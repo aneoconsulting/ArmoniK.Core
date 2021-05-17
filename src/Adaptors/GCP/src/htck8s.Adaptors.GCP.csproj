@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <BaseOutputPath>$(SolutionDir)\bin\$(AssemblyName)</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)\$(Configuration)</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Cloud.Bigtable.V2" Version="2.2.0" />
+    <PackageReference Include="Google.Cloud.Diagnostics.Common" Version="4.2.0" />
+    <PackageReference Include="Google.Cloud.PubSub.V1" Version="2.4.0" />
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="3.4.0" />
+  </ItemGroup>
+
+</Project>

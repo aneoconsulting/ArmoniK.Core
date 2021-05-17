@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <BaseOutputPath>$(SolutionDir)\bin\$(AssemblyName)</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)\$(Configuration)</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\DevelopmentKit\Common\src\htck8s.DevelopmentKit.Common.csproj" />
+  </ItemGroup>
+
+</Project>
