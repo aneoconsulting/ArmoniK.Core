@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\DevelopmentKit\Common\src\htck8s.DevelopmentKit.Common.csproj" />
+    <ProjectReference Include="..\..\..\DevelopmentKit\Common\src\ArmoniK.DevelopmentKit.Common.csproj" />
   </ItemGroup>
 
 </Project>

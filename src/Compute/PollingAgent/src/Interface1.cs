@@ -1,4 +1,4 @@
-﻿namespace htck8s.Compute.PollingAgent
+﻿namespace ArmoniK.Compute.PollingAgent
 {
   interface Interface1
   {

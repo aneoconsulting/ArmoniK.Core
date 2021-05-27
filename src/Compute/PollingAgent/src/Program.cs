@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace htck8s.Compute.PollingAgent
+namespace ArmoniK.Compute.PollingAgent
 {
   class Program
   {

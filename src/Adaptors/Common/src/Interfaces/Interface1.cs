@@ -1,3 +1,3 @@
-﻿namespace htck8s.Adaptors.Common.Interfaces
+﻿namespace ArmoniK.Adaptors.Common.Interfaces
 {
 }
