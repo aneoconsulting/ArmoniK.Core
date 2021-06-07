@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ArmoniK.Compute.PollingAgent": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

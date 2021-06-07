@@ -4,9 +4,7 @@ namespace ArmoniK.Compute.PollingAgent
 {
   class Program
   {
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     static async Task Main(string[] args)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     {
       // The port number(5001) must match the port of the gRPC server.
       //using var channel = GrpcChannel.ForAddress("https://localhost:49155");

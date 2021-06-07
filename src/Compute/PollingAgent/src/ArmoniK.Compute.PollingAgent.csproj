@@ -5,6 +5,8 @@
     <TargetFramework>net5.0</TargetFramework>
     <BaseOutputPath>$(SolutionDir)\bin\$(AssemblyName)</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)\$(Configuration)</OutputPath>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..\..\..</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,10 +16,17 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.13" />
   </ItemGroup>
 
   <ItemGroup>
     <Protobuf Include="**\*.proto" GrpcServices="Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\src\ArmoniK.Common.csproj" />
+    <ProjectReference Include="..\..\..\DevelopmentKit\Client\src\ArmoniK.DevelopmentKit.Client.csproj" />
+    <ProjectReference Include="..\..\..\DevelopmentKit\Common\src\ArmoniK.DevelopmentKit.Common.csproj" />
   </ItemGroup>
 
 </Project>
