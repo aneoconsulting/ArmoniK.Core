@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using ArmoniK.Common;
-using ArmoniK.Common.Exceptions;
 using ArmoniK.Common.gRPC;
 using ArmoniK.Common.gRPC.V1;
 using ArmoniK.Common.gRPC.V1.DispatchStatus;
@@ -11,9 +11,9 @@ using Google.Protobuf;
 
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.DevelopmentKit.Common.TaskStatus;
+using TaskStatus = ArmoniK.Common.TaskStatus;
 
-namespace ArmoniK.DevelopmentKit.Client
+namespace ArmoniK.Compute.PollingAgent
 {
   public class Dispatch : IDispatch
   {
@@ -34,7 +34,7 @@ namespace ArmoniK.DevelopmentKit.Client
 #pragma warning restore 649
     private          bool                                  isTimeoutRequested_;
 
-    public Dispatch(ITask                                 task,
+    public Dispatch(ITaskManager                                 taskManager,
                            DispatchService.DispatchServiceClient dispatchClient,
                            TaskDispatchId                        taskDispatchId,
                            ILogger                               logger)
@@ -42,7 +42,7 @@ namespace ArmoniK.DevelopmentKit.Client
       dispatchClient_        = dispatchClient;
       TaskDispatchId         = taskDispatchId;
       logger_                = logger;
-      Task                   = task;
+      TaskManager                   = taskManager;
       dispatchTaskIdMessage_ = new IdMessage {Id = TaskDispatchId.Value};
       heartbeat_             = new Heart().Start(Beat, TimeSpan.FromSeconds(HeartbeatPeriodS));
     }
@@ -99,7 +99,7 @@ namespace ArmoniK.DevelopmentKit.Client
     /// <inheritdoc />
     public async Task<byte[]> GetPayloadAsync(CancellationToken cancellationToken = default)
     {
-      var res = await  Task.GetPayloadAsync(cancellationToken);
+      var res = await  TaskManager.GetPayloadAsync(cancellationToken);
       NextStatus = DispatchStatus.Running;
       return res;
     }
@@ -121,7 +121,7 @@ namespace ArmoniK.DevelopmentKit.Client
                        .WrapRpcException();
       logger_.LogTrace("Sending result: updating status.");
       var completing    = UpdateDispatchStatusAsync(DispatchStatus.Completed, cancellationToken);
-      var taskCompleted = Task.UpdateStatusAsync(TaskStatus.Completed, cancellationToken);
+      var taskCompleted = TaskManager.UpdateStatusAsync(TaskStatus.Completed, cancellationToken);
       heartbeat_.BeatNow();
       await System.Threading.Tasks.Task.WhenAll(completing, taskCompleted);
       logger_.LogTrace("Sending result: done.");
@@ -132,7 +132,7 @@ namespace ArmoniK.DevelopmentKit.Client
     {
       logger_.LogWarning("Sending failure");
       var dispatchUpdate = UpdateDispatchStatusAsync(DispatchStatus.Failed, cancellationToken);
-      var taskUpdate     = Task.UpdateStatusAsync(TaskStatus.ReSubmitted, cancellationToken);
+      var taskUpdate     = TaskManager.UpdateStatusAsync(TaskStatus.ReSubmitted, cancellationToken);
       heartbeat_.BeatNow();
       await System.Threading.Tasks.Task.WhenAll(dispatchUpdate, taskUpdate);
       logger_.LogWarning("Sending failure: done.");
@@ -147,7 +147,7 @@ namespace ArmoniK.DevelopmentKit.Client
       {
         logger_.LogWarning("Sending cancellation");
         dispatchUpdate = UpdateDispatchStatusAsync(DispatchStatus.Cancelled, cancellationToken);
-        taskUpdate     = Task.UpdateStatusAsync(TaskStatus.Cancelled, cancellationToken);
+        taskUpdate     = TaskManager.UpdateStatusAsync(TaskStatus.Cancelled, cancellationToken);
         heartbeat_.BeatNow();
         await System.Threading.Tasks.Task.WhenAll(dispatchUpdate, taskUpdate);
         logger_.LogWarning("Sending cancellation: done.");
@@ -157,7 +157,7 @@ namespace ArmoniK.DevelopmentKit.Client
         logger_.LogWarning("Sending timeout");
 
         dispatchUpdate = UpdateDispatchStatusAsync(DispatchStatus.Timeout, cancellationToken);
-        taskUpdate     = Task.UpdateStatusAsync(TaskStatus.ReSubmitted, cancellationToken);
+        taskUpdate     = TaskManager.UpdateStatusAsync(TaskStatus.ReSubmitted, cancellationToken);
         heartbeat_.BeatNow();
         await System.Threading.Tasks.Task.WhenAll(dispatchUpdate, taskUpdate);
         logger_.LogWarning("Sending timeout: done.");
@@ -167,7 +167,7 @@ namespace ArmoniK.DevelopmentKit.Client
         logger_.LogWarning("Sending preemption");
 
         dispatchUpdate = UpdateDispatchStatusAsync(DispatchStatus.Preempted, cancellationToken);
-        taskUpdate     = Task.UpdateStatusAsync(TaskStatus.ReSubmitted, cancellationToken);
+        taskUpdate     = TaskManager.UpdateStatusAsync(TaskStatus.ReSubmitted, cancellationToken);
         heartbeat_.BeatNow();
         await System.Threading.Tasks.Task.WhenAll(dispatchUpdate, taskUpdate);
         logger_.LogWarning("Sending preemption: done.");
@@ -213,7 +213,7 @@ namespace ArmoniK.DevelopmentKit.Client
     public TaskDispatchId TaskDispatchId { get; }
 
     /// <inheritdoc />
-    public ITask Task { get; }
+    public ITaskManager TaskManager { get; }
 
     /// <inheritdoc />
     public System.Threading.Tasks.TaskStatus HeartbeatStatus => heartbeat_.BeatWaiter.Status;
