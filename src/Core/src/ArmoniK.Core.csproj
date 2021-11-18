@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <BaseOutputPath>$(SolutionDir)\bin\$(AssemblyName)</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)\$(Configuration)</OutputPath>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>embedded</DebugType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
+    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.19.1" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.40.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.41.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="$(SolutionDir)src\Protos\V1\Compute.proto" GrpcServices="Client">
+      <Link>gRPC\Protos\Compute.proto</Link>
+    </Protobuf>
+    <Protobuf Include="$(SolutionDir)src\Protos\V1\ClientService.proto" GrpcServices="Server">
+      <Link>gRPC\Protos\ClientService.proto</Link>
+    </Protobuf>
+    <Protobuf Include="$(SolutionDir)src\Protos\V1\Objects.proto" GrpcServices="Message">
+      <Link>gRPC\Protos\Objects.proto</Link>
+    </Protobuf>
+    <Protobuf Include="$(SolutionDir)src\Protos\V1\TaskStatus.proto" GrpcServices="Message">
+      <Link>gRPC\Protos\TaskStatus.proto</Link>
+    </Protobuf>
+  </ItemGroup>
+
+</Project>
