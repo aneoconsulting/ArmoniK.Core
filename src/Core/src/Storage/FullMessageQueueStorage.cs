@@ -10,21 +10,20 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
-using ArmoniK.Core.Utils;
 
 namespace ArmoniK.Core.Storage
 {
   public class FullMessageQueueStorage : IQueueStorage
   {
-    private readonly IQueueStorage                                        queueStorage_;
-    private readonly IKeyValueStorage<TaskId, TaskOptions>                taskOptionsStorage_;
-    private readonly IKeyValueStorage<TaskId, Payload>                    taskPayloadStorage_;
-    private readonly Func<QueueMessage, QueueMessage>                     queueMessageOptimizer_;
-    private readonly ConcurrentDictionary<string, TaskId[]>               idsMappingTaskIds_      = new();
+    private readonly IQueueStorage                          queueStorage_;
+    private readonly KeyValueStorage<TaskId, TaskOptions>   taskOptionsStorage_;
+    private readonly KeyValueStorage<TaskId, Payload>       taskPayloadStorage_;
+    private readonly Func<QueueMessage, QueueMessage>       queueMessageOptimizer_;
+    private readonly ConcurrentDictionary<string, TaskId[]> idsMappingTaskIds_ = new();
 
     public FullMessageQueueStorage(IQueueStorage                         queueStorage,
-                                   IKeyValueStorage<TaskId, TaskOptions> taskOptionsStorage,
-                                   IKeyValueStorage<TaskId, Payload>     taskPayloadStorage,
+                                   KeyValueStorage<TaskId, TaskOptions> taskOptionsStorage,
+                                   KeyValueStorage<TaskId, Payload>     taskPayloadStorage,
                                    Func<QueueMessage, QueueMessage>      queueMessageOptimizer)
     {
       queueStorage_          = queueStorage;
@@ -34,10 +33,10 @@ namespace ArmoniK.Core.Storage
     }
 
     private async Task<TaskOptions> GetTaskOptionsAsync(TaskId taskId, CancellationToken cancellationToken)
-      => (await (await taskOptionsStorage_.TryGetValuesAsync(new[] { taskId }, cancellationToken)).FirstAsync(cancellationToken)).Item2;
+      => (await taskOptionsStorage_.TryGetValuesAsync(new[] { taskId }, cancellationToken).SingleAsync(cancellationToken)).Item2;
 
     private async Task<Payload> GetTaskPayloadAsync(TaskId taskId, CancellationToken cancellationToken)
-      => (await (await taskPayloadStorage_.TryGetValuesAsync(new[] { taskId }, cancellationToken)).FirstAsync(cancellationToken)).Item2;
+      => (await taskPayloadStorage_.TryGetValuesAsync(new[] { taskId }, cancellationToken).SingleAsync(cancellationToken)).Item2;
 
     private async Task<QueueMessage> GetCompleteMessageAsync(QueueMessage message, CancellationToken cancellationToken)
     {

@@ -11,12 +11,12 @@ namespace ArmoniK.Core.Storage
 {
   public interface IObjectStorage
   {
-    Task<IAsyncEnumerable<(string, byte[])>> GetOrAddAsync(IEnumerable<(string, byte[])> values,
+    IAsyncEnumerable<(string, byte[])> GetOrAddAsync(IEnumerable<(string, byte[])> values,
                                                            CancellationToken             cancellationToken = default);
 
     Task AddOrUpdateAsync(IEnumerable<(string, byte[])> values, CancellationToken cancellationToken = default);
 
-    Task<IAsyncEnumerable<(string, byte[])>>
+    IAsyncEnumerable<(string, byte[])>
       TryGetValuesAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default);
 
     Task TryDeleteAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default);

@@ -1,13 +1,13 @@
+using ArmoniK.Core.Storage;
+
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Tests
 {
-  public class Tests
+  [TestFixture(TestOf = typeof(FullMessageQueueStorage))]
+  public class FullMessageQueueStorageTests
   {
-    [SetUp]
-    public void Setup()
-    {
-    }
+
 
     [Test]
     public void Test1()
