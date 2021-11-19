@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,12 +20,12 @@ namespace ArmoniK.Core.Storage
     private readonly KeyValueStorage<TaskId, TaskOptions>   taskOptionsStorage_;
     private readonly KeyValueStorage<TaskId, Payload>       taskPayloadStorage_;
     private readonly Func<QueueMessage, QueueMessage>       queueMessageOptimizer_;
-    private readonly ConcurrentDictionary<string, TaskId[]> idsMappingTaskIds_ = new();
+    private readonly ConcurrentDictionary<string, TaskId> idsMappingTaskIds_ = new();
 
-    public FullMessageQueueStorage(IQueueStorage                         queueStorage,
+    public FullMessageQueueStorage(IQueueStorage                        queueStorage,
                                    KeyValueStorage<TaskId, TaskOptions> taskOptionsStorage,
                                    KeyValueStorage<TaskId, Payload>     taskPayloadStorage,
-                                   Func<QueueMessage, QueueMessage>      queueMessageOptimizer)
+                                   Func<QueueMessage, QueueMessage>     queueMessageOptimizer)
     {
       queueStorage_          = queueStorage;
       taskOptionsStorage_    = taskOptionsStorage;
@@ -32,11 +33,11 @@ namespace ArmoniK.Core.Storage
       queueMessageOptimizer_ = queueMessageOptimizer;
     }
 
-    private async Task<TaskOptions> GetTaskOptionsAsync(TaskId taskId, CancellationToken cancellationToken)
-      => (await taskOptionsStorage_.TryGetValuesAsync(new[] { taskId }, cancellationToken).SingleAsync(cancellationToken)).Item2;
+    private Task<TaskOptions> GetTaskOptionsAsync(TaskId taskId, CancellationToken cancellationToken)
+      => taskOptionsStorage_.TryGetValuesAsync(taskId, cancellationToken);
 
-    private async Task<Payload> GetTaskPayloadAsync(TaskId taskId, CancellationToken cancellationToken)
-      => (await taskPayloadStorage_.TryGetValuesAsync(new[] { taskId }, cancellationToken).SingleAsync(cancellationToken)).Item2;
+    private Task<Payload> GetTaskPayloadAsync(TaskId taskId, CancellationToken cancellationToken)
+      => taskPayloadStorage_.TryGetValuesAsync(taskId, cancellationToken);
 
     private async Task<QueueMessage> GetCompleteMessageAsync(QueueMessage message, CancellationToken cancellationToken)
     {
@@ -74,35 +75,67 @@ namespace ArmoniK.Core.Storage
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
-      => Task.WhenAll(taskOptionsStorage_.TryDeleteAsync(idsMappingTaskIds_[id]),
-                      taskPayloadStorage_.TryDeleteAsync(idsMappingTaskIds_[id]),
-                      queueStorage_.DeleteAsync(id, cancellationToken));
-  
-
-    /// <inheritdoc />
-    public Task ModifyDeadlineAsync(string id, DateTime deadline, CancellationToken cancellationToken = default)
-      => queueStorage_.ModifyDeadlineAsync(id, deadline, cancellationToken);
-
-    /// <inheritdoc />
-    public async Task<string> EnqueueAsync(QueueMessage message, CancellationToken cancellationToken = default)
+    public async Task<QueueMessage> ReadAsync(string id, CancellationToken cancellationToken = default)
     {
-      var queueMessage  = queueMessageOptimizer_(message);
-      var queueSendTask = queueStorage_.EnqueueAsync(queueMessage, cancellationToken);
+      var message = await queueStorage_.ReadAsync(id, cancellationToken);
+      return await GetCompleteMessageAsync(message, cancellationToken);
+    }
 
-      var optionTask = queueMessage.HasTaskOptions
-                         ? Task.CompletedTask
-                         : taskOptionsStorage_.AddOrUpdateAsync(new[] { (message.TaskId, message.TaskOptions) });
+    /// <inheritdoc />
+    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+    {
+      if (!idsMappingTaskIds_.TryGetValue(id, out var taskId))
+      {
+        var message = await queueStorage_.ReadAsync(id, cancellationToken);
+        taskId = message.TaskId;
+      }
 
-      var payloadTask = queueMessage.HasTaskPayload
-                          ? Task.CompletedTask
-                          : taskPayloadStorage_.AddOrUpdateAsync(new[] { (message.TaskId, message.Payload) });
+      await Task.WhenAll(taskOptionsStorage_.TryDeleteAsync(taskId, cancellationToken),
+                         taskPayloadStorage_.TryDeleteAsync(taskId, cancellationToken),
+                         queueStorage_.DeleteAsync(id, cancellationToken));
+    }
 
-      var messageId = await queueSendTask;
-      idsMappingTaskIds_[messageId] = new[] { message.TaskId };
 
-      await Task.WhenAll(optionTask, payloadTask);
-      return messageId;
+    /// <inheritdoc />
+    public Task<bool> ModifyVisibilityAsync(string id, DateTime deadline, CancellationToken cancellationToken = default)
+      => queueStorage_.ModifyVisibilityAsync(id, deadline, cancellationToken);
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<string> EnqueueMessagesAsync(IEnumerable<QueueMessage> messages,
+                                                         CancellationToken         cancellationToken = default)
+    {
+      var optimizedMessages = messages.Select(message => (Origin: message, Optimized: queueMessageOptimizer_(message)))
+                                      .ToList();
+
+      var enqueueTask = queueStorage_.EnqueueMessagesAsync(optimizedMessages.Select(tuple => tuple.Optimized), cancellationToken);
+
+      var storeTasks = optimizedMessages.Select(async tuple =>
+                                                {
+                                                  var optionTask = tuple.Optimized.HasTaskOptions
+                                                                     ? Task.CompletedTask
+                                                                     : taskOptionsStorage_.AddOrUpdateAsync(tuple.Optimized.TaskId,
+                                                                                                            tuple.Origin.TaskOptions,
+                                                                                                            cancellationToken);
+                                                  var payloadTask = tuple.Optimized.HasTaskPayload
+                                                                      ? Task.CompletedTask
+                                                                      : taskPayloadStorage_.AddOrUpdateAsync(tuple.Optimized.TaskId,
+                                                                                                             tuple.Origin.Payload,
+                                                                                                             cancellationToken);
+                                                  await Task.WhenAll(optionTask, payloadTask);
+                                                  return tuple.Optimized.TaskId;
+                                                })
+                                        .ToList()
+                                        .ToAsyncEnumerable();
+
+
+
+
+      return enqueueTask.ZipAwait(storeTasks, async (s, task) =>
+                                              {
+                                                var taskId = await task;
+                                                idsMappingTaskIds_.AddOrUpdate(s, taskId, (_, _) => taskId);
+                                                return s;
+                                              });
     }
   }
 }

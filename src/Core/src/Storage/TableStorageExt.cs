@@ -10,13 +10,15 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
 
+using JetBrains.Annotations;
+
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Storage
 {
+  [PublicAPI]
   public static class TableStorageExt
   {
-
     public static async Task<bool> IsTaskCompleted(this ITableStorage tableStorage, TaskData taskData, CancellationToken cancellationToken = default)
     {
       var status = taskData.Status;

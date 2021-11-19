@@ -32,66 +32,44 @@ namespace ArmoniK.Core.Storage
       keyPrefix_     = keyPrefix;
     }
 
-    public string SerializeKey(TKey key) => $"{keyPrefix_}_{HttpUtility.UrlEncode(key.ToByteArray())}";
+    public string SerializeKey(TKey key) => $"{keyPrefix_}{HttpUtility.UrlEncode(key.ToByteArray())}";
 
     public TKey DeserializeKey(string stringKey)
     {
-      var cleanedKey = HttpUtility.UrlDecodeToBytes(stringKey[(keyPrefix_.Length + 1)..]);
+      var cleanedKey = HttpUtility.UrlDecodeToBytes(stringKey[keyPrefix_.Length..]);
 
       var key = KeyParser.ParseFrom(cleanedKey);
       return key;
     }
 
-    private IEnumerable<(string serializedKey, byte[] serializedVal)> SerializeValuesAsync(IEnumerable<(TKey, TValue)> values)
-      => values.Select(tuple =>
-      {
-        var (key, value) = tuple;
-
-        var stringKey = SerializeKey(key);
-        var serializedVal = value.ToByteArray();
-        return (serializedKey: stringKey, serializedVal);
-      });
-
-    private async IAsyncEnumerable<(TKey, TValue)> DeserializeValuesAsync(IAsyncEnumerable<(string, byte[])>         asyncEnum,
-                                                                          [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async Task<TValue> GetOrAddAsync(TKey key, TValue value, CancellationToken cancellationToken = default)
     {
-      await foreach (var (stringKey, serializedValue) in asyncEnum.WithCancellation(cancellationToken))
-      {
-        var key = DeserializeKey(stringKey);
-
-        var value = ValueParser.ParseFrom(serializedValue);
-
-        yield return (key, value);
-      }
-    }
-
-    public IAsyncEnumerable<(TKey, TValue)> GetOrAddAsync(IEnumerable<(TKey, TValue)> values,
-                                                         CancellationToken           cancellationToken = default)
-    {
-      var serializedValues = SerializeValuesAsync(values);
-
-      var asyncEnum = objectStorage_.GetOrAddAsync(serializedValues, cancellationToken);
-
-      return DeserializeValuesAsync(asyncEnum, cancellationToken);
+      var serializedKey    = SerializeKey(key);
+      var serializedValue  = value.ToByteArray();
+      var serializedOutput = await objectStorage_.GetOrAddAsync(serializedKey, serializedValue, cancellationToken);
+      return ValueParser.ParseFrom(serializedOutput);
     }
 
 
-
-    public Task AddOrUpdateAsync(IEnumerable<(TKey, TValue)> values, CancellationToken cancellationToken = default)
+    public Task AddOrUpdateAsync(TKey key, TValue value, CancellationToken cancellationToken = default)
     {
-      var serializedValues = SerializeValuesAsync(values);
-
-      return objectStorage_.AddOrUpdateAsync(serializedValues, cancellationToken);
+      var serializedKey    = SerializeKey(key);
+      var serializedValue  = value.ToByteArray();
+      return objectStorage_.AddOrUpdateAsync(serializedKey, serializedValue, cancellationToken);
     }
 
-    public IAsyncEnumerable<(TKey, TValue)> TryGetValuesAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public async Task<TValue> TryGetValuesAsync(TKey key, CancellationToken cancellationToken = default)
     {
-      var asyncEnum = objectStorage_.TryGetValuesAsync(keys.Select(SerializeKey), cancellationToken);
-
-      return DeserializeValuesAsync(asyncEnum, cancellationToken);
+      var serializedKey    = SerializeKey(key);
+      var serializedOutput = await objectStorage_.TryGetValuesAsync(serializedKey, cancellationToken);
+      return ValueParser.ParseFrom(serializedOutput);
     }
 
-    public Task TryDeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default) 
-      => objectStorage_.TryDeleteAsync(keys.Select(SerializeKey), cancellationToken);
+    public Task<bool> TryDeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    {
+      var serializedKey    = SerializeKey(key);
+      return objectStorage_.TryDeleteAsync(serializedKey, cancellationToken);
+    }
+    
   }
 }

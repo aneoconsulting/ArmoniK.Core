@@ -4,6 +4,7 @@
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,10 +17,12 @@ namespace ArmoniK.Core.Storage
   {
     Task<QueueMessage> PullAsync(DateTime deadline, CancellationToken cancellationToken = default);
 
+    Task<QueueMessage> ReadAsync(string id, CancellationToken cancellationToken = default);
+
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
 
-    Task ModifyDeadlineAsync(string id, DateTime deadline, CancellationToken cancellationToken = default);
+    Task<bool> ModifyVisibilityAsync(string id, DateTime deadline, CancellationToken cancellationToken = default);
 
-    Task<string> EnqueueAsync(QueueMessage message, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<string> EnqueueMessagesAsync(IEnumerable<QueueMessage> messages, CancellationToken cancellationToken = default);
   }
 }
