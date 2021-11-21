@@ -16,41 +16,40 @@ namespace ArmoniK.Core.Storage
   {
     private readonly ILeaseProvider    leaseProvider_;
     private readonly TaskId            taskId_;
-    private readonly TimeSpan          refreshPeriod_;
     private readonly CancellationToken cancellationToken_;
     private          Heart             heart_;
     private          string            leaseId_;
 
     public LeaseHandler(ILeaseProvider    leaseProvider,
                         TaskId            taskId,
-                        TimeSpan          refreshPeriod,
                         CancellationToken cancellationToken)
     {
       leaseProvider_     = leaseProvider;
       taskId_            = taskId;
-      refreshPeriod_     = refreshPeriod;
       cancellationToken_ = cancellationToken;
     }
 
     public async Task Start()
     {
-      var retentionSpan = refreshPeriod_ + refreshPeriod_;
-      var lease         = await leaseProvider_.TryAcquireLease(taskId_, DateTime.UtcNow + retentionSpan, cancellationToken_);
+      var lease         = await leaseProvider_.TryAcquireLease(taskId_, cancellationToken_);
       leaseId_ = lease.LeaseId;
       heart_ = new Heart(async ct =>
                          {
                            var renewedLease = await leaseProvider_.TryRenewLease(taskId_,
                                                                                  leaseId_,
-                                                                                 DateTime.UtcNow + retentionSpan, ct);
+                                                                                 ct);
                            return renewedLease.IsValid();
                          },
-                         refreshPeriod_, cancellationToken_);
+                         leaseProvider_.AcquisitionPeriod,
+                         cancellationToken_);
 
       if (lease.IsValid())
       {
         heart_.Start();
       }
     }
+
+    public CancellationToken LeaseExpired => heart_.HeartStopped;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

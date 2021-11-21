@@ -1,27 +1,92 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+using ArmoniK.Compute.gRPC.V1;
+using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Core.Storage;
 
 using Grpc.Net.Client;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Logging;
+
+using Serilog.Events;
+using Serilog;
+using Serilog.Core;
+
 namespace ArmoniK.Compute.PollingAgent
 {
   [PublicAPI]
-  public record Configuration(string ComputeServiceAddress);
-
-  [PublicAPI]
   internal class Program
   {
-    // to load from a teraform generated configuration file
-    static Configuration LoadConfiguration() => throw new NotImplementedException();
 
     static void Main(string[] args)
     {
-      var configuration = LoadConfiguration();
+      // TODO: setup Serilog as in https://blog.rsuter.com/logging-with-ilogger-recommendations-and-best-practices/
+
+      var configuration = Configuration.LoadFromFile("filename");
 
       using var channel = GrpcChannel.ForAddress(configuration.ComputeServiceAddress);
 
 
+      IQueueStorage  queueStorage = null;
+      ITableStorage  tableStorage = null;
+      ILeaseProvider leaseProvider = null;
+      IObjectStorage objectStorage = null;
+      var            taskResultStorage  = new KeyValueStorage<TaskId, ComputeReply>("TaskResult", objectStorage);
+      var            taskPayloadStorage = new KeyValueStorage<TaskId, Payload>("TaskPayload", objectStorage);
+      var            client             = new ComputerService.ComputerServiceClient(channel);
+
+      var serilogLogger = new LoggerConfiguration()
+                         .MinimumLevel.Debug()
+                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                         .Enrich.FromLogContext()
+                         .WriteTo.Console()
+                         .CreateLogger();
+
+      var loggerFactory = new LoggerFactory();
+      loggerFactory.AddSerilog(serilogLogger);
+      var logger = loggerFactory.CreateLogger<Program>();
+
+      var polster = new Pollster(loggerFactory.CreateLogger<Pollster>(), 
+                                 1, 
+                                 queueStorage, 
+                                 tableStorage, 
+                                 leaseProvider,
+                                 taskResultStorage, 
+                                 taskPayloadStorage, 
+                                 client);
+
+      var cts            = new CancellationTokenSource();
+
+      var sigintReceived = false;
+
+      Console.CancelKeyPress += (_, ea) =>
+                                {
+                                  // Tell .NET to not terminate the process
+                                  ea.Cancel = true;
+                                  logger.LogCritical("Received SIGINT (Ctrl+C)");
+                                  cts.Cancel();
+                                  sigintReceived = true;
+                                };
+
+      AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+                                             {
+                                               if (!sigintReceived)
+                                               {
+                                                 logger.LogCritical("Received SIGTERM");
+                                                 cts.Cancel();
+                                               }
+                                               else
+                                               {
+                                                 logger.LogCritical("Received SIGTERM, ignoring it because already processed SIGINT");
+                                               }
+                                             };
+
+
+      polster.MainLoop(cts.Token).Wait(cts.Token);
 
     }
   }

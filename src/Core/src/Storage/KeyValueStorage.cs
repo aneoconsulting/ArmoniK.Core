@@ -21,15 +21,15 @@ namespace ArmoniK.Core.Storage
     where TValue: IMessage<TValue>, new()
     where TKey:IMessage<TKey>, new()
   {
-    private static readonly MessageParser<TKey>   KeyParser   = new(() => new TKey());
-    private static readonly MessageParser<TValue> ValueParser = new(() => new TValue());
-    private readonly        IObjectStorage        objectStorage_;
-    private readonly        string                keyPrefix_;
+    public static readonly MessageParser<TKey>   KeyParser   = new(() => new TKey());
+    public static readonly MessageParser<TValue> ValueParser = new(() => new TValue());
+    private readonly       IObjectStorage        objectStorage_;
+    private readonly       string                keyPrefix_;
     
-    public KeyValueStorage(IObjectStorage objectStorage, string keyPrefix)
+    public KeyValueStorage(string keyPrefix, IObjectStorage objectStorage)
     {
-      objectStorage_ = objectStorage;
       keyPrefix_     = keyPrefix;
+      objectStorage_ = objectStorage;
     }
 
     public string SerializeKey(TKey key) => $"{keyPrefix_}{HttpUtility.UrlEncode(key.ToByteArray())}";

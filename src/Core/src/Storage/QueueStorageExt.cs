@@ -5,8 +5,10 @@
 
 using System;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 using JetBrains.Annotations;
 
@@ -21,9 +23,8 @@ namespace ArmoniK.Core.Storage
     }
 
     public static QueueMessageDeadlineHandler GetDeadlineHandler(this IQueueStorage queueStorage,
-                                                                 string             id,
-                                                                 TimeSpan           refreshPeriod,
-                                                                 CancellationToken  cancellationToken)
-      => new (queueStorage, id, refreshPeriod, cancellationToken);
+                                                                 string             messageId,
+                                                                 CancellationToken  cancellationToken = default)
+      => new (queueStorage, messageId, cancellationToken);
   }
 }

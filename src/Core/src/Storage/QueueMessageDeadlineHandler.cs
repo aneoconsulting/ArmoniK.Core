@@ -23,20 +23,22 @@ namespace ArmoniK.Core.Storage
 
     public QueueMessageDeadlineHandler(IQueueStorage     queueStorage,
                                        string            id,
-                                       TimeSpan          refreshPeriod,
                                        CancellationToken cancellationToken)
     {
       queueStorage_      = queueStorage;
       id_                = id;
       cancellationToken_ = cancellationToken;
-      var retentionSpan = refreshPeriod + refreshPeriod;
       heart_ = new Heart(async ct =>
                          {
-                           var modified = await queueStorage_.ModifyVisibilityAsync(id_, DateTime.UtcNow + retentionSpan, ct);
+                           var modified = await queueStorage_.RenewLockAsync(id_, ct);
                            return !modified;
                          },
-                         refreshPeriod, cancellationToken_);
+                         queueStorage_.LockRefreshPeriodicity, 
+                         cancellationToken_);
+      heart_.Start();
     }
+
+    public CancellationToken MessageLockLost => heart_.HeartStopped;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
@@ -45,7 +47,7 @@ namespace ArmoniK.Core.Storage
       {
         await heart_.Stop();
       }
-      await queueStorage_.ModifyVisibilityAsync(id_, DateTime.UtcNow, cancellationToken_);
+      await queueStorage_.RenewLockAsync(id_, cancellationToken_);
     }
   }
 }

@@ -3,14 +3,13 @@
 // Copyright (c) ANEO. All rights reserved.
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
-using ArmoniK.Core.gRPC.V1;
-
 using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
-  public record QueueMessage(
-    string                MessageId,
-    TaskId                TaskId);
+  public record Optional<T>(bool HasValue = false, T Value = null) where T : class
+  {
+    public Optional(T value):this(true, value){}
+  }
 }

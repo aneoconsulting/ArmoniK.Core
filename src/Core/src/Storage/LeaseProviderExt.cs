@@ -15,10 +15,9 @@ namespace ArmoniK.Core.Storage
   {
     public static async Task<LeaseHandler> GetLeaseHandler(this ILeaseProvider leaseProvider,
                                                            TaskId              taskId,
-                                                           TimeSpan            refreshPeriod,
-                                                           CancellationToken   cancellationToken)
+                                                           CancellationToken   cancellationToken = default)
     {
-      var output = new LeaseHandler(leaseProvider, taskId, refreshPeriod, cancellationToken);
+      var output = new LeaseHandler(leaseProvider, taskId, cancellationToken);
       await output.Start();
       return output;
     }

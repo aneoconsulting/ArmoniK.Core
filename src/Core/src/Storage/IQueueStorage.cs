@@ -4,9 +4,12 @@
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
+using ArmoniK.Compute.gRPC.V1;
 
 using JetBrains.Annotations;
 
@@ -15,14 +18,23 @@ namespace ArmoniK.Core.Storage
   [PublicAPI]
   public interface IQueueStorage
   {
-    Task<QueueMessage> PullAsync(DateTime deadline, CancellationToken cancellationToken = default);
+    TimeSpan LockRefreshPeriodicity { get; }
+
+    TimeSpan LockRefreshExtension { get; }
+      
+    IAsyncEnumerable<QueueMessage> PullAsync(int nbMessages, CancellationToken cancellationToken = default);
 
     Task<QueueMessage> ReadAsync(string id, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
 
-    Task<bool> ModifyVisibilityAsync(string id, DateTime deadline, CancellationToken cancellationToken = default);
+    Task<bool> RenewLockAsync(string id, CancellationToken cancellationToken = default);
+
+    Task UnlockAsync(string id, CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<string> EnqueueMessagesAsync(IEnumerable<QueueMessage> messages, CancellationToken cancellationToken = default);
+
+    Task<string> RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default);
+
   }
 }

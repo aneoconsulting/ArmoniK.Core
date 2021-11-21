@@ -13,21 +13,23 @@ namespace ArmoniK.Core.Storage
   [PublicAPI]
   public interface ITableStorage
   {
-    Task<string> CreateSessionAsync(SessionOptions sessionOptions, CancellationToken cancellationToken = default);
+    Task<SessionId> CreateSessionAsync(SessionOptions sessionOptions, CancellationToken cancellationToken = default);
 
-    Task CloseSessionAsync(string sessionId, CancellationToken cancellationToken = default);
+    Task CloseSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default);
+    Task CancelSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task<bool> IsSessionCancelledAsync(string sessionId, CancellationToken cancellationToken = default);
+    Task<bool> IsSessionCancelledAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task<SessionOptions> GetSessionOptions(string sessionId, CancellationToken cancellationToken = default);
+    Task<SessionOptions> GetSessionOptions(SessionId sessionId, CancellationToken cancellationToken = default);
 
     Task<TaskId> CreateTask(SessionId session, string payloadKey, TaskOptions options, CancellationToken cancellationToken = default);
 
     Task<TaskData> ReadTaskAsync(TaskId id, CancellationToken cancellationToken = default);
 
     Task UpdateTaskStatusAsync(TaskId id, TaskStatus status, CancellationToken cancellationToken = default);
+
+    Task IncreaseRetryCounterAsync(TaskId id, CancellationToken cancellationToken = default);
 
     Task DeleteTaskAsync(TaskId id, CancellationToken cancellationToken = default);
 
