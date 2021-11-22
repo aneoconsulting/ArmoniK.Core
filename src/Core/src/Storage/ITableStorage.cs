@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +14,8 @@ namespace ArmoniK.Core.Storage
   [PublicAPI]
   public interface ITableStorage
   {
+    TimeSpan PollingDelay { get; } 
+
     Task<SessionId> CreateSessionAsync(SessionOptions sessionOptions, CancellationToken cancellationToken = default);
 
     Task CloseSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
@@ -21,21 +24,28 @@ namespace ArmoniK.Core.Storage
 
     Task<bool> IsSessionCancelledAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
+    Task<bool> IsSessionClosedAsync(SessionId sessionId, CancellationToken cancellationToken = default);
+
     Task<SessionOptions> GetSessionOptions(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task<TaskId> CreateTask(SessionId session, string payloadKey, TaskOptions options, CancellationToken cancellationToken = default);
+    Task<TaskId> InitializeTaskCreation(SessionId session, TaskOptions options, CancellationToken cancellationToken = default);
+
+    Task FinalizeTaskCreation(TaskId taskId, CancellationToken cancellationToken = default);
 
     Task<TaskData> ReadTaskAsync(TaskId id, CancellationToken cancellationToken = default);
 
     Task UpdateTaskStatusAsync(TaskId id, TaskStatus status, CancellationToken cancellationToken = default);
 
+    Task<TaskId> CancelTask(TaskId id, CancellationToken cancellationToken = default);
+
+    Task<TaskId> CancelTask(TaskFilter filter, CancellationToken cancellationToken = default);
+
     Task IncreaseRetryCounterAsync(TaskId id, CancellationToken cancellationToken = default);
 
     Task DeleteTaskAsync(TaskId id, CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<TaskId> ListTasksAsync(SessionId id, CancellationToken cancellationToken = default);
-
     IAsyncEnumerable<TaskId> ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
+    Task<int> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
     
   }
 }

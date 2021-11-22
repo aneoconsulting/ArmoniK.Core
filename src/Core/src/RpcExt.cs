@@ -12,6 +12,7 @@ using Grpc.Core;
 using JetBrains.Annotations;
 
 using TaskCanceledException = ArmoniK.Core.Exceptions.TaskCanceledException;
+using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 using TimeoutException = ArmoniK.Core.Exceptions.TimeoutException;
 
 namespace ArmoniK.Core
@@ -80,6 +81,7 @@ namespace ArmoniK.Core
 
     public static string ToPrintableId(this TaskId taskId)
       => $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
+
 
   }
 }

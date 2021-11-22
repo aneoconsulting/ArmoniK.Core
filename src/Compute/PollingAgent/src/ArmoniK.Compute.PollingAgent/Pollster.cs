@@ -172,6 +172,7 @@ namespace ArmoniK.Compute.PollingAgent
             logger_.LogCritical("Task was in an unknown state {state}", taskData.Status);
             throw new ArgumentOutOfRangeException(nameof(taskData.Status));
         }
+
         var updateTask = tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Dispatched, combinesCTS.Token);
 
         async Task<bool> IsDependencyCompleted(TaskId tid)
