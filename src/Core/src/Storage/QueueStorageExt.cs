@@ -17,9 +17,9 @@ namespace ArmoniK.Core.Storage
   [PublicAPI]
   public static class QueueStorageExt
   {
-    public static async Task<string> EnqueueAsync(this IQueueStorage queueStorage, QueueMessage message, CancellationToken cancellationToken = default)
+    public static async Task<string> EnqueueAsync(this IQueueStorage queueStorage, QueueMessage message, int priority, CancellationToken cancellationToken = default)
     {
-      return await queueStorage.EnqueueMessagesAsync(new[] { message }, cancellationToken).SingleAsync(cancellationToken);
+      return await queueStorage.EnqueueMessagesAsync(new[] { message }, cancellationToken, priority).SingleAsync(cancellationToken);
     }
 
     public static QueueMessageDeadlineHandler GetDeadlineHandler(this IQueueStorage queueStorage,

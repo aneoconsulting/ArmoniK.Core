@@ -18,6 +18,7 @@ namespace ArmoniK.Control.Services
     private readonly ITableStorage tableStorage_;
     private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
     private readonly KeyValueStorage<TaskId, Payload> taskPayloadStorage_;
+    private readonly IQueueStorage queueStorage_;
 
     public ClientService(ITableStorage tableStorage, 
       KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
@@ -97,7 +98,12 @@ namespace ArmoniK.Control.Services
 
         var tid = await tableStorage_.InitializeTaskCreation(taskRequest.SessionId, options, context.CancellationToken);
 
-        await taskPayloadStorage_.AddOrUpdateAsync(tid, taskRequest.Payload, context.CancellationToken);
+        var payloadTask = taskPayloadStorage_.AddOrUpdateAsync(tid, taskRequest.Payload, context.CancellationToken);
+
+        var message = new QueueMessage("", tid);
+        await queueStorage_.EnqueueAsync(message, options.Priority, context.CancellationToken); //TODO: use Ienumerable version
+
+        await payloadTask;
 
         await tableStorage_.FinalizeTaskCreation(tid, context.CancellationToken);
 
