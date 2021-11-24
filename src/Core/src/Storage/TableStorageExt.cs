@@ -57,5 +57,17 @@ namespace ArmoniK.Core.Storage
 
       return true;
     }
+
+    public static Task CancelTask(this ITableStorage tableStorage, TaskId id, CancellationToken cancellationToken = default) 
+      => tableStorage.UpdateTaskStatusAsync(id, TaskStatus.Canceling, cancellationToken);
+
+    public static Task<int> CancelTask(this ITableStorage tableStorage, TaskFilter filter, CancellationToken cancellationToken = default)
+      => tableStorage.UpdateTaskStatusAsync(filter, TaskStatus.Canceling, cancellationToken);
+
+
+    public static Task FinalizeTaskCreation(this ITableStorage tableStorage,
+                                            TaskId             taskId,
+                                            CancellationToken  cancellationToken = default)
+      => tableStorage.UpdateTaskStatusAsync(taskId, TaskStatus.Submitted, cancellationToken);
   }
 }

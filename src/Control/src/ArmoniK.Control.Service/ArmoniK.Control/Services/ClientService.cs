@@ -20,13 +20,15 @@ namespace ArmoniK.Control.Services
     private readonly KeyValueStorage<TaskId, Payload> taskPayloadStorage_;
     private readonly IQueueStorage queueStorage_;
 
-    public ClientService(ITableStorage tableStorage, 
-      KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
-      KeyValueStorage<TaskId, Payload> taskPayloadStorage)
+    public ClientService(ITableStorage                         tableStorage,
+                         IQueueStorage                         queueStorage,
+                         KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
+                         KeyValueStorage<TaskId, Payload>      taskPayloadStorage)
     {
-      tableStorage_ = tableStorage;
-      taskResultStorage_ = taskResultStorage;
+      tableStorage_       = tableStorage;
+      taskResultStorage_  = taskResultStorage;
       taskPayloadStorage_ = taskPayloadStorage;
+      queueStorage_       = queueStorage;
     }
 
     public override async Task<Empty> CancelSession(SessionId request, ServerCallContext context)
@@ -43,7 +45,7 @@ namespace ArmoniK.Control.Services
       {
         throw new RpcException(new Status(StatusCode.Unknown, e.Message));
       }
-      return new();
+      return new Empty();
     }
 
     public override async Task<Empty> CancelTask(TaskFilter request, ServerCallContext context)
@@ -90,22 +92,26 @@ namespace ArmoniK.Control.Services
       var tidsTask = request.TaskRequests.Select(async taskRequest =>
       {
         var options = taskRequest.TaskOptions;
-        if(options == null)
+        if (options == null)
         {
-          var sessionOption = await tableStorage_.GetSessionOptions(taskRequest.SessionId, context.CancellationToken);
-          options = sessionOption.DefaultTaskOption;
+          options = await tableStorage_.GetDefaultTaskOption(taskRequest.SessionId, context.CancellationToken);
         }
 
-        var tid = await tableStorage_.InitializeTaskCreation(taskRequest.SessionId, options, context.CancellationToken);
+        var (tid, isPayloadStored) = await tableStorage_.InitializeTaskCreation(taskRequest.SessionId,
+                                                             options,
+                                                             taskRequest.Payload,
+                                                             context.CancellationToken);
 
-        var payloadTask = taskPayloadStorage_.AddOrUpdateAsync(tid, taskRequest.Payload, context.CancellationToken);
+        var payloadTask = isPayloadStored
+                            ? ValueTask.CompletedTask
+                            : new ValueTask(taskPayloadStorage_.AddOrUpdateAsync(tid, taskRequest.Payload, context.CancellationToken));
 
         var message = new QueueMessage("", tid);
-        await queueStorage_.EnqueueAsync(message, options.Priority, context.CancellationToken); //TODO: use Ienumerable version
+        await queueStorage_.EnqueueAsync(message, options.Priority, context.CancellationToken); //TODO: use IEnumerable version
 
         await payloadTask;
 
-        await tableStorage_.FinalizeTaskCreation(tid, context.CancellationToken);
+          await tableStorage_.FinalizeTaskCreation(tid, context.CancellationToken);
 
         return tid;
       }).ToList();

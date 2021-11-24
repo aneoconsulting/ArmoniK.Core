@@ -59,6 +59,7 @@ namespace ArmoniK.Core.Storage
         await heart_.Stop();
       }
       await leaseProvider_.ReleaseLease(taskId_, leaseId_, cancellationToken_);
+      GC.SuppressFinalize(this);
     }
   }
 }

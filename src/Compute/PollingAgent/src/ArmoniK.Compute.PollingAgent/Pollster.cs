@@ -25,6 +25,7 @@ namespace ArmoniK.Compute.PollingAgent
   public class Pollster
   {
     private readonly ILogger<Pollster>                     logger_;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "TODO: use this field")]
     private readonly int                                   messageBatchSize_;
     private readonly IQueueStorage                         queueStorage_;
     private readonly ITableStorage                         tableStorage_;
@@ -52,6 +53,7 @@ namespace ArmoniK.Compute.PollingAgent
       client_             = client;
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "<Pending>")]
     public async Task MainLoop(CancellationToken cancellationToken)
     {
       logger_.LogInformation("Main loop started.");
@@ -69,11 +71,9 @@ namespace ArmoniK.Compute.PollingAgent
          * Acquire locks
          */
 
-        // ReSharper disable once MethodSupportsCancellation
-        var leaseProviderTask = leaseProvider_.GetLeaseHandler(message.TaskId);
+        var leaseProviderTask = leaseProvider_.GetLeaseHandler(message.TaskId, CancellationToken.None);
 
-        // ReSharper disable once MethodSupportsCancellation
-        await using var queueDeadlineHandler = queueStorage_.GetDeadlineHandler(message.MessageId);
+        await using var queueDeadlineHandler = queueStorage_.GetDeadlineHandler(message.MessageId, CancellationToken.None);
 
         if (queueDeadlineHandler.MessageLockLost.IsCancellationRequested)
         {
@@ -87,8 +87,7 @@ namespace ArmoniK.Compute.PollingAgent
         {
           logger_.LogWarning("Cannot refresh lease for task");
           // cannot get lease: task is already running elsewhere
-          // ReSharper disable once MethodSupportsCancellation
-          await queueStorage_.DeleteAsync(message.MessageId);
+          await queueStorage_.DeleteAsync(message.MessageId, CancellationToken.None);
           await queueDeadlineHandler.DisposeAsync();
           continue;
         }
@@ -206,15 +205,15 @@ namespace ArmoniK.Compute.PollingAgent
         logger_.LogInformation("Task preconditions are OK");
         await updateTask;
 
-        await PrefetchAndCompute(cancellationToken, taskData, combinesCTS, queueDeadlineHandler, leaseHandler);
+        await PrefetchAndCompute(taskData, queueDeadlineHandler, leaseHandler, combinesCTS, cancellationToken);
       }
     }
 
-    private async Task PrefetchAndCompute(CancellationToken           cancellationToken,
-                                          TaskData                    taskData,
-                                          CancellationTokenSource     combinesCTS,
+    private async Task PrefetchAndCompute(TaskData taskData,
                                           QueueMessageDeadlineHandler queueDeadlineHandler,
-                                          LeaseHandler                leaseHandler)
+                                          LeaseHandler leaseHandler,
+                                          CancellationTokenSource combinesCTS,
+                                          CancellationToken cancellationToken)
     {
       /*
          * Prefetch Data
@@ -234,8 +233,7 @@ namespace ArmoniK.Compute.PollingAgent
          * Compute Task
          */
 
-      // ReSharper disable once MethodSupportsCancellation
-      var increaseTask = tableStorage_.IncreaseRetryCounterAsync(taskData.Id);
+      var increaseTask = tableStorage_.IncreaseRetryCounterAsync(taskData.Id, CancellationToken.None);
 
       var request = new ComputeRequest
                     {
@@ -247,8 +245,7 @@ namespace ArmoniK.Compute.PollingAgent
 
       logger_.LogInformation("Send compute request to the worker");
 
-      // ReSharper disable once MethodSupportsCancellation
-      var call = client_.ExecuteAsync(request, deadline: DateTime.UtcNow + taskData.Options.MaxDuration.ToTimeSpan()); 
+      var call = client_.ExecuteAsync(request, deadline: DateTime.UtcNow + taskData.Options.MaxDuration.ToTimeSpan(), cancellationToken: CancellationToken.None); 
 
       ComputeReply result;
       try
@@ -262,8 +259,7 @@ namespace ArmoniK.Compute.PollingAgent
                          taskData.Id.Task,
                          taskData.Id.Session);
 
-        // ReSharper disable once MethodSupportsCancellation
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Timeout);
+        await tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Timeout, CancellationToken.None);
         return;
       }
       catch (TaskCanceledException e)
@@ -280,8 +276,7 @@ namespace ArmoniK.Compute.PollingAgent
                          taskData.Id.Session,
                          details);
 
-        // ReSharper disable once MethodSupportsCancellation
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Timeout);
+        await tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Timeout, CancellationToken.None);
         return;
       }
       catch (ArmoniKException e)
@@ -292,8 +287,7 @@ namespace ArmoniK.Compute.PollingAgent
                          taskData.Id.Session,
                          e.ToString());
 
-        // ReSharper disable once MethodSupportsCancellation
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Failed);
+        await tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Failed, CancellationToken.None);
         return;
       }
       catch (Exception e)
@@ -313,12 +307,10 @@ namespace ArmoniK.Compute.PollingAgent
          */
 
       logger_.LogInformation("Sending result to storage.");
-      // ReSharper disable once MethodSupportsCancellation
-      await taskResultStorage_.AddOrUpdateAsync(taskData.Id, result);
+      await taskResultStorage_.AddOrUpdateAsync(taskData.Id, result, CancellationToken.None);
       logger_.LogInformation("Result sent.");
 
-      // ReSharper disable once MethodSupportsCancellation
-      var finishedUpdate = tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Completed);
+      var finishedUpdate = tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Completed, CancellationToken.None);
       await increaseTask;
       await finishedUpdate;
     }

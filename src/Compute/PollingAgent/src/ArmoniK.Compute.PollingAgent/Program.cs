@@ -22,7 +22,7 @@ namespace ArmoniK.Compute.PollingAgent
   internal class Program
   {
 
-    static void Main(string[] args)
+    static void Main()
     {
       // TODO: setup Serilog as in https://blog.rsuter.com/logging-with-ilogger-recommendations-and-best-practices/
 
@@ -50,7 +50,7 @@ namespace ArmoniK.Compute.PollingAgent
       loggerFactory.AddSerilog(serilogLogger);
       var logger = loggerFactory.CreateLogger<Program>();
 
-      var polster = new Pollster(loggerFactory.CreateLogger<Pollster>(), 
+      var pollster = new Pollster(loggerFactory.CreateLogger<Pollster>(), 
                                  1, 
                                  queueStorage, 
                                  tableStorage, 
@@ -86,7 +86,7 @@ namespace ArmoniK.Compute.PollingAgent
                                              };
 
 
-      polster.MainLoop(cts.Token).Wait(cts.Token);
+      pollster.MainLoop(cts.Token).Wait(cts.Token);
 
     }
   }

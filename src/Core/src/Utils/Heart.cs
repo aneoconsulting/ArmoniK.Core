@@ -6,7 +6,7 @@ namespace ArmoniK.Core.Utils
 {
   public class Heart
   {
-    private bool isStarted_ => nbPulsations_ >= 0;
+    private bool IsStarted => nbPulsations_ >= 0;
 
     private int nbPulsations_ = -1;
 
@@ -18,7 +18,7 @@ namespace ArmoniK.Core.Utils
 
     private readonly Func<CancellationToken, Task<bool>> pulse_;
 
-    protected readonly TimeSpan beatPeriod_;
+    protected readonly TimeSpan BeatPeriod;
 
     /// <summary>
     /// 
@@ -35,7 +35,7 @@ namespace ArmoniK.Core.Utils
     {
       cancellationToken_ = cancellationToken;
       pulse_             = pulse;
-      beatPeriod_        = beatPeriod;
+      BeatPeriod        = beatPeriod;
       stoppedHeartCts_.Cancel();
     }
 
@@ -94,7 +94,7 @@ namespace ArmoniK.Core.Utils
 
       runningTask_ = Task.Factory.StartNew(async () =>
                                            {
-                                             while (isStarted_)
+                                             while (IsStarted)
                                              {
                                                NextPulseWaiter = FullCycle();
                                                await NextPulseWaiter;
@@ -121,7 +121,7 @@ namespace ArmoniK.Core.Utils
 
     private async Task FullCycle()
     {
-      using var delayTask = Task.Delay(beatPeriod_, cancellationToken_);
+      using var delayTask = Task.Delay(BeatPeriod, cancellationToken_);
       if (!await pulse_(cancellationToken_))
       {
         stoppedHeartCts_.Cancel();

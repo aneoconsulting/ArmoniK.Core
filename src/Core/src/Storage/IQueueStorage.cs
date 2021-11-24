@@ -32,7 +32,7 @@ namespace ArmoniK.Core.Storage
 
     Task UnlockAsync(string id, CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<string> EnqueueMessagesAsync(IEnumerable<QueueMessage> messages, CancellationToken cancellationToken = default, int Priority = 1);
+    IAsyncEnumerable<string> EnqueueMessagesAsync(IEnumerable<QueueMessage> messages, int priority = 1, CancellationToken cancellationToken = default);
 
     Task<string> RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default);
 

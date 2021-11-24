@@ -26,25 +26,24 @@ namespace ArmoniK.Core.Storage
 
     Task<bool> IsSessionClosedAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task<SessionOptions> GetSessionOptions(SessionId sessionId, CancellationToken cancellationToken = default);
+    Task DeleteSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task<TaskId> InitializeTaskCreation(SessionId session, TaskOptions options, CancellationToken cancellationToken = default);
+    Task<TaskOptions> GetDefaultTaskOption(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task FinalizeTaskCreation(TaskId taskId, CancellationToken cancellationToken = default);
-
+    Task<(TaskId id, bool isPayloadStored)> InitializeTaskCreation(SessionId session, TaskOptions options, Payload payload, CancellationToken cancellationToken = default);
+    
     Task<TaskData> ReadTaskAsync(TaskId id, CancellationToken cancellationToken = default);
 
     Task UpdateTaskStatusAsync(TaskId id, TaskStatus status, CancellationToken cancellationToken = default);
 
-    Task<TaskId> CancelTask(TaskId id, CancellationToken cancellationToken = default);
-
-    Task<TaskId> CancelTask(TaskFilter filter, CancellationToken cancellationToken = default);
+    Task<int> UpdateTaskStatusAsync(TaskFilter filter, TaskStatus status, CancellationToken cancellationToken = default);
 
     Task IncreaseRetryCounterAsync(TaskId id, CancellationToken cancellationToken = default);
 
     Task DeleteTaskAsync(TaskId id, CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<TaskId> ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
+
     Task<int> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
     
   }
