@@ -27,14 +27,12 @@ namespace ArmoniK.Adapters.Amqp
 
       var receiver = new AmqpNetLite.ReceiverLink(session, "receiver", "q1");
 
-      receiver.
 
 
 
-
-      sender.Close();
-      session.Close();
-      connection.Close();
+      //sender.Close();
+      //session.Close();
+      //connection.Close();
     }
 
     /// <inheritdoc />
