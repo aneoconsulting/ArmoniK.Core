@@ -3,6 +3,7 @@
 &#xD;
 Copyright (c) ANEO. All rights reserved.&#xD;
   W. Kirschenmann &lt;wkirschenmann@aneo.fr&gt;</s:String>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Amqp/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=ANEO/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=appsettings/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Armoni/@EntryIndexedValue">True</s:Boolean>

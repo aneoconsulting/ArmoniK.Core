@@ -1,11 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-
-
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <BaseIntermediateOutputPath>$(SolutionDir)\obj\$(AssemblyName)</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)</IntermediateOutputPath>
     <BaseOutputPath>$(SolutionDir)\bin\$(AssemblyName)</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)\$(Configuration)</OutputPath>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -22,7 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver" Version="2.13.3" />
+    <PackageReference Include="AMQPNetLite.Core" Version="2.4.3" />
   </ItemGroup>
 
   <ItemGroup>
