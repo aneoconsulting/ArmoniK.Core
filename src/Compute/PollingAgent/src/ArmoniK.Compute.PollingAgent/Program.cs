@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using Serilog;
 using Serilog.Core;
+using ArmoniK.Adapters.Factories;
 
 namespace ArmoniK.Compute.PollingAgent
 {
@@ -30,15 +31,6 @@ namespace ArmoniK.Compute.PollingAgent
 
       using var channel = GrpcChannel.ForAddress(configuration.ComputeServiceAddress);
 
-
-      IQueueStorage  queueStorage = null;
-      ITableStorage  tableStorage = null;
-      ILeaseProvider leaseProvider = null;
-      IObjectStorage objectStorage = null;
-      var            taskResultStorage  = new KeyValueStorage<TaskId, ComputeReply>("TaskResult", objectStorage);
-      var            taskPayloadStorage = new KeyValueStorage<TaskId, Payload>("TaskPayload", objectStorage);
-      var            client             = new ComputerService.ComputerServiceClient(channel);
-
       var serilogLogger = new LoggerConfiguration()
                          .MinimumLevel.Debug()
                          .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
@@ -49,6 +41,14 @@ namespace ArmoniK.Compute.PollingAgent
       var loggerFactory = new LoggerFactory();
       loggerFactory.AddSerilog(serilogLogger);
       var logger = loggerFactory.CreateLogger<Program>();
+
+      ITableStorage tableStorage = TableStorageFactory.CreateFromEnv(loggerFactory);
+      IQueueStorage queueStorage = null;
+      ILeaseProvider leaseProvider = LeaseProviderFactory.CreateFromEnv(loggerFactory);
+      IObjectStorage objectStorage = null;
+      var taskResultStorage = new KeyValueStorage<TaskId, ComputeReply>("TaskResult", objectStorage);
+      var taskPayloadStorage = new KeyValueStorage<TaskId, Payload>("TaskPayload", objectStorage);
+      var client = new ComputerService.ComputerServiceClient(channel);
 
       var pollster = new Pollster(loggerFactory.CreateLogger<Pollster>(), 
                                  1, 

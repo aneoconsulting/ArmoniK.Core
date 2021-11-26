@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Adaptors\Factories\src\ArmoniK.Adapters.Factories\ArmoniK.Adapters.Factories.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\ArmoniK.Core.csproj" />
   </ItemGroup>
 
