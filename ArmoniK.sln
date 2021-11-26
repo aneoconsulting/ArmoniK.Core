@@ -45,12 +45,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataSynapseApi", "DataSynap
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generated", "Generated", "{389F4DCF-2E1A-4B98-ABFB-6B1C4BE5270D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Compute.GridLibAgent.Tests", "src\DevelopmentKit\csharp\Generated\GridLibAgent\tests\GridLibAgentTests\ArmoniK.Compute.GridLibAgent.Tests.csproj", "{7DDE9935-910C-49E7-AA9F-3DC9E48548C6}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Compute.GridLibAgent.TestClient", "src\DevelopmentKit\csharp\Generated\GridLibAgent\tests\TestClient\ArmoniK.Compute.GridLibAgent.TestClient.csproj", "{DCB52584-9304-43BB-A282-FAAE1382066D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Compute.GridLibAgent.TestComputeLib", "src\DevelopmentKit\csharp\Generated\GridLibAgent\tests\TestComputeLib\ArmoniK.Compute.GridLibAgent.TestComputeLib.csproj", "{09842DE3-98DE-4961-B5E9-494C4D009106}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0B81C6C7-DB6F-4AA5-9542-3AAAF7E44C8F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Tests", "src\Core\tests\ArmoniK.Core.Tests\ArmoniK.Core.Tests.csproj", "{707FF74D-C1AF-44CC-ACB0-533B11684710}"
@@ -63,9 +57,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Adapters.MongoDB", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Adapters", "Adapters", "{2D548C40-6260-4A4E-9C56-E8A80C639E13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.DevelopmentKit.SymphonyApi", "src\DevelopmentKit\csharp\SymphonyApi\Gridlib\src\ArmoniK.DevelopmentKit.SymphonyApi\ArmoniK.DevelopmentKit.SymphonyApi.csproj", "{64C1A5ED-2DB5-4DD7-BB3B-25D2759A042B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.DevelopmentKit.SymphonyApi", "src\DevelopmentKit\csharp\SymphonyApi\Gridlib\src\ArmoniK.DevelopmentKit.SymphonyApi\ArmoniK.DevelopmentKit.SymphonyApi.csproj", "{64C1A5ED-2DB5-4DD7-BB3B-25D2759A042B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.Adapters.Amqp", "src\Adaptors\Amqp\src\ArmoniK.Adapters.Amqp\ArmoniK.Adapters.Amqp.csproj", "{C9BA9A3C-B5C2-4042-B97B-F4383DEB43CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Adapters.Amqp", "src\Adaptors\Amqp\src\ArmoniK.Adapters.Amqp\ArmoniK.Adapters.Amqp.csproj", "{C9BA9A3C-B5C2-4042-B97B-F4383DEB43CB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.Adapters.Factories", "src\Adaptors\Factories\src\ArmoniK.Adapters.Factories\ArmoniK.Adapters.Factories.csproj", "{03AD7D1E-D69C-4D3C-9B26-FD0C40F46DAA}"
 EndProject
@@ -91,18 +85,6 @@ Global
 		{DF508951-93BE-4911-A918-EF23DDC0F608}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF508951-93BE-4911-A918-EF23DDC0F608}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF508951-93BE-4911-A918-EF23DDC0F608}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7DDE9935-910C-49E7-AA9F-3DC9E48548C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7DDE9935-910C-49E7-AA9F-3DC9E48548C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7DDE9935-910C-49E7-AA9F-3DC9E48548C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7DDE9935-910C-49E7-AA9F-3DC9E48548C6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DCB52584-9304-43BB-A282-FAAE1382066D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DCB52584-9304-43BB-A282-FAAE1382066D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DCB52584-9304-43BB-A282-FAAE1382066D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DCB52584-9304-43BB-A282-FAAE1382066D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{09842DE3-98DE-4961-B5E9-494C4D009106}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{09842DE3-98DE-4961-B5E9-494C4D009106}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{09842DE3-98DE-4961-B5E9-494C4D009106}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{09842DE3-98DE-4961-B5E9-494C4D009106}.Release|Any CPU.Build.0 = Release|Any CPU
 		{707FF74D-C1AF-44CC-ACB0-533B11684710}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{707FF74D-C1AF-44CC-ACB0-533B11684710}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{707FF74D-C1AF-44CC-ACB0-533B11684710}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -154,9 +136,6 @@ Global
 		{DF508951-93BE-4911-A918-EF23DDC0F608} = {2F36AAD7-5148-4C39-84A6-4AF9C2E711C0}
 		{C7BB45B1-4D77-4670-9D96-710BD7816E0C} = {99012513-4E98-4AE3-BE7B-6D87E66027C4}
 		{389F4DCF-2E1A-4B98-ABFB-6B1C4BE5270D} = {EF84F485-549D-49BC-BA35-73565E289954}
-		{7DDE9935-910C-49E7-AA9F-3DC9E48548C6} = {389F4DCF-2E1A-4B98-ABFB-6B1C4BE5270D}
-		{DCB52584-9304-43BB-A282-FAAE1382066D} = {389F4DCF-2E1A-4B98-ABFB-6B1C4BE5270D}
-		{09842DE3-98DE-4961-B5E9-494C4D009106} = {389F4DCF-2E1A-4B98-ABFB-6B1C4BE5270D}
 		{0B81C6C7-DB6F-4AA5-9542-3AAAF7E44C8F} = {CD412C3D-63D0-4726-B4C3-FEF701E4DCAF}
 		{707FF74D-C1AF-44CC-ACB0-533B11684710} = {0B81C6C7-DB6F-4AA5-9542-3AAAF7E44C8F}
 		{F5C73201-96E8-4A0D-B497-48ED1AF79DFE} = {36BBA44F-9A2F-413B-971D-C347BAF87B2A}

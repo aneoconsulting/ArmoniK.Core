@@ -3,24 +3,22 @@
 // Copyright (c) ANEO. All rights reserved.
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
-using System;
-
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson.Serialization.IdGenerators;
 
 namespace ArmoniK.Adapters.MongoDB
 {
-  public class LeaseDataModel
+  public class ObjectDataModel
   {
     [BsonId]
+    public string Id => $"{Key}{ChunkIdx}";
+
+    [BsonElement]
     public string Key { get; set; }
 
     [BsonElement]
-    public string Lock { get; set; }
+    public byte[] Chunk { get; set; }
 
     [BsonElement]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc,DateOnly = false)]
-    public DateTime ExpiresAt { get; set; }
+    public int ChunkIdx { get; set; }
   }
 }

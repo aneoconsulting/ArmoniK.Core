@@ -72,33 +72,6 @@ namespace ArmoniK.Core.Tests
     [TestCase("suffix1")]
     [TestCase("suffix2")]
     [TestCase("abc")]
-    public async Task GetOrAddForwardsToObjectStorage(string suffix)
-    {
-      var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
-
-      var lease = new Lease { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
-
-      var objectStorageMock = new Moq.Mock<IObjectStorage>();
-
-      Expression<Func<IObjectStorage, Task<byte[]>>> expression = storage
-                                                                    => storage.GetOrAddAsync(It.IsAny<string>(),
-                                                                                             It.IsAny<byte[]>(),
-                                                                                             It.IsAny<CancellationToken>());
-
-      objectStorageMock.Setup(expression)
-                       .Returns(new Func<string, byte[], CancellationToken, Task<byte[]>>((k, v, c) => Task.FromResult(v)));
-
-      var kvs = new KeyValueStorage<TaskId, Lease>(prefix_, objectStorageMock.Object);
-
-      var obtainedLeaseValue = await kvs.GetOrAddAsync(taskId, lease, CancellationToken.None);
-
-      objectStorageMock.Verify(expression, Times.Once);
-      Assert.AreEqual(lease, obtainedLeaseValue);
-    }
-
-    [TestCase("suffix1")]
-    [TestCase("suffix2")]
-    [TestCase("abc")]
     public async Task TryGetValuesForwardsToObjectStorage(string suffix)
     {
       var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };

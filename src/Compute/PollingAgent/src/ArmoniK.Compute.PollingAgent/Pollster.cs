@@ -59,7 +59,25 @@ namespace ArmoniK.Compute.PollingAgent
       logger_.LogInformation("Main loop started.");
       while (!cancellationToken.IsCancellationRequested)
       {
-        var message = await queueStorage_.PullAsync(1, cancellationToken).SingleAsync(cancellationToken);
+        QueueMessage message = null;
+        for (var i = 0; i < 5; ++i)
+        {
+          try
+          {
+            message = await queueStorage_.PullAsync(1, cancellationToken).SingleAsync(cancellationToken);
+            break;
+          }
+          catch (Exception)
+          {
+            await Task.Delay(queueStorage_.LockRefreshPeriodicity, cancellationToken);
+          }
+        }
+        if (message is null)
+        {
+          // No more messages in queue. Application exits to help K8s in scaling down.
+          // TODO : use kubectl to terminate the whole pod ?
+          Environment.Exit(0);
+        }
 
         using var scopedLogger = logger_.BeginNamedScope("Message",
                                                          ("message", message.MessageId),

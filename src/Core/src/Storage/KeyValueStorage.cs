@@ -42,14 +42,6 @@ namespace ArmoniK.Core.Storage
       return key;
     }
 
-    public async Task<TValue> GetOrAddAsync(TKey key, TValue value, CancellationToken cancellationToken = default)
-    {
-      var serializedKey    = SerializeKey(key);
-      var serializedValue  = value.ToByteArray();
-      var serializedOutput = await objectStorage_.GetOrAddAsync(serializedKey, serializedValue, cancellationToken);
-      return ValueParser.ParseFrom(serializedOutput);
-    }
-
 
     public Task AddOrUpdateAsync(TKey key, TValue value, CancellationToken cancellationToken = default)
     {

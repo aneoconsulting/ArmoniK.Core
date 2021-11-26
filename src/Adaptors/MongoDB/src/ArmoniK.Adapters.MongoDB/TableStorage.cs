@@ -20,6 +20,8 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using DnsClient.Internal;
 
+using ILoggerFactory = Microsoft.Extensions.Logging.ILoggerFactory;
+
 
 namespace ArmoniK.Adapters.MongoDB
 {

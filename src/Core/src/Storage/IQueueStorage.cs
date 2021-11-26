@@ -21,10 +21,10 @@ namespace ArmoniK.Core.Storage
     TimeSpan LockRefreshPeriodicity { get; }
 
     TimeSpan LockRefreshExtension { get; }
+
+    int MaxPriority { get; }
       
     IAsyncEnumerable<QueueMessage> PullAsync(int nbMessages, CancellationToken cancellationToken = default);
-
-    Task<QueueMessage> ReadAsync(string id, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
 
@@ -32,9 +32,9 @@ namespace ArmoniK.Core.Storage
 
     Task UnlockAsync(string id, CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<string> EnqueueMessagesAsync(IEnumerable<QueueMessage> messages, int priority = 1, CancellationToken cancellationToken = default);
+    Task EnqueueMessagesAsync(IEnumerable<QueueMessage> messages, int priority = 1, CancellationToken cancellationToken = default);
 
-    Task<string> RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default);
+    Task RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default);
 
   }
 }
