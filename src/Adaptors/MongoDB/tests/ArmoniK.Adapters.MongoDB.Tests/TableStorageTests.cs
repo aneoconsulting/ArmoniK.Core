@@ -67,7 +67,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                                IdTag             = "tag",
                                              }).Result;
 
-      var (taskId, payloadStored) = table.InitializeTaskCreation(session, new TaskOptions(), new Payload()).Result;
+      var (_, _) = table.InitializeTaskCreation(session, new TaskOptions(), new Payload()).Result;
 
       
       Assert.AreEqual(1, table.CountTasksAsync(new TaskFilter()

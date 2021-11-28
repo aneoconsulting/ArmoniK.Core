@@ -76,7 +76,7 @@ namespace ArmoniK.Adapters.MongoDB
                                               .Descending(qmm => qmm.Priority);
 
         var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(sessionHandle,
-                                                                                      qmdm => qmdm.OwnedUntil == default(DateTime) || qmdm.OwnedUntil < DateTime.UtcNow,
+                                                                                      qmdm => qmdm.OwnedUntil == default || qmdm.OwnedUntil < DateTime.UtcNow,
                                                                                       updateDefinition,
                                                                                       new FindOneAndUpdateOptions<QueueMessageModel>()
                                                                                       {
