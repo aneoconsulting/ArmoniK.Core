@@ -15,6 +15,7 @@ using ArmoniK.Core.Storage;
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -24,20 +25,20 @@ namespace ArmoniK.Adapters.MongoDB
   [PublicAPI]
   public class ObjectStorage : IObjectStorage
   {
-    private readonly IMongoCollection<ObjectDataModel> objectCollection_;
-    private readonly IClientSessionHandle              sessionHandle_;
-    private readonly int                               chunkSize_;
-    private readonly ILogger<ObjectStorage>            logger_;
+    private readonly MongoCollectionProvider<ObjectDataModel> objectCollectionProvider_;
+    private readonly SessionProvider                          sessionProvider_;
+    private readonly int                                      chunkSize_;
+    private readonly ILogger<ObjectStorage>                   logger_;
 
-    public ObjectStorage(IClientSessionHandle              sessionHandle,
-                         IMongoCollection<ObjectDataModel> objectCollection,
-                         ILogger<ObjectStorage>            logger,
-                         int                               chunkSize = 14500000)
+    public ObjectStorage(SessionProvider                          sessionProvider,
+                         MongoCollectionProvider<ObjectDataModel> objectCollectionProvider,
+                         ILogger<ObjectStorage>                   logger,
+                         IOptions<Options.ObjectStorage>           options)
     {
-      sessionHandle_    = sessionHandle;
-      objectCollection_ = objectCollection;
-      chunkSize_        = chunkSize;
-      logger_           = logger;
+      sessionProvider_          = sessionProvider;
+      objectCollectionProvider_ = objectCollectionProvider;
+      chunkSize_                = options.Value.ChunkSize;
+      logger_                   = logger;
     }
 
 
@@ -46,8 +47,11 @@ namespace ArmoniK.Adapters.MongoDB
     public async Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default)
     {
       logger_.LogFunction();
+      var sessionHandle    = await sessionProvider_.GetAsync();
+      var objectCollection = await objectCollectionProvider_.GetAsync();
+
       var taskList = new List<Task<ObjectDataModel>>();
-      for (var (pos, idx) = (0,0); pos < value.Length; idx+=1)
+      for (var (pos, idx) = (0, 0); pos < value.Length; idx += 1)
       {
         var chunkSize = Math.Min(value.Length - pos, chunkSize_);
         var chunk     = new byte[chunkSize];
@@ -60,9 +64,9 @@ namespace ArmoniK.Adapters.MongoDB
                                                         .SetOnInsert(odm => odm.Key, key)
                                                         .SetOnInsert(odm => odm.Id, $"{key}{idx}");
 
-        taskList.Add(objectCollection_.FindOneAndUpdateAsync<ObjectDataModel>
+        taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>
                        (
-                        sessionHandle_,
+                        sessionHandle,
                         odm => odm.Key == key && odm.ChunkIdx == idx,
                         updateDefinition,
                         new FindOneAndUpdateOptions<ObjectDataModel>()
@@ -86,11 +90,15 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default)
     {
-      var chunks = objectCollection_.AsQueryable(sessionHandle_)
-                                    .Where(odm => odm.Key == key)
-                                    .OrderBy(odm => odm.ChunkIdx)
-                                    .Select(odm => odm.Chunk)
-                                    .ToAsyncEnumerable();
+      logger_.LogFunction();
+      var sessionHandle    = await sessionProvider_.GetAsync();
+      var objectCollection = await objectCollectionProvider_.GetAsync();
+
+      var chunks = objectCollection.AsQueryable(sessionHandle)
+                                   .Where(odm => odm.Key == key)
+                                   .OrderBy(odm => odm.ChunkIdx)
+                                   .Select(odm => odm.Chunk)
+                                   .ToAsyncEnumerable();
 
       var buffer = new List<byte>(chunkSize_);
       await foreach (var chunk in chunks.WithCancellation(cancellationToken))
@@ -104,9 +112,13 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
     {
-      var res = await objectCollection_.DeleteManyAsync(sessionHandle_, 
-                                                        odm => odm.Key == key, 
-                                                        cancellationToken: cancellationToken);
+      logger_.LogFunction();
+      var sessionHandle    = await sessionProvider_.GetAsync();
+      var objectCollection = await objectCollectionProvider_.GetAsync();
+
+      var res = await objectCollection.DeleteManyAsync(sessionHandle,
+                                                       odm => odm.Key == key,
+                                                       cancellationToken: cancellationToken);
       return res.DeletedCount > 0;
     }
   }

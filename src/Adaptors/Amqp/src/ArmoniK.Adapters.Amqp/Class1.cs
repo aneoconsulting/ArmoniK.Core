@@ -1,17 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Amqp.Framing;
-
-using AmqpNetLite = Amqp;
-
-using ArmoniK.Core.Storage;
-
-using Google.Protobuf;
-
-using Microsoft.Extensions.Logging;
+﻿using AmqpNetLite = Amqp;
 
 namespace ArmoniK.Adapters.Amqp
 {

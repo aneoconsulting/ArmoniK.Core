@@ -6,8 +6,6 @@
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.IdGenerators;
 
-using static System.String;
-
 namespace ArmoniK.Adapters.MongoDB
 {
   public class SessionIdGenerator : IIdGenerator

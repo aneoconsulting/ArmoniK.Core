@@ -3,9 +3,6 @@
 // Copyright (c) ANEO. All rights reserved.
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;

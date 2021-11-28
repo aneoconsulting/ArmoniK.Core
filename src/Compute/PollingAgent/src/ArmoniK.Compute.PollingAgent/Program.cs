@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 using ArmoniK.Compute.gRPC.V1;
 using ArmoniK.Core.gRPC.V1;
@@ -14,18 +13,18 @@ using Microsoft.Extensions.Logging;
 
 using Serilog.Events;
 using Serilog;
-using Serilog.Core;
-using ArmoniK.Adapters.Factories;
+
 
 namespace ArmoniK.Compute.PollingAgent
 {
+  //TODO : migrate to the worker template instead of the console app one
   [PublicAPI]
   internal class Program
   {
 
     static void Main()
     {
-      // TODO: setup Serilog as in https://blog.rsuter.com/logging-with-ilogger-recommendations-and-best-practices/
+      // TODO: use interprocess communication (see https://docs.microsoft.com/en-us/aspnet/core/grpc/interprocess?view=aspnetcore-5.0)
 
       var configuration = Configuration.LoadFromFile("filename");
 
@@ -42,9 +41,9 @@ namespace ArmoniK.Compute.PollingAgent
       loggerFactory.AddSerilog(serilogLogger);
       var logger = loggerFactory.CreateLogger<Program>();
 
-      ITableStorage tableStorage = TableStorageFactory.CreateFromEnv(loggerFactory);
+      ITableStorage tableStorage = null;
       IQueueStorage queueStorage = null;
-      ILeaseProvider leaseProvider = LeaseProviderFactory.CreateFromEnv(loggerFactory);
+      ILeaseProvider leaseProvider = null;
       IObjectStorage objectStorage = null;
       var taskResultStorage = new KeyValueStorage<TaskId, ComputeReply>("TaskResult", objectStorage);
       var taskPayloadStorage = new KeyValueStorage<TaskId, Payload>("TaskPayload", objectStorage);

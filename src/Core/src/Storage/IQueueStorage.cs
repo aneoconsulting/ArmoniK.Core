@@ -4,12 +4,9 @@
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
-using ArmoniK.Compute.gRPC.V1;
 
 using JetBrains.Annotations;
 

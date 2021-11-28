@@ -3,12 +3,8 @@
 // Copyright (c) ANEO. All rights reserved.
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
-using System;
-using System.Linq;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 using JetBrains.Annotations;
 

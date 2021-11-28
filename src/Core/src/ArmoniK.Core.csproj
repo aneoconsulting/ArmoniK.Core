@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
     <PackageReference Include="Google.Protobuf" Version="3.19.1" />
     <PackageReference Include="Grpc.Net.Client" Version="2.40.0" />

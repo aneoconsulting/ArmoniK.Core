@@ -2,9 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using Google.Protobuf.Reflection;
-using Google.Protobuf.WellKnownTypes;
-
 using MongoDB.Driver;
 
 namespace ArmoniK.Adapters.MongoDB

@@ -16,6 +16,7 @@ using Google.Protobuf.WellKnownTypes;
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using MongoDB.Driver;
 
@@ -24,21 +25,20 @@ namespace ArmoniK.Adapters.MongoDB
   [PublicAPI]
   public class LeaseProvider : ILeaseProvider
   {
-    private readonly IMongoCollection<LeaseDataModel> leaseCollection_;
-    private readonly IClientSessionHandle             sessionHandle_;
-    private readonly ILogger<LeaseProvider>           logger_;
+    private readonly MongoCollectionProvider<LeaseDataModel> leaseCollectionProvider_;
+    private readonly SessionProvider                         sessionProvider_;
+    private readonly ILogger<LeaseProvider>                  logger_;
 
-    public LeaseProvider(TimeSpan acquisitionPeriod,
-                         TimeSpan acquisitionDuration,
-                         IMongoCollection<LeaseDataModel> leaseCollection,
-                         IClientSessionHandle sessionHandle, 
-                         ILogger<LeaseProvider> logger)
+    public LeaseProvider(IOptions<Options.LeaseProvider> options,
+                         MongoCollectionProvider<LeaseDataModel> leaseCollectionProvider,
+                         SessionProvider                         sessionProvider,
+                         ILogger<LeaseProvider>                  logger)
     {
-      AcquisitionPeriod = acquisitionPeriod;
-      AcquisitionDuration = acquisitionDuration;
-      leaseCollection_ = leaseCollection;
-      sessionHandle_ = sessionHandle;
-      logger_ = logger;
+      AcquisitionPeriod        = options.Value.AcquisitionPeriod;
+      AcquisitionDuration      = options.Value.AcquisitionDuration;
+      leaseCollectionProvider_ = leaseCollectionProvider;
+      sessionProvider_         = sessionProvider;
+      logger_                  = logger;
     }
 
     /// <inheritdoc />
@@ -51,25 +51,27 @@ namespace ArmoniK.Adapters.MongoDB
     public async Task<Lease> TryAcquireLease(TaskId id, CancellationToken cancellationToken = default)
     {
       logger_.LogTrace("Trying to acquire lease for task {id}", id);
-      var key     = id.ToPrintableId();
-      var leaseId = Guid.NewGuid().ToString();
+      var key             = id.ToPrintableId();
+      var leaseId         = Guid.NewGuid().ToString();
+      var leaseCollection = await leaseCollectionProvider_.GetAsync();
 
-      var updateDefinition = new UpdateDefinitionBuilder<LeaseDataModel>().SetOnInsert(ldm=> ldm.ExpiresAt, DateTime.UtcNow + AcquisitionDuration)
-                                                                          .SetOnInsert(ldm => ldm.Lock, leaseId)
-                                                                          .SetOnInsert(ldm => ldm.Key, key);
+      var updateDefinitionBuilder = new UpdateDefinitionBuilder<LeaseDataModel>();
+      var updateDefinition = updateDefinitionBuilder.SetOnInsert(ldm => ldm.ExpiresAt, DateTime.UtcNow + AcquisitionDuration)
+                                                    .SetOnInsert(ldm => ldm.Lock, leaseId)
+                                                    .SetOnInsert(ldm => ldm.Key, key);
 
-      var res = await leaseCollection_.FindOneAndUpdateAsync<LeaseDataModel>(sessionHandle_,
-                                                                             ldm => ldm.Key == key,
-                                                                             updateDefinition,
-                                                                             new FindOneAndUpdateOptions<LeaseDataModel>
-                                                                             {
-                                                                               IsUpsert       = true,
-                                                                               ReturnDocument = ReturnDocument.After,
-                                                                             }, 
-                                                                             cancellationToken);
+      var res = await leaseCollection.FindOneAndUpdateAsync<LeaseDataModel>(await sessionProvider_.GetAsync(),
+                                                                            ldm => ldm.Key == key,
+                                                                            updateDefinition,
+                                                                            new FindOneAndUpdateOptions<LeaseDataModel>
+                                                                            {
+                                                                              IsUpsert       = true,
+                                                                              ReturnDocument = ReturnDocument.After,
+                                                                            },
+                                                                            cancellationToken);
       if (leaseId == res.Lock)
       {
-        logger_.LogInformation("Lease {leaseId} acquired for task {id}",leaseId, id);
+        logger_.LogInformation("Lease {leaseId} acquired for task {id}", leaseId, id);
         return new Lease { ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt), Id = id, LeaseId = leaseId };
       }
       else
@@ -82,30 +84,31 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task<Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default)
     {
-      logger_.LogTrace("Trying to renew lease {leaseId} for task {id}",leaseId, id);
-      var key = id.ToPrintableId();
+      logger_.LogTrace("Trying to renew lease {leaseId} for task {id}", leaseId, id);
+      var key             = id.ToPrintableId();
+      var leaseCollection = await leaseCollectionProvider_.GetAsync();
 
       var updateDefinition = new UpdateDefinitionBuilder<LeaseDataModel>().Set(ldm => ldm.ExpiresAt,
                                                                                DateTime.UtcNow + AcquisitionDuration);
 
-      var res = await leaseCollection_.FindOneAndUpdateAsync<LeaseDataModel>(sessionHandle_,
-                                                                             ldm => ldm.Key == key &&
-                                                                                    ldm.Lock == leaseId,
-                                                                             updateDefinition,
-                                                                             new FindOneAndUpdateOptions<LeaseDataModel>
-                                                                             {
-                                                                               ReturnDocument = ReturnDocument.After,
-                                                                             },
-                                                                             cancellationToken);
+      var res = await leaseCollection.FindOneAndUpdateAsync<LeaseDataModel>(await sessionProvider_.GetAsync(),
+                                                                            ldm => ldm.Key == key &&
+                                                                                   ldm.Lock == leaseId,
+                                                                            updateDefinition,
+                                                                            new FindOneAndUpdateOptions<LeaseDataModel>
+                                                                            {
+                                                                              ReturnDocument = ReturnDocument.After,
+                                                                            },
+                                                                            cancellationToken);
 
       if (leaseId == res.Lock)
       {
-        logger_.LogInformation("Lease {leaseId} renewed for task {id}",leaseId, id);
+        logger_.LogInformation("Lease {leaseId} renewed for task {id}", leaseId, id);
         return new Lease { Id = id, LeaseId = leaseId, ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt) };
       }
       else
       {
-        logger_.LogWarning("Could not renew lease {leaseId} for task {id}",leaseId, id);
+        logger_.LogWarning("Could not renew lease {leaseId} for task {id}", leaseId, id);
         return new Lease { Id = id, LeaseId = string.Empty, ExpirationDate = new Timestamp() };
       }
     }
@@ -113,15 +116,16 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task ReleaseLease(TaskId id, string leaseId, CancellationToken cancellationToken = default)
     {
-      logger_.LogTrace("Trying to release lease {leaseId} for task {id}",leaseId, id);
-      var key = id.ToPrintableId();
+      logger_.LogTrace("Trying to release lease {leaseId} for task {id}", leaseId, id);
+      var key             = id.ToPrintableId();
+      var leaseCollection = await leaseCollectionProvider_.GetAsync();
 
-      var res = await leaseCollection_.FindOneAndDeleteAsync(sessionHandle_,
-                                                             ldm => ldm.Key == key &&
-                                                                    ldm.Lock == leaseId,
-                                                             cancellationToken: cancellationToken);
+      var res = await leaseCollection.FindOneAndDeleteAsync(await sessionProvider_.GetAsync(),
+                                                            ldm => ldm.Key == key &&
+                                                                   ldm.Lock == leaseId,
+                                                            cancellationToken: cancellationToken);
       if (res is null)
-        logger_.LogWarning("Could not release lease {leaseId} for task {id}",leaseId, id);
+        logger_.LogWarning("Could not release lease {leaseId} for task {id}", leaseId, id);
     }
   }
 }
