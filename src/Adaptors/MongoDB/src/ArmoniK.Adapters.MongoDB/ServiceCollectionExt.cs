@@ -4,6 +4,7 @@
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
 using ArmoniK.Core.Injection;
+using ArmoniK.Core.Injection.Options;
 
 using Microsoft.Extensions.DependencyInjection;
 

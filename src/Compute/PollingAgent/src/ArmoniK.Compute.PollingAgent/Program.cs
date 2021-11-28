@@ -1,92 +1,82 @@
 ﻿using System;
 using System.Threading;
 
+using ArmoniK.Adapters.MongoDB;
 using ArmoniK.Compute.gRPC.V1;
+using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Core.Injection;
+using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
-
-using Grpc.Net.Client;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging;
 
 using Serilog.Events;
 using Serilog;
 
+using GrpcChannel = Grpc.Net.Client.GrpcChannel;
+
 
 namespace ArmoniK.Compute.PollingAgent
 {
-  //TODO : migrate to the worker template instead of the console app one
-  [PublicAPI]
-  internal class Program
+  public static class Program
   {
-
-    static void Main()
+    public static int Main(string[] args)
     {
-      // TODO: use interprocess communication (see https://docs.microsoft.com/en-us/aspnet/core/grpc/interprocess?view=aspnetcore-5.0)
+      Log.Logger = new LoggerConfiguration()
+                  .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                  .Enrich.FromLogContext()
+                  .WriteTo.Console()
+                  .CreateBootstrapLogger();
 
-      var configuration = Configuration.LoadFromFile("filename");
+      try
+      {
+        Log.Information("Starting host");
+        CreateHostBuilder(args).Build().Run();
+        return 0;
+      }
+      catch (Exception ex)
+      {
+        Log.Fatal(ex, "Host terminated unexpectedly");
+        return 1;
+      }
+      finally
+      {
+        Log.CloseAndFlush();
+      }
 
-      using var channel = GrpcChannel.ForAddress(configuration.ComputeServiceAddress);
+    }
 
-      var serilogLogger = new LoggerConfiguration()
-                         .MinimumLevel.Debug()
-                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                         .Enrich.FromLogContext()
-                         .WriteTo.Console()
-                         .CreateLogger();
+    public static IHostBuilder CreateHostBuilder(string[] args)
+    {
+      var env = new HostingEnvironment();
 
-      var loggerFactory = new LoggerFactory();
-      loggerFactory.AddSerilog(serilogLogger);
-      var logger = loggerFactory.CreateLogger<Program>();
-
-      ITableStorage tableStorage = null;
-      IQueueStorage queueStorage = null;
-      ILeaseProvider leaseProvider = null;
-      IObjectStorage objectStorage = null;
-      var taskResultStorage = new KeyValueStorage<TaskId, ComputeReply>("TaskResult", objectStorage);
-      var taskPayloadStorage = new KeyValueStorage<TaskId, Payload>("TaskPayload", objectStorage);
-      var client = new ComputerService.ComputerServiceClient(channel);
-
-      var pollster = new Pollster(loggerFactory.CreateLogger<Pollster>(), 
-                                 1, 
-                                 queueStorage, 
-                                 tableStorage, 
-                                 leaseProvider,
-                                 taskResultStorage, 
-                                 taskPayloadStorage, 
-                                 client);
-
-      var cts            = new CancellationTokenSource();
-
-      var sigintReceived = false;
-
-      Console.CancelKeyPress += (_, ea) =>
-                                {
-                                  // Tell .NET to not terminate the process
-                                  ea.Cancel = true;
-                                  logger.LogCritical("Received SIGINT (Ctrl+C)");
-                                  cts.Cancel();
-                                  sigintReceived = true;
-                                };
-
-      AppDomain.CurrentDomain.ProcessExit += (_, _) =>
-                                             {
-                                               if (!sigintReceived)
-                                               {
-                                                 logger.LogCritical("Received SIGTERM");
-                                                 cts.Cancel();
-                                               }
-                                               else
-                                               {
-                                                 logger.LogCritical("Received SIGTERM, ignoring it because already processed SIGINT");
-                                               }
-                                             };
-
-
-      pollster.MainLoop(cts.Token).Wait(cts.Token);
-
+      return Host.CreateDefaultBuilder(args)
+                 .ConfigureHostConfiguration(builder => builder.SetBasePath(env.ContentRootPath)
+                                                               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                                                               .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                                                               .AddEnvironmentVariables()
+                                                               .AddCommandLine(args))
+                 .UseSerilog((context, services, config) => config
+                                                           .ReadFrom.Configuration(context.Configuration)
+                                                           .ReadFrom.Services(services)
+                                                           .Enrich.FromLogContext()
+                                                           .WriteTo.Console())
+                 .ConfigureServices((hostContext, services) =>
+                                    {
+                                      services.AddLogging()
+                                              .AddArmoniKCore(hostContext.Configuration)
+                                              .AddMongoComponents(hostContext.Configuration)
+                                              .AddHostedService<Worker>()
+                                              .AddSingleton<Pollster>()
+                                              .AddSingleton<ComputerService.ComputerServiceClient>();
+                                    });
     }
   }
 }

@@ -12,9 +12,11 @@ using ArmoniK.Compute.gRPC.V1;
 using ArmoniK.Core;
 using ArmoniK.Core.Exceptions;
 using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using TaskCanceledException = ArmoniK.Core.Exceptions.TaskCanceledException;
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
@@ -22,6 +24,8 @@ using TimeoutException = ArmoniK.Core.Exceptions.TimeoutException;
 
 namespace ArmoniK.Compute.PollingAgent
 {
+  
+
   public class Pollster
   {
     private readonly ILogger<Pollster>                     logger_;
@@ -35,8 +39,8 @@ namespace ArmoniK.Compute.PollingAgent
     private readonly ComputerService.ComputerServiceClient client_;
 
     public Pollster(ILogger<Pollster>                     logger,
-                    int                                   messageBatchSize,
-                    IQueueStorage                         queueStorage,
+                    IOptions<ComputePlan> options,
+                                          IQueueStorage                         queueStorage,
                     ITableStorage                         tableStorage,
                     ILeaseProvider                        leaseProvider,
                     KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
@@ -44,7 +48,7 @@ namespace ArmoniK.Compute.PollingAgent
                     ComputerService.ComputerServiceClient client)
     {
       logger_             = logger;
-      messageBatchSize_   = messageBatchSize;
+      messageBatchSize_   = options.Value.MessageBatchSize;
       queueStorage_       = queueStorage;
       tableStorage_       = tableStorage;
       leaseProvider_      = leaseProvider;

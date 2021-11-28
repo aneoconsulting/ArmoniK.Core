@@ -23,9 +23,9 @@ namespace ArmoniK.Core.Storage
     private readonly       IObjectStorage        objectStorage_;
     private readonly       string                keyPrefix_;
     
-    public KeyValueStorage(string keyPrefix, IObjectStorage objectStorage)
+    public KeyValueStorage(IObjectStorage objectStorage)
     {
-      keyPrefix_     = keyPrefix;
+      keyPrefix_     = $"{typeof(TKey).Name}{typeof(TValue)}";
       objectStorage_ = objectStorage;
     }
 

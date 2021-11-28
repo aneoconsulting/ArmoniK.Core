@@ -52,7 +52,7 @@ namespace ArmoniK.Core.Tests
     {
       var objectStorageMock = new Moq.Mock<IObjectStorage>();
 
-      var kvs = new KeyValueStorage<TaskId, Lease>(prefix_, objectStorageMock.Object);
+      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object);
 
       var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
 
@@ -87,7 +87,7 @@ namespace ArmoniK.Core.Tests
       objectStorageMock.Setup(expression)
                        .ReturnsAsync(lease.ToByteArray());
 
-      var kvs = new KeyValueStorage<TaskId, Lease>(prefix_, objectStorageMock.Object);
+      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object);
 
       var obtainedLeaseValue = await kvs.TryGetValuesAsync(taskId, CancellationToken.None);
 
@@ -113,7 +113,7 @@ namespace ArmoniK.Core.Tests
 
       objectStorageMock.Setup(expression);
 
-      var kvs = new KeyValueStorage<TaskId, Lease>(prefix_, objectStorageMock.Object);
+      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object);
 
       await kvs.AddOrUpdateAsync(taskId, lease, CancellationToken.None);
 
@@ -137,7 +137,7 @@ namespace ArmoniK.Core.Tests
 
       objectStorageMock.Setup(expression);
 
-      var kvs = new KeyValueStorage<TaskId, Lease>(prefix_, objectStorageMock.Object);
+      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object);
 
       await kvs.TryDeleteAsync(taskId, CancellationToken.None);
 
