@@ -7,8 +7,7 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["src/Control/src/ArmoniK.Control.Service/ArmoniK.Control/ArmoniK.Control.csproj", "src/Control/src/ArmoniK.Control.Service/ArmoniK.Control/"]
-COPY ["src/Core/src/ArmoniK.Core.csproj", "src/Core/src/"]
+COPY "src/" "src/"
 RUN dotnet restore "src/Control/src/ArmoniK.Control.Service/ArmoniK.Control/ArmoniK.Control.csproj"
 COPY . .
 WORKDIR "/src/src/Control/src/ArmoniK.Control.Service/ArmoniK.Control"

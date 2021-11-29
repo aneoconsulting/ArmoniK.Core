@@ -5,8 +5,9 @@
 
 using System;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
+
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -36,7 +37,7 @@ namespace ArmoniK.Core
     {
       logger.Log(level, "Entering {functionName}", functionName);
 
-      return Disposable.Create(functionName, s => logger.Log(level, "Leaving {functionName}", s));
+      return Disposable.Create(() => logger.Log(level, "Leaving {functionName}", functionName));
     }
 
   }

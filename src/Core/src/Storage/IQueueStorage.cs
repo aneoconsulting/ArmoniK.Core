@@ -33,5 +33,8 @@ namespace ArmoniK.Core.Storage
 
     Task RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default);
 
+    //TODO: add support for DLQ
+    //Task SendToDeadLetterQueue(QueueMessage message, CancellationToken cancellationToken = default);
+
   }
 }
