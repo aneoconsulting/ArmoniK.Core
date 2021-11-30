@@ -1,26 +1,22 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
+FROM mcr.microsoft.com/dotnet/runtime:5.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
-RUN dotnet tool install -g dotnet-grpc
-ENV PATH="$PATH:/root/.dotnet/tools"
-WORKDIR /armonik
+WORKDIR /src
+COPY ["src/Compute/PollingAgent/src/ArmoniK.Compute.PollingAgent/ArmoniK.Compute.PollingAgent.csproj", "src/Compute/PollingAgent/src/ArmoniK.Compute.PollingAgent/"]
+COPY ["src/Core/src/ArmoniK.Core.csproj", "src/Core/src/"]
+COPY ["src/Adaptors/MongoDB/src/ArmoniK.Adapters.MongoDB/ArmoniK.Adapters.MongoDB.csproj", "src/Adaptors/MongoDB/src/ArmoniK.Adapters.MongoDB/"]
+RUN SolutionDir=/src dotnet restore "src/Compute/PollingAgent/src/ArmoniK.Compute.PollingAgent/ArmoniK.Compute.PollingAgent.csproj"
 COPY . .
+WORKDIR "/src/src/Compute/PollingAgent/src/ArmoniK.Compute.PollingAgent"
+RUN SolutionDir=/src dotnet build "ArmoniK.Compute.PollingAgent.csproj" -c Release -o /app/build
 
-WORKDIR src/Core/src/
-RUN dotnet-grpc add-file -p ArmoniK.Core.csproj ../../Protos/V1/Compute.proto -s Client
-RUN dotnet-grpc add-file -p ArmoniK.Core.csproj ../../Protos/V1/ClientService.proto -s Server
-RUN dotnet-grpc add-file -p ArmoniK.Core.csproj ../../Protos/V1/Objects.proto -s Both
-RUN dotnet-grpc add-file -p ArmoniK.Core.csproj ../../Protos/V1/TaskStatus.proto -s Both
-
-WORKDIR /armonik/src/Compute/PollingAgent/src/ArmoniK.Compute.PollingAgent/
-RUN dotnet publish ArmoniK.Compute.PollingAgent.csproj -c Release -o /app/publish
+FROM build AS publish
+RUN SolutionDir=/src dotnet publish "ArmoniK.Compute.PollingAgent.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "ArmoniK.Compute.PollingAgent.dll"]

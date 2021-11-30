@@ -6,22 +6,19 @@ EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
-RUN dotnet tool install -g dotnet-grpc
-ENV PATH="$PATH:/root/.dotnet/tools"
-WORKDIR /armonik
+WORKDIR /src
+COPY ["src/Control/src/ArmoniK.Control.Service/ArmoniK.Control/ArmoniK.Control.csproj", "src/Control/src/ArmoniK.Control.Service/ArmoniK.Control/"]
+COPY ["src/Core/src/ArmoniK.Core.csproj", "src/Core/src/"]
+COPY ["src/Adaptors/MongoDB/src/ArmoniK.Adapters.MongoDB/ArmoniK.Adapters.MongoDB.csproj", "src/Adaptors/MongoDB/src/ArmoniK.Adapters.MongoDB/"]
+RUN SolutionDir=/src dotnet restore "src/Control/src/ArmoniK.Control.Service/ArmoniK.Control/ArmoniK.Control.csproj"
 COPY . .
+WORKDIR "/src/src/Control/src/ArmoniK.Control.Service/ArmoniK.Control"
+RUN SolutionDir=/src dotnet build "ArmoniK.Control.csproj" -c Release -o /app/build
 
-WORKDIR src/Core/src/
-RUN dotnet-grpc add-file -p ArmoniK.Core.csproj ../../Protos/V1/Compute.proto -s Client
-RUN dotnet-grpc add-file -p ArmoniK.Core.csproj ../../Protos/V1/ClientService.proto -s Server
-RUN dotnet-grpc add-file -p ArmoniK.Core.csproj ../../Protos/V1/Objects.proto -s Both
-RUN dotnet-grpc add-file -p ArmoniK.Core.csproj ../../Protos/V1/TaskStatus.proto -s Both
-RUN dotnet build ArmoniK.Core.csproj -c Release
-
-WORKDIR /armonik/src/Control/src/ArmoniK.Control.Service/ArmoniK.Control/
-RUN dotnet publish ArmoniK.Control.csproj -c Release -o /app/publish
+FROM build AS publish
+RUN SolutionDir=/src dotnet publish "ArmoniK.Control.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "ArmoniK.Control.dll"]
