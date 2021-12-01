@@ -9,30 +9,38 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ArmoniK.Core;
+
+using Microsoft.Extensions.Logging;
+
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Control.Services
 {
   public class ClientService : Core.gRPC.V1.ClientService.ClientServiceBase
   {
-    private readonly ITableStorage tableStorage_;
+    private readonly ITableStorage                         tableStorage_;
     private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
-    private readonly KeyValueStorage<TaskId, Payload> taskPayloadStorage_;
-    private readonly IQueueStorage queueStorage_;
+    private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
+    private readonly ILogger<ClientService>                logger_;
+    private readonly IQueueStorage                         queueStorage_;
 
     public ClientService(ITableStorage                         tableStorage,
                          IQueueStorage                         queueStorage,
                          KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
-                         KeyValueStorage<TaskId, Payload>      taskPayloadStorage)
+                         KeyValueStorage<TaskId, Payload>      taskPayloadStorage,
+                         ILogger<ClientService> logger)
     {
       tableStorage_       = tableStorage;
       taskResultStorage_  = taskResultStorage;
       taskPayloadStorage_ = taskPayloadStorage;
+      logger_        = logger;
       queueStorage_       = queueStorage;
     }
 
     public override async Task<Empty> CancelSession(SessionId request, ServerCallContext context)
     {
+      logger_.LogFunction();
       try
       {
         await tableStorage_.CancelSessionAsync(request, context.CancellationToken);
@@ -50,6 +58,7 @@ namespace ArmoniK.Control.Services
 
     public override async Task<Empty> CancelTask(TaskFilter request, ServerCallContext context)
     {
+      logger_.LogFunction();
       try
       {
         await tableStorage_.CancelTask(request, context.CancellationToken);
@@ -67,6 +76,7 @@ namespace ArmoniK.Control.Services
 
     public override async Task<Empty> CloseSession(SessionId request, ServerCallContext context)
     {
+      logger_.LogFunction();
       try
       {
         await tableStorage_.CloseSessionAsync(request, context.CancellationToken);
@@ -84,11 +94,13 @@ namespace ArmoniK.Control.Services
 
     public override Task<SessionId> CreateSession(SessionOptions request, ServerCallContext context)
     {
+      logger_.LogFunction();
       return tableStorage_.CreateSessionAsync(request, context.CancellationToken);
     }
 
     public override async Task<CreateTaskReply> CreateTask(CreateTaskRequest request, ServerCallContext context)
     {
+      logger_.LogFunction();
       var tidsTask = request.TaskRequests.Select(async taskRequest =>
       {
         var options = taskRequest.TaskOptions;
@@ -125,12 +137,14 @@ namespace ArmoniK.Control.Services
 
     public override async Task<Count> GetTasksCount(TaskFilter request, ServerCallContext context)
     {
+      logger_.LogFunction();
       var count = await tableStorage_.CountTasksAsync(request, context.CancellationToken);
       return new Count { Value = count };
     }
 
     public override async Task ListTask(TaskFilter request, IServerStreamWriter<TaskId> responseStream, ServerCallContext context)
     {
+      logger_.LogFunction();
       await foreach(var taskId in tableStorage_.ListTasksAsync(request, context.CancellationToken).WithCancellation(context.CancellationToken))
       {
         await responseStream.WriteAsync(taskId);
@@ -139,6 +153,7 @@ namespace ArmoniK.Control.Services
 
     public override async Task TryGetResult(TaskFilter request, IServerStreamWriter<SinglePayloadReply> responseStream, ServerCallContext context)
     {
+      logger_.LogFunction();
       await foreach(var taskId in tableStorage_.ListTasksAsync(request, context.CancellationToken).WithCancellation(context.CancellationToken))
       {
         var result = await taskResultStorage_.TryGetValuesAsync(taskId, context.CancellationToken);
@@ -149,6 +164,7 @@ namespace ArmoniK.Control.Services
 
     public override async Task<Empty> WaitForCompletion(TaskFilter request, ServerCallContext context)
     {
+      logger_.LogFunction();
       if (!request.ExcludedTaskIds.Any() && 
           !request.IncludedTaskIds.Any() &&
           string.IsNullOrEmpty(request.SubSessionId) && 
