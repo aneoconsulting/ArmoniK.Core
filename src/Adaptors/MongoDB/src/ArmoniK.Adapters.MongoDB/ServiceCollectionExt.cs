@@ -3,6 +3,8 @@
 // Copyright (c) ANEO. All rights reserved.
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
+using ArmoniK.Compute.gRPC.V1;
+using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection;
 using ArmoniK.Core.Injection.Options;
 
@@ -51,6 +53,8 @@ namespace ArmoniK.Adapters.MongoDB
                        .AddTransient<TableStorage>()
                        .AddTransient<LeaseProvider>()
                        .AddTransient<ObjectStorage>()
+                       .AddTransient<KeyValueStorage<TaskId, ComputeReply>>()
+                       .AddTransient<KeyValueStorage<TaskId, Payload>>()
                        .AddTransient<QueueStorage>();
 
       var components = configuration.GetSection(Components.SettingSection);
