@@ -20,12 +20,7 @@ namespace ArmoniK.Core.Injection
                  .Configure<GrpcChannel>(configuration.GetSection(GrpcChannel.SettingSection))
                  .Configure<Components>(configuration.GetSection(Components.SettingSection))
                  .AddSingleton<GrpcChannelProvider>()
-                 .AddSingleton<ChannelBase>(sp =>
-                 {
-                     GrpcChannelProvider channelProvider = sp.GetService<GrpcChannelProvider>();
-                     return channelProvider.GetAsync().Result;
-
-                 })
+                 .AddSingleton<ClientServiceProvider>()
                  .AddSingleton(typeof(KeyValueStorage<,>));
   }
 }

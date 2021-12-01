@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Injection;
 using ArmoniK.Core.Injection.Options;
 
+using Grpc.Core;
+
 using Microsoft.Extensions.Options;
 
 using GrpcChannel = Grpc.Net.Client.GrpcChannel;
@@ -22,7 +24,7 @@ using Grpc.Net.Client;
 namespace ArmoniK.Core.gRPC
 {
 
-  public class GrpcChannelProvider : ProviderBase<GrpcChannel>
+  public class GrpcChannelProvider : ProviderBase<ChannelBase>
   {
     public GrpcChannelProvider(IOptions<Injection.Options.GrpcChannel> options)
       : base(options.Value.SocketType == GrpcSocketType.Web
@@ -31,9 +33,9 @@ namespace ArmoniK.Core.gRPC
     {
     }
 
-    private static GrpcChannel BuildWebGrpcChannel(string address) => GrpcChannel.ForAddress(address);
+    private static ChannelBase BuildWebGrpcChannel(string address) => GrpcChannel.ForAddress(address);
 
-    private static GrpcChannel BuildUnixSocketGrpcChannel(string address)
+    private static ChannelBase BuildUnixSocketGrpcChannel(string address)
     {
       var udsEndPoint = new UnixDomainSocketEndPoint(address);
 

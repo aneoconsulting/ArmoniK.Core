@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Utils;
 
 namespace ArmoniK.Core.Injection

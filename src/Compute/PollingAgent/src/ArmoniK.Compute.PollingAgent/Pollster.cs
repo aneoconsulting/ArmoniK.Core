@@ -8,9 +8,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Compute.gRPC.V1;
 using ArmoniK.Core;
 using ArmoniK.Core.Exceptions;
+using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
@@ -24,8 +24,6 @@ using TimeoutException = ArmoniK.Core.Exceptions.TimeoutException;
 
 namespace ArmoniK.Compute.PollingAgent
 {
-  
-
   public class Pollster
   {
     private readonly ILogger<Pollster>                     logger_;
@@ -36,16 +34,16 @@ namespace ArmoniK.Compute.PollingAgent
     private readonly ILeaseProvider                        leaseProvider_;
     private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
     private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
-    private readonly ComputerService.ComputerServiceClient client_;
+    private readonly ClientServiceProvider                 clientProvider_;
 
     public Pollster(ILogger<Pollster>                     logger,
-                    IOptions<ComputePlan> options,
-                                          IQueueStorage                         queueStorage,
+                    IOptions<ComputePlan>                 options,
+                                          IQueueStorage   queueStorage,
                     ITableStorage                         tableStorage,
                     ILeaseProvider                        leaseProvider,
                     KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
                     KeyValueStorage<TaskId, Payload>      taskPayloadStorage,
-                    ComputerService.ComputerServiceClient client)
+                    ClientServiceProvider                 clientProvider)
     {
       logger_             = logger;
       messageBatchSize_   = options.Value.MessageBatchSize;
@@ -54,7 +52,7 @@ namespace ArmoniK.Compute.PollingAgent
       leaseProvider_      = leaseProvider;
       taskResultStorage_  = taskResultStorage;
       taskPayloadStorage_ = taskPayloadStorage;
-      client_             = client;
+      clientProvider_             = clientProvider;
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "<Pending>")]
@@ -267,7 +265,7 @@ namespace ArmoniK.Compute.PollingAgent
 
       logger_.LogInformation("Send compute request to the worker");
 
-      var call = client_.ExecuteAsync(request, deadline: DateTime.UtcNow + taskData.Options.MaxDuration.ToTimeSpan(), cancellationToken: CancellationToken.None); 
+      var call = (await clientProvider_.GetAsync()).ExecuteAsync(request, deadline: DateTime.UtcNow + taskData.Options.MaxDuration.ToTimeSpan(), cancellationToken: CancellationToken.None); 
 
       ComputeReply result;
       try
