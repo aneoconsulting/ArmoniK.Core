@@ -16,7 +16,7 @@ namespace ArmoniK.Adapters.MongoDB
 {
   public class QueueMessageModel : IMongoDataModel<QueueMessageModel>
   {
-    [BsonId(IdGenerator = typeof( CombGuidGenerator))]
+    [BsonId(IdGenerator = typeof( StringCombGuidGenerator))]
     public string MessageId { get; set; }
 
     [BsonElement]

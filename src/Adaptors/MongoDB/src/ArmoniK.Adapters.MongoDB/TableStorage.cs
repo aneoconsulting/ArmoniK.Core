@@ -141,14 +141,17 @@ namespace ArmoniK.Adapters.MongoDB
                  };
       if (subSession)
       {
-        data.SessionId = sessionOptions.ParentSession.Session;
+          data.SessionId = sessionOptions.ParentSession.Session;
       }
-      else
+      await sessionCollection.InsertOneAsync(data, cancellationToken: cancellationToken);
+
+      if(!subSession)
       {
         data.SessionId = data.SubSessionId;
+        var updateDefinition = new UpdateDefinitionBuilder<SessionDataModel>().Set(model => model.SessionId, data.SessionId);
+        await sessionCollection.UpdateOneAsync(sessionHandle, x => x.SubSessionId == data.SubSessionId,
+            updateDefinition, cancellationToken: cancellationToken);
       }
-
-      await sessionCollection.InsertOneAsync(data, cancellationToken: cancellationToken);
       return new SessionId { Session = data.SessionId, SubSession = data.SubSessionId };
     }
 

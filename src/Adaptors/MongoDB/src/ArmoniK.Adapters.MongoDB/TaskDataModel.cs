@@ -23,7 +23,7 @@ namespace ArmoniK.Adapters.MongoDB
     [BsonRequired]
     public string SubSessionId { get; set; }
 
-    [BsonId(IdGenerator = typeof(CombGuidGenerator))]
+    [BsonId(IdGenerator = typeof(StringCombGuidGenerator))]
     public string TaskId { get; set; }
 
     [BsonElement]

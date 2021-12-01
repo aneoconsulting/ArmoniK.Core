@@ -16,7 +16,7 @@ namespace ArmoniK.Adapters.MongoDB
     public object GenerateId(object container, object document)
       => $"{(document as SessionDataModel)?.IdTag}{Generator.GenerateId(container, document)}";
 
-    /// <inheritdoc />
-    public bool IsEmpty(object id) => ((string)id).EndsWith("00000000-0000-0000-0000-000000000000");
-  }
+        /// <inheritdoc />
+        public bool IsEmpty(object id) => id == null || ((string)id).EndsWith("00000000-0000-0000-0000-000000000000");
+    }
 }
