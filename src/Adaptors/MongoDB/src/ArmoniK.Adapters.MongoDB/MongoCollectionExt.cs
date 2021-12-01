@@ -27,11 +27,11 @@ namespace ArmoniK.Adapters.MongoDB
     public static Expression<Func<TaskDataModel, bool>> ToFilterExpression(this TaskFilter filter)
     {
       return x => x.SessionId == filter.SessionId &&
-                                         x.SubSessionId == filter.SubSessionId &&
-                                         filter.IncludedStatuses.Any(status => status == x.Status) &&
-                                         filter.ExcludedStatuses.All(status => status != x.Status) &&
-                                         filter.IncludedTaskIds.Any(tId => tId == x.TaskId) &&
-                                         filter.ExcludedTaskIds.All(tId => tId != x.TaskId);
+                  x.SubSessionId == filter.SubSessionId &&
+                  filter.IncludedStatuses.Aggregate(false, (b, status) => b || status == x.Status) &&
+                  filter.ExcludedStatuses.All(status => status != x.Status) &&
+                  filter.IncludedTaskIds.Aggregate(false, (b, tid) => b || tid == x.TaskId) &&
+                  filter.ExcludedTaskIds.All(tId => tId != x.TaskId);
     }
   }
 }
