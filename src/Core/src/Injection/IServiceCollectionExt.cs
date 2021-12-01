@@ -6,7 +6,7 @@
 using ArmoniK.Core.gRPC;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
-
+using Grpc.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +20,12 @@ namespace ArmoniK.Core.Injection
                  .Configure<GrpcChannel>(configuration.GetSection(GrpcChannel.SettingSection))
                  .Configure<Components>(configuration.GetSection(Components.SettingSection))
                  .AddSingleton<GrpcChannelProvider>()
+                 .AddSingleton<ChannelBase>(sp =>
+                 {
+                     GrpcChannelProvider channelProvider = sp.GetService<GrpcChannelProvider>();
+                     return channelProvider.GetAsync().Result;
+
+                 })
                  .AddSingleton(typeof(KeyValueStorage<,>));
   }
 }

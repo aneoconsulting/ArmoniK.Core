@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 
 using ArmoniK.Adapters.MongoDB;
@@ -55,8 +56,10 @@ namespace ArmoniK.Compute.PollingAgent
 
     public static IHostBuilder CreateHostBuilder(string[] args)
     {
-      var env = new HostingEnvironment();
-
+      var env = new HostingEnvironment()
+      {
+          ContentRootPath = Directory.GetCurrentDirectory()
+      };
       return Host.CreateDefaultBuilder(args)
                  .ConfigureHostConfiguration(builder => builder.SetBasePath(env.ContentRootPath)
                                                                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
