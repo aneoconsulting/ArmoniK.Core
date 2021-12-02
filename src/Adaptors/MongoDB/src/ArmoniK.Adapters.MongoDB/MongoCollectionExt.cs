@@ -32,12 +32,12 @@ namespace ArmoniK.Adapters.MongoDB
 
       Expression sessionCheck = string.IsNullOrEmpty(filter.SessionId)
                                   ? Expression.Constant(true, typeof(bool))
-                                  : Expression.Equal(Expression.Field(x, typeof(TaskDataModel), nameof(tdm.SessionId)),
+                                  : Expression.Equal(Expression.Property(x, typeof(TaskDataModel), nameof(tdm.SessionId)),
                                                      Expression.Constant(filter.SessionId, typeof(string)));
 
       Expression subSessionCheck = string.IsNullOrEmpty(filter.SubSessionId)
                                      ? Expression.Constant(true, typeof(bool))
-                                     : Expression.Equal(Expression.Field(x, typeof(TaskDataModel), nameof(tdm.SubSessionId)),
+                                     : Expression.Equal(Expression.Property(x, typeof(TaskDataModel), nameof(tdm.SubSessionId)),
                                                         Expression.Constant(filter.SubSessionId, typeof(string)));
 
       var globalExpression = Expression.And(sessionCheck, subSessionCheck);
@@ -48,7 +48,7 @@ namespace ArmoniK.Adapters.MongoDB
          (expression, status) =>
          {
            var left = expression;
-           var right = Expression.Equal(Expression.Field(x, typeof(TaskDataModel), nameof(tdm.Status)),
+           var right = Expression.Equal(Expression.Property(x, typeof(TaskDataModel), nameof(tdm.Status)),
                                         Expression.Constant(status, typeof(TaskStatus)));
            return Expression.Or(left, right);
          }
@@ -61,7 +61,7 @@ namespace ArmoniK.Adapters.MongoDB
          (expression, status) =>
          {
            var left = expression;
-           var right = Expression.Equal(Expression.Field(x, typeof(TaskDataModel), nameof(tdm.Status)),
+           var right = Expression.Equal(Expression.Property(x, typeof(TaskDataModel), nameof(tdm.Status)),
                                         Expression.Constant(status, typeof(TaskStatus)));
            return Expression.And(left, right);
          }
@@ -74,7 +74,7 @@ namespace ArmoniK.Adapters.MongoDB
          (expression, id) =>
          {
            var left = expression;
-           var right = Expression.Equal(Expression.Field(x, typeof(TaskDataModel), nameof(tdm.TaskId)),
+           var right = Expression.Equal(Expression.Property(x, typeof(TaskDataModel), nameof(tdm.TaskId)),
                                         Expression.Constant(id, typeof(string)));
            return Expression.Or(left, right);
          }
@@ -87,7 +87,7 @@ namespace ArmoniK.Adapters.MongoDB
          (expression, id) =>
          {
            var left = expression;
-           var right = Expression.Equal(Expression.Field(x, typeof(TaskDataModel), nameof(tdm.TaskId)),
+           var right = Expression.Equal(Expression.Property(x, typeof(TaskDataModel), nameof(tdm.TaskId)),
                                         Expression.Constant(id, typeof(string)));
            return Expression.And(left, right);
          }
