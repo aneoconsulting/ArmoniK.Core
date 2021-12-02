@@ -1,27 +1,17 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 
 using ArmoniK.Adapters.MongoDB;
-using ArmoniK.Compute.gRPC.V1;
-using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection;
-using ArmoniK.Core.Injection.Options;
-using ArmoniK.Core.Storage;
-
-using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
-using Microsoft.Extensions.Logging;
 
 using Serilog.Events;
 using Serilog;
-
-using GrpcChannel = Grpc.Net.Client.GrpcChannel;
 
 
 namespace ArmoniK.Compute.PollingAgent

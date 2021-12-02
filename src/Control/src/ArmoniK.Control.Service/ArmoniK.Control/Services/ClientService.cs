@@ -1,5 +1,4 @@
-﻿using ArmoniK.Compute.gRPC.V1;
-using ArmoniK.Core.Exceptions;
+﻿using ArmoniK.Core.Exceptions;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 

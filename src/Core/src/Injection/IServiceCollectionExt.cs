@@ -6,7 +6,7 @@
 using ArmoniK.Core.gRPC;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
-using Grpc.Core;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

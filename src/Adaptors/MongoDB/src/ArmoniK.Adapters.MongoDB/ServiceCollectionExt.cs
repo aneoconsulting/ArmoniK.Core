@@ -3,9 +3,7 @@
 // Copyright (c) ANEO. All rights reserved.
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
-using ArmoniK.Compute.gRPC.V1;
 using ArmoniK.Core.gRPC.V1;
-using ArmoniK.Core.Injection;
 using ArmoniK.Core.Injection.Options;
 
 using Microsoft.Extensions.DependencyInjection;

@@ -3,12 +3,8 @@
 // Copyright (c) ANEO. All rights reserved.
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
-using System;
-using System.IO;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Injection;

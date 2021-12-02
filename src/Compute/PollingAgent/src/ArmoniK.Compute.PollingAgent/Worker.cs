@@ -1,10 +1,6 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using DnsClient.Internal;
-
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace ArmoniK.Compute.PollingAgent

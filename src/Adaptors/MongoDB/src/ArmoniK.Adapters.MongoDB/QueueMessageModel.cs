@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using ArmoniK.Core.gRPC.V1;
 
 using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson.Serialization.IdGenerators;
 using MongoDB.Driver;
 
 namespace ArmoniK.Adapters.MongoDB
