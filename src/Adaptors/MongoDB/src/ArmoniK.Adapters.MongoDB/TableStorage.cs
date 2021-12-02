@@ -267,11 +267,20 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-      var session = await sessionCollection.AsQueryable(sessionHandle)
-                                           .Where(x => x.SessionId == sessionId.Session &&
-                                                       x.SubSessionId == (sessionId.SubSession ?? "") &&
-                                                       string.IsNullOrEmpty(sessionId.SubSession) || "" == x.SubSessionId)
-                                           .SingleAsync(cancellationToken);
+      SessionDataModel session;
+      if (string.IsNullOrEmpty(sessionId.SubSession) || sessionId.SubSession == "")
+      {
+          session = await sessionCollection.AsQueryable(sessionHandle)
+              .Where(x => x.SessionId == sessionId.Session)
+              .SingleAsync(cancellationToken);
+      }
+      else
+      {
+          session = await sessionCollection.AsQueryable(sessionHandle)
+              .Where(x => x.SessionId == sessionId.Session &&
+                          x.SubSessionId == sessionId.SubSession)
+              .SingleAsync(cancellationToken);
+      }
       return session.IsClosed;
     }
 
