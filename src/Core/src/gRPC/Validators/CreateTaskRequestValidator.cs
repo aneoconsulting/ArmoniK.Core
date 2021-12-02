@@ -5,11 +5,10 @@ namespace ArmoniK.Core.gRPC.Validators
 {
     public class CreateTaskRequestValidator : AbstractValidator<CreateTaskRequest>
     {
-        public CreateTaskRequestValidator()
-        {
-            RuleFor(request => request.TaskRequests).NotNull();
-            RuleFor(request => request.TaskRequests).NotEmpty();
-            RuleForEach(request => request.TaskRequests).SetValidator(new TaskRequestValidator());
-        }
+      public CreateTaskRequestValidator()
+      {
+        RuleFor(request => request.TaskRequests).NotNull().NotEmpty();
+        RuleForEach(request => request.TaskRequests).SetValidator(new TaskRequestValidator());
+      }
     }
 }

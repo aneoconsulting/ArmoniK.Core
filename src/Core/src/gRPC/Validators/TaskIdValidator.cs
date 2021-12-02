@@ -8,6 +8,7 @@ namespace ArmoniK.Core.gRPC.Validators
         public TaskIdValidator()
         {
             RuleFor(o => o.Session).NotNull();
+            RuleFor(o => o.SubSession).NotNull();
             RuleFor(o => o.Task).NotNull();
         }
     }

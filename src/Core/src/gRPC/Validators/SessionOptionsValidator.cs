@@ -7,7 +7,8 @@ namespace ArmoniK.Core.gRPC.Validators
     {
         public SessionOptionsValidator()
         {
-            RuleFor(o => o.DefaultTaskOption).NotNull().SetValidator(new TaskOptionsValidator());
+            RuleFor(o => o.DefaultTaskOption).NotNull()
+                                             .SetValidator(new TaskOptionsValidator());
         }
     }
 }

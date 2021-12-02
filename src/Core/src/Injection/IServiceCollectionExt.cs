@@ -4,8 +4,11 @@
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
 using ArmoniK.Core.gRPC;
+using ArmoniK.Core.gRPC.Validators;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
+
+using Calzolari.Grpc.AspNetCore.Validation;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,5 +25,18 @@ namespace ArmoniK.Core.Injection
                  .AddSingleton<GrpcChannelProvider>()
                  .AddSingleton<ClientServiceProvider>()
                  .AddSingleton(typeof(KeyValueStorage<,>));
+
+    public static IServiceCollection ValidateGrpcRequests(this IServiceCollection services)
+      => services.AddGrpc(options => options.EnableMessageValidation())
+                 .Services
+                 .AddValidator<CreateTaskRequestValidator>()
+                 .AddValidator<PayloadValidator>()
+                 .AddValidator<SessionIdValidator>()
+                 .AddValidator<SessionOptionsValidator>()
+                 .AddValidator<TaskIdValidator>()
+                 .AddValidator<TaskOptionsValidator>()
+                 .AddValidator<TaskRequestValidator>()
+                 .AddGrpcValidation();
+
   }
 }

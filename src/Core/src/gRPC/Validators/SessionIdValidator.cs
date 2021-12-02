@@ -8,6 +8,7 @@ namespace ArmoniK.Core.gRPC.Validators
         public SessionIdValidator()
         {
             RuleFor(o => o.Session).NotNull();
+            RuleFor(o => o.SubSession).NotNull();
         }
     }
 }

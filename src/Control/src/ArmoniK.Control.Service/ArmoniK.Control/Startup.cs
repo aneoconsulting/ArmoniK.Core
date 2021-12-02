@@ -9,6 +9,7 @@ using Calzolari.Grpc.AspNetCore.Validation;
 
 using Microsoft.Extensions.Configuration;
 using ArmoniK.Core.gRPC.Validators;
+using ArmoniK.Core.Injection;
 
 namespace ArmoniK.Control
 {
@@ -34,15 +35,7 @@ namespace ArmoniK.Control
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMongoComponents(Configuration);
-            services.AddGrpc(options => options.EnableMessageValidation());
-            services.AddValidator<CreateTaskRequestValidator>();
-            services.AddValidator<PayloadValidator>();
-            services.AddValidator<SessionIdValidator>();
-            services.AddValidator<SessionOptionsValidator>();
-            services.AddValidator<TaskIdValidator>();
-            services.AddValidator<TaskOptionsValidator>();
-            services.AddValidator<TaskRequestValidator>();
-            services.AddGrpcValidation();
+            services.ValidateGrpcRequests();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
