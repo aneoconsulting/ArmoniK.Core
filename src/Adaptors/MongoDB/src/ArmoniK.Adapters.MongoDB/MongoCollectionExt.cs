@@ -42,7 +42,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       var globalExpression = Expression.And(sessionCheck, subSessionCheck);
 
-      if (filter.IncludedStatuses.Any())
+      if (filter.IncludedStatuses is not null && filter.IncludedStatuses.Any())
       {
         var includeStatusesExpression = filter.IncludedStatuses.Aggregate
           (
@@ -58,7 +58,7 @@ namespace ArmoniK.Adapters.MongoDB
         globalExpression = Expression.And(globalExpression, includeStatusesExpression);
       }
 
-      if (filter.ExcludedStatuses.Any())
+      if (filter.ExcludedStatuses is not null && filter.ExcludedStatuses.Any())
       {
         var excludeStatusesExpression = filter.ExcludedStatuses.Aggregate
           (
@@ -74,7 +74,7 @@ namespace ArmoniK.Adapters.MongoDB
         globalExpression = Expression.And(globalExpression, excludeStatusesExpression);
       }
 
-      if (filter.IncludedTaskIds.Any())
+      if (filter.IncludedTaskIds is not null && filter.IncludedTaskIds.Any())
       {
         var includeTaskIdExpression = filter.IncludedTaskIds.Aggregate
           (
@@ -90,7 +90,7 @@ namespace ArmoniK.Adapters.MongoDB
         globalExpression = Expression.And(globalExpression, includeTaskIdExpression);
       }
 
-      if (filter.ExcludedTaskIds.Any())
+      if (filter.ExcludedTaskIds is not null && filter.ExcludedTaskIds.Any())
       {
         var excludeTaskIdExpression = filter.ExcludedTaskIds.Aggregate
           (
