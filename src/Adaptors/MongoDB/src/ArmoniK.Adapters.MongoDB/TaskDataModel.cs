@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
 
+using Google.Protobuf;
+
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
@@ -40,7 +42,7 @@ namespace ArmoniK.Adapters.MongoDB
     public bool HasPayload { get; set; }
 
     [BsonElement]
-    public Payload Payload { get; set; }
+    public byte[] Payload { get; set; }
 
     public TaskData ToTaskData() => new()
                                     {
@@ -51,7 +53,7 @@ namespace ArmoniK.Adapters.MongoDB
                                              Task       = TaskId,
                                            },
                                       HasPayload = HasPayload,
-                                      Payload    = Payload,
+                                      Payload    = new Payload{Data = ByteString.CopyFrom(Payload)},
                                       Options    = Options,
                                       Retries    = Retries,
                                       Status     = Status,

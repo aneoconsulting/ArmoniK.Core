@@ -239,7 +239,7 @@ namespace ArmoniK.Adapters.MongoDB
                 };
       if (isPayloadStored)
       {
-        tdm.Payload = payload;
+        tdm.Payload = payload.Data.ToByteArray();
       }
 
       await taskCollection.InsertOneAsync(sessionHandle, tdm, cancellationToken: cancellationToken);
