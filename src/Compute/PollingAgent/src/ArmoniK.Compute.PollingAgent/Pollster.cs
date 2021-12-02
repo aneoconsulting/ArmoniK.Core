@@ -66,6 +66,7 @@ namespace ArmoniK.Compute.PollingAgent
         {
           try
           {
+            logger_.LogInformation("Trying to fetch messages");
             message = await queueStorage_.PullAsync(1, cancellationToken).SingleAsync(cancellationToken);
             break;
           }
@@ -76,6 +77,7 @@ namespace ArmoniK.Compute.PollingAgent
         }
         if (message is null)
         {
+          logger_.LogInformation("No more message in queue, shutting the polling agent down");
           // No more messages in queue. Application exits to help K8s in scaling down.
           // TODO : use kubectl to terminate the whole pod ?
           Environment.Exit(0);
@@ -122,7 +124,8 @@ namespace ArmoniK.Compute.PollingAgent
          *  - Task status is OK
          *  - Dependencies have been checked
          */
-
+        
+        logger_.LogDebug("checking that the session is not cancelled");
         var isSessionCancelled = await tableStorage_.IsSessionCancelledAsync(new SessionId
                                                                              {
                                                                                Session    = message.TaskId.Session, 
@@ -141,7 +144,8 @@ namespace ArmoniK.Compute.PollingAgent
           await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Canceled, cancellationToken);
           continue;
         }
-
+        
+        logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
         if (taskData.Retries >= taskData.Options.MaxRetries)
         {
           logger_.LogInformation("Task has been retried too many times");
@@ -150,7 +154,8 @@ namespace ArmoniK.Compute.PollingAgent
           await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Failed, cancellationToken);
           continue;
         }
-
+        
+        logger_.LogDebug("Handling the task status ({status})", taskData.Status);
         switch (taskData.Status)
         {
           case TaskStatus.Canceling:
@@ -191,11 +196,14 @@ namespace ArmoniK.Compute.PollingAgent
             logger_.LogCritical("Task was in an unknown state {state}", taskData.Status);
             throw new ArgumentOutOfRangeException(nameof(taskData.Status));
         }
-
+        
+        logger_.LogDebug("Changing task status to 'Dispatched'");
         var updateTask = tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Dispatched, combinesCTS.Token);
 
+        // TODO: optimize the approach to reduce the number of requests
         async Task<bool> IsDependencyCompleted(TaskId tid)
         {
+          logger_.LogDebug("Checking status for dependency with taskId {tid}", tid.ToPrintableId());
           var tData = await tableStorage_.ReadTaskAsync(tid, combinesCTS.Token);
           if (tData.Status != TaskStatus.Completed) return false;
 
@@ -207,7 +215,7 @@ namespace ArmoniK.Compute.PollingAgent
           return true;
         }
 
-        var dependencyCheckTask = taskData.Options.Dependencies.Select(IsDependencyCompleted).ToList();
+        var dependencyCheckTask = taskData.Options.Dependencies.AsParallel().Select(IsDependencyCompleted).ToList();
 
         await Task.WhenAll(dependencyCheckTask);
 
@@ -235,6 +243,7 @@ namespace ArmoniK.Compute.PollingAgent
                                           CancellationTokenSource combinesCTS,
                                           CancellationToken cancellationToken)
     {
+      using var _ = logger_.LogFunction();
       /*
          * Prefetch Data
          */
