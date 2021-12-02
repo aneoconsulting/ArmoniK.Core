@@ -20,6 +20,7 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="5.4.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
