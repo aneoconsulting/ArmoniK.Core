@@ -1,8 +1,7 @@
-﻿
-using ArmoniK.Core.gRPC.V1;
+﻿using ArmoniK.Core.gRPC.V1;
 using FluentValidation;
 
-namespace ArmoniK.Core.gRPC
+namespace ArmoniK.Core.gRPC.Validators
 {
     public class CreateTaskRequestValidator : AbstractValidator<CreateTaskRequest>
     {
@@ -10,6 +9,7 @@ namespace ArmoniK.Core.gRPC
         {
             RuleFor(request => request.TaskRequests).NotNull();
             RuleFor(request => request.TaskRequests).NotEmpty();
+            RuleForEach(request => request.TaskRequests).SetValidator(new TaskRequestValidator());
         }
     }
 }
