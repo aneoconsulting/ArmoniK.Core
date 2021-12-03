@@ -50,7 +50,8 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task<Lease> TryAcquireLease(TaskId id, CancellationToken cancellationToken = default)
     {
-      logger_.LogTrace("Trying to acquire lease for task {id}", id);
+      var _ = logger_.LogFunction();
+      logger_.LogDebug("Trying to acquire lease for task {id}", id);
       var key             = id.ToPrintableId();
       var leaseId         = Guid.NewGuid().ToString();
       var leaseCollection = await leaseCollectionProvider_.GetAsync();
@@ -84,7 +85,8 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task<Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default)
     {
-      logger_.LogTrace("Trying to renew lease {leaseId} for task {id}", leaseId, id);
+      var _ = logger_.LogFunction();
+      logger_.LogDebug("Trying to renew lease {leaseId} for task {id}", leaseId, id);
       var key             = id.ToPrintableId();
       var leaseCollection = await leaseCollectionProvider_.GetAsync();
 
@@ -116,7 +118,8 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task ReleaseLease(TaskId id, string leaseId, CancellationToken cancellationToken = default)
     {
-      logger_.LogTrace("Trying to release lease {leaseId} for task {id}", leaseId, id);
+      var _ = logger_.LogFunction();
+      logger_.LogDebug("Trying to release lease {leaseId} for task {id}", leaseId, id);
       var key             = id.ToPrintableId();
       var leaseCollection = await leaseCollectionProvider_.GetAsync();
 
