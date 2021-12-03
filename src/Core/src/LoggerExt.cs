@@ -32,7 +32,7 @@ namespace ArmoniK.Core
     }
 
     public static IDisposable LogFunction(this ILogger              logger, 
-                                          LogLevel                  level        = LogLevel.Trace, 
+                                          LogLevel                  level        = LogLevel.Debug,
                                           [CallerMemberName] string functionName = "")
     {
       logger.Log(level, "Entering {functionName}", functionName);

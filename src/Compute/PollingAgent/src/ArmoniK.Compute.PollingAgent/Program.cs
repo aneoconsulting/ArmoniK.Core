@@ -59,8 +59,7 @@ namespace ArmoniK.Compute.PollingAgent
                  .UseSerilog((context, services, config) => config
                                                            .ReadFrom.Configuration(context.Configuration)
                                                            .ReadFrom.Services(services)
-                                                           .Enrich.FromLogContext()
-                                                           .WriteTo.Console())
+                                                           .Enrich.FromLogContext())
                  .ConfigureServices((hostContext, services) =>
                                     {
                                       services.AddLogging()
