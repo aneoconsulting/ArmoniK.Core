@@ -92,10 +92,12 @@ namespace ArmoniK.Compute.PollingAgent
         /*
          * Acquire locks
          */
-
+        
+        logger_.LogInformation("Start lease provider");
         var leaseProviderTask = leaseProvider_.GetLeaseHandler(message.TaskId, CancellationToken.None);
 
-        await using var queueDeadlineHandler = queueStorage_.GetDeadlineHandler(message.MessageId, CancellationToken.None);
+        logger_.LogInformation("Start queue deadline handler");
+        await using var queueDeadlineHandler = queueStorage_.GetDeadlineHandler(message.MessageId, logger_, CancellationToken.None);
 
         if (queueDeadlineHandler.MessageLockLost.IsCancellationRequested)
         {
@@ -116,6 +118,8 @@ namespace ArmoniK.Compute.PollingAgent
 
         var combinesCTS = CancellationTokenSource.CreateLinkedTokenSource(queueDeadlineHandler.MessageLockLost, leaseHandler.LeaseExpired, cancellationToken);
 
+        combinesCTS.Token.Register(() => logger_.LogWarning("CancellationToken has been triggered"));
+
         /*
          * Check preconditions:
          *  - Session is not cancelled
@@ -132,7 +136,8 @@ namespace ArmoniK.Compute.PollingAgent
                                                                                SubSession = message.TaskId.SubSession
                                                                              },
                                                                              combinesCTS.Token);
-
+        
+        logger_.LogDebug("Loading task data");
         var taskData = await tableStorage_.ReadTaskAsync(message.TaskId, combinesCTS.Token);
 
         if (isSessionCancelled && taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.WaitingForChildren))
@@ -261,7 +266,8 @@ namespace ArmoniK.Compute.PollingAgent
       /*
          * Compute Task
          */
-
+      
+      logger_.LogInformation("Increasing the retry counter");
       var increaseTask = tableStorage_.IncreaseRetryCounterAsync(taskData.Id, CancellationToken.None);
 
       var request = new ComputeRequest

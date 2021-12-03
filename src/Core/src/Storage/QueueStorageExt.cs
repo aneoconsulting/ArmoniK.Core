@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Logging;
+
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
@@ -21,7 +23,8 @@ namespace ArmoniK.Core.Storage
 
     public static QueueMessageDeadlineHandler GetDeadlineHandler(this IQueueStorage queueStorage,
                                                                  string             messageId,
+                                                                 ILogger            logger,
                                                                  CancellationToken  cancellationToken = default)
-      => new (queueStorage, messageId, cancellationToken);
+      => new(queueStorage, messageId, logger, cancellationToken);
   }
 }

@@ -11,6 +11,8 @@ using ArmoniK.Core.Utils;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Logging;
+
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
@@ -20,22 +22,25 @@ namespace ArmoniK.Core.Storage
     private readonly string            id_;
     private readonly CancellationToken cancellationToken_;
     private readonly Heart             heart_;
+    private readonly ILogger           logger_;
 
-    public QueueMessageDeadlineHandler(IQueueStorage     queueStorage,
-                                       string            id,
-                                       CancellationToken cancellationToken)
+    public QueueMessageDeadlineHandler(IQueueStorage queueStorage,
+                                       string id,
+                                       ILogger logger,
+                                       CancellationToken cancellationToken = default)
     {
-      queueStorage_      = queueStorage;
-      id_                = id;
+      queueStorage_ = queueStorage;
+      id_ = id;
       cancellationToken_ = cancellationToken;
       heart_ = new Heart(async ct =>
                          {
                            var modified = await queueStorage_.RenewLockAsync(id_, ct);
                            return !modified;
                          },
-                         queueStorage_.LockRefreshPeriodicity, 
+                         queueStorage_.LockRefreshPeriodicity,
                          cancellationToken_);
       heart_.Start();
+      logger_ = logger;
     }
 
     public CancellationToken MessageLockLost => heart_.HeartStopped;
@@ -43,6 +48,7 @@ namespace ArmoniK.Core.Storage
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+      using var _ = logger_.LogFunction(functionName: $"{nameof(QueueMessageDeadlineHandler)}.{nameof(DisposeAsync)}");
       if (!heart_.HeartStopped.IsCancellationRequested)
       {
         await heart_.Stop();
