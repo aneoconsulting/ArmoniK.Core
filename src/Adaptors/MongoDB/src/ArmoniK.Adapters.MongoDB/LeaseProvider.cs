@@ -96,17 +96,18 @@ namespace ArmoniK.Adapters.MongoDB
                                                                             updateDefinition,
                                                                             new FindOneAndUpdateOptions<LeaseDataModel>
                                                                             {
-                                                                              ReturnDocument = ReturnDocument.After
+                                                                              ReturnDocument = ReturnDocument.After,
+                                                                              IsUpsert = true,
                                                                             },
                                                                             cancellationToken);
-
+      logger_.LogDebug("Obtained LeaseResult {res}", res);
       if (leaseId == res.Lock)
       {
         logger_.LogInformation("Lease {leaseId} renewed for task {id}", leaseId, id);
         return new Lease { Id = id, LeaseId = leaseId, ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt) };
       }
 
-      logger_.LogWarning("Could not renew lease {leaseId} for task {id}", leaseId, id);
+      logger_.LogInformation("Could not renew lease {leaseId} for task {id}", leaseId, id);
       return new Lease { Id = id, LeaseId = string.Empty, ExpirationDate = new Timestamp() };
     }
 
