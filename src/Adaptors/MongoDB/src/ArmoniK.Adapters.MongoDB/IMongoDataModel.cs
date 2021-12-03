@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+
 using System.Threading.Tasks;
 
 using MongoDB.Bson.Serialization.Attributes;
@@ -9,7 +10,8 @@ namespace ArmoniK.Adapters.MongoDB
   {
     [BsonIgnore]
     string CollectionName { get; }
-    Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, 
-                                IMongoCollection<T> collection);
+
+    Task InitializeIndexesAsync(IClientSessionHandle sessionHandle,
+                                IMongoCollection<T>  collection);
   }
 }

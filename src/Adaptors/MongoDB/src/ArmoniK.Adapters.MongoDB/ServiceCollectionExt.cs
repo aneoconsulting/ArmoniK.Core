@@ -22,11 +22,10 @@ namespace ArmoniK.Adapters.MongoDB
   public static class ServiceCollectionExt
   {
     [PublicAPI]
-    public static IServiceCollection AddMongoComponents
-      (
-      this IServiceCollection serviceCollection, 
-      IConfiguration configuration
-      )
+    public static IServiceCollection AddMongoComponents(
+      this IServiceCollection serviceCollection,
+      IConfiguration          configuration
+    )
     {
       serviceCollection.Configure<Options.MongoDB>(configuration.GetSection(Options.MongoDB.SettingSection))
                        .Configure<Options.QueueStorage>(configuration.GetSection(Options.QueueStorage.SettingSection))
@@ -34,18 +33,18 @@ namespace ArmoniK.Adapters.MongoDB
                        .Configure<Options.LeaseProvider>(configuration.GetSection(Options.LeaseProvider.SettingSection))
                        .Configure<Options.ObjectStorage>(configuration.GetSection(Options.ObjectStorage.SettingSection))
                        .AddTransient<IMongoClient>
-                          (provider =>
-                           {
-                             var options = provider.GetRequiredService<IOptions<Options.MongoDB>>();
-                             return new MongoClient
-                               (options.Value.ConnectionString);
-                           })
+                       (provider =>
+                       {
+                         var options = provider.GetRequiredService<IOptions<Options.MongoDB>>();
+                         return new MongoClient
+                           (options.Value.ConnectionString);
+                       })
                        .AddTransient
-                          (provider =>
-                           {
-                             var options = provider.GetRequiredService<IOptions<Options.MongoDB>>();
-                             return provider.GetRequiredService<IMongoClient>().GetDatabase(options.Value.DatabaseName);
-                           })
+                       (provider =>
+                       {
+                         var options = provider.GetRequiredService<IOptions<Options.MongoDB>>();
+                         return provider.GetRequiredService<IMongoClient>().GetDatabase(options.Value.DatabaseName);
+                       })
                        .AddSingleton<SessionProvider>()
                        .AddSingleton(typeof(MongoCollectionProvider<>))
                        .AddTransient<TableStorage>()
@@ -57,16 +56,16 @@ namespace ArmoniK.Adapters.MongoDB
 
       var components = configuration.GetSection(Components.SettingSection);
 
-      if(components["TableStorage"]=="ArmoniK.Adapters.MongoDB.TableStorage")
+      if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
         serviceCollection.AddTransient<ITableStorage, TableStorage>();
 
-      if(components["QueueStorage"]=="ArmoniK.Adapters.MongoDB.QueueStorage")
+      if (components["QueueStorage"] == "ArmoniK.Adapters.MongoDB.QueueStorage")
         serviceCollection.AddTransient<IQueueStorage, QueueStorage>();
 
-      if(components["ObjectStorage"]=="ArmoniK.Adapters.MongoDB.ObjectStorage")
+      if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
         serviceCollection.AddTransient<IObjectStorage, ObjectStorage>();
 
-      if(components["LeaseProvider"]=="ArmoniK.Adapters.MongoDB.LeaseProvider")
+      if (components["LeaseProvider"] == "ArmoniK.Adapters.MongoDB.LeaseProvider")
         serviceCollection.AddTransient<ILeaseProvider, LeaseProvider>();
 
       return serviceCollection;

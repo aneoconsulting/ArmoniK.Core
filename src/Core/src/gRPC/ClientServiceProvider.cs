@@ -11,7 +11,7 @@ namespace ArmoniK.Core.gRPC
   public class ClientServiceProvider : ProviderBase<ComputerService.ComputerServiceClient>
   {
     /// <inheritdoc />
-    public ClientServiceProvider(GrpcChannelProvider channelProvider) : 
+    public ClientServiceProvider(GrpcChannelProvider channelProvider) :
       base(async () => new ComputerService.ComputerServiceClient(await channelProvider.GetAsync()))
     {
     }

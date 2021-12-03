@@ -19,7 +19,9 @@ namespace ArmoniK.Core.Storage
   [PublicAPI]
   public static class TableStorageExt
   {
-    public static async Task<bool> IsTaskCompleted(this ITableStorage tableStorage, TaskData taskData, CancellationToken cancellationToken = default)
+    public static async Task<bool> IsTaskCompleted(this ITableStorage tableStorage,
+                                                   TaskData           taskData,
+                                                   CancellationToken  cancellationToken = default)
     {
       var status = taskData.Status;
       if (status != TaskStatus.Completed)
@@ -32,10 +34,10 @@ namespace ArmoniK.Core.Storage
       var aggregateCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken);
 
       var futureDependenciesData = taskData.Options.Dependencies.Select(async id =>
-                                                                        {
-                                                                          var depTaskData = await tableStorage.ReadTaskAsync(id, aggregateCts.Token);
-                                                                          return await tableStorage.IsTaskCompleted(depTaskData, aggregateCts.Token);
-                                                                        }).ToList(); // ToList ensures that all operations have started before processing results
+      {
+        var depTaskData = await tableStorage.ReadTaskAsync(id, aggregateCts.Token);
+        return await tableStorage.IsTaskCompleted(depTaskData, aggregateCts.Token);
+      }).ToList(); // ToList ensures that all operations have started before processing results
 
       while (futureDependenciesData.Count > 0)
       {
@@ -50,7 +52,9 @@ namespace ArmoniK.Core.Storage
         {
           await Task.WhenAll(futureDependenciesData); // avoid dandling running Tasks
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+        }
 
         return false;
       }
@@ -58,10 +62,12 @@ namespace ArmoniK.Core.Storage
       return true;
     }
 
-    public static Task CancelTask(this ITableStorage tableStorage, TaskId id, CancellationToken cancellationToken = default) 
+    public static Task CancelTask(this ITableStorage tableStorage, TaskId id, CancellationToken cancellationToken = default)
       => tableStorage.UpdateTaskStatusAsync(id, TaskStatus.Canceling, cancellationToken);
 
-    public static Task<int> CancelTask(this ITableStorage tableStorage, TaskFilter filter, CancellationToken cancellationToken = default)
+    public static Task<int> CancelTask(this ITableStorage tableStorage,
+                                       TaskFilter         filter,
+                                       CancellationToken  cancellationToken = default)
       => tableStorage.UpdateTaskStatusAsync(filter, TaskStatus.Canceling, cancellationToken);
 
 

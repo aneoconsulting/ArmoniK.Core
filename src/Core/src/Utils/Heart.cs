@@ -5,17 +5,21 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Utils
 {
-
   public class AsyncLazy<T> : Lazy<Task<T>>
   {
     public AsyncLazy(Func<T> valueFactory) :
-      base(() => Task.FromResult(valueFactory())) { }
+      base(() => Task.FromResult(valueFactory()))
+    {
+    }
 
     public AsyncLazy(Func<Task<T>> taskFactory) :
-      base(taskFactory) { }
+      base(taskFactory)
+    {
+    }
 
     public TaskAwaiter<T> GetAwaiter() => Value.GetAwaiter();
   }
+
   public class Heart
   {
     private bool IsStarted => nbPulsations_ >= 0;
@@ -42,12 +46,12 @@ namespace ArmoniK.Core.Utils
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public Heart(Func<CancellationToken, Task<bool>> pulse,
-                   TimeSpan                            beatPeriod,
-                   CancellationToken                   cancellationToken = default)
+                 TimeSpan                            beatPeriod,
+                 CancellationToken                   cancellationToken = default)
     {
       cancellationToken_ = cancellationToken;
       pulse_             = pulse;
-      BeatPeriod        = beatPeriod;
+      BeatPeriod         = beatPeriod;
       stoppedHeartCts_.Cancel();
     }
 
@@ -65,7 +69,6 @@ namespace ArmoniK.Core.Utils
                  CancellationToken cancellationToken = default) :
       this(token => Task.FromResult(pulse()), beatPeriod, cancellationToken)
     {
-
     }
 
     /// <summary>
@@ -82,7 +85,7 @@ namespace ArmoniK.Core.Utils
     /// Start the heart. If the heart is beating, it has no effect.
     /// </summary>
     /// <param name="nbPulsations">Number of cycles to do. Set 0 for an infinite loop.</param>
-    public void Start(uint nbPulsations=0)
+    public void Start(uint nbPulsations = 0)
     {
       if (nbPulsations_ == 0) // already running with infinite loop
       {
@@ -94,14 +97,14 @@ namespace ArmoniK.Core.Utils
       {
         if (nbPulsations_ < nbPulsations || nbPulsations == 0) // new value is longer than current
         {
-          nbPulsations_ = (int)nbPulsations;
+          nbPulsations_ = (int) nbPulsations;
         }
 
         return;
       }
 
       stoppedHeartCts_ = new CancellationTokenSource();
-      nbPulsations_    = (int)nbPulsations;
+      nbPulsations_    = (int) nbPulsations;
 
 
       runningTask_ = Task.Factory.StartNew(async () =>
@@ -118,7 +121,10 @@ namespace ArmoniK.Core.Utils
 
                                                if (nbPulsations_ > 1) --nbPulsations_;
                                              }
-                                           }, cancellationToken_, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+                                           },
+                                           cancellationToken_,
+                                           TaskCreationOptions.LongRunning,
+                                           TaskScheduler.Current);
     }
 
     /// <summary>

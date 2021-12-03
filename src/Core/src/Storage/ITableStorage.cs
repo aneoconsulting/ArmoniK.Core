@@ -14,7 +14,7 @@ namespace ArmoniK.Core.Storage
   [PublicAPI]
   public interface ITableStorage
   {
-    TimeSpan PollingDelay { get; } 
+    TimeSpan PollingDelay { get; }
 
     Task<SessionId> CreateSessionAsync(SessionOptions sessionOptions, CancellationToken cancellationToken = default);
 
@@ -30,8 +30,11 @@ namespace ArmoniK.Core.Storage
 
     Task<TaskOptions> GetDefaultTaskOption(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task<(TaskId id, bool isPayloadStored)> InitializeTaskCreation(SessionId session, TaskOptions options, Payload payload, CancellationToken cancellationToken = default);
-    
+    Task<(TaskId id, bool isPayloadStored)> InitializeTaskCreation(SessionId         session,
+                                                                   TaskOptions       options,
+                                                                   Payload           payload,
+                                                                   CancellationToken cancellationToken = default);
+
     Task<TaskData> ReadTaskAsync(TaskId id, CancellationToken cancellationToken = default);
 
     Task UpdateTaskStatusAsync(TaskId id, TaskStatus status, CancellationToken cancellationToken = default);
@@ -45,6 +48,5 @@ namespace ArmoniK.Core.Storage
     IAsyncEnumerable<TaskId> ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
 
     Task<int> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
-    
   }
 }

@@ -24,13 +24,13 @@ namespace ArmoniK.Core.Storage
     private readonly Heart             heart_;
     private readonly ILogger           logger_;
 
-    public QueueMessageDeadlineHandler(IQueueStorage queueStorage,
-                                       string id,
-                                       ILogger logger,
+    public QueueMessageDeadlineHandler(IQueueStorage     queueStorage,
+                                       string            id,
+                                       ILogger           logger,
                                        CancellationToken cancellationToken = default)
     {
-      queueStorage_ = queueStorage;
-      id_ = id;
+      queueStorage_      = queueStorage;
+      id_                = id;
       cancellationToken_ = cancellationToken;
       heart_ = new Heart(async ct =>
                          {
@@ -53,6 +53,7 @@ namespace ArmoniK.Core.Storage
       {
         await heart_.Stop();
       }
+
       await queueStorage_.RenewLockAsync(id_, cancellationToken_);
       GC.SuppressFinalize(this);
     }

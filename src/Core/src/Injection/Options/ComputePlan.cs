@@ -15,6 +15,5 @@ namespace ArmoniK.Core.Injection.Options
     public GrpcChannel GrpcChannel { get; set; }
 
     public int MessageBatchSize { get; set; }
-
   }
 }

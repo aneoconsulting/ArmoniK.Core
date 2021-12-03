@@ -33,6 +33,7 @@ namespace ArmoniK.Core.Tests
 
       Assert.AreEqual(taskId, KeyValueStorage<TaskId, Lease>.KeyParser.ParseFrom(taskId.ToByteArray()));
     }
+
     [TestCase("suffix1")]
     [TestCase("suffix2")]
     [TestCase("abc")]
@@ -40,7 +41,8 @@ namespace ArmoniK.Core.Tests
     {
       var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
 
-      var lease = new Lease { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
+      var lease = new Lease
+        { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
 
       Assert.AreEqual(lease, KeyValueStorage<TaskId, Lease>.ValueParser.ParseFrom(lease.ToByteArray()));
     }
@@ -76,13 +78,14 @@ namespace ArmoniK.Core.Tests
     {
       var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
 
-      var lease = new Lease { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
+      var lease = new Lease
+        { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
 
       var objectStorageMock = new Moq.Mock<IObjectStorage>();
 
       Expression<Func<IObjectStorage, Task<byte[]>>> expression = storage
-                                                                    => storage.TryGetValuesAsync(It.IsAny<string>(),
-                                                                                             It.IsAny<CancellationToken>());
+        => storage.TryGetValuesAsync(It.IsAny<string>(),
+                                     It.IsAny<CancellationToken>());
 
       objectStorageMock.Setup(expression)
                        .ReturnsAsync(lease.ToByteArray());
@@ -102,14 +105,15 @@ namespace ArmoniK.Core.Tests
     {
       var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
 
-      var lease = new Lease { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
+      var lease = new Lease
+        { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
 
       var objectStorageMock = new Moq.Mock<IObjectStorage>();
 
       Expression<Func<IObjectStorage, Task>> expression = storage
-                                                                    => storage.AddOrUpdateAsync(It.IsAny<string>(),
-                                                                                                It.IsAny<byte[]>(),
-                                                                                             It.IsAny<CancellationToken>());
+        => storage.AddOrUpdateAsync(It.IsAny<string>(),
+                                    It.IsAny<byte[]>(),
+                                    It.IsAny<CancellationToken>());
 
       objectStorageMock.Setup(expression);
 
@@ -127,13 +131,14 @@ namespace ArmoniK.Core.Tests
     {
       var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
 
-      var lease = new Lease { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
+      var lease = new Lease
+        { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
 
       var objectStorageMock = new Moq.Mock<IObjectStorage>();
 
       Expression<Func<IObjectStorage, Task<bool>>> expression = storage
-                                                                    => storage.TryDeleteAsync(It.IsAny<string>(),
-                                                                                             It.IsAny<CancellationToken>());
+        => storage.TryDeleteAsync(It.IsAny<string>(),
+                                  It.IsAny<CancellationToken>());
 
       objectStorageMock.Setup(expression);
 

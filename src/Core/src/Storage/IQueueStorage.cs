@@ -20,7 +20,7 @@ namespace ArmoniK.Core.Storage
     TimeSpan LockRefreshExtension { get; }
 
     int MaxPriority { get; }
-      
+
     IAsyncEnumerable<QueueMessage> PullAsync(int nbMessages, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
@@ -29,12 +29,13 @@ namespace ArmoniK.Core.Storage
 
     Task UnlockAsync(string id, CancellationToken cancellationToken = default);
 
-    Task EnqueueMessagesAsync(IEnumerable<QueueMessage> messages, int priority = 1, CancellationToken cancellationToken = default);
+    Task EnqueueMessagesAsync(IEnumerable<QueueMessage> messages,
+                              int                       priority          = 1,
+                              CancellationToken         cancellationToken = default);
 
     Task RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default);
 
     //TODO: add support for DLQ
     //Task SendToDeadLetterQueue(QueueMessage message, CancellationToken cancellationToken = default);
-
   }
 }

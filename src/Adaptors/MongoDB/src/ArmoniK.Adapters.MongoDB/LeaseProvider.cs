@@ -29,7 +29,7 @@ namespace ArmoniK.Adapters.MongoDB
     private readonly SessionProvider                         sessionProvider_;
     private readonly ILogger<LeaseProvider>                  logger_;
 
-    public LeaseProvider(IOptions<Options.LeaseProvider> options,
+    public LeaseProvider(IOptions<Options.LeaseProvider>         options,
                          MongoCollectionProvider<LeaseDataModel> leaseCollectionProvider,
                          SessionProvider                         sessionProvider,
                          ILogger<LeaseProvider>                  logger)
@@ -75,11 +75,9 @@ namespace ArmoniK.Adapters.MongoDB
         logger_.LogInformation("Lease {leaseId} acquired for task {id}", leaseId, id);
         return new Lease { ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt), Id = id, LeaseId = leaseId };
       }
-      else
-      {
-        logger_.LogWarning("Could not acquire lease for task {id}", id);
-        return new Lease { Id = id, LeaseId = string.Empty, ExpirationDate = new Timestamp() };
-      }
+
+      logger_.LogWarning("Could not acquire lease for task {id}", id);
+      return new Lease { Id = id, LeaseId = string.Empty, ExpirationDate = new Timestamp() };
     }
 
     /// <inheritdoc />
@@ -94,12 +92,11 @@ namespace ArmoniK.Adapters.MongoDB
                                                                                DateTime.UtcNow + AcquisitionDuration);
 
       var res = await leaseCollection.FindOneAndUpdateAsync<LeaseDataModel>(await sessionProvider_.GetAsync(),
-                                                                            ldm => ldm.Key == key &&
-                                                                                   ldm.Lock == leaseId,
+                                                                            ldm => ldm.Key == key && ldm.Lock == leaseId,
                                                                             updateDefinition,
                                                                             new FindOneAndUpdateOptions<LeaseDataModel>
                                                                             {
-                                                                              ReturnDocument = ReturnDocument.After,
+                                                                              ReturnDocument = ReturnDocument.After
                                                                             },
                                                                             cancellationToken);
 
@@ -108,11 +105,9 @@ namespace ArmoniK.Adapters.MongoDB
         logger_.LogInformation("Lease {leaseId} renewed for task {id}", leaseId, id);
         return new Lease { Id = id, LeaseId = leaseId, ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt) };
       }
-      else
-      {
-        logger_.LogWarning("Could not renew lease {leaseId} for task {id}", leaseId, id);
-        return new Lease { Id = id, LeaseId = string.Empty, ExpirationDate = new Timestamp() };
-      }
+
+      logger_.LogWarning("Could not renew lease {leaseId} for task {id}", leaseId, id);
+      return new Lease { Id = id, LeaseId = string.Empty, ExpirationDate = new Timestamp() };
     }
 
     /// <inheritdoc />
@@ -124,8 +119,7 @@ namespace ArmoniK.Adapters.MongoDB
       var leaseCollection = await leaseCollectionProvider_.GetAsync();
 
       var res = await leaseCollection.FindOneAndDeleteAsync(await sessionProvider_.GetAsync(),
-                                                            ldm => ldm.Key == key &&
-                                                                   ldm.Lock == leaseId,
+                                                            ldm => ldm.Key == key && ldm.Lock == leaseId,
                                                             cancellationToken: cancellationToken);
       if (res is null)
         logger_.LogWarning("Could not release lease {leaseId} for task {id}", leaseId, id);

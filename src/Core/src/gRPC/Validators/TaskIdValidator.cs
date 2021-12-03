@@ -1,15 +1,16 @@
 ﻿using ArmoniK.Core.gRPC.V1;
+
 using FluentValidation;
 
 namespace ArmoniK.Core.gRPC.Validators
 {
-    public class TaskIdValidator : AbstractValidator<TaskId>
+  public class TaskIdValidator : AbstractValidator<TaskId>
+  {
+    public TaskIdValidator()
     {
-        public TaskIdValidator()
-        {
-            RuleFor(o => o.Session).NotNull();
-            RuleFor(o => o.SubSession).NotNull();
-            RuleFor(o => o.Task).NotNull();
-        }
+      RuleFor(o => o.Session).NotNull();
+      RuleFor(o => o.SubSession).NotNull();
+      RuleFor(o => o.Task).NotNull();
     }
+  }
 }

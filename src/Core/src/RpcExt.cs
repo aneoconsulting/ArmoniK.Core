@@ -18,12 +18,12 @@ namespace ArmoniK.Core
 {
   public static class RpcExt
   {
-
     [ItemNotNull]
     public static async Task<TMessage> WrapRpcException<TMessage>([NotNull] this AsyncUnaryCall<TMessage> asyncUnaryCall)
     {
       Contract.Requires<ArgumentNullException>(asyncUnaryCall is not null, nameof(asyncUnaryCall) + " != null");
-      Contract.Requires<ArgumentNullException>(asyncUnaryCall.ResponseAsync is not null, "asyncUnaryCall.ResponseAsync != null");
+      Contract.Requires<ArgumentNullException>(asyncUnaryCall.ResponseAsync is not null,
+                                               "asyncUnaryCall.ResponseAsync != null");
 
       try
       {
@@ -75,12 +75,10 @@ namespace ArmoniK.Core
       return asyncUnaryCall.ResponseAsync.Result!;
     }
 
-    public static bool IsValid(this Lease lease) 
+    public static bool IsValid(this Lease lease)
       => !string.IsNullOrEmpty(lease.LeaseId) && lease.ExpirationDate.CompareTo(Timestamp.FromDateTime(DateTime.UtcNow)) > 0;
 
     public static string ToPrintableId(this TaskId taskId)
       => $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
-
-
   }
 }

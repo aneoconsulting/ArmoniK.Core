@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using ArmoniK.Core;
 using ArmoniK.Core.Storage;
 
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -24,13 +23,13 @@ namespace ArmoniK.Adapters.MongoDB
   public class QueueStorage : IQueueStorage
   {
     private readonly MongoCollectionProvider<QueueMessageModel> queueCollectionProvider_;
-    private readonly SessionProvider                sessionProvider_;
-    private readonly ILogger<QueueStorage>               logger_;
-    private readonly string                              ownerId_ = Guid.NewGuid().ToString();
+    private readonly SessionProvider                            sessionProvider_;
+    private readonly ILogger<QueueStorage>                      logger_;
+    private readonly string                                     ownerId_ = Guid.NewGuid().ToString();
 
     public QueueStorage(MongoCollectionProvider<QueueMessageModel> queueCollectionProvider,
                         SessionProvider                            sessionProvider,
-                        IOptions<Options.QueueStorage>              options,
+                        IOptions<Options.QueueStorage>             options,
                         ILogger<QueueStorage>                      logger)
     {
       queueCollectionProvider_ = queueCollectionProvider;
@@ -59,8 +58,8 @@ namespace ArmoniK.Adapters.MongoDB
       [EnumeratorCancellation] CancellationToken cancellationToken = default
     )
     {
-      using var _                = logger_.LogFunction();
-      var       sessionHandle    = await sessionProvider_.GetAsync();
+      using var _               = logger_.LogFunction();
+      var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
       for (var messageIdx = 0; messageIdx < nbMessages; messageIdx++)
@@ -76,15 +75,18 @@ namespace ArmoniK.Adapters.MongoDB
                                               .Descending(qmm => qmm.Priority);
 
         var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(sessionHandle,
-                                                                                      qmdm => qmdm.OwnedUntil == default || qmdm.OwnedUntil < DateTime.UtcNow,
-                                                                                      updateDefinition,
-                                                                                      new FindOneAndUpdateOptions<QueueMessageModel>()
-                                                                                      {
-                                                                                        ReturnDocument = ReturnDocument.After,
-                                                                                        IsUpsert       = false,
-                                                                                        Sort           = sort,
-                                                                                      },
-                                                                                      cancellationToken);
+                                                                                     qmdm => qmdm.OwnedUntil == default ||
+                                                                                             qmdm.OwnedUntil <
+                                                                                             DateTime.UtcNow,
+                                                                                     updateDefinition,
+                                                                                     new FindOneAndUpdateOptions<
+                                                                                       QueueMessageModel>()
+                                                                                     {
+                                                                                       ReturnDocument = ReturnDocument.After,
+                                                                                       IsUpsert       = false,
+                                                                                       Sort           = sort,
+                                                                                     },
+                                                                                     cancellationToken);
 
         if (message is not null)
           yield return new QueueMessage(message.MessageId, message.TaskId);
@@ -96,78 +98,76 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-      using var _                = logger_.LogFunction();
-      var       sessionHandle    = await sessionProvider_.GetAsync();
+      using var _               = logger_.LogFunction();
+      var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
       await queueCollection.FindOneAndDeleteAsync(sessionHandle,
-                                                   qmm => qmm.MessageId == id && qmm.OwnerId == ownerId_,
-                                                   cancellationToken: cancellationToken);
+                                                  qmm => qmm.MessageId == id && qmm.OwnerId == ownerId_,
+                                                  cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<bool> RenewLockAsync(string id, CancellationToken cancellationToken = default)
     {
-      using var _                = logger_.LogFunction();
-      var       sessionHandle    = await sessionProvider_.GetAsync();
+      using var _               = logger_.LogFunction();
+      var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
       var updateDefinition = Builders<QueueMessageModel>.Update
                                                         .Set(qmdm => qmdm.OwnedUntil,
                                                              DateTime.UtcNow + LockRefreshExtension);
 
-      var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>
-                      (
-                       sessionHandle,
-                       qmdm => qmdm.MessageId == id &&
-                               qmdm.OwnerId == ownerId_,
-                       updateDefinition,
-                       new FindOneAndUpdateOptions<QueueMessageModel>()
-                       {
-                         ReturnDocument = ReturnDocument.After,
-                         IsUpsert       = false,
-                       },
-                       cancellationToken
-                      );
+      var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(
+        sessionHandle,
+        qmdm => qmdm.MessageId == id &&
+                qmdm.OwnerId == ownerId_,
+        updateDefinition,
+        new FindOneAndUpdateOptions<QueueMessageModel>()
+        {
+          ReturnDocument = ReturnDocument.After,
+          IsUpsert       = false,
+        },
+        cancellationToken
+      );
       return message is not null;
     }
 
     /// <inheritdoc />
     public async Task UnlockAsync(string id, CancellationToken cancellationToken = default)
     {
-      using var _                = logger_.LogFunction();
-      var       sessionHandle    = await sessionProvider_.GetAsync();
+      using var _               = logger_.LogFunction();
+      var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
       var updateDefinition = Builders<QueueMessageModel>.Update
                                                         .Set(qmdm => qmdm.OwnedUntil,
                                                              DateTime.UtcNow - LockRefreshExtension);
 
-      await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>
-        (
-         sessionHandle,
-         qmdm => qmdm.MessageId == id && qmdm.OwnerId == ownerId_,
-         updateDefinition,
-         new FindOneAndUpdateOptions<QueueMessageModel> { IsUpsert = false },
-         cancellationToken
-        );
+      await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(
+        sessionHandle,
+        qmdm => qmdm.MessageId == id && qmdm.OwnerId == ownerId_,
+        updateDefinition,
+        new FindOneAndUpdateOptions<QueueMessageModel> { IsUpsert = false },
+        cancellationToken
+      );
     }
 
     /// <inheritdoc />
     public async Task EnqueueMessagesAsync(IEnumerable<QueueMessage> messages,
-                                                         int                       priority          = 1,
-                                                         CancellationToken         cancellationToken = default)
+                                           int                       priority          = 1,
+                                           CancellationToken         cancellationToken = default)
     {
-      using var _                = logger_.LogFunction();
-      var       sessionHandle    = await sessionProvider_.GetAsync();
+      using var _               = logger_.LogFunction();
+      var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
       var qmms = messages.Select(message => new QueueMessageModel
-                                            {
-                                              TaskId         = message.TaskId,
-                                              Priority       = priority,
-                                              SubmissionDate = DateTime.UtcNow,
-                                            });
+      {
+        TaskId         = message.TaskId,
+        Priority       = priority,
+        SubmissionDate = DateTime.UtcNow,
+      });
 
       await queueCollection.InsertManyAsync(sessionHandle, qmms, cancellationToken: cancellationToken);
     }
@@ -175,22 +175,21 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default)
     {
-      using var _                = logger_.LogFunction();
-      var       sessionHandle    = await sessionProvider_.GetAsync();
+      using var _               = logger_.LogFunction();
+      var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
-      
-      var updateDefinition = Builders<QueueMessageModel>.Update
-                                                        .Unset(qmm=>qmm.OwnerId)
-                                                        .Unset(qmm=>qmm.OwnedUntil)
-                                                        .Set(qmm=>qmm.SubmissionDate, DateTime.UtcNow);
 
-      await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>
-        (
-         sessionHandle,
-         qmm => qmm.MessageId == message.MessageId,
-         updateDefinition,
-         cancellationToken: cancellationToken
-        );
+      var updateDefinition = Builders<QueueMessageModel>.Update
+                                                        .Unset(qmm => qmm.OwnerId)
+                                                        .Unset(qmm => qmm.OwnedUntil)
+                                                        .Set(qmm => qmm.SubmissionDate, DateTime.UtcNow);
+
+      await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(
+        sessionHandle,
+        qmm => qmm.MessageId == message.MessageId,
+        updateDefinition,
+        cancellationToken: cancellationToken
+      );
     }
   }
 }

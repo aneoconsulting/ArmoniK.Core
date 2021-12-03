@@ -37,6 +37,5 @@ namespace ArmoniK.Core.Injection
                  .AddValidator<TaskOptionsValidator>()
                  .AddValidator<TaskRequestValidator>()
                  .AddGrpcValidation();
-
   }
 }

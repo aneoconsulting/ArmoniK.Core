@@ -21,10 +21,10 @@ namespace ArmoniK.Compute.PollingAgent
     public static int Main(string[] args)
     {
       Log.Logger = new LoggerConfiguration()
-                  .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                  .Enrich.FromLogContext()
-                  .WriteTo.Console()
-                  .CreateBootstrapLogger();
+                   .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                   .Enrich.FromLogContext()
+                   .WriteTo.Console()
+                   .CreateBootstrapLogger();
 
       try
       {
@@ -41,34 +41,38 @@ namespace ArmoniK.Compute.PollingAgent
       {
         Log.CloseAndFlush();
       }
-
     }
 
     public static IHostBuilder CreateHostBuilder(string[] args)
     {
       var env = new HostingEnvironment()
       {
-          ContentRootPath = Directory.GetCurrentDirectory()
+        ContentRootPath = Directory.GetCurrentDirectory()
       };
       return Host.CreateDefaultBuilder(args)
                  .ConfigureHostConfiguration(builder => builder.SetBasePath(env.ContentRootPath)
-                                                               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                                                               .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                                                               .AddJsonFile(
+                                                                 "appsettings.json",
+                                                                 optional: true,
+                                                                 reloadOnChange: true)
+                                                               .AddJsonFile(
+                                                                 $"appsettings.{env.EnvironmentName}.json",
+                                                                 optional: true)
                                                                .AddEnvironmentVariables()
                                                                .AddCommandLine(args))
                  .UseSerilog((context, services, config) => config
-                                                           .ReadFrom.Configuration(context.Configuration)
-                                                           .ReadFrom.Services(services)
-                                                           .Enrich.FromLogContext())
+                                                            .ReadFrom.Configuration(context.Configuration)
+                                                            .ReadFrom.Services(services)
+                                                            .Enrich.FromLogContext())
                  .ConfigureServices((hostContext, services) =>
-                                    {
-                                      services.AddLogging()
-                                              .AddArmoniKCore(hostContext.Configuration)
-                                              .AddMongoComponents(hostContext.Configuration)
-                                              .AddHostedService<Worker>()
-                                              .AddSingleton<Pollster>()
-                                              .AddSingleton<ComputerService.ComputerServiceClient>();
-                                    });
+                 {
+                   services.AddLogging()
+                           .AddArmoniKCore(hostContext.Configuration)
+                           .AddMongoComponents(hostContext.Configuration)
+                           .AddHostedService<Worker>()
+                           .AddSingleton<Pollster>()
+                           .AddSingleton<ComputerService.ComputerServiceClient>();
+                 });
     }
   }
 }

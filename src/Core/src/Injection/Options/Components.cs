@@ -2,8 +2,7 @@
 
 namespace ArmoniK.Core.Injection.Options
 {
-  
-    [PublicAPI]
+  [PublicAPI]
   public class Components
   {
     public const string SettingSection = nameof(Components);
@@ -12,7 +11,5 @@ namespace ArmoniK.Core.Injection.Options
     public string QueueStorage { get; set; }
     public string LeaseProvider { get; set; }
     public string ObjectStorage { get; set; }
-  
   }
-
 }

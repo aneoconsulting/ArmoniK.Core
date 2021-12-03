@@ -45,19 +45,19 @@ namespace ArmoniK.Adapters.MongoDB
     public byte[] Payload { get; set; }
 
     public TaskData ToTaskData() => new()
-                                    {
-                                      Id = new TaskId
-                                           {
-                                             Session    = SessionId,
-                                             SubSession = SubSessionId,
-                                             Task       = TaskId,
-                                           },
-                                      HasPayload = HasPayload,
-                                      Payload    = new Payload{Data = ByteString.CopyFrom(Payload)},
-                                      Options    = Options,
-                                      Retries    = Retries,
-                                      Status     = Status,
-                                    };
+    {
+      Id = new TaskId
+      {
+        Session    = SessionId,
+        SubSession = SubSessionId,
+        Task       = TaskId,
+      },
+      HasPayload = HasPayload,
+      Payload    = new Payload { Data = ByteString.CopyFrom(Payload) },
+      Options    = Options,
+      Retries    = Retries,
+      Status     = Status,
+    };
 
     public TaskId GetTaskId() => new() { Session = SessionId, SubSession = SubSessionId, Task = TaskId };
 
@@ -76,11 +76,11 @@ namespace ArmoniK.Adapters.MongoDB
       var sessionStatusIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex, statusIndex);
 
       var indexModels = new CreateIndexModel<TaskDataModel>[]
-                        {
-                          new(sessionIndex, new CreateIndexOptions { Name       = nameof(sessionIndex) }),
-                          new(taskIdIndex, new CreateIndexOptions { Name        = nameof(taskIdIndex), Unique = true }),
-                          new(sessionStatusIndex, new CreateIndexOptions { Name = nameof(sessionStatusIndex) }),
-                        };
+      {
+        new(sessionIndex, new CreateIndexOptions { Name       = nameof(sessionIndex) }),
+        new(taskIdIndex, new CreateIndexOptions { Name        = nameof(taskIdIndex), Unique = true }),
+        new(sessionStatusIndex, new CreateIndexOptions { Name = nameof(sessionStatusIndex) }),
+      };
 
       return collection.Indexes.CreateManyAsync(sessionHandle, indexModels);
     }

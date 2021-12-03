@@ -15,11 +15,11 @@ using Grpc.Core;
 using Microsoft.Extensions.Options;
 
 using GrpcChannel = Grpc.Net.Client.GrpcChannel;
+
 using Grpc.Net.Client;
 
 namespace ArmoniK.Core.gRPC
 {
-
   public class GrpcChannelProvider : ProviderBase<ChannelBase>
   {
     public GrpcChannelProvider(IOptions<Injection.Options.GrpcChannel> options)
@@ -36,29 +36,31 @@ namespace ArmoniK.Core.gRPC
       var udsEndPoint = new UnixDomainSocketEndPoint(address);
 
       var socketsHttpHandler = new SocketsHttpHandler
-                               {
-                                 ConnectCallback = async (unknown, cancellationToken) =>
-                                                   {
-                                                     var socket = new Socket(AddressFamily.Unix, SocketType.Stream,
-                                                                             ProtocolType.Unspecified);
+      {
+        ConnectCallback = async (unknown, cancellationToken) =>
+        {
+          var socket = new Socket(AddressFamily.Unix,
+                                  SocketType.Stream,
+                                  ProtocolType.Unspecified);
 
-                                                     try
-                                                     {
-                                                       await socket.ConnectAsync(udsEndPoint, cancellationToken).ConfigureAwait(false);
-                                                       return new NetworkStream(socket, true);
-                                                     }
-                                                     catch
-                                                     {
-                                                       socket.Dispose();
-                                                       throw;
-                                                     }
-                                                   },
-                               };
+          try
+          {
+            await socket.ConnectAsync(udsEndPoint, cancellationToken).ConfigureAwait(false);
+            return new NetworkStream(socket, true);
+          }
+          catch
+          {
+            socket.Dispose();
+            throw;
+          }
+        },
+      };
 
-      return GrpcChannel.ForAddress("http://localhost", new GrpcChannelOptions
-                                                        {
-                                                          HttpHandler = socketsHttpHandler,
-                                                        });
+      return GrpcChannel.ForAddress("http://localhost",
+                                    new GrpcChannelOptions
+                                    {
+                                      HttpHandler = socketsHttpHandler,
+                                    });
     }
   }
 }

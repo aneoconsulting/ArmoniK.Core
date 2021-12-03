@@ -25,7 +25,7 @@ namespace ArmoniK.Core.Storage
 
     public LeaseHandler(ILeaseProvider    leaseProvider,
                         TaskId            taskId,
-                        ILogger logger,
+                        ILogger           logger,
                         CancellationToken cancellationToken = default)
     {
       leaseProvider_     = leaseProvider;
@@ -65,6 +65,7 @@ namespace ArmoniK.Core.Storage
       {
         await heart_.Stop();
       }
+
       await leaseProvider_.ReleaseLease(taskId_, leaseId_, cancellationToken_);
       GC.SuppressFinalize(this);
     }

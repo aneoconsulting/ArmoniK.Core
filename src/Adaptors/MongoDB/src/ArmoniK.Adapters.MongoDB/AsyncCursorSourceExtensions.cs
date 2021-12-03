@@ -9,8 +9,8 @@ namespace ArmoniK.Adapters.MongoDB
   public static class AsyncCursorSourceExtensions
   {
     public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(
-        this IAsyncCursorSource<T> asyncCursorSource) =>
-        new AsyncEnumerableAdapter<T>(asyncCursorSource);
+      this IAsyncCursorSource<T> asyncCursorSource) =>
+      new AsyncEnumerableAdapter<T>(asyncCursorSource);
 
     private class AsyncEnumerableAdapter<T> : IAsyncEnumerable<T>
     {
@@ -22,7 +22,7 @@ namespace ArmoniK.Adapters.MongoDB
       }
 
       public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
-          new AsyncEnumeratorAdapter<T>(asyncCursorSource_, cancellationToken);
+        new AsyncEnumeratorAdapter<T>(asyncCursorSource_, cancellationToken);
     }
 
     private class AsyncEnumeratorAdapter<T> : IAsyncEnumerator<T>
@@ -36,7 +36,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       public AsyncEnumeratorAdapter(IAsyncCursorSource<T> asyncCursorSource, CancellationToken cancellationToken = default)
       {
-        asyncCursorSource_     = asyncCursorSource;
+        asyncCursorSource_      = asyncCursorSource;
         this.cancellationToken_ = cancellationToken;
       }
 

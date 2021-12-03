@@ -11,6 +11,6 @@ namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
   public record QueueMessage(
-    string                MessageId,
-    TaskId                TaskId);
+    string MessageId,
+    TaskId TaskId);
 }

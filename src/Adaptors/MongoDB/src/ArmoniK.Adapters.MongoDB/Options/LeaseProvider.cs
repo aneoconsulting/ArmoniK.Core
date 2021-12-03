@@ -12,9 +12,9 @@ namespace ArmoniK.Adapters.MongoDB.Options
   [PublicAPI]
   public class LeaseProvider
   {
-    public const string SettingSection = nameof(MongoDB)+":"+nameof(LeaseProvider);
+    public const string SettingSection = nameof(MongoDB) + ":" + nameof(LeaseProvider);
 
-    public TimeSpan AcquisitionPeriod   { get; set; } = TimeSpan.FromMinutes(2);
+    public TimeSpan AcquisitionPeriod { get; set; } = TimeSpan.FromMinutes(2);
     public TimeSpan AcquisitionDuration { get; set; } = TimeSpan.FromMinutes(5);
   }
 }

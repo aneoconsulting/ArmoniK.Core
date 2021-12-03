@@ -33,14 +33,13 @@ namespace ArmoniK.Adapters.MongoDB
     public ObjectStorage(SessionProvider                          sessionProvider,
                          MongoCollectionProvider<ObjectDataModel> objectCollectionProvider,
                          ILogger<ObjectStorage>                   logger,
-                         IOptions<Options.ObjectStorage>           options)
+                         IOptions<Options.ObjectStorage>          options)
     {
       sessionProvider_          = sessionProvider;
       objectCollectionProvider_ = objectCollectionProvider;
       chunkSize_                = options.Value.ChunkSize;
       logger_                   = logger;
     }
-
 
 
     /// <inheritdoc />
@@ -64,18 +63,17 @@ namespace ArmoniK.Adapters.MongoDB
                                                         .SetOnInsert(odm => odm.Key, key)
                                                         .SetOnInsert(odm => odm.Id, $"{key}{idx}");
 
-        taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>
-                       (
-                        sessionHandle,
-                        odm => odm.Key == key && odm.ChunkIdx == idx,
-                        updateDefinition,
-                        new FindOneAndUpdateOptions<ObjectDataModel>()
-                        {
-                          ReturnDocument = ReturnDocument.After,
-                          IsUpsert       = true,
-                        },
-                        cancellationToken
-                       ));
+        taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>(
+                       sessionHandle,
+                       odm => odm.Key == key && odm.ChunkIdx == idx,
+                       updateDefinition,
+                       new FindOneAndUpdateOptions<ObjectDataModel>()
+                       {
+                         ReturnDocument = ReturnDocument.After,
+                         IsUpsert       = true,
+                       },
+                       cancellationToken
+                     ));
       }
 
       await Task.WhenAll(taskList);
@@ -84,7 +82,6 @@ namespace ArmoniK.Adapters.MongoDB
         logger_.LogError("Could not write value in DB for key {key}", key);
         throw new InvalidOperationException("Could not write value in DB");
       }
-
     }
 
     /// <inheritdoc />

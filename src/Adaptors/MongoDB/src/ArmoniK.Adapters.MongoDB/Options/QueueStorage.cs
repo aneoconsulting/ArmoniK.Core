@@ -12,7 +12,7 @@ namespace ArmoniK.Adapters.MongoDB.Options
   [PublicAPI]
   public class QueueStorage
   {
-    public const string SettingSection = nameof(MongoDB)+":"+nameof(QueueStorage);
+    public const string SettingSection = nameof(MongoDB) + ":" + nameof(QueueStorage);
 
     public TimeSpan LockRefreshPeriodicity { get; set; } = TimeSpan.FromMinutes(2);
 

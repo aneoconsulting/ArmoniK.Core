@@ -26,9 +26,13 @@ namespace ArmoniK.Compute.PollingAgent
 {
   public class Pollster
   {
-    private readonly ILogger<Pollster>                     logger_;
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "TODO: use this field")]
-    private readonly int                                   messageBatchSize_;
+    private readonly ILogger<Pollster> logger_;
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality",
+                                                     "IDE0052:Remove unread private members",
+                                                     Justification = "TODO: use this field")]
+    private readonly int messageBatchSize_;
+
     private readonly IQueueStorage                         queueStorage_;
     private readonly ITableStorage                         tableStorage_;
     private readonly ILeaseProvider                        leaseProvider_;
@@ -38,7 +42,7 @@ namespace ArmoniK.Compute.PollingAgent
 
     public Pollster(ILogger<Pollster>                     logger,
                     IOptions<ComputePlan>                 options,
-                                          IQueueStorage   queueStorage,
+                    IQueueStorage                         queueStorage,
                     ITableStorage                         tableStorage,
                     ILeaseProvider                        leaseProvider,
                     KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
@@ -52,10 +56,12 @@ namespace ArmoniK.Compute.PollingAgent
       leaseProvider_      = leaseProvider;
       taskResultStorage_  = taskResultStorage;
       taskPayloadStorage_ = taskPayloadStorage;
-      clientProvider_             = clientProvider;
+      clientProvider_     = clientProvider;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage",
+                                                     "CA2208:Instantiate argument exceptions correctly",
+                                                     Justification = "<Pending>")]
     public async Task MainLoop(CancellationToken cancellationToken)
     {
       logger_.LogInformation("Main loop started.");
@@ -75,6 +81,7 @@ namespace ArmoniK.Compute.PollingAgent
             await Task.Delay(queueStorage_.LockRefreshPeriodicity, cancellationToken);
           }
         }
+
         if (message is null)
         {
           logger_.LogInformation("No more message in queue, shutting the polling agent down");
@@ -92,12 +99,13 @@ namespace ArmoniK.Compute.PollingAgent
         /*
          * Acquire locks
          */
-        
+
         logger_.LogInformation("Start lease provider");
         var leaseProviderTask = leaseProvider_.GetLeaseHandler(message.TaskId, logger_, CancellationToken.None);
 
         logger_.LogInformation("Start queue deadline handler");
-        await using var queueDeadlineHandler = queueStorage_.GetDeadlineHandler(message.MessageId, logger_, CancellationToken.None);
+        await using var queueDeadlineHandler =
+          queueStorage_.GetDeadlineHandler(message.MessageId, logger_, CancellationToken.None);
 
         if (queueDeadlineHandler.MessageLockLost.IsCancellationRequested)
         {
@@ -116,7 +124,10 @@ namespace ArmoniK.Compute.PollingAgent
           continue;
         }
 
-        var combinesCTS = CancellationTokenSource.CreateLinkedTokenSource(queueDeadlineHandler.MessageLockLost, leaseHandler.LeaseExpired, cancellationToken);
+        var combinesCTS =
+          CancellationTokenSource.CreateLinkedTokenSource(queueDeadlineHandler.MessageLockLost,
+                                                          leaseHandler.LeaseExpired,
+                                                          cancellationToken);
 
         combinesCTS.Token.Register(() => logger_.LogWarning("CancellationToken has been triggered"));
 
@@ -128,19 +139,20 @@ namespace ArmoniK.Compute.PollingAgent
          *  - Task status is OK
          *  - Dependencies have been checked
          */
-        
+
         logger_.LogDebug("checking that the session is not cancelled");
         var isSessionCancelled = await tableStorage_.IsSessionCancelledAsync(new SessionId
                                                                              {
-                                                                               Session    = message.TaskId.Session, 
+                                                                               Session    = message.TaskId.Session,
                                                                                SubSession = message.TaskId.SubSession
                                                                              },
                                                                              combinesCTS.Token);
-        
+
         logger_.LogDebug("Loading task data");
         var taskData = await tableStorage_.ReadTaskAsync(message.TaskId, combinesCTS.Token);
 
-        if (isSessionCancelled && taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.WaitingForChildren))
+        if (isSessionCancelled &&
+            taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.WaitingForChildren))
         {
           logger_.LogInformation("Task is being cancelled");
           // cannot get lease: task is already running elsewhere
@@ -149,7 +161,7 @@ namespace ArmoniK.Compute.PollingAgent
           await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Canceled, cancellationToken);
           continue;
         }
-        
+
         logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
         if (taskData.Retries >= taskData.Options.MaxRetries)
         {
@@ -159,7 +171,7 @@ namespace ArmoniK.Compute.PollingAgent
           await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Failed, cancellationToken);
           continue;
         }
-        
+
         logger_.LogDebug("Handling the task status ({status})", taskData.Status);
         switch (taskData.Status)
         {
@@ -201,7 +213,7 @@ namespace ArmoniK.Compute.PollingAgent
             logger_.LogCritical("Task was in an unknown state {state}", taskData.Status);
             throw new ArgumentOutOfRangeException(nameof(taskData.Status));
         }
-        
+
         logger_.LogDebug("Changing task status to 'Dispatched'");
         var updateTask = tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Dispatched, combinesCTS.Token);
 
@@ -242,11 +254,11 @@ namespace ArmoniK.Compute.PollingAgent
       }
     }
 
-    private async Task PrefetchAndCompute(TaskData taskData,
+    private async Task PrefetchAndCompute(TaskData                    taskData,
                                           QueueMessageDeadlineHandler queueDeadlineHandler,
-                                          LeaseHandler leaseHandler,
-                                          CancellationTokenSource combinesCTS,
-                                          CancellationToken cancellationToken)
+                                          LeaseHandler                leaseHandler,
+                                          CancellationTokenSource     combinesCTS,
+                                          CancellationToken           cancellationToken)
     {
       using var _ = logger_.LogFunction();
       /*
@@ -256,8 +268,8 @@ namespace ArmoniK.Compute.PollingAgent
 
       logger_.LogInformation("Start retrieving payload");
       var payloadTask = taskData.HasPayload
-                          ? ValueTask.FromResult(taskData.Payload)
-                          : new ValueTask<Payload>(taskPayloadStorage_.TryGetValuesAsync(taskData.Id, combinesCTS.Token));
+        ? ValueTask.FromResult(taskData.Payload)
+        : new ValueTask<Payload>(taskPayloadStorage_.TryGetValuesAsync(taskData.Id, combinesCTS.Token));
 
       var payload = await payloadTask;
 
@@ -266,21 +278,24 @@ namespace ArmoniK.Compute.PollingAgent
       /*
          * Compute Task
          */
-      
+
       logger_.LogInformation("Increasing the retry counter");
       var increaseTask = tableStorage_.IncreaseRetryCounterAsync(taskData.Id, CancellationToken.None);
 
       var request = new ComputeRequest
-                    {
-                      Session    = taskData.Id.Session,
-                      Subsession = taskData.Id.SubSession,
-                      TaskId     = taskData.Id.Task,
-                      Payload    = payload.Data,
-                    };
+      {
+        Session    = taskData.Id.Session,
+        Subsession = taskData.Id.SubSession,
+        TaskId     = taskData.Id.Task,
+        Payload    = payload.Data,
+      };
 
       logger_.LogInformation("Send compute request to the worker");
 
-      var call = (await clientProvider_.GetAsync()).ExecuteAsync(request, deadline: DateTime.UtcNow + taskData.Options.MaxDuration.ToTimeSpan(), cancellationToken: CancellationToken.None); 
+      var call = (await clientProvider_.GetAsync()).ExecuteAsync(request,
+                                                                 deadline: DateTime.UtcNow +
+                                                                           taskData.Options.MaxDuration.ToTimeSpan(),
+                                                                 cancellationToken: CancellationToken.None);
 
       ComputeReply result;
       try

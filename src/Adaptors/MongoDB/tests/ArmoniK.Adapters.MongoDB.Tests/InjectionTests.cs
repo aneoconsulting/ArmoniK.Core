@@ -21,26 +21,26 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void SetUp()
     {
       Dictionary<string, string> baseConfig = new()
-                                              {
-                                                { "MongoDB:ConnectionString", "mongodb://localhost" },
-                                                { "MongoDB:DatabaseName", "database" },
-                                                { "MongoDB:DataRetention", "10.00:00:00" },
-                                                { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
-                                                { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
-                                                { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
-                                                { "MongoDB:ObjectStorage:ChunkSize", "100000" },
-                                                { "MongoDB:QueueStorage:LockRefreshPeriodicity", "00:20:00" },
-                                                { "MongoDB:QueueStorage:PollPeriodicity", "00:00:50" },
-                                                { "MongoDB:QueueStorage:LockRefreshExtension", "00:50:00" },
-                                              };
+      {
+        { "MongoDB:ConnectionString", "mongodb://localhost" },
+        { "MongoDB:DatabaseName", "database" },
+        { "MongoDB:DataRetention", "10.00:00:00" },
+        { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
+        { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
+        { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
+        { "MongoDB:ObjectStorage:ChunkSize", "100000" },
+        { "MongoDB:QueueStorage:LockRefreshPeriodicity", "00:20:00" },
+        { "MongoDB:QueueStorage:PollPeriodicity", "00:00:50" },
+        { "MongoDB:QueueStorage:LockRefreshExtension", "00:50:00" },
+      };
 
       var configSource = new MemoryConfigurationSource
-                         {
-                           InitialData = baseConfig,
-                         };
+      {
+        InitialData = baseConfig,
+      };
 
       var builder = new ConfigurationBuilder()
-       .Add(configSource);
+        .Add(configSource);
 
       configuration_ = builder.Build();
     }
@@ -65,7 +65,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var options = provider.GetRequiredService<IOptions<Options.MongoDB>>();
-      
+
       Assert.AreEqual("mongodb://localhost", options.Value.ConnectionString);
     }
 
@@ -91,7 +91,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
 
       Assert.AreEqual(TimeSpan.FromDays(10), options.Value.DataRetention);
     }
-    
+
     [Test]
     public void TableOptionsNotNull()
     {
@@ -112,10 +112,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var options = provider.GetRequiredService<IOptions<Options.TableStorage>>();
-      
+
       Assert.AreEqual(TimeSpan.FromSeconds(10), options.Value.PollingDelay);
     }
-    
+
     [Test]
     public void ObjectOptionsNotNull()
     {
@@ -136,10 +136,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var options = provider.GetRequiredService<IOptions<Options.ObjectStorage>>();
-      
+
       Assert.AreEqual(100000, options.Value.ChunkSize);
     }
-    
+
     [Test]
     public void QueueOptionsNotNull()
     {
@@ -160,7 +160,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var options = provider.GetRequiredService<IOptions<Options.QueueStorage>>();
-      
+
       Assert.AreEqual(TimeSpan.FromMinutes(50), options.Value.LockRefreshExtension);
     }
 
@@ -172,7 +172,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var options = provider.GetRequiredService<IOptions<Options.QueueStorage>>();
-      
+
       Assert.AreEqual(TimeSpan.FromSeconds(50), options.Value.PollPeriodicity);
     }
 
@@ -184,10 +184,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var options = provider.GetRequiredService<IOptions<Options.QueueStorage>>();
-      
+
       Assert.AreEqual(TimeSpan.FromMinutes(20), options.Value.LockRefreshPeriodicity);
     }
-    
+
     [Test]
     public void LeaseOptionsNotNull()
     {
@@ -208,7 +208,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var options = provider.GetRequiredService<IOptions<Options.LeaseProvider>>();
-      
+
       Assert.AreEqual(TimeSpan.FromMinutes(20), options.Value.AcquisitionPeriod);
     }
 
@@ -220,7 +220,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var options = provider.GetRequiredService<IOptions<Options.LeaseProvider>>();
-      
+
       Assert.AreEqual(TimeSpan.FromMinutes(50), options.Value.AcquisitionDuration);
     }
 
@@ -231,7 +231,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var _ = services.BuildServiceProvider(new ServiceProviderOptions{ ValidateOnBuild = true });
+      var _ = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
     }
 
     [Test]
@@ -241,7 +241,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions{ ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
 
       var table = provider.GetRequiredService<TableStorage>();
 
@@ -258,7 +258,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var table = provider.GetRequiredService<TableStorage>();
-      
+
       Assert.AreEqual(TimeSpan.FromSeconds(10), table.PollingDelay);
     }
 
@@ -269,7 +269,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions{ ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
 
       var objectStorage = provider.GetRequiredService<ObjectStorage>();
 
@@ -283,7 +283,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions{ ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
 
       var queue = provider.GetRequiredService<QueueStorage>();
 
@@ -297,11 +297,11 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions{ ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
 
       var queue = provider.GetRequiredService<QueueStorage>();
 
-      Assert.AreEqual(TimeSpan.FromMinutes(50),queue.LockRefreshExtension);
+      Assert.AreEqual(TimeSpan.FromMinutes(50), queue.LockRefreshExtension);
     }
 
     [Test]
@@ -311,11 +311,11 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions{ ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
 
       var queue = provider.GetRequiredService<QueueStorage>();
 
-      Assert.AreEqual(TimeSpan.FromSeconds(50),queue.PollPeriodicity);
+      Assert.AreEqual(TimeSpan.FromSeconds(50), queue.PollPeriodicity);
     }
 
     [Test]
@@ -325,11 +325,11 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions{ ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
 
       var queue = provider.GetRequiredService<QueueStorage>();
 
-      Assert.AreEqual(TimeSpan.FromMinutes(20),queue.LockRefreshPeriodicity);
+      Assert.AreEqual(TimeSpan.FromMinutes(20), queue.LockRefreshPeriodicity);
     }
 
     [Test]
@@ -339,7 +339,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions{ ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
 
       var table = provider.GetRequiredService<LeaseProvider>();
 
@@ -356,7 +356,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var leaseProvider = provider.GetRequiredService<LeaseProvider>();
-      
+
       Assert.AreEqual(TimeSpan.FromMinutes(20), leaseProvider.AcquisitionPeriod);
     }
 
@@ -370,7 +370,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var provider = services.BuildServiceProvider();
 
       var leaseProvider = provider.GetRequiredService<LeaseProvider>();
-      
+
       Assert.AreEqual(TimeSpan.FromMinutes(50), leaseProvider.AcquisitionDuration);
     }
 
@@ -378,9 +378,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ITableStorageHasBindingToTableStorage()
     {
       Dictionary<string, string> baseConfig = new()
-                                              {
-                                                { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
-                                              };
+      {
+        { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
+      };
       var configSource = new MemoryConfigurationSource { InitialData = baseConfig };
 
       var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
@@ -396,16 +396,16 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var table = provider.GetRequiredService<ITableStorage>();
 
       Assert.NotNull(table);
-      Assert.AreEqual(typeof(TableStorage),table.GetType());
+      Assert.AreEqual(typeof(TableStorage), table.GetType());
     }
 
     [Test]
     public void IQueueStorageHasBindingToQueueStorage()
     {
       Dictionary<string, string> baseConfig = new()
-                                              {
-                                                { "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.QueueStorage" },
-                                              };
+      {
+        { "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.QueueStorage" },
+      };
       var configSource = new MemoryConfigurationSource { InitialData = baseConfig };
 
       var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
@@ -421,16 +421,16 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var queueStorage = provider.GetRequiredService<IQueueStorage>();
 
       Assert.NotNull(queueStorage);
-      Assert.AreEqual(typeof(QueueStorage),queueStorage.GetType());
+      Assert.AreEqual(typeof(QueueStorage), queueStorage.GetType());
     }
 
     [Test]
     public void IObjectStorageHasBindingToObjectStorage()
     {
       Dictionary<string, string> baseConfig = new()
-                                              {
-                                                { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
-                                              };
+      {
+        { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
+      };
       var configSource = new MemoryConfigurationSource { InitialData = baseConfig };
 
       var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
@@ -446,16 +446,16 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var objectStorage = provider.GetRequiredService<IObjectStorage>();
 
       Assert.NotNull(objectStorage);
-      Assert.AreEqual(typeof(ObjectStorage),objectStorage.GetType());
+      Assert.AreEqual(typeof(ObjectStorage), objectStorage.GetType());
     }
 
     [Test]
     public void ILeaseProviderHasBindingToLeaseProvider()
     {
       Dictionary<string, string> baseConfig = new()
-                                              {
-                                                { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
-                                              };
+      {
+        { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
+      };
       var configSource = new MemoryConfigurationSource { InitialData = baseConfig };
 
       var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
@@ -471,9 +471,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var leaseProvider = provider.GetRequiredService<ILeaseProvider>();
 
       Assert.NotNull(leaseProvider);
-      Assert.AreEqual(typeof(LeaseProvider),leaseProvider.GetType());
+      Assert.AreEqual(typeof(LeaseProvider), leaseProvider.GetType());
     }
-
-
   }
 }

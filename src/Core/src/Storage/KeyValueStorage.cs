@@ -14,15 +14,15 @@ using JetBrains.Annotations;
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
-  public class KeyValueStorage<TKey, TValue> 
-    where TValue: IMessage<TValue>, new()
-    where TKey:IMessage<TKey>, new()
+  public class KeyValueStorage<TKey, TValue>
+    where TValue : IMessage<TValue>, new()
+    where TKey : IMessage<TKey>, new()
   {
     public static readonly MessageParser<TKey>   KeyParser   = new(() => new TKey());
     public static readonly MessageParser<TValue> ValueParser = new(() => new TValue());
     private readonly       IObjectStorage        objectStorage_;
     private readonly       string                keyPrefix_;
-    
+
     public KeyValueStorage(IObjectStorage objectStorage)
     {
       keyPrefix_     = $"{typeof(TKey).Name}{typeof(TValue)}";
@@ -42,8 +42,8 @@ namespace ArmoniK.Core.Storage
 
     public Task AddOrUpdateAsync(TKey key, TValue value, CancellationToken cancellationToken = default)
     {
-      var serializedKey    = SerializeKey(key);
-      var serializedValue  = value.ToByteArray();
+      var serializedKey   = SerializeKey(key);
+      var serializedValue = value.ToByteArray();
       return objectStorage_.AddOrUpdateAsync(serializedKey, serializedValue, cancellationToken);
     }
 
@@ -56,9 +56,8 @@ namespace ArmoniK.Core.Storage
 
     public Task<bool> TryDeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-      var serializedKey    = SerializeKey(key);
+      var serializedKey = SerializeKey(key);
       return objectStorage_.TryDeleteAsync(serializedKey, cancellationToken);
     }
-    
   }
 }

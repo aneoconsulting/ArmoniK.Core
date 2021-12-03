@@ -20,7 +20,7 @@ namespace ArmoniK.Adapters.MongoDB
     public string Lock { get; set; }
 
     [BsonElement]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc,DateOnly = false)]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc, DateOnly = false)]
     public DateTime ExpiresAt { get; set; }
 
     /// <inheritdoc />
@@ -36,10 +36,10 @@ namespace ArmoniK.Adapters.MongoDB
       var wholeIndex = Builders<LeaseDataModel>.IndexKeys.Combine(keyIndex, lockIndex);
 
       var indexModels = new CreateIndexModel<LeaseDataModel>[]
-                        {
-                          new(keyIndex, new CreateIndexOptions { Name   = nameof(keyIndex), Unique   = true }),
-                          new(wholeIndex, new CreateIndexOptions { Name = nameof(wholeIndex), Unique = true }),
-                        };
+      {
+        new(keyIndex, new CreateIndexOptions { Name   = nameof(keyIndex), Unique   = true }),
+        new(wholeIndex, new CreateIndexOptions { Name = nameof(wholeIndex), Unique = true }),
+      };
 
       return collection.Indexes.CreateManyAsync(sessionHandle, indexModels);
     }

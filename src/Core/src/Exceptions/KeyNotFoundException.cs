@@ -25,5 +25,5 @@ namespace ArmoniK.Core.Exceptions
     protected KeyNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
     {
     }
-  }  
+  }
 }

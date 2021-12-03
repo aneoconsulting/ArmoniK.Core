@@ -12,7 +12,7 @@ namespace ArmoniK.Adapters.MongoDB.Options
   [PublicAPI]
   public class TableStorage
   {
-    public const string SettingSection = nameof(MongoDB)+":"+nameof(TableStorage);
+    public const string SettingSection = nameof(MongoDB) + ":" + nameof(TableStorage);
 
     public TimeSpan PollingDelay { get; set; } = TimeSpan.FromSeconds(5);
   }

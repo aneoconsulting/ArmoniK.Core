@@ -30,7 +30,7 @@ namespace ArmoniK.Adapters.MongoDB
     public List<ParentId> ParentsId { get; set; }
 
     [BsonElement]
-    public bool IsClosed{ get; set; }
+    public bool IsClosed { get; set; }
 
     [BsonElement]
     public bool IsCancelled { get; set; }
@@ -52,11 +52,11 @@ namespace ArmoniK.Adapters.MongoDB
       var sessionParentIndex     = Builders<SessionDataModel>.IndexKeys.Combine(sessionIndex, parentsIndex);
 
       var indexModels = new CreateIndexModel<SessionDataModel>[]
-                        {
-                          new(sessionIndex, new CreateIndexOptions { Name           = nameof(sessionIndex) }),
-                          new(sessionSubSessionIndex, new CreateIndexOptions { Name = nameof(sessionSubSessionIndex), Unique = true }),
-                          new(sessionParentIndex, new CreateIndexOptions { Name     = nameof(sessionParentIndex) }),
-                        };
+      {
+        new(sessionIndex, new CreateIndexOptions { Name           = nameof(sessionIndex) }),
+        new(sessionSubSessionIndex, new CreateIndexOptions { Name = nameof(sessionSubSessionIndex), Unique = true }),
+        new(sessionParentIndex, new CreateIndexOptions { Name     = nameof(sessionParentIndex) }),
+      };
 
       return collection.Indexes.CreateManyAsync(sessionHandle, indexModels);
     }

@@ -10,7 +10,7 @@ namespace ArmoniK.Adapters.MongoDB.Options
   [PublicAPI]
   public class ObjectStorage
   {
-    public const string SettingSection = nameof(MongoDB)+":"+nameof(ObjectStorage);
+    public const string SettingSection = nameof(MongoDB) + ":" + nameof(ObjectStorage);
 
     public int ChunkSize { get; set; } = 14500000;
   }

@@ -15,7 +15,7 @@ namespace ArmoniK.Adapters.MongoDB
 {
   public class QueueMessageModel : IMongoDataModel<QueueMessageModel>
   {
-    [BsonId(IdGenerator = typeof( StringCombGuidGenerator))]
+    [BsonId(IdGenerator = typeof(StringCombGuidGenerator))]
     public string MessageId { get; set; }
 
     [BsonElement]
@@ -31,7 +31,7 @@ namespace ArmoniK.Adapters.MongoDB
     public int Priority { get; set; }
 
     [BsonElement]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc,DateOnly = false)]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc, DateOnly = false)]
     public DateTime OwnedUntil { get; set; }
 
     /// <inheritdoc />
@@ -52,14 +52,13 @@ namespace ArmoniK.Adapters.MongoDB
 
 
       var indexModels = new CreateIndexModel<QueueMessageModel>[]
-                        {
-                          new(pullIndex, new CreateIndexOptions { Name      = nameof(pullIndex) }),
-                          new(lockedIndex, new CreateIndexOptions { Name    = nameof(lockedIndex), Unique    = true }),
-                          new(messageIdIndex, new CreateIndexOptions { Name = nameof(messageIdIndex), Unique = true }),
-                        };
+      {
+        new(pullIndex, new CreateIndexOptions { Name      = nameof(pullIndex) }),
+        new(lockedIndex, new CreateIndexOptions { Name    = nameof(lockedIndex), Unique    = true }),
+        new(messageIdIndex, new CreateIndexOptions { Name = nameof(messageIdIndex), Unique = true }),
+      };
 
       return collection.Indexes.CreateManyAsync(sessionHandle, indexModels);
     }
-
   }
 }

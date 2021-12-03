@@ -28,12 +28,12 @@ namespace ArmoniK.Control.Services
                          IQueueStorage                         queueStorage,
                          KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
                          KeyValueStorage<TaskId, Payload>      taskPayloadStorage,
-                         ILogger<ClientService> logger)
+                         ILogger<ClientService>                logger)
     {
       tableStorage_       = tableStorage;
       taskResultStorage_  = taskResultStorage;
       taskPayloadStorage_ = taskPayloadStorage;
-      logger_        = logger;
+      logger_             = logger;
       queueStorage_       = queueStorage;
     }
 
@@ -44,14 +44,15 @@ namespace ArmoniK.Control.Services
       {
         await tableStorage_.CancelSessionAsync(request, context.CancellationToken);
       }
-      catch(KeyNotFoundException e)
+      catch (KeyNotFoundException e)
       {
         throw new RpcException(new Status(StatusCode.FailedPrecondition, e.Message));
       }
-      catch(Exception e)
+      catch (Exception e)
       {
         throw new RpcException(new Status(StatusCode.Unknown, e.Message));
       }
+
       return new Empty();
     }
 
@@ -70,6 +71,7 @@ namespace ArmoniK.Control.Services
       {
         throw new RpcException(new Status(StatusCode.Unknown, e.Message));
       }
+
       return new();
     }
 
@@ -88,6 +90,7 @@ namespace ArmoniK.Control.Services
       {
         throw new RpcException(new Status(StatusCode.Unknown, e.Message));
       }
+
       return new();
     }
 
@@ -109,20 +112,22 @@ namespace ArmoniK.Control.Services
         }
 
         var (tid, isPayloadStored) = await tableStorage_.InitializeTaskCreation(taskRequest.SessionId,
-                                                             options,
-                                                             taskRequest.Payload,
-                                                             context.CancellationToken);
+                                                                                options,
+                                                                                taskRequest.Payload,
+                                                                                context.CancellationToken);
 
         var payloadTask = isPayloadStored
-                            ? ValueTask.CompletedTask
-                            : new ValueTask(taskPayloadStorage_.AddOrUpdateAsync(tid, taskRequest.Payload, context.CancellationToken));
+          ? ValueTask.CompletedTask
+          : new ValueTask(taskPayloadStorage_.AddOrUpdateAsync(tid, taskRequest.Payload, context.CancellationToken));
 
         var message = new QueueMessage("", tid);
-        await queueStorage_.EnqueueAsync(message, options.Priority, context.CancellationToken); //TODO: use IEnumerable version
+        await queueStorage_.EnqueueAsync(message,
+                                         options.Priority,
+                                         context.CancellationToken); //TODO: use IEnumerable version
 
         await payloadTask;
 
-          await tableStorage_.FinalizeTaskCreation(tid, context.CancellationToken);
+        await tableStorage_.FinalizeTaskCreation(tid, context.CancellationToken);
 
         return tid;
       }).ToList();
@@ -141,61 +146,77 @@ namespace ArmoniK.Control.Services
       return new Count { Value = count };
     }
 
-    public override async Task ListTask(TaskFilter request, IServerStreamWriter<TaskId> responseStream, ServerCallContext context)
+    public override async Task ListTask(TaskFilter                  request,
+                                        IServerStreamWriter<TaskId> responseStream,
+                                        ServerCallContext           context)
     {
       logger_.LogFunction();
-      await foreach(var taskId in tableStorage_.ListTasksAsync(request, context.CancellationToken).WithCancellation(context.CancellationToken))
+      await foreach (var taskId in tableStorage_.ListTasksAsync(request, context.CancellationToken)
+                                                .WithCancellation(context.CancellationToken))
       {
         await responseStream.WriteAsync(taskId);
       }
     }
 
-    public override async Task TryGetResult(TaskFilter request, IServerStreamWriter<SinglePayloadReply> responseStream, ServerCallContext context)
+    public override async Task TryGetResult(TaskFilter                              request,
+                                            IServerStreamWriter<SinglePayloadReply> responseStream,
+                                            ServerCallContext                       context)
     {
       logger_.LogFunction();
-      await foreach(var taskId in tableStorage_.ListTasksAsync(request, context.CancellationToken).WithCancellation(context.CancellationToken))
+      await foreach (var taskId in tableStorage_.ListTasksAsync(request, context.CancellationToken)
+                                                .WithCancellation(context.CancellationToken))
       {
         var result = await taskResultStorage_.TryGetValuesAsync(taskId, context.CancellationToken);
-        var reply = new SinglePayloadReply { TaskId = taskId, Data = new Payload { Data = result.Result } };
+        var reply  = new SinglePayloadReply { TaskId = taskId, Data = new Payload { Data = result.Result } };
         await responseStream.WriteAsync(reply);
       }
     }
 
     public override async Task<Empty> WaitForCompletion(TaskFilter request, ServerCallContext context)
     {
-        logger_.LogFunction();
-        if (!request.ExcludedTaskIds.Any() &&
-            !request.IncludedTaskIds.Any() &&
-            string.IsNullOrEmpty(request.SubSessionId) &&
-            !await tableStorage_.IsSessionClosedAsync(new SessionId
-            {
-                Session = request.SessionId,
-                SubSession = request.SubSessionId
-            }, context.CancellationToken))
+      logger_.LogFunction();
+      if (!request.ExcludedTaskIds.Any() &&
+          !request.IncludedTaskIds.Any() &&
+          string.IsNullOrEmpty(request.SubSessionId) &&
+          !await tableStorage_.IsSessionClosedAsync(new SessionId
+                                                    {
+                                                      Session    = request.SessionId,
+                                                      SubSession = request.SubSessionId
+                                                    },
+                                                    context.CancellationToken))
+      {
+        throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                          "Session must be closed before witing for its completion"));
+      }
+
+      // TODO: optimize by filtering based on the task statuses
+      // TODO: optimize by filtering based on the number of retries
+      var taskIds = tableStorage_.ListTasksAsync(request, context.CancellationToken);
+      await foreach (var taskId in taskIds)
+      {
+        bool completed;
+        do
         {
-            throw new RpcException(new Status(StatusCode.FailedPrecondition, "Session must be closed before witing for its completion"));
-        }
-        // TODO: optimize by filtering based on the task statuses
-        // TODO: optimize by filtering based on the number of retries
-        var taskIds = tableStorage_.ListTasksAsync(request, context.CancellationToken);
-        await foreach (var taskId in taskIds)
-        {
-            bool completed;
-            do
-            {
-                var tdata = await tableStorage_.ReadTaskAsync(taskId, context.CancellationToken);
-                logger_.LogInformation("Task {id} has status {status}, retry : {retry}, max {max}", taskId, tdata.Status, tdata.Retries, tdata.Options.MaxRetries);
-                completed = tdata.Status == TaskStatus.Completed ||
-                            tdata.Status == TaskStatus.Canceled;
-                if (!completed)
-                {
-                    logger_.LogInformation("Task {id} is not completed. Will wait", taskId);
-                    await Task.Delay(tableStorage_.PollingDelay);
-                }
-            } while (!completed);
-            logger_.LogInformation("Task {id} has been completed", taskId);
-        }
-        return new Empty(); ;
+          var tdata = await tableStorage_.ReadTaskAsync(taskId, context.CancellationToken);
+          logger_.LogInformation("Task {id} has status {status}, retry : {retry}, max {max}",
+                                 taskId,
+                                 tdata.Status,
+                                 tdata.Retries,
+                                 tdata.Options.MaxRetries);
+          completed = tdata.Status == TaskStatus.Completed ||
+                      tdata.Status == TaskStatus.Canceled;
+          if (!completed)
+          {
+            logger_.LogInformation("Task {id} is not completed. Will wait", taskId);
+            await Task.Delay(tableStorage_.PollingDelay);
+          }
+        } while (!completed);
+
+        logger_.LogInformation("Task {id} has been completed", taskId);
+      }
+
+      return new Empty();
+      ;
     }
   }
 }

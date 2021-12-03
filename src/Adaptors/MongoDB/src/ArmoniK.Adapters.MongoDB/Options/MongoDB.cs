@@ -15,7 +15,7 @@ namespace ArmoniK.Adapters.MongoDB.Options
     public const string SettingSection = nameof(MongoDB);
 
     public string ConnectionString { get; set; }
-    
+
     public string DatabaseName { get; set; } = "ArmoniK";
 
     public TimeSpan DataRetention { get; set; } = TimeSpan.FromDays(15);

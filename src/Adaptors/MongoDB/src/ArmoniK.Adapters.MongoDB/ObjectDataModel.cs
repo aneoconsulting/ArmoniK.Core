@@ -40,11 +40,11 @@ namespace ArmoniK.Adapters.MongoDB
 
 
       var indexModels = new CreateIndexModel<ObjectDataModel>[]
-                        {
-                          new(iDIndex, new CreateIndexOptions { Name       = nameof(iDIndex), Unique = true }),
-                          new(keyIndex, new CreateIndexOptions { Name      = nameof(keyIndex) }),
-                          new(combinedIndex, new CreateIndexOptions { Name = nameof(combinedIndex), Unique = true }),
-                        };
+      {
+        new(iDIndex, new CreateIndexOptions { Name       = nameof(iDIndex), Unique = true }),
+        new(keyIndex, new CreateIndexOptions { Name      = nameof(keyIndex) }),
+        new(combinedIndex, new CreateIndexOptions { Name = nameof(combinedIndex), Unique = true }),
+      };
 
       return collection.Indexes.CreateManyAsync(sessionHandle, indexModels);
     }

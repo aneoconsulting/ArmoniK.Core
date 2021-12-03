@@ -17,7 +17,7 @@ namespace ArmoniK.Core
   public static class LoggerExt
   {
     public static IDisposable BeginNamedScope(this ILogger                        logger,
-                                              string                              name, 
+                                              string                              name,
                                               params ValueTuple<string, object>[] properties)
     {
       var dictionary = properties.ToDictionary(p => p.Item1, p => p.Item2);
@@ -32,7 +32,7 @@ namespace ArmoniK.Core
       return logger.BeginScope(dictionary);
     }
 
-    public static IDisposable LogFunction(this ILogger              logger, 
+    public static IDisposable LogFunction(this ILogger              logger,
                                           LogLevel                  level        = LogLevel.Debug,
                                           [CallerMemberName] string functionName = "")
     {
@@ -43,6 +43,5 @@ namespace ArmoniK.Core
 
       return Disposable.Create(() => logger.Log(level, "Leaving {className}.{functionName}", className, functionName));
     }
-
   }
 }

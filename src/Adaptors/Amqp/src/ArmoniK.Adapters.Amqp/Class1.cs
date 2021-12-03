@@ -8,10 +8,10 @@ namespace ArmoniK.Adapters.Amqp
   {
     public class Amqp
     {
-      public string   Address                { get; set; }
-      public int   MaxPriority            { get; set; }
+      public string Address { get; set; }
+      public int MaxPriority { get; set; }
       public TimeSpan LockRefreshPeriodicity { get; set; }
-      public TimeSpan LockRefreshExtension   { get; set; }
+      public TimeSpan LockRefreshExtension { get; set; }
     }
   }
 
@@ -90,7 +90,7 @@ namespace ArmoniK.Adapters.Amqp
   //        nbPulledMessage++;
   //        messages_[message.Properties.MessageId] = (message, receiver);
   //        yield return new QueueMessage(message.Properties.MessageId, taskId);
-          
+
   //        break;
   //      }
 
@@ -103,7 +103,7 @@ namespace ArmoniK.Adapters.Amqp
   //  {
   //    var (message, receiver) = messages_[id];
   //    receiver.Release(message);
-      
+
   //  }
 
   //  /// <inheritdoc />
@@ -120,5 +120,4 @@ namespace ArmoniK.Adapters.Amqp
   //  /// <inheritdoc />
   //  public async Task<string> RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default) => TODO_IMPLEMENT_ME;
   //}
-
 }
