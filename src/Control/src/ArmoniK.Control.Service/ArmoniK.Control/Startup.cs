@@ -10,6 +10,7 @@ using Calzolari.Grpc.AspNetCore.Validation;
 using Microsoft.Extensions.Configuration;
 using ArmoniK.Core.gRPC.Validators;
 using ArmoniK.Core.Injection;
+using Serilog;
 
 namespace ArmoniK.Control
 {
@@ -45,6 +46,8 @@ namespace ArmoniK.Control
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseSerilogRequestLogging();
 
             app.UseRouting();
 

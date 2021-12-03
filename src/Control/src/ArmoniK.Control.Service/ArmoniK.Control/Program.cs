@@ -42,6 +42,7 @@ namespace ArmoniK.Control
                 .UseSerilog((context, services, configuration) => configuration
                                                                  .ReadFrom.Configuration(context.Configuration)
                                                                  .ReadFrom.Services(services)
+                                                                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                                                                  .Enrich.FromLogContext())
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
