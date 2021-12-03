@@ -4,6 +4,7 @@
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -35,9 +36,12 @@ namespace ArmoniK.Core
                                           LogLevel                  level        = LogLevel.Debug,
                                           [CallerMemberName] string functionName = "")
     {
-      logger.Log(level, "Entering {functionName}", functionName);
+      var methodInfo = new StackTrace().GetFrame(1)?.GetMethod();
+      var className  = methodInfo?.ReflectedType?.Name;
 
-      return Disposable.Create(() => logger.Log(level, "Leaving {functionName}", functionName));
+      logger.Log(level, "Entering {className}.{functionName}", className, functionName);
+
+      return Disposable.Create(() => logger.Log(level, "Leaving {className}.{functionName}", className, functionName));
     }
 
   }
