@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Utils;
 
+using Microsoft.Extensions.Logging;
+
 namespace ArmoniK.Core.Storage
 {
   public class LeaseHandler : IAsyncDisposable
@@ -19,19 +21,23 @@ namespace ArmoniK.Core.Storage
     private readonly CancellationToken cancellationToken_;
     private          Heart             heart_;
     private          string            leaseId_;
+    private readonly ILogger           logger_;
 
     public LeaseHandler(ILeaseProvider    leaseProvider,
                         TaskId            taskId,
-                        CancellationToken cancellationToken)
+                        ILogger logger,
+                        CancellationToken cancellationToken = default)
     {
       leaseProvider_     = leaseProvider;
       taskId_            = taskId;
       cancellationToken_ = cancellationToken;
+      logger_            = logger;
     }
 
     public async Task Start()
     {
-      var lease         = await leaseProvider_.TryAcquireLease(taskId_, cancellationToken_);
+      using var _     = logger_.LogFunction();
+      var       lease = await leaseProvider_.TryAcquireLease(taskId_, cancellationToken_);
       leaseId_ = lease.LeaseId;
       heart_ = new Heart(async ct =>
                          {
@@ -54,6 +60,7 @@ namespace ArmoniK.Core.Storage
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+      using var _ = logger_.LogFunction();
       if (!heart_.HeartStopped.IsCancellationRequested)
       {
         await heart_.Stop();

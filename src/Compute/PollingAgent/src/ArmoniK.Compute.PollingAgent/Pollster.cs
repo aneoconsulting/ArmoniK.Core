@@ -94,7 +94,7 @@ namespace ArmoniK.Compute.PollingAgent
          */
         
         logger_.LogInformation("Start lease provider");
-        var leaseProviderTask = leaseProvider_.GetLeaseHandler(message.TaskId, CancellationToken.None);
+        var leaseProviderTask = leaseProvider_.GetLeaseHandler(message.TaskId, logger_, CancellationToken.None);
 
         logger_.LogInformation("Start queue deadline handler");
         await using var queueDeadlineHandler = queueStorage_.GetDeadlineHandler(message.MessageId, logger_, CancellationToken.None);
