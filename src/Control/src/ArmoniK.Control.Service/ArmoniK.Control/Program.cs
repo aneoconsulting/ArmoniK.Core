@@ -43,7 +43,7 @@ namespace ArmoniK.Control
                                                             .ReadFrom.Configuration(context.Configuration)
                                                             .ReadFrom.Services(services)
                                                             .MinimumLevel
-                                                            .Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                                                            .Override("Microsoft.AspNetCore", LogEventLevel.Debug)
                                                             .Enrich.FromLogContext())
           .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
   }
