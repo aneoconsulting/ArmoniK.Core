@@ -32,11 +32,7 @@ namespace ArmoniK.Core.Storage
       queueStorage_      = queueStorage;
       id_                = id;
       cancellationToken_ = cancellationToken;
-      heart_ = new Heart(async ct =>
-                         {
-                           var modified = await queueStorage_.RenewLockAsync(id_, ct);
-                           return !modified;
-                         },
+      heart_ = new Heart(async ct => await queueStorage_.RenewLockAsync(id_, ct),
                          queueStorage_.LockRefreshPeriodicity,
                          cancellationToken_);
       heart_.Start();
