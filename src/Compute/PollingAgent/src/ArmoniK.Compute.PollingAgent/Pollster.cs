@@ -129,7 +129,9 @@ namespace ArmoniK.Compute.PollingAgent
                                                           leaseHandler.LeaseExpired,
                                                           cancellationToken);
 
-        combinesCTS.Token.Register(() => logger_.LogWarning("CancellationToken has been triggered"));
+        queueDeadlineHandler.MessageLockLost.Register(() => logger_.LogWarning("queueDeadlineHandler: message has been lost"));
+        leaseHandler.LeaseExpired.Register(() => logger_.LogWarning("leaseHandler: lease has expired"));
+        cancellationToken.Register(() => logger_.LogWarning("CancellationToken has been triggered"));
 
         /*
          * Check preconditions:

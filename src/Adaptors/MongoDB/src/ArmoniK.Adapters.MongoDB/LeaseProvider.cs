@@ -97,7 +97,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                                             new FindOneAndUpdateOptions<LeaseDataModel>
                                                                             {
                                                                               ReturnDocument = ReturnDocument.After,
-                                                                              IsUpsert = true,
+                                                                              MaxTime = TimeSpan.FromSeconds(1),
                                                                             },
                                                                             cancellationToken);
       logger_.LogDebug("Obtained LeaseResult {res}", res);
