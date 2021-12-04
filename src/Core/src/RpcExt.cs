@@ -21,10 +21,6 @@ namespace ArmoniK.Core
     [ItemNotNull]
     public static async Task<TMessage> WrapRpcException<TMessage>([NotNull] this AsyncUnaryCall<TMessage> asyncUnaryCall)
     {
-      Contract.Requires<ArgumentNullException>(asyncUnaryCall is not null, nameof(asyncUnaryCall) + " != null");
-      Contract.Requires<ArgumentNullException>(asyncUnaryCall.ResponseAsync is not null,
-                                               "asyncUnaryCall.ResponseAsync != null");
-
       try
       {
         await asyncUnaryCall;
