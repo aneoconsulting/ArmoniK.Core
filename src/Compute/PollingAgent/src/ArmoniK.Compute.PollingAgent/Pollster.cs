@@ -293,12 +293,14 @@ namespace ArmoniK.Compute.PollingAgent
         Payload    = payload.Data,
       };
 
-      logger_.LogInformation("Send compute request to the worker");
+      logger_.LogDebug("Get client connection to the worker");
+      var client = await clientProvider_.GetAsync();
 
-      var call = (await clientProvider_.GetAsync()).ExecuteAsync(request,
-                                                                 deadline: DateTime.UtcNow +
-                                                                           taskData.Options.MaxDuration.ToTimeSpan(),
-                                                                 cancellationToken: CancellationToken.None);
+      logger_.LogInformation("Send compute request to the worker");
+      var call = client.ExecuteAsync(request,
+                                     deadline: DateTime.UtcNow +
+                                               taskData.Options.MaxDuration.ToTimeSpan(),
+                                     cancellationToken: CancellationToken.None);
 
       ComputeReply result;
       try
