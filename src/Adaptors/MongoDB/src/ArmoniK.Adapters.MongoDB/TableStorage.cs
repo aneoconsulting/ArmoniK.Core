@@ -130,7 +130,7 @@ namespace ArmoniK.Adapters.MongoDB
             var t = await sessionCollection.AsQueryable(sessionHandle)
                                            .Where(x => x.SessionId == sessionOptions.ParentSession.Session &&
                                                        x.SubSessionId == sessionOptions.ParentSession.SubSession)
-                                           .SingleAsync(cancellationToken);
+                                           .FirstAsync(cancellationToken);
             parents = t.ParentsId;
             parents.Add(new SessionDataModel.ParentId() { Id = sessionOptions.ParentSession.SubSession });
           }
@@ -266,10 +266,8 @@ namespace ArmoniK.Adapters.MongoDB
 
       var session = await sessionCollection.AsQueryable(sessionHandle)
                                            .Where(x => x.SessionId == sessionId.Session &&
-                                                       x.SubSessionId == (sessionId.SubSession ?? "") &&
-                                                       string.IsNullOrEmpty(sessionId.SubSession) ||
-                                                       "" == x.SubSessionId)
-                                           .SingleAsync(cancellationToken);
+                                                       x.SubSessionId == sessionId.SubSession)
+                                           .FirstAsync(cancellationToken);
 
       return session.IsCancelled;
     }
@@ -280,20 +278,10 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-      SessionDataModel session;
-      if (string.IsNullOrEmpty(sessionId.SubSession) || sessionId.SubSession == "")
-      {
-        session = await sessionCollection.AsQueryable(sessionHandle)
-                                         .Where(x => x.SessionId == sessionId.Session)
-                                         .SingleAsync(cancellationToken);
-      }
-      else
-      {
-        session = await sessionCollection.AsQueryable(sessionHandle)
-                                         .Where(x => x.SessionId == sessionId.Session &&
-                                                     x.SubSessionId == sessionId.SubSession)
-                                         .SingleAsync(cancellationToken);
-      }
+      var session = await sessionCollection.AsQueryable(sessionHandle)
+                                           .Where(x => x.SessionId == sessionId.Session &&
+                                                       x.SubSessionId == sessionId.SubSession)
+                                           .FirstAsync(cancellationToken);
 
       return session.IsClosed;
     }
