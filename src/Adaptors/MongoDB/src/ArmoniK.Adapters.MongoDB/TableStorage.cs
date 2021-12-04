@@ -304,8 +304,9 @@ namespace ArmoniK.Adapters.MongoDB
       var output = taskCollection.FilterQueryAsync(sessionHandle, filter)
                                  .Select(x => new TaskId
                                  {
-                                   Session = x.SessionId, SubSession = x.SubSessionId,
-                                   Task    = x.TaskId
+                                   Session    = x.SessionId,
+                                   SubSession = x.SubSessionId,
+                                   Task       = x.TaskId,
                                  })
                                  .ToAsyncEnumerable();
 

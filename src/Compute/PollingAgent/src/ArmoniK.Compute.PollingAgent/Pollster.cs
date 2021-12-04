@@ -129,7 +129,8 @@ namespace ArmoniK.Compute.PollingAgent
                                                           leaseHandler.LeaseExpired,
                                                           cancellationToken);
 
-        queueDeadlineHandler.MessageLockLost.Register(() => logger_.LogWarning("queueDeadlineHandler: message has been lost"));
+        queueDeadlineHandler.MessageLockLost.Register(
+          () => logger_.LogWarning("queueDeadlineHandler: message has been lost"));
         leaseHandler.LeaseExpired.Register(() => logger_.LogWarning("leaseHandler: lease has expired"));
         cancellationToken.Register(() => logger_.LogWarning("CancellationToken has been triggered"));
 
@@ -146,7 +147,7 @@ namespace ArmoniK.Compute.PollingAgent
         var isSessionCancelled = await tableStorage_.IsSessionCancelledAsync(new SessionId
                                                                              {
                                                                                Session    = message.TaskId.Session,
-                                                                               SubSession = message.TaskId.SubSession
+                                                                               SubSession = message.TaskId.SubSession,
                                                                              },
                                                                              combinesCTS.Token);
 
