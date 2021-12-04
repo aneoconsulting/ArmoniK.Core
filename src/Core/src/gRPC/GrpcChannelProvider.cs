@@ -18,21 +18,29 @@ using GrpcChannel = Grpc.Net.Client.GrpcChannel;
 
 using Grpc.Net.Client;
 
+using Microsoft.Extensions.Logging;
+
 namespace ArmoniK.Core.gRPC
 {
   public class GrpcChannelProvider : ProviderBase<ChannelBase>
   {
-    public GrpcChannelProvider(IOptions<Injection.Options.GrpcChannel> options)
+    public GrpcChannelProvider(IOptions<Injection.Options.GrpcChannel> options, ILogger<GrpcChannelProvider> logger)
       : base(options.Value.SocketType == GrpcSocketType.Web
-               ? () => Task.FromResult(BuildWebGrpcChannel(options.Value.Address))
-               : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Value.Address)))
+               ? () => Task.FromResult(BuildWebGrpcChannel(options.Value.Address, logger))
+               : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Value.Address, logger)))
     {
     }
 
-    private static ChannelBase BuildWebGrpcChannel(string address) => GrpcChannel.ForAddress(address);
-
-    private static ChannelBase BuildUnixSocketGrpcChannel(string address)
+    private static ChannelBase BuildWebGrpcChannel(string address, ILogger logger)
     {
+      using var _ = logger.LogFunction();
+      return GrpcChannel.ForAddress(address);
+    }
+
+    private static ChannelBase BuildUnixSocketGrpcChannel(string address, ILogger logger)
+    {
+      using var _ = logger.LogFunction();
+
       var udsEndPoint = new UnixDomainSocketEndPoint(address);
 
       var socketsHttpHandler = new SocketsHttpHandler
