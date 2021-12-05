@@ -105,6 +105,8 @@ namespace ArmoniK.Compute.PollingAgent
           continue;
         }
 
+        var dependencyCheckTask = taskData.Options.Dependencies.AsParallel().Select(tid => IsDependencyCompleted(tid, combinedCTS.Token)).ToList();
+
         logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
         if (taskData.Retries >= taskData.Options.MaxRetries)
         {
@@ -156,23 +158,6 @@ namespace ArmoniK.Compute.PollingAgent
         logger_.LogDebug("Changing task status to 'Dispatched'");
         var updateTask = tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Dispatched, combinedCTS.Token);
 
-        // TODO: optimize the approach to reduce the number of requests
-        async Task<bool> IsDependencyCompleted(TaskId tid)
-        {
-          logger_.LogDebug("Checking status for dependency with taskId {tid}", tid.ToPrintableId());
-          var tData = await tableStorage_.ReadTaskAsync(tid, combinedCTS.Token);
-          if (tData.Status != TaskStatus.Completed) return false;
-
-          foreach (var dependency in tData.Options.Dependencies)
-          {
-            if (!await IsDependencyCompleted(dependency)) return false;
-          }
-
-          return true;
-        }
-
-        var dependencyCheckTask = taskData.Options.Dependencies.AsParallel().Select(IsDependencyCompleted).ToList();
-
         await Task.WhenAll(dependencyCheckTask);
 
         if (!dependencyCheckTask.All(task => task.Result))
@@ -189,6 +174,33 @@ namespace ArmoniK.Compute.PollingAgent
 
         await PrefetchAndCompute(taskData, message.CancellationToken, cancellationToken);
       }
+    }
+
+    private Task<bool> IsDependencyCompleted(TaskId tid, CancellationToken cancellationToken)
+    {
+      var signal = new [] { false };
+      return IsDependencyCompleted(tid, signal, cancellationToken);
+    }
+
+    private async Task<bool> IsDependencyCompleted(TaskId tid, bool[] signal, CancellationToken cancellationToken)
+    {
+      if (signal[0]) return false;
+
+      logger_.LogDebug("Checking status for dependency with taskId {tid}", tid.ToPrintableId());
+      var tData = await tableStorage_.ReadTaskAsync(tid, cancellationToken);
+
+      if (tData.Status != TaskStatus.Completed)
+      {
+        signal[0] = true;
+        return false;
+      }
+
+      return await tData.Options.Dependencies.AsParallel()
+                        .Select(dependency => IsDependencyCompleted(dependency,
+                                                                    signal,
+                                                                    cancellationToken))
+                        .ToAsyncEnumerable()
+                        .AllAwaitAsync(async b => await b, cancellationToken);
     }
 
     private async Task PrefetchAndCompute(TaskData          taskData,
