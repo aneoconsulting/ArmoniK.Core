@@ -20,17 +20,17 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Adapters.MongoDB
 {
-  public class QueueStorage : IQueueStorage
+  public class LockedQueueStorage : ILockedQueueStorage
   {
     private readonly MongoCollectionProvider<QueueMessageModel> queueCollectionProvider_;
     private readonly SessionProvider                            sessionProvider_;
-    private readonly ILogger<QueueStorage>                      logger_;
+    private readonly ILogger<LockedQueueStorage>                      logger_;
     private readonly string                                     ownerId_ = Guid.NewGuid().ToString();
 
-    public QueueStorage(MongoCollectionProvider<QueueMessageModel> queueCollectionProvider,
+    public LockedQueueStorage(MongoCollectionProvider<QueueMessageModel> queueCollectionProvider,
                         SessionProvider                            sessionProvider,
                         IOptions<Options.QueueStorage>             options,
-                        ILogger<QueueStorage>                      logger)
+                        ILogger<LockedQueueStorage>                      logger)
     {
       queueCollectionProvider_ = queueCollectionProvider;
       sessionProvider_         = sessionProvider;

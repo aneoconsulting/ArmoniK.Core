@@ -22,10 +22,10 @@ namespace ArmoniK.Control.Services
     private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
     private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
     private readonly ILogger<ClientService>                logger_;
-    private readonly IQueueStorage                         queueStorage_;
+    private readonly ILockedQueueStorage                         lockedQueueStorage_;
 
     public ClientService(ITableStorage                         tableStorage,
-                         IQueueStorage                         queueStorage,
+                         ILockedQueueStorage                         lockedQueueStorage,
                          KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
                          KeyValueStorage<TaskId, Payload>      taskPayloadStorage,
                          ILogger<ClientService>                logger)
@@ -34,7 +34,7 @@ namespace ArmoniK.Control.Services
       taskResultStorage_  = taskResultStorage;
       taskPayloadStorage_ = taskPayloadStorage;
       logger_             = logger;
-      queueStorage_       = queueStorage;
+      lockedQueueStorage_       = lockedQueueStorage;
     }
 
     public override async Task<Empty> CancelSession(SessionId request, ServerCallContext context)
@@ -121,7 +121,7 @@ namespace ArmoniK.Control.Services
           : new ValueTask(taskPayloadStorage_.AddOrUpdateAsync(tid, taskRequest.Payload, context.CancellationToken));
 
         var message = new QueueMessage("", tid);
-        await queueStorage_.EnqueueAsync(message,
+        await lockedQueueStorage_.EnqueueAsync(message,
                                          options.Priority,
                                          context.CancellationToken); //TODO: use IEnumerable version
 

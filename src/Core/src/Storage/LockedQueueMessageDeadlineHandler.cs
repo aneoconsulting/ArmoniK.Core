@@ -16,24 +16,24 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
-  public class QueueMessageDeadlineHandler : IAsyncDisposable
+  public class LockedQueueMessageDeadlineHandler : IAsyncDisposable
   {
-    private readonly IQueueStorage     queueStorage_;
+    private readonly ILockedQueueStorage     lockedQueueStorage_;
     private readonly string            id_;
     private readonly CancellationToken cancellationToken_;
     private readonly Heart             heart_;
     private readonly ILogger           logger_;
 
-    public QueueMessageDeadlineHandler(IQueueStorage     queueStorage,
+    public LockedQueueMessageDeadlineHandler(ILockedQueueStorage     lockedQueueStorage,
                                        string            id,
                                        ILogger           logger,
                                        CancellationToken cancellationToken = default)
     {
-      queueStorage_      = queueStorage;
+      lockedQueueStorage_      = lockedQueueStorage;
       id_                = id;
       cancellationToken_ = cancellationToken;
-      heart_ = new Heart(async ct => await queueStorage_.RenewLockAsync(id_, ct),
-                         queueStorage_.LockRefreshPeriodicity,
+      heart_ = new Heart(async ct => await lockedQueueStorage_.RenewLockAsync(id_, ct),
+                         lockedQueueStorage_.LockRefreshPeriodicity,
                          cancellationToken_);
       heart_.Start();
       logger_ = logger;
@@ -44,13 +44,13 @@ namespace ArmoniK.Core.Storage
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-      using var _ = logger_.LogFunction(functionName: $"{nameof(QueueMessageDeadlineHandler)}.{nameof(DisposeAsync)}");
+      using var _ = logger_.LogFunction(functionName: $"{nameof(LockedQueueMessageDeadlineHandler)}.{nameof(DisposeAsync)}");
       if (!heart_.HeartStopped.IsCancellationRequested)
       {
         await heart_.Stop();
       }
 
-      await queueStorage_.RenewLockAsync(id_, cancellationToken_);
+      await lockedQueueStorage_.RenewLockAsync(id_, cancellationToken_);
       GC.SuppressFinalize(this);
     }
   }

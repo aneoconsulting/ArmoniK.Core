@@ -52,15 +52,15 @@ namespace ArmoniK.Adapters.MongoDB
                        .AddTransient<ObjectStorage>()
                        .AddTransient<KeyValueStorage<TaskId, ComputeReply>>()
                        .AddTransient<KeyValueStorage<TaskId, Payload>>()
-                       .AddTransient<QueueStorage>();
+                       .AddTransient<LockedQueueStorage>();
 
       var components = configuration.GetSection(Components.SettingSection);
 
       if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
         serviceCollection.AddTransient<ITableStorage, TableStorage>();
 
-      if (components["QueueStorage"] == "ArmoniK.Adapters.MongoDB.QueueStorage")
-        serviceCollection.AddTransient<IQueueStorage, QueueStorage>();
+      if (components["LockedQueueStorage"] == "ArmoniK.Adapters.MongoDB.LockedQueueStorage")
+        serviceCollection.AddTransient<ILockedQueueStorage, LockedQueueStorage>();
 
       if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
         serviceCollection.AddTransient<IObjectStorage, ObjectStorage>();

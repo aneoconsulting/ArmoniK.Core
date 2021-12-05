@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Exceptions;
@@ -14,7 +13,7 @@ using JetBrains.Annotations;
 using TaskCanceledException = ArmoniK.Core.Exceptions.TaskCanceledException;
 using TimeoutException = ArmoniK.Core.Exceptions.TimeoutException;
 
-namespace ArmoniK.Core
+namespace ArmoniK.Core.gRPC
 {
   public static class RpcExt
   {

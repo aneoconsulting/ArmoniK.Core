@@ -13,7 +13,7 @@ using JetBrains.Annotations;
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
-  public interface IQueueStorage
+  public interface ILockedQueueStorage
   {
     TimeSpan LockRefreshPeriodicity { get; }
 

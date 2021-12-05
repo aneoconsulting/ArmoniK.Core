@@ -33,7 +33,7 @@ namespace ArmoniK.Compute.PollingAgent
                                                      Justification = "TODO: use this field")]
     private readonly int messageBatchSize_;
 
-    private readonly IQueueStorage                         queueStorage_;
+    private readonly ILockedQueueStorage                         lockedQueueStorage_;
     private readonly ITableStorage                         tableStorage_;
     private readonly ILeaseProvider                        leaseProvider_;
     private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
@@ -42,7 +42,7 @@ namespace ArmoniK.Compute.PollingAgent
 
     public Pollster(ILogger<Pollster>                     logger,
                     IOptions<ComputePlan>                 options,
-                    IQueueStorage                         queueStorage,
+                    ILockedQueueStorage                         lockedQueueStorage,
                     ITableStorage                         tableStorage,
                     ILeaseProvider                        leaseProvider,
                     KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
@@ -51,7 +51,7 @@ namespace ArmoniK.Compute.PollingAgent
     {
       logger_             = logger;
       messageBatchSize_   = options.Value.MessageBatchSize;
-      queueStorage_       = queueStorage;
+      lockedQueueStorage_       = lockedQueueStorage;
       tableStorage_       = tableStorage;
       leaseProvider_      = leaseProvider;
       taskResultStorage_  = taskResultStorage;
@@ -73,12 +73,12 @@ namespace ArmoniK.Compute.PollingAgent
           try
           {
             logger_.LogInformation("Trying to fetch messages");
-            message = await queueStorage_.PullAsync(1, cancellationToken).SingleAsync(cancellationToken);
+            message = await lockedQueueStorage_.PullAsync(1, cancellationToken).SingleAsync(cancellationToken);
             break;
           }
           catch (Exception)
           {
-            await Task.Delay(queueStorage_.LockRefreshPeriodicity, cancellationToken);
+            await Task.Delay(lockedQueueStorage_.LockRefreshPeriodicity, cancellationToken);
           }
         }
 
@@ -105,7 +105,7 @@ namespace ArmoniK.Compute.PollingAgent
 
         logger_.LogInformation("Start queue deadline handler");
         await using var queueDeadlineHandler =
-          queueStorage_.GetDeadlineHandler(message.MessageId, logger_, CancellationToken.None);
+          lockedQueueStorage_.GetDeadlineHandler(message.MessageId, logger_, CancellationToken.None);
 
         if (queueDeadlineHandler.MessageLockLost.IsCancellationRequested)
         {
@@ -119,7 +119,7 @@ namespace ArmoniK.Compute.PollingAgent
         {
           logger_.LogWarning("Cannot refresh lease for task");
           // cannot get lease: task is already running elsewhere
-          await queueStorage_.DeleteAsync(message.MessageId, CancellationToken.None);
+          await lockedQueueStorage_.DeleteAsync(message.MessageId, CancellationToken.None);
           await queueDeadlineHandler.DisposeAsync();
           continue;
         }
@@ -130,7 +130,7 @@ namespace ArmoniK.Compute.PollingAgent
                                                           cancellationToken);
 
         queueDeadlineHandler.MessageLockLost.Register(
-          () => logger_.LogWarning("queueDeadlineHandler: message has been lost"));
+          () => logger_.LogWarning("lockedQueueDeadlineHandler: message has been lost"));
         leaseHandler.LeaseExpired.Register(() => logger_.LogWarning("leaseHandler: lease has expired"));
         cancellationToken.Register(() => logger_.LogWarning("CancellationToken has been triggered"));
 
@@ -159,7 +159,7 @@ namespace ArmoniK.Compute.PollingAgent
         {
           logger_.LogInformation("Task is being cancelled");
           // cannot get lease: task is already running elsewhere
-          await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+          await lockedQueueStorage_.DeleteAsync(message.MessageId, cancellationToken);
           await queueDeadlineHandler.DisposeAsync();
           await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Canceled, cancellationToken);
           continue;
@@ -169,7 +169,7 @@ namespace ArmoniK.Compute.PollingAgent
         if (taskData.Retries >= taskData.Options.MaxRetries)
         {
           logger_.LogInformation("Task has been retried too many times");
-          await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+          await lockedQueueStorage_.DeleteAsync(message.MessageId, cancellationToken);
           await queueDeadlineHandler.DisposeAsync();
           await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Failed, cancellationToken);
           continue;
@@ -180,13 +180,13 @@ namespace ArmoniK.Compute.PollingAgent
         {
           case TaskStatus.Canceling:
             logger_.LogInformation("Task is being cancelled");
-            await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+            await lockedQueueStorage_.DeleteAsync(message.MessageId, cancellationToken);
             await queueDeadlineHandler.DisposeAsync();
             await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Canceled, cancellationToken);
             continue;
           case TaskStatus.Completed:
             logger_.LogInformation("Task was already completed");
-            await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+            await lockedQueueStorage_.DeleteAsync(message.MessageId, cancellationToken);
             await queueDeadlineHandler.DisposeAsync();
             continue;
           case TaskStatus.Creating:
@@ -203,7 +203,7 @@ namespace ArmoniK.Compute.PollingAgent
             break;
           case TaskStatus.Canceled:
             logger_.LogInformation("Task has been cancelled");
-            await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+            await lockedQueueStorage_.DeleteAsync(message.MessageId, cancellationToken);
             await queueDeadlineHandler.DisposeAsync();
             continue;
           case TaskStatus.Processing:
@@ -242,8 +242,8 @@ namespace ArmoniK.Compute.PollingAgent
         if (!dependencyCheckTask.All(task => task.Result))
         {
           logger_.LogInformation("Dependencies are not complete yet.");
-          await queueStorage_.RequeueMessage(message, cancellationToken);
-          await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+          await lockedQueueStorage_.RequeueMessage(message, cancellationToken);
+          await lockedQueueStorage_.DeleteAsync(message.MessageId, cancellationToken);
           await queueDeadlineHandler.DisposeAsync();
           await updateTask;
           continue;
@@ -258,7 +258,7 @@ namespace ArmoniK.Compute.PollingAgent
     }
 
     private async Task PrefetchAndCompute(TaskData                    taskData,
-                                          QueueMessageDeadlineHandler queueDeadlineHandler,
+                                          LockedQueueMessageDeadlineHandler lockedQueueDeadlineHandler,
                                           LeaseHandler                leaseHandler,
                                           CancellationTokenSource     combinesCTS,
                                           CancellationToken           cancellationToken)
@@ -321,7 +321,7 @@ namespace ArmoniK.Compute.PollingAgent
       {
         var details = string.Empty;
 
-        if (queueDeadlineHandler.MessageLockLost.IsCancellationRequested) details += "Lock was lost on queueMessage. ";
+        if (lockedQueueDeadlineHandler.MessageLockLost.IsCancellationRequested) details += "Lock was lost on queueMessage. ";
         if (leaseHandler.LeaseExpired.IsCancellationRequested) details            += "Lease was lost on the task. ";
         if (cancellationToken.IsCancellationRequested) details                    += "Root token was cancelled. ";
 

@@ -14,7 +14,7 @@ namespace ArmoniK.Adapters.Amqp
   }
 
 
-  //public class QueueStorage : IQueueStorage, IDisposable
+  //public class QueueStorage : ILockedQueueStorage, IDisposable
   //{
   //  private readonly ILogger<QueueStorage>                                               logger_;
   //  private readonly AsyncLazy<AmqpNetLite.ISenderLink>[]                                senders_;

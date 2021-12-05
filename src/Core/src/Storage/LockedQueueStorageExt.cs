@@ -13,18 +13,18 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
-  public static class QueueStorageExt
+  public static class LockedQueueStorageExt
   {
-    public static Task EnqueueAsync(this IQueueStorage queueStorage,
+    public static Task EnqueueAsync(this ILockedQueueStorage lockedQueueStorage,
                                     QueueMessage       message,
                                     int                priority,
                                     CancellationToken  cancellationToken = default)
-      => queueStorage.EnqueueMessagesAsync(new[] { message }, priority, cancellationToken);
+      => lockedQueueStorage.EnqueueMessagesAsync(new[] { message }, priority, cancellationToken);
 
-    public static QueueMessageDeadlineHandler GetDeadlineHandler(this IQueueStorage queueStorage,
+    public static LockedQueueMessageDeadlineHandler GetDeadlineHandler(this ILockedQueueStorage lockedQueueStorage,
                                                                  string             messageId,
                                                                  ILogger            logger,
                                                                  CancellationToken  cancellationToken = default)
-      => new(queueStorage, messageId, logger, cancellationToken);
+      => new(lockedQueueStorage, messageId, logger, cancellationToken);
   }
 }

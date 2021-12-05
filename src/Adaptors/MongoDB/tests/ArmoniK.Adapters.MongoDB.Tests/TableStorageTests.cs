@@ -33,9 +33,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
         { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
         { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
         { "MongoDB:ObjectStorage:ChunkSize", "100000" },
-        { "MongoDB:QueueStorage:LockRefreshPeriodicity", "00:20:00" },
-        { "MongoDB:QueueStorage:PollPeriodicity", "00:00:50" },
-        { "MongoDB:QueueStorage:LockRefreshExtension", "00:50:00" },
+        { "MongoDB:LockedQueueStorage:LockRefreshPeriodicity", "00:20:00" },
+        { "MongoDB:LockedQueueStorage:PollPeriodicity", "00:00:50" },
+        { "MongoDB:LockedQueueStorage:LockRefreshExtension", "00:50:00" },
       };
 
       var configSource = new MemoryConfigurationSource
