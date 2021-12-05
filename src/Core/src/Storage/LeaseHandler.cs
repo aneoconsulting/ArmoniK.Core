@@ -38,7 +38,7 @@ namespace ArmoniK.Core.Storage
     public async Task Start()
     {
       using var _     = logger_.LogFunction();
-      var       lease = await leaseProvider_.TryAcquireLease(taskId_, cancellationToken_);
+      var       lease = await leaseProvider_.TryAcquireLeaseAsync(taskId_, cancellationToken_);
       leaseId_ = lease.LeaseId;
       heart_ = new Heart(async ct =>
                          {

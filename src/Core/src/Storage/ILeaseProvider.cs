@@ -23,7 +23,7 @@ namespace ArmoniK.Core.Storage
     /// <param name="id">The Id of the task to process.</param>
     /// <param name="cancellationToken">Cancellation token for the request</param>
     /// <returns>The lease to be used for renewal or an empty leaseId and past expiration in case of failure</returns>
-    Task<Lease> TryAcquireLease(TaskId id, CancellationToken cancellationToken = default);
+    Task<Lease> TryAcquireLeaseAsync(TaskId id, CancellationToken cancellationToken = default);
 
     Task<Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default);
 

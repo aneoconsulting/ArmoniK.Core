@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core;
+using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -48,6 +49,9 @@ namespace ArmoniK.Adapters.MongoDB
 
     /// <inheritdoc />
     public TimeSpan LockRefreshExtension { get; }
+
+    /// <inheritdoc />
+    public bool AreMessagesUnique => true;
 
     /// <inheritdoc />
     public int MaxPriority => int.MaxValue;
@@ -89,7 +93,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                                                      cancellationToken);
 
         if (message is not null)
-          yield return new QueueMessage(message.MessageId, message.TaskId);
+          yield return new QueueMessage(message.MessageId, message.TaskId, CancellationToken.None);
         else
           await Task.Delay(PollPeriodicity, cancellationToken);
       }
@@ -154,7 +158,7 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
     /// <inheritdoc />
-    public async Task EnqueueMessagesAsync(IEnumerable<QueueMessage> messages,
+    public async Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
                                            int                       priority          = 1,
                                            CancellationToken         cancellationToken = default)
     {
@@ -164,7 +168,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       var qmms = messages.Select(message => new QueueMessageModel
       {
-        TaskId         = message.TaskId,
+        TaskId         = message,
         Priority       = priority,
         SubmissionDate = DateTime.UtcNow,
       });
@@ -173,7 +177,7 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
     /// <inheritdoc />
-    public async Task RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default)
+    public async Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default)
     {
       using var _               = logger_.LogFunction();
       var       sessionHandle   = await sessionProvider_.GetAsync();
@@ -186,7 +190,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(
         sessionHandle,
-        qmm => qmm.MessageId == message.MessageId,
+        qmm => qmm.MessageId ==id,
         updateDefinition,
         cancellationToken: cancellationToken
       );

@@ -14,10 +14,10 @@ namespace ArmoniK.Core.Storage
 {
   public static class LeaseProviderExt
   {
-    public static async Task<LeaseHandler> GetLeaseHandler(this ILeaseProvider leaseProvider,
-                                                           TaskId              taskId,
-                                                           ILogger             logger,
-                                                           CancellationToken   cancellationToken = default)
+    public static async Task<LeaseHandler> GetLeaseHandlerAsync(this ILeaseProvider leaseProvider,
+                                                                TaskId              taskId,
+                                                                ILogger             logger,
+                                                                CancellationToken   cancellationToken = default)
     {
       var output = new LeaseHandler(leaseProvider, taskId, logger, cancellationToken);
       await output.Start();

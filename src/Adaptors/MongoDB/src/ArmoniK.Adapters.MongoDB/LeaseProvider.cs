@@ -49,7 +49,7 @@ namespace ArmoniK.Adapters.MongoDB
     public TimeSpan AcquisitionDuration { get; }
 
     /// <inheritdoc />
-    public async Task<Lease> TryAcquireLease(TaskId id, CancellationToken cancellationToken = default)
+    public async Task<Lease> TryAcquireLeaseAsync(TaskId id, CancellationToken cancellationToken = default)
     {
       var _ = logger_.LogFunction();
       logger_.LogDebug("Trying to acquire lease for task {id}", id);

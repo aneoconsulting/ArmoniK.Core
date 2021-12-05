@@ -116,6 +116,6 @@ namespace ArmoniK.Adapters.Amqp
   //                                                       CancellationToken cancellationToken = default) => TODO_IMPLEMENT_ME;
 
   //  /// <inheritdoc />
-  //  public async Task<string> RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default) => TODO_IMPLEMENT_ME;
+  //  public async Task<string> RequeueMessageAsync(QueueMessage message, CancellationToken cancellationToken = default) => TODO_IMPLEMENT_ME;
   //}
 }

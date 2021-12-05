@@ -6,6 +6,7 @@ using Grpc.Core;
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core;
@@ -120,8 +121,7 @@ namespace ArmoniK.Control.Services
           ? ValueTask.CompletedTask
           : new ValueTask(taskPayloadStorage_.AddOrUpdateAsync(tid, taskRequest.Payload, context.CancellationToken));
 
-        var message = new QueueMessage("", tid);
-        await lockedQueueStorage_.EnqueueAsync(message,
+        await lockedQueueStorage_.EnqueueAsync(tid,
                                          options.Priority,
                                          context.CancellationToken); //TODO: use IEnumerable version
 

@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.gRPC.V1;
+
 using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Storage
@@ -21,6 +23,8 @@ namespace ArmoniK.Core.Storage
 
     int MaxPriority { get; }
 
+    bool AreMessagesUnique { get; }
+
     IAsyncEnumerable<QueueMessage> PullAsync(int nbMessages, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
@@ -29,11 +33,11 @@ namespace ArmoniK.Core.Storage
 
     Task UnlockAsync(string id, CancellationToken cancellationToken = default);
 
-    Task EnqueueMessagesAsync(IEnumerable<QueueMessage> messages,
+    Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
                               int                       priority          = 1,
                               CancellationToken         cancellationToken = default);
 
-    Task RequeueMessage(QueueMessage message, CancellationToken cancellationToken = default);
+    Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default);
 
     //TODO: add support for DLQ
     //Task SendToDeadLetterQueue(QueueMessage message, CancellationToken cancellationToken = default);
