@@ -10,7 +10,7 @@ COPY ["src/Core/src/ArmoniK.Core.csproj", "src/Core/src/"]
 COPY ["src/Adaptors/MongoDB/src/ArmoniK.Adapters.MongoDB/ArmoniK.Adapters.MongoDB.csproj", "src/Adaptors/MongoDB/src/ArmoniK.Adapters.MongoDB/"]
 RUN SolutionDir=/src dotnet restore "src/Compute/PollingAgent/src/ArmoniK.Compute.PollingAgent/ArmoniK.Compute.PollingAgent.csproj"
 COPY . .
-WORKDIR "/src/src/Compute/PollingAgent/src/ArmoniK.Compute.PollingAgent"
+WORKDIR "/src/Compute/PollingAgent/src/ArmoniK.Compute.PollingAgent"
 RUN SolutionDir=/src dotnet build "ArmoniK.Compute.PollingAgent.csproj" -c Release -o /app/build
 
 FROM build AS publish
@@ -19,4 +19,4 @@ RUN SolutionDir=/src dotnet publish "ArmoniK.Compute.PollingAgent.csproj" -c Rel
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ArmoniK.Compute.PollingAgent.dll"]
+ENTRYPOINT ["ArmoniK.Compute.PollingAgent.exe"]

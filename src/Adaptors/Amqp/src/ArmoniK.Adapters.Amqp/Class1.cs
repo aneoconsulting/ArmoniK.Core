@@ -1,7 +1,5 @@
 ﻿using System;
 
-using AmqpNetLite = Amqp;
-
 namespace ArmoniK.Adapters.Amqp
 {
   namespace Options
