@@ -32,7 +32,7 @@ namespace ArmoniK.Core.Storage
       lockedQueueStorage_      = lockedQueueStorage;
       id_                = id;
       cancellationToken_ = cancellationToken;
-      heart_ = new Heart(async ct => await lockedQueueStorage_.RenewLockAsync(id_, ct),
+      heart_ = new Heart(async ct => await lockedQueueStorage_.RenewLeaseAsync(id_, ct),
                          lockedQueueStorage_.LockRefreshPeriodicity,
                          cancellationToken_);
       heart_.Start();
@@ -50,7 +50,7 @@ namespace ArmoniK.Core.Storage
         await heart_.Stop();
       }
 
-      await lockedQueueStorage_.RenewLockAsync(id_, cancellationToken_);
+      await lockedQueueStorage_.RenewLeaseAsync(id_, cancellationToken_);
       GC.SuppressFinalize(this);
     }
   }

@@ -5,6 +5,7 @@
 
 using Amqp;
 
+using ArmoniK.Adapters.Amqp.Options;
 using ArmoniK.Core.Injection;
 
 using Microsoft.Extensions.Options;
@@ -14,7 +15,7 @@ namespace ArmoniK.Adapters.Amqp
   public class SessionProvider : ProviderBase<Session>
   {
     /// <inheritdoc />
-    public SessionProvider(IOptions<Options.Amqp> options)
+    public SessionProvider(IOptions<AmqpOptions> options)
       : base(async () =>
       {
         var connection = await global::Amqp.Connection.Factory.CreateAsync(new global::Amqp.Address(options.Value.Address));

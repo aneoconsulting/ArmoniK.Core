@@ -15,31 +15,14 @@ using JetBrains.Annotations;
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
-  public interface ILockedQueueStorage
+  public interface ILockedQueueStorage : IQueueStorageBase
   {
     TimeSpan LockRefreshPeriodicity { get; }
 
     TimeSpan LockRefreshExtension { get; }
 
-    int MaxPriority { get; }
-
     bool AreMessagesUnique { get; }
 
-    IAsyncEnumerable<QueueMessage> PullAsync(int nbMessages, CancellationToken cancellationToken = default);
-
-    Task DeleteAsync(string id, CancellationToken cancellationToken = default);
-
-    Task<bool> RenewLockAsync(string id, CancellationToken cancellationToken = default);
-
-    Task UnlockAsync(string id, CancellationToken cancellationToken = default);
-
-    Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
-                              int                       priority          = 1,
-                              CancellationToken         cancellationToken = default);
-
-    Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default);
-
-    //TODO: add support for DLQ
-    //Task SendToDeadLetterQueue(QueueMessage message, CancellationToken cancellationToken = default);
+    Task<bool> RenewLeaseAsync(string id, CancellationToken cancellationToken = default);
   }
 }

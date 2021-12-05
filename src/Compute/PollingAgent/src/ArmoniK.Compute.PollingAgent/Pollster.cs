@@ -100,7 +100,7 @@ namespace ArmoniK.Compute.PollingAgent
         {
           logger_.LogInformation("Task is being cancelled");
           // cannot get lease: task is already running elsewhere
-          await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+          await queueStorage_.MessageProcessedAsync(message.MessageId, cancellationToken);
           await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Canceled, cancellationToken);
           continue;
         }
@@ -111,7 +111,7 @@ namespace ArmoniK.Compute.PollingAgent
         if (taskData.Retries >= taskData.Options.MaxRetries)
         {
           logger_.LogInformation("Task has been retried too many times");
-          await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+          await queueStorage_.MessageRejectedAsync(message.MessageId, cancellationToken);
           await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Failed, cancellationToken);
           continue;
         }
@@ -121,12 +121,12 @@ namespace ArmoniK.Compute.PollingAgent
         {
           case TaskStatus.Canceling:
             logger_.LogInformation("Task is being cancelled");
-            await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+            await queueStorage_.MessageProcessedAsync(message.MessageId, cancellationToken);
             await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Canceled, cancellationToken);
             continue;
           case TaskStatus.Completed:
             logger_.LogInformation("Task was already completed");
-            await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+            await queueStorage_.MessageProcessedAsync(message.MessageId, cancellationToken);
             continue;
           case TaskStatus.Creating:
             break;
@@ -142,7 +142,7 @@ namespace ArmoniK.Compute.PollingAgent
             break;
           case TaskStatus.Canceled:
             logger_.LogInformation("Task has been cancelled");
-            await queueStorage_.DeleteAsync(message.MessageId, cancellationToken);
+            await queueStorage_.MessageProcessedAsync(message.MessageId, cancellationToken);
             continue;
           case TaskStatus.Processing:
             logger_.LogInformation("Task is processing elsewhere ; taking over here");

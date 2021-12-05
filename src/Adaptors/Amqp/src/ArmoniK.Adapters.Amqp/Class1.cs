@@ -1,121 +1,156 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Amqp;
+using Amqp.Framing;
+using Amqp.Types;
+
+using ArmoniK.Adapters.Amqp.Options;
+using ArmoniK.Core;
+using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Core.Storage;
+using ArmoniK.Core.Utils;
+
+using Google.Protobuf;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Adapters.Amqp
 {
   namespace Options
   {
-    public class Amqp
-    {
-      public string Address { get; set; }
-      public int MaxPriority { get; set; }
-      public TimeSpan LockRefreshPeriodicity { get; set; }
-      public TimeSpan LockRefreshExtension { get; set; }
-    }
   }
 
 
-  //public class QueueStorage : ILockedQueueStorage, IDisposable
-  //{
-  //  private readonly ILogger<QueueStorage>                                               logger_;
-  //  private readonly AsyncLazy<AmqpNetLite.ISenderLink>[]                                senders_;
-  //  private readonly AsyncLazy<AmqpNetLite.IReceiverLink>[]                              receivers_;
-  //  private readonly Dictionary<string, (AmqpNetLite.Message, AmqpNetLite.IReceiverLink)> messages_;
-  //  private readonly AsyncLazy<AmqpNetLite.ISenderLink>                                  dlq_;
+  public class QueueStorage : IQueueStorage
+  {
+    private readonly ILogger<QueueStorage>                                                                 logger_;
+    private readonly AsyncLazy<ISenderLink>[]                                                              senders_;
+    private readonly AsyncLazy<IReceiverLink>[]                                                            receivers_;
+    private readonly ConcurrentDictionary<string, (Message message, IReceiverLink receiver, int priority)> messages_ = new();
 
-  //  public QueueStorage(IOptions<Options.Amqp> options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
-  //  {
-  //    LockRefreshPeriodicity = options.Value.LockRefreshPeriodicity;
-  //    LockRefreshExtension   = options.Value.LockRefreshExtension;
-  //    MaxPriority            = options.Value.MaxPriority;
-  //    logger_ = logger;
+    public QueueStorage(IOptions<AmqpOptions> options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
+    {
+      MaxPriority = options.Value.MaxPriority;
+      logger_     = logger;
 
-  //    var nbLinks = (MaxPriority + 3) / 3;
+      var nbLinks = (MaxPriority + 3) / 3;
 
-  //    senders_ = Enumerable.Range(0, nbLinks)
-  //                         .Select(i => new AsyncLazy<AmqpNetLite.ISenderLink>(async ()
-  //                                                                               => new
-  //                                                                                 AmqpNetLite.SenderLink(await sessionProvider.GetAsync(),
-  //                                                                                                        $"SenderLink{i}",
-  //                                                                                                        $"q{i}")))
-  //                         .ToArray();
+      senders_ = Enumerable.Range(0, nbLinks)
+                           .Select(i => new AsyncLazy<ISenderLink>(async ()
+                                                                     => new
+                                                                       SenderLink(await sessionProvider.GetAsync(),
+                                                                                  $"SenderLink{i}",
+                                                                                  $"q{i}")))
+                           .ToArray();
 
-  //    receivers_ = Enumerable.Range(0, nbLinks)
-  //                         .Select(i => new AsyncLazy<AmqpNetLite.IReceiverLink>(async ()
-  //                                                                               => new
-  //                                                                                 AmqpNetLite.ReceiverLink(await sessionProvider.GetAsync(),
-  //                                                                                                          $"ReceiverLink{i}",
-  //                                                                                                          $"q{i}")))
-  //                         .ToArray();
-  //    dlq_ = new AsyncLazy<AmqpNetLite.ISenderLink>(async ()
-  //                                                    => new
-  //                                                      AmqpNetLite.SenderLink(await sessionProvider.GetAsync(),
-  //                                                                             "ReceiverLink-dlq",
-  //                                                                             "dlq"));
+      receivers_ = Enumerable.Range(0, nbLinks)
+                             .Select(i => new AsyncLazy<IReceiverLink>(async ()
+                                                                         => new
+                                                                           ReceiverLink(await sessionProvider.GetAsync(),
+                                                                                        $"ReceiverLink{i}",
+                                                                                        $"q{i}")))
+                             .ToArray();
+    }
 
-  //  }
+    /// <inheritdoc />
+    public int MaxPriority { get; } = 9;
 
-  //  /// <inheritdoc />
-  //  public TimeSpan LockRefreshPeriodicity { get; }
+    /// <inheritdoc />
+    public async IAsyncEnumerable<QueueMessage> PullAsync(int nbMessages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+      using var _ = logger_.LogFunction();
+      var nbPulledMessage = 0;
 
-  //  /// <inheritdoc />
-  //  public TimeSpan LockRefreshExtension { get; }
-
-  //  /// <inheritdoc />
-  //  public int MaxPriority { get; } = 9;
-
-  //  /// <inheritdoc />
-  //  public async IAsyncEnumerable<QueueMessage> PullAsync(int nbMessages, CancellationToken cancellationToken = default)
-  //  {
-  //    using var _ = logger_.LogFunction();
-  //    var nbPulledMessage = 0;
-
-  //    while(nbPulledMessage < nbMessages)
-  //    {
-  //      var currentNbMessages = nbPulledMessage;
-  //      for (var i = receivers_.Length - 1; i >= 0; --i)
-  //      {
-  //        var receiver = await receivers_[i];
-  //        var message  = await receiver.ReceiveAsync(TimeSpan.FromSeconds(5));
-  //        if (message is null) continue;
+      while (nbPulledMessage < nbMessages)
+      {
+        var currentNbMessages = nbPulledMessage;
+        for (var i = receivers_.Length - 1; i >= 0; --i)
+        {
+          cancellationToken.ThrowIfCancellationRequested();
+          var receiver = await receivers_[i];
+          var message = await receiver.ReceiveAsync(TimeSpan.FromSeconds(5));
+          if (message is null) continue;
 
 
-  //        if (message.Body is not TaskId taskId)
-  //        {
-  //          logger_.LogError("Body of message with Id={id} is not a TaskId", message.Properties.MessageId);
-  //          continue;
-  //        }
+          if (message.Body is not TaskId taskId)
+          {
+            logger_.LogError("Body of message with Id={id} is not a TaskId", message.Properties.MessageId);
+            continue;
+          }
 
-  //        nbPulledMessage++;
-  //        messages_[message.Properties.MessageId] = (message, receiver);
-  //        yield return new QueueMessage(message.Properties.MessageId, taskId);
+          nbPulledMessage++;
+          messages_[message.Properties.MessageId] = (message, receiver, 3*i + message.Header.Priority/4);
+          yield return new QueueMessage(message.Properties.MessageId, taskId, cancellationToken);
 
-  //        break;
-  //      }
+          break;
+        }
 
-  //      if (nbPulledMessage == currentNbMessages) break;
-  //    }
-  //  }
+        if (nbPulledMessage == currentNbMessages) break;
+      }
+    }
 
-  //  /// <inheritdoc />
-  //  public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
-  //  {
-  //    var (message, receiver) = messages_[id];
-  //    receiver.Release(message);
+    /// <inheritdoc />
+    public Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default)
+    {
+      using var _ = logger_.LogFunction();
+      messages_.TryRemove(id, out var msg);
+      var (message, receiver, _) = msg;
+      receiver.Accept(message);
+      return Task.CompletedTask;
 
-  //  }
+    }
 
-  //  /// <inheritdoc />
-  //  public async Task<bool> RenewLockAsync(string id, CancellationToken cancellationToken = default) => TODO_IMPLEMENT_ME;
+    /// <inheritdoc />
+    public Task MessageRejectedAsync(string id, CancellationToken cancellationToken = default)
+    {
+      using var _ = logger_.LogFunction();
+      messages_.TryRemove(id, out var msg);
+      var (message, receiver, _) = msg;
+      receiver.Reject(message);
+      return Task.CompletedTask;
+    }
 
-  //  /// <inheritdoc />
-  //  public async Task UnlockAsync(string id, CancellationToken cancellationToken = default) => TODO_IMPLEMENT_ME;
+    /// <inheritdoc />
+    public async Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
+                                     int                 priority          = 1,
+                                     CancellationToken   cancellationToken = default)
+    {
+      var sender = await senders_[priority / 3];
+      await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(id)
+                                                                {
+                                                                  Header = new Header { Priority = (byte)((priority % 3)*4) },
+                                                                })));
+    }
 
-  //  /// <inheritdoc />
-  //  public IAsyncEnumerable<string> EnqueueMessagesAsync(IEnumerable<QueueMessage> messages,
-  //                                                       int priority = 1,
-  //                                                       CancellationToken cancellationToken = default) => TODO_IMPLEMENT_ME;
+    /// <inheritdoc />
+    public async Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default)
+    {
+      using var _ = logger_.LogFunction();
+      messages_.TryRemove(id, out var msg);
+      var (message, receiver, priority) = msg;
 
-  //  /// <inheritdoc />
-  //  public async Task<string> RequeueMessageAsync(QueueMessage message, CancellationToken cancellationToken = default) => TODO_IMPLEMENT_ME;
-  //}
+      var sender = await senders_[priority / 3];
+      await sender.SendAsync(new Message(id)
+                             {
+                               Header = new Header { Priority = (byte)((priority % 3) * 4) },
+                             });
+    }
+
+    /// <inheritdoc />
+    public Task ReleaseMessageAsync(string id, CancellationToken cancellationToken = default)
+    {
+      using var _ = logger_.LogFunction();
+      messages_.TryRemove(id, out var msg);
+      var (message, receiver, _) = msg;
+      receiver.Release(message);
+      return Task.CompletedTask;
+    }
+  }
 }

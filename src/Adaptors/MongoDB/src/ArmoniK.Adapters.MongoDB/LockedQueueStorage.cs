@@ -100,7 +100,7 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+    public async Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default)
     {
       using var _               = logger_.LogFunction();
       var       sessionHandle   = await sessionProvider_.GetAsync();
@@ -112,7 +112,7 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
     /// <inheritdoc />
-    public async Task<bool> RenewLockAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<bool> RenewLeaseAsync(string id, CancellationToken cancellationToken = default)
     {
       using var _               = logger_.LogFunction();
       var       sessionHandle   = await sessionProvider_.GetAsync();
@@ -135,26 +135,6 @@ namespace ArmoniK.Adapters.MongoDB
         cancellationToken
       );
       return message is not null;
-    }
-
-    /// <inheritdoc />
-    public async Task UnlockAsync(string id, CancellationToken cancellationToken = default)
-    {
-      using var _               = logger_.LogFunction();
-      var       sessionHandle   = await sessionProvider_.GetAsync();
-      var       queueCollection = await queueCollectionProvider_.GetAsync();
-
-      var updateDefinition = Builders<QueueMessageModel>.Update
-                                                        .Set(qmdm => qmdm.OwnedUntil,
-                                                             DateTime.UtcNow - LockRefreshExtension);
-
-      await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(
-        sessionHandle,
-        qmdm => qmdm.MessageId == id && qmdm.OwnerId == ownerId_,
-        updateDefinition,
-        new FindOneAndUpdateOptions<QueueMessageModel> { IsUpsert = false },
-        cancellationToken
-      );
     }
 
     /// <inheritdoc />
@@ -194,6 +174,31 @@ namespace ArmoniK.Adapters.MongoDB
         updateDefinition,
         cancellationToken: cancellationToken
       );
+    }
+
+    /// <inheritdoc />
+    public Task MessageRejectedAsync(string id, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public async Task ReleaseMessageAsync(string id, CancellationToken cancellationToken)
+    {
+      using var _               = logger_.LogFunction();
+      var       sessionHandle   = await sessionProvider_.GetAsync();
+      var       queueCollection = await queueCollectionProvider_.GetAsync();
+
+      var updateDefinition = Builders<QueueMessageModel>.Update
+                                                        .Set(qmdm => qmdm.OwnedUntil,
+                                                             DateTime.UtcNow - LockRefreshExtension);
+
+      await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(
+                                                                     sessionHandle,
+                                                                     qmdm => qmdm.MessageId == id &&
+                                                                             qmdm.OwnerId == ownerId_,
+                                                                     updateDefinition,
+                                                                     new FindOneAndUpdateOptions<QueueMessageModel>
+                                                                     { IsUpsert = false },
+                                                                     cancellationToken
+                                                                    );
     }
   }
 }
