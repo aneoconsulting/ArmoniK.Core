@@ -59,7 +59,7 @@ namespace ArmoniK.Adapters.MongoDB
       if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
         serviceCollection.AddTransient<ITableStorage, TableStorage>();
 
-      if (components["LockedQueueStorage"] == "ArmoniK.Adapters.MongoDB.LockedQueueStorage")
+      if (components["QueueStorage"] == "ArmoniK.Adapters.MongoDB.LockedQueueStorage")
         serviceCollection.AddTransient<ILockedQueueStorage, LockedQueueStorage>();
 
       if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
