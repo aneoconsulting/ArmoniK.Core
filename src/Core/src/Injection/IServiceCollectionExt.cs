@@ -25,6 +25,7 @@ namespace ArmoniK.Core.Injection
                  .AddSingleton<GrpcChannelProvider>()
                  .AddSingleton<ClientServiceProvider>()
                  .AddTransient<IQueueStorage, QueueStorageWrapper>()
+                 .AddTransient<IObjectStorage, DistributedCacheObjectStorage>()
                  .AddSingleton(typeof(KeyValueStorage<,>));
 
     public static IServiceCollection ValidateGrpcRequests(this IServiceCollection services)
