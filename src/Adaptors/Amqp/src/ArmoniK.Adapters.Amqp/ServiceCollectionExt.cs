@@ -24,7 +24,7 @@ namespace ArmoniK.Adapters.Amqp
       IConfiguration          configuration
     )
     {
-      serviceCollection.Configure<AmqpOptions>(configuration.GetSection(AmqpOptions.SettingSection))
+      serviceCollection.Configure<Options.Amqp>(configuration.GetSection(Options.Amqp.SettingSection))
                        .AddSingleton<SessionProvider>();
 
       var components = configuration.GetSection(Components.SettingSection);

@@ -5,9 +5,9 @@
 
 namespace ArmoniK.Adapters.Amqp.Options
 {
-  public class AmqpOptions
+  public class Amqp
   {
-    public const string SettingSection = nameof(AmqpOptions);
+    public const string SettingSection = nameof(Amqp);
 
     public       string Address     { get; set; }
     public       int    MaxPriority { get; set; }

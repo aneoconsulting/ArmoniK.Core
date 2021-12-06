@@ -30,7 +30,7 @@ namespace ArmoniK.Adapters.Amqp
     private readonly AsyncLazy<IReceiverLink>[]                                                            receivers_;
     private readonly ConcurrentDictionary<string, (Message message, IReceiverLink receiver, int priority)> messages_ = new();
 
-    public QueueStorage(IOptions<AmqpOptions> options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
+    public QueueStorage(IOptions<Options.Amqp> options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
     {
       MaxPriority = options.Value.MaxPriority;
       logger_     = logger;
