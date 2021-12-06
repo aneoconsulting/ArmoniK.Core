@@ -63,7 +63,7 @@ namespace ArmoniK.Compute.PollingAgent
         do
         {
           logger_.LogInformation("Trying to fetch messages");
-          message = await queueStorage_.PullAsync(1, cancellationToken).SingleAsync(cancellationToken);
+          message = await queueStorage_.PullAsync(1, cancellationToken).FirstOrDefaultAsync(cancellationToken);
         } while (message is null);
 
         using var scopedLogger = logger_.BeginNamedScope("Message",
