@@ -23,11 +23,6 @@ using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Adapters.Amqp
 {
-  namespace Options
-  {
-  }
-
-
   public class QueueStorage : IQueueStorage
   {
     private readonly ILogger<QueueStorage>                                                                 logger_;

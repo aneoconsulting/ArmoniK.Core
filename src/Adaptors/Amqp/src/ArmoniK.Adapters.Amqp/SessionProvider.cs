@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Adapters.Amqp
 {
+  // ReSharper disable once ClassNeverInstantiated.Global
   public class SessionProvider : ProviderBase<Session>
   {
     /// <inheritdoc />

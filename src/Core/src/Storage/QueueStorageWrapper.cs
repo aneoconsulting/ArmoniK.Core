@@ -29,6 +29,13 @@ namespace ArmoniK.Core.Storage
     private readonly ConcurrentDictionary<string, LeaseHandler>                      leaseHandlers_    = new ();
     private readonly ILogger<QueueStorageWrapper>                                    logger_;
 
+    public QueueStorageWrapper(ILockedQueueStorage lockedQueueStorage, ILeaseProvider leaseProvider, ILogger<QueueStorageWrapper> logger)
+    {
+      lockedQueueStorage_ = lockedQueueStorage;
+      leaseProvider_ = leaseProvider;
+      logger_ = logger;
+    }
+
     /// <inheritdoc />
     public int MaxPriority => lockedQueueStorage_.MaxPriority;
 
