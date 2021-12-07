@@ -277,7 +277,7 @@ namespace ArmoniK.Adapters.MongoDB
       using var _                 = logger_.LogFunction();
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
-      if (string.IsNullOrEmpty(sessionId.SubSession))
+      if (!string.IsNullOrEmpty(sessionId.SubSession))
       {
         var session = await sessionCollection.AsQueryable(sessionHandle)
                                              .Where(x => x.SessionId == sessionId.Session &&
