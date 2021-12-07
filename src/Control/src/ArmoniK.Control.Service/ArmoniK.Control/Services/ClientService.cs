@@ -10,10 +10,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
+using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Control.Services
 {
@@ -104,38 +106,56 @@ namespace ArmoniK.Control.Services
     public override async Task<CreateTaskReply> CreateTask(CreateTaskRequest request, ServerCallContext context)
     {
       logger_.LogFunction();
-      var tidsTask = request.TaskRequests.Select(async taskRequest =>
-      {
-        var options = taskRequest.TaskOptions;
-        if (options == null)
-        {
-          options = await tableStorage_.GetDefaultTaskOption(taskRequest.SessionId, context.CancellationToken);
-        }
 
-        var (tid, isPayloadStored) = await tableStorage_.InitializeTaskCreation(taskRequest.SessionId,
-                                                                                options,
-                                                                                taskRequest.Payload,
-                                                                                context.CancellationToken);
+      var inits = await request.TaskRequests.Select(async taskRequest =>
+                                                    {
+                                                      var options = taskRequest.TaskOptions;
+                                                      if (options == null)
+                                                      {
+                                                        options =
+                                                          await tableStorage_.GetDefaultTaskOption(taskRequest.SessionId,
+                                                                                                   context
+                                                                                                    .CancellationToken);
+                                                      }
 
-        var payloadTask = isPayloadStored
-          ? ValueTask.CompletedTask
-          : new ValueTask(taskPayloadStorage_.AddOrUpdateAsync(tid, taskRequest.Payload, context.CancellationToken));
+                                                      var (tid, isPayloadStored, finalizer) =
+                                                        await tableStorage_.InitializeTaskCreation(taskRequest.SessionId,
+                                                                                                   options,
+                                                                                                   taskRequest.Payload,
+                                                                                                   context
+                                                                                                    .CancellationToken);
+                                                      return (id: tid,
+                                                              isPayloadStored,
+                                                              finalizer,
+                                                              request: taskRequest,
+                                                              options);
+                                                    }).WhenAll();
 
-        await lockedQueueStorage_.EnqueueAsync(tid,
-                                         options.Priority,
-                                         context.CancellationToken); //TODO: use IEnumerable version
 
-        await payloadTask;
+      var payloadsUpdateTask = inits.Where(tuple => !tuple.isPayloadStored)
+                                    .Select(tuple => taskPayloadStorage_.AddOrUpdateAsync(tuple.id,
+                                                                                          tuple.request.Payload,
+                                                                                          context.CancellationToken))
+                                    .WhenAll();
 
-        await tableStorage_.FinalizeTaskCreation(tid, context.CancellationToken);
+      await using var finalizers = inits.Select(tuple => tuple.finalizer).Merge();
 
-        return tid;
-      }).ToList();
+      var priorityBuckets = inits.GroupBy(tuple => tuple.options.Priority);
 
-      var tids = await Task.WhenAll(tidsTask);
+      var enqueueTask = priorityBuckets.Select(async grouping =>
+                                               {
+                                                 var priority = grouping.Key;
+                                                 await lockedQueueStorage_.EnqueueMessagesAsync(inits.Select(tuple => tuple
+                                                                                                              .id),
+                                                                                                priority,
+                                                                                                cancellationToken: context
+                                                                                                 .CancellationToken);
+                                               }).WhenAll();
+
+      await Task.WhenAll(enqueueTask, payloadsUpdateTask);
 
       CreateTaskReply reply = new();
-      reply.TaskIds.Add(tids);
+      reply.TaskIds.Add(inits.Select(tuple => tuple.id));
       return reply;
     }
 
