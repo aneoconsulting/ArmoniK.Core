@@ -14,6 +14,7 @@ using MongoDB.Driver.Linq;
 using ArmoniK.Core.Exceptions;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
+using ArmoniK.Core.Utils;
 
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
@@ -228,11 +229,11 @@ namespace ArmoniK.Adapters.MongoDB
       }
     }
 
-    public async Task<(TaskId id, bool isPayloadStored)> InitializeTaskCreation(SessionId   session,
-                                                                                TaskOptions options,
-                                                                                Payload     payload,
-                                                                                CancellationToken cancellationToken =
-                                                                                  default)
+    public async Task<(TaskId id, bool isPayloadStored, IAsyncDisposable finalizer)> InitializeTaskCreation(SessionId   session,
+                                                                                                            TaskOptions options,
+                                                                                                            Payload     payload,
+                                                                                                            CancellationToken cancellationToken =
+                                                                                                              default)
     {
       using var _              = logger_.LogFunction();
       var       sessionHandle  = await sessionProvider_.GetAsync();
@@ -255,7 +256,7 @@ namespace ArmoniK.Adapters.MongoDB
       }
 
       await taskCollection.InsertOneAsync(sessionHandle, tdm, cancellationToken: cancellationToken);
-      return (tdm.GetTaskId(), isPayloadStored);
+      return (tdm.GetTaskId(), isPayloadStored, AsyncDisposable.Create(async () => await this.FinalizeTaskCreation(tdm.GetTaskId(), cancellationToken)));
     }
 
     public async Task<bool> IsSessionCancelledAsync(SessionId sessionId, CancellationToken cancellationToken = default)

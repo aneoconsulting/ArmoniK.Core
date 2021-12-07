@@ -25,7 +25,7 @@ namespace ArmoniK.Core.Utils
     }
   }
 
-  internal static class Disposable
+  public static class Disposable
   {
     private class DisposableImpl : IDisposable
     {
@@ -43,7 +43,7 @@ namespace ArmoniK.Core.Utils
     public static IDisposable Create(Action action) => new DisposableImpl(action);
   }
 
-  internal static class AsyncDisposable
+  public static class AsyncDisposable
   {
     private class AsyncDisposableImpl : IAsyncDisposable
     {

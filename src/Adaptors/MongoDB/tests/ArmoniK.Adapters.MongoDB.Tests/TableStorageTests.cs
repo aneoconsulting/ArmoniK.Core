@@ -68,7 +68,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
         IdTag             = "tag",
       }).Result;
 
-      var (_, _) = table.InitializeTaskCreation(session, new TaskOptions(), new Payload()).Result;
+      var (_, _, _) = table.InitializeTaskCreation(session, new TaskOptions(), new Payload()).Result;
 
 
       Assert.AreEqual(1,
