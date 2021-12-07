@@ -66,6 +66,7 @@ namespace ArmoniK.Compute.PollingAgent
           message = await queueStorage_.PullAsync(1, cancellationToken).FirstOrDefaultAsync(cancellationToken);
         } while (message is null);
 
+        await using var msg = message;
         using var scopedLogger = logger_.BeginNamedScope("Message",
                                                          ("message", message.MessageId),
                                                          ("session", message.TaskId.Session),
@@ -111,8 +112,10 @@ namespace ArmoniK.Compute.PollingAgent
         if (taskData.Retries >= taskData.Options.MaxRetries)
         {
           logger_.LogInformation("Task has been retried too many times");
-          await queueStorage_.MessageRejectedAsync(message.MessageId, cancellationToken);
-          await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Failed, cancellationToken);
+          await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(message.TaskId,
+                                                                 TaskStatus.Failed,
+                                                                 CancellationToken.None),
+                             queueStorage_.MessageRejectedAsync(message.MessageId, CancellationToken.None));
           continue;
         }
 
@@ -121,8 +124,8 @@ namespace ArmoniK.Compute.PollingAgent
         {
           case TaskStatus.Canceling:
             logger_.LogInformation("Task is being cancelled");
-            await queueStorage_.MessageProcessedAsync(message.MessageId, cancellationToken);
-            await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Canceled, cancellationToken);
+            await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Canceled, CancellationToken.None),
+                               queueStorage_.MessageProcessedAsync(message.MessageId, CancellationToken.None));
             continue;
           case TaskStatus.Completed:
             logger_.LogInformation("Task was already completed");
@@ -172,7 +175,7 @@ namespace ArmoniK.Compute.PollingAgent
         logger_.LogInformation("Task preconditions are OK");
         await updateTask;
 
-        await PrefetchAndCompute(taskData, message.CancellationToken, cancellationToken);
+        await PrefetchAndCompute(taskData, message.MessageId, message.CancellationToken, cancellationToken);
       }
     }
 
@@ -204,6 +207,7 @@ namespace ArmoniK.Compute.PollingAgent
     }
 
     private async Task PrefetchAndCompute(TaskData          taskData,
+                                          string messageId,
                                           CancellationToken messageToken,
                                           CancellationToken cancellationToken)
     {
@@ -259,8 +263,8 @@ namespace ArmoniK.Compute.PollingAgent
                          "Deadline exceeded when computing task {taskId} from session {sessionId}",
                          taskData.Id.Task,
                          taskData.Id.Session);
-
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Timeout, CancellationToken.None);
+        await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Timeout, CancellationToken.None),
+                           queueStorage_.ReleaseMessageAsync(messageId, CancellationToken.None));
         return;
       }
       catch (TaskCanceledException e)
@@ -276,7 +280,8 @@ namespace ArmoniK.Compute.PollingAgent
                          taskData.Id.Session,
                          details);
 
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Timeout, CancellationToken.None);
+        await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Canceling, CancellationToken.None),
+                           queueStorage_.ReleaseMessageAsync(messageId, CancellationToken.None));
         return;
       }
       catch (ArmoniKException e)
@@ -287,7 +292,8 @@ namespace ArmoniK.Compute.PollingAgent
                          taskData.Id.Session,
                          e.ToString());
 
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Failed, CancellationToken.None);
+        await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Failed, CancellationToken.None),
+                           queueStorage_.ReleaseMessageAsync(messageId, CancellationToken.None));
         return;
       }
       catch (Exception e)
@@ -296,6 +302,8 @@ namespace ArmoniK.Compute.PollingAgent
                          "Exception encountered when computing task {taskId} from session {sessionId}",
                          taskData.Id.Task,
                          taskData.Id.Session);
+        await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Failed, CancellationToken.None),
+                           queueStorage_.ReleaseMessageAsync(messageId, CancellationToken.None));
         Console.WriteLine(e);
         throw;
       }
@@ -310,9 +318,9 @@ namespace ArmoniK.Compute.PollingAgent
       await taskResultStorage_.AddOrUpdateAsync(taskData.Id, result, CancellationToken.None);
       logger_.LogInformation("Result sent.");
 
-      var finishedUpdate = tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Completed, CancellationToken.None);
-      await increaseTask;
-      await finishedUpdate;
+      await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id, TaskStatus.Completed, CancellationToken.None),
+                         queueStorage_.MessageProcessedAsync(messageId, CancellationToken.None),
+                         increaseTask);
     }
   }
 }

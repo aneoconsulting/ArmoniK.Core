@@ -55,7 +55,18 @@ namespace ArmoniK.Adapters.Amqp
     }
 
     /// <inheritdoc />
-    public int MaxPriority { get; } = 9;
+    public int MaxPriority { get; }
+
+    private Task DisposeTask(string id)
+    {
+      if (messages_.TryRemove(id, out var msg))
+      {
+        var (message, receiver, priority) = msg;
+        receiver.Release(message);
+      }
+
+      return Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<QueueMessage> PullAsync(int nbMessages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -82,7 +93,7 @@ namespace ArmoniK.Adapters.Amqp
 
           nbPulledMessage++;
           messages_[message.Properties.MessageId] = (message, receiver, 3*i + message.Header.Priority/4);
-          yield return new QueueMessage(message.Properties.MessageId, taskId, cancellationToken);
+          yield return new QueueMessage(message.Properties.MessageId, taskId, ()=> DisposeTask(message.Properties.MessageId), cancellationToken);
 
           break;
         }

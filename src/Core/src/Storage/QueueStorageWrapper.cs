@@ -50,6 +50,8 @@ namespace ArmoniK.Core.Storage
       {
         using var logScope = logger_.BeginPropertyScope(("messageId", qm.MessageId), ("taskId", qm.TaskId.ToPrintableId()));
 
+        Func<Task> messageDisposeFunc = async () => await qm.DisposeAsync();
+
         var cancellationTokens = new List<CancellationToken>();
 
         var deadlineHandler = lockedQueueStorage_.GetDeadlineHandler(qm.MessageId, logger_, cancellationToken);
@@ -57,6 +59,13 @@ namespace ArmoniK.Core.Storage
         {
           throw new ArmoniKException($"A deadline handler already exists for message {qm.MessageId}");
         }
+
+        var messageDisposeFunc1 = messageDisposeFunc;
+        messageDisposeFunc = async () =>
+                             {
+                               await deadlineHandler.DisposeAsync();
+                               await messageDisposeFunc1();
+                             };
 
         deadlineHandler.MessageLockLost.Register(() => deadlineHandlers_.TryRemove(qm.MessageId, out _));
 
@@ -85,9 +94,16 @@ namespace ArmoniK.Core.Storage
             throw new ArmoniKException($"A lease handler already exists for message {qm.MessageId}");
           }
 
+          var messageDisposeFunc2 = messageDisposeFunc;
+          messageDisposeFunc = async () =>
+                               {
+                                 await lease.DisposeAsync();
+                                 await messageDisposeFunc2();
+                               };
+
           deadlineHandler.MessageLockLost.Register(() =>
                                                    {
-                                                     if(leaseHandlers_.TryRemove(qm.MessageId, out var handler))
+                                                     if (leaseHandlers_.TryRemove(qm.MessageId, out var handler))
                                                        handler.DisposeAsync().AsTask().Wait(cancellationToken);
                                                    });
 
@@ -102,7 +118,11 @@ namespace ArmoniK.Core.Storage
 
         var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens.ToArray());
 
-        yield return qm with { CancellationToken = cts.Token };
+        yield return new QueueMessage(qm.MessageId,
+                                      qm.TaskId,
+                                      messageDisposeFunc,
+                                      cancellationToken
+                                     );
       }
     }
 

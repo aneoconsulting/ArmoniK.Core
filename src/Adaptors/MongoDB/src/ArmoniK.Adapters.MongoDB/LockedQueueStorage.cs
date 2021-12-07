@@ -93,7 +93,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                                                      cancellationToken);
 
         if (message is not null)
-          yield return new QueueMessage(message.MessageId, message.TaskId, CancellationToken.None);
+          yield return new QueueMessage(message.MessageId, message.TaskId, () => Task.CompletedTask, CancellationToken.None);
         else
           await Task.Delay(PollPeriodicity, cancellationToken);
       }
