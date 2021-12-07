@@ -177,7 +177,16 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
     /// <inheritdoc />
-    public Task MessageRejectedAsync(string id, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public async Task MessageRejectedAsync(string id, CancellationToken cancellationToken)
+    {
+      using var _               = logger_.LogFunction();
+      var       sessionHandle   = await sessionProvider_.GetAsync();
+      var       queueCollection = await queueCollectionProvider_.GetAsync();
+
+      await queueCollection.FindOneAndDeleteAsync(sessionHandle,
+                                                                qmm => qmm.MessageId == id,
+                                                                cancellationToken: cancellationToken);
+    }
 
     /// <inheritdoc />
     public async Task ReleaseMessageAsync(string id, CancellationToken cancellationToken)
