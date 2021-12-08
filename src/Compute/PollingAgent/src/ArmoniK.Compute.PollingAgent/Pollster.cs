@@ -14,6 +14,7 @@ using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,7 +29,7 @@ namespace ArmoniK.Compute.PollingAgent
   {
     private readonly ILogger<Pollster>                     logger_;
     private readonly int                                   messageBatchSize_;
-    private readonly IQueueStorage                   queueStorage_;
+    private readonly IQueueStorage                         queueStorage_;
     private readonly ITableStorage                         tableStorage_;
     private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
     private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
@@ -63,20 +64,35 @@ namespace ArmoniK.Compute.PollingAgent
         do
         {
           logger_.LogInformation("Trying to fetch messages");
-          message = await queueStorage_.PullAsync(1, cancellationToken).FirstOrDefaultAsync(cancellationToken);
+          message = await queueStorage_.PullAsync(1, cancellationToken)
+                                       .FirstOrDefaultAsync(cancellationToken);
         } while (message is null);
 
-        await using var msg = message;
-        using var scopedLogger = logger_.BeginNamedScope("Message",
-                                                         ("message", message.MessageId),
-                                                         ("session", message.TaskId.Session),
-                                                         ("task", message.TaskId.Task));
-        logger_.LogInformation(LogEvents.StartMessageProcessing, "Message acquired.");
+        await Task.Factory.StartNew(() => ProcessMessageAsync(
+                                                              message,
+                                                              cancellationToken
+                                                             ),
+                                    cancellationToken,
+                                    TaskCreationOptions.None,
+                                    TaskScheduler.Current);
 
-        var combinedCTS = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
-                                                                          cancellationToken);
+      }
+    }
 
-        /*
+    private async Task ProcessMessageAsync(QueueMessage message, CancellationToken cancellationToken)
+    {
+      await using var msg = message;
+      using var scopedLogger = logger_.BeginNamedScope("Message",
+                                                       ("message", message.MessageId),
+                                                       ("session", message.TaskId.Session),
+                                                       ("task", message.TaskId.Task));
+      logger_.LogInformation(LogEvents.StartMessageProcessing,
+                             "Message acquired.");
+
+      var combinedCTS = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
+                                                                        cancellationToken);
+
+      /*
          * Check preconditions:
          *  - Session is not cancelled
          *  - Task is not cancelled
@@ -85,98 +101,114 @@ namespace ArmoniK.Compute.PollingAgent
          *  - Dependencies have been checked
          */
 
-        logger_.LogDebug("checking that the session is not cancelled");
-        var isSessionCancelled = await tableStorage_.IsSessionCancelledAsync(new SessionId
-                                                                             {
-                                                                               Session    = message.TaskId.Session,
-                                                                               SubSession = message.TaskId.SubSession,
-                                                                             },
-                                                                             combinedCTS.Token);
+      logger_.LogDebug("checking that the session is not cancelled");
+      var isSessionCancelled = await tableStorage_.IsSessionCancelledAsync(new SessionId
+                                                                           {
+                                                                             Session    = message.TaskId.Session,
+                                                                             SubSession = message.TaskId.SubSession,
+                                                                           },
+                                                                           combinedCTS.Token);
 
-        logger_.LogDebug("Loading task data");
-        var taskData = await tableStorage_.ReadTaskAsync(message.TaskId, combinedCTS.Token);
+      logger_.LogDebug("Loading task data");
+      var taskData = await tableStorage_.ReadTaskAsync(message.TaskId,
+                                                       combinedCTS.Token);
 
-        if (isSessionCancelled &&
-            taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.WaitingForChildren))
-        {
-          logger_.LogInformation("Task is being cancelled");
-          // cannot get lease: task is already running elsewhere
-          await queueStorage_.MessageProcessedAsync(message.MessageId, cancellationToken);
-          await tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Canceled, cancellationToken);
-          continue;
-        }
-
-        var dependencyCheckTask = taskData.Options.Dependencies.AsParallel().Select(tid => IsDependencyCompleted(tid, combinedCTS.Token)).ToList();
-
-        logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
-        if (taskData.Retries >= taskData.Options.MaxRetries)
-        {
-          logger_.LogInformation("Task has been retried too many times");
-          await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(message.TaskId,
-                                                                 TaskStatus.Failed,
-                                                                 CancellationToken.None),
-                             queueStorage_.MessageRejectedAsync(message.MessageId, CancellationToken.None));
-          continue;
-        }
-
-        logger_.LogDebug("Handling the task status ({status})", taskData.Status);
-        switch (taskData.Status)
-        {
-          case TaskStatus.Canceling:
-            logger_.LogInformation("Task is being cancelled");
-            await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Canceled, CancellationToken.None),
-                               queueStorage_.MessageProcessedAsync(message.MessageId, CancellationToken.None));
-            continue;
-          case TaskStatus.Completed:
-            logger_.LogInformation("Task was already completed");
-            await queueStorage_.MessageProcessedAsync(message.MessageId, cancellationToken);
-            continue;
-          case TaskStatus.Creating:
-            break;
-          case TaskStatus.Submitted:
-            break;
-          case TaskStatus.Dispatched:
-            break;
-          case TaskStatus.Failed:
-            logger_.LogInformation("Task was on error elsewhere ; retrying");
-            break;
-          case TaskStatus.Timeout:
-            logger_.LogInformation("Task was timeout elsewhere ; taking over here");
-            break;
-          case TaskStatus.Canceled:
-            logger_.LogInformation("Task has been cancelled");
-            await queueStorage_.MessageProcessedAsync(message.MessageId, cancellationToken);
-            continue;
-          case TaskStatus.Processing:
-            logger_.LogInformation("Task is processing elsewhere ; taking over here");
-            break;
-          case TaskStatus.WaitingForChildren:
-            logger_.LogInformation("Task was already processed and is waiting for children");
-            continue;
-          default:
-            logger_.LogCritical("Task was in an unknown state {state}", taskData.Status);
-            throw new ArgumentOutOfRangeException(nameof(taskData.Status));
-        }
-
-        logger_.LogDebug("Changing task status to 'Dispatched'");
-        var updateTask = tableStorage_.UpdateTaskStatusAsync(message.TaskId, TaskStatus.Dispatched, combinedCTS.Token);
-
-        await Task.WhenAll(dependencyCheckTask);
-
-        if (!dependencyCheckTask.All(task => task.Result))
-        {
-          logger_.LogInformation("Dependencies are not complete yet.");
-          await queueStorage_.RequeueMessageAsync(message.MessageId, cancellationToken);
-          await updateTask;
-          continue;
-        }
-
-
-        logger_.LogInformation("Task preconditions are OK");
-        await updateTask;
-
-        await PrefetchAndCompute(taskData, message.MessageId, message.CancellationToken, cancellationToken);
+      if (isSessionCancelled &&
+          taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.WaitingForChildren))
+      {
+        logger_.LogInformation("Task is being cancelled");
+        // cannot get lease: task is already running elsewhere
+        await queueStorage_.MessageProcessedAsync(message.MessageId,
+                                                  cancellationToken);
+        await tableStorage_.UpdateTaskStatusAsync(message.TaskId,
+                                                  TaskStatus.Canceled,
+                                                  cancellationToken);
+        return;
       }
+
+      var dependencyCheckTask = taskData.Options.Dependencies.AsParallel().Select(tid => IsDependencyCompleted(tid,
+                                                                                                               combinedCTS.Token)).WhenAll();
+
+      logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
+      if (taskData.Retries >= taskData.Options.MaxRetries)
+      {
+        logger_.LogInformation("Task has been retried too many times");
+        await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(message.TaskId,
+                                                               TaskStatus.Failed,
+                                                               CancellationToken.None),
+                           queueStorage_.MessageRejectedAsync(message.MessageId,
+                                                              CancellationToken.None));
+        return;
+      }
+
+      logger_.LogDebug("Handling the task status ({status})",
+                       taskData.Status);
+      switch (taskData.Status)
+      {
+        case TaskStatus.Canceling:
+          logger_.LogInformation("Task is being cancelled");
+          await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(message.TaskId,
+                                                                 TaskStatus.Canceled,
+                                                                 CancellationToken.None),
+                             queueStorage_.MessageProcessedAsync(message.MessageId,
+                                                                 CancellationToken.None));
+          return;
+        case TaskStatus.Completed:
+          logger_.LogInformation("Task was already completed");
+          await queueStorage_.MessageProcessedAsync(message.MessageId,
+                                                    cancellationToken);
+          return;
+        case TaskStatus.Creating:
+          break;
+        case TaskStatus.Submitted:
+          break;
+        case TaskStatus.Dispatched:
+          break;
+        case TaskStatus.Failed:
+          logger_.LogInformation("Task was on error elsewhere ; retrying");
+          break;
+        case TaskStatus.Timeout:
+          logger_.LogInformation("Task was timeout elsewhere ; taking over here");
+          break;
+        case TaskStatus.Canceled:
+          logger_.LogInformation("Task has been cancelled");
+          await queueStorage_.MessageProcessedAsync(message.MessageId,
+                                                    cancellationToken);
+          return;
+        case TaskStatus.Processing:
+          logger_.LogInformation("Task is processing elsewhere ; taking over here");
+          break;
+        case TaskStatus.WaitingForChildren:
+          logger_.LogInformation("Task was already processed and is waiting for children");
+          return;
+        default:
+          logger_.LogCritical("Task was in an unknown state {state}",
+                              taskData.Status);
+          throw new ArgumentOutOfRangeException(nameof(taskData.Status));
+      }
+
+      logger_.LogDebug("Changing task status to 'Dispatched'");
+      var updateTask = tableStorage_.UpdateTaskStatusAsync(message.TaskId,
+                                                           TaskStatus.Dispatched,
+                                                           combinedCTS.Token);
+
+      if (!(await dependencyCheckTask).All(b => b))
+      {
+        logger_.LogInformation("Dependencies are not complete yet.");
+        await queueStorage_.RequeueMessageAsync(message.MessageId,
+                                                cancellationToken);
+        await updateTask;
+        return;
+      }
+
+
+      logger_.LogInformation("Task preconditions are OK");
+      await updateTask;
+
+      await PrefetchAndCompute(taskData,
+                               message.MessageId,
+                               message.CancellationToken,
+                               cancellationToken);
     }
 
     private Task<bool> IsDependencyCompleted(TaskId tid, CancellationToken cancellationToken)
