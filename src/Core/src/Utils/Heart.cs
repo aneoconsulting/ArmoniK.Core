@@ -34,7 +34,7 @@ namespace ArmoniK.Core.Utils
 
     private readonly Func<CancellationToken, Task<bool>> pulse_;
 
-    protected readonly TimeSpan BeatPeriod;
+    private readonly TimeSpan BeatPeriod;
 
     /// <summary>
     /// 
@@ -85,7 +85,7 @@ namespace ArmoniK.Core.Utils
     /// Start the heart. If the heart is beating, it has no effect.
     /// </summary>
     /// <param name="nbPulsations">Number of cycles to do. Set 0 for an infinite loop.</param>
-    public void Start(uint nbPulsations = 0)
+    public void Start(int nbPulsations = 0)
     {
       if (nbPulsations_ == 0) // already running with infinite loop
       {
@@ -95,36 +95,35 @@ namespace ArmoniK.Core.Utils
 
       if (nbPulsations_ > 0) // already running
       {
-        if (nbPulsations_ < nbPulsations || nbPulsations == 0) // new value is longer than current
-        {
-          nbPulsations_ = (int) nbPulsations;
-        }
-
+        nbPulsations_ = Math.Max(nbPulsations_,
+                                 nbPulsations);
         return;
       }
 
       stoppedHeartCts_ = new CancellationTokenSource();
-      nbPulsations_    = (int) nbPulsations;
+      nbPulsations_    = nbPulsations;
 
 
-      runningTask_ = Task.Factory.StartNew(async () =>
-                                           {
-                                             while (IsStarted)
-                                             {
-                                               NextPulseWaiter = FullCycle();
-                                               await NextPulseWaiter;
-                                               if (nbPulsations_ == 1)
-                                               {
-                                                 nbPulsations_ = -1;
-                                                 stoppedHeartCts_.Cancel();
-                                               }
+      runningTask_ = Task.Factory
+                         .StartNew(async () =>
+                                   {
+                                     while (IsStarted)
+                                     {
+                                       NextPulseWaiter = FullCycle();
+                                       await NextPulseWaiter;
+                                       if (nbPulsations_ == 1)
+                                       {
+                                         nbPulsations_ = -1;
+                                         stoppedHeartCts_.Cancel();
+                                       }
 
-                                               if (nbPulsations_ > 1) --nbPulsations_;
-                                             }
-                                           },
-                                           cancellationToken_,
-                                           TaskCreationOptions.LongRunning,
-                                           TaskScheduler.Current);
+                                       if (nbPulsations_ > 1) --nbPulsations_;
+                                     }
+                                   },
+                                   cancellationToken_,
+                                   TaskCreationOptions.LongRunning,
+                                   TaskScheduler.Current)
+                         .Unwrap();
     }
 
     /// <summary>
@@ -139,7 +138,7 @@ namespace ArmoniK.Core.Utils
 
     private async Task FullCycle()
     {
-      using var delayTask = Task.Delay(BeatPeriod, cancellationToken_);
+      var delayTask = Task.Delay(BeatPeriod, cancellationToken_);
       if (!await pulse_(cancellationToken_))
       {
         stoppedHeartCts_.Cancel();
