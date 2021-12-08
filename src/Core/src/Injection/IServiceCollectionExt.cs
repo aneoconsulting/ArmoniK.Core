@@ -24,7 +24,6 @@ namespace ArmoniK.Core.Injection
                  .Configure<Components>(configuration.GetSection(Components.SettingSection))
                  .AddSingleton<GrpcChannelProvider>()
                  .AddSingleton<ClientServiceProvider>()
-                 .AddTransient<IQueueStorage, QueueStorageWrapper>()
                  .AddTransient<IObjectStorage, DistributedCacheObjectStorage>()
                  .AddSingleton(typeof(KeyValueStorage<,>));
 

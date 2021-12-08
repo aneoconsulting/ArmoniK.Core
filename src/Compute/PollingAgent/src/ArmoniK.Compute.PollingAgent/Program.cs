@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 
+using ArmoniK.Adapters.Amqp;
 using ArmoniK.Adapters.MongoDB;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection;
@@ -69,6 +70,7 @@ namespace ArmoniK.Compute.PollingAgent
                    services.AddLogging()
                            .AddArmoniKCore(hostContext.Configuration)
                            .AddMongoComponents(hostContext.Configuration)
+                           .AddAmqp(hostContext.Configuration)
                            .AddHostedService<Worker>()
                            .AddSingleton<Pollster>()
                            .AddSingleton<ComputerService.ComputerServiceClient>();

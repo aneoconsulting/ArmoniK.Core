@@ -19,8 +19,8 @@ namespace ArmoniK.Adapters.Amqp
     public SessionProvider(IOptions<Options.Amqp> options)
       : base(async () =>
       {
-        var connection = await global::Amqp.Connection.Factory.CreateAsync(new global::Amqp.Address(options.Value.Address));
-        return new global::Amqp.Session(connection);
+        var connection = await Connection.Factory.CreateAsync(new Address(options.Value.Address));
+        return new Session(connection);
       })
     {
     }
