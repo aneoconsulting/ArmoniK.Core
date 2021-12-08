@@ -47,12 +47,8 @@ namespace ArmoniK.Adapters.MongoDB
                        })
                        .AddSingleton<SessionProvider>()
                        .AddSingleton(typeof(MongoCollectionProvider<>))
-                       .AddTransient<TableStorage>()
-                       .AddTransient<LeaseProvider>()
-                       .AddTransient<ObjectStorage>()
                        .AddTransient<KeyValueStorage<TaskId, ComputeReply>>()
-                       .AddTransient<KeyValueStorage<TaskId, Payload>>()
-                       .AddTransient<LockedQueueStorage>();
+                       .AddTransient<KeyValueStorage<TaskId, Payload>>();
 
       var components = configuration.GetSection(Components.SettingSection);
 

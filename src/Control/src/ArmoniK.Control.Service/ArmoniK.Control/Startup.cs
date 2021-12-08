@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using ArmoniK.Adapters.Amqp;
+
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +41,7 @@ namespace ArmoniK.Control
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddMongoComponents(Configuration);
+      services.AddAmqp(Configuration);
       services.ValidateGrpcRequests();
     }
 
