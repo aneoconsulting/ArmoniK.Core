@@ -49,8 +49,6 @@ namespace ArmoniK.Core.Storage
       {
         await heart_.Stop();
       }
-
-      await lockedQueueStorage_.RenewDeadlineAsync(id_, cancellationToken_);
       GC.SuppressFinalize(this);
     }
   }
