@@ -68,6 +68,8 @@ namespace ArmoniK.Compute.PollingAgent
                                        .FirstOrDefaultAsync(cancellationToken);
         } while (message is null);
 
+
+        logger_.LogDebug("Start a new Task to process the message");
         await Task.Factory.StartNew(() => ProcessMessageAsync(
                                                               message,
                                                               cancellationToken
@@ -76,6 +78,7 @@ namespace ArmoniK.Compute.PollingAgent
                                     TaskCreationOptions.None,
                                     TaskScheduler.Current);
 
+        logger_.LogDebug("Task returned");
       }
     }
 

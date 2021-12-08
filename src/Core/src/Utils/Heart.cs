@@ -148,7 +148,6 @@ namespace ArmoniK.Core.Utils
       }
 
       await delayTask;
-      return;
     }
   }
 }
