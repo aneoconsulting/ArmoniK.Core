@@ -27,10 +27,10 @@ namespace ArmoniK.Control.Services
     private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
     private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
     private readonly ILogger<ClientService>                logger_;
-    private readonly ILockedQueueStorage                         lockedQueueStorage_;
+    private readonly IQueueStorage                         lockedQueueStorage_;
 
     public ClientService(ITableStorage                         tableStorage,
-                         ILockedQueueStorage                         lockedQueueStorage,
+                         IQueueStorage                         lockedQueueStorage,
                          KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
                          KeyValueStorage<TaskId, Payload>      taskPayloadStorage,
                          ILogger<ClientService>                logger)
