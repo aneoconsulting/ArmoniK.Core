@@ -15,15 +15,9 @@ using NUnit.Framework;
 
 namespace ArmoniK.Core.Tests
 {
-  [TestFixture("prefix1", TestOf = typeof(KeyValueStorage<,>))]
-  [TestFixture("prefix2", TestOf = typeof(KeyValueStorage<,>))]
-  [TestFixture("abc", TestOf = typeof(KeyValueStorage<,>))]
+  [TestFixture(TestOf = typeof(KeyValueStorage<,>))]
   public class KeyValueStorageTests
   {
-    private readonly string prefix_;
-
-    public KeyValueStorageTests(string prefix) => prefix_ = prefix;
-
     [TestCase("suffix1")]
     [TestCase("suffix2")]
     [TestCase("abc")]
@@ -59,8 +53,6 @@ namespace ArmoniK.Core.Tests
       var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
 
       var serializedKey = kvs.SerializeKey(taskId);
-
-      Assert.IsTrue(serializedKey.StartsWith(prefix_));
 
       var deserializedKey = kvs.DeserializeKey(serializedKey);
 
