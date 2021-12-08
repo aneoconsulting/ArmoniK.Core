@@ -14,6 +14,8 @@ namespace ArmoniK.Core.Utils
   {
     public static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> enumerable) => Task.WhenAll(enumerable);
     public static Task WhenAll(this IEnumerable<Task> enumerable) => Task.WhenAll(enumerable);
+
+    public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> enumerableTask) => (await enumerableTask).ToList();
   }
 
   public static class DisposableExt

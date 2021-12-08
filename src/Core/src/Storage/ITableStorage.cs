@@ -30,6 +30,13 @@ namespace ArmoniK.Core.Storage
 
     Task<TaskOptions> GetDefaultTaskOption(SessionId sessionId, CancellationToken cancellationToken = default);
 
+    public Task<IEnumerable<(TaskId id, bool HasPayload, byte[] Payload)>> InitializeTaskCreation(SessionId   session,
+                                                                                                  TaskOptions options,
+                                                                                                  IEnumerable<Payload>
+                                                                                                    payloads,
+                                                                                                  CancellationToken
+                                                                                                    cancellationToken = default);
+
     Task<(TaskId id, bool isPayloadStored, IAsyncDisposable finalizer)> InitializeTaskCreation(SessionId         session,
                                                                    TaskOptions       options,
                                                                    Payload           payload,

@@ -15,8 +15,6 @@ namespace ArmoniK.Core.gRPC.Validators
   {
     public TaskRequestValidator()
     {
-      RuleFor(r => r.SessionId).NotNull().SetValidator(new SessionIdValidator());
-      RuleFor(r => r.TaskOptions).SetValidator(new TaskOptionsValidator());
       RuleFor(r => r.Payload).NotNull().SetValidator(new PayloadValidator());
     }
   }

@@ -37,7 +37,7 @@ namespace ArmoniK.Core.Storage
       {
         var depTaskData = await tableStorage.ReadTaskAsync(id, aggregateCts.Token);
         return await tableStorage.IsTaskCompleted(depTaskData, aggregateCts.Token);
-      }).ToList(); // ToList ensures that all operations have started before processing results
+      }).ToList(); // ToListAsync ensures that all operations have started before processing results
 
       while (futureDependenciesData.Count > 0)
       {
@@ -75,5 +75,10 @@ namespace ArmoniK.Core.Storage
                                             TaskId             taskId,
                                             CancellationToken  cancellationToken = default)
       => tableStorage.UpdateTaskStatusAsync(taskId, TaskStatus.Submitted, cancellationToken);
+
+    public static Task FinalizeTaskCreation(this ITableStorage tableStorage,
+                                            TaskFilter         filter,
+                                            CancellationToken  cancellationToken = default)
+      => tableStorage.UpdateTaskStatusAsync(filter, TaskStatus.Submitted, cancellationToken);
   }
 }

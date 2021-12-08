@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using ArmoniK.Core;
 using ArmoniK.Core.Utils;
 
+using Google.Protobuf;
+
 using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
@@ -107,50 +109,38 @@ namespace ArmoniK.Control.Services
     {
       logger_.LogFunction();
 
-      var inits = await request.TaskRequests.Select(async taskRequest =>
-                                                    {
-                                                      var options = taskRequest.TaskOptions;
-                                                      if (options == null)
-                                                      {
-                                                        options =
-                                                          await tableStorage_.GetDefaultTaskOption(taskRequest.SessionId,
-                                                                                                   context
-                                                                                                    .CancellationToken);
-                                                      }
+      var options = request.TaskOptions ??
+                    await tableStorage_.GetDefaultTaskOption(request.SessionId,
+                                                             context
+                                                              .CancellationToken);
 
-                                                      var (tid, isPayloadStored, finalizer) =
-                                                        await tableStorage_.InitializeTaskCreation(taskRequest.SessionId,
-                                                                                                   options,
-                                                                                                   taskRequest.Payload,
-                                                                                                   context
-                                                                                                    .CancellationToken);
-                                                      return (id: tid,
-                                                              isPayloadStored,
-                                                              finalizer,
-                                                              request: taskRequest,
-                                                              options);
-                                                    }).WhenAll();
+      var inits = await tableStorage_.InitializeTaskCreation(request.SessionId,
+                                                           options,
+                                                           request.TaskRequests.Select(taskRequest => taskRequest.Payload),
+                                                           context.CancellationToken)
+                                     .ToListAsync();
 
+      await using var finalizer = AsyncDisposable.Create(async () => await tableStorage_.FinalizeTaskCreation(new TaskFilter
+                                                                                                              {
+                                                                                                                SessionId    = request.SessionId.Session,
+                                                                                                                SubSessionId = request.SessionId.SubSession,
+                                                                                                                IncludedTaskIds =
+                                                                                                                {
+                                                                                                                  inits.Select(tuple => tuple.id.Task),
+                                                                                                                },
+                                                                                                              },
+                                                                                                              context.CancellationToken));
 
-      var payloadsUpdateTask = inits.Where(tuple => !tuple.isPayloadStored)
-                                    .Select(tuple => taskPayloadStorage_.AddOrUpdateAsync(tuple.id,
-                                                                                          tuple.request.Payload,
+      var payloadsUpdateTask = inits.Where(tuple => !tuple.HasPayload)
+                                    .Select(tuple => taskPayloadStorage_.AddOrUpdateAsync(tuple.Item1,
+                                                                                          new Payload{Data = ByteString.CopyFrom(tuple.Payload)},
                                                                                           context.CancellationToken))
                                     .WhenAll();
 
-      await using var finalizers = inits.Select(tuple => tuple.finalizer).Merge();
 
-      var priorityBuckets = inits.GroupBy(tuple => tuple.options.Priority);
-
-      var enqueueTask = priorityBuckets.Select(async grouping =>
-                                               {
-                                                 var priority = grouping.Key;
-                                                 await lockedQueueStorage_.EnqueueMessagesAsync(inits.Select(tuple => tuple
-                                                                                                              .id),
-                                                                                                priority,
-                                                                                                cancellationToken: context
-                                                                                                 .CancellationToken);
-                                               }).WhenAll();
+      var enqueueTask = lockedQueueStorage_.EnqueueMessagesAsync(inits.Select(tuple => tuple.id),
+                                                                 options.Priority,
+                                                                 context.CancellationToken);
 
       await Task.WhenAll(enqueueTask, payloadsUpdateTask);
 

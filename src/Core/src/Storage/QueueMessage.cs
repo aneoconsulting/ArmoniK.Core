@@ -43,6 +43,10 @@ namespace ArmoniK.Core.Storage
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync() => await disposeFunc_();
+    public async ValueTask DisposeAsync()
+    {
+      await disposeFunc_();
+      GC.SuppressFinalize(this);
+    }
   }
 }

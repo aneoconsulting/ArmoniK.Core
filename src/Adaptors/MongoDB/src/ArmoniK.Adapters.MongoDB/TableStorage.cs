@@ -229,6 +229,44 @@ namespace ArmoniK.Adapters.MongoDB
       }
     }
 
+    public async Task<IEnumerable<(TaskId id, bool HasPayload, byte[] Payload)>>
+      InitializeTaskCreation(
+        SessionId            session,
+        TaskOptions          options,
+        IEnumerable<Payload> payloads,
+        CancellationToken    cancellationToken = default)
+    {
+      using var _              = logger_.LogFunction();
+      var       sessionHandle  = await sessionProvider_.GetAsync();
+      var       taskCollection = await taskCollectionProvider_.GetAsync();
+
+      var tdms = payloads.Select(payload =>
+                                 {
+                                   var isPayloadStored = payload.CalculateSize() < 12000000;
+
+                                   var tdm = new TaskDataModel
+                                             {
+                                               HasPayload   = isPayloadStored,
+                                               Options      = options,
+                                               Retries      = 0,
+                                               SessionId    = session.Session,
+                                               SubSessionId = session.SubSession,
+                                               Status       = TaskStatus.Creating,
+                                             };
+                                   if (isPayloadStored)
+                                   {
+                                     tdm.Payload = payload.Data.ToByteArray();
+                                   }
+
+                                   return tdm;
+                                 })
+                         .ToList();
+
+      await taskCollection.InsertManyAsync(sessionHandle, tdms, cancellationToken: cancellationToken);
+
+      return tdms.Select(tdm => (tdm.GetTaskId(), tdm.HasPayload, tdm.Payload));
+    }
+
     public async Task<(TaskId id, bool isPayloadStored, IAsyncDisposable finalizer)> InitializeTaskCreation(SessionId   session,
                                                                                                             TaskOptions options,
                                                                                                             Payload     payload,

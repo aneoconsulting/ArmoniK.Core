@@ -61,7 +61,7 @@ namespace ArmoniK.Adapters.Amqp
     {
       if (messages_.TryRemove(id, out var msg))
       {
-        var (message, receiver, priority) = msg;
+        var (message, receiver, _) = msg;
         receiver.Release(message);
       }
 
