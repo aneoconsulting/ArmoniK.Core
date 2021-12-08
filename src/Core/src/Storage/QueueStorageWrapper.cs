@@ -49,11 +49,13 @@ namespace ArmoniK.Core.Storage
                                                   .WithCancellation(cancellationToken))
       {
         using var logScope = logger_.BeginPropertyScope(("messageId", qm.MessageId), ("taskId", qm.TaskId.ToPrintableId()));
+        logger_.LogInformation("Pulled a message from Mongo queue");
 
         Func<Task> messageDisposeFunc = async () => await qm.DisposeAsync();
 
         var cancellationTokens = new List<CancellationToken>();
 
+        logger_.LogInformation("Setting message lock");
         var deadlineHandler = lockedQueueStorage_.GetDeadlineHandler(qm.MessageId, logger_, cancellationToken);
         if (!deadlineHandlers_.TryAdd(qm.MessageId, deadlineHandler))
         {
@@ -73,6 +75,7 @@ namespace ArmoniK.Core.Storage
 
         if (!lockedQueueStorage_.AreMessagesUnique)
         {
+          logger_.LogInformation("Setting task lease");
           LeaseHandler lease;
           try
           {
@@ -118,6 +121,7 @@ namespace ArmoniK.Core.Storage
 
         var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens.ToArray());
 
+        logger_.LogInformation("Queue message ready to forward");
         yield return new QueueMessage(qm.MessageId,
                                       qm.TaskId,
                                       messageDisposeFunc,
