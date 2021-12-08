@@ -78,6 +78,7 @@ namespace ArmoniK.Adapters.MongoDB
                                               .Ascending(qmm => qmm.SubmissionDate)
                                               .Descending(qmm => qmm.Priority);
 
+        logger_.LogDebug("Trying to get a new message from Mongo queue");
         var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(sessionHandle,
                                                                                      qmdm => qmdm.OwnedUntil == default ||
                                                                                              qmdm.OwnedUntil <
@@ -93,9 +94,13 @@ namespace ArmoniK.Adapters.MongoDB
                                                                                      cancellationToken);
 
         if (message is not null)
-          yield return new QueueMessage(message.MessageId, message.TaskId, () => Task.CompletedTask, CancellationToken.None);
+          yield return new QueueMessage(message.MessageId,
+                                        message.TaskId,
+                                        () => Task.CompletedTask,
+                                        CancellationToken.None);
         else
-          await Task.Delay(PollPeriodicity, cancellationToken);
+          await Task.Delay(PollPeriodicity,
+                           cancellationToken);
       }
     }
 
