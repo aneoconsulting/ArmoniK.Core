@@ -105,7 +105,7 @@ namespace ArmoniK.Adapters.Amqp
     /// <inheritdoc />
     public Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default)
     {
-      using var _ = logger_.LogFunction();
+      using var _ = logger_.LogFunction(id);
       messages_.TryRemove(id, out var msg);
       var (message, receiver, _) = msg;
       receiver.Accept(message);
@@ -116,7 +116,7 @@ namespace ArmoniK.Adapters.Amqp
     /// <inheritdoc />
     public Task MessageRejectedAsync(string id, CancellationToken cancellationToken = default)
     {
-      using var _ = logger_.LogFunction();
+      using var _ = logger_.LogFunction(id);
       messages_.TryRemove(id, out var msg);
       var (message, receiver, _) = msg;
       receiver.Reject(message);
@@ -138,7 +138,7 @@ namespace ArmoniK.Adapters.Amqp
     /// <inheritdoc />
     public async Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default)
     {
-      using var _ = logger_.LogFunction();
+      using var _ = logger_.LogFunction(id);
       messages_.TryRemove(id, out var msg);
       var (message, receiver, priority) = msg;
 
@@ -152,7 +152,7 @@ namespace ArmoniK.Adapters.Amqp
     /// <inheritdoc />
     public Task ReleaseMessageAsync(string id, CancellationToken cancellationToken = default)
     {
-      using var _ = logger_.LogFunction();
+      using var _ = logger_.LogFunction(id);
       messages_.TryRemove(id, out var msg);
       var (message, receiver, _) = msg;
       receiver.Release(message);

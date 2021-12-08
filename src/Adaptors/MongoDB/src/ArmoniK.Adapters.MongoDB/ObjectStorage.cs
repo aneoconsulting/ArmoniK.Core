@@ -45,9 +45,9 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default)
     {
-      logger_.LogFunction();
-      var sessionHandle    = await sessionProvider_.GetAsync();
-      var objectCollection = await objectCollectionProvider_.GetAsync();
+      using var _                = logger_.LogFunction(key);
+      var       sessionHandle    = await sessionProvider_.GetAsync();
+      var       objectCollection = await objectCollectionProvider_.GetAsync();
 
       var taskList = new List<Task<ObjectDataModel>>();
       for (var (pos, idx) = (0, 0); pos < value.Length; idx += 1)
@@ -87,9 +87,9 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default)
     {
-      logger_.LogFunction();
-      var sessionHandle    = await sessionProvider_.GetAsync();
-      var objectCollection = await objectCollectionProvider_.GetAsync();
+      using var _                = logger_.LogFunction(key);
+      var       sessionHandle    = await sessionProvider_.GetAsync();
+      var       objectCollection = await objectCollectionProvider_.GetAsync();
 
       var chunks = objectCollection.AsQueryable(sessionHandle)
                                    .Where(odm => odm.Key == key)
@@ -109,9 +109,9 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
     {
-      logger_.LogFunction();
-      var sessionHandle    = await sessionProvider_.GetAsync();
-      var objectCollection = await objectCollectionProvider_.GetAsync();
+      using var _                = logger_.LogFunction(key);
+      var       sessionHandle    = await sessionProvider_.GetAsync();
+      var       objectCollection = await objectCollectionProvider_.GetAsync();
 
       var res = await objectCollection.DeleteManyAsync(sessionHandle,
                                                        odm => odm.Key == key,

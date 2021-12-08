@@ -49,7 +49,7 @@ namespace ArmoniK.Core.Storage
                                                   .WithCancellation(cancellationToken))
       {
         using var logScope = logger_.BeginPropertyScope(("messageId", qm.MessageId), ("taskId", qm.TaskId.ToPrintableId()));
-        logger_.LogInformation("Pulled a message from Mongo queue");
+        logger_.LogDebug("Pulled a message from Mongo queue. MessageId={messageId}", qm.MessageId);
 
         Func<Task> messageDisposeFunc = async () => await qm.DisposeAsync();
 

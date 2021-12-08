@@ -102,7 +102,7 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default)
     {
-      using var _               = logger_.LogFunction();
+      using var _               = logger_.LogFunction(id);
       var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
@@ -114,7 +114,7 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task<bool> RenewDeadlineAsync(string id, CancellationToken cancellationToken = default)
     {
-      using var _               = logger_.LogFunction();
+      using var _               = logger_.LogFunction(id);
       var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
@@ -159,7 +159,7 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default)
     {
-      using var _               = logger_.LogFunction();
+      using var _               = logger_.LogFunction(id);
       var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
@@ -179,7 +179,7 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task MessageRejectedAsync(string id, CancellationToken cancellationToken)
     {
-      using var _               = logger_.LogFunction();
+      using var _               = logger_.LogFunction(id);
       var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
@@ -191,7 +191,7 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task ReleaseMessageAsync(string id, CancellationToken cancellationToken)
     {
-      using var _               = logger_.LogFunction();
+      using var _               = logger_.LogFunction(id);
       var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 

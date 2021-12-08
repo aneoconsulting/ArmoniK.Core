@@ -6,6 +6,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 
 using Microsoft.Extensions.Logging;
@@ -19,8 +20,8 @@ namespace ArmoniK.Core.Storage
                                                                 ILogger             logger,
                                                                 CancellationToken   cancellationToken = default)
     {
-      using var _ = logger.LogFunction();
-      var output = new LeaseHandler(leaseProvider, taskId, logger, cancellationToken);
+      using var _      = logger.LogFunction(taskId.ToPrintableId());
+      var       output = new LeaseHandler(leaseProvider, taskId, logger, cancellationToken);
       await output.Start();
       return output;
     }

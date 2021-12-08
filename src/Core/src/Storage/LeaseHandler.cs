@@ -37,7 +37,7 @@ namespace ArmoniK.Core.Storage
 
     public async Task Start()
     {
-      using var _     = logger_.LogFunction();
+      using var _     = logger_.LogFunction(taskId_.ToPrintableId());
       var       lease = await leaseProvider_.TryAcquireLeaseAsync(taskId_, cancellationToken_);
       leaseId_ = lease.LeaseId;
       heart_ = new Heart(async ct =>
@@ -61,12 +61,11 @@ namespace ArmoniK.Core.Storage
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-      using var _ = logger_.LogFunction();
+      using var _ = logger_.LogFunction(taskId_.ToPrintableId());
       if (!heart_.HeartStopped.IsCancellationRequested)
       {
         await heart_.Stop();
       }
-
       await leaseProvider_.ReleaseLease(taskId_, leaseId_, cancellationToken_);
       GC.SuppressFinalize(this);
     }

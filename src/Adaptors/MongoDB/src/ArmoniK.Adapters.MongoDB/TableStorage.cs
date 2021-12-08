@@ -12,6 +12,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
 using ArmoniK.Core.Exceptions;
+using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 using ArmoniK.Core.Utils;
@@ -22,6 +23,7 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 
 namespace ArmoniK.Adapters.MongoDB
@@ -55,7 +57,8 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task CancelSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
-      using var _                 = logger_.LogFunction();
+
+      using var _                 = logger_.LogFunction(sessionId.ToString());
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
@@ -67,8 +70,10 @@ namespace ArmoniK.Adapters.MongoDB
                                                                       !sdm.IsClosed));
 
       var updateDefinition = Builders<SessionDataModel>.Update
-                                                       .Set(model => model.IsCancelled, true)
-                                                       .Set(model => model.IsClosed, true);
+                                                       .Set(model => model.IsCancelled,
+                                                            true)
+                                                       .Set(model => model.IsClosed,
+                                                            true);
 
       var res = await sessionCollection.UpdateManyAsync(sessionHandle,
                                                         filterDefinition,
@@ -80,7 +85,7 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task CloseSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
-      using var _                 = logger_.LogFunction();
+      using var _                 = logger_.LogFunction(sessionId.ToString());
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
@@ -170,7 +175,7 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task DeleteTaskAsync(TaskId id, CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction();
+      using var _              = logger_.LogFunction(id.ToPrintableId());
       var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
@@ -205,7 +210,7 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task IncreaseRetryCounterAsync(TaskId id, CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction();
+      using var _              = logger_.LogFunction(id.ToPrintableId());
       var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
@@ -234,7 +239,7 @@ namespace ArmoniK.Adapters.MongoDB
         IEnumerable<Payload> payloads,
         CancellationToken    cancellationToken = default)
     {
-      using var _              = logger_.LogFunction();
+      using var _              = logger_.LogFunction(session.ToString());
       var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
@@ -272,7 +277,7 @@ namespace ArmoniK.Adapters.MongoDB
       CancellationToken cancellationToken = default
     )
     {
-      using var _              = logger_.LogFunction();
+      using var _              = logger_.LogFunction(session.ToString());
       var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
@@ -301,7 +306,7 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task<bool> IsSessionCancelledAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
-      using var _                 = logger_.LogFunction();
+      using var _                 = logger_.LogFunction(sessionId.ToString());
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
@@ -315,7 +320,7 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task<bool> IsSessionClosedAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
-      using var _                 = logger_.LogFunction();
+      using var _                 = logger_.LogFunction(sessionId.ToString());
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
       if (!string.IsNullOrEmpty(sessionId.SubSession))
@@ -336,7 +341,7 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public Task DeleteSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
-      using var disposableLog = logger_.LogFunction();
+      using var _ = logger_.LogFunction(sessionId.ToString());
       throw new NotImplementedException();
     }
 
@@ -363,7 +368,7 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task<TaskData> ReadTaskAsync(TaskId id, CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction();
+      using var _              = logger_.LogFunction(id.ToPrintableId());
       var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
@@ -379,7 +384,7 @@ namespace ArmoniK.Adapters.MongoDB
                                             TaskStatus        status,
                                             CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction();
+      using var _              = logger_.LogFunction(id.ToPrintableId());
       var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
@@ -407,7 +412,7 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task<TaskOptions> GetDefaultTaskOption(SessionId sessionId, CancellationToken cancellationToken)
     {
-      using var _                 = logger_.LogFunction();
+      using var _              = logger_.LogFunction(sessionId.ToString());
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
