@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ArmoniK.Core.Injection
 {
-  public static class IServiceCollectionExt
+  public static class ServiceCollectionExt
   {
     public static IServiceCollection AddArmoniKCore(this IServiceCollection services,
                                                     IConfiguration          configuration)

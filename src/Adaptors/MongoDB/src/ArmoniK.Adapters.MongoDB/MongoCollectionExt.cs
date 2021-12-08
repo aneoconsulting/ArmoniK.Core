@@ -22,6 +22,9 @@ namespace ArmoniK.Adapters.MongoDB
       => taskCollection.AsQueryable(sessionHandle)
                        .Where(ToFilterExpression(filter));
 
+    public static FilterDefinition<TaskDataModel> ToFilterDefinition(this TaskFilter filter)
+      => Builders<TaskDataModel>.Filter.Where(filter.ToFilterExpression());
+
     public static Expression<Func<TaskDataModel, bool>> ToFilterExpression(this TaskFilter filter)
     {
       const TaskDataModel tdm = null;

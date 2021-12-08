@@ -59,16 +59,16 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-      Expression<Func<SessionDataModel, bool>> filterDefinition = sdm => sessionId.Session == sdm.SessionId &&
-                                                                         (sessionId.SubSession == sdm.SubSessionId ||
-                                                                          sdm.ParentsId.Any(
-                                                                            id => id.Id == sessionId.SubSession) &&
-                                                                          !sdm.IsClosed);
+      var filterDefinition = Builders<SessionDataModel>.Filter
+                                                       .Where(sdm => sessionId.Session == sdm.SessionId &&
+                                                                     (sessionId.SubSession == sdm.SubSessionId ||
+                                                                      sdm.ParentsId.Any(
+                                                                                        id => id.Id == sessionId.SubSession) &&
+                                                                      !sdm.IsClosed));
 
-      var definitionBuilder = new UpdateDefinitionBuilder<SessionDataModel>();
-
-      var updateDefinition = definitionBuilder.Combine(definitionBuilder.Set(model => model.IsCancelled, true),
-                                                       definitionBuilder.Set(model => model.IsClosed, true));
+      var updateDefinition = Builders<SessionDataModel>.Update
+                                                       .Set(model => model.IsCancelled, true)
+                                                       .Set(model => model.IsClosed, true);
 
       var res = await sessionCollection.UpdateManyAsync(sessionHandle,
                                                         filterDefinition,
@@ -84,10 +84,11 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-      Expression<Func<SessionDataModel, bool>> filterDefinition = sdm => sessionId.Session == sdm.SessionId &&
-                                                                         (sessionId.SubSession == sdm.SubSessionId ||
-                                                                          sdm.ParentsId.Any(
-                                                                            id => id.Id == sessionId.SubSession));
+      var filterDefinition = Builders<SessionDataModel>.Filter
+                                                       .Where(sdm => sessionId.Session == sdm.SessionId &&
+                                                                     (sessionId.SubSession == sdm.SubSessionId ||
+                                                                      sdm.ParentsId.Any(
+                                                                                        id => id.Id == sessionId.SubSession)));
 
       var definitionBuilder = new UpdateDefinitionBuilder<SessionDataModel>();
 
@@ -156,7 +157,8 @@ namespace ArmoniK.Adapters.MongoDB
       if (!subSession)
       {
         data.SessionId = data.SubSessionId;
-        var updateDefinition = new UpdateDefinitionBuilder<SessionDataModel>().Set(model => model.SessionId, data.SessionId);
+        var updateDefinition = Builders<SessionDataModel>.Update
+                                                         .Set(model => model.SessionId, data.SessionId);
         await sessionCollection.UpdateOneAsync(sessionHandle,
                                                x => x.SubSessionId == data.SubSessionId,
                                                updateDefinition,
@@ -193,10 +195,8 @@ namespace ArmoniK.Adapters.MongoDB
       filter.ExcludedStatuses.Add(TaskStatus.Completed);
       filter.ExcludedStatuses.Add(TaskStatus.Canceled);
 
-      var filterDefinition = new FilterDefinitionBuilder<TaskDataModel>().Where(filter.ToFilterExpression());
-
       var result = await taskCollection.UpdateManyAsync(sessionHandle,
-                                                        filterDefinition,
+                                                        filter.ToFilterDefinition(),
                                                         updateDefinition,
                                                         cancellationToken: cancellationToken
       );
@@ -209,7 +209,8 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-      var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Inc(tdm => tdm.Retries, 1);
+      var updateDefinition = Builders<TaskDataModel>.Update
+                                                    .Inc(tdm => tdm.Retries, 1);
 
       var res = await taskCollection.UpdateManyAsync(sessionHandle,
                                                      tdm => tdm.SessionId == id.Session &&
