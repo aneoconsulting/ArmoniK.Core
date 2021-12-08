@@ -33,15 +33,24 @@ namespace ArmoniK.Core
     }
 
     public static IDisposable LogFunction(this ILogger              logger,
+                                          string                    id      = "",
                                           LogLevel                  level        = LogLevel.Debug,
                                           [CallerMemberName] string functionName = "")
     {
       var methodInfo = new StackTrace().GetFrame(1)?.GetMethod();
       var className  = methodInfo?.ReflectedType?.Name;
 
-      logger.Log(level, "Entering {className}.{functionName}", className, functionName);
+      logger.Log(level,
+                 "Entering {className}.{functionName} - {id}",
+                 className,
+                 functionName,
+                 id);
 
-      return Disposable.Create(() => logger.Log(level, "Leaving {className}.{functionName}", className, functionName));
+      return Disposable.Create(() => logger.Log(level,
+                                                "Leaving {className}.{functionName} - {id}",
+                                                className,
+                                                functionName,
+                                                id));
     }
   }
 }

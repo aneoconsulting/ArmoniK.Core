@@ -44,7 +44,7 @@ namespace ArmoniK.Core.Storage
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-      using var _ = logger_.LogFunction(functionName: $"{nameof(LockedQueueMessageDeadlineHandler)}.{nameof(DisposeAsync)}");
+      using var _ = logger_.LogFunction(id:id_, functionName: $"{nameof(LockedQueueMessageDeadlineHandler)}.{nameof(DisposeAsync)}");
       if (!heart_.HeartStopped.IsCancellationRequested)
       {
         await heart_.Stop();
