@@ -23,6 +23,6 @@ namespace ArmoniK.Core.Storage
 
     bool AreMessagesUnique { get; }
 
-    Task<bool> RenewLeaseAsync(string id, CancellationToken cancellationToken = default);
+    Task<bool> RenewDeadlineAsync(string id, CancellationToken cancellationToken = default);
   }
 }

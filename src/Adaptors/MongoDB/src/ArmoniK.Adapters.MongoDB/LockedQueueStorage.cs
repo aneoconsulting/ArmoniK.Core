@@ -112,7 +112,7 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
     /// <inheritdoc />
-    public async Task<bool> RenewLeaseAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<bool> RenewDeadlineAsync(string id, CancellationToken cancellationToken = default)
     {
       using var _               = logger_.LogFunction();
       var       sessionHandle   = await sessionProvider_.GetAsync();
