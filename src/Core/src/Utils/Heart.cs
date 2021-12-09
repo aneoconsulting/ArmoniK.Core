@@ -57,10 +57,20 @@ namespace ArmoniK.Core.Utils
     /// Stops the heart
     /// </summary>
     /// <returns>A task finishing with the last heartbeat</returns>
-    public Task Stop()
+    public async Task Stop()
     {
       stoppedHeartCts_.Cancel();
-      return runningTask_;
+      try
+      {
+        await runningTask_;
+      }
+      catch (TaskCanceledException e)
+      {
+      }
+      catch (AggregateException ae)
+      {
+        ae.Handle(exception => exception is not TaskCanceledException);
+      }
     }
 
     /// <summary>
@@ -80,6 +90,8 @@ namespace ArmoniK.Core.Utils
       runningTask_ = Task<Task>.Factory
                          .StartNew(async () =>
                                    {
+                                     await Task.Delay(beatPeriod,
+                                                      combinedSource_.Token);
                                      while (!stoppedHeartCts_.IsCancellationRequested)
                                      {
                                        await FullCycle();

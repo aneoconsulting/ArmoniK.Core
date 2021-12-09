@@ -97,6 +97,7 @@ namespace ArmoniK.Adapters.MongoDB
           yield return new QueueMessage(message.MessageId,
                                         message.TaskId,
                                         () => Task.CompletedTask,
+                                        logger_,
                                         CancellationToken.None);
         //else
         //  await Task.Delay(PollPeriodicity,
@@ -111,7 +112,7 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
-      await queueCollection.FindOneAndDeleteAsync(sessionHandle,
+      await queueCollection.FindOneAndDeleteAsync(
                                                   qmm => qmm.MessageId == id && qmm.OwnerId == ownerId_,
                                                   cancellationToken: cancellationToken);
     }

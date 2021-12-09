@@ -5,6 +5,7 @@
 
 using System;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,6 +17,7 @@ using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
 using ArmoniK.Core.Utils;
 
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -33,6 +35,7 @@ namespace ArmoniK.Compute.PollingAgent
     private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
     private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
     private readonly ClientServiceProvider                 clientProvider_;
+    private readonly IHostApplicationLifetime              lifeTime_;
 
     public Pollster(ILogger<Pollster>                     logger,
                     // ReSharper disable once UnusedParameter.Local
@@ -41,7 +44,8 @@ namespace ArmoniK.Compute.PollingAgent
                     ITableStorage                         tableStorage,
                     KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
                     KeyValueStorage<TaskId, Payload>      taskPayloadStorage,
-                    ClientServiceProvider                 clientProvider)
+                    ClientServiceProvider                 clientProvider,
+                    IHostApplicationLifetime              lifeTime)
     {
       logger_             = logger;
       queueStorage_       = queueStorage;
@@ -49,54 +53,74 @@ namespace ArmoniK.Compute.PollingAgent
       taskResultStorage_  = taskResultStorage;
       taskPayloadStorage_ = taskPayloadStorage;
       clientProvider_     = clientProvider;
+      lifeTime_       = lifeTime;
     }
 
     public async Task MainLoop(CancellationToken cancellationToken)
     {
       cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
-
-      logger_.LogInformation("Main loop started.");
-      while (!cancellationToken.IsCancellationRequested)
+      try
       {
+        logger_.LogInformation("Main loop started.");
+        while (!cancellationToken.IsCancellationRequested)
+        {
           logger_.LogInformation("Trying to fetch messages");
           var messages = queueStorage_.PullAsync(1,
-                                                     cancellationToken);
+                                                 cancellationToken);
+
           await foreach (var message in messages.WithCancellation(cancellationToken))
           {
+            await using var msg = message;
+              using var scopedLogger = logger_.BeginNamedScope("Message",
+                                                               ("message", msg.MessageId),
+                                                               ("session", msg.TaskId.Session),
+                                                               ("task", msg.TaskId.Task));
             logger_.LogDebug("Start a new Task to process the message");
 
-            await Task.Factory
-                      .StartNew(() => ProcessMessageAsync(
-                                          message,
-                                          cancellationToken
-                                        ),
-                                        cancellationToken,
-                                        TaskCreationOptions.None,
-                                        TaskScheduler.Current)
-                      .Unwrap();
+              var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(msg.CancellationToken,
+                                                                                cancellationToken);
+            try
+            {
+              logger_.LogDebug("Loading task data");
+              var taskData = await tableStorage_.ReadTaskAsync(msg.TaskId,
+                                                               combinedCts.Token);
+
+              if (await CheckPreconditions(msg,
+                                           taskData,
+                                           combinedCts,
+                                           cancellationToken))
+              {
+                var payload = await PrefetchPayload(taskData,
+                                                    combinedCts.Token);
+
+                await ProcessTaskAsync(taskData,
+                                       msg.MessageId,
+                                       msg.CancellationToken,
+                                       cancellationToken,
+                                       payload,
+                                       combinedCts.Token);
+              }
+            }
+            catch (Exception e)
+            {
+              logger_.LogWarning(e, "Error while processing message");
+              throw;
+            }
 
             logger_.LogDebug("Task returned");
           }
+        }
+
+      }
+      catch (Exception e)
+      {
+        logger_.LogCritical(e, "Error in pollster");
+        lifeTime_.StopApplication();
       }
     }
 
-    private async Task ProcessMessageAsync(QueueMessage message, CancellationToken cancellationToken)
+    private async Task<bool> CheckPreconditions(QueueMessage message, TaskData taskData, CancellationTokenSource combinedCts, CancellationToken cancellationToken)
     {
-      await using var msg = message;
-      using var scopedLogger = logger_.BeginNamedScope("Message",
-                                                       ("message", message.MessageId),
-                                                       ("session", message.TaskId.Session),
-                                                       ("task", message.TaskId.Task));
-      logger_.LogInformation(LogEvents.StartMessageProcessing,
-                             "Message acquired.");
-
-      using var _ = logger_.LogFunction(message.MessageId);
-
-      var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
-                                                                        cancellationToken);
-
-      combinedCts.Token.Register(() => logger_.LogError("Combined CancellationToken has been triggered."));
-
       /*
        * Check preconditions:
        *  - Session is not cancelled
@@ -114,10 +138,6 @@ namespace ArmoniK.Compute.PollingAgent
                                                                            },
                                                                            combinedCts.Token);
 
-      logger_.LogDebug("Loading task data");
-      var taskData = await tableStorage_.ReadTaskAsync(message.TaskId,
-                                                       combinedCts.Token);
-
       if (isSessionCancelled &&
           taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.WaitingForChildren))
       {
@@ -128,23 +148,12 @@ namespace ArmoniK.Compute.PollingAgent
         await tableStorage_.UpdateTaskStatusAsync(message.TaskId,
                                                   TaskStatus.Canceled,
                                                   cancellationToken);
-        return;
+        return true;
       }
 
       var dependencyCheckTask = taskData.Options.Dependencies.AsParallel().Select(tid => IsDependencyCompleted(tid,
                                                                                                                combinedCts.Token)).WhenAll();
 
-      logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
-      if (taskData.Retries >= taskData.Options.MaxRetries)
-      {
-        logger_.LogInformation("Task has been retried too many times");
-        await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(message.TaskId,
-                                                               TaskStatus.Failed,
-                                                               CancellationToken.None),
-                           queueStorage_.MessageRejectedAsync(message.MessageId,
-                                                              CancellationToken.None));
-        return;
-      }
 
       logger_.LogDebug("Handling the task status ({status})",
                        taskData.Status);
@@ -157,12 +166,12 @@ namespace ArmoniK.Compute.PollingAgent
                                                                  CancellationToken.None),
                              queueStorage_.MessageProcessedAsync(message.MessageId,
                                                                  CancellationToken.None));
-          return;
+          return false;
         case TaskStatus.Completed:
           logger_.LogInformation("Task was already completed");
           await queueStorage_.MessageProcessedAsync(message.MessageId,
                                                     cancellationToken);
-          return;
+          return false;
         case TaskStatus.Creating:
           break;
         case TaskStatus.Submitted:
@@ -179,17 +188,29 @@ namespace ArmoniK.Compute.PollingAgent
           logger_.LogInformation("Task has been cancelled");
           await queueStorage_.MessageProcessedAsync(message.MessageId,
                                                     cancellationToken);
-          return;
+          return false;
         case TaskStatus.Processing:
           logger_.LogInformation("Task is processing elsewhere ; taking over here");
           break;
         case TaskStatus.WaitingForChildren:
           logger_.LogInformation("Task was already processed and is waiting for children");
-          return;
+          return false;
         default:
           logger_.LogCritical("Task was in an unknown state {state}",
                               taskData.Status);
-          throw new ArgumentOutOfRangeException(nameof(taskData.Status));
+          throw new ArgumentOutOfRangeException(nameof(taskData));
+      }
+
+      logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
+      if (taskData.Retries >= taskData.Options.MaxRetries)
+      {
+        logger_.LogInformation("Task has been retried too many times");
+        await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(message.TaskId,
+                                                               TaskStatus.Failed,
+                                                               CancellationToken.None),
+                           queueStorage_.MessageRejectedAsync(message.MessageId,
+                                                              CancellationToken.None));
+        return false;
       }
 
       logger_.LogDebug("Changing task status to 'Dispatched'");
@@ -203,17 +224,13 @@ namespace ArmoniK.Compute.PollingAgent
         await queueStorage_.RequeueMessageAsync(message.MessageId,
                                                 cancellationToken);
         await updateTask;
-        return;
+        return false;
       }
 
 
       logger_.LogInformation("Task preconditions are OK");
       await updateTask;
-
-      await PrefetchAndCompute(taskData,
-                               message.MessageId,
-                               message.CancellationToken,
-                               cancellationToken);
+      return true;
     }
 
     private Task<bool> IsDependencyCompleted(TaskId tid, CancellationToken cancellationToken)
@@ -248,30 +265,14 @@ namespace ArmoniK.Compute.PollingAgent
                                        cancellationToken);
     }
 
-    private async Task PrefetchAndCompute(TaskData          taskData,
-                                          string            messageId,
-                                          CancellationToken messageToken,
-                                          CancellationToken cancellationToken)
+    private async Task ProcessTaskAsync(TaskData                taskData,
+                                        string                  messageId,
+                                        CancellationToken       messageToken,
+                                        CancellationToken       cancellationToken,
+                                        Payload                 payload,
+                                        CancellationToken combinedCt)
     {
       using var _ = logger_.LogFunction(taskData.Id.ToPrintableId());
-
-      var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(messageToken,
-                                                                        cancellationToken);
-      /*
-       * Prefetch Data
-       */
-
-
-      logger_.LogInformation("Start retrieving payload");
-      var payloadTask = taskData.HasPayload
-                          ? ValueTask.FromResult(taskData.Payload)
-                          : new ValueTask<Payload>(taskPayloadStorage_.TryGetValuesAsync(taskData.Id,
-                                                                                         combinedCts.Token));
-
-      var payload = await payloadTask;
-
-      logger_.LogInformation("Payload retrieved");
-
       /*
        * Compute Task
        */
@@ -281,15 +282,21 @@ namespace ArmoniK.Compute.PollingAgent
                                                                  CancellationToken.None);
 
       var request = new ComputeRequest
-                    {
-                      Session    = taskData.Id.Session,
-                      Subsession = taskData.Id.SubSession,
-                      TaskId     = taskData.Id.Task,
-                      Payload    = payload.Data,
-                    };
+      {
+        Session    = taskData.Id.Session,
+        Subsession = taskData.Id.SubSession,
+        TaskId     = taskData.Id.Task,
+        Payload    = payload.Data,
+      };
 
       logger_.LogDebug("Get client connection to the worker");
       var client = await clientProvider_.GetAsync();
+
+
+      logger_.LogDebug("Set task status to Processing");
+      var updateTask = tableStorage_.UpdateTaskStatusAsync(taskData.Id,
+                                                           TaskStatus.Processing,
+                                                           combinedCt);
 
       logger_.LogInformation("Send compute request to the worker");
       var call = client.ExecuteAsync(request,
@@ -300,6 +307,7 @@ namespace ArmoniK.Compute.PollingAgent
       ComputeReply result;
       try
       {
+        await updateTask;
         result = await call.WrapRpcException();
       }
       catch (TimeoutException e)
@@ -383,6 +391,27 @@ namespace ArmoniK.Compute.PollingAgent
                          queueStorage_.MessageProcessedAsync(messageId,
                                                              CancellationToken.None),
                          increaseTask);
+    }
+
+    private async Task<Payload> PrefetchPayload(TaskData taskData, CancellationToken combinedCt)
+    {
+      using var _ = logger_.LogFunction(taskData.Id.ToPrintableId());
+      /*
+       * Prefetch Data
+       */
+
+
+      logger_.LogInformation("Start retrieving payload");
+      var payloadTask = taskData.HasPayload
+        ? ValueTask.FromResult(taskData.Payload)
+        : new ValueTask<Payload>(taskPayloadStorage_.TryGetValuesAsync(taskData.Id,
+                                                                       combinedCt));
+
+      var payload = await payloadTask;
+
+      logger_.LogInformation("Payload retrieved");
+
+      return payload;
     }
   }
 }

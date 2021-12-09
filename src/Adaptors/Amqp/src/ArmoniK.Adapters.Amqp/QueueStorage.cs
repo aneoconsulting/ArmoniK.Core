@@ -93,7 +93,7 @@ namespace ArmoniK.Adapters.Amqp
 
           nbPulledMessage++;
           messages_[message.Properties.MessageId] = (message, receiver, 3*i + message.Header.Priority/4);
-          yield return new QueueMessage(message.Properties.MessageId, taskId, ()=> DisposeTask(message.Properties.MessageId), cancellationToken);
+          yield return new QueueMessage(message.Properties.MessageId, taskId, ()=> DisposeTask(message.Properties.MessageId),logger_, cancellationToken);
 
           break;
         }

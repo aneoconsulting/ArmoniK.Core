@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,27 +43,24 @@ namespace ArmoniK.Core.Storage
                                                           [EnumeratorCancellation] 
                                                           CancellationToken cancellationToken = default)
     {
-      using var logFunction = logger_.LogFunction();
+      using var logFunction = logger_.LogFunction($"for {nbMessages} messages");
 
       await foreach (var qm in lockedQueueStorage_.PullAsync(nbMessages, cancellationToken)
                                                   .WithCancellation(cancellationToken))
       {
         using var logScope = logger_.BeginPropertyScope(("messageId", qm.MessageId), ("taskId", qm.TaskId.ToPrintableId()));
-        logger_.LogDebug("Pulled a message from Mongo queue. MessageId={messageId}", qm.MessageId);
 
-        Func<Task> messageDisposeFunc = async () => await qm.DisposeAsync();
+        List<Func<Task>> disposeFunctions = new()
+        {
+          async () => await qm.DisposeAsync(),
+        };
 
-        var cancellationTokens = new List<CancellationToken>();
+        var cancellationTokens = new List<CancellationToken> { qm.CancellationToken };
 
         logger_.LogInformation("Setting message lock");
         var deadlineHandler = lockedQueueStorage_.GetDeadlineHandler(qm.MessageId, logger_, cancellationToken);
 
-        var messageDisposeFunc1 = messageDisposeFunc;
-        messageDisposeFunc = async () =>
-                             {
-                               await deadlineHandler.DisposeAsync();
-                               await messageDisposeFunc1();
-                             };
+        disposeFunctions.Add(async () => await deadlineHandler.DisposeAsync());
 
         cancellationTokens.Add(deadlineHandler.MessageLockLost);
 
@@ -84,22 +82,20 @@ namespace ArmoniK.Core.Storage
             continue;
           }
 
-          var messageDisposeFunc2 = messageDisposeFunc;
-          messageDisposeFunc = async () =>
-                               {
-                                 await lease.DisposeAsync();
-                                 await messageDisposeFunc2();
-                               };
+          disposeFunctions.Add(async () => await lease.DisposeAsync());
 
           cancellationTokens.Add(lease.LeaseExpired);
         }
 
         var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens.ToArray());
 
+        Task DisposeFunc() => Task.WhenAll(disposeFunctions.Select(func => func()));
+
         logger_.LogInformation("Queue message ready to forward");
         yield return new QueueMessage(qm.MessageId,
                                       qm.TaskId,
-                                      messageDisposeFunc,
+                                      DisposeFunc,
+                                      logger_,
                                       cts.Token
                                      );
       }

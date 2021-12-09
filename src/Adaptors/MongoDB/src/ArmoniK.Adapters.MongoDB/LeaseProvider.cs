@@ -101,7 +101,6 @@ namespace ArmoniK.Adapters.MongoDB
                                                                               MaxTime        = TimeSpan.FromSeconds(1),
                                                                             },
                                                                             cancellationToken);
-      logger_.LogDebug("Obtained LeaseResult {res}", res);
       if (leaseId == res.Lock)
       {
         logger_.LogInformation("Lease {leaseId} renewed for task {id}", leaseId, id);
