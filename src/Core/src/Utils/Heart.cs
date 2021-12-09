@@ -64,7 +64,7 @@ namespace ArmoniK.Core.Utils
       {
         await runningTask_;
       }
-      catch (TaskCanceledException e)
+      catch (TaskCanceledException)
       {
       }
       catch (AggregateException ae)

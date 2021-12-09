@@ -21,14 +21,60 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Storage
 {
+  public class LockedWrapperQueueMessage : IQueueMessage
+  {
+    private readonly LeaseHandler                      leaseHandler_;
+    private readonly LockedQueueMessageDeadlineHandler deadlineHandler_;
+    private readonly IQueueMessage                queueMessage_;
+    private readonly CancellationTokenSource           cancellationTokenSource_;
+
+    public LockedWrapperQueueMessage(IQueueMessage                queueMessage,
+                                     LockedQueueMessageDeadlineHandler deadlineHandler,
+                                     LeaseHandler                      leaseHandler,
+                                     CancellationToken                 cancellationToken)
+    {
+      queueMessage_    = queueMessage;
+      deadlineHandler_ = deadlineHandler;
+      leaseHandler_    = leaseHandler;
+      cancellationTokenSource_ = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,
+                                                                                 queueMessage_.CancellationToken,
+                                                                                 deadlineHandler_.MessageLockLost,
+                                                                                 leaseHandler_?.LeaseExpired ?? CancellationToken.None);
+    }
+
+    /// <inheritdoc />
+    public CancellationToken CancellationToken => cancellationTokenSource_.Token;
+
+    /// <inheritdoc />
+    public string MessageId => queueMessage_.MessageId;
+
+    /// <inheritdoc />
+    public TaskId TaskId => queueMessage_.TaskId;
+
+    /// <inheritdoc />
+    public QueueMessageStatus Status
+    {
+      get => queueMessage_.Status;
+      set => queueMessage_.Status = value;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+      await (deadlineHandler_ is null ? ValueTask.CompletedTask : deadlineHandler_.DisposeAsync());
+      await (leaseHandler_ is null ? ValueTask.CompletedTask : leaseHandler_.DisposeAsync());
+      await queueMessage_.DisposeAsync();
+    }
+  }
+
   [PublicAPI]
-  public class QueueStorageWrapper : IQueueStorage
+  public class LockedWrapperQueueStorage : IQueueStorage
   {
     private readonly ILockedQueueStorage                                             lockedQueueStorage_;
     private readonly ILeaseProvider                                                  leaseProvider_;
-    private readonly ILogger<QueueStorageWrapper>                                    logger_;
+    private readonly ILogger<LockedWrapperQueueStorage>                                    logger_;
 
-    public QueueStorageWrapper(ILockedQueueStorage lockedQueueStorage, ILeaseProvider leaseProvider, ILogger<QueueStorageWrapper> logger)
+    public LockedWrapperQueueStorage(ILockedQueueStorage lockedQueueStorage, ILeaseProvider leaseProvider, ILogger<LockedWrapperQueueStorage> logger)
     {
       lockedQueueStorage_ = lockedQueueStorage;
       leaseProvider_ = leaseProvider;
@@ -39,7 +85,7 @@ namespace ArmoniK.Core.Storage
     public int MaxPriority => lockedQueueStorage_.MaxPriority;
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<QueueMessage> PullAsync(int nbMessages,
+    public async IAsyncEnumerable<IQueueMessage> PullAsync(int nbMessages,
                                                           [EnumeratorCancellation] 
                                                           CancellationToken cancellationToken = default)
     {
@@ -50,54 +96,33 @@ namespace ArmoniK.Core.Storage
       {
         using var logScope = logger_.BeginPropertyScope(("messageId", qm.MessageId), ("taskId", qm.TaskId.ToPrintableId()));
 
-        List<Func<Task>> disposeFunctions = new()
-        {
-          async () => await qm.DisposeAsync(),
-        };
-
-        var cancellationTokens = new List<CancellationToken> { qm.CancellationToken };
-
         logger_.LogInformation("Setting message lock");
         var deadlineHandler = lockedQueueStorage_.GetDeadlineHandler(qm.MessageId, logger_, cancellationToken);
 
-        disposeFunctions.Add(async () => await deadlineHandler.DisposeAsync());
-
-        cancellationTokens.Add(deadlineHandler.MessageLockLost);
-
+        LeaseHandler leaseHandler = null;
         if (!lockedQueueStorage_.AreMessagesUnique)
         {
           logger_.LogInformation("Setting task lease");
-          LeaseHandler lease;
           try
           {
-            lease = await leaseProvider_.GetLeaseHandlerAsync(qm.TaskId, logger_, cancellationToken);
-            lease.LeaseExpired.ThrowIfCancellationRequested();
+            leaseHandler = await leaseProvider_.GetLeaseHandlerAsync(qm.TaskId, logger_, cancellationToken);
+            leaseHandler.LeaseExpired.ThrowIfCancellationRequested();
           }
           catch (Exception e)
           {
             logger_.LogWarning(e, "Could not acquire lease. Message is considered as a duplicate and will be rejected");
-            var deleteTask = lockedQueueStorage_.MessageRejectedAsync(qm.MessageId, cancellationToken);
+            qm.Status = QueueMessageStatus.Failed;
             await deadlineHandler.DisposeAsync();
-            await deleteTask;
             continue;
           }
-
-          disposeFunctions.Add(async () => await lease.DisposeAsync());
-
-          cancellationTokens.Add(lease.LeaseExpired);
         }
 
-        var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens.ToArray());
-
-        Task DisposeFunc() => Task.WhenAll(disposeFunctions.Select(func => func()));
-
         logger_.LogInformation("Queue message ready to forward");
-        yield return new QueueMessage(qm.MessageId,
-                                      qm.TaskId,
-                                      DisposeFunc,
-                                      logger_,
-                                      cts.Token
-                                     );
+        yield return new LockedWrapperQueueMessage(qm,
+                                                   deadlineHandler,
+                                                   leaseHandler,
+                                                   cancellationToken
+                                                  );
       }
     }
 

@@ -132,7 +132,7 @@ namespace ArmoniK.Control.Services
                                                                                                               context.CancellationToken));
 
       var payloadsUpdateTask = inits.Where(tuple => !tuple.HasPayload)
-                                    .Select(tuple => taskPayloadStorage_.AddOrUpdateAsync(tuple.Item1,
+                                    .Select(tuple => taskPayloadStorage_.AddOrUpdateAsync(tuple.id,
                                                                                           new Payload{Data = ByteString.CopyFrom(tuple.Payload)},
                                                                                           context.CancellationToken))
                                     .WhenAll();

@@ -16,16 +16,16 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
-  public class QueueMessage : IAsyncDisposable
+  public class QueueMessage : IQueueMessage
   {
-    private readonly Func<Task> disposeFunc_;
-    private readonly ILogger    logger;
+    private readonly Func<QueueMessageStatus, Task> disposeFunc_;
+    private readonly ILogger                        logger;
 
-    public QueueMessage(string            messageId,
-                        TaskId            taskId,
-                        Func<Task>        disposeFunc,
-                        ILogger logger,
-                        CancellationToken cancellationToken)
+    public QueueMessage(string                         messageId,
+                        TaskId                         taskId,
+                        Func<QueueMessageStatus, Task> disposeFunc,
+                        ILogger                        logger,
+                        CancellationToken              cancellationToken)
     {
       disposeFunc_      = disposeFunc;
       this.logger       = logger;
@@ -34,19 +34,21 @@ namespace ArmoniK.Core.Storage
       CancellationToken = cancellationToken;
     }
 
-    public string            MessageId         { get; init; }
-    public TaskId            TaskId            { get; init; }
+    public string MessageId { get; init; }
+    public TaskId TaskId    { get; init; }
+
+    /// <inheritdoc />
+    public QueueMessageStatus Status { get; set; }
+
     public CancellationToken CancellationToken { get; init; }
-    
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
       using var _ = logger.LogFunction(MessageId,
-                         functionName: $"{nameof(QueueMessage)}.{nameof(DisposeAsync)}");
-      await disposeFunc_();
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
+                                       functionName: $"{nameof(QueueMessage)}.{nameof(DisposeAsync)}");
+      await disposeFunc_(Status);
       GC.SuppressFinalize(this);
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
     }
   }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,8 @@ using ArmoniK.Core.Utils;
 
 using Google.Protobuf;
 
+using Grpc.Core;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -28,7 +31,6 @@ namespace ArmoniK.Adapters.Amqp
     private readonly ILogger<QueueStorage>                                                                 logger_;
     private readonly AsyncLazy<ISenderLink>[]                                                              senders_;
     private readonly AsyncLazy<IReceiverLink>[]                                                            receivers_;
-    private readonly ConcurrentDictionary<string, (Message message, IReceiverLink receiver, int priority)> messages_ = new();
 
     public QueueStorage(IOptions<Options.Amqp> options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
     {
@@ -57,19 +59,8 @@ namespace ArmoniK.Adapters.Amqp
     /// <inheritdoc />
     public int MaxPriority { get; }
 
-    private Task DisposeTask(string id)
-    {
-      if (messages_.TryRemove(id, out var msg))
-      {
-        var (message, receiver, _) = msg;
-        receiver.Release(message);
-      }
-
-      return Task.CompletedTask;
-    }
-
     /// <inheritdoc />
-    public async IAsyncEnumerable<QueueMessage> PullAsync(int nbMessages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<IQueueMessage> PullAsync(int nbMessages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       using var _ = logger_.LogFunction();
       var nbPulledMessage = 0;
@@ -92,35 +83,19 @@ namespace ArmoniK.Adapters.Amqp
           }
 
           nbPulledMessage++;
-          messages_[message.Properties.MessageId] = (message, receiver, 3*i + message.Header.Priority/4);
-          yield return new QueueMessage(message.Properties.MessageId, taskId, ()=> DisposeTask(message.Properties.MessageId),logger_, cancellationToken);
+
+          yield return new QueueMessage(message,
+                                        await senders_[i],
+                                        receiver,
+                                        taskId,
+                                        logger_,
+                                        cancellationToken);
 
           break;
         }
 
         if (nbPulledMessage == currentNbMessages) break;
       }
-    }
-
-    /// <inheritdoc />
-    public Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default)
-    {
-      using var _ = logger_.LogFunction(id);
-      messages_.TryRemove(id, out var msg);
-      var (message, receiver, _) = msg;
-      receiver.Accept(message);
-      return Task.CompletedTask;
-
-    }
-
-    /// <inheritdoc />
-    public Task MessageRejectedAsync(string id, CancellationToken cancellationToken = default)
-    {
-      using var _ = logger_.LogFunction(id);
-      messages_.TryRemove(id, out var msg);
-      var (message, receiver, _) = msg;
-      receiver.Reject(message);
-      return Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -133,30 +108,6 @@ namespace ArmoniK.Adapters.Amqp
                                                                 {
                                                                   Header = new Header { Priority = (byte)((priority % 3)*4) },
                                                                 })));
-    }
-
-    /// <inheritdoc />
-    public async Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default)
-    {
-      using var _ = logger_.LogFunction(id);
-      messages_.TryRemove(id, out var msg);
-      var (message, receiver, priority) = msg;
-
-      var sender = await senders_[priority / 3];
-      await sender.SendAsync(new Message(id)
-                             {
-                               Header = new Header { Priority = (byte)((priority % 3) * 4) },
-                             });
-    }
-
-    /// <inheritdoc />
-    public Task ReleaseMessageAsync(string id, CancellationToken cancellationToken = default)
-    {
-      using var _ = logger_.LogFunction(id);
-      messages_.TryRemove(id, out var msg);
-      var (message, receiver, _) = msg;
-      receiver.Release(message);
-      return Task.CompletedTask;
     }
   }
 }
