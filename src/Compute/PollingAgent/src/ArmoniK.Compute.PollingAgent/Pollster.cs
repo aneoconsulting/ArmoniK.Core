@@ -57,6 +57,8 @@ namespace ArmoniK.Compute.PollingAgent
                                                      Justification = "<Pending>")]
     public async Task MainLoop(CancellationToken cancellationToken)
     {
+      cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
+
       logger_.LogInformation("Main loop started.");
       while (!cancellationToken.IsCancellationRequested)
       {
@@ -93,8 +95,12 @@ namespace ArmoniK.Compute.PollingAgent
       logger_.LogInformation(LogEvents.StartMessageProcessing,
                              "Message acquired.");
 
+      using var _ = logger_.LogFunction(message.MessageId);
+
       var combinedCTS = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
                                                                         cancellationToken);
+
+      combinedCTS.Token.Register(() => logger_.LogError("Combined CancellationToken has been triggered."));
 
       /*
        * Check preconditions:
