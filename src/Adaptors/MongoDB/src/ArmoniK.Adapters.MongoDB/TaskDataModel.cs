@@ -3,17 +3,57 @@
 // Copyright (c) ANEO. All rights reserved.
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
+using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf;
 
+using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
+using SharpCompress.Common;
+
 namespace ArmoniK.Adapters.MongoDB
 {
+  public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()
+  {
+    /// <inheritdoc />
+    object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args) => Deserialize(context,
+                                                                                                                        args);
+
+    /// <inheritdoc />
+    public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, T value)
+    {
+      context.Writer.WriteBytes(value.ToByteArray());
+    }
+
+    /// <inheritdoc />
+    public T Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+    {
+      var parser = new MessageParser<T>(() => new T());
+      return parser.ParseFrom(context.Reader.ReadBytes());
+    }
+
+    /// <inheritdoc />
+    public void            Serialize(BsonSerializationContext     context, BsonSerializationArgs   args, object value)
+    {
+      if(value is T t)
+      {
+        Serialize(context, args, t);
+      }
+      else
+      {
+        throw new Exception("Not supported type");
+      }
+    }
+
+    /// <inheritdoc />
+    public Type ValueType => typeof(T);
+  }
+
   public class TaskDataModel : IMongoDataModel<TaskDataModel>
   {
     [BsonElement]
@@ -29,6 +69,7 @@ namespace ArmoniK.Adapters.MongoDB
 
     [BsonElement]
     [BsonRequired]
+    [BsonSerializer(typeof(BsonProtoSerializer<TaskOptions>))]
     public TaskOptions Options { get; set; }
 
     [BsonElement]
