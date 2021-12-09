@@ -25,8 +25,6 @@ namespace ArmoniK.Core.Storage
   {
     private readonly ILockedQueueStorage                                             lockedQueueStorage_;
     private readonly ILeaseProvider                                                  leaseProvider_;
-    private readonly ConcurrentDictionary<string, LockedQueueMessageDeadlineHandler> deadlineHandlers_ = new ();
-    private readonly ConcurrentDictionary<string, LeaseHandler>                      leaseHandlers_    = new ();
     private readonly ILogger<QueueStorageWrapper>                                    logger_;
 
     public QueueStorageWrapper(ILockedQueueStorage lockedQueueStorage, ILeaseProvider leaseProvider, ILogger<QueueStorageWrapper> logger)
@@ -58,10 +56,6 @@ namespace ArmoniK.Core.Storage
 
         logger_.LogInformation("Setting message lock");
         var deadlineHandler = lockedQueueStorage_.GetDeadlineHandler(qm.MessageId, logger_, cancellationToken);
-        if (!deadlineHandlers_.TryAdd(qm.MessageId, deadlineHandler))
-        {
-          throw new ArmoniKException($"A deadline handler already exists for message {qm.MessageId}");
-        }
 
         var messageDisposeFunc1 = messageDisposeFunc;
         messageDisposeFunc = async () =>
@@ -69,8 +63,6 @@ namespace ArmoniK.Core.Storage
                                await deadlineHandler.DisposeAsync();
                                await messageDisposeFunc1();
                              };
-
-        deadlineHandler.MessageLockLost.Register(() => deadlineHandlers_.TryRemove(qm.MessageId, out _));
 
         cancellationTokens.Add(deadlineHandler.MessageLockLost);
 
@@ -92,30 +84,12 @@ namespace ArmoniK.Core.Storage
             continue;
           }
 
-          if (!leaseHandlers_.TryAdd(qm.MessageId, lease))
-          {
-            await deadlineHandler.DisposeAsync();
-            throw new ArmoniKException($"A lease handler already exists for message {qm.MessageId}");
-          }
-
           var messageDisposeFunc2 = messageDisposeFunc;
           messageDisposeFunc = async () =>
                                {
                                  await lease.DisposeAsync();
                                  await messageDisposeFunc2();
                                };
-
-          deadlineHandler.MessageLockLost.Register(() =>
-                                                   {
-                                                     if (leaseHandlers_.TryRemove(qm.MessageId, out var handler))
-                                                       handler.DisposeAsync().AsTask().Wait(cancellationToken);
-                                                   });
-
-          lease.LeaseExpired.Register(() =>
-                                      {
-                                        if (deadlineHandlers_.TryRemove(qm.MessageId, out var handler))
-                                          handler.DisposeAsync().AsTask().Wait(cancellationToken);
-                                      });
 
           cancellationTokens.Add(lease.LeaseExpired);
         }
@@ -126,36 +100,18 @@ namespace ArmoniK.Core.Storage
         yield return new QueueMessage(qm.MessageId,
                                       qm.TaskId,
                                       messageDisposeFunc,
-                                      cancellationToken
+                                      cts.Token
                                      );
       }
     }
 
     /// <inheritdoc />
-    public async Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default)
-    {
-      leaseHandlers_.TryRemove(id, out var leaseHandler);
-      deadlineHandlers_.TryRemove(id, out var deadlineHandler);
-      await lockedQueueStorage_.MessageProcessedAsync(id, cancellationToken);
-
-      if (deadlineHandler is not null)
-        await deadlineHandler.DisposeAsync();
-      if (leaseHandler is not null)
-        await leaseHandler.DisposeAsync();
-    }
+    public Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default) 
+      => lockedQueueStorage_.MessageProcessedAsync(id, cancellationToken);
 
     /// <inheritdoc />
-    public async Task MessageRejectedAsync(string id, CancellationToken cancellationToken = default)
-    {
-      leaseHandlers_.TryRemove(id, out var leaseHandler);
-      deadlineHandlers_.TryRemove(id, out var deadlineHandler);
-      await lockedQueueStorage_.MessageRejectedAsync(id, cancellationToken);
-
-      if (deadlineHandler is not null)
-        await deadlineHandler.DisposeAsync();
-      if (leaseHandler is not null)
-        await leaseHandler.DisposeAsync();
-    }
+    public Task MessageRejectedAsync(string id, CancellationToken cancellationToken = default) 
+      => lockedQueueStorage_.MessageRejectedAsync(id, cancellationToken);
 
     /// <inheritdoc />
     public Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
@@ -164,29 +120,11 @@ namespace ArmoniK.Core.Storage
       => lockedQueueStorage_.EnqueueMessagesAsync(messages, priority, cancellationToken);
 
     /// <inheritdoc />
-    public async Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default)
-    {
-      leaseHandlers_.TryRemove(id, out var leaseHandler);
-      deadlineHandlers_.TryRemove(id, out var deadlineHandler);
-      await lockedQueueStorage_.RequeueMessageAsync(id, cancellationToken);
-
-      if (deadlineHandler is not null)
-        await deadlineHandler.DisposeAsync();
-      if (leaseHandler is not null)
-        await leaseHandler.DisposeAsync();
-    }
+    public Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default) 
+      => lockedQueueStorage_.RequeueMessageAsync(id, cancellationToken);
 
     /// <inheritdoc />
-    public async Task ReleaseMessageAsync(string id, CancellationToken cancellationToken = default)
-    {
-      leaseHandlers_.TryRemove(id, out var leaseHandler);
-      deadlineHandlers_.TryRemove(id, out var deadlineHandler);
-      await lockedQueueStorage_.ReleaseMessageAsync(id, cancellationToken);
-
-      if (deadlineHandler is not null)
-        await deadlineHandler.DisposeAsync();
-      if (leaseHandler is not null)
-        await leaseHandler.DisposeAsync();
-    }
+    public Task ReleaseMessageAsync(string id, CancellationToken cancellationToken = default) 
+      => lockedQueueStorage_.ReleaseMessageAsync(id, cancellationToken);
   }
 }

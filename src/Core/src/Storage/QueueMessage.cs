@@ -18,30 +18,21 @@ namespace ArmoniK.Core.Storage
   {
     private readonly Func<Task> disposeFunc_;
 
-    public QueueMessage(string            MessageId,
-                        TaskId            TaskId,
+    public QueueMessage(string            messageId,
+                        TaskId            taskId,
                         Func<Task>        disposeFunc,
-                        CancellationToken CancellationToken)
+                        CancellationToken cancellationToken)
     {
       disposeFunc_         = disposeFunc;
-      this.MessageId         = MessageId;
-      this.TaskId            = TaskId;
-      this.CancellationToken = CancellationToken;
+      MessageId         = messageId;
+      TaskId            = taskId;
+      CancellationToken = cancellationToken;
     }
 
     public string            MessageId         { get; init; }
     public TaskId            TaskId            { get; init; }
     public CancellationToken CancellationToken { get; init; }
-
-    public void Deconstruct(out string            MessageId,
-                            out TaskId            TaskId,
-                            out CancellationToken CancellationToken)
-    {
-      MessageId         = this.MessageId;
-      TaskId            = this.TaskId;
-      CancellationToken = this.CancellationToken;
-    }
-
+    
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
