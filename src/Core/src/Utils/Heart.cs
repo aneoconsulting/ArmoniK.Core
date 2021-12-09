@@ -30,6 +30,8 @@ namespace ArmoniK.Core.Utils
 
     private CancellationTokenSource stoppedHeartCts_ = new();
 
+    private CancellationTokenSource combinedSource_;
+
     private Task runningTask_;
 
     private readonly Func<CancellationToken, Task<bool>> pulse_;
@@ -78,6 +80,7 @@ namespace ArmoniK.Core.Utils
     public Task Stop()
     {
       nbPulsations_ = 2;
+      stoppedHeartCts_.Cancel();
       return runningTask_;
     }
 
@@ -102,7 +105,8 @@ namespace ArmoniK.Core.Utils
 
       stoppedHeartCts_ = new CancellationTokenSource();
       nbPulsations_    = nbPulsations;
-
+      combinedSource_ = CancellationTokenSource.CreateLinkedTokenSource(stoppedHeartCts_.Token,
+                                                                        cancellationToken_);
 
       runningTask_ = Task.Factory
                          .StartNew(async () =>
@@ -138,7 +142,8 @@ namespace ArmoniK.Core.Utils
 
     private async Task FullCycle()
     {
-      var delayTask = Task.Delay(BeatPeriod, cancellationToken_);
+      var delayTask = Task.Delay(BeatPeriod,
+                                 combinedSource_.Token);
       if (!await pulse_(cancellationToken_))
       {
         stoppedHeartCts_.Cancel();
