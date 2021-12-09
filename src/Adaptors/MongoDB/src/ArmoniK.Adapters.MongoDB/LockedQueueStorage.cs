@@ -98,9 +98,9 @@ namespace ArmoniK.Adapters.MongoDB
                                         message.TaskId,
                                         () => Task.CompletedTask,
                                         CancellationToken.None);
-        else
-          await Task.Delay(PollPeriodicity,
-                           cancellationToken);
+        //else
+        //  await Task.Delay(PollPeriodicity,
+        //                   cancellationToken);
       }
     }
 

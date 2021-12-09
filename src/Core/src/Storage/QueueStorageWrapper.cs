@@ -45,6 +45,7 @@ namespace ArmoniK.Core.Storage
                                                           CancellationToken cancellationToken = default)
     {
       using var logFunction = logger_.LogFunction();
+
       await foreach (var qm in lockedQueueStorage_.PullAsync(nbMessages, cancellationToken)
                                                   .WithCancellation(cancellationToken))
       {
