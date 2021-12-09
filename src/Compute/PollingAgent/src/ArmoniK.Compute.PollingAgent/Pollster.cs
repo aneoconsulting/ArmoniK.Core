@@ -65,13 +65,15 @@ namespace ArmoniK.Compute.PollingAgent
           {
             logger_.LogDebug("Start a new Task to process the message");
 
-            await Task.Factory.StartNew(() => ProcessMessageAsync(
+            await Task.Factory
+                      .StartNew(() => ProcessMessageAsync(
                                           message,
                                           cancellationToken
                                         ),
                                         cancellationToken,
                                         TaskCreationOptions.None,
-                                        TaskScheduler.Current);
+                                        TaskScheduler.Current)
+                      .Unwrap();
 
             logger_.LogDebug("Task returned");
           }
