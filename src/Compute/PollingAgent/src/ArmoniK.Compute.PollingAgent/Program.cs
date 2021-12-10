@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting.Internal;
 
 using Serilog.Events;
 using Serilog;
+using Serilog.Formatting.Compact;
 
 
 namespace ArmoniK.Compute.PollingAgent
@@ -24,7 +25,7 @@ namespace ArmoniK.Compute.PollingAgent
       Log.Logger = new LoggerConfiguration()
                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                    .Enrich.FromLogContext()
-                   .WriteTo.Console()
+                   .WriteTo.Console(new CompactJsonFormatter())
                    .CreateBootstrapLogger();
 
       try
@@ -64,7 +65,8 @@ namespace ArmoniK.Compute.PollingAgent
                  .UseSerilog((context, services, config) => config
                                                             .ReadFrom.Configuration(context.Configuration)
                                                             .ReadFrom.Services(services)
-                                                            .Enrich.FromLogContext())
+                                                            .Enrich.FromLogContext()
+                                                            )
                  .ConfigureServices((hostContext, services) =>
                  {
                    services.AddLogging()
