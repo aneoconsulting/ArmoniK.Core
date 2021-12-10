@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Core;
@@ -61,43 +62,105 @@ namespace ArmoniK.Compute.PollingAgent
       cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
       try
       {
-        logger_.LogInformation("Main loop started.");
+
+        var prefetchChannel = Channel.CreateBounded<(TaskData taskData, IQueueMessage message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
+                                                                                                                              {
+                                                                                                                                SingleReader = true,
+                                                                                                                                SingleWriter = true,
+                                                                                                                                FullMode = BoundedChannelFullMode.Wait,
+                                                                                                                                Capacity = 1,
+                                                                                                                                AllowSynchronousContinuations = false,
+                                                                                                                              });
+
+        var prefetchTask = Task<Task>.Factory.StartNew(async () =>
+                                                       {
+                                                         logger_.LogInformation("Prefetching loop started.");
+
+                                                         try
+                                                         {
+                                                           while (!cancellationToken.IsCancellationRequested)
+                                                           {
+                                                             logger_.LogInformation("Trying to fetch messages");
+                                                             var messages = queueStorage_.PullAsync(1,
+                                                                                                    cancellationToken);
+
+                                                             await foreach (var message in messages.WithCancellation(cancellationToken))
+                                                             {
+                                                               var dispose = true;
+
+                                                               using var scopedLogger = logger_.BeginNamedScope("Prefetch message",
+                                                                                                                ("message", message.MessageId),
+                                                                                                                ("session", message.TaskId.Session),
+                                                                                                                ("task", message.TaskId.Task));
+                                                               logger_.LogDebug("Start a new Task to process the message");
+
+                                                               var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
+                                                                                                                                 cancellationToken);
+                                                               try
+                                                               {
+                                                                 logger_.LogDebug("Loading task data");
+                                                                 var taskData = await tableStorage_.ReadTaskAsync(message.TaskId,
+                                                                                                                  combinedCts.Token);
+
+                                                                 if (await CheckPreconditions(message,
+                                                                                              taskData,
+                                                                                              combinedCts,
+                                                                                              cancellationToken))
+                                                                 {
+                                                                   taskData = await PrefetchPayload(taskData,
+                                                                                                    combinedCts.Token);
+
+                                                                   await prefetchChannel.Writer.WaitToWriteAsync(combinedCts.Token);
+                                                                   await prefetchChannel.Writer.WriteAsync((taskData, message, combinedCts.Token),
+                                                                                                           combinedCts.Token);
+                                                                   dispose = false;
+                                                                 }
+                                                               }
+                                                               catch (Exception e)
+                                                               {
+                                                                 logger_.LogWarning(e,
+                                                                                    "Error while prefetching message");
+                                                                 throw;
+                                                               }
+                                                               finally
+                                                               {
+                                                                 if (dispose)
+                                                                   await message.DisposeAsync();
+                                                               }
+                                                             }
+                                                           }
+                                                         }
+                                                         finally
+                                                         {
+                                                           prefetchChannel.Writer.Complete();
+                                                         }
+                                                       },
+                                                       cancellationToken,
+                                                       TaskCreationOptions.LongRunning,
+                                                       TaskScheduler.Current)
+                                     .Unwrap();
+
+
+
+
+        logger_.LogInformation("Processing loop started.");
         while (!cancellationToken.IsCancellationRequested)
         {
-          logger_.LogInformation("Trying to fetch messages");
-          var messages = queueStorage_.PullAsync(1,
-                                                 cancellationToken);
-
-          await foreach (var message in messages.WithCancellation(cancellationToken))
+          await foreach (var (taskData, message, combinedCt) in prefetchChannel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
           {
             await using var msg = message;
-            using var scopedLogger = logger_.BeginNamedScope("Message",
+            using var scopedLogger = logger_.BeginNamedScope("Process message",
                                                              ("message", msg.MessageId),
                                                              ("session", msg.TaskId.Session),
                                                              ("task", msg.TaskId.Task));
             logger_.LogDebug("Start a new Task to process the message");
 
-            var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(msg.CancellationToken,
-                                                                              cancellationToken);
             try
             {
-              logger_.LogDebug("Loading task data");
-              var taskData = await tableStorage_.ReadTaskAsync(msg.TaskId,
-                                                               combinedCts.Token);
-
-              if (await CheckPreconditions(msg,
-                                           taskData,
-                                           combinedCts,
-                                           cancellationToken))
-              {
-                taskData = await PrefetchPayload(taskData,
-                                                 combinedCts.Token);
-
-                await ProcessTaskAsync(taskData,
-                                       msg,
-                                       combinedCts.Token,
-                                       cancellationToken);
-              }
+              await ProcessTaskAsync(taskData,
+                                     msg,
+                                     combinedCt,
+                                     cancellationToken);
             }
             catch (Exception e)
             {
@@ -110,13 +173,16 @@ namespace ArmoniK.Compute.PollingAgent
           }
         }
 
+        await prefetchTask;
+
       }
       catch (Exception e)
       {
         logger_.LogCritical(e,
                             "Error in pollster");
-        lifeTime_.StopApplication();
       }
+
+      lifeTime_.StopApplication();
     }
 
     private async Task<bool> CheckPreconditions(IQueueMessage            message,
