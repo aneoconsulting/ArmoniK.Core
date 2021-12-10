@@ -3,6 +3,8 @@
 // Copyright (c) ANEO. All rights reserved.
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
+using System;
+
 using ArmoniK.Core.gRPC.V1;
 
 using System.Threading;
@@ -21,14 +23,12 @@ namespace ArmoniK.Core.Storage
     Poisonous,
   }
 
-  public interface IQueueMessage
+  public interface IQueueMessage : IAsyncDisposable
   {
     CancellationToken CancellationToken { get; }
     string MessageId { get; }
     TaskId TaskId { get; }
 
     QueueMessageStatus Status { get; set; }
-
-    ValueTask DisposeAsync();
   }
 }

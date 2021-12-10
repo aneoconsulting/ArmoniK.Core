@@ -70,6 +70,7 @@ namespace ArmoniK.Adapters.Amqp
                                                 Status,
                                                 null);
       }
+      GC.SuppressFinalize(this);
     }
   }
 }

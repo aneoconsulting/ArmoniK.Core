@@ -46,8 +46,8 @@ namespace ArmoniK.Compute.PollingAgent
 
     public static IHostBuilder CreateHostBuilder(string[] args)
     {
-      var env = new HostingEnvironment()
-      {
+      var env = new HostingEnvironment
+                {
         ContentRootPath = Directory.GetCurrentDirectory()
       };
       return Host.CreateDefaultBuilder(args)

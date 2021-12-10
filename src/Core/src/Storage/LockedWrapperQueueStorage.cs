@@ -4,14 +4,11 @@
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Exceptions;
 using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 
@@ -64,6 +61,7 @@ namespace ArmoniK.Core.Storage
       await (deadlineHandler_ is null ? ValueTask.CompletedTask : deadlineHandler_.DisposeAsync());
       await (leaseHandler_ is null ? ValueTask.CompletedTask : leaseHandler_.DisposeAsync());
       await queueMessage_.DisposeAsync();
+      GC.SuppressFinalize(this);
     }
   }
 

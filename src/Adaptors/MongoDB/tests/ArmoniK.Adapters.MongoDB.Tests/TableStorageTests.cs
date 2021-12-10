@@ -62,8 +62,8 @@ namespace ArmoniK.Adapters.MongoDB.Tests
 
       Assert.AreEqual(0, table.CountTasksAsync(new TaskFilter()).Result);
 
-      var session = table.CreateSessionAsync(new SessionOptions()
-      {
+      var session = table.CreateSessionAsync(new SessionOptions
+                                             {
         DefaultTaskOption = new TaskOptions(),
         IdTag             = "tag",
       }).Result;
@@ -72,8 +72,8 @@ namespace ArmoniK.Adapters.MongoDB.Tests
 
 
       Assert.AreEqual(1,
-                      table.CountTasksAsync(new TaskFilter()
-                      {
+                      table.CountTasksAsync(new TaskFilter
+                                            {
                         SessionId    = session.Session,
                         SubSessionId = session.SubSession
                       }).Result);

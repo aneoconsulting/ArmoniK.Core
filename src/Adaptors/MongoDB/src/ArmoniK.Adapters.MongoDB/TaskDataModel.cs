@@ -14,8 +14,6 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
-using SharpCompress.Common;
-
 namespace ArmoniK.Adapters.MongoDB
 {
   public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()

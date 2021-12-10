@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
 
@@ -24,10 +21,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void SerializeTaskDataModel()
     {
-      var tdm = new TaskDataModel()
+      var tdm = new TaskDataModel
                 {
                   HasPayload = true,
-                  Options = new TaskOptions()
+                  Options = new TaskOptions
                             {
                               Priority = 2,
                               Options =
@@ -37,13 +34,13 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                               },
                               Dependencies =
                               {
-                                new TaskId()
+                                new TaskId
                                 {
                                   SubSession = "sub1",
                                   Session    = "ses1",
                                   Task       = "dep1",
                                 },
-                                new TaskId()
+                                new TaskId
                                 {
                                   SubSession = "sub1",
                                   Session    = "ses1",

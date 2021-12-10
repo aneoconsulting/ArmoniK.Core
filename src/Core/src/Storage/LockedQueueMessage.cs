@@ -66,6 +66,7 @@ namespace ArmoniK.Core.Storage
         default:
           throw new ArgumentOutOfRangeException();
       }
+      GC.SuppressFinalize(this);
     }
   }
 }

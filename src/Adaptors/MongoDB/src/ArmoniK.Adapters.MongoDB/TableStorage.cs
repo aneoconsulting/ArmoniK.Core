@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +22,6 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 
 namespace ArmoniK.Adapters.MongoDB
@@ -139,7 +137,8 @@ namespace ArmoniK.Adapters.MongoDB
                                                        x.SubSessionId == sessionOptions.ParentSession.SubSession)
                                            .FirstAsync(cancellationToken);
             parents = t.ParentsId;
-            parents.Add(new SessionDataModel.ParentId() { Id = sessionOptions.ParentSession.SubSession });
+            parents.Add(new SessionDataModel.ParentId
+                        { Id = sessionOptions.ParentSession.SubSession });
           }
         }
       }

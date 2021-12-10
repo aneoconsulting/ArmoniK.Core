@@ -6,7 +6,6 @@ using Grpc.Core;
 
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core;
@@ -17,7 +16,6 @@ using Google.Protobuf;
 using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
-using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Control.Services
 {

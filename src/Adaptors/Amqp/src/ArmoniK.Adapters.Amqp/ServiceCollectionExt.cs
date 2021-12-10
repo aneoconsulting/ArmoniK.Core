@@ -3,8 +3,6 @@
 // Copyright (c) ANEO. All rights reserved.
 //   W. Kirschenmann <wkirschenmann@aneo.fr>
 
-using ArmoniK.Adapters.Amqp.Options;
-using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
 
@@ -12,7 +10,6 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Adapters.Amqp
 {

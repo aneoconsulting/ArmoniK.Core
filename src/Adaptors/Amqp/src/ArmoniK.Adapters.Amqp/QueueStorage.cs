@@ -1,25 +1,17 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Amqp;
 using Amqp.Framing;
-using Amqp.Types;
 
-using ArmoniK.Adapters.Amqp.Options;
 using ArmoniK.Core;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 using ArmoniK.Core.Utils;
-
-using Google.Protobuf;
-
-using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

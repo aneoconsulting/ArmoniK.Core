@@ -5,7 +5,6 @@
 
 using Amqp;
 
-using ArmoniK.Adapters.Amqp.Options;
 using ArmoniK.Core.Injection;
 
 using Microsoft.Extensions.Options;

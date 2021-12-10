@@ -67,7 +67,7 @@ namespace ArmoniK.Adapters.MongoDB
                        sessionHandle,
                        odm => odm.Key == key && odm.ChunkIdx == idx,
                        updateDefinition,
-                       new FindOneAndUpdateOptions<ObjectDataModel>()
+                       new FindOneAndUpdateOptions<ObjectDataModel>
                        {
                          ReturnDocument = ReturnDocument.After,
                          IsUpsert       = true,

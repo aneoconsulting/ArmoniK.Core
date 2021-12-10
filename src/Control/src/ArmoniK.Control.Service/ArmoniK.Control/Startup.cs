@@ -9,11 +9,8 @@ using Microsoft.Extensions.Hosting;
 using ArmoniK.Adapters.MongoDB;
 using ArmoniK.Control.Services;
 
-using Calzolari.Grpc.AspNetCore.Validation;
-
 using Microsoft.Extensions.Configuration;
 
-using ArmoniK.Core.gRPC.Validators;
 using ArmoniK.Core.Injection;
 
 using Serilog;

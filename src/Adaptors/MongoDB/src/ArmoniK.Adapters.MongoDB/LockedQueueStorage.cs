@@ -83,11 +83,10 @@ namespace ArmoniK.Adapters.MongoDB
         logger_.LogDebug("Trying to get a new message from Mongo queue");
         var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(sessionHandle,
                                                                                      qmdm => qmdm.OwnedUntil == default ||
-                                                                                             qmdm.OwnedUntil <
-                                                                                             DateTime.UtcNow,
+                                                                                             qmdm.OwnedUntil < DateTime.UtcNow,
                                                                                      updateDefinition,
                                                                                      new FindOneAndUpdateOptions<
-                                                                                       QueueMessageModel>()
+                                                                                       QueueMessageModel>
                                                                                      {
                                                                                        ReturnDocument = ReturnDocument.After,
                                                                                        IsUpsert       = false,
@@ -129,7 +128,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                                                    qmdm => qmdm.MessageId == id &&
                                                                                            qmdm.OwnerId == ownerId_,
                                                                                    updateDefinition,
-                                                                                   new FindOneAndUpdateOptions<QueueMessageModel>()
+                                                                                   new FindOneAndUpdateOptions<QueueMessageModel>
                                                                                    {
                                                                                      ReturnDocument = ReturnDocument.After,
                                                                                      IsUpsert       = false,
@@ -170,11 +169,11 @@ namespace ArmoniK.Adapters.MongoDB
                                                         .Set(qmm => qmm.SubmissionDate,
                                                              DateTime.UtcNow);
 
-      await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(
-                                                                     qmm => qmm.MessageId == id,
-                                                                     updateDefinition,
-                                                                     cancellationToken: cancellationToken
-                                                                    );
+      await queueCollection.FindOneAndUpdateAsync(
+                                                  qmm => qmm.MessageId == id,
+                                                  updateDefinition,
+                                                  cancellationToken: cancellationToken
+                                                 );
     }
 
     /// <inheritdoc />
