@@ -36,6 +36,7 @@ namespace ArmoniK.Compute.PollingAgent
     private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
     private readonly ClientServiceProvider                 clientProvider_;
     private readonly IHostApplicationLifetime              lifeTime_;
+    private readonly int                                   messageBatchSize_;
 
     public Pollster(ILogger<Pollster> logger,
                     // ReSharper disable once UnusedParameter.Local
@@ -54,6 +55,7 @@ namespace ArmoniK.Compute.PollingAgent
       taskPayloadStorage_ = taskPayloadStorage;
       clientProvider_     = clientProvider;
       lifeTime_           = lifeTime;
+      messageBatchSize_      = options.Value.MessageBatchSize;
     }
 
     public async Task MainLoop(CancellationToken cancellationToken)
@@ -80,7 +82,7 @@ namespace ArmoniK.Compute.PollingAgent
                                                            while (!cancellationToken.IsCancellationRequested)
                                                            {
                                                              logger_.LogInformation("Trying to fetch messages");
-                                                             var messages = queueStorage_.PullAsync(1,
+                                                             var messages = queueStorage_.PullAsync(messageBatchSize_,
                                                                                                     cancellationToken);
 
                                                              await foreach (var message in messages.WithCancellation(cancellationToken))
