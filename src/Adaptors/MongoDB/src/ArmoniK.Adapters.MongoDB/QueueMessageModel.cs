@@ -1,7 +1,25 @@
-﻿// This file is part of ArmoniK project.
+﻿// This file is part of the ArmoniK project
 // 
-// Copyright (c) ANEO. All rights reserved.
-//   W. Kirschenmann <wkirschenmann@aneo.fr>
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Threading.Tasks;
@@ -31,7 +49,8 @@ namespace ArmoniK.Adapters.MongoDB
     public int Priority { get; set; }
 
     [BsonElement]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc, DateOnly = false)]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc,
+                         DateOnly = false)]
     public DateTime OwnedUntil { get; set; }
 
     /// <inheritdoc />
@@ -47,18 +66,25 @@ namespace ArmoniK.Adapters.MongoDB
       var submissionIndex = Builders<QueueMessageModel>.IndexKeys.Ascending(model => model.SubmissionDate);
       var priorityIndex   = Builders<QueueMessageModel>.IndexKeys.Descending(model => model.Priority);
       var ownedUntilIndex = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnedUntil);
-      var pullIndex       = Builders<QueueMessageModel>.IndexKeys.Combine(submissionIndex, priorityIndex, ownedUntilIndex);
-      var lockedIndex     = Builders<QueueMessageModel>.IndexKeys.Combine(messageIdIndex, ownerIdIndex);
+      var pullIndex = Builders<QueueMessageModel>.IndexKeys.Combine(submissionIndex,
+                                                                    priorityIndex,
+                                                                    ownedUntilIndex);
+      var lockedIndex = Builders<QueueMessageModel>.IndexKeys.Combine(messageIdIndex,
+                                                                      ownerIdIndex);
 
 
       var indexModels = new CreateIndexModel<QueueMessageModel>[]
-      {
-        new(pullIndex, new CreateIndexOptions { Name      = nameof(pullIndex) }),
-        new(lockedIndex, new CreateIndexOptions { Name    = nameof(lockedIndex), Unique    = true }),
-        new(messageIdIndex, new CreateIndexOptions { Name = nameof(messageIdIndex), Unique = true }),
-      };
+                        {
+                          new(pullIndex,
+                              new CreateIndexOptions { Name = nameof(pullIndex) }),
+                          new(lockedIndex,
+                              new CreateIndexOptions { Name = nameof(lockedIndex), Unique = true }),
+                          new(messageIdIndex,
+                              new CreateIndexOptions { Name = nameof(messageIdIndex), Unique = true }),
+                        };
 
-      return collection.Indexes.CreateManyAsync(sessionHandle, indexModels);
+      return collection.Indexes.CreateManyAsync(sessionHandle,
+                                                indexModels);
     }
   }
 }

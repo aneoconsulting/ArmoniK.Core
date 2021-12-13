@@ -1,7 +1,25 @@
-﻿// This file is part of ArmoniK project.
+﻿// This file is part of the ArmoniK project
 // 
-// Copyright (c) ANEO. All rights reserved.
-//   W. Kirschenmann <wkirschenmann@aneo.fr>
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -20,12 +38,12 @@ namespace ArmoniK.Core.Storage
 {
   public class LockedWrapperQueueMessage : IQueueMessage
   {
-    private readonly LeaseHandler                      leaseHandler_;
-    private readonly LockedQueueMessageDeadlineHandler deadlineHandler_;
-    private readonly IQueueMessage                queueMessage_;
     private readonly CancellationTokenSource           cancellationTokenSource_;
+    private readonly LockedQueueMessageDeadlineHandler deadlineHandler_;
+    private readonly LeaseHandler                      leaseHandler_;
+    private readonly IQueueMessage                     queueMessage_;
 
-    public LockedWrapperQueueMessage(IQueueMessage                queueMessage,
+    public LockedWrapperQueueMessage(IQueueMessage                     queueMessage,
                                      LockedQueueMessageDeadlineHandler deadlineHandler,
                                      LeaseHandler                      leaseHandler,
                                      CancellationToken                 cancellationToken)
@@ -68,34 +86,37 @@ namespace ArmoniK.Core.Storage
   [PublicAPI]
   public class LockedWrapperQueueStorage : IQueueStorage
   {
-    private readonly ILockedQueueStorage                                             lockedQueueStorage_;
-    private readonly ILeaseProvider                                                  leaseProvider_;
-    private readonly ILogger<LockedWrapperQueueStorage>                                    logger_;
+    private readonly ILeaseProvider                     leaseProvider_;
+    private readonly ILockedQueueStorage                lockedQueueStorage_;
+    private readonly ILogger<LockedWrapperQueueStorage> logger_;
 
     public LockedWrapperQueueStorage(ILockedQueueStorage lockedQueueStorage, ILeaseProvider leaseProvider, ILogger<LockedWrapperQueueStorage> logger)
     {
       lockedQueueStorage_ = lockedQueueStorage;
-      leaseProvider_ = leaseProvider;
-      logger_ = logger;
+      leaseProvider_      = leaseProvider;
+      logger_             = logger;
     }
 
     /// <inheritdoc />
     public int MaxPriority => lockedQueueStorage_.MaxPriority;
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<IQueueMessage> PullAsync(int nbMessages,
-                                                          [EnumeratorCancellation] 
-                                                          CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<IQueueMessage> PullAsync(int                                        nbMessages,
+                                                           [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
       using var logFunction = logger_.LogFunction($"for {nbMessages} messages");
 
-      await foreach (var qm in lockedQueueStorage_.PullAsync(nbMessages, cancellationToken)
+      await foreach (var qm in lockedQueueStorage_.PullAsync(nbMessages,
+                                                             cancellationToken)
                                                   .WithCancellation(cancellationToken))
       {
-        using var logScope = logger_.BeginPropertyScope(("messageId", qm.MessageId), ("taskId", qm.TaskId.ToPrintableId()));
+        using var logScope = logger_.BeginPropertyScope(("messageId", qm.MessageId),
+                                                        ("taskId", qm.TaskId.ToPrintableId()));
 
         logger_.LogInformation("Setting message lock");
-        var deadlineHandler = lockedQueueStorage_.GetDeadlineHandler(qm.MessageId, logger_, cancellationToken);
+        var deadlineHandler = lockedQueueStorage_.GetDeadlineHandler(qm.MessageId,
+                                                                     logger_,
+                                                                     cancellationToken);
 
         LeaseHandler leaseHandler = null;
         if (!lockedQueueStorage_.AreMessagesUnique)
@@ -103,12 +124,15 @@ namespace ArmoniK.Core.Storage
           logger_.LogInformation("Setting task lease");
           try
           {
-            leaseHandler = await leaseProvider_.GetLeaseHandlerAsync(qm.TaskId, logger_, cancellationToken);
+            leaseHandler = await leaseProvider_.GetLeaseHandlerAsync(qm.TaskId,
+                                                                     logger_,
+                                                                     cancellationToken);
             leaseHandler.LeaseExpired.ThrowIfCancellationRequested();
           }
           catch (Exception e)
           {
-            logger_.LogWarning(e, "Could not acquire lease. Message is considered as a duplicate and will be rejected");
+            logger_.LogWarning(e,
+                               "Could not acquire lease. Message is considered as a duplicate and will be rejected");
             qm.Status = QueueMessageStatus.Failed;
             await deadlineHandler.DisposeAsync();
             continue;
@@ -125,25 +149,31 @@ namespace ArmoniK.Core.Storage
     }
 
     /// <inheritdoc />
-    public Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default) 
-      => lockedQueueStorage_.MessageProcessedAsync(id, cancellationToken);
-
-    /// <inheritdoc />
-    public Task MessageRejectedAsync(string id, CancellationToken cancellationToken = default) 
-      => lockedQueueStorage_.MessageRejectedAsync(id, cancellationToken);
-
-    /// <inheritdoc />
     public Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
                                      int                 priority          = 1,
                                      CancellationToken   cancellationToken = default)
-      => lockedQueueStorage_.EnqueueMessagesAsync(messages, priority, cancellationToken);
+      => lockedQueueStorage_.EnqueueMessagesAsync(messages,
+                                                  priority,
+                                                  cancellationToken);
 
     /// <inheritdoc />
-    public Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default) 
-      => lockedQueueStorage_.RequeueMessageAsync(id, cancellationToken);
+    public Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default)
+      => lockedQueueStorage_.MessageProcessedAsync(id,
+                                                   cancellationToken);
 
     /// <inheritdoc />
-    public Task ReleaseMessageAsync(string id, CancellationToken cancellationToken = default) 
-      => lockedQueueStorage_.ReleaseMessageAsync(id, cancellationToken);
+    public Task MessageRejectedAsync(string id, CancellationToken cancellationToken = default)
+      => lockedQueueStorage_.MessageRejectedAsync(id,
+                                                  cancellationToken);
+
+    /// <inheritdoc />
+    public Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default)
+      => lockedQueueStorage_.RequeueMessageAsync(id,
+                                                 cancellationToken);
+
+    /// <inheritdoc />
+    public Task ReleaseMessageAsync(string id, CancellationToken cancellationToken = default)
+      => lockedQueueStorage_.ReleaseMessageAsync(id,
+                                                 cancellationToken);
   }
 }

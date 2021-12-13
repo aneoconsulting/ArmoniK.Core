@@ -1,7 +1,25 @@
-﻿// This file is part of ArmoniK project.
+﻿// This file is part of the ArmoniK project
 // 
-// Copyright (c) ANEO. All rights reserved.
-//   W. Kirschenmann <wkirschenmann@aneo.fr>
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,8 +38,8 @@ namespace ArmoniK.Core.Storage
   {
     public static readonly MessageParser<TKey>   KeyParser   = new(() => new TKey());
     public static readonly MessageParser<TValue> ValueParser = new(() => new TValue());
-    private readonly       IObjectStorage        objectStorage_;
     private readonly       string                keyPrefix_;
+    private readonly       IObjectStorage        objectStorage_;
 
     public KeyValueStorage(IObjectStorage objectStorage)
     {
@@ -44,20 +62,24 @@ namespace ArmoniK.Core.Storage
     {
       var serializedKey   = SerializeKey(key);
       var serializedValue = value.ToByteArray();
-      return objectStorage_.AddOrUpdateAsync(serializedKey, serializedValue, cancellationToken);
+      return objectStorage_.AddOrUpdateAsync(serializedKey,
+                                             serializedValue,
+                                             cancellationToken);
     }
 
     public async Task<TValue> TryGetValuesAsync(TKey key, CancellationToken cancellationToken = default)
     {
-      var serializedKey    = SerializeKey(key);
-      var serializedOutput = await objectStorage_.TryGetValuesAsync(serializedKey, cancellationToken);
+      var serializedKey = SerializeKey(key);
+      var serializedOutput = await objectStorage_.TryGetValuesAsync(serializedKey,
+                                                                    cancellationToken);
       return ValueParser.ParseFrom(serializedOutput);
     }
 
     public Task<bool> TryDeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
       var serializedKey = SerializeKey(key);
-      return objectStorage_.TryDeleteAsync(serializedKey, cancellationToken);
+      return objectStorage_.TryDeleteAsync(serializedKey,
+                                           cancellationToken);
     }
   }
 }

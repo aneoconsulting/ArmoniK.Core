@@ -1,4 +1,27 @@
-﻿using System;
+﻿// This file is part of the ArmoniK project
+// 
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -22,9 +45,9 @@ namespace ArmoniK.Adapters.Amqp
 {
   public class QueueStorage : IQueueStorage
   {
-    private readonly ILogger<QueueStorage>                                                                 logger_;
-    private readonly AsyncLazy<ISenderLink>[]                                                              senders_;
-    private readonly AsyncLazy<IReceiverLink>[]                                                            receivers_;
+    private readonly ILogger<QueueStorage>      logger_;
+    private readonly AsyncLazy<IReceiverLink>[] receivers_;
+    private readonly AsyncLazy<ISenderLink>[]   senders_;
 
     public QueueStorage(IOptions<Options.Amqp> options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
     {
@@ -33,7 +56,8 @@ namespace ArmoniK.Adapters.Amqp
 
       var nbLinks = (MaxPriority + 3) / 3;
 
-      senders_ = Enumerable.Range(0, nbLinks)
+      senders_ = Enumerable.Range(0,
+                                  nbLinks)
                            .Select(i => new AsyncLazy<ISenderLink>(async ()
                                                                      => new
                                                                        SenderLink(await sessionProvider.GetAsync(),
@@ -41,7 +65,8 @@ namespace ArmoniK.Adapters.Amqp
                                                                                   $"q{i}")))
                            .ToArray();
 
-      receivers_ = Enumerable.Range(0, nbLinks)
+      receivers_ = Enumerable.Range(0,
+                                    nbLinks)
                              .Select(i => new AsyncLazy<IReceiverLink>(async ()
                                                                          => new
                                                                            ReceiverLink(await sessionProvider.GetAsync(),
@@ -56,8 +81,8 @@ namespace ArmoniK.Adapters.Amqp
     /// <inheritdoc />
     public async IAsyncEnumerable<IQueueMessage> PullAsync(int nbMessages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-      using var _ = logger_.LogFunction();
-      var nbPulledMessage = 0;
+      using var _               = logger_.LogFunction();
+      var       nbPulledMessage = 0;
 
       while (nbPulledMessage < nbMessages)
       {
@@ -66,14 +91,15 @@ namespace ArmoniK.Adapters.Amqp
         {
           cancellationToken.ThrowIfCancellationRequested();
           var receiver = await receivers_[i];
-          var message = await receiver.ReceiveAsync(TimeSpan.FromSeconds(5));
+          var message  = await receiver.ReceiveAsync(TimeSpan.FromSeconds(5));
           if (message is null) continue;
 
           logger_.LogDebug("Read message with id={id}",
                            message.Properties.MessageId);
           if (TaskId.Parser.ParseFrom(message.Body as byte[]) is not TaskId taskId)
           {
-            logger_.LogError("Body of message with Id={id} is not a TaskId", message.Properties.MessageId);
+            logger_.LogError("Body of message with Id={id} is not a TaskId",
+                             message.Properties.MessageId);
             continue;
           }
 
@@ -97,13 +123,13 @@ namespace ArmoniK.Adapters.Amqp
 
     /// <inheritdoc />
     public async Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
-                                     int                 priority          = 1,
-                                     CancellationToken   cancellationToken = default)
+                                           int                 priority          = 1,
+                                           CancellationToken   cancellationToken = default)
     {
       var sender = await senders_[priority / 3];
       await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(id.ToByteArray())
                                                                 {
-                                                                  Header = new Header { Priority = (byte)((priority % 3)*4) },
+                                                                  Header = new Header { Priority = (byte)((priority % 3) * 4) },
                                                                 })));
     }
   }

@@ -1,7 +1,25 @@
-﻿// This file is part of ArmoniK project.
+﻿// This file is part of the ArmoniK project
 // 
-// Copyright (c) ANEO. All rights reserved.
-//   W. Kirschenmann <wkirschenmann@aneo.fr>
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -25,10 +43,10 @@ namespace ArmoniK.Adapters.MongoDB
   [PublicAPI]
   public class ObjectStorage : IObjectStorage
   {
-    private readonly MongoCollectionProvider<ObjectDataModel> objectCollectionProvider_;
-    private readonly SessionProvider                          sessionProvider_;
     private readonly int                                      chunkSize_;
     private readonly ILogger<ObjectStorage>                   logger_;
+    private readonly MongoCollectionProvider<ObjectDataModel> objectCollectionProvider_;
+    private readonly SessionProvider                          sessionProvider_;
 
     public ObjectStorage(SessionProvider                          sessionProvider,
                          MongoCollectionProvider<ObjectDataModel> objectCollectionProvider,
@@ -52,34 +70,44 @@ namespace ArmoniK.Adapters.MongoDB
       var taskList = new List<Task<ObjectDataModel>>();
       for (var (pos, idx) = (0, 0); pos < value.Length; idx += 1)
       {
-        var chunkSize = Math.Min(value.Length - pos, chunkSize_);
-        var chunk     = new byte[chunkSize];
-        Array.Copy(value, pos, chunk, 0, chunkSize);
+        var chunkSize = Math.Min(value.Length - pos,
+                                 chunkSize_);
+        var chunk = new byte[chunkSize];
+        Array.Copy(value,
+                   pos,
+                   chunk,
+                   0,
+                   chunkSize);
         pos += chunkSize;
 
         var updateDefinition = Builders<ObjectDataModel>.Update
-                                                        .SetOnInsert(odm => odm.Chunk, chunk)
-                                                        .SetOnInsert(odm => odm.ChunkIdx, idx)
-                                                        .SetOnInsert(odm => odm.Key, key)
-                                                        .SetOnInsert(odm => odm.Id, $"{key}{idx}");
+                                                        .SetOnInsert(odm => odm.Chunk,
+                                                                     chunk)
+                                                        .SetOnInsert(odm => odm.ChunkIdx,
+                                                                     idx)
+                                                        .SetOnInsert(odm => odm.Key,
+                                                                     key)
+                                                        .SetOnInsert(odm => odm.Id,
+                                                                     $"{key}{idx}");
 
         taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>(
-                       sessionHandle,
-                       odm => odm.Key == key && odm.ChunkIdx == idx,
-                       updateDefinition,
-                       new FindOneAndUpdateOptions<ObjectDataModel>
-                       {
-                         ReturnDocument = ReturnDocument.After,
-                         IsUpsert       = true,
-                       },
-                       cancellationToken
-                     ));
+                                                                             sessionHandle,
+                                                                             odm => odm.Key == key && odm.ChunkIdx == idx,
+                                                                             updateDefinition,
+                                                                             new FindOneAndUpdateOptions<ObjectDataModel>
+                                                                             {
+                                                                               ReturnDocument = ReturnDocument.After,
+                                                                               IsUpsert       = true,
+                                                                             },
+                                                                             cancellationToken
+                                                                            ));
       }
 
       await Task.WhenAll(taskList);
       if (taskList.Any(task => task.Result is null))
       {
-        logger_.LogError("Could not write value in DB for key {key}", key);
+        logger_.LogError("Could not write value in DB for key {key}",
+                         key);
         throw new InvalidOperationException("Could not write value in DB");
       }
     }
@@ -99,9 +127,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       var buffer = new List<byte>(chunkSize_);
       await foreach (var chunk in chunks.WithCancellation(cancellationToken))
-      {
         buffer.AddRange(chunk);
-      }
 
       return buffer.ToArray();
     }

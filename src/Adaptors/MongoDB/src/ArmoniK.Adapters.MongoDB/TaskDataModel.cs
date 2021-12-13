@@ -1,7 +1,25 @@
-﻿// This file is part of ArmoniK project.
+﻿// This file is part of the ArmoniK project
 // 
-// Copyright (c) ANEO. All rights reserved.
-//   W. Kirschenmann <wkirschenmann@aneo.fr>
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Threading.Tasks;
@@ -13,6 +31,8 @@ using Google.Protobuf;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
+
+using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Adapters.MongoDB
 {
@@ -36,16 +56,14 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
     /// <inheritdoc />
-    public void            Serialize(BsonSerializationContext     context, BsonSerializationArgs   args, object value)
+    public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
     {
-      if(value is T t)
-      {
-        Serialize(context, args, t);
-      }
+      if (value is T t)
+        Serialize(context,
+                  args,
+                  t);
       else
-      {
         throw new Exception("Not supported type");
-      }
     }
 
     /// <inheritdoc />
@@ -71,7 +89,7 @@ namespace ArmoniK.Adapters.MongoDB
     public TaskOptions Options { get; set; }
 
     [BsonElement]
-    public Core.gRPC.V1.TaskStatus Status { get; set; }
+    public TaskStatus Status { get; set; }
 
     [BsonElement]
     public int Retries { get; set; }
@@ -83,23 +101,6 @@ namespace ArmoniK.Adapters.MongoDB
     [BsonElement]
     public byte[] Payload { get; set; }
 
-    public TaskData ToTaskData() => new()
-    {
-      Id = new TaskId
-      {
-        Session    = SessionId,
-        SubSession = SubSessionId,
-        Task       = TaskId,
-      },
-      HasPayload = HasPayload,
-      Payload    = new Payload { Data = ByteString.CopyFrom(Payload) },
-      Options    = Options,
-      Retries    = Retries,
-      Status     = Status,
-    };
-
-    public TaskId GetTaskId() => new() { Session = SessionId, SubSession = SubSessionId, Task = TaskId };
-
     /// <inheritdoc />
     public string CollectionName { get; } = "tasks";
 
@@ -107,21 +108,45 @@ namespace ArmoniK.Adapters.MongoDB
     public Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,
                                        IMongoCollection<TaskDataModel> collection)
     {
-      var sessionIndex       = Builders<TaskDataModel>.IndexKeys.Text(model => model.SessionId);
-      var subSessionIndex    = Builders<TaskDataModel>.IndexKeys.Text(model => model.SubSessionId);
-      var taskIndex          = Builders<TaskDataModel>.IndexKeys.Text(model => model.TaskId);
-      var statusIndex        = Builders<TaskDataModel>.IndexKeys.Text(model => model.Status);
-      var taskIdIndex        = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex, subSessionIndex, taskIndex);
-      var sessionStatusIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex, statusIndex);
+      var sessionIndex    = Builders<TaskDataModel>.IndexKeys.Text(model => model.SessionId);
+      var subSessionIndex = Builders<TaskDataModel>.IndexKeys.Text(model => model.SubSessionId);
+      var taskIndex       = Builders<TaskDataModel>.IndexKeys.Text(model => model.TaskId);
+      var statusIndex     = Builders<TaskDataModel>.IndexKeys.Text(model => model.Status);
+      var taskIdIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
+                                                                  subSessionIndex,
+                                                                  taskIndex);
+      var sessionStatusIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
+                                                                         statusIndex);
 
       var indexModels = new CreateIndexModel<TaskDataModel>[]
-      {
-        new(sessionIndex, new CreateIndexOptions { Name       = nameof(sessionIndex) }),
-        new(taskIdIndex, new CreateIndexOptions { Name        = nameof(taskIdIndex), Unique = true }),
-        new(sessionStatusIndex, new CreateIndexOptions { Name = nameof(sessionStatusIndex) }),
-      };
+                        {
+                          new(sessionIndex,
+                              new CreateIndexOptions { Name = nameof(sessionIndex) }),
+                          new(taskIdIndex,
+                              new CreateIndexOptions { Name = nameof(taskIdIndex), Unique = true }),
+                          new(sessionStatusIndex,
+                              new CreateIndexOptions { Name = nameof(sessionStatusIndex) }),
+                        };
 
-      return collection.Indexes.CreateManyAsync(sessionHandle, indexModels);
+      return collection.Indexes.CreateManyAsync(sessionHandle,
+                                                indexModels);
     }
+
+    public TaskData ToTaskData() => new()
+                                    {
+                                      Id = new TaskId
+                                           {
+                                             Session    = SessionId,
+                                             SubSession = SubSessionId,
+                                             Task       = TaskId,
+                                           },
+                                      HasPayload = HasPayload,
+                                      Payload    = new Payload { Data = ByteString.CopyFrom(Payload) },
+                                      Options    = Options,
+                                      Retries    = Retries,
+                                      Status     = Status,
+                                    };
+
+    public TaskId GetTaskId() => new() { Session = SessionId, SubSession = SubSessionId, Task = TaskId };
   }
 }

@@ -22,10 +22,28 @@
 	<s:Int64 x:Key="/Default/CodeStyle/CodeFormatting/ProtobufCodeFormatting/INDENT_SIZE/@EntryValue">2</s:Int64>
 	<s:Int64 x:Key="/Default/CodeStyle/CodeFormatting/ProtobufCodeFormatting/TAB_WIDTH/@EntryValue">2</s:Int64>
 	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/ProtobufCodeFormatting/USE_INDENT_FROM_VS/@EntryValue">False</s:Boolean>
-	<s:String x:Key="/Default/CodeStyle/FileHeader/FileHeaderText/@EntryValue">This file is part of ArmoniK project.&#xD;
+	<s:String x:Key="/Default/CodeStyle/FileHeader/FileHeaderText/@EntryValue">This file is part of the ArmoniK project&#xD;
 &#xD;
-Copyright (c) ANEO. All rights reserved.&#xD;
-  W. Kirschenmann &lt;wkirschenmann@aneo.fr&gt;</s:String>
+Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.&#xD;
+  W. Kirschenmann   &lt;wkirschenmann@aneo.fr&gt;&#xD;
+  J. Gurhem         &lt;jgurhem@aneo.fr&gt;&#xD;
+  D. Dubuc          &lt;ddubuc@aneo.fr&gt;&#xD;
+  L. Ziane Khodja   &lt;lzianekhodja@aneo.fr&gt;&#xD;
+  F. Lemaitre       &lt;flemaitre@aneo.fr&gt;&#xD;
+  S. Djebbar        &lt;sdjebbar@aneo.fr&gt;&#xD;
+&#xD;
+This program is free software: you can redistribute it and/or modify&#xD;
+it under the terms of the GNU Affero General Public License as published&#xD;
+by the Free Software Foundation, either version 3 of the License, or&#xD;
+(at your option) any later version.&#xD;
+&#xD;
+This program is distributed in the hope that it will be useful,&#xD;
+but WITHOUT ANY WARRANTY; without even the implied warranty of&#xD;
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the&#xD;
+GNU Affero General Public License for more details.&#xD;
+&#xD;
+You should have received a copy of the GNU Affero General Public License&#xD;
+along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</s:String>
 	<s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ECSharpKeepExistingMigration/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ECSharpPlaceEmbeddedOnSameLineMigration/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ECSharpUseContinuousIndentInsideBracesMigration/@EntryIndexedValue">True</s:Boolean>

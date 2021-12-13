@@ -1,7 +1,25 @@
-﻿// This file is part of ArmoniK project.
+﻿// This file is part of the ArmoniK project
 // 
-// Copyright (c) ANEO. All rights reserved.
-//   W. Kirschenmann <wkirschenmann@aneo.fr>
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -10,6 +28,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Adapters.MongoDB.Options;
 using ArmoniK.Core;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
@@ -21,18 +40,16 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Adapters.MongoDB
 {
-
-
   public class LockedQueueStorage : ILockedQueueStorage
   {
-    private readonly MongoCollectionProvider<QueueMessageModel> queueCollectionProvider_;
-    private readonly SessionProvider                            sessionProvider_;
     private readonly ILogger<LockedQueueStorage>                logger_;
     private readonly string                                     ownerId_ = Guid.NewGuid().ToString();
+    private readonly MongoCollectionProvider<QueueMessageModel> queueCollectionProvider_;
+    private readonly SessionProvider                            sessionProvider_;
 
     public LockedQueueStorage(MongoCollectionProvider<QueueMessageModel> queueCollectionProvider,
                               SessionProvider                            sessionProvider,
-                              IOptions<Options.QueueStorage>             options,
+                              IOptions<QueueStorage>                     options,
                               ILogger<LockedQueueStorage>                logger)
     {
       queueCollectionProvider_ = queueCollectionProvider;
@@ -43,11 +60,11 @@ namespace ArmoniK.Adapters.MongoDB
       LockRefreshPeriodicity   = options.Value.LockRefreshPeriodicity;
     }
 
-    /// <inheritdoc />
-    public TimeSpan LockRefreshPeriodicity { get; }
-
 
     public TimeSpan PollPeriodicity { get; }
+
+    /// <inheritdoc />
+    public TimeSpan LockRefreshPeriodicity { get; }
 
     /// <inheritdoc />
     public TimeSpan LockRefreshExtension { get; }
@@ -82,7 +99,7 @@ namespace ArmoniK.Adapters.MongoDB
 
         logger_.LogDebug("Trying to get a new message from Mongo queue");
         var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(sessionHandle,
-                                                                                     qmdm => qmdm.OwnedUntil == default ||
+                                                                                     qmdm => qmdm.OwnedUntil == default(DateTime) ||
                                                                                              qmdm.OwnedUntil < DateTime.UtcNow,
                                                                                      updateDefinition,
                                                                                      new FindOneAndUpdateOptions<

@@ -1,7 +1,25 @@
-﻿// This file is part of ArmoniK project.
+﻿// This file is part of the ArmoniK project
 // 
-// Copyright (c) ANEO. All rights reserved.
-//   W. Kirschenmann <wkirschenmann@aneo.fr>
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Linq;
@@ -29,14 +47,14 @@ namespace ArmoniK.Compute.PollingAgent
 {
   public class Pollster
   {
-    private readonly ILogger<Pollster>                     logger_;
-    private readonly IQueueStorage                         queueStorage_;
-    private readonly ITableStorage                         tableStorage_;
-    private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
-    private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
     private readonly ClientServiceProvider                 clientProvider_;
     private readonly IHostApplicationLifetime              lifeTime_;
+    private readonly ILogger<Pollster>                     logger_;
     private readonly int                                   messageBatchSize_;
+    private readonly IQueueStorage                         queueStorage_;
+    private readonly ITableStorage                         tableStorage_;
+    private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
+    private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
 
     public Pollster(ILogger<Pollster> logger,
                     // ReSharper disable once UnusedParameter.Local
@@ -55,7 +73,7 @@ namespace ArmoniK.Compute.PollingAgent
       taskPayloadStorage_ = taskPayloadStorage;
       clientProvider_     = clientProvider;
       lifeTime_           = lifeTime;
-      messageBatchSize_      = options.Value.MessageBatchSize;
+      messageBatchSize_   = options.Value.MessageBatchSize;
     }
 
     public async Task MainLoop(CancellationToken cancellationToken)
@@ -63,7 +81,6 @@ namespace ArmoniK.Compute.PollingAgent
       cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
       try
       {
-
         var prefetchChannel = Channel.CreateBounded<(TaskData taskData, IQueueMessage message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
                                                                                                                               {
                                                                                                                                 SingleReader = true,
@@ -146,11 +163,8 @@ namespace ArmoniK.Compute.PollingAgent
                                      .Unwrap();
 
 
-
-
         logger_.LogInformation("Processing loop started.");
         while (!cancellationToken.IsCancellationRequested)
-        {
           await foreach (var (taskData, message, combinedCt) in prefetchChannel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
           {
             await using var msg = message;
@@ -176,10 +190,8 @@ namespace ArmoniK.Compute.PollingAgent
 
             logger_.LogDebug("Task returned");
           }
-        }
 
         await prefetchTask;
-
       }
       catch (Exception e)
       {
@@ -190,7 +202,7 @@ namespace ArmoniK.Compute.PollingAgent
       lifeTime_.StopApplication();
     }
 
-    private async Task<bool> CheckPreconditions(IQueueMessage            message,
+    private async Task<bool> CheckPreconditions(IQueueMessage           message,
                                                 TaskData                taskData,
                                                 CancellationTokenSource combinedCts,
                                                 CancellationToken       cancellationToken)
@@ -333,8 +345,8 @@ namespace ArmoniK.Compute.PollingAgent
                                        cancellationToken);
     }
 
-    private async Task ProcessTaskAsync(TaskData taskData,
-                                        IQueueMessage message,
+    private async Task ProcessTaskAsync(TaskData          taskData,
+                                        IQueueMessage     message,
                                         CancellationToken combinedCt,
                                         CancellationToken cancellationToken)
     {
@@ -392,8 +404,8 @@ namespace ArmoniK.Compute.PollingAgent
       {
         var details = string.Empty;
 
-        if (message.CancellationToken.IsCancellationRequested) details      += "Message was cancelled. ";
-        if (cancellationToken.IsCancellationRequested) details += "Root token was cancelled. ";
+        if (message.CancellationToken.IsCancellationRequested) details += "Message was cancelled. ";
+        if (cancellationToken.IsCancellationRequested) details         += "Root token was cancelled. ";
 
         logger_.LogError(e,
                          "Execution has been cancelled for task {taskId} from session {sessionId}. {details}",
@@ -461,14 +473,14 @@ namespace ArmoniK.Compute.PollingAgent
 
       if (!taskData.HasPayload)
       {
-      logger_.LogInformation("Start retrieving payload");
+        logger_.LogInformation("Start retrieving payload");
         var payload = await taskPayloadStorage_.TryGetValuesAsync(taskData.Id,
                                                                   combinedCt);
-      logger_.LogInformation("Payload retrieved");
+        logger_.LogInformation("Payload retrieved");
         taskData.Payload    = payload;
         taskData.HasPayload = true;
-
       }
+
       return taskData;
     }
   }

@@ -1,7 +1,25 @@
-﻿// This file is part of ArmoniK project.
+﻿// This file is part of the ArmoniK project
 // 
-// Copyright (c) ANEO. All rights reserved.
-//   W. Kirschenmann <wkirschenmann@aneo.fr>
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Net.Http;
 using System.Net.Sockets;
@@ -11,30 +29,30 @@ using ArmoniK.Core.Injection;
 using ArmoniK.Core.Injection.Options;
 
 using Grpc.Core;
-
-using Microsoft.Extensions.Options;
-
-using GrpcChannel = Grpc.Net.Client.GrpcChannel;
-
 using Grpc.Net.Client;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+using GrpcChannel = ArmoniK.Core.Injection.Options.GrpcChannel;
 
 namespace ArmoniK.Core.gRPC
 {
   public class GrpcChannelProvider : ProviderBase<ChannelBase>
   {
-    public GrpcChannelProvider(IOptions<Injection.Options.GrpcChannel> options, ILogger<GrpcChannelProvider> logger)
+    public GrpcChannelProvider(IOptions<GrpcChannel> options, ILogger<GrpcChannelProvider> logger)
       : base(options.Value.SocketType == GrpcSocketType.Web
-               ? () => Task.FromResult(BuildWebGrpcChannel(options.Value.Address, logger))
-               : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Value.Address, logger)))
+               ? () => Task.FromResult(BuildWebGrpcChannel(options.Value.Address,
+                                                           logger))
+               : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Value.Address,
+                                                                  logger)))
     {
     }
 
     private static ChannelBase BuildWebGrpcChannel(string address, ILogger logger)
     {
       using var _ = logger.LogFunction();
-      return GrpcChannel.ForAddress(address);
+      return Grpc.Net.Client.GrpcChannel.ForAddress(address);
     }
 
     private static ChannelBase BuildUnixSocketGrpcChannel(string address, ILogger logger)
@@ -44,31 +62,33 @@ namespace ArmoniK.Core.gRPC
       var udsEndPoint = new UnixDomainSocketEndPoint(address);
 
       var socketsHttpHandler = new SocketsHttpHandler
-      {
-        ConnectCallback = async (unknown, cancellationToken) =>
-        {
-          var socket = new Socket(AddressFamily.Unix,
-                                  SocketType.Stream,
-                                  ProtocolType.Unspecified);
+                               {
+                                 ConnectCallback = async (unknown, cancellationToken) =>
+                                                   {
+                                                     var socket = new Socket(AddressFamily.Unix,
+                                                                             SocketType.Stream,
+                                                                             ProtocolType.Unspecified);
 
-          try
-          {
-            await socket.ConnectAsync(udsEndPoint, cancellationToken).ConfigureAwait(false);
-            return new NetworkStream(socket, true);
-          }
-          catch
-          {
-            socket.Dispose();
-            throw;
-          }
-        },
-      };
+                                                     try
+                                                     {
+                                                       await socket.ConnectAsync(udsEndPoint,
+                                                                                 cancellationToken).ConfigureAwait(false);
+                                                       return new NetworkStream(socket,
+                                                                                true);
+                                                     }
+                                                     catch
+                                                     {
+                                                       socket.Dispose();
+                                                       throw;
+                                                     }
+                                                   },
+                               };
 
-      return GrpcChannel.ForAddress("http://localhost",
-                                    new GrpcChannelOptions
-                                    {
-                                      HttpHandler = socketsHttpHandler,
-                                    });
+      return Grpc.Net.Client.GrpcChannel.ForAddress("http://localhost",
+                                                    new GrpcChannelOptions
+                                                    {
+                                                      HttpHandler = socketsHttpHandler,
+                                                    });
     }
   }
 }
