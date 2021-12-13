@@ -99,7 +99,7 @@ namespace ArmoniK.Adapters.MongoDB
 
         logger_.LogDebug("Trying to get a new message from Mongo queue");
         var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(sessionHandle,
-                                                                                     qmdm => qmdm.OwnedUntil == default(DateTime) ||
+                                                                                     qmdm => qmdm.OwnedUntil == default ||
                                                                                              qmdm.OwnedUntil < DateTime.UtcNow,
                                                                                      updateDefinition,
                                                                                      new FindOneAndUpdateOptions<
