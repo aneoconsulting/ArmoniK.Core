@@ -13,6 +13,8 @@ using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 using ArmoniK.Core.Utils;
 
+using Google.Protobuf;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -67,8 +69,9 @@ namespace ArmoniK.Adapters.Amqp
           var message = await receiver.ReceiveAsync(TimeSpan.FromSeconds(5));
           if (message is null) continue;
 
-
-          if (message.Body is not TaskId taskId)
+          logger_.LogDebug("Read message with id={id}",
+                           message.Properties.MessageId);
+          if (TaskId.Parser.ParseFrom(message.Body as byte[]) is not TaskId taskId)
           {
             logger_.LogError("Body of message with Id={id} is not a TaskId", message.Properties.MessageId);
             continue;
@@ -98,7 +101,7 @@ namespace ArmoniK.Adapters.Amqp
                                      CancellationToken   cancellationToken = default)
     {
       var sender = await senders_[priority / 3];
-      await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(id)
+      await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(id.ToByteArray())
                                                                 {
                                                                   Header = new Header { Priority = (byte)((priority % 3)*4) },
                                                                 })));
