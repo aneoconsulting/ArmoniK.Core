@@ -79,9 +79,13 @@ namespace ArmoniK.Compute.PollingAgent
 
                                                          try
                                                          {
+                                                           logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
                                                            while (!cancellationToken.IsCancellationRequested)
                                                            {
                                                              logger_.LogInformation("Trying to fetch messages");
+
+                                                             logger_.LogFunction(functionName:
+                                                                                 $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
                                                              var messages = queueStorage_.PullAsync(messageBatchSize_,
                                                                                                     cancellationToken);
 

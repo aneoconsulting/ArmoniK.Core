@@ -76,6 +76,8 @@ namespace ArmoniK.Adapters.Amqp
 
           nbPulledMessage++;
 
+          logger_.LogDebug("Read message with id={id}",
+                           message.Properties.MessageId);
           yield return new QueueMessage(message,
                                         await senders_[i],
                                         receiver,
