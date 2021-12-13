@@ -73,6 +73,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.HelloWorld.Worker",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.HelloWorld.Client", "Samples\HelloWorld\Client\src\ArmoniK.HelloWorld.Client\ArmoniK.HelloWorld.Client.csproj", "{316A4A72-4E70-4A49-B923-A3D76357DCBC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HtcMock", "HtcMock", "{C5CC2D24-36BA-45D9-8660-72DA539F722A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Htc.Mock.Client", "Samples\HtcMock\ArmoniK.Samples.Htc.Mock.Client\src\ArmoniK.Samples.Htc.Mock.Client.csproj", "{228CB8DC-51DB-4862-8E64-17DB29B9E19F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Integration.Htc.Mock", "Samples\HtcMock\ArmoniK.Samples.Integration.Htc.Mock\src\ArmoniK.Samples.Integration.Htc.Mock.csproj", "{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Htc.Mock.GridWorker", "Samples\HtcMock\ArmoniK.Samples.Htc.Mock.GridWorker\src\ArmoniK.Samples.Htc.Mock.GridWorker.csproj", "{1930EAB0-20FB-488B-B050-75278ED14812}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -193,6 +201,30 @@ Global
 		{316A4A72-4E70-4A49-B923-A3D76357DCBC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{316A4A72-4E70-4A49-B923-A3D76357DCBC}.Release|x64.ActiveCfg = Release|Any CPU
 		{316A4A72-4E70-4A49-B923-A3D76357DCBC}.Release|x64.Build.0 = Release|Any CPU
+		{228CB8DC-51DB-4862-8E64-17DB29B9E19F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{228CB8DC-51DB-4862-8E64-17DB29B9E19F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{228CB8DC-51DB-4862-8E64-17DB29B9E19F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{228CB8DC-51DB-4862-8E64-17DB29B9E19F}.Debug|x64.Build.0 = Debug|Any CPU
+		{228CB8DC-51DB-4862-8E64-17DB29B9E19F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{228CB8DC-51DB-4862-8E64-17DB29B9E19F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{228CB8DC-51DB-4862-8E64-17DB29B9E19F}.Release|x64.ActiveCfg = Release|Any CPU
+		{228CB8DC-51DB-4862-8E64-17DB29B9E19F}.Release|x64.Build.0 = Release|Any CPU
+		{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}.Debug|x64.Build.0 = Debug|Any CPU
+		{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}.Release|x64.ActiveCfg = Release|Any CPU
+		{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}.Release|x64.Build.0 = Release|Any CPU
+		{1930EAB0-20FB-488B-B050-75278ED14812}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1930EAB0-20FB-488B-B050-75278ED14812}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1930EAB0-20FB-488B-B050-75278ED14812}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1930EAB0-20FB-488B-B050-75278ED14812}.Debug|x64.Build.0 = Debug|Any CPU
+		{1930EAB0-20FB-488B-B050-75278ED14812}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1930EAB0-20FB-488B-B050-75278ED14812}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1930EAB0-20FB-488B-B050-75278ED14812}.Release|x64.ActiveCfg = Release|Any CPU
+		{1930EAB0-20FB-488B-B050-75278ED14812}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -228,6 +260,10 @@ Global
 		{756699C0-8D4F-4FA3-A6B9-CD4C73121578} = {ED1CD14A-5622-412E-AE86-3F5DBBC48497}
 		{94C05011-C128-4A6F-9DC1-995D8E9C83F6} = {756699C0-8D4F-4FA3-A6B9-CD4C73121578}
 		{316A4A72-4E70-4A49-B923-A3D76357DCBC} = {756699C0-8D4F-4FA3-A6B9-CD4C73121578}
+		{C5CC2D24-36BA-45D9-8660-72DA539F722A} = {ED1CD14A-5622-412E-AE86-3F5DBBC48497}
+		{228CB8DC-51DB-4862-8E64-17DB29B9E19F} = {C5CC2D24-36BA-45D9-8660-72DA539F722A}
+		{A9BD09F2-5929-449C-9B1E-EAF61A6213F8} = {C5CC2D24-36BA-45D9-8660-72DA539F722A}
+		{1930EAB0-20FB-488B-B050-75278ED14812} = {C5CC2D24-36BA-45D9-8660-72DA539F722A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1285A466-2AF6-43E6-8DCC-2F93A5D5F02E}
