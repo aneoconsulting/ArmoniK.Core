@@ -47,7 +47,10 @@ namespace ArmoniK.Core.Storage
       objectStorage_ = objectStorage;
     }
 
-    public string SerializeKey(TKey key) => $"{keyPrefix_}{HttpUtility.UrlEncode(key.ToByteArray())}";
+    public string SerializeKey(TKey key)
+    {
+      return $"{keyPrefix_}{HttpUtility.UrlEncode(key.ToByteArray())}";
+    }
 
     public TKey DeserializeKey(string stringKey)
     {

@@ -43,22 +43,22 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void SetUp()
     {
       Dictionary<string, string> baseConfig = new()
-                                              {
-                                                { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
-                                                { "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage" },
-                                                { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
-                                                { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
-                                                { "MongoDB:ConnectionString", "mongodb://localhost" },
-                                                { "MongoDB:DatabaseName", "database" },
-                                                { "MongoDB:DataRetention", "10.00:00:00" },
-                                                { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
-                                                { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
-                                                { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
-                                                { "MongoDB:ObjectStorage:ChunkSize", "100000" },
-                                                { "MongoDB:QueueStorage:LockRefreshPeriodicity", "00:20:00" },
-                                                { "MongoDB:QueueStorage:PollPeriodicity", "00:00:50" },
-                                                { "MongoDB:QueueStorage:LockRefreshExtension", "00:50:00" },
-                                              };
+      {
+        { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
+        { "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage" },
+        { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
+        { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
+        { "MongoDB:ConnectionString", "mongodb://localhost" },
+        { "MongoDB:DatabaseName", "database" },
+        { "MongoDB:DataRetention", "10.00:00:00" },
+        { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
+        { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
+        { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
+        { "MongoDB:ObjectStorage:ChunkSize", "100000" },
+        { "MongoDB:QueueStorage:LockRefreshPeriodicity", "00:20:00" },
+        { "MongoDB:QueueStorage:PollPeriodicity", "00:00:50" },
+        { "MongoDB:QueueStorage:LockRefreshExtension", "00:50:00" },
+      };
 
       var configSource = new MemoryConfigurationSource
                          {

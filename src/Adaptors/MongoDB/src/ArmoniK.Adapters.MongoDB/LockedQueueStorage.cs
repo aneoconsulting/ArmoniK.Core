@@ -127,8 +127,8 @@ namespace ArmoniK.Adapters.MongoDB
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
       await queueCollection.FindOneAndDeleteAsync(
-                                                  qmm => qmm.MessageId == id && qmm.OwnerId == ownerId_,
-                                                  cancellationToken: cancellationToken);
+        qmm => qmm.MessageId == id && qmm.OwnerId == ownerId_,
+        cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -142,16 +142,16 @@ namespace ArmoniK.Adapters.MongoDB
                                                              DateTime.UtcNow + LockRefreshExtension);
 
       var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(
-                                                                                   qmdm => qmdm.MessageId == id &&
-                                                                                           qmdm.OwnerId == ownerId_,
-                                                                                   updateDefinition,
-                                                                                   new FindOneAndUpdateOptions<QueueMessageModel>
-                                                                                   {
-                                                                                     ReturnDocument = ReturnDocument.After,
-                                                                                     IsUpsert       = false,
-                                                                                   },
-                                                                                   cancellationToken
-                                                                                  );
+        qmdm => qmdm.MessageId == id &&
+                qmdm.OwnerId == ownerId_,
+        updateDefinition,
+        new FindOneAndUpdateOptions<QueueMessageModel>
+        {
+          ReturnDocument = ReturnDocument.After,
+          IsUpsert       = false,
+        },
+        cancellationToken
+      );
       return message is not null;
     }
 
@@ -164,11 +164,11 @@ namespace ArmoniK.Adapters.MongoDB
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
       var qmms = messages.Select(message => new QueueMessageModel
-                                            {
-                                              TaskId         = message,
-                                              Priority       = priority,
-                                              SubmissionDate = DateTime.UtcNow,
-                                            });
+      {
+        TaskId         = message,
+        Priority       = priority,
+        SubmissionDate = DateTime.UtcNow,
+      });
 
       await queueCollection.InsertManyAsync(qmms,
                                             cancellationToken: cancellationToken);
@@ -187,10 +187,10 @@ namespace ArmoniK.Adapters.MongoDB
                                                              DateTime.UtcNow);
 
       await queueCollection.FindOneAndUpdateAsync(
-                                                  qmm => qmm.MessageId == id,
-                                                  updateDefinition,
-                                                  cancellationToken: cancellationToken
-                                                 );
+        qmm => qmm.MessageId == id,
+        updateDefinition,
+        cancellationToken: cancellationToken
+      );
     }
 
     /// <inheritdoc />
@@ -217,9 +217,9 @@ namespace ArmoniK.Adapters.MongoDB
                                                                              qmdm.OwnerId == ownerId_,
                                                                      updateDefinition,
                                                                      new FindOneAndUpdateOptions<QueueMessageModel>
-                                                                     { IsUpsert = false },
+                                                                       { IsUpsert = false },
                                                                      cancellationToken
-                                                                    );
+      );
     }
   }
 }

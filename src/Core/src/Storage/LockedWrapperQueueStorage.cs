@@ -144,8 +144,18 @@ namespace ArmoniK.Core.Storage
                                                    deadlineHandler,
                                                    leaseHandler,
                                                    cancellationToken
-                                                  );
+        );
       }
+    }
+
+    /// <inheritdoc />
+    public Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
+                                     int                 priority          = 1,
+                                     CancellationToken   cancellationToken = default)
+    {
+      return lockedQueueStorage_.EnqueueMessagesAsync(messages,
+                                                      priority,
+                                                      cancellationToken);
     }
 
     /// <inheritdoc />

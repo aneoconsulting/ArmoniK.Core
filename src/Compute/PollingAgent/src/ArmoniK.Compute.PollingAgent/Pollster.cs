@@ -82,13 +82,13 @@ namespace ArmoniK.Compute.PollingAgent
       try
       {
         var prefetchChannel = Channel.CreateBounded<(TaskData taskData, IQueueMessage message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
-                                                                                                                              {
-                                                                                                                                SingleReader = true,
-                                                                                                                                SingleWriter = true,
-                                                                                                                                FullMode = BoundedChannelFullMode.Wait,
-                                                                                                                                Capacity = 1,
-                                                                                                                                AllowSynchronousContinuations = false,
-                                                                                                                              });
+        {
+          SingleReader                  = true,
+          SingleWriter                  = true,
+          FullMode                      = BoundedChannelFullMode.Wait,
+          Capacity                      = 1,
+          AllowSynchronousContinuations = false,
+        });
 
         var prefetchTask = Task<Task>.Factory.StartNew(async () =>
                                                        {
@@ -360,12 +360,12 @@ namespace ArmoniK.Compute.PollingAgent
                                                                  CancellationToken.None);
 
       var request = new ComputeRequest
-                    {
-                      Session    = taskData.Id.Session,
-                      Subsession = taskData.Id.SubSession,
-                      TaskId     = taskData.Id.Task,
-                      Payload    = taskData.Payload.Data,
-                    };
+      {
+        Session    = taskData.Id.Session,
+        Subsession = taskData.Id.SubSession,
+        TaskId     = taskData.Id.Task,
+        Payload    = taskData.Payload.Data,
+      };
 
       logger_.LogDebug("Get client connection to the worker");
       var client = await clientProvider_.GetAsync();

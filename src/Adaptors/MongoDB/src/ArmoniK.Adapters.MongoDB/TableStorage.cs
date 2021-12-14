@@ -94,9 +94,9 @@ namespace ArmoniK.Adapters.MongoDB
                                                             true);
 
       var res = await sessionCollection.UpdateOneAsync(
-                                                       filterDefinition,
-                                                       updateDefinition,
-                                                       cancellationToken: cancellationToken);
+        filterDefinition,
+        updateDefinition,
+        cancellationToken: cancellationToken);
       if (res.MatchedCount < 1)
         throw new InvalidOperationException("No open session found. Was the session closed?");
     }
@@ -111,7 +111,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                        .Where(sdm => sessionId.Session == sdm.SessionId &&
                                                                      (sessionId.SubSession == sdm.SubSessionId ||
                                                                       sdm.ParentsId.Any(
-                                                                                        id => id.Id == sessionId.SubSession)));
+                                                                        id => id.Id == sessionId.SubSession)));
 
       var definitionBuilder = new UpdateDefinitionBuilder<SessionDataModel>();
 
@@ -159,7 +159,7 @@ namespace ArmoniK.Adapters.MongoDB
                                            .FirstAsync(cancellationToken);
             parents = t.ParentsId;
             parents.Add(new SessionDataModel.ParentId
-                        { Id = sessionOptions.ParentSession.SubSession });
+                          { Id = sessionOptions.ParentSession.SubSession });
           }
         }
 
@@ -184,9 +184,9 @@ namespace ArmoniK.Adapters.MongoDB
                                                          .Set(model => model.SessionId,
                                                               data.SessionId);
         await sessionCollection.UpdateOneAsync(
-                                               x => x.SubSessionId == data.SubSessionId,
-                                               updateDefinition,
-                                               cancellationToken: cancellationToken);
+          x => x.SubSessionId == data.SubSessionId,
+          updateDefinition,
+          cancellationToken: cancellationToken);
       }
 
       return new SessionId { Session = data.SessionId, SubSession = data.SubSessionId };
@@ -265,8 +265,8 @@ namespace ArmoniK.Adapters.MongoDB
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
       var tdms = payloads.Select(payload =>
-                                 {
-                                   var isPayloadStored = payload.CalculateSize() < 12000000;
+                         {
+                           var isPayloadStored = payload.CalculateSize() < 12000000;
 
                                    var tdm = new TaskDataModel
                                              {
@@ -280,8 +280,8 @@ namespace ArmoniK.Adapters.MongoDB
                                    if (isPayloadStored)
                                      tdm.Payload = payload.Data.ToByteArray();
 
-                                   return tdm;
-                                 })
+                           return tdm;
+                         })
                          .ToList();
 
       await taskCollection.InsertManyAsync(tdms,
@@ -304,20 +304,20 @@ namespace ArmoniK.Adapters.MongoDB
       var isPayloadStored = payload.CalculateSize() < 12000000;
 
       var tdm = new TaskDataModel
-                {
-                  HasPayload   = isPayloadStored,
-                  Options      = options,
-                  Retries      = 0,
-                  SessionId    = session.Session,
-                  SubSessionId = session.SubSession,
-                  Status       = TaskStatus.Creating,
-                };
+      {
+        HasPayload   = isPayloadStored,
+        Options      = options,
+        Retries      = 0,
+        SessionId    = session.Session,
+        SubSessionId = session.SubSession,
+        Status       = TaskStatus.Creating,
+      };
       if (isPayloadStored)
         tdm.Payload = payload.Data.ToByteArray();
 
       await taskCollection.InsertOneAsync(
-                                          tdm,
-                                          cancellationToken: cancellationToken);
+        tdm,
+        cancellationToken: cancellationToken);
       return (tdm.GetTaskId(), isPayloadStored, AsyncDisposable.Create(async () => await this.FinalizeTaskCreation(tdm.GetTaskId(),
                                                                                                                    cancellationToken)));
     }

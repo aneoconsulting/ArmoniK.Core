@@ -32,8 +32,10 @@ namespace ArmoniK.Adapters.MongoDB
   public static class AsyncCursorSourceExtensions
   {
     public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(
-      this IAsyncCursorSource<T> asyncCursorSource) =>
-      new AsyncEnumerableAdapter<T>(asyncCursorSource);
+      this IAsyncCursorSource<T> asyncCursorSource)
+    {
+      return new AsyncEnumerableAdapter<T>(asyncCursorSource);
+    }
 
     private class AsyncEnumerableAdapter<T> : IAsyncEnumerable<T>
     {

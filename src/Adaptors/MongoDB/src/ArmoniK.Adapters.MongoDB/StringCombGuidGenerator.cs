@@ -32,7 +32,9 @@ namespace ArmoniK.Adapters.MongoDB
 
     /// <inheritdoc />
     public object GenerateId(object container, object document)
-      => $"{Generator.GenerateId(container, document)}";
+    {
+      return $"{Generator.GenerateId(container, document)}";
+    }
 
     /// <inheritdoc />
     public bool IsEmpty(object id) => id == null || ((string)id).Equals("00000000-0000-0000-0000-000000000000");

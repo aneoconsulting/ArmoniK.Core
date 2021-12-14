@@ -53,7 +53,7 @@ namespace ArmoniK.Core.Storage
     }
 
     public string MessageId { get; init; }
-    public TaskId TaskId    { get; init; }
+    public TaskId TaskId { get; init; }
 
     /// <inheritdoc />
     public QueueMessageStatus Status { get; set; }

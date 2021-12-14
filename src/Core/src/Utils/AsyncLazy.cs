@@ -39,6 +39,9 @@ namespace ArmoniK.Core.Utils
     {
     }
 
-    public TaskAwaiter<T> GetAwaiter() => Value.GetAwaiter();
+    public TaskAwaiter<T> GetAwaiter()
+    {
+      return Value.GetAwaiter();
+    }
   }
 }

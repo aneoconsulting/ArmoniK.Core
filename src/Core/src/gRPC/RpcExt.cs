@@ -97,9 +97,13 @@ namespace ArmoniK.Core.gRPC
     }
 
     public static bool IsValid(this Lease lease)
-      => !string.IsNullOrEmpty(lease.LeaseId) && lease.ExpirationDate.CompareTo(Timestamp.FromDateTime(DateTime.UtcNow)) > 0;
+    {
+      return !string.IsNullOrEmpty(lease.LeaseId) && lease.ExpirationDate.CompareTo(Timestamp.FromDateTime(DateTime.UtcNow)) > 0;
+    }
 
     public static string ToPrintableId(this TaskId taskId)
-      => $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
+    {
+      return $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
+    }
   }
 }

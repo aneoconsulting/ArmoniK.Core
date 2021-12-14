@@ -37,24 +37,28 @@ namespace ArmoniK.Core.Injection
   {
     public static IServiceCollection AddArmoniKCore(this IServiceCollection services,
                                                     IConfiguration          configuration)
-      => services.Configure<ComputePlan>(configuration.GetSection(ComputePlan.SettingSection))
-                 .Configure<GrpcChannel>(configuration.GetSection(GrpcChannel.SettingSection))
-                 .Configure<Components>(configuration.GetSection(Components.SettingSection))
-                 .AddSingleton<GrpcChannelProvider>()
-                 .AddSingleton<ClientServiceProvider>()
-                 .AddTransient<IObjectStorage, DistributedCacheObjectStorage>()
-                 .AddSingleton(typeof(KeyValueStorage<,>));
+    {
+      return services.Configure<ComputePlan>(configuration.GetSection(ComputePlan.SettingSection))
+                     .Configure<GrpcChannel>(configuration.GetSection(GrpcChannel.SettingSection))
+                     .Configure<Components>(configuration.GetSection(Components.SettingSection))
+                     .AddSingleton<GrpcChannelProvider>()
+                     .AddSingleton<ClientServiceProvider>()
+                     .AddTransient<IObjectStorage, DistributedCacheObjectStorage>()
+                     .AddSingleton(typeof(KeyValueStorage<,>));
+    }
 
     public static IServiceCollection ValidateGrpcRequests(this IServiceCollection services)
-      => services.AddGrpc(options => options.EnableMessageValidation())
-                 .Services
-                 .AddValidator<CreateTaskRequestValidator>()
-                 .AddValidator<PayloadValidator>()
-                 .AddValidator<SessionIdValidator>()
-                 .AddValidator<SessionOptionsValidator>()
-                 .AddValidator<TaskIdValidator>()
-                 .AddValidator<TaskOptionsValidator>()
-                 .AddValidator<TaskRequestValidator>()
-                 .AddGrpcValidation();
+    {
+      return services.AddGrpc(options => options.EnableMessageValidation())
+                     .Services
+                     .AddValidator<CreateTaskRequestValidator>()
+                     .AddValidator<PayloadValidator>()
+                     .AddValidator<SessionIdValidator>()
+                     .AddValidator<SessionOptionsValidator>()
+                     .AddValidator<TaskIdValidator>()
+                     .AddValidator<TaskOptionsValidator>()
+                     .AddValidator<TaskRequestValidator>()
+                     .AddGrpcValidation();
+    }
   }
 }

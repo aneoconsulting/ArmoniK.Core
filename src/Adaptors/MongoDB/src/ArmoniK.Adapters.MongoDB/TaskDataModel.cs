@@ -39,8 +39,11 @@ namespace ArmoniK.Adapters.MongoDB
   public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()
   {
     /// <inheritdoc />
-    object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args) => Deserialize(context,
-                                                                                                                        args);
+    object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+    {
+      return Deserialize(context,
+                         args);
+    }
 
     /// <inheritdoc />
     public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, T value)

@@ -142,7 +142,7 @@ namespace ArmoniK.Control.Services
       var options = request.TaskOptions ??
                     await tableStorage_.GetDefaultTaskOption(request.SessionId,
                                                              context
-                                                              .CancellationToken);
+                                                               .CancellationToken);
 
       var inits = await tableStorage_.InitializeTaskCreation(request.SessionId,
                                                              options,

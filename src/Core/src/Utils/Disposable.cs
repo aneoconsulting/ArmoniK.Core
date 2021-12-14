@@ -33,7 +33,10 @@ namespace ArmoniK.Core.Utils
     public static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> enumerable) => Task.WhenAll(enumerable);
     public static Task      WhenAll(this    IEnumerable<Task>    enumerable) => Task.WhenAll(enumerable);
 
-    public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> enumerableTask) => (await enumerableTask).ToList();
+    public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> enumerableTask)
+    {
+      return (await enumerableTask).ToList();
+    }
   }
 
   public static class DisposableExt
@@ -53,7 +56,10 @@ namespace ArmoniK.Core.Utils
     {
       private readonly Action action_;
 
-      public DisposableImpl(Action action) => action_ = action;
+      public DisposableImpl(Action action)
+      {
+        action_ = action;
+      }
 
       /// <inheritdoc />
       public void Dispose()
@@ -71,10 +77,16 @@ namespace ArmoniK.Core.Utils
     {
       private readonly Func<ValueTask> action_;
 
-      public AsyncDisposableImpl(Func<ValueTask> action) => action_ = action;
+      public AsyncDisposableImpl(Func<ValueTask> action)
+      {
+        action_ = action;
+      }
 
       /// <inheritdoc />
-      public ValueTask DisposeAsync() => action_();
+      public ValueTask DisposeAsync()
+      {
+        return action_();
+      }
     }
   }
 }
