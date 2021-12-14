@@ -152,16 +152,6 @@ namespace ArmoniK.Core.Storage
     public Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
                                      int                 priority          = 1,
                                      CancellationToken   cancellationToken = default)
-    {
-      return lockedQueueStorage_.EnqueueMessagesAsync(messages,
-                                                      priority,
-                                                      cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
-                                     int                 priority          = 1,
-                                     CancellationToken   cancellationToken = default)
       => lockedQueueStorage_.EnqueueMessagesAsync(messages,
                                                   priority,
                                                   cancellationToken);
