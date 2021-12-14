@@ -65,4 +65,5 @@ along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</s:S
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=qmdm/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=redispatched/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=requeued/@EntryIndexedValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/UserDictionary/Words/=serilog/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=serilog/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Ziane/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
