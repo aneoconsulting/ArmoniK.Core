@@ -21,11 +21,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AMQPNetLite.Core" Version="2.4.3" />
+    <PackageReference Include="MongoDB.Driver" Version="2.13.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\src\ArmoniK.Core.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\ArmoniK.Core.csproj" />
   </ItemGroup>
 
 </Project>

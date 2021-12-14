@@ -10,7 +10,7 @@
     <IsPackable>true</IsPackable>
     <UserSecretsId>61626152-69fe-468e-b033-201f8c9716ad</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>..\..\..\..\..</DockerfileContext>
+    <DockerfileContext>..\..\..</DockerfileContext>
     <DockerComposeProjectPath>..\..\..\..\..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
@@ -35,9 +35,9 @@
 
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Adaptors\Amqp\src\ArmoniK.Adapters.Amqp\ArmoniK.Adapters.Amqp.csproj" />
-    <ProjectReference Include="..\..\..\..\Adaptors\MongoDB\src\ArmoniK.Adapters.MongoDB\ArmoniK.Adapters.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\..\Core\src\ArmoniK.Core.csproj" />
+    <ProjectReference Include="..\..\Adaptors\Amqp\src\ArmoniK.Adapters.Amqp.csproj" />
+    <ProjectReference Include="..\..\Adaptors\MongoDB\src\ArmoniK.Adapters.MongoDB.csproj" />
+    <ProjectReference Include="..\..\Core\src\ArmoniK.Core.csproj" />
   </ItemGroup>
 
 </Project>
