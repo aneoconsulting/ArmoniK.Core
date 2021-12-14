@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31911.196
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sources", "Sources", "{79DE0448-1BF2-48D2-8A33-243E402CFD27}"
 EndProject
@@ -75,15 +75,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.HelloWorld.Client",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HtcMock", "HtcMock", "{C5CC2D24-36BA-45D9-8660-72DA539F722A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Htc.Mock.Client", "Samples\HtcMock\ArmoniK.Samples.Htc.Mock.Client\src\ArmoniK.Samples.Htc.Mock.Client.csproj", "{228CB8DC-51DB-4862-8E64-17DB29B9E19F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.HtcMock.Client", "Samples\HtcMock\ArmoniK.Samples.Htc.Mock.Client\src\ArmoniK.Samples.HtcMock.Client.csproj", "{228CB8DC-51DB-4862-8E64-17DB29B9E19F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Integration.Htc.Mock", "Samples\HtcMock\ArmoniK.Samples.Integration.Htc.Mock\src\ArmoniK.Samples.Integration.Htc.Mock.csproj", "{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Integration.HtcMock", "Samples\HtcMock\ArmoniK.Samples.Integration.Htc.Mock\src\ArmoniK.Samples.Integration.HtcMock.csproj", "{A9BD09F2-5929-449C-9B1E-EAF61A6213F8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Htc.Mock.GridWorker", "Samples\HtcMock\ArmoniK.Samples.Htc.Mock.GridWorker\src\ArmoniK.Samples.Htc.Mock.GridWorker.csproj", "{1930EAB0-20FB-488B-B050-75278ED14812}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.HtcMock.GridWorker", "Samples\HtcMock\ArmoniK.Samples.Htc.Mock.GridWorker\src\ArmoniK.Samples.HtcMock.GridWorker.csproj", "{1930EAB0-20FB-488B-B050-75278ED14812}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{413634D0-0359-4BA2-AFCE-714BDE1C7BE7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Integration.Htc.Mock", "Samples\HtcMock\ArmoniK.Samples.Integration.Htc.Mock\tests\ArmoniK.Samples.Integration.Htc.Mock.Tests\ArmoniK.Samples.Integration.Htc.Mock.csproj", "{1DF2B654-0932-4C9D-B4E6-4CF12BE37380}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Samples.Integration.HtcMock.Tests", "Samples\HtcMock\ArmoniK.Samples.Integration.Htc.Mock\tests\ArmoniK.Samples.Integration.Htc.Mock.Tests\ArmoniK.Samples.Integration.HtcMock.Tests.csproj", "{1DF2B654-0932-4C9D-B4E6-4CF12BE37380}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
