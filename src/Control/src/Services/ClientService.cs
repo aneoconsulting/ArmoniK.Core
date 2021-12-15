@@ -199,11 +199,11 @@ namespace ArmoniK.Control.Services
         await responseStream.WriteAsync(taskId);
     }
 
-    public override async Task TryGetResult(TaskFilter                              request,
-                                            IServerStreamWriter<SinglePayloadReply> responseStream,
-                                            ServerCallContext                       context)
+    public override async Task<MultiplePayloadReply> TryGetResult(TaskFilter                              request,
+                                                                  ServerCallContext                       context)
     {
       logger_.LogFunction();
+      MultiplePayloadReply multiplePayloadReply = new();
       await foreach (var taskId in tableStorage_.ListTasksAsync(request,
                                                                 context.CancellationToken)
                                                 .WithCancellation(context.CancellationToken))
@@ -211,8 +211,9 @@ namespace ArmoniK.Control.Services
         var result = await taskResultStorage_.TryGetValuesAsync(taskId,
                                                                 context.CancellationToken);
         var reply = new SinglePayloadReply { TaskId = taskId, Data = new Payload { Data = result.Result } };
-        await responseStream.WriteAsync(reply);
+        multiplePayloadReply.Payloads.Add(reply);
       }
+      return multiplePayloadReply;
     }
 
     public override async Task<Empty> WaitForCompletion(TaskFilter request, ServerCallContext context)

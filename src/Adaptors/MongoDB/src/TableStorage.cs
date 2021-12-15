@@ -164,6 +164,10 @@ namespace ArmoniK.Adapters.MongoDB
             if (sessionOptionsDefaultTaskOption is null)
             {
               sessionOptionsDefaultTaskOption = t.Options;
+              if (sessionOptionsDefaultTaskOption is null)
+              {
+                throw new NullReferenceException();
+              }
             }
           }
         }
