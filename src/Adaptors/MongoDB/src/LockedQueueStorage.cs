@@ -85,7 +85,9 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
-      for (var messageIdx = 0; messageIdx < nbMessages; messageIdx++)
+      var nbPulledMessage = 0;
+
+      while (nbPulledMessage < nbMessages && !cancellationToken.IsCancellationRequested)
       {
         var updateDefinition = Builders<QueueMessageModel>.Update
                                                           .Set(qmdm => qmdm.OwnedUntil,
@@ -112,11 +114,20 @@ namespace ArmoniK.Adapters.MongoDB
                                                                                      cancellationToken);
 
         if (message is not null)
+        {
+          nbPulledMessage++;
           yield return new LockedQueueMessage(this,
-                                              message.MessageId,
-                                              message.TaskId,
-                                              logger_,
-                                              CancellationToken.None);
+                                             message.MessageId,
+                                             message.TaskId,
+                                             logger_,
+                                             CancellationToken.None);
+        }
+        else
+        {
+          await Task.Delay(PollPeriodicity,
+                           cancellationToken);
+        }
+
       }
     }
 
