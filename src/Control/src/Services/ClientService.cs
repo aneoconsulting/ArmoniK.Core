@@ -275,13 +275,13 @@ namespace ArmoniK.Control.Services
                                                  context.CancellationToken);
       await foreach (var taskId in taskIds)
       {
-        await WaitForTaskCompletion(taskId, context);
+        await WaitForSingleTaskCompletion(taskId, context);
       }
 
       return new Empty();
     }
 
-    private async Task WaitForTaskCompletion(TaskId taskId, ServerCallContext context)
+    private async Task WaitForSingleTaskCompletion(TaskId taskId, ServerCallContext context)
     {
       using var _ = logger_.LogFunction(taskId.ToPrintableId());
       bool completed;
@@ -317,9 +317,13 @@ namespace ArmoniK.Control.Services
 
       await foreach (var id in taskIds)
       {
-        await WaitForTaskCompletion(id,
-                                    context);
+        await WaitForSingleTaskCompletion(id,
+                                          context);
         var localFilter = new TaskFilter(request) { SubSessionId = id.Task };
+        localFilter.IncludedTaskIds.Clear();
+        logger_.LogDebug("localFilter: {localFilter}",
+                         localFilter);
+
         await WaitForSubTasksCompletion(localFilter,
                                         context);
       }
