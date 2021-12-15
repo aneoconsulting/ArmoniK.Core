@@ -77,7 +77,6 @@ namespace ArmoniK.Adapters.MongoDB
     public async Task CancelSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
       using var _                 = logger_.LogFunction(sessionId.ToString());
-      var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
       var filterDefinition = Builders<SessionDataModel>.Filter
@@ -104,7 +103,6 @@ namespace ArmoniK.Adapters.MongoDB
     public async Task CloseSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
       using var _                 = logger_.LogFunction(sessionId.ToString());
-      var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
       var filterDefinition = Builders<SessionDataModel>.Filter
@@ -145,33 +143,29 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
       var sessionOptionsDefaultTaskOption = sessionOptions.DefaultTaskOption;
 
-      var                             subSession = false;
-      List<SessionDataModel.ParentId> parents    = new();
-      if (sessionOptions.ParentSession != null)
-        if (!string.IsNullOrEmpty(sessionOptions.ParentSession.Session))
-        {
-          subSession = true;
 
-          if (!string.IsNullOrEmpty(sessionOptions.ParentSession.SubSession))
+      List<SessionDataModel.ParentId> parents    = new();
+
+      if (sessionOptions.ParentTask is not null) //TODO: create a validator so that if ParentTaskIs defined, all fields are defined.
+      {
+        var t = await sessionCollection.AsQueryable(sessionHandle)
+                                       .Where(x => x.SessionId == sessionOptions.ParentTask.Session &&
+                                                   x.SubSessionId == sessionOptions.ParentTask.SubSession)
+                                       .FirstAsync(cancellationToken);
+        parents.AddRange(t.ParentsId);
+
+        parents.Add(new SessionDataModel.ParentId
+                    { Id = sessionOptions.ParentTask.SubSession });
+
+        if (sessionOptionsDefaultTaskOption is null)
+        {
+          sessionOptionsDefaultTaskOption = t.Options;
+          if (sessionOptionsDefaultTaskOption is null)
           {
-            var t = await sessionCollection.AsQueryable(sessionHandle)
-                                           .Where(x => x.SessionId == sessionOptions.ParentSession.Session &&
-                                                       x.SubSessionId == sessionOptions.ParentSession.SubSession)
-                                           .FirstAsync(cancellationToken);
-            parents.AddRange(t.ParentsId);
-            parents.Add(new SessionDataModel.ParentId
-                        { Id = sessionOptions.ParentSession.SubSession });
-            if (sessionOptionsDefaultTaskOption is null)
-            {
-              sessionOptionsDefaultTaskOption = t.Options;
-              if (sessionOptionsDefaultTaskOption is null)
-              {
-                throw new NullReferenceException();
-              }
-            }
+            throw new NullReferenceException();
           }
         }
-
+      }
 
       var data = new SessionDataModel
                  {
@@ -181,13 +175,16 @@ namespace ArmoniK.Adapters.MongoDB
                    Options     = sessionOptionsDefaultTaskOption,
                    ParentsId   = parents,
                  };
-      if (subSession)
-        data.SessionId = sessionOptions.ParentSession.Session;
+      if (sessionOptions.ParentTask is not null)
+      {
+        data.SessionId    = sessionOptions.ParentTask.Session;
+        data.SubSessionId = sessionOptions.ParentTask.Task;
+      }
 
       await sessionCollection.InsertOneAsync(data,
                                              cancellationToken: cancellationToken);
 
-      if (!subSession)
+      if (sessionOptions.ParentTask is null)
       {
         data.SessionId = data.SubSessionId;
         var updateDefinition = Builders<SessionDataModel>.Update
@@ -205,7 +202,6 @@ namespace ArmoniK.Adapters.MongoDB
     public async Task DeleteTaskAsync(TaskId id, CancellationToken cancellationToken = default)
     {
       using var _              = logger_.LogFunction(id.ToPrintableId());
-      var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
       await taskCollection.DeleteOneAsync(
@@ -221,7 +217,6 @@ namespace ArmoniK.Adapters.MongoDB
                                                  CancellationToken cancellationToken = default)
     {
       using var _              = logger_.LogFunction();
-      var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
       var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,
@@ -241,7 +236,6 @@ namespace ArmoniK.Adapters.MongoDB
     public async Task IncreaseRetryCounterAsync(TaskId id, CancellationToken cancellationToken = default)
     {
       using var _              = logger_.LogFunction(id.ToPrintableId());
-      var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
       var updateDefinition = Builders<TaskDataModel>.Update
@@ -271,33 +265,32 @@ namespace ArmoniK.Adapters.MongoDB
       CancellationToken    cancellationToken = default)
     {
       using var _              = logger_.LogFunction(session.ToString());
-      var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-      var tdms = payloads.Select(payload =>
-                         {
-                           var isPayloadStored = payload.CalculateSize() < 12000000;
+      var taskDataModels = payloads.Select(payload =>
+                                           {
+                                             var isPayloadStored = payload.CalculateSize() < 12000000;
 
-                                   var tdm = new TaskDataModel
-                                             {
-                                               HasPayload   = isPayloadStored,
-                                               Options      = options,
-                                               Retries      = 0,
-                                               SessionId    = session.Session,
-                                               SubSessionId = session.SubSession,
-                                               Status       = TaskStatus.Creating,
-                                             };
-                                   if (isPayloadStored)
-                                     tdm.Payload = payload.Data.ToByteArray();
+                                             var tdm = new TaskDataModel
+                                                       {
+                                                         HasPayload   = isPayloadStored,
+                                                         Options      = options,
+                                                         Retries      = 0,
+                                                         SessionId    = session.Session,
+                                                         SubSessionId = session.SubSession,
+                                                         Status       = TaskStatus.Creating,
+                                                       };
+                                             if (isPayloadStored)
+                                               tdm.Payload = payload.Data.ToByteArray();
 
-                           return tdm;
-                         })
-                         .ToList();
+                                             return tdm;
+                                           })
+                                   .ToList();
 
-      await taskCollection.InsertManyAsync(tdms,
+      await taskCollection.InsertManyAsync(taskDataModels,
                                            cancellationToken: cancellationToken);
 
-      return tdms.Select(tdm => (tdm.GetTaskId(), tdm.HasPayload, tdm.Payload));
+      return taskDataModels.Select(tdm => (tdm.GetTaskId(), tdm.HasPayload, tdm.Payload));
     }
 
     public async Task<(TaskId id, bool isPayloadStored, IAsyncDisposable finalizer)> InitializeTaskCreation(
@@ -308,7 +301,6 @@ namespace ArmoniK.Adapters.MongoDB
     )
     {
       using var _              = logger_.LogFunction(session.ToString());
-      var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
       var isPayloadStored = payload.CalculateSize() < 12000000;
@@ -414,7 +406,6 @@ namespace ArmoniK.Adapters.MongoDB
                                             CancellationToken cancellationToken = default)
     {
       using var _              = logger_.LogFunction(id.ToPrintableId());
-      var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
       var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,

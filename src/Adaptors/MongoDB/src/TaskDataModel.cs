@@ -21,14 +21,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf;
 
-using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
@@ -36,43 +34,6 @@ using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Adapters.MongoDB
 {
-  public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()
-  {
-    /// <inheritdoc />
-    object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-    {
-      return Deserialize(context,
-                         args);
-    }
-
-    /// <inheritdoc />
-    public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, T value)
-    {
-      context.Writer.WriteBytes(value.ToByteArray());
-    }
-
-    /// <inheritdoc />
-    public T Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-    {
-      var parser = new MessageParser<T>(() => new T());
-      return parser.ParseFrom(context.Reader.ReadBytes());
-    }
-
-    /// <inheritdoc />
-    public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
-    {
-      if (value is T t)
-        Serialize(context,
-                  args,
-                  t);
-      else
-        throw new Exception("Not supported type");
-    }
-
-    /// <inheritdoc />
-    public Type ValueType => typeof(T);
-  }
-
   public class TaskDataModel : IMongoDataModel<TaskDataModel>
   {
     [BsonElement]
