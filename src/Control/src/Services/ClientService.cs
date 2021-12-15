@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using Amqp.Types;
 
 using ArmoniK.Core;
+using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 using ArmoniK.Core.Utils;
@@ -267,17 +268,6 @@ namespace ArmoniK.Control.Services
     public override async Task<Empty> WaitForCompletion(TaskFilter request, ServerCallContext context)
     {
       logger_.LogFunction();
-      if (!request.ExcludedTaskIds.Any() &&
-          !request.IncludedTaskIds.Any() &&
-          string.IsNullOrEmpty(request.SubSessionId) &&
-          !await tableStorage_.IsSessionClosedAsync(new SessionId
-                                                    {
-                                                      Session    = request.SessionId,
-                                                      SubSession = request.SubSessionId,
-                                                    },
-                                                    context.CancellationToken))
-        throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                          "Session must be closed before witing for its completion"));
 
       // TODO: optimize by filtering based on the task statuses
       // TODO: optimize by filtering based on the number of retries
@@ -285,32 +275,55 @@ namespace ArmoniK.Control.Services
                                                  context.CancellationToken);
       await foreach (var taskId in taskIds)
       {
-        bool completed;
-        do
-        {
-          var tdata = await tableStorage_.ReadTaskAsync(taskId,
-                                                        context.CancellationToken);
-          logger_.LogInformation("Task {id} has status {status}, retry : {retry}, max {max}",
-                                 taskId,
-                                 tdata.Status,
-                                 tdata.Retries,
-                                 tdata.Options.MaxRetries);
-          completed = tdata.Status == TaskStatus.Completed ||
-                      tdata.Status == TaskStatus.Canceled;
-          if (!completed)
-          {
-            logger_.LogInformation("Task {id} is not completed. Will wait",
-                                   taskId);
-            await Task.Delay(tableStorage_.PollingDelay);
-          }
-        } while (!completed);
-
-        logger_.LogInformation("Task {id} has been completed",
-                               taskId);
+        await WaitForTaskCompletion(taskId, context);
       }
 
       return new Empty();
-      ;
+    }
+
+    private async Task WaitForTaskCompletion(TaskId taskId, ServerCallContext context)
+    {
+      logger_.LogFunction(taskId.ToPrintableId());
+      bool completed;
+      do
+      {
+        var taskData = await tableStorage_.ReadTaskAsync(taskId,
+                                                      context.CancellationToken);
+        logger_.LogInformation("Task {id} has status {status}, retry : {retry}, max {max}",
+                               taskId,
+                               taskData.Status,
+                               taskData.Retries,
+                               taskData.Options.MaxRetries);
+        completed = taskData.Status == TaskStatus.Completed ||
+                    taskData.Status == TaskStatus.Canceled;
+        if (!completed)
+        {
+          logger_.LogInformation("Task {id} is not completed. Will wait",
+                                 taskId);
+          await Task.Delay(tableStorage_.PollingDelay);
+        }
+      } while (!completed);
+
+      logger_.LogInformation("Task {id} has been completed",
+                             taskId);
+    }
+
+    /// <inheritdoc />
+    public override async Task<Empty> WaitForSubTasksCompletion(TaskFilter request, ServerCallContext context)
+    {
+      var taskIds = tableStorage_.ListTasksAsync(request,
+                                                 context.CancellationToken);
+
+      await foreach (var id in taskIds)
+      {
+        await WaitForTaskCompletion(id,
+                                    context);
+        var localFilter = new TaskFilter(request) { SubSessionId = id.Task };
+        await WaitForSubTasksCompletion(localFilter,
+                                        context);
+      }
+
+      return new Empty();
     }
   }
 }
