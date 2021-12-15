@@ -49,7 +49,11 @@ namespace ArmoniK.Core.Injection
 
     public static IServiceCollection ValidateGrpcRequests(this IServiceCollection services)
     {
-      return services.AddGrpc(options => options.EnableMessageValidation())
+      return services.AddGrpc(options =>
+                     {
+                       options.EnableMessageValidation();
+                       options.MaxReceiveMessageSize = null;
+                     })
                      .Services
                      .AddValidator<CreateTaskRequestValidator>()
                      .AddValidator<PayloadValidator>()
