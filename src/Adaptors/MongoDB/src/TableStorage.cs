@@ -145,7 +145,7 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
       var                             subSession = false;
-      List<SessionDataModel.ParentId> parents    = null;
+      List<SessionDataModel.ParentId> parents    = new();
       if (sessionOptions.ParentSession != null)
         if (!string.IsNullOrEmpty(sessionOptions.ParentSession.Session))
         {
@@ -157,7 +157,7 @@ namespace ArmoniK.Adapters.MongoDB
                                            .Where(x => x.SessionId == sessionOptions.ParentSession.Session &&
                                                        x.SubSessionId == sessionOptions.ParentSession.SubSession)
                                            .FirstAsync(cancellationToken);
-            parents = t.ParentsId;
+            parents.AddRange(t.ParentsId);
             parents.Add(new SessionDataModel.ParentId
                           { Id = sessionOptions.ParentSession.SubSession });
           }
