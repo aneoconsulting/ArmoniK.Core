@@ -69,7 +69,7 @@ namespace ArmoniK.Control.Services
 
     public override async Task<Empty> CancelSession(SessionId request, ServerCallContext context)
     {
-      logger_.LogFunction();
+      using var _ = logger_.LogFunction();
       try
       {
         await tableStorage_.CancelSessionAsync(request,
@@ -91,7 +91,7 @@ namespace ArmoniK.Control.Services
 
     public override async Task<Empty> CancelTask(TaskFilter request, ServerCallContext context)
     {
-      logger_.LogFunction();
+      using var _ = logger_.LogFunction();
       try
       {
         await tableStorage_.CancelTask(request,
@@ -113,7 +113,7 @@ namespace ArmoniK.Control.Services
 
     public override async Task<Empty> CloseSession(SessionId request, ServerCallContext context)
     {
-      logger_.LogFunction();
+      using var _ = logger_.LogFunction();
       try
       {
         await tableStorage_.CloseSessionAsync(request,
@@ -135,14 +135,14 @@ namespace ArmoniK.Control.Services
 
     public override Task<SessionId> CreateSession(SessionOptions request, ServerCallContext context)
     {
-      logger_.LogFunction();
+      using var _ = logger_.LogFunction();
       return tableStorage_.CreateSessionAsync(request,
                                               context.CancellationToken);
     }
 
     public override async Task<CreateTaskReply> CreateTask(CreateTaskRequest request, ServerCallContext context)
     {
-      logger_.LogFunction();
+      using var _ = logger_.LogFunction();
 
       var options = request.TaskOptions ??
                     await tableStorage_.GetDefaultTaskOption(request.SessionId,
@@ -187,7 +187,7 @@ namespace ArmoniK.Control.Services
 
     public override async Task<Count> GetTasksCount(TaskFilter request, ServerCallContext context)
     {
-      logger_.LogFunction();
+      using var _ = logger_.LogFunction();
       var count = await tableStorage_.CountTasksAsync(request,
                                                       context.CancellationToken);
       return new Count { Value = count };
@@ -196,7 +196,7 @@ namespace ArmoniK.Control.Services
     public override async Task<TaskIdList> ListTask(TaskFilter        request,
                                                     ServerCallContext context)
     {
-      logger_.LogFunction();
+      using var _ = logger_.LogFunction();
 
       var list = await tableStorage_.ListTasksAsync(request,
                                                 context.CancellationToken).ToListAsync(context.CancellationToken);
@@ -209,7 +209,7 @@ namespace ArmoniK.Control.Services
     /// <inheritdoc />
     public override async Task<TaskIdList> ListSubTasks(TaskFilter request, ServerCallContext context)
     {
-      logger_.LogFunction();
+      using var _ = logger_.LogFunction();
 
       TaskIdList wholeList = new();
 
@@ -232,7 +232,7 @@ namespace ArmoniK.Control.Services
     public override async Task<Count> GetSubTasksCount(TaskFilter request, ServerCallContext context) 
 
     {
-      logger_.LogFunction();
+      using var _ = logger_.LogFunction();
 
 
       var listAsync = tableStorage_.ListTasksAsync(request,
@@ -251,7 +251,7 @@ namespace ArmoniK.Control.Services
     public override async Task<MultiplePayloadReply> TryGetResult(TaskFilter                              request,
                                                                   ServerCallContext                       context)
     {
-      logger_.LogFunction();
+      using var            _                    = logger_.LogFunction();
       MultiplePayloadReply multiplePayloadReply = new();
       await foreach (var taskId in tableStorage_.ListTasksAsync(request,
                                                                 context.CancellationToken)
@@ -267,7 +267,7 @@ namespace ArmoniK.Control.Services
 
     public override async Task<Empty> WaitForCompletion(TaskFilter request, ServerCallContext context)
     {
-      logger_.LogFunction();
+      using var _ = logger_.LogFunction();
 
       // TODO: optimize by filtering based on the task statuses
       // TODO: optimize by filtering based on the number of retries
@@ -283,7 +283,7 @@ namespace ArmoniK.Control.Services
 
     private async Task WaitForTaskCompletion(TaskId taskId, ServerCallContext context)
     {
-      logger_.LogFunction(taskId.ToPrintableId());
+      using var _ = logger_.LogFunction(taskId.ToPrintableId());
       bool completed;
       do
       {
@@ -311,6 +311,7 @@ namespace ArmoniK.Control.Services
     /// <inheritdoc />
     public override async Task<Empty> WaitForSubTasksCompletion(TaskFilter request, ServerCallContext context)
     {
+      using var _ = logger_.LogFunction();
       var taskIds = tableStorage_.ListTasksAsync(request,
                                                  context.CancellationToken);
 
