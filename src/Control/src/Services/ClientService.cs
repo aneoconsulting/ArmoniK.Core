@@ -22,11 +22,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
+using Amqp.Types;
+
 using ArmoniK.Core;
-using ArmoniK.Core.Exceptions;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 using ArmoniK.Core.Utils;
@@ -37,6 +40,7 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
+using KeyNotFoundException = ArmoniK.Core.Exceptions.KeyNotFoundException;
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Control.Services
@@ -188,15 +192,59 @@ namespace ArmoniK.Control.Services
       return new Count { Value = count };
     }
 
-    public override async Task ListTask(TaskFilter                  request,
-                                        IServerStreamWriter<TaskId> responseStream,
-                                        ServerCallContext           context)
+    public override async Task<TaskIdList> ListTask(TaskFilter        request,
+                                                    ServerCallContext context)
     {
       logger_.LogFunction();
-      await foreach (var taskId in tableStorage_.ListTasksAsync(request,
-                                                                context.CancellationToken)
-                                                .WithCancellation(context.CancellationToken))
-        await responseStream.WriteAsync(taskId);
+
+      var list = await tableStorage_.ListTasksAsync(request,
+                                                context.CancellationToken).ToListAsync(context.CancellationToken);
+
+      var output = new TaskIdList();
+      output.TaskIds.Add(list);
+      return output;
+    }
+
+    /// <inheritdoc />
+    public override async Task<TaskIdList> ListSubTasks(TaskFilter request, ServerCallContext context)
+    {
+      logger_.LogFunction();
+
+      TaskIdList wholeList = new();
+
+      var listAsync = tableStorage_.ListTasksAsync(request,
+                                                   context.CancellationToken);
+
+      await foreach (var tid in listAsync)
+      {
+        var localFilter = new TaskFilter(request) { SubSessionId = tid.Task };
+        var localList = await ListSubTasks(localFilter,
+                                     context);
+        wholeList.TaskIds.Add(tid);
+        wholeList.TaskIds.Add(localList.TaskIds);
+      }
+
+      return wholeList;
+    }
+
+    /// <inheritdoc />
+    public override async Task<Count> GetSubTasksCount(TaskFilter request, ServerCallContext context) 
+
+    {
+      logger_.LogFunction();
+
+
+      var listAsync = tableStorage_.ListTasksAsync(request,
+                                                   context.CancellationToken);
+
+      var wholeCount = await listAsync.SelectAwait(async id =>
+                                             {
+                                               var localFilter = new TaskFilter(request) { SubSessionId = id.Task };
+                                               return (await ListSubTasks(localFilter,
+                                                                          context)).TaskIds.Count + 1;
+                                             }).SumAsync(i => i);
+
+      return new Count{ Value = wholeCount };
     }
 
     public override async Task<MultiplePayloadReply> TryGetResult(TaskFilter                              request,
