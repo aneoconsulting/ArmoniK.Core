@@ -336,13 +336,14 @@ namespace ArmoniK.Compute.PollingAgent
         return false;
       }
 
-      return await tData.Options.Dependencies.AsParallel()
-                        .Select(dependency => IsDependencyCompleted(dependency,
-                                                                    signal,
-                                                                    cancellationToken))
-                        .ToAsyncEnumerable()
-                        .AllAwaitAsync(async b => await b,
-                                       cancellationToken);
+      var list = tableStorage_.ListTasksAsync(new TaskFilter { SessionId = tid.Session, SubSessionId = tid.Task },
+                                              cancellationToken);
+
+      return await list.AllAwaitWithCancellationAsync(async (id, token)
+                                                        => await IsDependencyCompleted(id,
+                                                                                       signal,
+                                                                                       token),
+                                                      cancellationToken);
     }
 
     private async Task ProcessTaskAsync(TaskData          taskData,

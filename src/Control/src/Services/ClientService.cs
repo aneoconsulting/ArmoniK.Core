@@ -219,6 +219,7 @@ namespace ArmoniK.Control.Services
       await foreach (var tid in listAsync)
       {
         var localFilter = new TaskFilter(request) { SubSessionId = tid.Task };
+        localFilter.IncludedTaskIds.Clear();
         var localList = await ListSubTasks(localFilter,
                                      context);
         wholeList.TaskIds.Add(tid);
@@ -241,6 +242,7 @@ namespace ArmoniK.Control.Services
       var wholeCount = await listAsync.SelectAwait(async id =>
                                              {
                                                var localFilter = new TaskFilter(request) { SubSessionId = id.Task };
+                                               localFilter.IncludedTaskIds.Clear();
                                                return (await ListSubTasks(localFilter,
                                                                           context)).TaskIds.Count + 1;
                                              }).SumAsync(i => i);
