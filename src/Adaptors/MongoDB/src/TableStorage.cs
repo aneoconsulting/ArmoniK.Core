@@ -143,6 +143,7 @@ namespace ArmoniK.Adapters.MongoDB
       using var _                 = logger_.LogFunction();
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+      var sessionOptionsDefaultTaskOption = sessionOptions.DefaultTaskOption;
 
       var                             subSession = false;
       List<SessionDataModel.ParentId> parents    = new();
@@ -159,16 +160,21 @@ namespace ArmoniK.Adapters.MongoDB
                                            .FirstAsync(cancellationToken);
             parents.AddRange(t.ParentsId);
             parents.Add(new SessionDataModel.ParentId
-                          { Id = sessionOptions.ParentSession.SubSession });
+                        { Id = sessionOptions.ParentSession.SubSession });
+            if (sessionOptionsDefaultTaskOption is null)
+            {
+              sessionOptionsDefaultTaskOption = t.Options;
+            }
           }
         }
+
 
       var data = new SessionDataModel
                  {
                    IdTag       = sessionOptions.IdTag,
                    IsCancelled = false,
                    IsClosed    = false,
-                   Options     = sessionOptions.DefaultTaskOption,
+                   Options     = sessionOptionsDefaultTaskOption,
                    ParentsId   = parents,
                  };
       if (subSession)
