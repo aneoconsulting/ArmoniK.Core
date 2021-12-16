@@ -39,7 +39,7 @@ namespace ArmoniK.Compute.PollingAgent
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-      return pollster_.MainLoop(stoppingToken);
+      return pollster_.MainLoopPrefetch(stoppingToken);
     }
   }
 }
