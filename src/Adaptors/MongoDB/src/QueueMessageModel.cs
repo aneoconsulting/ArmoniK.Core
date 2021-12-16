@@ -36,12 +36,14 @@ namespace ArmoniK.Adapters.MongoDB
     [BsonId(IdGenerator = typeof(StringCombGuidGenerator))]
     public string MessageId { get; set; }
 
+    [BsonRequired]
     [BsonElement]
     public TaskId TaskId { get; set; }
 
     [BsonElement]
     public string OwnerId { get; set; }
 
+    [BsonRequired]
     [BsonElement]
     public DateTime SubmissionDate { get; set; }
 

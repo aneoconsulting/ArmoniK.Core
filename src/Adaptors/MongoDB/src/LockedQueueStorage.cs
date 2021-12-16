@@ -193,7 +193,8 @@ namespace ArmoniK.Adapters.MongoDB
 
       var updateDefinition = Builders<QueueMessageModel>.Update
                                                         .Unset(qmm => qmm.OwnerId)
-                                                        .Unset(qmm => qmm.OwnedUntil)
+                                                        .Set(qmdm => qmdm.OwnedUntil,
+                                                             default)
                                                         .Set(qmm => qmm.SubmissionDate,
                                                              DateTime.UtcNow);
 
@@ -222,7 +223,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       var updateDefinition = Builders<QueueMessageModel>.Update
                                                         .Set(qmdm => qmdm.OwnedUntil,
-                                                             DateTime.UtcNow - LockRefreshExtension);
+                                                             default);
 
       await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(qmdm => qmdm.MessageId == id &&
                                                                              qmdm.OwnerId == ownerId_,
