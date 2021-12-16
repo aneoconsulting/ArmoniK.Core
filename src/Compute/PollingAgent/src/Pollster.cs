@@ -395,20 +395,19 @@ namespace ArmoniK.Compute.PollingAgent
       }
       catch (AggregateException ae)
       {
-        List<Exception> unhandledExceptions = null;
+        List<Exception> unhandledExceptions = new ();
         foreach (var ie in ae.InnerExceptions)
         {
           // If the exception was not handled, lazily allocate a list of unhandled
           // exceptions (to be rethrown later) and add it.
           if (!await HandleExceptionAsync(ie, taskData, message, cancellationToken))
           {
-            unhandledExceptions ??= new List<Exception>();
             unhandledExceptions.Add(ie);
           }
         }
 
         // If there are unhandled exceptions remaining, throw them.
-        if (unhandledExceptions is not null)
+        if (unhandledExceptions.Any())
         {
           throw new AggregateException(ae.Message,
                                        unhandledExceptions);
@@ -478,6 +477,7 @@ namespace ArmoniK.Compute.PollingAgent
           return true;
         }
         case ArmoniKException:
+        {
           logger_.LogError(e,
                            "Execution has failed for task {taskId} from session {sessionId}. {details}",
                            taskData.Id.Task,
@@ -489,18 +489,39 @@ namespace ArmoniK.Compute.PollingAgent
                                                     TaskStatus.Failed,
                                                     CancellationToken.None);
           return true;
-      }
+        }
+        case AggregateException ae:
+        {
+          foreach (var ie in ae.InnerExceptions)
+          {
+            // If the exception was not handled, lazily allocate a list of unhandled
+            // exceptions (to be rethrown later) and add it.
+            if (!await HandleExceptionAsync(ie,
+                                            taskData,
+                                            message,
+                                            cancellationToken))
+            {
+              return false;
+            }
+          }
 
-      logger_.LogError(e,
-                       "Exception encountered when computing task {taskId} from session {sessionId}",
-                       taskData.Id.Task,
-                       taskData.Id.Session);
-      message.Status = QueueMessageStatus.Failed;
-      await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                TaskStatus.Failed,
-                                                CancellationToken.None);
-      Console.WriteLine(e);
-      return false;
+          return true;
+        }
+        default:
+        {
+          logger_.LogError(e,
+                           "Exception encountered when computing task {taskId} from session {sessionId}",
+                           taskData.Id.Task,
+                           taskData.Id.Session);
+          message.Status = QueueMessageStatus.Failed;
+          await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
+                                                    TaskStatus.Failed,
+                                                    CancellationToken.None);
+          Console.WriteLine(e);
+          return false;
+
+        }
+      }
     }
 
     private async Task<TaskData> PrefetchPayload(TaskData taskData, CancellationToken combinedCt)
