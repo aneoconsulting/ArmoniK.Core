@@ -143,30 +143,30 @@ namespace ArmoniK.Adapters.MongoDB
       var       taskCollection    = await taskCollectionProvider_.GetAsync();
 
       var rootTaskQuery = taskCollection.AsQueryable(sessionHandle)
-                                   .FilterField(nameof(SessionDataModel.SessionId),
+                                   .FilterField(model => model.SessionId,
                                                 new[] { filter.SessionId });
 
       if(!string.IsNullOrEmpty(filter.SubSessionId))
-        rootTaskQuery = rootTaskQuery.FilterField(nameof(SessionDataModel.SubSessionId),
+        rootTaskQuery = rootTaskQuery.FilterField(model => model.SubSessionId,
                                                     new[] { filter.SubSessionId });
 
       if (filter.IncludedTaskIds is not null)
-        rootTaskQuery = rootTaskQuery.FilterField(nameof(TaskDataModel.TaskId),
+        rootTaskQuery = rootTaskQuery.FilterField(model=> model.TaskId,
                                                   filter.IncludedTaskIds);
 
       if (filter.ExcludedTaskIds is not null)
-        rootTaskQuery = rootTaskQuery.FilterField(nameof(TaskDataModel.TaskId),
+        rootTaskQuery = rootTaskQuery.FilterField(model => model.TaskId,
                                                   filter.ExcludedTaskIds, false);
 
       var taskList = rootTaskQuery.Select(model => model.TaskId);
 
 
       var taskQuery = taskCollection.AsQueryable(sessionHandle)
-                                    .FilterField(nameof(TaskDataModel.SessionId),
+                                    .FilterField(model => model.SubSessionId,
                                                  new[] { filter.SessionId })
-                                    .FilterField(nameof(TaskDataModel.Status),
+                                    .FilterField(model => model.Status,
                                                  filter.IncludedStatuses)
-                                    .FilterField(nameof(TaskDataModel.Status),
+                                    .FilterField(model => model.Status,
                                                  filter.ExcludedStatuses,
                                                  false)
                                     .SelectMany(model => model.ParentSubSessions.Select(s => new Tuple<TaskDataModel, string>(model,

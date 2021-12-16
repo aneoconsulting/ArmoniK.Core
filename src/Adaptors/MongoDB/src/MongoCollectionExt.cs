@@ -25,7 +25,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 using ArmoniK.Core.gRPC.V1;
 
@@ -113,9 +112,9 @@ namespace ArmoniK.Adapters.MongoDB
 
       return values.Aggregate(
                               (Expression)Expression.Constant(!include),
-                              (expression, subSession) =>
+                              (expr, subSession) =>
                               {
-                                var left = expression;
+                                var left = expr;
                                 var right = Expression.Equal(Expression.Property(x,
                                                                                  typeof(TaskDataModel),
                                                                                  fieldName),
