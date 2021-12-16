@@ -79,14 +79,14 @@ namespace ArmoniK.Adapters.MongoDB
 
       if (filter.IncludedStatuses.Any())
         output = Expression.And(output,
-                                FieldFilterInternal<TaskDataModel, TaskStatus>(nameof(TaskDataModel.TaskId),
+                                FieldFilterInternal<TaskDataModel, TaskStatus>(nameof(TaskDataModel.Status),
                                                                            filter.IncludedStatuses,
                                                                            true,
                                                                            x));
 
       if (filter.ExcludedStatuses.Any())
         output = Expression.And(output,
-                                FieldFilterInternal<TaskDataModel, TaskStatus>(nameof(TaskDataModel.TaskId),
+                                FieldFilterInternal<TaskDataModel, TaskStatus>(nameof(TaskDataModel.Status),
                                                                                filter.ExcludedStatuses,
                                                                                false,
                                                                                x));
