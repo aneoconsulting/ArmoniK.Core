@@ -240,8 +240,8 @@ namespace ArmoniK.Compute.PollingAgent
         return true;
       }
 
-      var dependencyCheckTask = taskData.Options.Dependencies.AsParallel().Select(tid => IsDependencyCompleted(tid,
-                                                                                                               combinedCts.Token)).WhenAll();
+      var dependencyCheckTask = taskData.Dependencies.AsParallel().Select(tid => IsDependencyCompleted(new TaskId(taskData.Id){Task = tid},
+                                                                                                       combinedCts.Token)).WhenAll();
 
 
       logger_.LogDebug("Handling the task status ({status})",

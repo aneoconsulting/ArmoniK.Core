@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
@@ -64,6 +65,9 @@ namespace ArmoniK.Adapters.MongoDB
 
     [BsonElement]
     public byte[] Payload { get; set; }
+
+    [BsonElement]
+    public IEnumerable<string> Dependencies { get; set; }
 
     /// <inheritdoc />
     public string CollectionName { get; } = "tasks";
@@ -109,6 +113,7 @@ namespace ArmoniK.Adapters.MongoDB
                                       Options    = Options,
                                       Retries    = Retries,
                                       Status     = Status,
+                                      Dependencies = { Dependencies },
                                     };
 
     public TaskId GetTaskId() => new() { Session = SessionId, SubSession = SubSessionId, Task = TaskId };

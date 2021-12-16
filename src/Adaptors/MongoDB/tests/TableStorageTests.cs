@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Linq;
 
 using ArmoniK.Core.gRPC.V1;
 
@@ -88,8 +89,11 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                              }).Result;
 
       var (_, _, _) = table.InitializeTaskCreation(session,
-                                                   new TaskOptions(),
-                                                   new Payload()).Result;
+                                                   new TaskOptions(), 
+                                                   new []
+                                                   {
+                                                     new TaskRequest(){ Payload = new Payload()}
+                                                   }).Result.Single();
 
 
       Assert.AreEqual(1,

@@ -259,17 +259,19 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
     public async Task<IEnumerable<(TaskId id, bool HasPayload, byte[] Payload)>> InitializeTaskCreation(
-      SessionId            session,
-      TaskOptions          options,
-      IEnumerable<Payload> payloads,
-      CancellationToken    cancellationToken = default)
+      SessionId                session,
+      TaskOptions              options,
+      IEnumerable<TaskRequest> requests,
+      CancellationToken        cancellationToken = default)
     {
       using var _              = logger_.LogFunction(session.ToString());
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-      var taskDataModels = payloads.Select(payload =>
+      var taskDataModels = requests.Select(request =>
                                            {
-                                             var isPayloadStored = payload.CalculateSize() < 12000000;
+                                             var isPayloadStored = request.Payload.CalculateSize() < 12000000;
+
+                                             TaskOptions localOptions = new(options);
 
                                              var tdm = new TaskDataModel
                                                        {
@@ -280,9 +282,10 @@ namespace ArmoniK.Adapters.MongoDB
                                                          SubSessionId = session.SubSession,
                                                          TaskId       = StringCombGuidGenerator.GenerateId(),
                                                          Status       = TaskStatus.Creating,
+                                                         Dependencies = request.DependenciesTaskIds,
                                                        };
                                              if (isPayloadStored)
-                                               tdm.Payload = payload.Data.ToByteArray();
+                                               tdm.Payload = request.Payload.Data.ToByteArray();
 
                                              logger_.LogDebug("Stored {size} bytes for task {taskId}",
                                                               tdm.ToTaskData().CalculateSize(),
@@ -290,7 +293,7 @@ namespace ArmoniK.Adapters.MongoDB
 
                                              logger_.LogDebug("{taskId} dependencies:{dependencies}", 
                                                               tdm.TaskId, 
-                                                              string.Join(", ", tdm.Options.Dependencies.Select(id=>id)));
+                                                              string.Join(", ", tdm.Dependencies.Select(id=>id)));
 
                                              return tdm;
                                            })
@@ -300,37 +303,6 @@ namespace ArmoniK.Adapters.MongoDB
                                            cancellationToken: cancellationToken);
 
       return taskDataModels.Select(tdm => (tdm.GetTaskId(), tdm.HasPayload, tdm.Payload));
-    }
-
-    public async Task<(TaskId id, bool isPayloadStored, IAsyncDisposable finalizer)> InitializeTaskCreation(
-      SessionId         session,
-      TaskOptions       options,
-      Payload           payload,
-      CancellationToken cancellationToken = default
-    )
-    {
-      using var _              = logger_.LogFunction(session.ToString());
-      var       taskCollection = await taskCollectionProvider_.GetAsync();
-
-      var isPayloadStored = payload.CalculateSize() < 12000000;
-
-      var tdm = new TaskDataModel
-      {
-        HasPayload   = isPayloadStored,
-        Options      = options,
-        Retries      = 0,
-        SessionId    = session.Session,
-        SubSessionId = session.SubSession,
-        Status       = TaskStatus.Creating,
-      };
-      if (isPayloadStored)
-        tdm.Payload = payload.Data.ToByteArray();
-
-      await taskCollection.InsertOneAsync(
-        tdm,
-        cancellationToken: cancellationToken);
-      return (tdm.GetTaskId(), isPayloadStored, AsyncDisposable.Create(async () => await this.FinalizeTaskCreation(tdm.GetTaskId(),
-                                                                                                                   cancellationToken)));
     }
 
     public async Task<bool> IsSessionCancelledAsync(SessionId sessionId, CancellationToken cancellationToken = default)

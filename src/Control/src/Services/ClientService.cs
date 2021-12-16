@@ -22,12 +22,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
-
-using Amqp.Types;
 
 using ArmoniK.Core;
 using ArmoniK.Core.gRPC;
@@ -151,7 +147,7 @@ namespace ArmoniK.Control.Services
 
       var inits = await tableStorage_.InitializeTaskCreation(request.SessionId,
                                                              options,
-                                                             request.TaskRequests.Select(taskRequest => taskRequest.Payload),
+                                                             request.TaskRequests,
                                                              context.CancellationToken)
                                      .ToListAsync();
 

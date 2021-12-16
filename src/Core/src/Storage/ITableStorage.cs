@@ -55,15 +55,10 @@ namespace ArmoniK.Core.Storage
 
     public Task<IEnumerable<(TaskId id, bool HasPayload, byte[] Payload)>> InitializeTaskCreation(SessionId   session,
                                                                                                   TaskOptions options,
-                                                                                                  IEnumerable<Payload>
-                                                                                                    payloads,
+                                                                                                  IEnumerable<TaskRequest>
+                                                                                                    requests,
                                                                                                   CancellationToken
                                                                                                     cancellationToken = default);
-
-    Task<(TaskId id, bool isPayloadStored, IAsyncDisposable finalizer)> InitializeTaskCreation(SessionId         session,
-                                                                                               TaskOptions       options,
-                                                                                               Payload           payload,
-                                                                                               CancellationToken cancellationToken = default);
 
     Task<TaskData> ReadTaskAsync(TaskId id, CancellationToken cancellationToken = default);
 

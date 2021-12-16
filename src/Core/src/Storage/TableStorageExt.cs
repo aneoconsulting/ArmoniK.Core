@@ -45,16 +45,16 @@ namespace ArmoniK.Core.Storage
       if (status != TaskStatus.Completed)
         return false;
 
-      if (taskData.Options.Dependencies.Count == 0)
+      if (taskData.Dependencies.Count == 0)
         return true;
 
       var cts = new CancellationTokenSource();
       var aggregateCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token,
                                                                          cancellationToken);
 
-      var futureDependenciesData = taskData.Options.Dependencies.Select(async id =>
+      var futureDependenciesData = taskData.Dependencies.Select(async id =>
                                                                         {
-                                                                          var depTaskData = await tableStorage.ReadTaskAsync(id,
+                                                                          var depTaskData = await tableStorage.ReadTaskAsync(new TaskId(taskData.Id){Task = id},
                                                                                                                              aggregateCts.Token);
                                                                           return await tableStorage.IsTaskCompleted(depTaskData,
                                                                                                                     aggregateCts.Token);

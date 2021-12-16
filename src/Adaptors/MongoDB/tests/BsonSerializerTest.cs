@@ -52,21 +52,6 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                 { "key1", "Value1" },
                                 { "key2", "value2" },
                               },
-                              Dependencies =
-                              {
-                                new TaskId
-                                {
-                                  SubSession = "sub1",
-                                  Session    = "ses1",
-                                  Task       = "dep1",
-                                },
-                                new TaskId
-                                {
-                                  SubSession = "sub1",
-                                  Session    = "ses1",
-                                  Task       = "dep2",
-                                },
-                              },
                               IdTag       = "tag",
                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(42)),
                               MaxRetries  = 7,
@@ -77,6 +62,11 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                   SessionId    = "ses1",
                   Status       = TaskStatus.Creating,
                   SubSessionId = "sub1",
+                  Dependencies = new[]
+                  {
+                    "dep1", 
+                    "dep2",
+                  },
                 };
 
       var serialized = tdm.ToBson();
@@ -94,7 +84,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                       deserialized.Options.Options["key1"]);
       Assert.AreEqual(tdm.Options.Options["key2"],
                       deserialized.Options.Options["key2"]);
-      Assert.IsTrue(tdm.Options.Dependencies.SequenceEqual(deserialized.Options.Dependencies));
+      Assert.IsTrue(tdm.Dependencies.SequenceEqual(deserialized.Dependencies));
       Assert.AreEqual(tdm.Options.IdTag,
                       deserialized.Options.IdTag);
       Assert.AreEqual(tdm.Options.MaxDuration,
