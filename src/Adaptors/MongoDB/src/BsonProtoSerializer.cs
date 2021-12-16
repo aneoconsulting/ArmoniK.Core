@@ -31,6 +31,8 @@ namespace ArmoniK.Adapters.MongoDB
 {
   public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()
   {
+    
+
     /// <inheritdoc />
     object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
     {
@@ -41,14 +43,14 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, T value)
     {
-      context.Writer.WriteBytes(value.ToByteArray());
+      context.Writer.WriteString(value.ToString());
     }
 
     /// <inheritdoc />
     public T Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
     {
-      var parser = new MessageParser<T>(() => new T());
-      return parser.ParseFrom(context.Reader.ReadBytes());
+      var parser = new JsonParser(JsonParser.Settings.Default);
+      return parser.Parse<T>(context.Reader.ReadString());
     }
 
     /// <inheritdoc />
