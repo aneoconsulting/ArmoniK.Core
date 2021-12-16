@@ -1,51 +1,62 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Versions.xml" />
 
-	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Version>$(ArmonikVersion)</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Company>ANEO</Company>
 		<Copyright>Copyright (C) ANEO, 2021-2021</Copyright>
 		<PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <IsPackable>true</IsPackable>
+    <PackageOutputPath>..\..\..\publish</PackageOutputPath>
+    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
 	</PropertyGroup>
 
-	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-		<DebugType>embedded</DebugType>
-		<IncludeSymbols>true</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<DefineConstants>DEBUG;TRACE</DefineConstants>
-	</PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>embedded</DebugType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)'=='Release'">
-		<Optimize>true</Optimize>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
 
 
-	<ItemGroup>
-		<PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="5.4.0" />
-		<PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
-		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
-		<PackageReference Include="System.Linq.Async" Version="5.0.0" />
-		<PackageReference Include="Google.Protobuf" Version="3.19.1" />
-		<PackageReference Include="Grpc.Tools" Version="2.42.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="5.4.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.19.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.42.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Protobuf Include="..\..\Protos\V1\Compute.proto" GrpcServices="Client">
-			<Link>gRPC\Protos\Compute.proto</Link>
-		</Protobuf>
-		<Protobuf Include="..\..\Protos\V1\ClientService.proto" GrpcServices="Server">
-			<Link>gRPC\Protos\ClientService.proto</Link>
-		</Protobuf>
-		<Protobuf Include="..\..\Protos\V1\Objects.proto" GrpcServices="Message">
-			<Link>gRPC\Protos\Objects.proto</Link>
-		</Protobuf>
-		<Protobuf Include="..\..\Protos\V1\TaskStatus.proto" GrpcServices="Message">
-			<Link>gRPC\Protos\TaskStatus.proto</Link>
-		</Protobuf>
-	</ItemGroup>
+  <ItemGroup>
+    <Protobuf Include="..\..\Protos\V1\Compute.proto" GrpcServices="Client">
+      <Link>gRPC\Protos\Compute.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\Protos\V1\ClientService.proto" GrpcServices="Server">
+      <Link>gRPC\Protos\ClientService.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\Protos\V1\Objects.proto" GrpcServices="Message">
+      <Link>gRPC\Protos\Objects.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\Protos\V1\TaskStatus.proto" GrpcServices="Message">
+      <Link>gRPC\Protos\TaskStatus.proto</Link>
+    </Protobuf>
+  </ItemGroup>
+
+
+  <Target Name="DeleteLocalCache" BeforeTargets="Pack">
+    <RemoveDir Directories="$(NugetPackageRoot)/$(PackageId.ToLower())/$(ArmonikVersion)" />
+  </Target>
 
 </Project>

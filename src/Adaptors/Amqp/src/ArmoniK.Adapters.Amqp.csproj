@@ -1,12 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\..\Versions.xml"/>
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Company>ANEO</Company>
     <Copyright>Copyright (C) ANEO, 2021-2021</Copyright>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <IsPackable>true</IsPackable>
+    <PackageOutputPath>..\..\..\..\..\publish</PackageOutputPath>
+    <Version>$(ArmonikVersion)</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <PackageOutputPath>..\..\..\..\publish</PackageOutputPath>
+    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -27,5 +35,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\ArmoniK.Core.csproj" />
   </ItemGroup>
+
+  <Target Name="DeleteLocalCache" BeforeTargets="Pack">
+    <RemoveDir Directories="$(NugetPackageRoot)/$(PackageId.ToLower())/$(ArmonikVersion)" />
+  </Target>
 
 </Project>

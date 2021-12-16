@@ -1,16 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <Import Project="..\..\..\..\Versions.xml"/>
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
     <Company>ANEO</Company>
     <Copyright>Copyright (C) ANEO, 2021-2021</Copyright>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..\..</DockerfileContext>
-    <DockerComposeProjectPath>..\..\..\..\..\docker-compose.dcproj</DockerComposeProjectPath>
+
+    <Version>$(ArmonikVersion)</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <PackageOutputPath>..\..\..\..\publish</PackageOutputPath>
+    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -39,5 +44,10 @@
     <ProjectReference Include="..\..\..\Adaptors\MongoDB\src\ArmoniK.Adapters.MongoDB.csproj" />
     <ProjectReference Include="..\..\..\Core\src\ArmoniK.Core.csproj" />
   </ItemGroup>
+
+
+  <Target Name="DeleteLocalCache" BeforeTargets="Pack">
+    <RemoveDir Directories="$(NugetPackageRoot)/$(PackageId.ToLower())/$(ArmonikVersion)" />
+  </Target>
 
 </Project>
