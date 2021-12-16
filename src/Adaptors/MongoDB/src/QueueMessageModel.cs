@@ -50,7 +50,7 @@ namespace ArmoniK.Adapters.MongoDB
     [BsonElement]
     public int Priority { get; set; }
 
-    [BsonElement]
+    [BsonIgnoreIfDefault]
     [BsonDateTimeOptions(Kind = DateTimeKind.Utc,
                          DateOnly = false)]
     public DateTime OwnedUntil { get; set; }
@@ -68,8 +68,10 @@ namespace ArmoniK.Adapters.MongoDB
       var submissionIndex = Builders<QueueMessageModel>.IndexKeys.Ascending(model => model.SubmissionDate);
       var priorityIndex   = Builders<QueueMessageModel>.IndexKeys.Descending(model => model.Priority);
       var ownedUntilIndex = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnedUntil);
-      var pullIndex = Builders<QueueMessageModel>.IndexKeys.Combine(submissionIndex,
-                                                                    priorityIndex,
+      var pullIndex = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
+                                                                    submissionIndex);
+      var pullIndex2 = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
+                                                                    submissionIndex,
                                                                     ownedUntilIndex);
       var lockedIndex = Builders<QueueMessageModel>.IndexKeys.Combine(messageIdIndex,
                                                                       ownerIdIndex);
@@ -79,6 +81,8 @@ namespace ArmoniK.Adapters.MongoDB
                         {
                           new(pullIndex,
                               new CreateIndexOptions { Name = nameof(pullIndex) }),
+                          new(pullIndex2,
+                              new CreateIndexOptions { Name = nameof(pullIndex2) }),
                           new(lockedIndex,
                               new CreateIndexOptions { Name = nameof(lockedIndex), Unique = true }),
                           new(messageIdIndex,

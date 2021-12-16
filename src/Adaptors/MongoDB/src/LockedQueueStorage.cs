@@ -45,15 +45,12 @@ namespace ArmoniK.Adapters.MongoDB
     private readonly ILogger<LockedQueueStorage>                logger_;
     private readonly string                                     ownerId_ = Guid.NewGuid().ToString();
     private readonly MongoCollectionProvider<QueueMessageModel> queueCollectionProvider_;
-    private readonly SessionProvider                            sessionProvider_;
 
     public LockedQueueStorage(MongoCollectionProvider<QueueMessageModel> queueCollectionProvider,
-                              SessionProvider                            sessionProvider,
                               IOptions<QueueStorage>                     options,
                               ILogger<LockedQueueStorage>                logger)
     {
       queueCollectionProvider_ = queueCollectionProvider;
-      sessionProvider_         = sessionProvider;
       logger_                  = logger;
       LockRefreshExtension     = options.Value.LockRefreshExtension;
       PollPeriodicity          = options.Value.PollPeriodicity;
@@ -82,7 +79,6 @@ namespace ArmoniK.Adapters.MongoDB
     )
     {
       using var _               = logger_.LogFunction();
-      var       sessionHandle   = await sessionProvider_.GetAsync();
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
       var nbPulledMessage = 0;
@@ -96,22 +92,29 @@ namespace ArmoniK.Adapters.MongoDB
                                                                ownerId_);
 
         var sort = Builders<QueueMessageModel>.Sort
-                                              .Ascending(qmm => qmm.SubmissionDate)
-                                              .Descending(qmm => qmm.Priority);
+                                              .Descending(qmm => qmm.Priority)
+                                              .Ascending(qmm => qmm.SubmissionDate);
 
+        var filter = Builders<QueueMessageModel>.Filter
+                                                .Or(
+                                                    Builders<QueueMessageModel>.Filter.Exists(model => model.OwnedUntil,
+                                                                                              false),
+                                                    Builders<QueueMessageModel>.Filter.Where(model => model.OwnedUntil == default ||
+                                                                                                      model.OwnedUntil < DateTime.UtcNow)
+                                                   );
+        
         logger_.LogDebug("Trying to get a new message from Mongo queue");
-        var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(sessionHandle,
-                                                                                     qmdm => qmdm.OwnedUntil == default ||
-                                                                                             qmdm.OwnedUntil < DateTime.UtcNow,
-                                                                                     updateDefinition,
-                                                                                     new FindOneAndUpdateOptions<
-                                                                                       QueueMessageModel>
-                                                                                     {
-                                                                                       ReturnDocument = ReturnDocument.After,
-                                                                                       IsUpsert       = false,
-                                                                                       Sort           = sort,
-                                                                                     },
-                                                                                     cancellationToken);
+        var message = await queueCollection.FindOneAndUpdateAsync(
+                                                                  filter,
+                                                                  updateDefinition,
+                                                                  new FindOneAndUpdateOptions<
+                                                                    QueueMessageModel>
+                                                                  {
+                                                                    ReturnDocument = ReturnDocument.After,
+                                                                    IsUpsert       = false,
+                                                                    Sort           = sort,
+                                                                  },
+                                                                  cancellationToken);
 
         if (message is not null)
         {
@@ -193,8 +196,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       var updateDefinition = Builders<QueueMessageModel>.Update
                                                         .Unset(qmm => qmm.OwnerId)
-                                                        .Set(qmdm => qmdm.OwnedUntil,
-                                                             default)
+                                                        .Unset(qmdm => qmdm.OwnedUntil)
                                                         .Set(qmm => qmm.SubmissionDate,
                                                              DateTime.UtcNow);
 
@@ -222,8 +224,7 @@ namespace ArmoniK.Adapters.MongoDB
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
       var updateDefinition = Builders<QueueMessageModel>.Update
-                                                        .Set(qmdm => qmdm.OwnedUntil,
-                                                             default);
+                                                        .Unset(qmdm => qmdm.OwnedUntil);
 
       await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(qmdm => qmdm.MessageId == id &&
                                                                              qmdm.OwnerId == ownerId_,
