@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Exceptions;
@@ -40,6 +41,67 @@ namespace ArmoniK.Core.gRPC
 {
   public static class RpcExt
   {
+    private static bool HandleExceptions(Exception e, StatusCode status)
+    {
+      switch (e)
+      {
+        case RpcException:
+        {
+          switch (status)
+          {
+            case StatusCode.DeadlineExceeded:
+              throw new TimeoutException("Deadline Exceeded",
+                                         e);
+            case StatusCode.OK:
+              break;
+            case StatusCode.Cancelled:
+              throw new TaskCanceledException("Operation Cancelled",
+                                              e);
+            case StatusCode.Unknown:
+              break;
+            case StatusCode.InvalidArgument:
+              break;
+            case StatusCode.NotFound:
+              break;
+            case StatusCode.AlreadyExists:
+              break;
+            case StatusCode.PermissionDenied:
+              break;
+            case StatusCode.Unauthenticated:
+              break;
+            case StatusCode.ResourceExhausted:
+              break;
+            case StatusCode.FailedPrecondition:
+              break;
+            case StatusCode.Aborted:
+              break;
+            case StatusCode.OutOfRange:
+              break;
+            case StatusCode.Unimplemented:
+              break;
+            case StatusCode.Internal:
+              break;
+            case StatusCode.Unavailable:
+              break;
+            case StatusCode.DataLoss:
+              break;
+            default:
+              throw new ArmoniKException("An error occurred while computing the request",
+                                         e);
+          }
+
+          return true;
+        }
+        case AggregateException ae:
+        {
+          return ae.InnerExceptions.All(ie => HandleExceptions(ie,
+                                                               status));
+        }
+        default:
+          return false;
+      }
+    }
+
     [ItemNotNull]
     public static async Task<TMessage> WrapRpcException<TMessage>([NotNull] this AsyncUnaryCall<TMessage> asyncUnaryCall)
     {
@@ -47,50 +109,11 @@ namespace ArmoniK.Core.gRPC
       {
         await asyncUnaryCall;
       }
-      catch (RpcException e)
+      catch (Exception e)
       {
-        switch (asyncUnaryCall.GetStatus().StatusCode)
-        {
-          case StatusCode.DeadlineExceeded:
-            throw new TimeoutException("Deadline Exceeded",
-                                       e);
-          case StatusCode.OK:
-            break;
-          case StatusCode.Cancelled:
-            throw new TaskCanceledException("Operation Cancelled",
-                                            e);
-          case StatusCode.Unknown:
-            break;
-          case StatusCode.InvalidArgument:
-            break;
-          case StatusCode.NotFound:
-            break;
-          case StatusCode.AlreadyExists:
-            break;
-          case StatusCode.PermissionDenied:
-            break;
-          case StatusCode.Unauthenticated:
-            break;
-          case StatusCode.ResourceExhausted:
-            break;
-          case StatusCode.FailedPrecondition:
-            break;
-          case StatusCode.Aborted:
-            break;
-          case StatusCode.OutOfRange:
-            break;
-          case StatusCode.Unimplemented:
-            break;
-          case StatusCode.Internal:
-            break;
-          case StatusCode.Unavailable:
-            break;
-          case StatusCode.DataLoss:
-            break;
-          default:
-            throw new ArmoniKException("An error occurred while computing the request",
-                                       e);
-        }
+        if (!HandleExceptions(e,
+                              asyncUnaryCall.GetStatus().StatusCode))
+          throw;
       }
 
       return asyncUnaryCall.ResponseAsync.Result!;
