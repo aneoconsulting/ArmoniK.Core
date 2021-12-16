@@ -32,6 +32,8 @@ using ArmoniK.Core.Storage;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 using NUnit.Framework;
@@ -73,7 +75,8 @@ namespace ArmoniK.Core.Tests
     {
       var objectStorageMock = new Mock<IObjectStorage>();
 
-      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object);
+      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object,
+                                                   NullLogger<KeyValueStorage<TaskId, Lease>>.Instance);
 
       var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
 
@@ -110,7 +113,8 @@ namespace ArmoniK.Core.Tests
       objectStorageMock.Setup(expression)
                        .ReturnsAsync(lease.ToByteArray());
 
-      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object);
+      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object,
+                                                   NullLogger<KeyValueStorage<TaskId, Lease>>.Instance);
 
       var obtainedLeaseValue = await kvs.TryGetValuesAsync(taskId,
                                                            CancellationToken.None);
@@ -140,7 +144,8 @@ namespace ArmoniK.Core.Tests
 
       objectStorageMock.Setup(expression);
 
-      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object);
+      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object,
+                                                   NullLogger<KeyValueStorage<TaskId, Lease>>.Instance);
 
       await kvs.AddOrUpdateAsync(taskId,
                                  lease,
@@ -168,7 +173,8 @@ namespace ArmoniK.Core.Tests
 
       objectStorageMock.Setup(expression);
 
-      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object);
+      var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object,
+                                                   NullLogger<KeyValueStorage<TaskId, Lease>>.Instance);
 
       await kvs.TryDeleteAsync(taskId,
                                CancellationToken.None);

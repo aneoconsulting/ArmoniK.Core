@@ -22,11 +22,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+
+using Amqp;
 
 using ArmoniK.Core;
 using ArmoniK.Core.Exceptions;
@@ -384,68 +387,42 @@ namespace ArmoniK.Compute.PollingAgent
                                                taskData.Options.MaxDuration.ToTimeSpan(),
                                      cancellationToken: CancellationToken.None);
 
-      ComputeReply result;
+      ComputeReply result = null;
       try
       {
         await updateTask;
         result = await call.WrapRpcException();
       }
-      catch (TimeoutException e)
+      catch (AggregateException ae)
       {
-        logger_.LogError(e,
-                         "Deadline exceeded when computing task {taskId} from session {sessionId}",
-                         taskData.Id.Task,
-                         taskData.Id.Session);
-        message.Status = QueueMessageStatus.Failed;
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  TaskStatus.Timeout,
-                                                  CancellationToken.None);
-        return;
-      }
-      catch (TaskCanceledException e)
-      {
-        var details = string.Empty;
+        List<Exception> unhandledExceptions = null;
+        foreach (var ie in ae.InnerExceptions)
+        {
+          // If the exception was not handled, lazily allocate a list of unhandled
+          // exceptions (to be rethrown later) and add it.
+          if (!await HandleExceptionAsync(ie, taskData, message, cancellationToken))
+          {
+            unhandledExceptions ??= new List<Exception>();
+            unhandledExceptions.Add(ie);
+          }
+        }
 
-        if (message.CancellationToken.IsCancellationRequested) details += "Message was cancelled. ";
-        if (cancellationToken.IsCancellationRequested) details         += "Root token was cancelled. ";
-
-        logger_.LogError(e,
-                         "Execution has been cancelled for task {taskId} from session {sessionId}. {details}",
-                         taskData.Id.Task,
-                         taskData.Id.Session,
-                         details);
-        message.Status = QueueMessageStatus.Cancelled;
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  TaskStatus.Canceling,
-                                                  CancellationToken.None);
-        return;
-      }
-      catch (ArmoniKException e)
-      {
-        logger_.LogError(e,
-                         "Execution has failed for task {taskId} from session {sessionId}. {details}",
-                         taskData.Id.Task,
-                         taskData.Id.Session,
-                         e.ToString());
-
-        message.Status = QueueMessageStatus.Failed;
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  TaskStatus.Failed,
-                                                  CancellationToken.None);
-        return;
+        // If there are unhandled exceptions remaining, throw them.
+        if (unhandledExceptions is not null)
+        {
+          throw new AggregateException(ae.Message,
+                                       unhandledExceptions);
+        }
       }
       catch (Exception e)
       {
-        logger_.LogError(e,
-                         "Exception encountered when computing task {taskId} from session {sessionId}",
-                         taskData.Id.Task,
-                         taskData.Id.Session);
-        message.Status = QueueMessageStatus.Failed;
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  TaskStatus.Failed,
-                                                  CancellationToken.None);
-        Console.WriteLine(e);
-        throw;
+        if (!await HandleExceptionAsync(e,
+                                   taskData,
+                                   message,
+                                   cancellationToken))
+        {
+          throw;
+        }
       }
 
       logger_.LogInformation("Compute finished successfully.");
@@ -464,6 +441,66 @@ namespace ArmoniK.Compute.PollingAgent
                                                              TaskStatus.Completed,
                                                              CancellationToken.None),
                          increaseTask);
+    }
+
+    private async Task<bool> HandleExceptionAsync(Exception e, TaskData taskData, IQueueMessage message, CancellationToken cancellationToken)
+    {
+      switch (e)
+      {
+        case TimeoutException:
+        {
+          logger_.LogError(e,
+                           "Deadline exceeded when computing task {taskId} from session {sessionId}",
+                           taskData.Id.Task,
+                           taskData.Id.Session);
+          message.Status = QueueMessageStatus.Failed;
+          await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
+                                                    TaskStatus.Timeout,
+                                                    CancellationToken.None);
+          return true;
+        }
+        case TaskCanceledException:
+        {
+          var details = string.Empty;
+
+          if (message.CancellationToken.IsCancellationRequested) details += "Message was cancelled. ";
+          if (cancellationToken.IsCancellationRequested) details         += "Root token was cancelled. ";
+
+          logger_.LogError(e,
+                           "Execution has been cancelled for task {taskId} from session {sessionId}. {details}",
+                           taskData.Id.Task,
+                           taskData.Id.Session,
+                           details);
+          message.Status = QueueMessageStatus.Cancelled;
+          await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
+                                                    TaskStatus.Canceling,
+                                                    CancellationToken.None);
+          return true;
+        }
+        case ArmoniKException:
+          logger_.LogError(e,
+                           "Execution has failed for task {taskId} from session {sessionId}. {details}",
+                           taskData.Id.Task,
+                           taskData.Id.Session,
+                           e.ToString());
+
+          message.Status = QueueMessageStatus.Failed;
+          await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
+                                                    TaskStatus.Failed,
+                                                    CancellationToken.None);
+          return true;
+      }
+
+      logger_.LogError(e,
+                       "Exception encountered when computing task {taskId} from session {sessionId}",
+                       taskData.Id.Task,
+                       taskData.Id.Session);
+      message.Status = QueueMessageStatus.Failed;
+      await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
+                                                TaskStatus.Failed,
+                                                CancellationToken.None);
+      Console.WriteLine(e);
+      return false;
     }
 
     private async Task<TaskData> PrefetchPayload(TaskData taskData, CancellationToken combinedCt)
