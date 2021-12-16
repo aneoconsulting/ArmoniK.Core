@@ -104,7 +104,7 @@ namespace ArmoniK.Adapters.MongoDB
                                              SubSession = SubSessionId,
                                              Task       = TaskId,
                                            },
-                                      HasPayload = HasPayload,
+                                      IsPayloadAvailable = HasPayload,
                                       Payload    = new Payload { Data = ByteString.CopyFrom(Payload) },
                                       Options    = Options,
                                       Retries    = Retries,

@@ -278,10 +278,15 @@ namespace ArmoniK.Adapters.MongoDB
                                                          Retries      = 0,
                                                          SessionId    = session.Session,
                                                          SubSessionId = session.SubSession,
+                                                         TaskId       = StringCombGuidGenerator.GenerateId(),
                                                          Status       = TaskStatus.Creating,
                                                        };
                                              if (isPayloadStored)
                                                tdm.Payload = payload.Data.ToByteArray();
+
+                                             logger_.LogDebug("Stored {size} bytes for task {taskId}",
+                                                              tdm.ToTaskData().CalculateSize(),
+                                                              tdm.TaskId);
 
                                              return tdm;
                                            })
@@ -397,8 +402,11 @@ namespace ArmoniK.Adapters.MongoDB
                                     .Where(tdm => tdm.SessionId == id.Session &&
                                                   tdm.SubSessionId == id.SubSession &&
                                                   tdm.TaskId == id.Task)
-                                    .SingleAsync(cancellationToken);
-      return res.ToTaskData();
+                                    .FirstAsync(cancellationToken);
+      var taskData = res.ToTaskData();
+      logger_.LogDebug("Read {size} bytes for taskData from base",
+                       taskData.CalculateSize());
+      return taskData;
     }
 
     public async Task UpdateTaskStatusAsync(TaskId            id,

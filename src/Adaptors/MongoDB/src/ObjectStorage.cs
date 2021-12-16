@@ -64,7 +64,6 @@ namespace ArmoniK.Adapters.MongoDB
     public async Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default)
     {
       using var _                = logger_.LogFunction(key);
-      var       sessionHandle    = await sessionProvider_.GetAsync();
       var       objectCollection = await objectCollectionProvider_.GetAsync();
 
       var taskList = new List<Task<ObjectDataModel>>();
@@ -91,7 +90,6 @@ namespace ArmoniK.Adapters.MongoDB
                                                                      $"{key}{idx}");
 
         taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>(
-                                                                             sessionHandle,
                                                                              odm => odm.Key == key && odm.ChunkIdx == idx,
                                                                              updateDefinition,
                                                                              new FindOneAndUpdateOptions<ObjectDataModel>
@@ -136,12 +134,12 @@ namespace ArmoniK.Adapters.MongoDB
     public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
     {
       using var _                = logger_.LogFunction(key);
-      var       sessionHandle    = await sessionProvider_.GetAsync();
       var       objectCollection = await objectCollectionProvider_.GetAsync();
 
-      var res = await objectCollection.DeleteManyAsync(sessionHandle,
+      var res = await objectCollection.DeleteManyAsync(
                                                        odm => odm.Key == key,
-                                                       cancellationToken: cancellationToken);
+                                                       cancellationToken: cancellationToken
+                                                      );
       return res.DeletedCount > 0;
     }
   }

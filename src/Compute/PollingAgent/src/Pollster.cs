@@ -473,14 +473,14 @@ namespace ArmoniK.Compute.PollingAgent
        * Prefetch Data
        */
 
-      if (!taskData.HasPayload)
+      if (!taskData.IsPayloadAvailable)
       {
         logger_.LogInformation("Start retrieving payload");
         var payload = await taskPayloadStorage_.TryGetValuesAsync(taskData.Id,
                                                                   combinedCt);
         logger_.LogInformation("Payload retrieved");
         taskData.Payload    = payload;
-        taskData.HasPayload = true;
+        taskData.IsPayloadAvailable = true;
       }
 
       return taskData;

@@ -29,6 +29,8 @@ using Google.Protobuf;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Logging;
+
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
@@ -36,21 +38,20 @@ namespace ArmoniK.Core.Storage
     where TValue : IMessage<TValue>, new()
     where TKey : IMessage<TKey>, new()
   {
-    public static readonly MessageParser<TKey>   KeyParser   = new(() => new TKey());
-    public static readonly MessageParser<TValue> ValueParser = new(() => new TValue());
-    private readonly       string                keyPrefix_;
-    private readonly       IObjectStorage        objectStorage_;
+    public static readonly MessageParser<TKey>                    KeyParser   = new(() => new TKey());
+    public static readonly MessageParser<TValue>                  ValueParser = new(() => new TValue());
+    private readonly       string                                 keyPrefix_;
+    private readonly       IObjectStorage                         objectStorage_;
+    private readonly       ILogger<KeyValueStorage<TKey, TValue>> logger_;
 
-    public KeyValueStorage(IObjectStorage objectStorage)
+    public KeyValueStorage(IObjectStorage objectStorage, ILogger<KeyValueStorage<TKey, TValue>> logger)
     {
-      keyPrefix_     = $"{typeof(TKey).Name}{typeof(TValue)}";
+      keyPrefix_ = $"{typeof(TKey).Name}{typeof(TValue)}";
       objectStorage_ = objectStorage;
+      logger_ = logger;
     }
 
-    public string SerializeKey(TKey key)
-    {
-      return $"{keyPrefix_}{HttpUtility.UrlEncode(key.ToByteArray())}";
-    }
+    public string SerializeKey(TKey key) => $"{keyPrefix_}{HttpUtility.UrlEncode(key.ToByteArray())}";
 
     public TKey DeserializeKey(string stringKey)
     {
@@ -63,8 +64,9 @@ namespace ArmoniK.Core.Storage
 
     public Task AddOrUpdateAsync(TKey key, TValue value, CancellationToken cancellationToken = default)
     {
-      var serializedKey   = SerializeKey(key);
-      var serializedValue = value.ToByteArray();
+      var       serializedKey   = SerializeKey(key);
+      using var _               = logger_.LogFunction(serializedKey);
+      var       serializedValue = value.ToByteArray();
       return objectStorage_.AddOrUpdateAsync(serializedKey,
                                              serializedValue,
                                              cancellationToken);
@@ -72,7 +74,8 @@ namespace ArmoniK.Core.Storage
 
     public async Task<TValue> TryGetValuesAsync(TKey key, CancellationToken cancellationToken = default)
     {
-      var serializedKey = SerializeKey(key);
+      var       serializedKey = SerializeKey(key);
+      using var _             = logger_.LogFunction(serializedKey);
       var serializedOutput = await objectStorage_.TryGetValuesAsync(serializedKey,
                                                                     cancellationToken);
       return ValueParser.ParseFrom(serializedOutput);
@@ -80,7 +83,8 @@ namespace ArmoniK.Core.Storage
 
     public Task<bool> TryDeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-      var serializedKey = SerializeKey(key);
+      var       serializedKey = SerializeKey(key);
+      using var _             = logger_.LogFunction(serializedKey);
       return objectStorage_.TryDeleteAsync(serializedKey,
                                            cancellationToken);
     }
