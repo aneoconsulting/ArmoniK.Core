@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 using ArmoniK.Core.gRPC.V1;
 
@@ -51,86 +52,90 @@ namespace ArmoniK.Adapters.MongoDB
       var x = Expression.Parameter(typeof(TaskDataModel),
                                    "model");
 
-      var output = FieldFilterInternal<TaskDataModel, string>(nameof(TaskDataModel.SessionId),
-                                                              new[] { filter.SessionId },
-                                                              true,
-                                                              x);
+      var output = FieldFilterInternal(model => model.SessionId,
+                                       new[] { filter.SessionId },
+                                       true,
+                                       x);
 
       if (!string.IsNullOrEmpty(filter.SubSessionId))
         output = Expression.And(output,
-                                FieldFilterInternal<TaskDataModel, string>(nameof(TaskDataModel.SubSessionId),
-                                                                           new[] { filter.SubSessionId },
-                                                                           true,
-                                                                           x));
+                                FieldFilterInternal(model => model.SubSessionId,
+                                                    new[] { filter.SubSessionId },
+                                                    true,
+                                                    x));
 
       if (filter.IncludedTaskIds.Any())
         output = Expression.And(output,
-                                FieldFilterInternal<TaskDataModel, string>(nameof(TaskDataModel.TaskId),
-                                                                           filter.IncludedTaskIds,
-                                                                           true,
-                                                                           x));
+                                FieldFilterInternal(model => model.TaskId,
+                                                    filter.IncludedTaskIds,
+                                                    true,
+                                                    x));
 
       if (filter.ExcludedTaskIds.Any())
         output = Expression.And(output,
-                                FieldFilterInternal<TaskDataModel, string>(nameof(TaskDataModel.TaskId),
-                                                                           filter.ExcludedTaskIds,
-                                                                           false,
-                                                                           x));
+                                FieldFilterInternal(model => model.TaskId,
+                                                    filter.ExcludedTaskIds,
+                                                    false,
+                                                    x));
 
       if (filter.IncludedStatuses.Any())
         output = Expression.And(output,
-                                FieldFilterInternal<TaskDataModel, TaskStatus>(nameof(TaskDataModel.Status),
-                                                                           filter.IncludedStatuses,
-                                                                           true,
-                                                                           x));
+                                FieldFilterInternal(model => model.Status,
+                                                    filter.IncludedStatuses,
+                                                    true,
+                                                    x));
 
       if (filter.ExcludedStatuses.Any())
         output = Expression.And(output,
-                                FieldFilterInternal<TaskDataModel, TaskStatus>(nameof(TaskDataModel.Status),
-                                                                               filter.ExcludedStatuses,
-                                                                               false,
-                                                                               x));
+                                FieldFilterInternal(model => model.Status,
+                                                    filter.ExcludedStatuses,
+                                                    false,
+                                                    x));
 
       return (Expression<Func<TaskDataModel, bool>>)Expression.Lambda(output,
                                                                       x);
     }
 
 
-    public static Expression<Func<TModel, bool>> FieldFilterExpression<TModel, TField>(string              fieldName,
-                                                                                       IEnumerable<TField> values,
-                                                                                       bool                include = true)
+    public static Expression<Func<TModel, bool>> FieldFilterExpression<TModel, TField>(Expression<Func<TaskDataModel, TField>> expression,
+                                                                                       IEnumerable<TField>                     values,
+                                                                                       bool                                    include = true)
     {
       var x = Expression.Parameter(typeof(TModel),
                                    "model");
 
-      return (Expression<Func<TModel, bool>>) Expression.Lambda(FieldFilterInternal<TModel, TField>(fieldName, values, include, x), x);
+      return (Expression<Func<TModel, bool>>) Expression.Lambda(FieldFilterInternal(expression, values, include, x), x);
     }
 
-    private static Expression FieldFilterInternal<TModel, TField>(string fieldName, IEnumerable<TField> values, bool include, Expression x)
-      => values.Aggregate(
-                          (Expression)Expression.Constant(!include),
-                          (expression, subSession) =>
-                          {
-                            var left = expression;
-                            var right = Expression.Equal(Expression.Property(x,
-                                                                             typeof(TModel),
-                                                                             fieldName),
-                                                         Expression.Constant(subSession,
-                                                                             typeof(TField)));
-                            if (include)
-                              return Expression.Or(left,
-                                                   right);
+    private static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel,TField>> expression, IEnumerable<TField> values, bool include, Expression x)
+    {
+      var fieldName = ((MemberExpression)expression.Body).Member.Name;
 
-                            return Expression.And(left,
-                                                  right);
-                          }
-                         );
+      return values.Aggregate(
+                              (Expression)Expression.Constant(!include),
+                              (expression, subSession) =>
+                              {
+                                var left = expression;
+                                var right = Expression.Equal(Expression.Property(x,
+                                                                                 typeof(TaskDataModel),
+                                                                                 fieldName),
+                                                             Expression.Constant(subSession,
+                                                                                 typeof(TField)));
+                                if (include)
+                                  return Expression.Or(left,
+                                                       right);
 
-    public static IMongoQueryable<TModel> FilterField<TModel, TField>(this IMongoQueryable<TModel> taskQueryable,
-                                                                      string                       fieldName,
-                                                                      IEnumerable<TField>          values,
-                                                                      bool                         include = true)
-      => taskQueryable.Where(FieldFilterExpression<TModel, TField>(fieldName,
+                                return Expression.And(left,
+                                                      right);
+                              }
+                             );
+    }
+
+    public static IMongoQueryable<TModel> FilterField<TModel, TField>(this IMongoQueryable<TModel>            taskQueryable,
+                                                                      Expression<Func<TaskDataModel, TField>> expression,
+                                                                      IEnumerable<TField>                     values,
+                                                                      bool                                    include = true)
+      => taskQueryable.Where(FieldFilterExpression<TModel, TField>(expression,
                                                                    values,
                                                                    include));
   }
