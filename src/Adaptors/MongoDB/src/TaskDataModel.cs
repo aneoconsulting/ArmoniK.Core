@@ -69,6 +69,9 @@ namespace ArmoniK.Adapters.MongoDB
     [BsonElement]
     public IEnumerable<string> Dependencies { get; set; }
 
+    [BsonElement]
+    public IEnumerable<string> ParentSubSessions { get; set; }
+
     /// <inheritdoc />
     public string CollectionName { get; } = "tasks";
 

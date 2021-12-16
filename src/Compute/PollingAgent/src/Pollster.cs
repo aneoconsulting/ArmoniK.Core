@@ -327,8 +327,17 @@ namespace ArmoniK.Compute.PollingAgent
         return true;
       }
 
-      var dependencyCheckTask = taskData.Dependencies.AsParallel().Select(tid => IsDependencyCompleted(new TaskId(taskData.Id){Task = tid},
-                                                                                                       combinedCts.Token)).WhenAll();
+      var dependencyCheckTask = tableStorage_.CountSubTasksAsync(new TaskFilter
+                                                                 {
+                                                                   SessionId       = taskData.Id.Session,
+                                                                   SubSessionId    = taskData.Id.SubSession,
+                                                                   IncludedTaskIds = { taskData.Dependencies },
+                                                                   ExcludedStatuses =
+                                                                   {
+                                                                     TaskStatus.Completed,
+                                                                   },
+                                                                 },
+                                                                 combinedCts.Token);
 
 
       logger_.LogDebug("Handling the task status ({status})",
@@ -390,7 +399,7 @@ namespace ArmoniK.Compute.PollingAgent
                                                            TaskStatus.Dispatched,
                                                            combinedCts.Token);
 
-      if (!(await dependencyCheckTask).All(b => b))
+      if ((await dependencyCheckTask)>0)
       {
         logger_.LogInformation("Dependencies are not complete yet.");
         message.Status = QueueMessageStatus.Postponed;
@@ -402,39 +411,6 @@ namespace ArmoniK.Compute.PollingAgent
       logger_.LogInformation("Task preconditions are OK");
       await updateTask;
       return true;
-    }
-
-    private Task<bool> IsDependencyCompleted(TaskId tid, CancellationToken cancellationToken)
-    {
-      StrongBox<bool> signal = new(false);
-      return IsDependencyCompleted(tid,
-                                   signal,
-                                   cancellationToken);
-    }
-
-    private async Task<bool> IsDependencyCompleted(TaskId tid, StrongBox<bool> signal, CancellationToken cancellationToken)
-    {
-      if (signal.Value) return false;
-
-      logger_.LogDebug("Checking status for dependency with taskId {tid}",
-                       tid.ToPrintableId());
-      var tData = await tableStorage_.ReadTaskAsync(tid,
-                                                    cancellationToken);
-
-      if (tData.Status != TaskStatus.Completed)
-      {
-        signal.Value = true;
-        return false;
-      }
-
-      var list = tableStorage_.ListTasksAsync(new TaskFilter { SessionId = tid.Session, SubSessionId = tid.Task },
-                                              cancellationToken);
-
-      return await list.AllAwaitWithCancellationAsync(async (id, token)
-                                                        => await IsDependencyCompleted(id,
-                                                                                       signal,
-                                                                                       token),
-                                                      cancellationToken);
     }
 
     private async Task ProcessTaskAsync(TaskData          taskData,
