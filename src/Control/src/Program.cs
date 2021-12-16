@@ -65,12 +65,13 @@ namespace ArmoniK.Control
     public static IHostBuilder CreateHostBuilder(string[] args) =>
       Host.CreateDefaultBuilder(args)
           .UseSerilog((context, services, configuration) => configuration
-                                                           .ReadFrom.Configuration(context.Configuration)
-                                                           .ReadFrom.Services(services)
-                                                           .MinimumLevel
-                                                           .Override("Microsoft.AspNetCore",
-                                                                     LogEventLevel.Debug)
-                                                           .Enrich.FromLogContext())
-          .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+                                                            .ReadFrom.Configuration(context.Configuration)
+                                                            .ReadFrom.Services(services)
+                                                            .MinimumLevel
+                                                            .Override("Microsoft.AspNetCore",
+                                                                      LogEventLevel.Debug)
+                                                            .Enrich.FromLogContext())
+          .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>()
+                                                              .ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 2097152000); });
   }
 }
