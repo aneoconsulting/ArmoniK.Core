@@ -23,6 +23,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -315,15 +316,15 @@ namespace ArmoniK.Compute.PollingAgent
 
     private Task<bool> IsDependencyCompleted(TaskId tid, CancellationToken cancellationToken)
     {
-      var signal = new[] { false };
+      StrongBox<bool> signal = new(false);
       return IsDependencyCompleted(tid,
                                    signal,
                                    cancellationToken);
     }
 
-    private async Task<bool> IsDependencyCompleted(TaskId tid, bool[] signal, CancellationToken cancellationToken)
+    private async Task<bool> IsDependencyCompleted(TaskId tid, StrongBox<bool> signal, CancellationToken cancellationToken)
     {
-      if (signal[0]) return false;
+      if (signal.Value) return false;
 
       logger_.LogDebug("Checking status for dependency with taskId {tid}",
                        tid.ToPrintableId());
@@ -332,7 +333,7 @@ namespace ArmoniK.Compute.PollingAgent
 
       if (tData.Status != TaskStatus.Completed)
       {
-        signal[0] = true;
+        signal.Value = true;
         return false;
       }
 
