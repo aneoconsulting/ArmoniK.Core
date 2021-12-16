@@ -61,7 +61,6 @@ namespace ArmoniK.Compute.PollingAgent
     private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
 
     public Pollster(ILogger<Pollster> logger,
-                    // ReSharper disable once UnusedParameter.Local
                     IOptions<ComputePlan>                 options,
                     IQueueStorage                         queueStorage,
                     ITableStorage                         tableStorage,
@@ -81,6 +80,94 @@ namespace ArmoniK.Compute.PollingAgent
     }
 
     public async Task MainLoop(CancellationToken cancellationToken)
+    {
+      cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
+      try
+      {
+        var prefetchChannel = Channel.CreateBounded<(TaskData taskData, IQueueMessage message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
+        {
+          SingleReader                  = true,
+          SingleWriter                  = true,
+          FullMode                      = BoundedChannelFullMode.Wait,
+          Capacity                      = 1,
+          AllowSynchronousContinuations = false,
+        });
+        
+                                                         logger_.LogInformation("Prefetching loop started.");
+
+        try
+        {
+          logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
+          while (!cancellationToken.IsCancellationRequested)
+          {
+            logger_.LogInformation("Trying to fetch messages");
+
+            logger_.LogFunction(functionName:
+                                $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
+            var messages = queueStorage_.PullAsync(messageBatchSize_,
+                                                   cancellationToken);
+
+            await foreach (var message in messages.WithCancellation(cancellationToken))
+            {
+              await using var msg = message;
+
+              using var scopedLogger = logger_.BeginNamedScope("Prefetch message",
+                                                               ("message", message.MessageId),
+                                                               ("session", message.TaskId.Session),
+                                                               ("task", message.TaskId.Task));
+              logger_.LogDebug("Start a new Task to process the message");
+
+              var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
+                                                                                cancellationToken);
+              try
+              {
+                logger_.LogDebug("Loading task data");
+                var taskData = await tableStorage_.ReadTaskAsync(message.TaskId,
+                                                                 combinedCts.Token);
+
+                if (await CheckPreconditions(message,
+                                             taskData,
+                                             combinedCts,
+                                             cancellationToken))
+                {
+                  taskData = await PrefetchPayload(taskData,
+                                                   combinedCts.Token);
+
+                  logger_.LogDebug("Start a new Task to process the message");
+
+                  await ProcessTaskAsync(taskData,
+                                         msg,
+                                         combinedCts.Token,
+                                         cancellationToken);
+
+                  logger_.LogDebug("Task returned");
+                }
+              }
+              catch (Exception e)
+              {
+                logger_.LogWarning(e,
+                                   "Error with message {messageId}",
+                                   message.MessageId);
+                throw;
+              }
+            }
+          }
+        }
+        finally
+        {
+          prefetchChannel.Writer.Complete();
+        }
+
+      }
+      catch (Exception e)
+      {
+        logger_.LogCritical(e,
+                            "Error in pollster");
+      }
+
+      lifeTime_.StopApplication();
+    }
+    public async Task MainLoopPrefetch(CancellationToken cancellationToken)
     {
       cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
       try
