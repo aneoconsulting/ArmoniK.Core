@@ -288,6 +288,10 @@ namespace ArmoniK.Adapters.MongoDB
                                                               tdm.ToTaskData().CalculateSize(),
                                                               tdm.TaskId);
 
+                                             logger_.LogDebug("{taskId} dependencies:{dependencies}", 
+                                                              tdm.TaskId, 
+                                                              string.Join(", ", tdm.Options.Dependencies.Select(id=>id)));
+
                                              return tdm;
                                            })
                                    .ToList();
