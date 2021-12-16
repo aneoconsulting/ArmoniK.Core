@@ -370,7 +370,9 @@ namespace ArmoniK.Compute.PollingAgent
         Subsession = taskData.Id.SubSession,
         TaskId     = taskData.Id.Task,
         Payload    = taskData.Payload.Data,
+        Dependencies = { taskData.Dependencies },
       };
+      request.TaskOptions.Add(taskData.Options.Options);
 
       logger_.LogDebug("Get client connection to the worker");
       var client = await clientProvider_.GetAsync();
