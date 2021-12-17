@@ -37,7 +37,7 @@ namespace ArmoniK.Core.Storage
   public class QueueMessage : IQueueMessage
   {
     private readonly Func<QueueMessageStatus, Task> disposeFunc_;
-    private readonly ILogger                        logger;
+    private readonly ILogger                        logger_;
 
     public QueueMessage(string                         messageId,
                         TaskId                         taskId,
@@ -46,7 +46,7 @@ namespace ArmoniK.Core.Storage
                         CancellationToken              cancellationToken)
     {
       disposeFunc_      = disposeFunc;
-      this.logger       = logger;
+      logger_       = logger;
       MessageId         = messageId;
       TaskId            = taskId;
       CancellationToken = cancellationToken;
@@ -63,7 +63,7 @@ namespace ArmoniK.Core.Storage
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-      using var _ = logger.LogFunction(MessageId,
+      using var _ = logger_.LogFunction(MessageId,
                                        functionName: $"{nameof(QueueMessage)}.{nameof(DisposeAsync)}");
       await disposeFunc_(Status);
       GC.SuppressFinalize(this);
