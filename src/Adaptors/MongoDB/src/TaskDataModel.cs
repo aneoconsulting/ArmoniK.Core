@@ -116,6 +116,7 @@ namespace ArmoniK.Adapters.MongoDB
 
     static TaskDataModel()
     {
+      if(BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
       BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
                                                    {
                                                      cm.MapIdProperty(nameof(TaskId)).SetIdGenerator(new TaggedIdGenerator());
@@ -143,7 +144,7 @@ namespace ArmoniK.Adapters.MongoDB
     public string IdTag => Options.IdTag;
   }
 
-  public struct ParentSubSessionRelation
+  public class ParentSubSessionRelation
   {
     public string ParentSubSession { get; set; }
 
