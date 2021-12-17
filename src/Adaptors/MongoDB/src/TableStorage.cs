@@ -224,7 +224,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                        .FilterField(model => model.Status,
                                                                     filter.ExcludedStatuses,
                                                                     false)
-                                                       .SelectMany(model => model.ParentSubSessions)
+                                                       .SelectMany(model => model.ParentRelations)
                                                        .Where(filterExpression)
                                                        .ToListAsync(cancellationToken);
       logger.LogDebug("children tasks: {childrenRetrieved}",
@@ -389,22 +389,16 @@ namespace ArmoniK.Adapters.MongoDB
       var taskDataModels = requests.Select(request =>
                                            {
                                              var isPayloadStored = request.Payload.CalculateSize() < 12000000;
-                                             var taskId          = StringCombGuidGenerator.GenerateId();
                                              var tdm = new TaskDataModel
                                                        {
-                                                         HasPayload        = isPayloadStored,
-                                                         Options           = options,
-                                                         Retries           = 0,
-                                                         SessionId         = session.Session,
-                                                         SubSessionId      = session.SubSession,
-                                                         TaskId            = taskId,
-                                                         Status            = TaskStatus.Creating,
-                                                         Dependencies      = request.DependenciesTaskIds,
-                                                         ParentSubSessions = parents.Select(s => new ParentSubSessionRelation
-                                                                                                 {
-                                                                                                   ParentSubSession = s, 
-                                                                                                   TaskId = taskId,
-                                                                                                 }),
+                                                         HasPayload         = isPayloadStored,
+                                                         Options            = options,
+                                                         Retries            = 0,
+                                                         SessionId          = session.Session,
+                                                         SubSessionId       = session.SubSession,
+                                                         Status             = TaskStatus.Creating,
+                                                         Dependencies       = request.DependenciesTaskIds,
+                                                         ParentsSubSessions = parents,
                                                        };
                                              if (isPayloadStored)
                                                tdm.Payload = request.Payload.Data.ToByteArray();

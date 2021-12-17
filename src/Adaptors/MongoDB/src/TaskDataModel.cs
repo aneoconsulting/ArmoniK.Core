@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
@@ -73,9 +74,20 @@ namespace ArmoniK.Adapters.MongoDB
     public IEnumerable<string> Dependencies { get; set; }
 
     [BsonElement]
-    [BsonIgnoreIfNull]
-    [BsonIgnoreIfDefault]
-    public IEnumerable<ParentSubSessionRelation> ParentSubSessions { get; set; }
+    public IEnumerable<ParentSubSessionRelation> ParentRelations {
+      get
+      {
+        return ParentsSubSessions.Select(s => new ParentSubSessionRelation { ParentSubSession = s, TaskId = TaskId });
+      }
+      set
+      {
+        ParentsSubSessions = value.Select(relation => relation.ParentSubSession).ToList();
+      }
+    }
+
+
+    [BsonIgnore]
+    public IList<string> ParentsSubSessions { get; set; } = Array.Empty<string>();
 
     /// <inheritdoc />
     public string CollectionName { get; } = "tasks";
