@@ -88,16 +88,17 @@ namespace ArmoniK.Adapters.MongoDB
 
     static SessionDataModel()
     {
-      BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
-                                                      {
-                                                        cm.MapIdProperty(nameof(SubSessionId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
-                                                        cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(ParentsId)).SetIgnoreIfDefault(true);
-                                                        cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
-                                                        cm.SetIgnoreExtraElements(true);
-                                                      });
+      if (!BsonClassMap.IsClassMapRegistered(typeof(SessionDataModel)))
+        BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
+                                                        {
+                                                          cm.MapIdProperty(nameof(SubSessionId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
+                                                          cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
+                                                          cm.MapProperty(nameof(ParentsId)).SetIgnoreIfDefault(true);
+                                                          cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
+                                                          cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
+                                                          cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                          cm.SetIgnoreExtraElements(true);
+                                                        });
 
     }
     

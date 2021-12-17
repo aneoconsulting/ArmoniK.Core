@@ -116,8 +116,8 @@ namespace ArmoniK.Adapters.MongoDB
 
     static TaskDataModel()
     {
-      if(BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
-      BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
+      if(!BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
+        BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
                                                    {
                                                      cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
                                                      cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
@@ -132,12 +132,13 @@ namespace ArmoniK.Adapters.MongoDB
                                                      cm.SetIgnoreExtraElements(true);
                                                    });
 
-      BsonClassMap.RegisterClassMap<ParentSubSessionRelation>(cm =>
-                                                              {
-                                                                cm.MapProperty(nameof(ParentSubSessionRelation.ParentSubSession)).SetIsRequired(true);
-                                                                cm.MapProperty(nameof(ParentSubSessionRelation.TaskId)).SetIsRequired(true);
-                                                                cm.SetIgnoreExtraElements(true);
-                                                              });
+      if (!BsonClassMap.IsClassMapRegistered(typeof(ParentSubSessionRelation)))
+        BsonClassMap.RegisterClassMap<ParentSubSessionRelation>(cm =>
+                                                                {
+                                                                  cm.MapProperty(nameof(ParentSubSessionRelation.ParentSubSession)).SetIsRequired(true);
+                                                                  cm.MapProperty(nameof(ParentSubSessionRelation.TaskId)).SetIsRequired(true);
+                                                                  cm.SetIgnoreExtraElements(true);
+                                                                });
     }
 
     /// <inheritdoc />
