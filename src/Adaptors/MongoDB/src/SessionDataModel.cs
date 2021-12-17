@@ -26,6 +26,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
 
+using Google.Protobuf.Collections;
+
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
@@ -91,7 +93,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       BsonClassMap.RegisterClassMap<TaskOptions>(cm =>
                                                  {
-                                                   cm.MapProperty(nameof(TaskOptions.Options)).SetIsRequired(true);
+                                                   cm.MapProperty(nameof(TaskOptions.Options)).SetIgnoreIfDefault(true).SetIgnoreIfNull(true);
                                                    cm.MapProperty(nameof(TaskOptions.MaxDuration)).SetIsRequired(true);
                                                    cm.MapProperty(nameof(TaskOptions.MaxRetries)).SetIsRequired(true);
                                                    cm.MapProperty(nameof(TaskOptions.Priority)).SetIsRequired(true);
