@@ -74,8 +74,6 @@ namespace ArmoniK.Adapters.MongoDB
       PollingDelay               = options.Value.PollingDelay;
       logger_                    = logger;
 
-      BsonClassMap.RegisterClassMap<SessionDataModel>(cm => cm.AutoMap());
-      BsonClassMap.RegisterClassMap<TaskDataModel>(cm => cm.AutoMap()); 
       BsonClassMap.RegisterClassMap<TaskOptions>(cm => cm.AutoMap());
       BsonClassMap.RegisterClassMap<ParentSubSessionRelation>(cm => cm.AutoMap());
     }
