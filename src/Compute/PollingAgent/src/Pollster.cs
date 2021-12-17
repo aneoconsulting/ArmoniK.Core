@@ -327,17 +327,25 @@ namespace ArmoniK.Compute.PollingAgent
         return true;
       }
 
-      var dependencyCheckTask = tableStorage_.CountSubTasksAsync(new TaskFilter
+      Task<int> dependencyCheckTask;
+      if (taskData.Dependencies.Any())
+      {
+        dependencyCheckTask = tableStorage_.CountSubTasksAsync(new TaskFilter
+                                                               {
+                                                                 SessionId       = taskData.Id.Session,
+                                                                 SubSessionId    = taskData.Id.SubSession,
+                                                                 IncludedTaskIds = { taskData.Dependencies },
+                                                                 ExcludedStatuses =
                                                                  {
-                                                                   SessionId       = taskData.Id.Session,
-                                                                   SubSessionId    = taskData.Id.SubSession,
-                                                                   IncludedTaskIds = { taskData.Dependencies },
-                                                                   ExcludedStatuses =
-                                                                   {
-                                                                     TaskStatus.Completed,
-                                                                   },
+                                                                   TaskStatus.Completed,
                                                                  },
-                                                                 combinedCts.Token);
+                                                               },
+                                                               combinedCts.Token);
+      }
+      else
+      {
+        dependencyCheckTask = Task.FromResult(0);
+      }
 
 
       logger_.LogDebug("Handling the task status ({status})",
@@ -399,7 +407,7 @@ namespace ArmoniK.Compute.PollingAgent
                                                            TaskStatus.Dispatched,
                                                            combinedCts.Token);
 
-      if ((await dependencyCheckTask)>0)
+      if (await dependencyCheckTask>0)
       {
         logger_.LogInformation("Dependencies are not complete yet.");
         message.Status = QueueMessageStatus.Postponed;
