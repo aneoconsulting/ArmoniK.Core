@@ -15,7 +15,6 @@
 **/bin
 **/charts
 **/docker-compose*
-**/Dockerfile*
 **/node_modules
 **/npm-debug.log
 **/obj
@@ -23,3 +22,4 @@
 **/values.dev.yaml
 LICENSE
 README.md
+**/publish
