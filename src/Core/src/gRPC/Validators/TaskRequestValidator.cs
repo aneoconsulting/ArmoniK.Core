@@ -31,7 +31,7 @@ namespace ArmoniK.Core.gRPC.Validators
   {
     public TaskRequestValidator()
     {
-      RuleFor(r => r.Payload).NotNull().SetValidator(new PayloadValidator());
+      RuleFor(r => r.Payload).NotNull().SetValidator(new PayloadValidator()).WithName(nameof(TaskRequest.Payload));
     }
   }
 }
