@@ -128,12 +128,14 @@ namespace ArmoniK.Adapters.MongoDB
                                                      cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
                                                      cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true);
                                                      cm.MapProperty(nameof(ParentRelations)).SetIgnoreIfDefault(true);
+                                                     cm.SetIgnoreExtraElements(true);
                                                    });
 
       BsonClassMap.RegisterClassMap<ParentSubSessionRelation>(cm =>
                                                               {
                                                                 cm.MapProperty(nameof(ParentSubSessionRelation.ParentSubSession)).SetIsRequired(true);
                                                                 cm.MapProperty(nameof(ParentSubSessionRelation.TaskId)).SetIsRequired(true);
+                                                                cm.SetIgnoreExtraElements(true);
                                                               });
     }
 
