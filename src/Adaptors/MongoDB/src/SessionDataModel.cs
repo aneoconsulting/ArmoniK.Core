@@ -95,19 +95,10 @@ namespace ArmoniK.Adapters.MongoDB
                                                         cm.MapProperty(nameof(ParentsId)).SetIgnoreIfDefault(true);
                                                         cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
                                                         cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(Options)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
                                                         cm.SetIgnoreExtraElements(true);
                                                       });
 
-      BsonClassMap.RegisterClassMap<TaskOptions>(cm =>
-                                                 {
-                                                   cm.MapProperty(nameof(TaskOptions.Options)).SetIgnoreIfDefault(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
-                                                   cm.MapProperty(nameof(TaskOptions.MaxDuration)).SetIsRequired(true);
-                                                   cm.MapProperty(nameof(TaskOptions.MaxRetries)).SetIsRequired(true);
-                                                   cm.MapProperty(nameof(TaskOptions.Priority)).SetIsRequired(true);
-                                                   cm.MapProperty(nameof(TaskOptions.IdTag)).SetIgnoreIfDefault(true);
-                                                   cm.SetIgnoreExtraElements(true);
-                                                 });
     }
     
   }
