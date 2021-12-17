@@ -35,18 +35,17 @@ using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 
-using Google.Protobuf.WellKnownTypes;
+using DnsClient.Internal;
 
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Adapters.MongoDB
@@ -147,16 +146,18 @@ namespace ArmoniK.Adapters.MongoDB
       var sessionHandle = await sessionProvider_.GetAsync();
       var taskCollection = await taskCollectionProvider_.GetAsync();
 
-      return await CountSubTasksQuery(filter, sessionHandle, taskCollection, cancellationToken);
+      return await CountSubTasksQuery(filter, sessionHandle, taskCollection, cancellationToken, logger_);
     }
 
     public static async Task<int> CountSubTasksQuery(
-      TaskFilter                      filter,
-      IClientSessionHandle            sessionHandle,
-      IMongoCollection<TaskDataModel> taskCollection,
-      CancellationToken               cancellationToken
+      TaskFilter                           filter,
+      IClientSessionHandle                 sessionHandle,
+      IMongoCollection<TaskDataModel>      taskCollection,
+      CancellationToken                    cancellationToken,
+      ILogger logger
     )
     {
+      using var _ = logger.LogFunction(filter.ToString());
       var rootTaskQuery = taskCollection.AsQueryable(sessionHandle)
                                         .FilterField(model => model.SessionId,
                                                      new[] { filter.SessionId });
@@ -182,6 +183,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                                  filter).CountAsync(cancellationToken);
 
       var taskList = await taskListTask;
+      logger.LogDebug("root tasks: {taskList}", string.Join(", ", taskList));
 
       var parameter = Expression.Parameter(typeof(ParentSubSessionRelation),
                                            "tuple");
@@ -206,25 +208,35 @@ namespace ArmoniK.Adapters.MongoDB
 
       var filterExpression = Expression.Lambda<Func<ParentSubSessionRelation, bool>>(filterExpressionBody,
                                                                                                      parameter);
-      
-
-      var childrenCountTask = taskCollection.AsQueryable(sessionHandle)
-                                            .FilterField(model => model.SubSessionId,
-                                                         new[] { filter.SessionId })
-                                            .FilterField(model => model.Status,
-                                                         filter.IncludedStatuses)
-                                            .FilterField(model => model.Status,
-                                                         filter.ExcludedStatuses,
-                                                         false)
-                                            .SelectMany(model => model.ParentSubSessions)
-                                            .Where(filterExpression)
-                                            .Select(tuple => tuple.TaskId)
-                                            .Distinct()
-                                            .CountAsync(cancellationToken);
 
 
+      var childrenRetrieved = await taskCollection.AsQueryable(sessionHandle)
+                                                       .FilterField(model => model.SubSessionId,
+                                                                    new[] { filter.SessionId })
+                                                       .FilterField(model => model.Status,
+                                                                    filter.IncludedStatuses)
+                                                       .FilterField(model => model.Status,
+                                                                    filter.ExcludedStatuses,
+                                                                    false)
+                                                       .SelectMany(model => model.ParentSubSessions)
+                                                       .Where(filterExpression)
+                                                       .ToListAsync(cancellationToken);
+      logger.LogDebug("children tasks: {childrenRetrieved}",
+                      string.Join(", ",
+                                  childrenRetrieved));
 
-      return await rootCountTask + await childrenCountTask;
+      var childrenCountTask = childrenRetrieved.Select(tuple => tuple.TaskId)
+                                               .Distinct()
+                                               .Count();
+
+      var rootCount = await rootCountTask;
+      logger.LogDebug("rootCount:{rootCount}",
+                      rootCount);
+      var childrenCount = childrenCountTask;
+      logger.LogDebug("childrenCount:{childrenCount}",
+                      childrenCount);
+
+      return rootCount + childrenCount;
     }
 
     public async Task<SessionId> CreateSessionAsync(SessionOptions    sessionOptions,
