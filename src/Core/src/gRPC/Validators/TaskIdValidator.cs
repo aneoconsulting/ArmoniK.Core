@@ -31,9 +31,9 @@ namespace ArmoniK.Core.gRPC.Validators
   {
     public TaskIdValidator()
     {
-      RuleFor(o => o.Session).NotNull();
-      RuleFor(o => o.SubSession).NotNull();
-      RuleFor(o => o.Task).NotNull();
+      RuleFor(o => o.Session).NotNull().WithMessage("Session should not be null").WithName(nameof(TaskId.Session));
+      RuleFor(o => o.SubSession).NotNull().WithMessage("SubSession should not be null").WithName(nameof(TaskId.SubSession));
+      RuleFor(o => o.Task).NotNull().WithMessage("Task should not be null").WithName(nameof(TaskId.Task));
     }
   }
 }
