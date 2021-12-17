@@ -40,6 +40,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
@@ -395,7 +396,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                tdm.Payload = request.Payload.Data.ToByteArray();
 
                                              logger_.LogDebug("Stored {size} bytes for task",
-                                                              tdm.ToTaskData().CalculateSize());
+                                                              tdm.ToBson().Length);
 
                                              return tdm;
                                            })
