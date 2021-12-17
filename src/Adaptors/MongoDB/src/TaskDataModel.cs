@@ -129,6 +129,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                      cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true);
                                                      cm.MapProperty(nameof(ParentRelations)).SetIgnoreIfDefault(true);
                                                    });
+
       BsonClassMap.RegisterClassMap<ParentSubSessionRelation>(cm =>
                                                               {
                                                                 cm.MapProperty(nameof(ParentSubSessionRelation.ParentSubSession)).SetIsRequired(true);

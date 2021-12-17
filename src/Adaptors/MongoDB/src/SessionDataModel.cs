@@ -87,6 +87,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                         cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
                                                         cm.MapProperty(nameof(Options)).SetIsRequired(true);
                                                       });
+
       BsonClassMap.RegisterClassMap<TaskOptions>(cm =>
                                                  {
                                                    cm.MapProperty(nameof(TaskOptions.Options)).SetIsRequired(true);
@@ -95,6 +96,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                    cm.MapProperty(nameof(TaskOptions.IdTag)).SetIgnoreIfDefault(true);
                                                  });
     }
+
 
   }
 }

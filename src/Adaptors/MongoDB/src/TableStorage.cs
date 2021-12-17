@@ -394,13 +394,8 @@ namespace ArmoniK.Adapters.MongoDB
                                              if (isPayloadStored)
                                                tdm.Payload = request.Payload.Data.ToByteArray();
 
-                                             logger_.LogDebug("Stored {size} bytes for task {taskId}",
-                                                              tdm.ToTaskData().CalculateSize(),
-                                                              tdm.TaskId);
-
-                                             logger_.LogDebug("{taskId} dependencies:{dependencies}", 
-                                                              tdm.TaskId, 
-                                                              string.Join(", ", tdm.Dependencies.Select(id=>id)));
+                                             logger_.LogDebug("Stored {size} bytes for task",
+                                                              tdm.ToTaskData().CalculateSize());
 
                                              return tdm;
                                            })
