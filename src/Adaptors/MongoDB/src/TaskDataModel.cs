@@ -30,63 +30,39 @@ using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf;
 
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Adapters.MongoDB
 {
-  public class TaskDataModel : IMongoDataModel<TaskDataModel>
+  public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaggedId
   {
-    [BsonElement]
-    [BsonRequired]
     public string SessionId { get; set; }
 
-    [BsonElement]
-    [BsonRequired]
     public string SubSessionId { get; set; }
 
-    [BsonId(IdGenerator = typeof(StringCombGuidGenerator))]
     public string TaskId { get; set; }
 
-    [BsonElement]
-    [BsonRequired]
-    [BsonSerializer(typeof(BsonProtoSerializer<TaskOptions>))]
     public TaskOptions Options { get; set; }
 
-    [BsonElement]
     public TaskStatus Status { get; set; }
 
-    [BsonElement]
-    [BsonRequired]
     public int Retries { get; set; }
 
-    [BsonElement]
-    [BsonRequired]
     public bool HasPayload { get; set; }
 
-    [BsonElement]
     public byte[] Payload { get; set; }
 
-    [BsonElement]
     public IEnumerable<string> Dependencies { get; set; }
 
-    [BsonElement]
-    public IEnumerable<ParentSubSessionRelation> ParentRelations {
-      get
-      {
-        return ParentsSubSessions.Select(s => new ParentSubSessionRelation { ParentSubSession = s, TaskId = TaskId });
-      }
-      set
-      {
-        ParentsSubSessions = value.Select(relation => relation.ParentSubSession).ToList();
-      }
+    public IEnumerable<ParentSubSessionRelation> ParentRelations
+    {
+      get { return ParentsSubSessions.Select(s => new ParentSubSessionRelation { ParentSubSession = s, TaskId = TaskId }); }
+      set { ParentsSubSessions = value.Select(relation => relation.ParentSubSession).ToList(); }
     }
 
-
-    [BsonIgnore]
     public IList<string> ParentsSubSessions { get; set; } = Array.Empty<string>();
 
     /// <inheritdoc />
@@ -137,14 +113,37 @@ namespace ArmoniK.Adapters.MongoDB
                                     };
 
     public TaskId GetTaskId() => new() { Session = SessionId, SubSession = SubSessionId, Task = TaskId };
+
+    static TaskDataModel()
+    {
+      BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
+                                                   {
+                                                     cm.MapIdProperty(nameof(TaskId)).SetIdGenerator(new TaggedIdGenerator());
+                                                     cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(SubSessionId)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(Options)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(Status)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(Retries)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
+                                                     cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true);
+                                                     cm.MapProperty(nameof(ParentRelations)).SetIgnoreIfDefault(true);
+                                                   });
+      BsonClassMap.RegisterClassMap<ParentSubSessionRelation>(cm =>
+                                                              {
+                                                                cm.MapProperty(nameof(ParentSubSessionRelation.ParentSubSession)).SetIsRequired(true);
+                                                                cm.MapProperty(nameof(ParentSubSessionRelation.TaskId)).SetIsRequired(true);
+                                                              });
+    }
+
+    /// <inheritdoc />
+    public string IdTag => Options.IdTag;
   }
 
   public struct ParentSubSessionRelation
   {
-    [BsonElement]
     public string ParentSubSession { get; set; }
 
-    [BsonElement]
-    public string TaskId           { get; set; }
+    public string TaskId { get; set; }
   }
 }

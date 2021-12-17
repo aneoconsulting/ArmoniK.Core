@@ -26,34 +26,26 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
 
+using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
 namespace ArmoniK.Adapters.MongoDB
 {
-  public class SessionDataModel : IMongoDataModel<SessionDataModel>
+  public class SessionDataModel : IMongoDataModel<SessionDataModel>, ITaggedId
   {
-    [BsonIgnore]
     public string IdTag { get; set; }
-
-    [BsonElement]
-    [BsonRequired]
+    
     public string SessionId { get; set; }
 
-    [BsonId(IdGenerator = typeof(SessionIdGenerator))]
     public string SubSessionId { get; set; }
 
-    [BsonElement]
-    public List<ParentId> ParentsId { get; set; }
+    public List<string> ParentsId { get; set; }
 
-    [BsonElement]
     public bool IsClosed { get; set; }
 
-    [BsonElement]
     public bool IsCancelled { get; set; }
-
-    [BsonElement]
-    [BsonRequired]
+    
     public TaskOptions Options { get; set; }
 
     /// <inheritdoc />
@@ -84,10 +76,25 @@ namespace ArmoniK.Adapters.MongoDB
                                                 indexModels);
     }
 
-    public class ParentId
+    static SessionDataModel()
     {
-      [BsonElement]
-      public string Id { get; set; }
+      BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
+                                                      {
+                                                        cm.MapIdProperty(nameof(SubSessionId)).SetIdGenerator(new TaggedIdGenerator());
+                                                        cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(ParentsId)).SetIgnoreIfDefault(true);
+                                                        cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(Options)).SetIsRequired(true);
+                                                      });
+      BsonClassMap.RegisterClassMap<TaskOptions>(cm =>
+                                                 {
+                                                   cm.MapProperty(nameof(TaskOptions.Options)).SetIsRequired(true);
+                                                   cm.MapProperty(nameof(TaskOptions.MaxDuration)).SetIsRequired(true);
+                                                   cm.MapProperty(nameof(TaskOptions.MaxRetries)).SetIsRequired(true);
+                                                   cm.MapProperty(nameof(TaskOptions.IdTag)).SetIgnoreIfDefault(true);
+                                                 });
     }
+
   }
 }

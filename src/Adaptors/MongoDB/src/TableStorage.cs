@@ -35,14 +35,11 @@ using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 
-using DnsClient.Internal;
-
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
@@ -73,9 +70,6 @@ namespace ArmoniK.Adapters.MongoDB
       sessionProvider_           = sessionProvider;
       PollingDelay               = options.Value.PollingDelay;
       logger_                    = logger;
-
-      BsonClassMap.RegisterClassMap<TaskOptions>(cm => cm.AutoMap());
-      BsonClassMap.RegisterClassMap<ParentSubSessionRelation>(cm => cm.AutoMap());
     }
 
     public TimeSpan PollingDelay { get; }
@@ -91,7 +85,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                        .Where(sdm => sessionId.Session == sdm.SessionId &&
                                                                      (sessionId.SubSession == sdm.SubSessionId ||
                                                                       (sdm.ParentsId.Any(
-                                                                                         id => id.Id == sessionId.SubSession) &&
+                                                                                         id => id == sessionId.SubSession) &&
                                                                        !sdm.IsClosed)));
 
       var updateDefinition = Builders<SessionDataModel>.Update
@@ -117,7 +111,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                        .Where(sdm => sessionId.Session == sdm.SessionId &&
                                                                      (sessionId.SubSession == sdm.SubSessionId ||
                                                                       sdm.ParentsId.Any(
-                                                                        id => id.Id == sessionId.SubSession)));
+                                                                        id => id == sessionId.SubSession)));
 
       var definitionBuilder = new UpdateDefinitionBuilder<SessionDataModel>();
 
@@ -252,7 +246,7 @@ namespace ArmoniK.Adapters.MongoDB
       var sessionOptionsDefaultTaskOption = sessionOptions.DefaultTaskOption;
 
 
-      List<SessionDataModel.ParentId> parents    = new();
+      List<string> parents    = new();
 
       if (sessionOptions.ParentTask is not null) //TODO: create a validator so that if ParentTaskIs defined, all fields are defined.
       {
@@ -262,8 +256,7 @@ namespace ArmoniK.Adapters.MongoDB
                                        .FirstAsync(cancellationToken);
         parents.AddRange(t.ParentsId);
 
-        parents.Add(new SessionDataModel.ParentId
-                    { Id = sessionOptions.ParentTask.SubSession });
+        parents.Add(sessionOptions.ParentTask.SubSession);
 
         if (sessionOptionsDefaultTaskOption is null)
         {
@@ -380,7 +373,7 @@ namespace ArmoniK.Adapters.MongoDB
       var parents = (await sessionCollection.AsQueryable(sessionHandle)
                                             .Where(model => model.SubSessionId == session.SubSession)
                                             .Select(model => model.ParentsId)
-                                            .FirstAsync(cancellationToken)).Select(id => id.Id)
+                                            .FirstAsync(cancellationToken)).Select(id => id)
                                                                            .ToList();
                                            
 
