@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -70,7 +71,7 @@ namespace ArmoniK.Adapters.MongoDB
     public IEnumerable<string> Dependencies { get; set; }
 
     [BsonElement]
-    public IEnumerable<string> ParentSubSessions { get; set; }
+    public IEnumerable<ParentSubSessionRelation> ParentSubSessions { get; set; }
 
     /// <inheritdoc />
     public string CollectionName { get; } = "tasks";
@@ -112,13 +113,48 @@ namespace ArmoniK.Adapters.MongoDB
                                              Task       = TaskId,
                                            },
                                       IsPayloadAvailable = HasPayload,
-                                      Payload    = new Payload { Data = ByteString.CopyFrom(Payload) },
-                                      Options    = Options,
-                                      Retries    = Retries,
-                                      Status     = Status,
-                                      Dependencies = { Dependencies },
+                                      Payload            = new Payload { Data = ByteString.CopyFrom(Payload) },
+                                      Options            = Options,
+                                      Retries            = Retries,
+                                      Status             = Status,
+                                      Dependencies       = { Dependencies },
                                     };
 
     public TaskId GetTaskId() => new() { Session = SessionId, SubSession = SubSessionId, Task = TaskId };
+  }
+
+  public struct ParentSubSessionRelation
+  {
+    [BsonElement]
+    public string ParentSubSession { get; set; }
+
+    [BsonElement]
+    public string TaskId           { get; set; }
+
+    public ParentSubSessionRelation(string parentSubSession, string taskId)
+    {
+      ParentSubSession = parentSubSession;
+      TaskId           = taskId;
+    }
+
+    public override bool Equals(object obj) =>
+      obj is ParentSubSessionRelation(var parentSubSession, var taskId) &&
+      ParentSubSession == parentSubSession &&
+      TaskId == taskId;
+
+    public override int GetHashCode()
+      => HashCode.Combine(ParentSubSession, TaskId);
+
+    public void Deconstruct(out string parentSubSession, out string taskId)
+    {
+      parentSubSession = ParentSubSession;
+      taskId           = TaskId;
+    }
+
+    public static implicit operator (string ParentSubSession, string TaskId)(ParentSubSessionRelation value) 
+      => (value.ParentSubSession, value.TaskId);
+
+    public static implicit operator ParentSubSessionRelation((string ParentSubSession, string TaskId) value) 
+      => new(value.ParentSubSession, value.TaskId);
   }
 }

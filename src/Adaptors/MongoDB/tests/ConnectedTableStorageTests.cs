@@ -36,7 +36,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
 {
   [TestFixture]
   [Ignore("Require a deployed database")]
-  internal class TableStorageTests
+  internal class ConnectedTableStorageTests
   {
     [SetUp]
     public void SetUp()
