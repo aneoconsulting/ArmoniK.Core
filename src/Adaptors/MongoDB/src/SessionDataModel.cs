@@ -22,7 +22,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Exceptions;
@@ -99,7 +101,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       BsonClassMap.RegisterClassMap<TaskOptions>(cm =>
                                                  {
-                                                   cm.MapProperty(nameof(TaskOptions.Options)).SetIgnoreIfDefault(true).SetSerializer(new MapFieldSerializer<string, string>());
+                                                   cm.MapProperty(nameof(TaskOptions.Options)).SetIgnoreIfDefault(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
                                                    cm.MapProperty(nameof(TaskOptions.MaxDuration)).SetIsRequired(true);
                                                    cm.MapProperty(nameof(TaskOptions.MaxRetries)).SetIsRequired(true);
                                                    cm.MapProperty(nameof(TaskOptions.Priority)).SetIsRequired(true);
@@ -107,95 +109,6 @@ namespace ArmoniK.Adapters.MongoDB
                                                    cm.SetIgnoreExtraElements(true);
                                                  });
     }
-
-    class MapFieldSerializer<TKey, TValue> : IBsonSerializer<MapField<TKey, TValue>>
-    {
-      /// <inheritdoc />
-      object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args) => Deserialize(context,
-                                                                                                                          args);
-
-      /// <inheritdoc />
-      public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, MapField<TKey, TValue> value)
-      {
-        context.Writer.WriteStartDocument();
-        context.Writer.WriteStartArray();
-        foreach (var kvp in value)
-        {
-          context.Writer.WriteStartDocument();
-          context.Writer.WriteStartDocument();
-          context.Writer.WriteName("Key");
-                  context.Writer.WriteBinaryData("Key",
-                                                 kvp.Key.ToBson());
-          context.Writer.WriteEndDocument();
-          context.Writer.WriteStartDocument();
-          context.Writer.WriteName("Value");
-          context.Writer.WriteBinaryData("Value",
-                                         kvp.Value.ToBson());
-          context.Writer.WriteEndDocument();
-          context.Writer.WriteEndDocument();
-        }
-
-        context.Writer.WriteEndArray();
-        context.Writer.WriteEndDocument();
-      }
-
-      /// <inheritdoc />
-      public MapField<TKey, TValue> Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-      {
-        var output = new MapField<TKey, TValue>();
-        context.Reader.ReadStartDocument();
-        context.Reader.ReadStartArray();
-        var type = context.Reader.ReadBsonType();
-        while (type == BsonType.Document)
-        {
-          context.Reader.ReadStartDocument();
-
-          context.Reader.ReadStartDocument();
-          var name = context.Reader.ReadName();
-          if (name != "Key")
-            throw new ArmoniKException($"Should have 'Key' here, got '{name}'");
-          var binaryKey = context.Reader.ReadBinaryData("Key");
-          var key       = BsonSerializer.Deserialize<TKey>(binaryKey.Bytes);
-          context.Reader.ReadEndDocument();
-
-          context.Reader.ReadStartDocument();
-          name = context.Reader.ReadName();
-          if (name != "Value")
-            throw new ArmoniKException($"Should have 'Value' here, got '{name}'");
-          var binaryValue = context.Reader.ReadBinaryData("Value");
-          var value       = BsonSerializer.Deserialize<TValue>(binaryValue.Bytes);
-          context.Reader.ReadEndDocument();
-
-          context.Reader.ReadEndDocument();
-
-          output.Add(key,
-                     value);
-
-          type = context.Reader.ReadBsonType();
-        }
-
-        context.Reader.ReadEndArray();
-        context.Reader.ReadEndDocument();
-        return output;
-      }
-
-      /// <inheritdoc />
-      public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
-      {
-        if (value is MapField<TKey, TValue> map)
-        {
-          Serialize(context,
-                    args,
-                    map);
-        }
-
-        throw new ArgumentException("value is not a MapField",
-                                    nameof(value));
-      }
-
-      /// <inheritdoc />
-      public Type ValueType => typeof(MapField<TKey, TValue>);
-    }
-
+    
   }
 }
