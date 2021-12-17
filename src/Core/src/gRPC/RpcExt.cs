@@ -95,6 +95,7 @@ namespace ArmoniK.Core.gRPC
                                                                status));
         }
         default:
+          Console.WriteLine($"Type of Exception is {e.GetType()}");
           return false;
       }
     }
