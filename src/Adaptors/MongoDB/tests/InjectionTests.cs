@@ -419,7 +419,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     }
 
     [Test]
-    public void ITableStorageHasBindingToTableStorage()
+    public void TableStorageHasBindingToTableStorage()
     {
       Dictionary<string, string> baseConfig = new()
                                               {
@@ -445,7 +445,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     }
 
     [Test]
-    public void IQueueStorageHasBindingToQueueStorage()
+    public void QueueStorageHasBindingToQueueStorage()
     {
       Dictionary<string, string> baseConfig = new()
                                               {
@@ -471,7 +471,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     }
 
     [Test]
-    public void IObjectStorageHasBindingToObjectStorage()
+    public void ObjectStorageHasBindingToObjectStorage()
     {
       Dictionary<string, string> baseConfig = new()
                                               {
@@ -497,7 +497,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     }
 
     [Test]
-    public void ILeaseProviderHasBindingToLeaseProvider()
+    public void LeaseProviderHasBindingToLeaseProvider()
     {
       Dictionary<string, string> baseConfig = new()
                                               {

@@ -96,14 +96,14 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
 
-    public static Expression<Func<TModel, bool>> FieldFilterExpression<TModel, TField>(Expression<Func<TaskDataModel, TField>> expression,
-                                                                                       IEnumerable<TField>                     values,
-                                                                                       bool                                    include = true)
+    public static Expression<Func<TaskDataModel, bool>> FieldFilterExpression<TField>(Expression<Func<TaskDataModel, TField>> expression,
+                                                                                      IEnumerable<TField>                     values,
+                                                                                      bool                                    include = true)
     {
-      var x = Expression.Parameter(typeof(TModel),
+      var x = Expression.Parameter(typeof(TaskDataModel),
                                    "model");
 
-      return (Expression<Func<TModel, bool>>) Expression.Lambda(FieldFilterInternal(expression, values, include, x), x);
+      return (Expression<Func<TaskDataModel, bool>>) Expression.Lambda(FieldFilterInternal(expression, values, include, x), x);
     }
 
     private static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel,TField>> expression, IEnumerable<TField> values, bool include, Expression x)
@@ -115,27 +115,38 @@ namespace ArmoniK.Adapters.MongoDB
                               (expr, subSession) =>
                               {
                                 var left = expr;
-                                var right = Expression.Equal(Expression.Property(x,
-                                                                                 typeof(TaskDataModel),
-                                                                                 fieldName),
-                                                             Expression.Constant(subSession,
-                                                                                 typeof(TField)));
-                                if (include)
-                                  return Expression.Or(left,
-                                                       right);
 
-                                return Expression.And(left,
+                                if (include)
+                                {
+                                  var right = Expression.Equal(Expression.Property(x,
+                                                                                   typeof(TaskDataModel),
+                                                                                   fieldName),
+                                                               Expression.Constant(subSession,
+                                                                                   typeof(TField)));
+                                  return Expression.Or(left,
                                                       right);
+
+                                }
+                                else
+                                {
+                                  var right = Expression.NotEqual(Expression.Property(x,
+                                                                                   typeof(TaskDataModel),
+                                                                                   fieldName),
+                                                               Expression.Constant(subSession,
+                                                                                   typeof(TField)));
+                                  return Expression.And(left,
+                                                        right);
+                                }
                               }
                              );
     }
 
-    public static IMongoQueryable<TModel> FilterField<TModel, TField>(this IMongoQueryable<TModel>            taskQueryable,
-                                                                      Expression<Func<TaskDataModel, TField>> expression,
-                                                                      IEnumerable<TField>                     values,
-                                                                      bool                                    include = true)
-      => taskQueryable.Where(FieldFilterExpression<TModel, TField>(expression,
-                                                                   values,
-                                                                   include));
+    public static IMongoQueryable<TaskDataModel> FilterField<TField>(this IMongoQueryable<TaskDataModel>     taskQueryable,
+                                                                     Expression<Func<TaskDataModel, TField>> expression,
+                                                                     IEnumerable<TField>                     values,
+                                                                     bool                                    include = true)
+      => taskQueryable.Where(FieldFilterExpression(expression,
+                                                           values,
+                                                           include));
   }
 }
