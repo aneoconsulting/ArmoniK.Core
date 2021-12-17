@@ -29,6 +29,7 @@ using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf;
 
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
@@ -58,6 +59,7 @@ namespace ArmoniK.Adapters.MongoDB
     public TaskStatus Status { get; set; }
 
     [BsonElement]
+    [BsonRequired]
     public int Retries { get; set; }
 
     [BsonElement]
@@ -71,6 +73,9 @@ namespace ArmoniK.Adapters.MongoDB
     public IEnumerable<string> Dependencies { get; set; }
 
     [BsonElement]
+    [BsonIgnoreIfNull]
+    [BsonIgnoreIfDefault]
+    [BsonRepresentation(BsonType.Array)]
     public IEnumerable<ParentSubSessionRelation> ParentSubSessions { get; set; }
 
     /// <inheritdoc />

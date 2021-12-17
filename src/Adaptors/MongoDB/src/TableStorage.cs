@@ -42,6 +42,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
@@ -72,6 +73,11 @@ namespace ArmoniK.Adapters.MongoDB
       sessionProvider_           = sessionProvider;
       PollingDelay               = options.Value.PollingDelay;
       logger_                    = logger;
+
+      BsonClassMap.RegisterClassMap<SessionDataModel>(cm => cm.AutoMap());
+      BsonClassMap.RegisterClassMap<TaskDataModel>(cm => cm.AutoMap()); 
+      BsonClassMap.RegisterClassMap<TaskOptions>(cm => cm.AutoMap());
+      BsonClassMap.RegisterClassMap<ParentSubSessionRelation>(cm => cm.AutoMap());
     }
 
     public TimeSpan PollingDelay { get; }
