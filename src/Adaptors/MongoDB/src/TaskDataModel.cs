@@ -119,7 +119,7 @@ namespace ArmoniK.Adapters.MongoDB
       if(BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
       BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
                                                    {
-                                                     cm.MapIdProperty(nameof(TaskId)).SetIdGenerator(new TaggedIdGenerator());
+                                                     cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
                                                      cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(SubSessionId)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());

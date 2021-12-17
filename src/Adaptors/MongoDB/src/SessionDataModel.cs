@@ -90,7 +90,7 @@ namespace ArmoniK.Adapters.MongoDB
     {
       BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
                                                       {
-                                                        cm.MapIdProperty(nameof(SubSessionId)).SetIdGenerator(new TaggedIdGenerator());
+                                                        cm.MapIdProperty(nameof(SubSessionId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
                                                         cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
                                                         cm.MapProperty(nameof(ParentsId)).SetIgnoreIfDefault(true);
                                                         cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
