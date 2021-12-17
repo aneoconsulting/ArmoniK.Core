@@ -39,6 +39,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
@@ -134,7 +135,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                    filter)
                                  .CountAsync(cancellationToken);
     }
-    
+
 
     public async Task<int> CountSubTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default)
     {
@@ -169,19 +170,26 @@ namespace ArmoniK.Adapters.MongoDB
                                     .FilterField(model => model.Status,
                                                  filter.ExcludedStatuses,
                                                  false)
-                                    .SelectMany(model => model.ParentSubSessions.Select(s => new Tuple<TaskDataModel, string>(model,
-                                                                                                                              s)));
+                                    .SelectMany(model => model.ParentSubSessions
+                                                              .Select(s => new
+                                                                           {
+                                                                             ParentSubSession = s,
+                                                                             TaskId           = model.TaskId,
+                                                                           }));
 
       var childrenCountTask = taskQuery.Join(taskList,
-                                       tuple => tuple.Item2,
-                                       subSession => subSession,
-                                       (tuple, subSession) => new Tuple<TaskDataModel, string, string>(tuple.Item1,
-                                                                                                       tuple.Item2,
-                                                                                                       subSession))
-                                 .Where(tuple => tuple.Item2 == tuple.Item3)
-                                 .Select(tuple => tuple.Item1.TaskId)
-                                 .Distinct()
-                                 .CountAsync(cancellationToken);
+                                             task => task.ParentSubSession,
+                                             parentTaskId => parentTaskId,
+                                             (task, parentTaskId) => new
+                                                                     {
+                                                                       TaskId           = task.TaskId,
+                                                                       ParentSubSession = task.ParentSubSession,
+                                                                       ParentTaskId     = parentTaskId,
+                                                                     })
+                                       .Where(joinTask => joinTask.ParentSubSession == joinTask.ParentTaskId)
+                                       .Select(joinTask => joinTask.TaskId)
+                                       .Distinct()
+                                       .CountAsync(cancellationToken);
 
       var rootCount = await taskCollection.FilterCollectionAsync(sessionHandle,
                                                            filter).CountAsync(cancellationToken);
