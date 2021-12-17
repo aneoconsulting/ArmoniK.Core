@@ -394,7 +394,11 @@ namespace ArmoniK.Adapters.MongoDB
                                                          TaskId            = taskId,
                                                          Status            = TaskStatus.Creating,
                                                          Dependencies      = request.DependenciesTaskIds,
-                                                         ParentSubSessions = parents.Select(s => new ParentSubSessionRelation(s, taskId)),
+                                                         ParentSubSessions = parents.Select(s => new ParentSubSessionRelation
+                                                                                                 {
+                                                                                                   ParentSubSession = s, 
+                                                                                                   TaskId = taskId,
+                                                                                                 }),
                                                        };
                                              if (isPayloadStored)
                                                tdm.Payload = request.Payload.Data.ToByteArray();

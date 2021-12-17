@@ -130,31 +130,5 @@ namespace ArmoniK.Adapters.MongoDB
 
     [BsonElement]
     public string TaskId           { get; set; }
-
-    public ParentSubSessionRelation(string parentSubSession, string taskId)
-    {
-      ParentSubSession = parentSubSession;
-      TaskId           = taskId;
-    }
-
-    public override bool Equals(object obj) =>
-      obj is ParentSubSessionRelation(var parentSubSession, var taskId) &&
-      ParentSubSession == parentSubSession &&
-      TaskId == taskId;
-
-    public override int GetHashCode()
-      => HashCode.Combine(ParentSubSession, TaskId);
-
-    public void Deconstruct(out string parentSubSession, out string taskId)
-    {
-      parentSubSession = ParentSubSession;
-      taskId           = TaskId;
-    }
-
-    public static implicit operator (string ParentSubSession, string TaskId)(ParentSubSessionRelation value) 
-      => (value.ParentSubSession, value.TaskId);
-
-    public static implicit operator ParentSubSessionRelation((string ParentSubSession, string TaskId) value) 
-      => new(value.ParentSubSession, value.TaskId);
   }
 }
