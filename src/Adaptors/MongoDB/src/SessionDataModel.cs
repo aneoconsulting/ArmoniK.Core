@@ -93,6 +93,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                    cm.MapProperty(nameof(TaskOptions.Options)).SetIsRequired(true);
                                                    cm.MapProperty(nameof(TaskOptions.MaxDuration)).SetIsRequired(true);
                                                    cm.MapProperty(nameof(TaskOptions.MaxRetries)).SetIsRequired(true);
+                                                   cm.MapProperty(nameof(TaskOptions.Priority)).SetIsRequired(true);
                                                    cm.MapProperty(nameof(TaskOptions.IdTag)).SetIgnoreIfDefault(true);
                                                  });
     }
