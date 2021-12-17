@@ -75,7 +75,6 @@ namespace ArmoniK.Adapters.MongoDB
     [BsonElement]
     [BsonIgnoreIfNull]
     [BsonIgnoreIfDefault]
-    [BsonRepresentation(BsonType.Array)]
     public IEnumerable<ParentSubSessionRelation> ParentSubSessions { get; set; }
 
     /// <inheritdoc />
