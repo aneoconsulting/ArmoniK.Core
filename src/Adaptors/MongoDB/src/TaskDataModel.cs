@@ -144,11 +144,4 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public string IdTag => Options.IdTag;
   }
-
-  public class ParentSubSessionRelation
-  {
-    public string ParentSubSession { get; set; }
-
-    public string TaskId { get; set; }
-  }
 }
