@@ -41,7 +41,7 @@ namespace ArmoniK.Core.gRPC
 {
   public static class RpcExt
   {
-    private static bool HandleExceptions(Exception e, StatusCode status)
+    public static bool HandleExceptions(Exception e, StatusCode status)
     {
       switch (e)
       {
@@ -50,13 +50,11 @@ namespace ArmoniK.Core.gRPC
           switch (status)
           {
             case StatusCode.DeadlineExceeded:
-              throw new TimeoutException("Deadline Exceeded",
-                                         e);
+              return false;
             case StatusCode.OK:
               break;
             case StatusCode.Cancelled:
-              throw new TaskCanceledException("Operation Cancelled",
-                                              e);
+              return false;
             case StatusCode.Unknown:
               break;
             case StatusCode.InvalidArgument:
@@ -86,8 +84,7 @@ namespace ArmoniK.Core.gRPC
             case StatusCode.DataLoss:
               break;
             default:
-              throw new ArmoniKException("An error occurred while computing the request",
-                                         e);
+              return false;
           }
 
           return true;
@@ -102,7 +99,6 @@ namespace ArmoniK.Core.gRPC
       }
     }
 
-    [ItemNotNull]
     public static async Task<TMessage> WrapRpcException<TMessage>([NotNull] this AsyncUnaryCall<TMessage> asyncUnaryCall)
     {
       try
@@ -111,22 +107,17 @@ namespace ArmoniK.Core.gRPC
       }
       catch (Exception e)
       {
-        if (!HandleExceptions(e,
-                              asyncUnaryCall.GetStatus().StatusCode))
+        if (!HandleExceptions(e, asyncUnaryCall.GetStatus().StatusCode))
           throw;
       }
 
       return asyncUnaryCall.ResponseAsync.Result!;
     }
 
-    public static bool IsValid(this Lease lease)
-    {
-      return !string.IsNullOrEmpty(lease.LeaseId) && lease.ExpirationDate.CompareTo(Timestamp.FromDateTime(DateTime.UtcNow)) > 0;
-    }
+    public static bool IsValid(this Lease lease) 
+      => !string.IsNullOrEmpty(lease.LeaseId) && lease.ExpirationDate.CompareTo(Timestamp.FromDateTime(DateTime.UtcNow)) > 0;
 
-    public static string ToPrintableId(this TaskId taskId)
-    {
-      return $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
-    }
+    public static string ToPrintableId(this TaskId taskId) 
+      => $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
   }
 }

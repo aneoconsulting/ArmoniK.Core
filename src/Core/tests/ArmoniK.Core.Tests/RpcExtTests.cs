@@ -1,0 +1,102 @@
+﻿// This file is part of the ArmoniK project
+// 
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
+//   W. Kirschenmann   <wkirschenmann@aneo.fr>
+//   J. Gurhem         <jgurhem@aneo.fr>
+//   D. Dubuc          <ddubuc@aneo.fr>
+//   L. Ziane Khodja   <lzianekhodja@aneo.fr>
+//   F. Lemaitre       <flemaitre@aneo.fr>
+//   S. Djebbar        <sdjebbar@aneo.fr>
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
+
+using ArmoniK.Core.gRPC;
+
+using Grpc.Core;
+
+using NUnit.Framework;
+
+namespace ArmoniK.Core.Tests
+{
+  [TestFixture(TestOf = typeof(RpcExt))]
+  public class RpcExtTests
+  {
+    [Test]
+    [TestCase(StatusCode.OK)]
+    [TestCase(StatusCode.Unknown)]
+    [TestCase(StatusCode.Internal)]
+    [TestCase(StatusCode.InvalidArgument)]
+    [TestCase(StatusCode.NotFound)]
+    [TestCase(StatusCode.AlreadyExists)]
+    [TestCase(StatusCode.PermissionDenied)]
+    [TestCase(StatusCode.Unauthenticated)]
+    [TestCase(StatusCode.ResourceExhausted)]
+    [TestCase(StatusCode.FailedPrecondition)]
+    [TestCase(StatusCode.AlreadyExists)]
+    [TestCase(StatusCode.OutOfRange)]
+    [TestCase(StatusCode.Unimplemented)]
+    [TestCase(StatusCode.Internal)]
+    [TestCase(StatusCode.Unavailable)]
+    [TestCase(StatusCode.DataLoss)]
+    public void HandleRpcExceptionsWithStatus(StatusCode status)
+    {
+      Assert.IsTrue(RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
+                                            status));
+    }
+
+    [Test]
+    [TestCase(StatusCode.OK)]
+    [TestCase(StatusCode.Unknown)]
+    [TestCase(StatusCode.Internal)]
+    [TestCase(StatusCode.InvalidArgument)]
+    [TestCase(StatusCode.NotFound)]
+    [TestCase(StatusCode.AlreadyExists)]
+    [TestCase(StatusCode.PermissionDenied)]
+    [TestCase(StatusCode.Unauthenticated)]
+    [TestCase(StatusCode.ResourceExhausted)]
+    [TestCase(StatusCode.FailedPrecondition)]
+    [TestCase(StatusCode.AlreadyExists)]
+    [TestCase(StatusCode.OutOfRange)]
+    [TestCase(StatusCode.Unimplemented)]
+    [TestCase(StatusCode.Internal)]
+    [TestCase(StatusCode.Unavailable)]
+    [TestCase(StatusCode.DataLoss)]
+    public void HandleAggregateExceptionsWithStatus(StatusCode status)
+    {
+      Assert.IsTrue(RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
+                                            status));
+    }
+
+
+
+    [TestCase(StatusCode.DeadlineExceeded)]
+    [TestCase(StatusCode.Cancelled)]
+    public void DoNotHandleRpcExceptionsWithStatus(StatusCode status)
+    {
+      Assert.IsFalse(RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
+                                            status));
+    }
+
+    [TestCase(StatusCode.DeadlineExceeded)]
+    [TestCase(StatusCode.Cancelled)]
+    public void DoNotHandleAggregateExceptionsWithStatus(StatusCode status)
+    {
+      Assert.IsFalse(RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
+                                             status));
+    }
+
+  }
+}
