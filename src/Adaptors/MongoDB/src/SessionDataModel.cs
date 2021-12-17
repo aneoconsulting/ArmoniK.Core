@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Exceptions;
 using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf.Collections;
@@ -122,10 +123,12 @@ namespace ArmoniK.Adapters.MongoDB
         {
           context.Writer.WriteStartDocument();
           context.Writer.WriteStartDocument();
-          context.Writer.WriteBinaryData("Key",
-                                         kvp.Key.ToBson());
+          context.Writer.WriteName("Key");
+                  context.Writer.WriteBinaryData("Key",
+                                                 kvp.Key.ToBson());
           context.Writer.WriteEndDocument();
           context.Writer.WriteStartDocument();
+          context.Writer.WriteName("Value");
           context.Writer.WriteBinaryData("Value",
                                          kvp.Value.ToBson());
           context.Writer.WriteEndDocument();
@@ -146,18 +149,29 @@ namespace ArmoniK.Adapters.MongoDB
         while (type == BsonType.Document)
         {
           context.Reader.ReadStartDocument();
+
           context.Reader.ReadStartDocument();
+          var name = context.Reader.ReadName();
+          if (name != "Key")
+            throw new ArmoniKException($"Should have 'Key' here, got '{name}'");
           var binaryKey = context.Reader.ReadBinaryData("Key");
           var key       = BsonSerializer.Deserialize<TKey>(binaryKey.Bytes);
           context.Reader.ReadEndDocument();
+
           context.Reader.ReadStartDocument();
+          name = context.Reader.ReadName();
+          if (name != "Value")
+            throw new ArmoniKException($"Should have 'Value' here, got '{name}'");
           var binaryValue = context.Reader.ReadBinaryData("Value");
           var value       = BsonSerializer.Deserialize<TValue>(binaryValue.Bytes);
           context.Reader.ReadEndDocument();
-          type = context.Reader.ReadBsonType();
+
+          context.Reader.ReadEndDocument();
 
           output.Add(key,
                      value);
+
+          type = context.Reader.ReadBsonType();
         }
 
         context.Reader.ReadEndArray();
