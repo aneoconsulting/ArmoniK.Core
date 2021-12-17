@@ -22,7 +22,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -35,118 +34,129 @@ namespace ArmoniK.Adapters.MongoDB
 {
   public static class MongoCollectionExt
   {
-    public static IMongoQueryable<TaskDataModel> FilterCollectionAsync(this IMongoCollection<TaskDataModel> taskCollection,
+    public static IMongoQueryable<TaskDataModel> FilterQueryAsync(this IMongoCollection<TaskDataModel> taskCollection,
                                                                   IClientSessionHandle                 sessionHandle,
                                                                   TaskFilter                           filter)
-      => taskCollection.AsQueryable(sessionHandle)
-                       .FilterQuery(filter);
+    {
+      return taskCollection.AsQueryable(sessionHandle)
+                           .Where(ToFilterExpression(filter));
+    }
 
-    private static IMongoQueryable<TaskDataModel> FilterQuery(this IMongoQueryable<TaskDataModel> taskQueryable,
-                                                              TaskFilter                          filter)
-      => taskQueryable.Where(filter.ToFilterExpression());
+    public static FilterDefinition<TaskDataModel> ToFilterDefinition(this TaskFilter filter)
+    {
+      return Builders<TaskDataModel>.Filter.Where(filter.ToFilterExpression());
+    }
 
     public static Expression<Func<TaskDataModel, bool>> ToFilterExpression(this TaskFilter filter)
     {
+      const TaskDataModel tdm = null;
 
       var x = Expression.Parameter(typeof(TaskDataModel),
-                                   "model");
+                                   "taskData");
 
-      var output = FieldFilterInternal(model => model.SessionId,
-                                       new[] { filter.SessionId },
-                                       true,
-                                       x);
+      Expression sessionCheck = string.IsNullOrEmpty(filter.SessionId)
+                                  ? Expression.Constant(true,
+                                                        typeof(bool))
+                                  : Expression.Equal(Expression.Property(x,
+                                                                         typeof(TaskDataModel),
+                                                                         nameof(tdm.SessionId)),
+                                                     Expression.Constant(filter.SessionId,
+                                                                         typeof(string)));
 
-      if (!string.IsNullOrEmpty(filter.SubSessionId))
-        output = Expression.And(output,
-                                FieldFilterInternal(model => model.SubSessionId,
-                                                    new[] { filter.SubSessionId },
-                                                    true,
-                                                    x));
+      Expression subSessionCheck = string.IsNullOrEmpty(filter.SubSessionId)
+                                     ? Expression.Constant(true,
+                                                           typeof(bool))
+                                     : Expression.Equal(Expression.Property(x,
+                                                                            typeof(TaskDataModel),
+                                                                            nameof(tdm.SubSessionId)),
+                                                        Expression.Constant(filter.SubSessionId,
+                                                                            typeof(string)));
 
-      if (filter.IncludedTaskIds.Any())
-        output = Expression.And(output,
-                                FieldFilterInternal(model => model.TaskId,
-                                                    filter.IncludedTaskIds,
-                                                    true,
-                                                    x));
+      var globalExpression = Expression.And(sessionCheck,
+                                            subSessionCheck);
 
-      if (filter.ExcludedTaskIds.Any())
-        output = Expression.And(output,
-                                FieldFilterInternal(model => model.TaskId,
-                                                    filter.ExcludedTaskIds,
-                                                    false,
-                                                    x));
+      if (filter.IncludedStatuses is not null && filter.IncludedStatuses.Any())
+      {
+        var includeStatusesExpression = filter.IncludedStatuses.Aggregate(
+                                                                          (Expression)Expression.Constant(false),
+                                                                          (expression, status) =>
+                                                                          {
+                                                                            var left = expression;
+                                                                            var right = Expression.Equal(Expression.Property(x,
+                                                                                                                             typeof(TaskDataModel),
+                                                                                                                             nameof(tdm.Status)),
+                                                                                                         Expression.Constant(status,
+                                                                                                                             typeof(TaskStatus)));
+                                                                            return Expression.Or(left,
+                                                                                                 right);
+                                                                          }
+                                                                         );
+        globalExpression = Expression.And(globalExpression,
+                                          includeStatusesExpression);
+      }
 
-      if (filter.IncludedStatuses.Any())
-        output = Expression.And(output,
-                                FieldFilterInternal(model => model.Status,
-                                                    filter.IncludedStatuses,
-                                                    true,
-                                                    x));
+      if (filter.ExcludedStatuses is not null && filter.ExcludedStatuses.Any())
+      {
+        var excludeStatusesExpression = filter.ExcludedStatuses.Aggregate(
+                                                                          (Expression)Expression.Constant(true),
+                                                                          (expression, status) =>
+                                                                          {
+                                                                            var left = expression;
+                                                                            var right = Expression.Equal(Expression.Property(x,
+                                                                                                                             typeof(TaskDataModel),
+                                                                                                                             nameof(tdm.Status)),
+                                                                                                         Expression.Constant(status,
+                                                                                                                             typeof(TaskStatus)));
+                                                                            return Expression.And(left,
+                                                                                                  right);
+                                                                          }
+                                                                         );
+        globalExpression = Expression.And(globalExpression,
+                                          excludeStatusesExpression);
+      }
 
-      if (filter.ExcludedStatuses.Any())
-        output = Expression.And(output,
-                                FieldFilterInternal(model => model.Status,
-                                                    filter.ExcludedStatuses,
-                                                    false,
-                                                    x));
+      if (filter.IncludedTaskIds is not null && filter.IncludedTaskIds.Any())
+      {
+        var includeTaskIdExpression = filter.IncludedTaskIds.Aggregate(
+                                                                       (Expression)Expression.Constant(false),
+                                                                       (expression, id) =>
+                                                                       {
+                                                                         var left = expression;
+                                                                         var right = Expression.Equal(Expression.Property(x,
+                                                                                                                          typeof(TaskDataModel),
+                                                                                                                          nameof(tdm.TaskId)),
+                                                                                                      Expression.Constant(id,
+                                                                                                                          typeof(string)));
+                                                                         return Expression.Or(left,
+                                                                                              right);
+                                                                       }
+                                                                      );
+        globalExpression = Expression.And(globalExpression,
+                                          includeTaskIdExpression);
+      }
 
-      return (Expression<Func<TaskDataModel, bool>>)Expression.Lambda(output,
+      if (filter.ExcludedTaskIds is not null && filter.ExcludedTaskIds.Any())
+      {
+        var excludeTaskIdExpression = filter.ExcludedTaskIds.Aggregate(
+                                                                       (Expression)Expression.Constant(true),
+                                                                       (expression, id) =>
+                                                                       {
+                                                                         var left = expression;
+                                                                         var right = Expression.Equal(Expression.Property(x,
+                                                                                                                          typeof(TaskDataModel),
+                                                                                                                          nameof(tdm.TaskId)),
+                                                                                                      Expression.Constant(id,
+                                                                                                                          typeof(string)));
+                                                                         return Expression.And(left,
+                                                                                               right);
+                                                                       }
+                                                                      );
+        globalExpression = Expression.And(globalExpression,
+                                          excludeTaskIdExpression);
+      }
+
+      return (Expression<Func<TaskDataModel, bool>>)Expression.Lambda(globalExpression,
                                                                       x);
     }
-
-
-    public static Expression<Func<TaskDataModel, bool>> FieldFilterExpression<TField>(Expression<Func<TaskDataModel, TField>> expression,
-                                                                                      IEnumerable<TField>                     values,
-                                                                                      bool                                    include = true)
-    {
-      var x = Expression.Parameter(typeof(TaskDataModel),
-                                   "model");
-
-      return (Expression<Func<TaskDataModel, bool>>) Expression.Lambda(FieldFilterInternal(expression, values, include, x), x);
-    }
-
-    private static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel,TField>> expression, IEnumerable<TField> values, bool include, Expression x)
-    {
-      var fieldName = ((MemberExpression)expression.Body).Member.Name;
-
-      return values.Aggregate(
-                              (Expression)Expression.Constant(!include),
-                              (expr, subSession) =>
-                              {
-                                var left = expr;
-
-                                if (include)
-                                {
-                                  var right = Expression.Equal(Expression.Property(x,
-                                                                                   typeof(TaskDataModel),
-                                                                                   fieldName),
-                                                               Expression.Constant(subSession,
-                                                                                   typeof(TField)));
-                                  return Expression.Or(left,
-                                                      right);
-
-                                }
-                                else
-                                {
-                                  var right = Expression.NotEqual(Expression.Property(x,
-                                                                                   typeof(TaskDataModel),
-                                                                                   fieldName),
-                                                               Expression.Constant(subSession,
-                                                                                   typeof(TField)));
-                                  return Expression.And(left,
-                                                        right);
-                                }
-                              }
-                             );
-    }
-
-    public static IMongoQueryable<TaskDataModel> FilterField<TField>(this IMongoQueryable<TaskDataModel>     taskQueryable,
-                                                                     Expression<Func<TaskDataModel, TField>> expression,
-                                                                     IEnumerable<TField>                     values,
-                                                                     bool                                    include = true)
-      => taskQueryable.Where(FieldFilterExpression(expression,
-                                                           values,
-                                                           include));
   }
 }
