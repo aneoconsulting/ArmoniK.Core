@@ -51,10 +51,16 @@ namespace ArmoniK.Adapters.MongoDB
       var x = Expression.Parameter(typeof(TaskDataModel),
                                    "model");
 
-      var output = FieldFilterInternal(model => model.SessionId,
-                                       new[] { filter.SessionId },
-                                       true,
-                                       x);
+
+      var output = (Expression)Expression.Constant(true,
+                                       typeof(bool));
+
+      if(!string.IsNullOrEmpty(filter.SessionId))
+        output = Expression.And(output,
+                                FieldFilterInternal(model => model.SessionId,
+                                                    new[] { filter.SessionId },
+                                                    true,
+                                                    x));
 
       if (!string.IsNullOrEmpty(filter.SubSessionId))
         output = Expression.And(output,
@@ -106,7 +112,10 @@ namespace ArmoniK.Adapters.MongoDB
       return (Expression<Func<TaskDataModel, bool>>) Expression.Lambda(FieldFilterInternal(expression, values, include, x), x);
     }
 
-    private static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel,TField>> expression, IEnumerable<TField> values, bool include, Expression x)
+    private static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel,TField>> expression, 
+                                                          IEnumerable<TField> values, 
+                                                          bool include, 
+                                                          Expression x)
     {
       var fieldName = ((MemberExpression)expression.Body).Member.Name;
 

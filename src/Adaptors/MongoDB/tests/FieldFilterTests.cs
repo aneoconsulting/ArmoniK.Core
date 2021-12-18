@@ -190,9 +190,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
 
       Assert.IsTrue(func(model));
     }
-
+    
     [Test]
-    public void ShouldIncludeStatus()
+    public void ShouldRecognizeStatus()
     {
       var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
                                                                 new[] { TaskStatus.Completed })
@@ -204,6 +204,207 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       Assert.IsTrue(func(model));
     }
 
+    [Test]
+    public void ShouldExcludeStatus()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+                                                                new[] { TaskStatus.Completed }, 
+                                                          false)
+                                   .Compile();
 
+      var model = new TaskDataModel
+                  { Status = TaskStatus.Completed };
+
+      Assert.IsFalse(func(model));
+    }
+
+    [Test]
+    public void ShouldRecognizeMultipleStatus()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+                                                                new[] { TaskStatus.Completed, TaskStatus.Canceled })
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { Status = TaskStatus.Completed };
+
+      Assert.IsTrue(func(model));
+    }
+
+    [Test]
+    public void ShouldExcludeMultipleStatus()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+                                                                new[] { TaskStatus.Completed, TaskStatus.Canceled },
+                                                          false)
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { Status = TaskStatus.Completed };
+
+      Assert.IsFalse(func(model));
+    }
+
+    [Test]
+    public void ShouldRejectOtherStatus()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+                                                                new[] { TaskStatus.Completed })
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { Status = TaskStatus.Canceled };
+
+      Assert.IsFalse(func(model));
+    }
+
+    [Test]
+    public void ShouldIncludeOtherStatus()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+                                                                new[] { TaskStatus.Completed },
+                                                          false)
+                                   .Compile(true);
+
+      var model = new TaskDataModel
+                  { Status = TaskStatus.Canceled };
+
+      Assert.IsTrue(func(model));
+    }
+
+    [Test]
+    public void ShouldRejectOtherMultipleStatus()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+                                                                new[] { TaskStatus.Completed, TaskStatus.Canceling })
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { Status = TaskStatus.Canceled };
+
+      Assert.IsFalse(func(model));
+    }
+
+    [Test]
+    public void ShouldIncludeOtherMultipleStatus()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+                                                                new[] { TaskStatus.Completed, TaskStatus.Canceling },
+                                                          false)
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { Status = TaskStatus.Canceled };
+
+      Assert.IsTrue(func(model));
+    }
+
+    [Test]
+    public void ShouldRecognizeTask()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+                                                                new[] { "Task" })
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { TaskId = "Task" };
+
+      Assert.IsTrue(func(model));
+    }
+
+    [Test]
+    public void ShouldExcludeTask()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+                                                                new[] { "Task" }, 
+                                                          false)
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { TaskId = "Task" };
+
+      Assert.IsFalse(func(model));
+    }
+
+    [Test]
+    public void ShouldRecognizeMultipleTask()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+                                                                new[] { "Task", "Task2" })
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { TaskId = "Task" };
+
+      Assert.IsTrue(func(model));
+    }
+
+    [Test]
+    public void ShouldExcludeMultipleTask()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+                                                                new[] { "Task", "Task2" },
+                                                          false)
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { TaskId = "Task" };
+
+      Assert.IsFalse(func(model));
+    }
+
+    [Test]
+    public void ShouldRejectOtherTask()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+                                                                new[] { "Task" })
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { TaskId = "OtherTask" };
+
+      Assert.IsFalse(func(model));
+    }
+
+    [Test]
+    public void ShouldIncludeOtherTask()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+                                                                new[] { "Task" },
+                                                          false)
+                                   .Compile(true);
+
+      var model = new TaskDataModel
+                  { TaskId = "OtherTask" };
+
+      Assert.IsTrue(func(model));
+    }
+
+    [Test]
+    public void ShouldRejectOtherMultipleTask()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+                                                                new[] { "Task", "Task2" })
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { TaskId = "OtherTask" };
+
+      Assert.IsFalse(func(model));
+    }
+
+    [Test]
+    public void ShouldIncludeOtherMultipleTask()
+    {
+      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+                                                                new[] { "Task", "Task2" },
+                                                          false)
+                                   .Compile();
+
+      var model = new TaskDataModel
+                  { TaskId = "OtherTask" };
+
+      Assert.IsTrue(func(model));
+    }
   }
 }
