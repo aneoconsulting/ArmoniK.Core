@@ -35,13 +35,7 @@ namespace ArmoniK.Adapters.MongoDB
 {
   public static class MongoCollectionExt
   {
-    public static IMongoQueryable<TaskDataModel> FilterCollectionAsync(this IMongoCollection<TaskDataModel> taskCollection,
-                                                                  IClientSessionHandle                 sessionHandle,
-                                                                  TaskFilter                           filter)
-      => taskCollection.AsQueryable(sessionHandle)
-                       .FilterQuery(filter);
-
-    private static IMongoQueryable<TaskDataModel> FilterQuery(this IMongoQueryable<TaskDataModel> taskQueryable,
+    public static IMongoQueryable<TaskDataModel> FilterQuery(this IMongoQueryable<TaskDataModel> taskQueryable,
                                                               TaskFilter                          filter)
       => taskQueryable.Where(filter.ToFilterExpression());
 

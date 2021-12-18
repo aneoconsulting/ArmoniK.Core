@@ -133,8 +133,8 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-      return await taskCollection.FilterCollectionAsync(sessionHandle,
-                                                   filter)
+      return await taskCollection.AsQueryable(sessionHandle)
+                                 .FilterQuery(filter)
                                  .CountAsync(cancellationToken);
     }
 
@@ -144,39 +144,28 @@ namespace ArmoniK.Adapters.MongoDB
       using var _ = logger_.LogFunction();
       var sessionHandle = await sessionProvider_.GetAsync();
       var taskCollection = await taskCollectionProvider_.GetAsync();
+
+      var rootTaskFilter = new TaskFilter(filter);
+      rootTaskFilter.ExcludedStatuses.Clear();
+      rootTaskFilter.IncludedStatuses.Clear();
+
+      var rootTaskListTask = taskCollection.AsQueryable(sessionHandle)
+                                       .FilterQuery(rootTaskFilter)
+                                       .Select(model => model.TaskId)
+                                       .ToListAsync(cancellationToken);
       
-      var rootTaskQuery = taskCollection.AsQueryable(sessionHandle)
-                                        .FilterField(model => model.SessionId,
-                                                     new[] { filter.SessionId });
+      var rootCountTask = taskCollection.AsQueryable(sessionHandle)
+                                        .FilterQuery(filter)
+                                        .CountAsync(cancellationToken);
 
-      if (!string.IsNullOrEmpty(filter.SubSessionId))
-        rootTaskQuery = rootTaskQuery.FilterField(model => model.SubSessionId,
-                                                  new[] { filter.SubSessionId });
-
-      if (filter.IncludedTaskIds is not null)
-        rootTaskQuery = rootTaskQuery.FilterField(model => model.TaskId,
-                                                  filter.IncludedTaskIds);
-
-      if (filter.ExcludedTaskIds is not null)
-        rootTaskQuery = rootTaskQuery.FilterField(model => model.TaskId,
-                                                  filter.ExcludedTaskIds,
-                                                  false);
-
-      var taskListTask = rootTaskQuery.Select(model => model.TaskId)
-                                      .ToListAsync(cancellationToken);
-
-
-      var rootCountTask = taskCollection.FilterCollectionAsync(sessionHandle,
-                                                               filter).CountAsync(cancellationToken);
-
-      var taskList = await taskListTask;
-      logger_.LogDebug("root tasks: {taskList}", string.Join(", ", taskList));
+      var rootTaskList = await rootTaskListTask;
+      logger_.LogDebug("root tasks: {taskList}", string.Join(", ", rootTaskList));
 
       var parameter = Expression.Parameter(typeof(ParentSubSessionRelation),
                                            "tuple");
 
       var filterExpressionBody =
-        taskList.Aggregate<string, Expression>(
+        rootTaskList.Aggregate<string, Expression>(
                                                Expression.Constant(false),
                                                (expr, parentTaskId) =>
                                                {
@@ -196,15 +185,14 @@ namespace ArmoniK.Adapters.MongoDB
       var filterExpression = Expression.Lambda<Func<ParentSubSessionRelation, bool>>(filterExpressionBody,
                                                                                      parameter);
 
-
+      var childrenFilter = new TaskFilter(filter)
+                           {
+                             SubSessionId = null,
+                           };
+      childrenFilter.IncludedTaskIds.Clear();
+      childrenFilter.ExcludedTaskIds.Clear();
       var childrenRetrieved = await taskCollection.AsQueryable(sessionHandle)
-                                                  .FilterField(model => model.SessionId,
-                                                               new[] { filter.SessionId })
-                                                  .FilterField(model => model.Status,
-                                                               filter.IncludedStatuses)
-                                                  .FilterField(model => model.Status,
-                                                               filter.ExcludedStatuses,
-                                                               false)
+                                                  .FilterQuery(childrenFilter)
                                                   .SelectMany(model => model.ParentRelations)
                                                   .Where(filterExpression)
                                                   .Select(tuple => tuple.TaskId)
@@ -444,8 +432,8 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle  = await sessionProvider_.GetAsync();
       var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-      var output = taskCollection.FilterCollectionAsync(sessionHandle,
-                                                   filter)
+      var output = taskCollection.AsQueryable(sessionHandle)
+                                 .FilterQuery(filter)
                                  .Select(x => new TaskId
                                               {
                                                 Session    = x.SessionId,
