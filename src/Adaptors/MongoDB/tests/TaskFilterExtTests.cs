@@ -29,8 +29,8 @@ using NUnit.Framework;
 
 namespace ArmoniK.Adapters.MongoDB.Tests
 {
-  [TestFixture]
-  internal class ToFilterExpressionsTests
+  [TestFixture(TestOf = typeof(TaskFilterExt))]
+  internal class TaskFilterExtTests
   {
     [Test]
     public void ShouldRecognizeSession()
@@ -431,6 +431,31 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var model = new TaskDataModel
                   {
                     TaskId = "OtherTask",
+                  };
+
+      Assert.IsTrue(func(model));
+    }
+
+    [Test]
+    public void AllNullShouldPass()
+    {
+      var func = new TaskFilter
+                 {
+                   SessionId = null,
+                   SubSessionId = null,
+                 }
+                .ToFilterExpression()
+                .Compile();
+
+      var model = new TaskDataModel
+                  {
+                    SessionId = null,
+                    SubSessionId = null,
+                    Dependencies = null,
+                    Options = null,
+                    ParentsSubSessions = null,
+                    Payload = null,
+                    TaskId = null,
                   };
 
       Assert.IsTrue(func(model));

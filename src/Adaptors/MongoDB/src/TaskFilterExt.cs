@@ -55,28 +55,28 @@ namespace ArmoniK.Adapters.MongoDB
                                                                         true,
                                                                         x));
 
-      if (filter.IncludedTaskIds.Any())
+      if (filter.IncludedTaskIds is not null && filter.IncludedTaskIds.Any())
         output = Expression.And(output,
                                 ExpressionsBuilders.FieldFilterInternal(model => model.TaskId,
                                                                         filter.IncludedTaskIds,
                                                                         true,
                                                                         x));
 
-      if (filter.ExcludedTaskIds.Any())
+      if (filter.ExcludedTaskIds is not null && filter.ExcludedTaskIds.Any())
         output = Expression.And(output,
                                 ExpressionsBuilders.FieldFilterInternal(model => model.TaskId,
                                                                         filter.ExcludedTaskIds,
                                                                         false,
                                                                         x));
 
-      if (filter.IncludedStatuses.Any())
+      if (filter.IncludedStatuses is not null && filter.IncludedStatuses.Any())
         output = Expression.And(output,
                                 ExpressionsBuilders.FieldFilterInternal(model => model.Status,
                                                                         filter.IncludedStatuses,
                                                                         true,
                                                                         x));
 
-      if (filter.ExcludedStatuses.Any())
+      if (filter.ExcludedStatuses is not null && filter.ExcludedStatuses.Any())
         output = Expression.And(output,
                                 ExpressionsBuilders.FieldFilterInternal(model => model.Status,
                                                                         filter.ExcludedStatuses,
