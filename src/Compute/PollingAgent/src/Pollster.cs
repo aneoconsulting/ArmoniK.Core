@@ -460,11 +460,26 @@ namespace ArmoniK.Compute.PollingAgent
                                                taskData.Options.MaxDuration.ToTimeSpan(),
                                      cancellationToken: CancellationToken.None);
 
-      ComputeReply result = null;
       try
       {
         await updateTask;
-        result = await call.WrapRpcException();
+        var result = await call.WrapRpcException();
+        logger_.LogInformation("Compute finished successfully.");
+
+        /*
+         * Store Result
+         */
+
+        logger_.LogInformation("Sending result to storage.");
+        await taskResultStorage_.AddOrUpdateAsync(taskData.Id,
+                                                  result,
+                                                  CancellationToken.None);
+        logger_.LogInformation("Result sent.");
+        message.Status = QueueMessageStatus.Processed;
+        await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id,
+                                                               TaskStatus.Completed,
+                                                               CancellationToken.None),
+                           increaseTask);
       }
       catch (Exception e)
       {
@@ -477,22 +492,7 @@ namespace ArmoniK.Compute.PollingAgent
         }
       }
 
-      logger_.LogInformation("Compute finished successfully.");
 
-      /*
-       * Store Result
-       */
-
-      logger_.LogInformation("Sending result to storage.");
-      await taskResultStorage_.AddOrUpdateAsync(taskData.Id,
-                                                result,
-                                                CancellationToken.None);
-      logger_.LogInformation("Result sent.");
-      message.Status = QueueMessageStatus.Processed;
-      await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                             TaskStatus.Completed,
-                                                             CancellationToken.None),
-                         increaseTask);
     }
 
     private async Task<bool> HandleExceptionAsync(Exception e, TaskData taskData, IQueueMessage message, CancellationToken cancellationToken)
