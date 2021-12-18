@@ -210,23 +210,25 @@ namespace ArmoniK.Adapters.MongoDB
       Expression<Func<TaskDataModel, bool>> ElementaryFuncBuilder(string parentId)
         => model
              => model.ParentsSubSessions != null && model.ParentsSubSessions.Any(parentSubSession => parentId == parentSubSession);
-      
-
-      var areChildrenExpressionBody =
-        rootTaskList.Aggregate<string, Expression>(
-                                               Expression.Constant(false),
-                                               (expr, parentId) =>
-                                               {
-                                                 var isChildExpression = ElementaryFuncBuilder(parentId);
-
-                                                 var visitor = new ParameterUpdateVisitor(isChildExpression.Parameters.Single(),
-                                                                                          parameter);
 
 
-                                                 return Expression.Or(expr,
-                                                                      visitor.Visit(isChildExpression.Body));
-                                               }
-                                              );
+      var areChildrenExpressionBody
+        = rootTaskList is null
+            ? Expression.Constant(false)
+            : rootTaskList.Aggregate<string, Expression>(
+                                                         Expression.Constant(false),
+                                                         (expr, parentId) =>
+                                                         {
+                                                           var isChildExpression = ElementaryFuncBuilder(parentId);
+
+                                                           var visitor = new ParameterUpdateVisitor(isChildExpression.Parameters.Single(),
+                                                                                                    parameter);
+
+
+                                                           return Expression.Or(expr,
+                                                                                visitor.Visit(isChildExpression.Body));
+                                                         }
+                                                        );
 
       var filterExpression = Expression.Lambda<Func<TaskDataModel, bool>>(areChildrenExpressionBody,
                                                                           parameter);

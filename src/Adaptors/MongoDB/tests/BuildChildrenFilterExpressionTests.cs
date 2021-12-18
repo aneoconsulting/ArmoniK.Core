@@ -114,5 +114,20 @@ namespace ArmoniK.Adapters.MongoDB.Tests
 
       Assert.IsFalse(filter(tdm));
     }
+
+    [Test]
+    public void NullParentList()
+    {
+      var filter = TableStorage.BuildChildrenFilterExpression(null)
+                               .Compile();
+
+      var tdm = new TaskDataModel
+                {
+                  TaskId             = "taskId1",
+                  ParentsSubSessions = new []{"parent0"},
+                };
+
+      Assert.IsFalse(filter(tdm));
+    }
   }
 }
