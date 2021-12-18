@@ -198,7 +198,7 @@ namespace ArmoniK.Adapters.MongoDB
 
 
       var childrenRetrieved = await taskCollection.AsQueryable(sessionHandle)
-                                                  .FilterField(model => model.SubSessionId,
+                                                  .FilterField(model => model.SessionId,
                                                                new[] { filter.SessionId })
                                                   .FilterField(model => model.Status,
                                                                filter.IncludedStatuses)
