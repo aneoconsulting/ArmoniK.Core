@@ -187,7 +187,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       var childrenFilter = new TaskFilter(filter)
                            {
-                             SubSessionId = null,
+                             SubSessionId = string.Empty,
                            };
       childrenFilter.IncludedTaskIds.Clear();
       childrenFilter.ExcludedTaskIds.Clear();
