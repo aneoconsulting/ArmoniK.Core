@@ -466,26 +466,6 @@ namespace ArmoniK.Compute.PollingAgent
         await updateTask;
         result = await call.WrapRpcException();
       }
-      catch (AggregateException ae)
-      {
-        List<Exception> unhandledExceptions = new ();
-        foreach (var ie in ae.InnerExceptions)
-        {
-          // If the exception was not handled, lazily allocate a list of unhandled
-          // exceptions (to be rethrown later) and add it.
-          if (!await HandleExceptionAsync(ie, taskData, message, cancellationToken))
-          {
-            unhandledExceptions.Add(ie);
-          }
-        }
-
-        // If there are unhandled exceptions remaining, throw them.
-        if (unhandledExceptions.Any())
-        {
-          throw new AggregateException(ae.Message,
-                                       unhandledExceptions);
-        }
-      }
       catch (Exception e)
       {
         if (!await HandleExceptionAsync(e,

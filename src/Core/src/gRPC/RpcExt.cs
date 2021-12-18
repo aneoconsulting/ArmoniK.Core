@@ -50,11 +50,13 @@ namespace ArmoniK.Core.gRPC
           switch (status)
           {
             case StatusCode.DeadlineExceeded:
-              return false;
+              throw new TimeoutException("Deadline Exceeded",
+                                         e);
             case StatusCode.OK:
               break;
             case StatusCode.Cancelled:
-              return false;
+              throw new TaskCanceledException("Operation Cancelled",
+                                              e);
             case StatusCode.Unknown:
               break;
             case StatusCode.InvalidArgument:
@@ -84,7 +86,8 @@ namespace ArmoniK.Core.gRPC
             case StatusCode.DataLoss:
               break;
             default:
-              return false;
+              throw new ArmoniKException("An error occurred while computing the request",
+                                         e);
           }
 
           return true;
@@ -108,7 +111,8 @@ namespace ArmoniK.Core.gRPC
       }
       catch (Exception e)
       {
-        if (!HandleExceptions(e, asyncUnaryCall.GetStatus().StatusCode))
+        if (!HandleExceptions(e,
+                              asyncUnaryCall.GetStatus().StatusCode))
           throw;
       }
 
