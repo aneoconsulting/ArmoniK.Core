@@ -207,13 +207,13 @@ namespace ArmoniK.Adapters.MongoDB
                                                                false)
                                                   .SelectMany(model => model.ParentRelations)
                                                   .Where(filterExpression)
+                                                  .Select(tuple => tuple.TaskId)
                                                   .ToListAsync(cancellationToken);
       logger_.LogDebug("children tasks: {childrenRetrieved}",
                        string.Join(", ",
                                    childrenRetrieved));
 
-      var childrenCountTask = childrenRetrieved.Select(tuple => tuple.TaskId)
-                                               .Distinct()
+      var childrenCountTask = childrenRetrieved.Distinct()
                                                .Count();
 
       var rootCount = await rootCountTask;
