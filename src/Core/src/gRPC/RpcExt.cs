@@ -108,6 +108,7 @@ namespace ArmoniK.Core.gRPC
       try
       {
         await asyncUnaryCall;
+        return asyncUnaryCall.ResponseAsync.Result;
       }
       catch (Exception e)
       {
@@ -116,7 +117,7 @@ namespace ArmoniK.Core.gRPC
           throw;
       }
 
-      return asyncUnaryCall.ResponseAsync.Result!;
+      throw new ArmoniKException("An exception occurred during execution but has been handled");
     }
 
     public static bool IsValid(this Lease lease) 
