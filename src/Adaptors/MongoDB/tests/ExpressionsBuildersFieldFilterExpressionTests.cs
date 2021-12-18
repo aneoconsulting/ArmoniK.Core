@@ -27,8 +27,8 @@ using NUnit.Framework;
 
 namespace ArmoniK.Adapters.MongoDB.Tests
 {
-  [TestFixture]
-  internal class FieldFilterTests
+  [TestFixture(TestOf = typeof(ExpressionsBuilders))]
+  internal class ExpressionsBuildersFieldFilterExpressionTests
   {
     [Test]
     public void ShouldRecognizeSession()
