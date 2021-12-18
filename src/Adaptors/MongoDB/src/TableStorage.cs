@@ -22,9 +22,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +46,6 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Adapters.MongoDB
@@ -153,7 +154,7 @@ namespace ArmoniK.Adapters.MongoDB
                                        .FilterQuery(rootTaskFilter)
                                        .Select(model => model.TaskId)
                                        .ToListAsync(cancellationToken);
-      
+
       var rootCountTask = taskCollection.AsQueryable(sessionHandle)
                                         .FilterQuery(filter)
                                         .CountAsync(cancellationToken);
@@ -161,48 +162,18 @@ namespace ArmoniK.Adapters.MongoDB
       var rootTaskList = await rootTaskListTask;
       logger_.LogDebug("root tasks: {taskList}", string.Join(", ", rootTaskList));
 
-      var parameter = Expression.Parameter(typeof(ParentSubSessionRelation),
-                                           "tuple");
-
-      var filterExpressionBody =
-        rootTaskList.Aggregate<string, Expression>(
-                                               Expression.Constant(false),
-                                               (expr, parentTaskId) =>
-                                               {
-                                                 var left = expr;
-
-                                                 var right = Expression.Equal(Expression.Property(parameter,
-                                                                                                  typeof(ParentSubSessionRelation),
-                                                                                                  nameof(ParentSubSessionRelation.ParentSubSession)),
-                                                                              Expression.Constant(parentTaskId,
-                                                                                                  typeof(string)));
-                                                 return Expression.Or(left,
-                                                                      right);
-
-                                               }
-                                              );
-
-      var filterExpression = Expression.Lambda<Func<ParentSubSessionRelation, bool>>(filterExpressionBody,
-                                                                                     parameter);
+      Expression<Func<TaskDataModel, bool>> filterExpression = BuildChildrenFilterExpression(rootTaskList);
 
       var childrenFilter = new TaskFilter(filter)
-                           {
-                             SubSessionId = null,
-                           };
+      {
+        SubSessionId = null,
+      };
       childrenFilter.IncludedTaskIds.Clear();
       childrenFilter.ExcludedTaskIds.Clear();
-      var childrenRetrieved = await taskCollection.AsQueryable(sessionHandle)
+      var childrenCountTask = await taskCollection.AsQueryable(sessionHandle)
                                                   .FilterQuery(childrenFilter)
-                                                  .SelectMany(model => model.ParentRelations)
                                                   .Where(filterExpression)
-                                                  .Select(tuple => tuple.TaskId)
-                                                  .Distinct()
-                                                  .ToListAsync(cancellationToken);
-      logger_.LogDebug("children tasks: {childrenRetrieved}",
-                       string.Join(", ",
-                                   childrenRetrieved));
-
-      var childrenCountTask = childrenRetrieved.Count();
+                                                  .CountAsync(cancellationToken);
 
       var rootCount = await rootCountTask;
       logger_.LogDebug("rootCount:{rootCount}",
@@ -211,6 +182,55 @@ namespace ArmoniK.Adapters.MongoDB
       logger_.LogDebug("childrenCount:{childrenCount}",
                        childrenCount);
       return rootCount + childrenCount;
+    }
+
+    private class ParameterUpdateVisitor : ExpressionVisitor
+    {
+      private readonly ParameterExpression oldParameter_;
+      private readonly ParameterExpression newParameter_;
+
+      public ParameterUpdateVisitor(ParameterExpression oldParameter, ParameterExpression newParameter)
+      {
+        oldParameter_ = oldParameter;
+        newParameter_ = newParameter;
+      }
+
+      protected override Expression VisitParameter(ParameterExpression node)
+        => ReferenceEquals(node,
+                           oldParameter_)
+             ? newParameter_
+             : base.VisitParameter(node);
+    }
+
+    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IEnumerable<string> rootTaskList)
+    {
+      var parameter = Expression.Parameter(typeof(TaskDataModel),
+                                           "model");
+
+      Expression<Func<TaskDataModel, bool>> ElementaryFuncBuilder(string parentId)
+        => model
+             => model.ParentsSubSessions != null && model.ParentsSubSessions.Any(parentSubSession => parentId == parentSubSession);
+      
+
+      var areChildrenExpressionBody =
+        rootTaskList.Aggregate<string, Expression>(
+                                               Expression.Constant(false),
+                                               (expr, parentId) =>
+                                               {
+                                                 var isChildExpression = ElementaryFuncBuilder(parentId);
+
+                                                 var visitor = new ParameterUpdateVisitor(isChildExpression.Parameters.Single(),
+                                                                                          parameter);
+
+
+                                                 return Expression.Or(expr,
+                                                                      visitor.Visit(isChildExpression.Body));
+                                               }
+                                              );
+
+      var filterExpression = Expression.Lambda<Func<TaskDataModel, bool>>(areChildrenExpressionBody,
+                                                                          parameter);
+      return filterExpression;
     }
 
     public async Task<SessionId> CreateSessionAsync(SessionOptions    sessionOptions,

@@ -21,9 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
@@ -56,17 +54,11 @@ namespace ArmoniK.Adapters.MongoDB
     public byte[] Payload { get; set; }
 
     public IEnumerable<string> Dependencies { get; set; }
-
-    public IEnumerable<ParentSubSessionRelation> ParentRelations
-    {
-      get { return ParentsSubSessions.Select(s => new ParentSubSessionRelation { ParentSubSession = s, TaskId = TaskId }); }
-      set { ParentsSubSessions = value.Select(relation => relation.ParentSubSession).ToList(); }
-    }
-
-    public IList<string> ParentsSubSessions { get; set; } = Array.Empty<string>();
+    
+    public IEnumerable<string> ParentsSubSessions { get; set; }
 
     /// <inheritdoc />
-    public string CollectionName { get; } = "tasks";
+    public string CollectionName => "tasks";
 
     /// <inheritdoc />
     public Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,
@@ -128,17 +120,9 @@ namespace ArmoniK.Adapters.MongoDB
                                                      cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
                                                      cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true);
-                                                     cm.MapProperty(nameof(ParentRelations)).SetIgnoreIfDefault(true);
+                                                     cm.MapProperty(nameof(ParentsSubSessions)).SetIgnoreIfDefault(true);
                                                      cm.SetIgnoreExtraElements(true);
                                                    });
-
-      if (!BsonClassMap.IsClassMapRegistered(typeof(ParentSubSessionRelation)))
-        BsonClassMap.RegisterClassMap<ParentSubSessionRelation>(cm =>
-                                                                {
-                                                                  cm.MapProperty(nameof(ParentSubSessionRelation.ParentSubSession)).SetIsRequired(true);
-                                                                  cm.MapProperty(nameof(ParentSubSessionRelation.TaskId)).SetIsRequired(true);
-                                                                  cm.SetIgnoreExtraElements(true);
-                                                                });
     }
 
     /// <inheritdoc />
