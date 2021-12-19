@@ -40,31 +40,8 @@ namespace ArmoniK.Adapters.MongoDB
       => taskQueryable.Where(filter.ToFilterExpression());
 
 
-
-
-
-    public static IMongoQueryable<TaskDataModel> FilterField<TField>(this IMongoQueryable<TaskDataModel>     taskQueryable,
-                                                                     Expression<Func<TaskDataModel, TField>> expression,
-                                                                     IEnumerable<TField>                     values,
-                                                                     bool                                    include = true)
-      => taskQueryable.Where(ExpressionsBuilders.FieldFilterExpression(expression,
-                                                                       values,
-                                                                       include));
-
-
     public static IQueryable<TaskDataModel> FilterQuery(this IQueryable<TaskDataModel> taskQueryable,
                                                         TaskFilter                     filter)
       => taskQueryable.Where(filter.ToFilterExpression());
-
-
-
-
-
-    public static IQueryable<TaskDataModel> FilterField<TField>(this IQueryable<TaskDataModel>          taskQueryable,
-                                                                Expression<Func<TaskDataModel, TField>> expression,
-                                                                IEnumerable<TField>                     values,
-                                                                bool                                    include = true)
-      => taskQueryable.Where(ExpressionsBuilders.FieldFilterExpression(expression,
-                                                                       values,
   }
 }
