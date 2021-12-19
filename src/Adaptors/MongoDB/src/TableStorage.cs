@@ -160,7 +160,7 @@ namespace ArmoniK.Adapters.MongoDB
       var rootTaskList = await rootTaskListTask;
       logger_.LogDebug("root tasks: {taskList}", string.Join(", ", rootTaskList));
 
-      Expression<Func<TaskDataModel, bool>> filterExpression = BuildChildrenFilterExpression(rootTaskList);
+      var filterExpression = BuildChildrenFilterExpression(rootTaskList);
 
       var childrenTaskFilter = new TaskFilter(filter)
       {
