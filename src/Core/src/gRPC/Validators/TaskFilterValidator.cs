@@ -21,18 +21,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Linq;
+
 using ArmoniK.Core.gRPC.V1;
 
 using FluentValidation;
 
+using JetBrains.Annotations;
+
 namespace ArmoniK.Core.gRPC.Validators
 {
-  public class SessionIdValidator : AbstractValidator<SessionId>
+  [UsedImplicitly]
+  public class TaskFilterValidator : AbstractValidator<TaskFilter>
   {
-    public SessionIdValidator()
+
+    public TaskFilterValidator()
     {
-      RuleFor(o => o.Session).NotEmpty().WithName(nameof(SessionId.Session));
-      RuleFor(o => o.SubSession).NotEmpty().WithName(nameof(SessionId.SubSession));
+      RuleFor(tf => tf).Must(filter => filter.IncludedTaskIds.All(id => !filter.ExcludedTaskIds.Contains(id)))
+                       .WithMessage($"Content of {nameof(TaskFilter.IncludedTaskIds)} and {nameof(TaskFilter.ExcludedTaskIds)} must not overlap.");
+
+      RuleFor(tf => tf).Must(filter => filter.IncludedStatuses.All(status => !filter.ExcludedStatuses.Contains(status)))
+                       .WithMessage($"Content of {nameof(TaskFilter.IncludedStatuses)} and {nameof(TaskFilter.ExcludedStatuses)} must not overlap.");
     }
   }
 }

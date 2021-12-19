@@ -25,6 +25,8 @@ using ArmoniK.Core.gRPC.V1;
 
 using FluentValidation;
 
+using JetBrains.Annotations;
+
 namespace ArmoniK.Core.gRPC.Validators
 {
   public class TaskRequestValidator : AbstractValidator<TaskRequest>
