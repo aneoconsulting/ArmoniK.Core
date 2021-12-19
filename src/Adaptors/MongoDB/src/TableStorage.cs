@@ -519,7 +519,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,
                                                                               status);
-
+      logger_.LogDebug("update task {task} to status {status}", id.ToPrintableId(), status);
       var res = await taskCollection.UpdateManyAsync(
                                                      x => x.SessionId == id.Session &&
                                                           x.SubSessionId == id.SubSession &&
@@ -533,7 +533,7 @@ namespace ArmoniK.Adapters.MongoDB
       switch (res.MatchedCount)
       {
         case 0:
-          throw new ArmoniKException("Task not found");
+          throw new ArmoniKException($"Task not found - {id.ToPrintableId()}");
         case > 1:
           throw new ArmoniKException("Multiple tasks modified");
       }
