@@ -27,10 +27,16 @@ using System.Linq.Expressions;
 
 using ArmoniK.Core.gRPC.V1;
 
+using MongoDB.Driver.Linq;
+
 namespace ArmoniK.Adapters.MongoDB
 {
   public static class TaskFilterExt
   {
+    public static IMongoQueryable<TaskDataModel> FilterQuery(this IMongoQueryable<TaskDataModel> taskQueryable,
+                                                             TaskFilter                          filter)
+      => taskQueryable.Where(filter.ToFilterExpression());
+
     public static Expression<Func<TaskDataModel, bool>> ToFilterExpression(this TaskFilter filter)
     {
 

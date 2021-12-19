@@ -21,25 +21,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 
 using ArmoniK.Core.gRPC.V1;
-
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace ArmoniK.Adapters.MongoDB
 {
   public static class MongoCollectionExt
   {
-    public static IMongoQueryable<TaskDataModel> FilterQuery(this IMongoQueryable<TaskDataModel> taskQueryable,
-                                                              TaskFilter                          filter)
-      => taskQueryable.Where(filter.ToFilterExpression());
-
-
     public static IQueryable<TaskDataModel> FilterQuery(this IQueryable<TaskDataModel> taskQueryable,
                                                         TaskFilter                     filter)
       => taskQueryable.Where(filter.ToFilterExpression());

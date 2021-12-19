@@ -21,8 +21,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Linq;
-
 using ArmoniK.Core.gRPC.V1;
 
 using NUnit.Framework;

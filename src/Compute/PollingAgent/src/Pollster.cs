@@ -22,14 +22,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-
-using Amqp;
 
 using ArmoniK.Core;
 using ArmoniK.Core.Exceptions;
@@ -37,7 +33,6 @@ using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
-using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

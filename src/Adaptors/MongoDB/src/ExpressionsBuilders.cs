@@ -30,7 +30,6 @@ namespace ArmoniK.Adapters.MongoDB
 {
   public static class ExpressionsBuilders
   {
-
     public static Expression<Func<TaskDataModel, bool>> FieldFilterExpression<TField>(Expression<Func<TaskDataModel, TField>> expression,
                                                                                       IEnumerable<TField>                     values,
                                                                                       bool                                    include = true)
