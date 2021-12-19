@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 using ArmoniK.Core.gRPC.V1;
@@ -49,5 +50,21 @@ namespace ArmoniK.Adapters.MongoDB
       => taskQueryable.Where(ExpressionsBuilders.FieldFilterExpression(expression,
                                                                        values,
                                                                        include));
+
+
+    public static IQueryable<TaskDataModel> FilterQuery(this IQueryable<TaskDataModel> taskQueryable,
+                                                        TaskFilter                     filter)
+      => taskQueryable.Where(filter.ToFilterExpression());
+
+
+
+
+
+    public static IQueryable<TaskDataModel> FilterField<TField>(this IQueryable<TaskDataModel>          taskQueryable,
+                                                                Expression<Func<TaskDataModel, TField>> expression,
+                                                                IEnumerable<TField>                     values,
+                                                                bool                                    include = true)
+      => taskQueryable.Where(ExpressionsBuilders.FieldFilterExpression(expression,
+                                                                       values,
   }
 }

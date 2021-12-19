@@ -162,21 +162,48 @@ namespace ArmoniK.Adapters.MongoDB
 
       Expression<Func<TaskDataModel, bool>> filterExpression = BuildChildrenFilterExpression(rootTaskList);
 
-      var childrenFilter = new TaskFilter(filter)
+      var childrenTaskFilter = new TaskFilter(filter)
       {
         SubSessionId = string.Empty,
       };
-      childrenFilter.IncludedTaskIds.Clear();
-      childrenFilter.ExcludedTaskIds.Clear();
-      var childrenCountTask = await taskCollection.AsQueryable(sessionHandle)
-                                                  .FilterQuery(childrenFilter)
-                                                  .Where(filterExpression)
-                                                  .CountAsync(cancellationToken);
+      childrenTaskFilter.IncludedTaskIds.Clear();
+      childrenTaskFilter.ExcludedTaskIds.Clear();
+
+
+      if (logger_.IsEnabled(LogLevel.Debug))
+      {
+        var childrenList = await taskCollection.AsQueryable(sessionHandle)
+                                               .Where(filterExpression)
+                                               .Select(model => new TaskDataModel
+                                                                {
+                                                                  SessionId    = model.SessionId,
+                                                                  SubSessionId = model.SubSessionId,
+                                                                  TaskId       = model.TaskId,
+                                                                  Status       = model.Status,
+                                                                })
+                                               .ToListAsync(cancellationToken);
+        logger_.LogDebug("Children tasks: {taskList}",
+                         string.Join(", ",
+                                     childrenList.Select(model => model.TaskId)));
+
+        var countedChildrenList = childrenList.AsQueryable()
+                                              .FilterQuery(childrenTaskFilter)
+                                              .Select(model => model.TaskId);
+        logger_.LogDebug("Children counted tasks: {taskList}",
+                         string.Join(", ",
+                                     countedChildrenList));
+      }
+
+      var childrenCountTask = taskCollection.AsQueryable(sessionHandle)
+                                            .Where(filterExpression)
+                                            .FilterQuery(childrenTaskFilter)
+                                            .CountAsync(cancellationToken);
 
       var rootCount = await rootCountTask;
+      var childrenCount = await childrenCountTask;
+
       logger_.LogDebug("rootCount:{rootCount}",
                        rootCount);
-      var childrenCount = childrenCountTask;
       logger_.LogDebug("childrenCount:{childrenCount}",
                        childrenCount);
       return rootCount + childrenCount;

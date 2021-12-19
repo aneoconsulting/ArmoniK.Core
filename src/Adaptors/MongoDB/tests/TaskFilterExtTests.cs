@@ -441,8 +441,8 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     {
       var func = new TaskFilter
                  {
-                   SessionId = null,
-                   SubSessionId = null,
+                   SessionId = string.Empty,
+                   SubSessionId = string.Empty,
                  }
                 .ToFilterExpression()
                 .Compile();
