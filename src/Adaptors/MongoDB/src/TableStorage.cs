@@ -161,7 +161,7 @@ namespace ArmoniK.Adapters.MongoDB
                                         .CountAsync(cancellationToken);
 
       var rootTaskList = await rootTaskListTask;
-      logger_.LogDebug("root tasks: {taskList}", string.Join(", ", rootTaskList));
+      logger_.LogTrace("root tasks: {taskList}", string.Join(", ", rootTaskList));
 
       var filterExpression = BuildChildrenFilterExpression(rootTaskList);
 
@@ -173,7 +173,7 @@ namespace ArmoniK.Adapters.MongoDB
       childrenTaskFilter.ExcludedTaskIds.Clear();
 
 
-      if (logger_.IsEnabled(LogLevel.Debug))
+      if (logger_.IsEnabled(LogLevel.Trace))
       {
 
         var childrenList = await taskCollection.AsQueryable(sessionHandle)
@@ -187,7 +187,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                                 })
                                                .Take(10)
                                                .ToListAsync(cancellationToken);
-        logger_.LogDebug("Children tasks (first 10): {taskList}",
+        logger_.LogTrace("Children tasks (first 10): {taskList}",
                          string.Join(", ",
                                      childrenList.Select(model => model.TaskId)));
 
@@ -204,7 +204,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                       .Select(model => model.TaskId)
                                                       .Take(10)
                                                       .ToListAsync(cancellationToken);
-        logger_.LogDebug("Children counted tasks (first 10): {taskList}",
+        logger_.LogTrace("Children counted tasks (first 10): {taskList}",
                          string.Join(", ",
                                      countedChildrenList));
       }

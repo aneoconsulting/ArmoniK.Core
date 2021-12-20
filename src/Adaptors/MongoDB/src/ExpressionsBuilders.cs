@@ -25,13 +25,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace ArmoniK.Adapters.MongoDB
 {
   public static class ExpressionsBuilders
   {
     public static Expression<Func<TaskDataModel, bool>> FieldFilterExpression<TField>(Expression<Func<TaskDataModel, TField>> expression,
-                                                                                      IEnumerable<TField>                     values,
+                                                                                      IList<TField>                     values,
                                                                                       bool                                    include = true)
     {
       var x = Expression.Parameter(typeof(TaskDataModel),
@@ -43,44 +44,42 @@ namespace ArmoniK.Adapters.MongoDB
                                                                                           x),
                                                                       x);
     }
-    
+
     
     public static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel,TField>> expression, 
-                                                         IEnumerable<TField>                    values, 
+                                                         IList<TField>                    values, 
                                                          bool                                   include, 
                                                          Expression                             x)
     {
+      if (!values.Any())
+        return Expression.Constant(true);
+
+
+      //var t = model => // ReSharper disable once ConvertClosureToMethodGroup for better handling by MongoDriver visitor
+      //                model.ParentsSubSessions.Any(parentSubSession => values.Contains(parentSubSession));
+
       var fieldName = ((MemberExpression)expression.Body).Member.Name;
 
-      return values.Aggregate(
-                              (Expression)Expression.Constant(!include),
-                              (expr, subSession) =>
-                              {
-                                var left = expr;
+      var property = Expression.Property(x,
+                                         typeof(TaskDataModel),
+                                         fieldName);
 
-                                if (include)
-                                {
-                                  var right = Expression.Equal(Expression.Property(x,
-                                                                                   typeof(TaskDataModel),
-                                                                                   fieldName),
-                                                               Expression.Constant(subSession,
-                                                                                   typeof(TField)));
-                                  return Expression.Or(left,
-                                                       right);
+      var containsMethodInfo = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)
+                                                 .Single(m => m.Name == nameof(Enumerable.Contains) &&
+                                                              m.GetParameters().Length == 2)
+                                                 .GetGenericMethodDefinition()
+                                                 .MakeGenericMethod(typeof(TField));
 
-                                }
-                                else
-                                {
-                                  var right = Expression.NotEqual(Expression.Property(x,
-                                                                                      typeof(TaskDataModel),
-                                                                                      fieldName),
-                                                                  Expression.Constant(subSession,
-                                                                                      typeof(TField)));
-                                  return Expression.And(left,
-                                                        right);
-                                }
-                              }
-                             );
+      var valueExpr = Expression.Constant(values);
+
+      var body = Expression.Call(null,
+                                 containsMethodInfo,
+                                 valueExpr,
+                                 property);
+      if(include)
+        return body;
+      else 
+        return Expression.Not(body);
     }
   }
 }
