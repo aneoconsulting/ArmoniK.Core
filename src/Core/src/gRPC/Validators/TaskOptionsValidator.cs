@@ -32,8 +32,7 @@ namespace ArmoniK.Core.gRPC.Validators
     public TaskOptionsValidator()
     {
       RuleFor(o => o.MaxRetries).GreaterThanOrEqualTo(1).WithName(nameof(TaskOptions.MaxRetries));
-      RuleFor(o => o.MaxDuration).NotNull().WithName(nameof(TaskOptions.MaxDuration));
-      RuleFor(o => o.Priority).NotNull().WithMessage("Priority should not be null.").GreaterThanOrEqualTo(0)
+      RuleFor(o => o.Priority).GreaterThanOrEqualTo(1).LessThanOrEqualTo(99).WithMessage("Priority should not be null.").GreaterThanOrEqualTo(0)
                               .WithMessage("Priority should be > 0.").WithName(nameof(TaskOptions.Priority));
     }
   }

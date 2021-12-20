@@ -22,14 +22,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-
-using Amqp;
 
 using ArmoniK.Core;
 using ArmoniK.Core.Exceptions;
@@ -37,7 +33,6 @@ using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
-using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -348,6 +343,19 @@ namespace ArmoniK.Compute.PollingAgent
       }
 
 
+
+      logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
+      if (taskData.Retries >= taskData.Options.MaxRetries)
+      {
+        logger_.LogInformation("Task has been retried too many times");
+        message.Status = QueueMessageStatus.Poisonous;
+        await tableStorage_.UpdateTaskStatusAsync(message.TaskId,
+                                                  TaskStatus.Failed,
+                                                  CancellationToken.None);
+        return false;
+      }
+
+
       logger_.LogDebug("Handling the task status ({status})",
                        taskData.Status);
       switch (taskData.Status)
@@ -389,17 +397,6 @@ namespace ArmoniK.Compute.PollingAgent
           logger_.LogCritical("Task was in an unknown state {state}",
                               taskData.Status);
           throw new ArgumentOutOfRangeException(nameof(taskData));
-      }
-
-      logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
-      if (taskData.Retries >= taskData.Options.MaxRetries)
-      {
-        logger_.LogInformation("Task has been retried too many times");
-        message.Status = QueueMessageStatus.Poisonous;
-        await tableStorage_.UpdateTaskStatusAsync(message.TaskId,
-                                                  TaskStatus.Failed,
-                                                  CancellationToken.None);
-        return false;
       }
 
       logger_.LogDebug("Changing task status to 'Dispatched'");
@@ -460,11 +457,26 @@ namespace ArmoniK.Compute.PollingAgent
                                                taskData.Options.MaxDuration.ToTimeSpan(),
                                      cancellationToken: CancellationToken.None);
 
-      ComputeReply result = null;
       try
       {
         await updateTask;
-        result = await call.WrapRpcException();
+        var result = await call.WrapRpcException();
+        logger_.LogInformation("Compute finished successfully.");
+
+        /*
+         * Store Result
+         */
+
+        logger_.LogInformation("Sending result to storage.");
+        await taskResultStorage_.AddOrUpdateAsync(taskData.Id,
+                                                  result,
+                                                  CancellationToken.None);
+        logger_.LogInformation("Result sent.");
+        message.Status = QueueMessageStatus.Processed;
+        await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id,
+                                                               TaskStatus.Completed,
+                                                               CancellationToken.None),
+                           increaseTask);
       }
       catch (Exception e)
       {
@@ -477,22 +489,7 @@ namespace ArmoniK.Compute.PollingAgent
         }
       }
 
-      logger_.LogInformation("Compute finished successfully.");
 
-      /*
-       * Store Result
-       */
-
-      logger_.LogInformation("Sending result to storage.");
-      await taskResultStorage_.AddOrUpdateAsync(taskData.Id,
-                                                result,
-                                                CancellationToken.None);
-      logger_.LogInformation("Result sent.");
-      message.Status = QueueMessageStatus.Processed;
-      await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                             TaskStatus.Completed,
-                                                             CancellationToken.None),
-                         increaseTask);
     }
 
     private async Task<bool> HandleExceptionAsync(Exception e, TaskData taskData, IQueueMessage message, CancellationToken cancellationToken)

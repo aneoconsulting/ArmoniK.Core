@@ -27,14 +27,14 @@ using NUnit.Framework;
 
 namespace ArmoniK.Adapters.MongoDB.Tests
 {
-  [TestFixture]
-  internal class FieldFilterTests
+  [TestFixture(TestOf = typeof(ExpressionsBuilders))]
+  internal class ExpressionsBuildersFieldFilterExpressionTests
   {
     [Test]
     public void ShouldRecognizeSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SessionId,
-                                                                new[] { "Session" }).Compile();
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SessionId,
+                                                          new[] { "Session" }).Compile();
 
       var model = new TaskDataModel
                   { SessionId = "Session" };
@@ -45,9 +45,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRejectOtherSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SessionId,
-                                                                new[] { "Session" })
-                                   .Compile();
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SessionId,
+                                                           new[] { "Session" })
+                                    .Compile();
 
       var model = new TaskDataModel
                   { SessionId = "OtherSession" };
@@ -58,10 +58,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldExcludeSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SessionId,
-                                                                new[] { "Session" },
-                                                          false)
-                                   .Compile();
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SessionId,
+                                                           new[] { "Session" },
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
                   { SessionId = "Session" };
@@ -72,10 +72,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldIncludeOtherSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SessionId,
-                                                                new[] { "Session" },
-                                                          false)
-                                   .Compile();
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SessionId,
+                                                           new[] { "Session" },
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
                   { SessionId = "OtherSession" };
@@ -86,9 +86,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRecognizeSubSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SubSessionId,
-                                                                new[] { "SubSession" })
-                                   .Compile();
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+                                                           new[] { "SubSession" })
+                                    .Compile();
 
       var model = new TaskDataModel
                   { SubSessionId = "SubSession" };
@@ -99,10 +99,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldExcludeSubSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SubSessionId,
-                                                                new[] { "SubSession" }, 
-                                                          false)
-                                   .Compile();
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+                                                           new[] { "SubSession" }, 
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
                   { SubSessionId = "SubSession" };
@@ -113,9 +113,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRecognizeMultipleSubSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SubSessionId,
-                                                                new[] { "SubSession", "SubSession2" })
-                                   .Compile();
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+                                                           new[] { "SubSession", "SubSession2" })
+                                    .Compile();
 
       var model = new TaskDataModel
                   { SubSessionId = "SubSession" };
@@ -126,10 +126,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldExcludeMultipleSubSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SubSessionId,
-                                                                new[] { "SubSession", "SubSession2" },
-                                                          false)
-                                   .Compile();
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+                                                           new[] { "SubSession", "SubSession2" },
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
                   { SubSessionId = "SubSession" };
@@ -140,9 +140,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRejectOtherSubSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SubSessionId,
-                                                                new[] { "SubSession" })
-                                   .Compile();
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+                                                           new[] { "SubSession" })
+                                    .Compile();
 
       var model = new TaskDataModel
                   { SubSessionId = "OtherSubSession" };
@@ -153,7 +153,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldIncludeOtherSubSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SubSessionId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
                                                                 new[] { "SubSession" },
                                                           false)
                                    .Compile(true);
@@ -167,7 +167,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRejectOtherMultipleSubSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SubSessionId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
                                                                 new[] { "SubSession", "SubSession2" })
                                    .Compile();
 
@@ -180,7 +180,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldIncludeOtherMultipleSubSession()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.SubSessionId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
                                                                 new[] { "SubSession", "SubSession2" },
                                                           false)
                                    .Compile();
@@ -194,7 +194,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRecognizeStatus()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
                                                                 new[] { TaskStatus.Completed })
                                    .Compile();
 
@@ -207,7 +207,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldExcludeStatus()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
                                                                 new[] { TaskStatus.Completed }, 
                                                           false)
                                    .Compile();
@@ -221,7 +221,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRecognizeMultipleStatus()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
                                                                 new[] { TaskStatus.Completed, TaskStatus.Canceled })
                                    .Compile();
 
@@ -234,7 +234,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldExcludeMultipleStatus()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
                                                                 new[] { TaskStatus.Completed, TaskStatus.Canceled },
                                                           false)
                                    .Compile();
@@ -248,7 +248,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRejectOtherStatus()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
                                                                 new[] { TaskStatus.Completed })
                                    .Compile();
 
@@ -261,7 +261,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldIncludeOtherStatus()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
                                                                 new[] { TaskStatus.Completed },
                                                           false)
                                    .Compile(true);
@@ -275,7 +275,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRejectOtherMultipleStatus()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
                                                                 new[] { TaskStatus.Completed, TaskStatus.Canceling })
                                    .Compile();
 
@@ -288,7 +288,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldIncludeOtherMultipleStatus()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.Status,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
                                                                 new[] { TaskStatus.Completed, TaskStatus.Canceling },
                                                           false)
                                    .Compile();
@@ -302,7 +302,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRecognizeTask()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
                                                                 new[] { "Task" })
                                    .Compile();
 
@@ -315,7 +315,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldExcludeTask()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
                                                                 new[] { "Task" }, 
                                                           false)
                                    .Compile();
@@ -329,7 +329,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRecognizeMultipleTask()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
                                                                 new[] { "Task", "Task2" })
                                    .Compile();
 
@@ -342,7 +342,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldExcludeMultipleTask()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
                                                                 new[] { "Task", "Task2" },
                                                           false)
                                    .Compile();
@@ -356,7 +356,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRejectOtherTask()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
                                                                 new[] { "Task" })
                                    .Compile();
 
@@ -369,7 +369,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldIncludeOtherTask()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
                                                                 new[] { "Task" },
                                                           false)
                                    .Compile(true);
@@ -383,7 +383,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldRejectOtherMultipleTask()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
                                                                 new[] { "Task", "Task2" })
                                    .Compile();
 
@@ -396,7 +396,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     [Test]
     public void ShouldIncludeOtherMultipleTask()
     {
-      var func = MongoCollectionExt.FieldFilterExpression(model => model.TaskId,
+      var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
                                                                 new[] { "Task", "Task2" },
                                                           false)
                                    .Compile();

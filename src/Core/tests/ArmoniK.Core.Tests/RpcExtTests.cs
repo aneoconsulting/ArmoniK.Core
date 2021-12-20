@@ -23,11 +23,14 @@
 
 using System;
 
+using ArmoniK.Core.Exceptions;
 using ArmoniK.Core.gRPC;
 
 using Grpc.Core;
 
 using NUnit.Framework;
+
+using TimeoutException = ArmoniK.Core.Exceptions.TimeoutException;
 
 namespace ArmoniK.Core.Tests
 {
@@ -82,20 +85,32 @@ namespace ArmoniK.Core.Tests
 
 
 
-    [TestCase(StatusCode.DeadlineExceeded)]
-    [TestCase(StatusCode.Cancelled)]
-    public void DoNotHandleRpcExceptionsWithStatus(StatusCode status)
+    [Test]
+    public void ThrowCancelledExceptionWhenCallWasCancelled()
     {
-      Assert.IsFalse(RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
-                                            status));
+      Assert.Throws<TaskCanceledException>(() => RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
+                                            StatusCode.Cancelled));
     }
 
-    [TestCase(StatusCode.DeadlineExceeded)]
-    [TestCase(StatusCode.Cancelled)]
-    public void DoNotHandleAggregateExceptionsWithStatus(StatusCode status)
+    [Test]
+    public void ThrowTimeoutExceptionWhenCallReachedDeadline()
     {
-      Assert.IsFalse(RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
-                                             status));
+      Assert.Throws<TimeoutException>(() => RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
+                                            StatusCode.DeadlineExceeded));
+    }
+
+    [Test]
+    public void ThrowCancelledExceptionWhenCallWasCancelledAggregated()
+    {
+      Assert.Throws<TaskCanceledException>(() => RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
+                                                                                                StatusCode.Cancelled));
+    }
+
+    [Test]
+    public void ThrowTimeoutExceptionWhenCallReachedDeadlineAggregated()
+    {
+      Assert.Throws<TimeoutException>(() => RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
+                                                                    StatusCode.DeadlineExceeded));
     }
 
   }

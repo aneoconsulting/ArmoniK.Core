@@ -21,12 +21,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Adapters.MongoDB
-{
-  public class ParentSubSessionRelation
-  {
-    public string ParentSubSession { get; set; }
+using System.Linq;
 
-    public string TaskId { get; set; }
+using ArmoniK.Core.gRPC.V1;
+
+using FluentValidation;
+
+using JetBrains.Annotations;
+
+namespace ArmoniK.Core.gRPC.Validators
+{
+  [UsedImplicitly]
+  public class TaskFilterValidator : AbstractValidator<TaskFilter>
+  {
+
+    public TaskFilterValidator()
+    {
+      RuleFor(tf => tf).Must(filter => filter.IncludedTaskIds.All(id => !filter.ExcludedTaskIds.Contains(id)))
+                       .WithMessage($"Content of {nameof(TaskFilter.IncludedTaskIds)} and {nameof(TaskFilter.ExcludedTaskIds)} must not overlap.");
+
+      RuleFor(tf => tf).Must(filter => filter.IncludedStatuses.All(status => !filter.ExcludedStatuses.Contains(status)))
+                       .WithMessage($"Content of {nameof(TaskFilter.IncludedStatuses)} and {nameof(TaskFilter.ExcludedStatuses)} must not overlap.");
+    }
   }
 }

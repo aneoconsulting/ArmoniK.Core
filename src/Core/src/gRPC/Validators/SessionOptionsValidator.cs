@@ -25,13 +25,16 @@ using ArmoniK.Core.gRPC.V1;
 
 using FluentValidation;
 
+using JetBrains.Annotations;
+
 namespace ArmoniK.Core.gRPC.Validators
 {
+  [UsedImplicitly]
   public class SessionOptionsValidator : AbstractValidator<SessionOptions>
   {
     public SessionOptionsValidator()
     {
-      RuleFor(o => o.DefaultTaskOption).NotNull()
+      RuleFor(o => o.DefaultTaskOption).NotEmpty()
                                        .SetValidator(new TaskOptionsValidator());
     }
   }

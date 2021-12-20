@@ -31,7 +31,7 @@ namespace ArmoniK.Core.gRPC.Validators
   {
     public PayloadValidator()
     {
-      RuleFor(o => o.Data).NotNull().NotEmpty();
+      RuleFor(o => o.Data).NotEmpty();
     }
   }
 }

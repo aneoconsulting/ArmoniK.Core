@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
-  <Import Project="..\..\..\..\Versions.xml"/>
+  <Import Project="..\..\..\..\Versions.xml" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -36,6 +36,7 @@
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.0" />
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" />
   </ItemGroup>
 

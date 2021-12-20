@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,10 +42,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using ILogger = Microsoft.Extensions.Logging.ILogger;
+using ExpressionVisitor = System.Linq.Expressions.ExpressionVisitor;
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Adapters.MongoDB
@@ -153,7 +155,7 @@ namespace ArmoniK.Adapters.MongoDB
                                        .FilterQuery(rootTaskFilter)
                                        .Select(model => model.TaskId)
                                        .ToListAsync(cancellationToken);
-      
+
       var rootCountTask = taskCollection.AsQueryable(sessionHandle)
                                         .FilterQuery(filter)
                                         .CountAsync(cancellationToken);
@@ -161,56 +163,74 @@ namespace ArmoniK.Adapters.MongoDB
       var rootTaskList = await rootTaskListTask;
       logger_.LogDebug("root tasks: {taskList}", string.Join(", ", rootTaskList));
 
-      var parameter = Expression.Parameter(typeof(ParentSubSessionRelation),
-                                           "tuple");
+      var filterExpression = BuildChildrenFilterExpression(rootTaskList);
 
-      var filterExpressionBody =
-        rootTaskList.Aggregate<string, Expression>(
-                                               Expression.Constant(false),
-                                               (expr, parentTaskId) =>
-                                               {
-                                                 var left = expr;
+      var childrenTaskFilter = new TaskFilter(filter)
+      {
+        SubSessionId = string.Empty,
+      };
+      childrenTaskFilter.IncludedTaskIds.Clear();
+      childrenTaskFilter.ExcludedTaskIds.Clear();
 
-                                                 var right = Expression.Equal(Expression.Property(parameter,
-                                                                                                  typeof(ParentSubSessionRelation),
-                                                                                                  nameof(ParentSubSessionRelation.ParentSubSession)),
-                                                                              Expression.Constant(parentTaskId,
-                                                                                                  typeof(string)));
-                                                 return Expression.Or(left,
-                                                                      right);
 
-                                               }
-                                              );
+      if (logger_.IsEnabled(LogLevel.Debug))
+      {
 
-      var filterExpression = Expression.Lambda<Func<ParentSubSessionRelation, bool>>(filterExpressionBody,
-                                                                                     parameter);
+        var childrenList = await taskCollection.AsQueryable(sessionHandle)
+                                               .Where(filterExpression)
+                                               .Select(model => new TaskDataModel
+                                                                {
+                                                                  SessionId    = model.SessionId,
+                                                                  SubSessionId = model.SubSessionId,
+                                                                  TaskId       = model.TaskId,
+                                                                  Status       = model.Status,
+                                                                })
+                                               .Take(10)
+                                               .ToListAsync(cancellationToken);
+        logger_.LogDebug("Children tasks (first 10): {taskList}",
+                         string.Join(", ",
+                                     childrenList.Select(model => model.TaskId)));
 
-      var childrenFilter = new TaskFilter(filter)
-                           {
-                             SubSessionId = string.Empty,
-                           };
-      childrenFilter.IncludedTaskIds.Clear();
-      childrenFilter.ExcludedTaskIds.Clear();
-      var childrenRetrieved = await taskCollection.AsQueryable(sessionHandle)
-                                                  .FilterQuery(childrenFilter)
-                                                  .SelectMany(model => model.ParentRelations)
-                                                  .Where(filterExpression)
-                                                  .Select(tuple => tuple.TaskId)
-                                                  .Distinct()
-                                                  .ToListAsync(cancellationToken);
-      logger_.LogDebug("children tasks: {childrenRetrieved}",
-                       string.Join(", ",
-                                   childrenRetrieved));
+        var countedChildrenList = await taskCollection.AsQueryable(sessionHandle)
+                                                      .Where(filterExpression)
+                                                      .Select(model => new TaskDataModel
+                                                                       {
+                                                                         SessionId    = model.SessionId,
+                                                                         SubSessionId = model.SubSessionId,
+                                                                         TaskId       = model.TaskId,
+                                                                         Status       = model.Status,
+                                                                       })
+                                                      .FilterQuery(childrenTaskFilter)
+                                                      .Select(model => model.TaskId)
+                                                      .Take(10)
+                                                      .ToListAsync(cancellationToken);
+        logger_.LogDebug("Children counted tasks (first 10): {taskList}",
+                         string.Join(", ",
+                                     countedChildrenList));
+      }
 
-      var childrenCountTask = childrenRetrieved.Count();
+      var childrenCountTask = taskCollection.AsQueryable(sessionHandle)
+                                            .Where(filterExpression)
+                                            .FilterQuery(childrenTaskFilter)
+                                            .CountAsync(cancellationToken);
 
       var rootCount = await rootCountTask;
+      var childrenCount = await childrenCountTask;
+
       logger_.LogDebug("rootCount:{rootCount}",
                        rootCount);
-      var childrenCount = childrenCountTask;
       logger_.LogDebug("childrenCount:{childrenCount}",
                        childrenCount);
       return rootCount + childrenCount;
+    }
+
+    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IList<string> rootTaskList)
+    {
+      if (rootTaskList is null || !rootTaskList.Any())
+        return model => false;
+      return model => rootTaskList.Contains(model.SubSessionId) ||
+                      // ReSharper disable once ConvertClosureToMethodGroup for better handling by MongoDriver visitor
+                      model.ParentsSubSessions.Any(parentSubSession => rootTaskList.Contains(parentSubSession));
     }
 
     public async Task<SessionId> CreateSessionAsync(SessionOptions    sessionOptions,
@@ -224,7 +244,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       List<string> parents    = new();
 
-      if (sessionOptions.ParentTask is not null) //TODO: create a validator so that if ParentTaskIs defined, all fields are defined.
+      if (sessionOptions.ParentTask is not null)
       {
         var t = await sessionCollection.AsQueryable(sessionHandle)
                                        .Where(x => x.SessionId == sessionOptions.ParentTask.Session &&
@@ -389,12 +409,13 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-      var session = await sessionCollection.AsQueryable(sessionHandle)
-                                           .Where(x => x.SessionId == sessionId.Session &&
-                                                       x.SubSessionId == sessionId.SubSession)
-                                           .FirstAsync(cancellationToken);
 
-      return session.IsCancelled;
+      return await sessionCollection.AsQueryable(sessionHandle)
+                                         .Where(x => x.IsCancelled &&
+                                                     x.SessionId == sessionId.Session &&
+                                                     (x.SubSessionId == sessionId.SubSession || x.ParentsId.Contains(sessionId.SubSession)))
+                                         .Select(x => 1)
+                                         .AnyAsync(cancellationToken);
     }
 
     public async Task<bool> IsSessionClosedAsync(SessionId sessionId, CancellationToken cancellationToken = default)
@@ -404,17 +425,17 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
       if (!string.IsNullOrEmpty(sessionId.SubSession))
       {
-        var session = await sessionCollection.AsQueryable(sessionHandle)
-                                             .Where(x => x.SessionId == sessionId.Session &&
-                                                         x.SubSessionId == sessionId.SubSession)
-                                             .FirstAsync(cancellationToken);
-        return session.IsClosed;
+        return await sessionCollection.AsQueryable(sessionHandle)
+                                      .Where(x => x.IsClosed &&
+                                                  x.SessionId == sessionId.Session &&
+                                                  (x.SubSessionId == sessionId.SubSession || x.ParentsId.Contains(sessionId.SubSession)))
+                                      .Select(x => 1)
+                                      .AnyAsync(cancellationToken);
       }
 
-      return 0 ==
-             await sessionCollection.AsQueryable(sessionHandle)
+      return await sessionCollection.AsQueryable(sessionHandle)
                                     .Where(x => x.SessionId == sessionId.Session && !x.IsClosed)
-                                    .CountAsync(cancellationToken);
+                                    .AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -472,7 +493,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,
                                                                               status);
-
+      logger_.LogDebug("update task {task} to status {status}", id.ToPrintableId(), status);
       var res = await taskCollection.UpdateManyAsync(
                                                      x => x.SessionId == id.Session &&
                                                           x.SubSessionId == id.SubSession &&
@@ -486,7 +507,7 @@ namespace ArmoniK.Adapters.MongoDB
       switch (res.MatchedCount)
       {
         case 0:
-          throw new ArmoniKException("Task not found");
+          throw new ArmoniKException($"Task not found - {id.ToPrintableId()}");
         case > 1:
           throw new ArmoniKException("Multiple tasks modified");
       }

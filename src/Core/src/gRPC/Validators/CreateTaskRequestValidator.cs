@@ -34,10 +34,10 @@ namespace ArmoniK.Core.gRPC.Validators
   {
     public CreateTaskRequestValidator()
     {
-      RuleFor(r => r.SessionId).NotNull().SetValidator(new SessionIdValidator());
+      RuleFor(r => r.SessionId).NotEmpty().SetValidator(new SessionIdValidator());
       RuleFor(r => r.TaskOptions).SetValidator(new TaskOptionsValidator());
-      RuleFor(request => request.TaskRequests).NotNull().NotEmpty();
-      RuleForEach(request => request.TaskRequests).SetValidator(new TaskRequestValidator());
+      RuleFor(request => request.TaskRequests).NotEmpty();
+      RuleForEach(request => request.TaskRequests).NotEmpty().SetValidator(new TaskRequestValidator());
     }
   }
 }

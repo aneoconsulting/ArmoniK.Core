@@ -31,8 +31,8 @@ namespace ArmoniK.Core.gRPC.Validators
   {
     public SessionIdValidator()
     {
-      RuleFor(o => o.Session).NotNull().WithName(nameof(SessionId.Session));
-      RuleFor(o => o.SubSession).NotNull().WithName(nameof(SessionId.SubSession));
+      RuleFor(o => o.Session).NotEmpty().WithName(nameof(SessionId.Session));
+      RuleFor(o => o.SubSession).NotEmpty().WithName(nameof(SessionId.SubSession));
     }
   }
 }
