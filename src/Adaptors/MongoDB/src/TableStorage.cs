@@ -483,12 +483,13 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionHandle     = await sessionProvider_.GetAsync();
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-      var session = await sessionCollection.AsQueryable(sessionHandle)
-                                           .Where(x => x.SessionId == sessionId.Session &&
-                                                       x.SubSessionId == sessionId.SubSession)
-                                           .FirstAsync(cancellationToken);
 
-      return session.IsCancelled;
+      return await sessionCollection.AsQueryable(sessionHandle)
+                                         .Where(x => x.IsCancelled &&
+                                                     x.SessionId == sessionId.Session &&
+                                                     (x.SubSessionId == sessionId.SubSession || x.ParentsId.Contains(sessionId.SubSession)))
+                                         .Select(x => 1)
+                                         .AnyAsync(cancellationToken);
     }
 
     public async Task<bool> IsSessionClosedAsync(SessionId sessionId, CancellationToken cancellationToken = default)
@@ -498,17 +499,17 @@ namespace ArmoniK.Adapters.MongoDB
       var       sessionCollection = await sessionCollectionProvider_.GetAsync();
       if (!string.IsNullOrEmpty(sessionId.SubSession))
       {
-        var session = await sessionCollection.AsQueryable(sessionHandle)
-                                             .Where(x => x.SessionId == sessionId.Session &&
-                                                         x.SubSessionId == sessionId.SubSession)
-                                             .FirstAsync(cancellationToken);
-        return session.IsClosed;
+        return await sessionCollection.AsQueryable(sessionHandle)
+                                      .Where(x => x.IsClosed &&
+                                                  x.SessionId == sessionId.Session &&
+                                                  (x.SubSessionId == sessionId.SubSession || x.ParentsId.Contains(sessionId.SubSession)))
+                                      .Select(x => 1)
+                                      .AnyAsync(cancellationToken);
       }
 
-      return 0 ==
-             await sessionCollection.AsQueryable(sessionHandle)
+      return await sessionCollection.AsQueryable(sessionHandle)
                                     .Where(x => x.SessionId == sessionId.Session && !x.IsClosed)
-                                    .CountAsync(cancellationToken);
+                                    .AnyAsync(cancellationToken);
     }
 
     /// <inheritdoc />

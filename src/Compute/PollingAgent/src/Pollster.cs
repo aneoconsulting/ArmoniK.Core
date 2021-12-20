@@ -343,6 +343,19 @@ namespace ArmoniK.Compute.PollingAgent
       }
 
 
+
+      logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
+      if (taskData.Retries >= taskData.Options.MaxRetries)
+      {
+        logger_.LogInformation("Task has been retried too many times");
+        message.Status = QueueMessageStatus.Poisonous;
+        await tableStorage_.UpdateTaskStatusAsync(message.TaskId,
+                                                  TaskStatus.Failed,
+                                                  CancellationToken.None);
+        return false;
+      }
+
+
       logger_.LogDebug("Handling the task status ({status})",
                        taskData.Status);
       switch (taskData.Status)
@@ -384,17 +397,6 @@ namespace ArmoniK.Compute.PollingAgent
           logger_.LogCritical("Task was in an unknown state {state}",
                               taskData.Status);
           throw new ArgumentOutOfRangeException(nameof(taskData));
-      }
-
-      logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
-      if (taskData.Retries >= taskData.Options.MaxRetries)
-      {
-        logger_.LogInformation("Task has been retried too many times");
-        message.Status = QueueMessageStatus.Poisonous;
-        await tableStorage_.UpdateTaskStatusAsync(message.TaskId,
-                                                  TaskStatus.Failed,
-                                                  CancellationToken.None);
-        return false;
       }
 
       logger_.LogDebug("Changing task status to 'Dispatched'");
