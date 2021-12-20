@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -53,9 +54,9 @@ namespace ArmoniK.Adapters.MongoDB
 
     public byte[] Payload { get; set; }
 
-    public IEnumerable<string> Dependencies { get; set; }
-    
-    public IEnumerable<string> ParentsSubSessions { get; set; }
+    public IList<string> Dependencies { get; set; } = Array.Empty<string>();
+
+    public IList<string> ParentsSubSessions { get; set; } = Array.Empty<string>();
 
     /// <inheritdoc />
     public string CollectionName => "tasks";
@@ -119,8 +120,8 @@ namespace ArmoniK.Adapters.MongoDB
                                                      cm.MapProperty(nameof(Retries)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
-                                                     cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true);
-                                                     cm.MapProperty(nameof(ParentsSubSessions)).SetIgnoreIfDefault(true);
+                                                     cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                     cm.MapProperty(nameof(ParentsSubSessions)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
                                                      cm.SetIgnoreExtraElements(true);
                                                    });
     }

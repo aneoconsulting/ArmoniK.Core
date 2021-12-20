@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -227,7 +228,7 @@ namespace ArmoniK.Adapters.MongoDB
              : base.VisitParameter(node);
     }
 
-    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IEnumerable<string> rootTaskList)
+    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression_(IList<string> rootTaskList)
     {
       var parameter = Expression.Parameter(typeof(TaskDataModel),
                                            "model");
@@ -256,6 +257,52 @@ namespace ArmoniK.Adapters.MongoDB
                                                         );
 
       var filterExpression = Expression.Lambda<Func<TaskDataModel, bool>>(areChildrenExpressionBody,
+                                                                          parameter);
+      return filterExpression;
+    }
+    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IList<string> rootTaskList)
+    {
+      if (rootTaskList is null || !rootTaskList.Any())
+        return model => false;
+
+      var parameter = Expression.Parameter(typeof(TaskDataModel),
+                                           "model");
+
+      var notNulParentsSubSessionsExpression = Expression.ReferenceNotEqual(Expression.Property(parameter,
+                                                                                       nameof(TaskDataModel.ParentsSubSessions)),
+                                                                   Expression.Constant(null, parameter.Type));
+
+      var anyLambdaParameter = Expression.Parameter(typeof(string),
+                                                    "parentSubSession");
+
+      var anyLambdaBody = rootTaskList.Skip(1)
+                                      .Aggregate<string, Expression>(
+                                                                     Expression.Equal(anyLambdaParameter,
+                                                                                      Expression.Constant(rootTaskList.First())),
+                                                                     (expr, parentId) =>
+                                                                     {
+                                                                       var newExpr = Expression.Equal(anyLambdaParameter,
+                                                                                                     Expression.Constant(parentId));
+                                                                       return Expression.Or(expr,
+                                                                                            newExpr);
+                                                                     }
+                                                                    );
+
+      var anyLambdaExpression = Expression.Lambda<Func<string, bool>>(anyLambdaBody,
+                                                                      anyLambdaParameter);
+
+      var method = typeof(Enumerable)
+                  .GetMethods(BindingFlags.Static | BindingFlags.Public)
+                  .Single(mi => mi.Name == nameof(Enumerable.Any) && mi.GetParameters().Count() ==2 && mi.IsGenericMethod)
+                  .GetGenericMethodDefinition()
+                  .MakeGenericMethod(typeof(string));
+
+      var body = Expression.Call(null,
+                                 method,
+                                 Expression.Property(parameter, nameof(TaskDataModel.ParentsSubSessions)),
+                                 anyLambdaExpression);
+
+      var filterExpression = Expression.Lambda<Func<TaskDataModel, bool>>(Expression.And(notNulParentsSubSessionsExpression, body),
                                                                           parameter);
       return filterExpression;
     }

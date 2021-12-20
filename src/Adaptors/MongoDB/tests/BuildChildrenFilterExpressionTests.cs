@@ -26,6 +26,10 @@ using System.Linq;
 
 using ArmoniK.Core.gRPC.V1;
 
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson;
+using MongoDB.Driver;
+
 using NUnit.Framework;
 
 namespace ArmoniK.Adapters.MongoDB.Tests
@@ -301,10 +305,19 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                            };
       Console.WriteLine($"taskDataModels: {string.Join(", ", taskDataModels.Select(model => model.TaskId).OrderBy(s => s))}");
 
-      var parentsIds = new[] { "49da1bd5-578d-4abf-83a0-ae030165d365" };
+      var parentsIds = new[] { "49da1bd5-578d-4abf-83a0-ae030165d365", "49da1bd5-578d-4abf-83a0-ae030165d65" };
 
 
       var filterExpression = TableStorage.BuildChildrenFilterExpression(parentsIds);
+
+      var definition = Builders<TaskDataModel>.Filter.Where(filterExpression);
+
+      var documentSerializer = BsonSerializer.SerializerRegistry.GetSerializer<TaskDataModel>();
+
+      var renderedFilter = definition.Render(documentSerializer,
+                                             BsonSerializer.SerializerRegistry);
+
+      Console.WriteLine(renderedFilter.ToString());
 
       var filteredTasks = taskDataModels.AsQueryable().Where(filterExpression);
 
