@@ -183,9 +183,6 @@ namespace ArmoniK.Adapters.MongoDB
         var renderedFilter = definition.Render(documentSerializer,
                                                BsonSerializer.SerializerRegistry);
 
-        logger_.LogDebug("Request to filter children tasks is {request}",
-                         renderedFilter.ToString());
-
         var childrenList = await taskCollection.AsQueryable(sessionHandle)
                                                .Where(filterExpression)
                                                .Select(model => new TaskDataModel
@@ -195,15 +192,26 @@ namespace ArmoniK.Adapters.MongoDB
                                                                   TaskId       = model.TaskId,
                                                                   Status       = model.Status,
                                                                 })
+                                               .Take(10)
                                                .ToListAsync(cancellationToken);
-        logger_.LogDebug("Children tasks: {taskList}",
+        logger_.LogDebug("Children tasks (first 10): {taskList}",
                          string.Join(", ",
                                      childrenList.Select(model => model.TaskId)));
 
-        var countedChildrenList = childrenList.AsQueryable()
-                                              .FilterQuery(childrenTaskFilter)
-                                              .Select(model => model.TaskId);
-        logger_.LogDebug("Children counted tasks: {taskList}",
+        var countedChildrenList = await taskCollection.AsQueryable(sessionHandle)
+                                                      .Where(filterExpression)
+                                                      .Select(model => new TaskDataModel
+                                                                       {
+                                                                         SessionId    = model.SessionId,
+                                                                         SubSessionId = model.SubSessionId,
+                                                                         TaskId       = model.TaskId,
+                                                                         Status       = model.Status,
+                                                                       })
+                                                      .FilterQuery(childrenTaskFilter)
+                                                      .Select(model => model.TaskId)
+                                                      .Take(10)
+                                                      .ToListAsync(cancellationToken);
+        logger_.LogDebug("Children counted tasks (first 10): {taskList}",
                          string.Join(", ",
                                      countedChildrenList));
       }
