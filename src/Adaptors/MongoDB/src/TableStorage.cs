@@ -42,9 +42,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+using ExpressionVisitor = System.Linq.Expressions.ExpressionVisitor;
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Adapters.MongoDB
@@ -173,6 +175,17 @@ namespace ArmoniK.Adapters.MongoDB
 
       if (logger_.IsEnabled(LogLevel.Debug))
       {
+
+        var definition = Builders<TaskDataModel>.Filter.Where(filterExpression);
+
+        var documentSerializer = BsonSerializer.SerializerRegistry.GetSerializer<TaskDataModel>();
+
+        var renderedFilter = definition.Render(documentSerializer,
+                                               BsonSerializer.SerializerRegistry);
+
+        logger_.LogDebug("Request to filter children tasks is {request}",
+                         renderedFilter.ToString());
+
         var childrenList = await taskCollection.AsQueryable(sessionHandle)
                                                .Where(filterExpression)
                                                .Select(model => new TaskDataModel
@@ -228,7 +241,7 @@ namespace ArmoniK.Adapters.MongoDB
              : base.VisitParameter(node);
     }
 
-    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression_(IList<string> rootTaskList)
+    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression__(IList<string> rootTaskList)
     {
       var parameter = Expression.Parameter(typeof(TaskDataModel),
                                            "model");
@@ -260,7 +273,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                                           parameter);
       return filterExpression;
     }
-    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IList<string> rootTaskList)
+    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression_(IList<string> rootTaskList)
     {
       if (rootTaskList is null || !rootTaskList.Any())
         return model => false;
@@ -305,6 +318,14 @@ namespace ArmoniK.Adapters.MongoDB
       var filterExpression = Expression.Lambda<Func<TaskDataModel, bool>>(Expression.And(notNulParentsSubSessionsExpression, body),
                                                                           parameter);
       return filterExpression;
+    }
+    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IList<string> rootTaskList)
+    {
+      if (rootTaskList is null || !rootTaskList.Any())
+        return model => false;
+      return model => model.ParentsSubSessions != null && 
+                      // ReSharper disable once ConvertClosureToMethodGroup for better handling by MongoDriver visitor
+                      model.ParentsSubSessions.Any(parentSubSession => rootTaskList.Contains(parentSubSession));
     }
 
     public async Task<SessionId> CreateSessionAsync(SessionOptions    sessionOptions,
