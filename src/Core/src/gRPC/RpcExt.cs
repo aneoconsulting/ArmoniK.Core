@@ -115,9 +115,11 @@ namespace ArmoniK.Core.gRPC
         if (!HandleExceptions(e,
                               asyncUnaryCall.GetStatus().StatusCode))
           throw;
+
+        throw new ArmoniKException("An exception occurred during the rpc call but has been handled",
+                                   e);
       }
 
-      throw new ArmoniKException("An exception occurred during execution but has been handled");
     }
 
     public static bool IsValid(this Lease lease) 
