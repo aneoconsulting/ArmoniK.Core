@@ -66,9 +66,12 @@ namespace ArmoniK.Adapters.MongoDB
                                                                        {
                                                                          cb.Subscribe<CommandStartedEvent>(e =>
                                                                                                            {
-                                                                                                             logger.LogDebug("{CommandName} - {Command}",
-                                                                                                                                           e.CommandName,
-                                                                                                                                           e.Command.ToJson());
+                                                                                                             if (logger.IsEnabled(LogLevel.Debug))
+                                                                                                             {
+                                                                                                               logger.LogDebug("{CommandName} - {Command}",
+                                                                                                                               e.CommandName,
+                                                                                                                               e.Command.ToJson());
+                                                                                                             }
                                                                                                            });
                                                                        };
                              return new MongoClient(mongoClientSettings);
