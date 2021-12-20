@@ -66,9 +66,9 @@ namespace ArmoniK.Adapters.MongoDB
                                                                        {
                                                                          cb.Subscribe<CommandStartedEvent>(e =>
                                                                                                            {
-                                                                                                             if (logger.IsEnabled(LogLevel.Debug))
+                                                                                                             if (logger.IsEnabled(LogLevel.Trace))
                                                                                                              {
-                                                                                                               logger.LogDebug("{CommandName} - {Command}",
+                                                                                                               logger.LogTrace("{CommandName} - {Command}",
                                                                                                                                e.CommandName,
                                                                                                                                e.Command.ToJson());
                                                                                                              }
