@@ -176,13 +176,6 @@ namespace ArmoniK.Adapters.MongoDB
       if (logger_.IsEnabled(LogLevel.Debug))
       {
 
-        var definition = Builders<TaskDataModel>.Filter.Where(filterExpression);
-
-        var documentSerializer = BsonSerializer.SerializerRegistry.GetSerializer<TaskDataModel>();
-
-        var renderedFilter = definition.Render(documentSerializer,
-                                               BsonSerializer.SerializerRegistry);
-
         var childrenList = await taskCollection.AsQueryable(sessionHandle)
                                                .Where(filterExpression)
                                                .Select(model => new TaskDataModel
