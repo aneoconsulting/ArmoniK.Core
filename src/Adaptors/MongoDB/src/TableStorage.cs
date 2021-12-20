@@ -223,102 +223,6 @@ namespace ArmoniK.Adapters.MongoDB
       return rootCount + childrenCount;
     }
 
-    private class ParameterUpdateVisitor : ExpressionVisitor
-    {
-      private readonly ParameterExpression oldParameter_;
-      private readonly ParameterExpression newParameter_;
-
-      public ParameterUpdateVisitor(ParameterExpression oldParameter, ParameterExpression newParameter)
-      {
-        oldParameter_ = oldParameter;
-        newParameter_ = newParameter;
-      }
-
-      protected override Expression VisitParameter(ParameterExpression node)
-        => ReferenceEquals(node,
-                           oldParameter_)
-             ? newParameter_
-             : base.VisitParameter(node);
-    }
-
-    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression__(IList<string> rootTaskList)
-    {
-      var parameter = Expression.Parameter(typeof(TaskDataModel),
-                                           "model");
-
-      Expression<Func<TaskDataModel, bool>> ElementaryFuncBuilder(string parentId)
-        => model
-             => model.ParentsSubSessions != null && model.ParentsSubSessions.Any(parentSubSession => parentId == parentSubSession);
-
-
-      var areChildrenExpressionBody
-        = rootTaskList is null
-            ? Expression.Constant(false)
-            : rootTaskList.Aggregate<string, Expression>(
-                                                         Expression.Constant(false),
-                                                         (expr, parentId) =>
-                                                         {
-                                                           var isChildExpression = ElementaryFuncBuilder(parentId);
-
-                                                           var visitor = new ParameterUpdateVisitor(isChildExpression.Parameters.Single(),
-                                                                                                    parameter);
-
-
-                                                           return Expression.Or(expr,
-                                                                                visitor.Visit(isChildExpression.Body));
-                                                         }
-                                                        );
-
-      var filterExpression = Expression.Lambda<Func<TaskDataModel, bool>>(areChildrenExpressionBody,
-                                                                          parameter);
-      return filterExpression;
-    }
-    public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression_(IList<string> rootTaskList)
-    {
-      if (rootTaskList is null || !rootTaskList.Any())
-        return model => false;
-
-      var parameter = Expression.Parameter(typeof(TaskDataModel),
-                                           "model");
-
-      var notNulParentsSubSessionsExpression = Expression.ReferenceNotEqual(Expression.Property(parameter,
-                                                                                       nameof(TaskDataModel.ParentsSubSessions)),
-                                                                   Expression.Constant(null, parameter.Type));
-
-      var anyLambdaParameter = Expression.Parameter(typeof(string),
-                                                    "parentSubSession");
-
-      var anyLambdaBody = rootTaskList.Skip(1)
-                                      .Aggregate<string, Expression>(
-                                                                     Expression.Equal(anyLambdaParameter,
-                                                                                      Expression.Constant(rootTaskList.First())),
-                                                                     (expr, parentId) =>
-                                                                     {
-                                                                       var newExpr = Expression.Equal(anyLambdaParameter,
-                                                                                                     Expression.Constant(parentId));
-                                                                       return Expression.Or(expr,
-                                                                                            newExpr);
-                                                                     }
-                                                                    );
-
-      var anyLambdaExpression = Expression.Lambda<Func<string, bool>>(anyLambdaBody,
-                                                                      anyLambdaParameter);
-
-      var method = typeof(Enumerable)
-                  .GetMethods(BindingFlags.Static | BindingFlags.Public)
-                  .Single(mi => mi.Name == nameof(Enumerable.Any) && mi.GetParameters().Count() ==2 && mi.IsGenericMethod)
-                  .GetGenericMethodDefinition()
-                  .MakeGenericMethod(typeof(string));
-
-      var body = Expression.Call(null,
-                                 method,
-                                 Expression.Property(parameter, nameof(TaskDataModel.ParentsSubSessions)),
-                                 anyLambdaExpression);
-
-      var filterExpression = Expression.Lambda<Func<TaskDataModel, bool>>(Expression.And(notNulParentsSubSessionsExpression, body),
-                                                                          parameter);
-      return filterExpression;
-    }
     public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IList<string> rootTaskList)
     {
       if (rootTaskList is null || !rootTaskList.Any())
@@ -339,7 +243,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       List<string> parents    = new();
 
-      if (sessionOptions.ParentTask is not null) //TODO: create a validator so that if ParentTaskIs defined, all fields are defined.
+      if (sessionOptions.ParentTask is not null)
       {
         var t = await sessionCollection.AsQueryable(sessionHandle)
                                        .Where(x => x.SessionId == sessionOptions.ParentTask.Session &&

@@ -21,6 +21,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using ArmoniK.Adapters.MongoDB.Options;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection.Options;
@@ -30,9 +32,13 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Configuration;
+using MongoDB.Driver.Core.Events;
 
 namespace ArmoniK.Adapters.MongoDB
 {
@@ -52,9 +58,20 @@ namespace ArmoniK.Adapters.MongoDB
                        .AddTransient<IMongoClient>
                           (provider =>
                            {
-                             var options = provider.GetRequiredService<IOptions<Options.MongoDB>>();
-                             return new MongoClient
-                               (options.Value.ConnectionString);
+                             var options             = provider.GetRequiredService<IOptions<Options.MongoDB>>();
+                             var logger              = provider.GetRequiredService<ILogger<IMongoClient>>();
+                             var mongoConnectionUrl  = new MongoUrl(options.Value.ConnectionString);
+                             var mongoClientSettings = MongoClientSettings.FromUrl(mongoConnectionUrl);
+                             mongoClientSettings.ClusterConfigurator = cb =>
+                                                                       {
+                                                                         cb.Subscribe<CommandStartedEvent>(e =>
+                                                                                                           {
+                                                                                                             logger.LogDebug("{CommandName} - {Command}",
+                                                                                                                                           e.CommandName,
+                                                                                                                                           e.Command.ToJson());
+                                                                                                           });
+                                                                       };
+                             return new MongoClient(mongoClientSettings);
                            })
                        .AddTransient
                           (provider =>
