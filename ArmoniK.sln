@@ -90,6 +90,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{32C3A803-8BF6-4F29-8B1A-9F5EC97ED971}"
 	ProjectSection(SolutionItems) = preProject
 		imgs.py = imgs.py
+		rebuild.sh = rebuild.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Versioning", "Versioning", "{A12D37A5-9B85-4ABB-9056-865F62C390C0}"
