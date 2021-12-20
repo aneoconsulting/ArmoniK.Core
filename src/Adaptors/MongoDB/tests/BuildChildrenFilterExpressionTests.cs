@@ -39,7 +39,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
   {
 
     [Test]
-    public void ParentsSubSessionsFieldIsNull()
+    public void ParentsSubSessionsFieldIsUndefined()
     {
       var parentsIds = new[]{ "parent1" };
 

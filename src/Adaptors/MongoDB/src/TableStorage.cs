@@ -323,7 +323,7 @@ namespace ArmoniK.Adapters.MongoDB
     {
       if (rootTaskList is null || !rootTaskList.Any())
         return model => false;
-      return model => model.ParentsSubSessions != null && 
+      return model => 
                       // ReSharper disable once ConvertClosureToMethodGroup for better handling by MongoDriver visitor
                       model.ParentsSubSessions.Any(parentSubSession => rootTaskList.Contains(parentSubSession));
     }
