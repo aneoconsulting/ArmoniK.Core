@@ -138,6 +138,21 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     }
 
     [Test]
+    public void DetectFirstLevel()
+    {
+      var filter = TableStorage.BuildChildrenFilterExpression(new[] { "parent0" })
+                               .Compile();
+
+      var tdm = new TaskDataModel()
+                {
+                  TaskId       = "taskId1",
+                  SubSessionId = "parent0",
+                };
+
+      Assert.IsTrue(filter(tdm));
+    }
+
+    [Test]
     public void CompoundDataFromRealCaseTest()
     {
       var taskDataModels = new TaskDataModel[]
