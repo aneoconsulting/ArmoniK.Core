@@ -325,7 +325,7 @@ namespace ArmoniK.Compute.PollingAgent
       Task<int> dependencyCheckTask;
       if (taskData.Dependencies.Any())
       {
-        dependencyCheckTask = tableStorage_.CountSubTasksAsync(new TaskFilter
+        dependencyCheckTask = tableStorage_.CountSubTasksAsync(new()
                                                                {
                                                                  SessionId       = taskData.Id.Session,
                                                                  SubSessionId    = taskData.Id.SubSession,
@@ -335,7 +335,11 @@ namespace ArmoniK.Compute.PollingAgent
                                                                    TaskStatus.Completed,
                                                                  },
                                                                },
-                                                               combinedCts.Token);
+                                                               combinedCts.Token)
+                                           .ContinueWith(task => task.Result
+                                                                     .Where(tuple => tuple.Status != TaskStatus.Completed)
+                                                                     .Sum(tuple => tuple.Count),
+                                                         cancellationToken);
       }
       else
       {
@@ -377,7 +381,7 @@ namespace ArmoniK.Compute.PollingAgent
           break;
         case TaskStatus.Dispatched:
           break;
-        case TaskStatus.Failed:
+        case TaskStatus.Error:
           logger_.LogInformation("Task was on error elsewhere ; retrying");
           break;
         case TaskStatus.Timeout:
@@ -393,6 +397,10 @@ namespace ArmoniK.Compute.PollingAgent
         case TaskStatus.WaitingForChildren:
           logger_.LogInformation("Task was already processed and is waiting for children");
           return false;
+        case TaskStatus.Failed:
+          logger_.LogInformation("Task is failed");
+          message.Status = QueueMessageStatus.Poisonous;
+          break;
         default:
           logger_.LogCritical("Task was in an unknown state {state}",
                               taskData.Status);
@@ -536,7 +544,7 @@ namespace ArmoniK.Compute.PollingAgent
 
           message.Status = QueueMessageStatus.Failed;
           await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                    TaskStatus.Failed,
+                                                    TaskStatus.Error,
                                                     CancellationToken.None);
           return true;
         }
@@ -565,7 +573,7 @@ namespace ArmoniK.Compute.PollingAgent
                            taskData.Id.Session);
           message.Status = QueueMessageStatus.Failed;
           await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                    TaskStatus.Failed,
+                                                    TaskStatus.Error,
                                                     CancellationToken.None);
           Console.WriteLine(e);
           return false;
