@@ -78,11 +78,14 @@ namespace ArmoniK.Adapters.MongoDB
       var indexModels = new CreateIndexModel<TaskDataModel>[]
                         {
                           new(sessionIndex,
-                              new CreateIndexOptions { Name = nameof(sessionIndex) }),
+                              new()
+                              { Name = nameof(sessionIndex) }),
                           new(taskIdIndex,
-                              new CreateIndexOptions { Name = nameof(taskIdIndex), Unique = true }),
+                              new()
+                              { Name = nameof(taskIdIndex), Unique = true }),
                           new(sessionStatusIndex,
-                              new CreateIndexOptions { Name = nameof(sessionStatusIndex) }),
+                              new()
+                              { Name = nameof(sessionStatusIndex) }),
                         };
 
       return collection.Indexes.CreateManyAsync(sessionHandle,
@@ -91,14 +94,15 @@ namespace ArmoniK.Adapters.MongoDB
 
     public TaskData ToTaskData() => new()
                                     {
-                                      Id = new TaskId
+                                      Id = new()
                                            {
                                              Session    = SessionId,
                                              SubSession = SubSessionId,
                                              Task       = TaskId,
                                            },
                                       IsPayloadAvailable = HasPayload,
-                                      Payload            = new Payload { Data = ByteString.CopyFrom(Payload) },
+                                      Payload            = new()
+                                                           { Data = ByteString.CopyFrom(Payload) },
                                       Options            = Options,
                                       Retries            = Retries,
                                       Status             = Status,

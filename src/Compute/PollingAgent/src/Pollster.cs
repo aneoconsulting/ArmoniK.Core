@@ -303,7 +303,7 @@ namespace ArmoniK.Compute.PollingAgent
        */
 
       logger_.LogDebug("checking that the session is not cancelled");
-      var isSessionCancelled = await tableStorage_.IsSessionCancelledAsync(new SessionId
+      var isSessionCancelled = await tableStorage_.IsSessionCancelledAsync(new()
                                                                            {
                                                                              Session    = message.TaskId.Session,
                                                                              SubSession = message.TaskId.SubSession,

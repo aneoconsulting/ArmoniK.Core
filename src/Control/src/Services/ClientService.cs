@@ -76,16 +76,16 @@ namespace ArmoniK.Control.Services
       }
       catch (KeyNotFoundException e)
       {
-        throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.FailedPrecondition,
+                                   e.Message));
       }
       catch (Exception e)
       {
-        throw new RpcException(new Status(StatusCode.Unknown,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.Unknown,
+                                   e.Message));
       }
 
-      return new Empty();
+      return new();
     }
 
     public override async Task<Empty> CancelTask(TaskFilter request, ServerCallContext context)
@@ -98,16 +98,16 @@ namespace ArmoniK.Control.Services
       }
       catch (KeyNotFoundException e)
       {
-        throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.FailedPrecondition,
+                                   e.Message));
       }
       catch (Exception e)
       {
-        throw new RpcException(new Status(StatusCode.Unknown,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.Unknown,
+                                   e.Message));
       }
 
-      return new Empty();
+      return new();
     }
 
     public override async Task<Empty> CloseSession(SessionId request, ServerCallContext context)
@@ -120,16 +120,16 @@ namespace ArmoniK.Control.Services
       }
       catch (KeyNotFoundException e)
       {
-        throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.FailedPrecondition,
+                                   e.Message));
       }
       catch (Exception e)
       {
-        throw new RpcException(new Status(StatusCode.Unknown,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.Unknown,
+                                   e.Message));
       }
 
-      return new Empty();
+      return new();
     }
 
     public override Task<SessionId> CreateSession(SessionOptions request, ServerCallContext context)
@@ -167,7 +167,8 @@ namespace ArmoniK.Control.Services
 
       var payloadsUpdateTask = inits.Where(tuple => !tuple.HasPayload)
                                     .Select(tuple => taskPayloadStorage_.AddOrUpdateAsync(tuple.id,
-                                                                                          new Payload { Data = ByteString.CopyFrom(tuple.Payload) },
+                                                                                          new()
+                                                                                          { Data = ByteString.CopyFrom(tuple.Payload) },
                                                                                           context.CancellationToken))
                                     .WhenAll();
 
@@ -250,7 +251,8 @@ namespace ArmoniK.Control.Services
       {
         var result = await taskResultStorage_.TryGetValuesAsync(taskId,
                                                                 context.CancellationToken);
-        var reply = new SinglePayloadReply { TaskId = taskId, Data = new Payload { Data = result.Result } };
+        var reply = new SinglePayloadReply { TaskId = taskId, Data = new()
+                                                                     { Data = result.Result } };
         multiplePayloadReply.Payloads.Add(reply);
       }
       return multiplePayloadReply;

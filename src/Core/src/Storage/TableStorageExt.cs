@@ -54,7 +54,7 @@ namespace ArmoniK.Core.Storage
 
       var futureDependenciesData = taskData.Dependencies.Select(async id =>
                                                                         {
-                                                                          var depTaskData = await tableStorage.ReadTaskAsync(new TaskId(taskData.Id){Task = id},
+                                                                          var depTaskData = await tableStorage.ReadTaskAsync(new(taskData.Id){Task = id},
                                                                                                                              aggregateCts.Token);
                                                                           return await tableStorage.IsTaskCompleted(depTaskData,
                                                                                                                     aggregateCts.Token);

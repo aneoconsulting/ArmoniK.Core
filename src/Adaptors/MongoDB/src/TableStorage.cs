@@ -269,7 +269,8 @@ namespace ArmoniK.Adapters.MongoDB
           cancellationToken: cancellationToken);
       }
 
-      return new SessionId { Session = data.SessionId, SubSession = data.SubSessionId };
+      return new()
+             { Session = data.SessionId, SubSession = data.SubSessionId };
     }
 
     public async Task DeleteTaskAsync(TaskId id, CancellationToken cancellationToken = default)
