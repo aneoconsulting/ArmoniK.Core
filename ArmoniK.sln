@@ -61,7 +61,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.DevelopmentKit.Symp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WorkerApi", "WorkerApi", "{405A08BF-360C-4344-B015-3B9AB5B50044}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armonik.DevelopmentKit.WorkerApi.Common", "DevelopmentKit\csharp\WorkerApi\ArmoniK.DevelopmentKit.WorkerApi.Common\Armonik.DevelopmentKit.WorkerApi.Common.csproj", "{C303206B-FEBB-412D-9CC4-9E503E26ECB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Armonik.DevelopmentKit.WorkerApi.Common", "DevelopmentKit\csharp\WorkerApi\ArmoniK.DevelopmentKit.WorkerApi.Common\ArmoniK.DevelopmentKit.WorkerApi.Common.csproj", "{C303206B-FEBB-412D-9CC4-9E503E26ECB3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.DevelopmentKit.WorkerApi", "DevelopmentKit\csharp\WorkerApi\ArmoniK.DevelopmentKit.WorkerApi\ArmoniK.DevelopmentKit.WorkerApi.csproj", "{3EA24A5F-DFC7-4CDB-B352-FA485A16A173}"
 EndProject
