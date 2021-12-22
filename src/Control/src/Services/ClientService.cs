@@ -28,7 +28,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core;
 using ArmoniK.Core.Exceptions;
-using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 using ArmoniK.Core.Utils;
@@ -258,7 +257,7 @@ namespace ArmoniK.Control.Services
       return multiplePayloadReply;
     }
 
-    public override async Task<Empty> WaitForCompletion(WaitRequest request, ServerCallContext context)
+    public override async Task<Count> WaitForCompletion(WaitRequest request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
 
@@ -270,7 +269,7 @@ namespace ArmoniK.Control.Services
                                          CountUpdateFunc);
     }
 
-    private async Task<Empty> WaitForCompletionCore(WaitRequest request, ServerCallContext context, Func<Task<IEnumerable<(TaskStatus Status, int Count)>>>
+    private async Task<Count> WaitForCompletionCore(WaitRequest request, ServerCallContext context, Func<Task<IEnumerable<(TaskStatus Status, int Count)>>>
                                                       countUpdateFunc)
     {
       while (true)
@@ -320,7 +319,13 @@ namespace ArmoniK.Control.Services
               throw new ArmoniKException($"Unknown TaskStatus {status}");
           }
 
-          if (notCompleted == 0) return new();
+          if (notCompleted == 0)
+          {
+            var output = new Count();
+            // ReSharper disable once PossibleMultipleEnumeration
+            output.Values.AddRange(counts.Select(tuple => new StatusCount { Count = tuple.Count, Status = tuple.Status, }));
+            return output;
+          }
 
           await Task.Delay(tableStorage_.PollingDelay);
         }
@@ -328,7 +333,7 @@ namespace ArmoniK.Control.Services
     }
 
     /// <inheritdoc />
-    public override async Task<Empty> WaitForSubTasksCompletion(WaitRequest request, ServerCallContext context)
+    public override async Task<Count> WaitForSubTasksCompletion(WaitRequest request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
 
