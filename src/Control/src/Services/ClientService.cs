@@ -265,17 +265,18 @@ namespace ArmoniK.Control.Services
         => tableStorage_.CountTasksAsync(request.Filter,
                                          context.CancellationToken);
 
-      return await WaitForCompletionCore(request, context,
+      return await WaitForCompletionCore(request,
                                          CountUpdateFunc);
     }
 
-    private async Task<Count> WaitForCompletionCore(WaitRequest request, ServerCallContext context, Func<Task<IEnumerable<(TaskStatus Status, int Count)>>>
+    private async Task<Count> WaitForCompletionCore(WaitRequest request, Func<Task<IEnumerable<(TaskStatus Status, int Count)>>>
                                                       countUpdateFunc)
     {
       while (true)
       {
         var counts = await countUpdateFunc();
 
+        // ReSharper disable once PossibleMultipleEnumeration
         foreach (var (status, count) in counts)
         {
           var notCompleted = 0;
@@ -324,6 +325,8 @@ namespace ArmoniK.Control.Services
             var output = new Count();
             // ReSharper disable once PossibleMultipleEnumeration
             output.Values.AddRange(counts.Select(tuple => new StatusCount { Count = tuple.Count, Status = tuple.Status, }));
+            logger_.LogDebug("All sub tasks have completed. Returning count={count}",
+                             output);
             return output;
           }
 
@@ -345,7 +348,6 @@ namespace ArmoniK.Control.Services
                                          context.CancellationToken);
 
       return await WaitForCompletionCore(request,
-                                         context,
                                          CountUpdateFunc);
     }
   }

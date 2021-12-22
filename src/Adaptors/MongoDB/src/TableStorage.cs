@@ -138,6 +138,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       var res = await taskCollection.AsQueryable(sessionHandle)
                                     .FilterQuery(filter)
+                                    .Select(model => new { Status = model.Status, Id = model.TaskId })
                                     .GroupBy(model => model.Status)
                                     .Select(models => new { Status = models.Key, Count = models.Count() })
                                     .ToListAsync(cancellationToken);
@@ -163,6 +164,7 @@ namespace ArmoniK.Adapters.MongoDB
 
       var rootCountTask = taskCollection.AsQueryable(sessionHandle)
                                         .FilterQuery(filter)
+                                        .Select(model=> new {Status = model.Status, Id = model.TaskId})
                                         .GroupBy(model => model.Status)
                                         .Select(models => new { Status = models.Key, Count = models.Count() })
                                         .ToListAsync(cancellationToken);
@@ -189,15 +191,20 @@ namespace ArmoniK.Adapters.MongoDB
       var rootCount = await rootCountTask;
       var childrenCount = await childrenCountTask;
 
-      logger_.LogDebug("rootCount:{rootCount}",
+      logger_.LogDebug("RootCount:{rootCount}",
                        rootCount);
-      logger_.LogDebug("childrenCount:{childrenCount}",
+      logger_.LogDebug("ChildrenCount:{childrenCount}",
                        childrenCount);
 
       rootCount.AddRange(childrenCount);
 
-      return rootCount.GroupBy(arg => arg.Status)
-                      .Select(grouping => (Status: grouping.Key, Count: grouping.Sum(arg => arg.Count)));
+      var output = rootCount.GroupBy(arg => arg.Status)
+                                        .Select(grouping => (Status: grouping.Key, Count: grouping.Sum(arg => arg.Count)));
+
+      logger_.LogDebug("Output:{output}",
+                       output);
+
+      return output;
     }
 
     public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IList<string> rootTaskList)
