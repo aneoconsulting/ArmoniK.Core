@@ -38,6 +38,25 @@ namespace ArmoniK.Adapters.MongoDB
 {
   public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaggedId
   {
+    static TaskDataModel()
+    {
+      if (!BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
+        BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
+                                                     {
+                                                       cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
+                                                       cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(SubSessionId)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                       cm.MapProperty(nameof(Status)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(Retries)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
+                                                       cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                       cm.MapProperty(nameof(ParentsSubSessions)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                       cm.SetIgnoreExtraElements(true);
+                                                     });
+    }
+
     public string SessionId { get; set; }
 
     public string SubSessionId { get; set; }
@@ -79,18 +98,28 @@ namespace ArmoniK.Adapters.MongoDB
                         {
                           new(sessionIndex,
                               new()
-                              { Name = nameof(sessionIndex) }),
+                              {
+                                Name = nameof(sessionIndex),
+                              }),
                           new(taskIdIndex,
                               new()
-                              { Name = nameof(taskIdIndex), Unique = true }),
+                              {
+                                Name   = nameof(taskIdIndex),
+                                Unique = true,
+                              }),
                           new(sessionStatusIndex,
                               new()
-                              { Name = nameof(sessionStatusIndex) }),
+                              {
+                                Name = nameof(sessionStatusIndex),
+                              }),
                         };
 
       return collection.Indexes.CreateManyAsync(sessionHandle,
                                                 indexModels);
     }
+
+    /// <inheritdoc />
+    public string IdTag => Options.IdTag;
 
     public TaskData ToTaskData() => new()
                                     {
@@ -101,36 +130,24 @@ namespace ArmoniK.Adapters.MongoDB
                                              Task       = TaskId,
                                            },
                                       IsPayloadAvailable = HasPayload,
-                                      Payload            = new()
-                                                           { Data = ByteString.CopyFrom(Payload) },
-                                      Options            = Options,
-                                      Retries            = Retries,
-                                      Status             = Status,
-                                      Dependencies       = { Dependencies },
+                                      Payload = new()
+                                                {
+                                                  Data = ByteString.CopyFrom(Payload),
+                                                },
+                                      Options = Options,
+                                      Retries = Retries,
+                                      Status  = Status,
+                                      Dependencies =
+                                      {
+                                        Dependencies,
+                                      },
                                     };
 
-    public TaskId GetTaskId() => new() { Session = SessionId, SubSession = SubSessionId, Task = TaskId };
-
-    static TaskDataModel()
-    {
-      if(!BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
-        BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
-                                                   {
-                                                     cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
-                                                     cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(SubSessionId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
-                                                     cm.MapProperty(nameof(Status)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(Retries)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
-                                                     cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                     cm.MapProperty(nameof(ParentsSubSessions)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                     cm.SetIgnoreExtraElements(true);
-                                                   });
-    }
-
-    /// <inheritdoc />
-    public string IdTag => Options.IdTag;
+    public TaskId GetTaskId() => new()
+                                 {
+                                   Session    = SessionId,
+                                   SubSession = SubSessionId,
+                                   Task       = TaskId,
+                                 };
   }
 }

@@ -31,7 +31,7 @@ namespace ArmoniK.Adapters.MongoDB
     private static CombGuidGenerator Generator => CombGuidGenerator.Instance;
 
     /// <inheritdoc />
-    public object GenerateId(object container, object document) 
+    public object GenerateId(object container, object document)
       => $"{(document as ITaggedId)?.IdTag}{Generator.GenerateId(container, document)}";
 
     /// <inheritdoc />

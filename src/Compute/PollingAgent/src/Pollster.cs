@@ -55,7 +55,7 @@ namespace ArmoniK.Compute.PollingAgent
     private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
     private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
 
-    public Pollster(ILogger<Pollster> logger,
+    public Pollster(ILogger<Pollster>                     logger,
                     IOptions<ComputePlan>                 options,
                     IQueueStorage                         queueStorage,
                     ITableStorage                         tableStorage,
@@ -79,16 +79,17 @@ namespace ArmoniK.Compute.PollingAgent
       cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
       try
       {
-        var prefetchChannel = Channel.CreateBounded<(TaskData taskData, IQueueMessage message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
-        {
-          SingleReader                  = true,
-          SingleWriter                  = true,
-          FullMode                      = BoundedChannelFullMode.Wait,
-          Capacity                      = 1,
-          AllowSynchronousContinuations = false,
-        });
-        
-                                                         logger_.LogInformation("Prefetching loop started.");
+        var prefetchChannel =
+          Channel.CreateBounded<(TaskData taskData, IQueueMessage message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
+                                                                                                          {
+                                                                                                            SingleReader                  = true,
+                                                                                                            SingleWriter                  = true,
+                                                                                                            FullMode                      = BoundedChannelFullMode.Wait,
+                                                                                                            Capacity                      = 1,
+                                                                                                            AllowSynchronousContinuations = false,
+                                                                                                          });
+
+        logger_.LogInformation("Prefetching loop started.");
 
         try
         {
@@ -152,7 +153,6 @@ namespace ArmoniK.Compute.PollingAgent
         {
           prefetchChannel.Writer.Complete();
         }
-
       }
       catch (Exception e)
       {
@@ -162,19 +162,21 @@ namespace ArmoniK.Compute.PollingAgent
 
       lifeTime_.StopApplication();
     }
+
     public async Task MainLoopPrefetch(CancellationToken cancellationToken)
     {
       cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
       try
       {
-        var prefetchChannel = Channel.CreateBounded<(TaskData taskData, IQueueMessage message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
-        {
-          SingleReader                  = true,
-          SingleWriter                  = true,
-          FullMode                      = BoundedChannelFullMode.Wait,
-          Capacity                      = 1,
-          AllowSynchronousContinuations = false,
-        });
+        var prefetchChannel =
+          Channel.CreateBounded<(TaskData taskData, IQueueMessage message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
+                                                                                                          {
+                                                                                                            SingleReader                  = true,
+                                                                                                            SingleWriter                  = true,
+                                                                                                            FullMode                      = BoundedChannelFullMode.Wait,
+                                                                                                            Capacity                      = 1,
+                                                                                                            AllowSynchronousContinuations = false,
+                                                                                                          });
 
         var prefetchTask = Task<Task>.Factory.StartNew(async () =>
                                                        {
@@ -324,12 +326,14 @@ namespace ArmoniK.Compute.PollingAgent
 
       Task<int> dependencyCheckTask;
       if (taskData.Dependencies.Any())
-      {
         dependencyCheckTask = tableStorage_.CountSubTasksAsync(new()
                                                                {
-                                                                 SessionId       = taskData.Id.Session,
-                                                                 SubSessionId    = taskData.Id.SubSession,
-                                                                 IncludedTaskIds = { taskData.Dependencies },
+                                                                 SessionId    = taskData.Id.Session,
+                                                                 SubSessionId = taskData.Id.SubSession,
+                                                                 IncludedTaskIds =
+                                                                 {
+                                                                   taskData.Dependencies,
+                                                                 },
                                                                  ExcludedStatuses =
                                                                  {
                                                                    TaskStatus.Completed,
@@ -340,12 +344,8 @@ namespace ArmoniK.Compute.PollingAgent
                                                                      .Where(tuple => tuple.Status != TaskStatus.Completed)
                                                                      .Sum(tuple => tuple.Count),
                                                          cancellationToken);
-      }
       else
-      {
         dependencyCheckTask = Task.FromResult(0);
-      }
-
 
 
       logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
@@ -412,7 +412,7 @@ namespace ArmoniK.Compute.PollingAgent
                                                            TaskStatus.Dispatched,
                                                            combinedCts.Token);
 
-      if (await dependencyCheckTask>0)
+      if (await dependencyCheckTask > 0)
       {
         logger_.LogInformation("Dependencies are not complete yet.");
         message.Status = QueueMessageStatus.Postponed;
@@ -441,13 +441,16 @@ namespace ArmoniK.Compute.PollingAgent
                                                                  CancellationToken.None);
 
       var request = new ComputeRequest
-      {
-        Session    = taskData.Id.Session,
-        Subsession = taskData.Id.SubSession,
-        TaskId     = taskData.Id.Task,
-        Payload    = taskData.Payload.Data,
-        Dependencies = { taskData.Dependencies },
-      };
+                    {
+                      Session    = taskData.Id.Session,
+                      Subsession = taskData.Id.SubSession,
+                      TaskId     = taskData.Id.Task,
+                      Payload    = taskData.Payload.Data,
+                      Dependencies =
+                      {
+                        taskData.Dependencies,
+                      },
+                    };
       request.TaskOptions.Add(taskData.Options.Options);
 
       logger_.LogDebug("Get client connection to the worker");
@@ -489,15 +492,11 @@ namespace ArmoniK.Compute.PollingAgent
       catch (Exception e)
       {
         if (!await HandleExceptionAsync(e,
-                                   taskData,
-                                   message,
-                                   cancellationToken))
-        {
+                                        taskData,
+                                        message,
+                                        cancellationToken))
           throw;
-        }
       }
-
-
     }
 
     private async Task<bool> HandleExceptionAsync(Exception e, TaskData taskData, IQueueMessage message, CancellationToken cancellationToken)
@@ -551,17 +550,13 @@ namespace ArmoniK.Compute.PollingAgent
         case AggregateException ae:
         {
           foreach (var ie in ae.InnerExceptions)
-          {
             // If the exception was not handled, lazily allocate a list of unhandled
             // exceptions (to be rethrown later) and add it.
             if (!await HandleExceptionAsync(ie,
                                             taskData,
                                             message,
                                             cancellationToken))
-            {
               return false;
-            }
-          }
 
           return true;
         }
@@ -577,7 +572,6 @@ namespace ArmoniK.Compute.PollingAgent
                                                     CancellationToken.None);
           Console.WriteLine(e);
           return false;
-
         }
       }
     }
@@ -595,7 +589,7 @@ namespace ArmoniK.Compute.PollingAgent
         var payload = await taskPayloadStorage_.TryGetValuesAsync(taskData.Id,
                                                                   combinedCt);
         logger_.LogInformation("Payload retrieved");
-        taskData.Payload    = payload;
+        taskData.Payload            = payload;
         taskData.IsPayloadAvailable = true;
       }
 

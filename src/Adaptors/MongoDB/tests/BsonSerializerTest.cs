@@ -44,7 +44,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       var tdm = new TaskDataModel
                 {
                   HasPayload = true,
-                  Options = new TaskOptions
+                  Options = new()
                             {
                               Priority = 2,
                               Options =
@@ -62,11 +62,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                   SessionId    = "ses1",
                   Status       = TaskStatus.Creating,
                   SubSessionId = "sub1",
-                  Dependencies = new[]
-                  {
-                    "dep1", 
-                    "dep2",
-                  },
+                  Dependencies = new[] { "dep1", "dep2" },
                 };
 
       var serialized = tdm.ToBson();

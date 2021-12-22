@@ -71,8 +71,8 @@ namespace ArmoniK.Adapters.MongoDB
       var pullIndex = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
                                                                     submissionIndex);
       var pullIndex2 = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
-                                                                    submissionIndex,
-                                                                    ownedUntilIndex);
+                                                                     submissionIndex,
+                                                                     ownedUntilIndex);
       var lockedIndex = Builders<QueueMessageModel>.IndexKeys.Combine(messageIdIndex,
                                                                       ownerIdIndex);
 
@@ -80,13 +80,27 @@ namespace ArmoniK.Adapters.MongoDB
       var indexModels = new CreateIndexModel<QueueMessageModel>[]
                         {
                           new(pullIndex,
-                              new CreateIndexOptions { Name = nameof(pullIndex) }),
+                              new()
+                              {
+                                Name = nameof(pullIndex),
+                              }),
                           new(pullIndex2,
-                              new CreateIndexOptions { Name = nameof(pullIndex2) }),
+                              new()
+                              {
+                                Name = nameof(pullIndex2),
+                              }),
                           new(lockedIndex,
-                              new CreateIndexOptions { Name = nameof(lockedIndex), Unique = true }),
+                              new()
+                              {
+                                Name   = nameof(lockedIndex),
+                                Unique = true,
+                              }),
                           new(messageIdIndex,
-                              new CreateIndexOptions { Name = nameof(messageIdIndex), Unique = true }),
+                              new()
+                              {
+                                Name   = nameof(messageIdIndex),
+                                Unique = true,
+                              }),
                         };
 
       return collection.Indexes.CreateManyAsync(sessionHandle,

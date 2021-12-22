@@ -75,7 +75,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions
+                                                   {
+                                                     ValidateOnBuild = true,
+                                                   });
 
       var table = provider.GetRequiredService<TableStorage>();
 
@@ -89,10 +92,13 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                              }).Result;
 
       var (_, _, _) = table.InitializeTaskCreation(session,
-                                                   new(), 
-                                                   new []
+                                                   new(),
+                                                   new[]
                                                    {
-                                                     new TaskRequest(){ Payload = new()}
+                                                     new TaskRequest
+                                                     {
+                                                       Payload = new(),
+                                                     },
                                                    }).Result.Single();
 
 

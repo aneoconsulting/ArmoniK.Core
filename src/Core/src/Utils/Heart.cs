@@ -56,7 +56,7 @@ namespace ArmoniK.Core.Utils
     {
       cancellationToken_ = cancellationToken;
       pulse_             = pulse;
-      this.beatPeriod_    = beatPeriod;
+      beatPeriod_        = beatPeriod;
       stoppedHeartCts_.Cancel();
     }
 
@@ -112,7 +112,7 @@ namespace ArmoniK.Core.Utils
       if (!stoppedHeartCts_.IsCancellationRequested) // already running with infinite loop
         return;
 
-      stoppedHeartCts_ = new CancellationTokenSource();
+      stoppedHeartCts_ = new();
       combinedSource_ = CancellationTokenSource.CreateLinkedTokenSource(stoppedHeartCts_.Token,
                                                                         cancellationToken_);
 

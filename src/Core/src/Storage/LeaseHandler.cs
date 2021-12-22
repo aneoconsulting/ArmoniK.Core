@@ -73,15 +73,15 @@ namespace ArmoniK.Core.Storage
       var lease = await leaseProvider_.TryAcquireLeaseAsync(taskId_,
                                                             cancellationToken_);
       leaseId_ = lease.LeaseId;
-      heart_ = new Heart(async ct =>
-                         {
-                           var renewedLease = await leaseProvider_.TryRenewLease(taskId_,
-                                                                                 leaseId_,
-                                                                                 ct);
-                           return renewedLease.IsValid();
-                         },
-                         leaseProvider_.AcquisitionPeriod,
-                         cancellationToken_);
+      heart_ = new(async ct =>
+                   {
+                     var renewedLease = await leaseProvider_.TryRenewLease(taskId_,
+                                                                           leaseId_,
+                                                                           ct);
+                     return renewedLease.IsValid();
+                   },
+                   leaseProvider_.AcquisitionPeriod,
+                   cancellationToken_);
 
       if (lease.IsValid())
         heart_.Start();

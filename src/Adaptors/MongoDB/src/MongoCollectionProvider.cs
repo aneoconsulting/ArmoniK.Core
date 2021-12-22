@@ -47,9 +47,11 @@ namespace ArmoniK.Adapters.MongoDB
              var model = new TDataModel();
              try
              {
-               await mongoDatabase.CreateCollectionAsync(
-                                                         model.CollectionName,
-                                                         new CreateCollectionOptions<TDataModel> { ExpireAfter = options.Value.DataRetention },
+               await mongoDatabase.CreateCollectionAsync(model.CollectionName,
+                                                         new CreateCollectionOptions<TDataModel>
+                                                         {
+                                                           ExpireAfter = options.Value.DataRetention,
+                                                         },
                                                          cancellationToken);
              }
              catch (MongoCommandException)

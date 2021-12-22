@@ -21,8 +21,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 using ArmoniK.Adapters.MongoDB.Options;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection.Options;
@@ -37,7 +35,6 @@ using Microsoft.Extensions.Options;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Core.Configuration;
 using MongoDB.Driver.Core.Events;
 
 namespace ArmoniK.Adapters.MongoDB
@@ -55,33 +52,31 @@ namespace ArmoniK.Adapters.MongoDB
                        .Configure<Options.TableStorage>(configuration.GetSection(Options.TableStorage.SettingSection))
                        .Configure<Options.LeaseProvider>(configuration.GetSection(Options.LeaseProvider.SettingSection))
                        .Configure<Options.ObjectStorage>(configuration.GetSection(Options.ObjectStorage.SettingSection))
-                       .AddTransient<IMongoClient>
-                          (provider =>
-                           {
-                             var options             = provider.GetRequiredService<IOptions<Options.MongoDB>>();
-                             var logger              = provider.GetRequiredService<ILogger<IMongoClient>>();
-                             var mongoConnectionUrl  = new MongoUrl(options.Value.ConnectionString);
-                             var mongoClientSettings = MongoClientSettings.FromUrl(mongoConnectionUrl);
-                             mongoClientSettings.ClusterConfigurator = cb =>
-                                                                       {
-                                                                         cb.Subscribe<CommandStartedEvent>(e =>
-                                                                                                           {
-                                                                                                             if (logger.IsEnabled(LogLevel.Trace))
-                                                                                                             {
-                                                                                                               logger.LogTrace("{CommandName} - {Command}",
-                                                                                                                               e.CommandName,
-                                                                                                                               e.Command.ToJson());
-                                                                                                             }
-                                                                                                           });
-                                                                       };
-                             return new MongoClient(mongoClientSettings);
-                           })
-                       .AddTransient
-                          (provider =>
-                           {
-                             var options = provider.GetRequiredService<IOptions<Options.MongoDB>>();
-                             return provider.GetRequiredService<IMongoClient>().GetDatabase(options.Value.DatabaseName);
-                           })
+                       .AddTransient<IMongoClient>(provider =>
+                                                   {
+                                                     var options             = provider.GetRequiredService<IOptions<Options.MongoDB>>();
+                                                     var logger              = provider.GetRequiredService<ILogger<IMongoClient>>();
+                                                     var mongoConnectionUrl  = new MongoUrl(options.Value.ConnectionString);
+                                                     var mongoClientSettings = MongoClientSettings.FromUrl(mongoConnectionUrl);
+                                                     mongoClientSettings.ClusterConfigurator = cb =>
+                                                                                               {
+                                                                                                 cb.Subscribe<CommandStartedEvent>(e =>
+                                                                                                                                   {
+                                                                                                                                     if (logger
+                                                                                                                                        .IsEnabled(LogLevel.Trace))
+                                                                                                                                       logger
+                                                                                                                                        .LogTrace("{CommandName} - {Command}",
+                                                                                                                                                  e.CommandName,
+                                                                                                                                                  e.Command.ToJson());
+                                                                                                                                   });
+                                                                                               };
+                                                     return new MongoClient(mongoClientSettings);
+                                                   })
+                       .AddTransient(provider =>
+                                     {
+                                       var options = provider.GetRequiredService<IOptions<Options.MongoDB>>();
+                                       return provider.GetRequiredService<IMongoClient>().GetDatabase(options.Value.DatabaseName);
+                                     })
                        .AddSingleton<SessionProvider>()
                        .AddSingleton(typeof(MongoCollectionProvider<>))
                        .AddTransient<TableStorage>()

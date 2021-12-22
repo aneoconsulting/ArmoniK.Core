@@ -32,7 +32,7 @@ namespace ArmoniK.Adapters.MongoDB
   public static class ExpressionsBuilders
   {
     public static Expression<Func<TaskDataModel, bool>> FieldFilterExpression<TField>(Expression<Func<TaskDataModel, TField>> expression,
-                                                                                      IList<TField>                     values,
+                                                                                      IList<TField>                           values,
                                                                                       bool                                    include = true)
     {
       var x = Expression.Parameter(typeof(TaskDataModel),
@@ -45,11 +45,11 @@ namespace ArmoniK.Adapters.MongoDB
                                                                       x);
     }
 
-    
-    public static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel,TField>> expression, 
-                                                         IList<TField>                    values, 
-                                                         bool                                   include, 
-                                                         Expression                             x)
+
+    public static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel, TField>> expression,
+                                                         IList<TField>                           values,
+                                                         bool                                    include,
+                                                         Expression                              x)
     {
       if (!values.Any())
         return Expression.Constant(true);
@@ -76,10 +76,9 @@ namespace ArmoniK.Adapters.MongoDB
                                  containsMethodInfo,
                                  valueExpr,
                                  property);
-      if(include)
+      if (include)
         return body;
-      else 
-        return Expression.Not(body);
+      return Expression.Not(body);
     }
   }
 }

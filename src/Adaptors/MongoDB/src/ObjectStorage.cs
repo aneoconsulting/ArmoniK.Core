@@ -89,16 +89,14 @@ namespace ArmoniK.Adapters.MongoDB
                                                         .SetOnInsert(odm => odm.Id,
                                                                      $"{key}{idx}");
 
-        taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>(
-                                                                             odm => odm.Key == key && odm.ChunkIdx == idx,
+        taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>(odm => odm.Key == key && odm.ChunkIdx == idx,
                                                                              updateDefinition,
                                                                              new FindOneAndUpdateOptions<ObjectDataModel>
                                                                              {
                                                                                ReturnDocument = ReturnDocument.After,
                                                                                IsUpsert       = true,
                                                                              },
-                                                                             cancellationToken
-                                                                            ));
+                                                                             cancellationToken));
       }
 
       await Task.WhenAll(taskList);
@@ -136,10 +134,8 @@ namespace ArmoniK.Adapters.MongoDB
       using var _                = logger_.LogFunction(key);
       var       objectCollection = await objectCollectionProvider_.GetAsync();
 
-      var res = await objectCollection.DeleteManyAsync(
-                                                       odm => odm.Key == key,
-                                                       cancellationToken: cancellationToken
-                                                      );
+      var res = await objectCollection.DeleteManyAsync(odm => odm.Key == key,
+                                                       cancellationToken);
       return res.DeletedCount > 0;
     }
   }
