@@ -511,6 +511,9 @@ namespace ArmoniK.Adapters.MongoDB
     {
       if (rootTaskList is null || !rootTaskList.Any())
         return model => false;
+      if (rootTaskList.Count == 1)
+        return model => rootTaskList[0] == model.SubSessionId || model.ParentsSubSessions.Contains(rootTaskList[0]);
+
       return model => rootTaskList.Contains(model.SubSessionId) ||
                       // ReSharper disable once ConvertClosureToMethodGroup for better handling by MongoDriver visitor
                       model.ParentsSubSessions.Any(parentSubSession => rootTaskList.Contains(parentSubSession));

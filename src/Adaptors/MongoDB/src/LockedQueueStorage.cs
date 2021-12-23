@@ -98,8 +98,7 @@ namespace ArmoniK.Adapters.MongoDB
         var filter = Builders<QueueMessageModel>.Filter
                                                 .Or(Builders<QueueMessageModel>.Filter.Exists(model => model.OwnedUntil,
                                                                                               false),
-                                                    Builders<QueueMessageModel>.Filter.Where(model => model.OwnedUntil == default ||
-                                                                                                      model.OwnedUntil < DateTime.UtcNow));
+                                                    Builders<QueueMessageModel>.Filter.Where(model => model.OwnedUntil < DateTime.UtcNow));
 
         logger_.LogDebug("Trying to get a new message from Mongo queue");
         var message = await queueCollection.FindOneAndUpdateAsync(filter,
