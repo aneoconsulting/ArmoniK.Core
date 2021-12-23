@@ -54,15 +54,20 @@ namespace ArmoniK.Adapters.MongoDB
       if (!values.Any())
         return Expression.Constant(true);
 
-
-      //var t = model => // ReSharper disable once ConvertClosureToMethodGroup for better handling by MongoDriver visitor
-      //                model.ParentsSubSessions.Any(parentSubSession => values.Contains(parentSubSession));
-
       var fieldName = ((MemberExpression)expression.Body).Member.Name;
 
       var property = Expression.Property(x,
                                          typeof(TaskDataModel),
                                          fieldName);
+
+      if (values.Count == 1)
+      {
+        return include
+                 ? Expression.Equal(property,
+                                    Expression.Constant(values[0]))
+                 : Expression.NotEqual(property,
+                                       Expression.Constant(values[0]));
+      }
 
       var containsMethodInfo = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)
                                                  .Single(m => m.Name == nameof(Enumerable.Contains) &&
@@ -73,12 +78,11 @@ namespace ArmoniK.Adapters.MongoDB
       var valueExpr = Expression.Constant(values);
 
       var body = Expression.Call(null,
-                                 containsMethodInfo,
-                                 valueExpr,
-                                 property);
-      if (include)
-        return body;
-      return Expression.Not(body);
+                                        containsMethodInfo,
+                                        valueExpr,
+                                        property);
+
+      return include ? body : Expression.Not(body);
     }
   }
 }
