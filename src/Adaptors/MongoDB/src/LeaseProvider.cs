@@ -98,12 +98,22 @@ namespace ArmoniK.Adapters.MongoDB
         logger_.LogInformation("Lease {leaseId} acquired for task {id}",
                                leaseId,
                                id);
-        return new Lease { ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt), Id = id, LeaseId = leaseId };
+        return new()
+               {
+                 ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt),
+                 Id             = id,
+                 LeaseId        = leaseId,
+               };
       }
 
       logger_.LogWarning("Could not acquire lease for task {id}",
                          id);
-      return new Lease { Id = id, LeaseId = string.Empty, ExpirationDate = new Timestamp() };
+      return new()
+             {
+               Id             = id,
+               LeaseId        = string.Empty,
+               ExpirationDate = new(),
+             };
     }
 
     /// <inheritdoc />
@@ -133,13 +143,23 @@ namespace ArmoniK.Adapters.MongoDB
         logger_.LogInformation("Lease {leaseId} renewed for task {id}",
                                leaseId,
                                id);
-        return new Lease { Id = id, LeaseId = leaseId, ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt) };
+        return new()
+               {
+                 Id             = id,
+                 LeaseId        = leaseId,
+                 ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt),
+               };
       }
 
       logger_.LogInformation("Could not renew lease {leaseId} for task {id}",
                              leaseId,
                              id);
-      return new Lease { Id = id, LeaseId = string.Empty, ExpirationDate = new Timestamp() };
+      return new()
+             {
+               Id             = id,
+               LeaseId        = string.Empty,
+               ExpirationDate = new(),
+             };
     }
 
     /// <inheritdoc />

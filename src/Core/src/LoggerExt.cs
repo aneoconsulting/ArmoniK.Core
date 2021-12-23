@@ -54,7 +54,7 @@ namespace ArmoniK.Core
 
     public static IDisposable LogFunction(this ILogger              logger,
                                           string                    id           = "",
-                                          LogLevel                  level        = LogLevel.Debug,
+                                          LogLevel                  level        = LogLevel.Trace,
                                           [CallerMemberName] string functionName = "")
     {
       var methodInfo = new StackTrace().GetFrame(1)?.GetMethod();

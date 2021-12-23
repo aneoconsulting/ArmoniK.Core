@@ -50,10 +50,10 @@ namespace ArmoniK.Core.Storage
       lockedQueueStorage_ = lockedQueueStorage;
       id_                 = id;
       cancellationToken_  = cancellationToken;
-      heart_ = new Heart(async ct => await lockedQueueStorage_.RenewDeadlineAsync(id_,
-                                                                                  ct),
-                         lockedQueueStorage_.LockRefreshPeriodicity,
-                         cancellationToken_);
+      heart_ = new(async ct => await lockedQueueStorage_.RenewDeadlineAsync(id_,
+                                                                            ct),
+                   lockedQueueStorage_.LockRefreshPeriodicity,
+                   cancellationToken_);
       heart_.Start();
       logger_ = logger;
     }

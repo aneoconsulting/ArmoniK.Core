@@ -34,7 +34,6 @@ namespace ArmoniK.Core.gRPC.Validators
   [UsedImplicitly]
   public class TaskFilterValidator : AbstractValidator<TaskFilter>
   {
-
     public TaskFilterValidator()
     {
       RuleFor(tf => tf).Must(filter => filter.IncludedTaskIds.All(id => !filter.ExcludedTaskIds.Contains(id)))

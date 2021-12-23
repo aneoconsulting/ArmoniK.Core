@@ -31,14 +31,10 @@ namespace ArmoniK.Adapters.MongoDB
 {
   public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()
   {
-    
-
     /// <inheritdoc />
     object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-    {
-      return Deserialize(context,
-                         args);
-    }
+      => Deserialize(context,
+                     args);
 
     /// <inheritdoc />
     public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, T value)
@@ -61,7 +57,7 @@ namespace ArmoniK.Adapters.MongoDB
                   args,
                   t);
       else
-        throw new Exception("Not supported type");
+        throw new("Not supported type");
     }
 
     /// <inheritdoc />

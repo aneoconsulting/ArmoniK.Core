@@ -143,8 +143,7 @@ namespace ArmoniK.Core.Storage
         yield return new LockedWrapperQueueMessage(qm,
                                                    deadlineHandler,
                                                    leaseHandler,
-                                                   cancellationToken
-        );
+                                                   cancellationToken);
       }
     }
 

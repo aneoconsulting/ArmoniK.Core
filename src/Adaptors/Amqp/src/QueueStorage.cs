@@ -29,7 +29,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Amqp;
-using Amqp.Framing;
 
 using ArmoniK.Core;
 using ArmoniK.Core.gRPC.V1;
@@ -127,9 +126,12 @@ namespace ArmoniK.Adapters.Amqp
                                            CancellationToken   cancellationToken = default)
     {
       var sender = await senders_[priority / 3];
-      await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(id.ToByteArray())
+      await Task.WhenAll(messages.Select(id => sender.SendAsync(new(id.ToByteArray())
                                                                 {
-                                                                  Header = new Header { Priority = (byte)((priority % 3) * 4) },
+                                                                  Header = new()
+                                                                           {
+                                                                             Priority = (byte)((priority % 3) * 4),
+                                                                           },
                                                                 })));
     }
   }

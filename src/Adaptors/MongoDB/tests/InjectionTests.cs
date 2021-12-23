@@ -43,22 +43,22 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void SetUp()
     {
       Dictionary<string, string> baseConfig = new()
-      {
-        { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
-        { "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage" },
-        { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
-        { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
-        { "MongoDB:ConnectionString", "mongodb://localhost" },
-        { "MongoDB:DatabaseName", "database" },
-        { "MongoDB:DataRetention", "10.00:00:00" },
-        { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
-        { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
-        { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
-        { "MongoDB:ObjectStorage:ChunkSize", "100000" },
-        { "MongoDB:QueueStorage:LockRefreshPeriodicity", "00:20:00" },
-        { "MongoDB:QueueStorage:PollPeriodicity", "00:00:50" },
-        { "MongoDB:QueueStorage:LockRefreshExtension", "00:50:00" },
-      };
+                                              {
+                                                { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
+                                                { "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage" },
+                                                { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
+                                                { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
+                                                { "MongoDB:ConnectionString", "mongodb://localhost" },
+                                                { "MongoDB:DatabaseName", "database" },
+                                                { "MongoDB:DataRetention", "10.00:00:00" },
+                                                { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
+                                                { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
+                                                { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
+                                                { "MongoDB:ObjectStorage:ChunkSize", "100000" },
+                                                { "MongoDB:QueueStorage:LockRefreshPeriodicity", "00:20:00" },
+                                                { "MongoDB:QueueStorage:PollPeriodicity", "00:00:50" },
+                                                { "MongoDB:QueueStorage:LockRefreshExtension", "00:50:00" },
+                                              };
 
       var configSource = new MemoryConfigurationSource
                          {
@@ -269,7 +269,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var _ = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+      var _ = services.BuildServiceProvider(new ServiceProviderOptions
+                                            {
+                                              ValidateOnBuild = true,
+                                            });
     }
 
     [Test]
@@ -279,7 +282,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions
+                                                   {
+                                                     ValidateOnBuild = true,
+                                                   });
 
       var table = provider.GetRequiredService<TableStorage>();
 
@@ -308,7 +314,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions
+                                                   {
+                                                     ValidateOnBuild = true,
+                                                   });
 
       var objectStorage = provider.GetRequiredService<ObjectStorage>();
 
@@ -322,7 +331,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions
+                                                   {
+                                                     ValidateOnBuild = true,
+                                                   });
 
       var queue = provider.GetRequiredService<LockedQueueStorage>();
 
@@ -336,7 +348,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions
+                                                   {
+                                                     ValidateOnBuild = true,
+                                                   });
 
       var queue = provider.GetRequiredService<LockedQueueStorage>();
 
@@ -351,7 +366,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions
+                                                   {
+                                                     ValidateOnBuild = true,
+                                                   });
 
       var queue = provider.GetRequiredService<LockedQueueStorage>();
 
@@ -366,7 +384,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions
+                                                   {
+                                                     ValidateOnBuild = true,
+                                                   });
 
       var queue = provider.GetRequiredService<LockedQueueStorage>();
 
@@ -381,7 +402,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions
+                                                   {
+                                                     ValidateOnBuild = true,
+                                                   });
 
       var table = provider.GetRequiredService<LeaseProvider>();
 
@@ -425,7 +449,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                               {
                                                 { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
                                               };
-      var configSource = new MemoryConfigurationSource { InitialData = baseConfig };
+      var configSource = new MemoryConfigurationSource
+                         {
+                           InitialData = baseConfig,
+                         };
 
       var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
                                               .Add(configSource);
@@ -451,7 +478,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                               {
                                                 { "Components:LockedQueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage" },
                                               };
-      var configSource = new MemoryConfigurationSource { InitialData = baseConfig };
+      var configSource = new MemoryConfigurationSource
+                         {
+                           InitialData = baseConfig,
+                         };
 
       var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
                                               .Add(configSource);
@@ -477,7 +507,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                               {
                                                 { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
                                               };
-      var configSource = new MemoryConfigurationSource { InitialData = baseConfig };
+      var configSource = new MemoryConfigurationSource
+                         {
+                           InitialData = baseConfig,
+                         };
 
       var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
                                               .Add(configSource);
@@ -503,7 +536,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                               {
                                                 { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
                                               };
-      var configSource = new MemoryConfigurationSource { InitialData = baseConfig };
+      var configSource = new MemoryConfigurationSource
+                         {
+                           InitialData = baseConfig,
+                         };
 
       var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
                                               .Add(configSource);

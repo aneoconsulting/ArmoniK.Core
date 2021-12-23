@@ -37,23 +37,21 @@ namespace ArmoniK.Core.Injection
   {
     public static IServiceCollection AddArmoniKCore(this IServiceCollection services,
                                                     IConfiguration          configuration)
-    {
-      return services.Configure<ComputePlan>(configuration.GetSection(ComputePlan.SettingSection))
-                     .Configure<GrpcChannel>(configuration.GetSection(GrpcChannel.SettingSection))
-                     .Configure<Components>(configuration.GetSection(Components.SettingSection))
-                     .AddSingleton<GrpcChannelProvider>()
-                     .AddSingleton<ClientServiceProvider>()
-                     .AddTransient<IObjectStorage, DistributedCacheObjectStorage>()
-                     .AddSingleton(typeof(KeyValueStorage<,>));
-    }
+      => services.Configure<ComputePlan>(configuration.GetSection(ComputePlan.SettingSection))
+                 .Configure<GrpcChannel>(configuration.GetSection(GrpcChannel.SettingSection))
+                 .Configure<Components>(configuration.GetSection(Components.SettingSection))
+                 .AddSingleton<GrpcChannelProvider>()
+                 .AddSingleton<ClientServiceProvider>()
+                 .AddTransient<IObjectStorage, DistributedCacheObjectStorage>()
+                 .AddSingleton(typeof(KeyValueStorage<,>));
 
     public static IServiceCollection ValidateGrpcRequests(this IServiceCollection services)
     {
       return services.AddGrpc(options =>
-                     {
-                       options.EnableMessageValidation();
-                       options.MaxReceiveMessageSize = null;
-                     })
+                              {
+                                options.EnableMessageValidation();
+                                options.MaxReceiveMessageSize = null;
+                              })
                      .Services
                      .AddValidator<CreateTaskRequestValidator>()
                      .AddValidator<PayloadValidator>()

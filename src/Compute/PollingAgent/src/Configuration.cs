@@ -32,8 +32,6 @@ namespace ArmoniK.Compute.PollingAgent
   {
     // to load from a terraform generated configuration file
     public static Configuration LoadFromFile(string filename)
-    {
-      throw new NotImplementedException($"{filename}");
-    }
+      => throw new NotImplementedException($"{filename}");
   }
 }

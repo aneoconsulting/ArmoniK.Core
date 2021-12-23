@@ -58,9 +58,17 @@ namespace ArmoniK.Adapters.MongoDB
       var indexModels = new CreateIndexModel<LeaseDataModel>[]
                         {
                           new(keyIndex,
-                              new CreateIndexOptions { Name = nameof(keyIndex), Unique = true }),
+                              new()
+                              {
+                                Name   = nameof(keyIndex),
+                                Unique = true,
+                              }),
                           new(wholeIndex,
-                              new CreateIndexOptions { Name = nameof(wholeIndex), Unique = true }),
+                              new()
+                              {
+                                Name   = nameof(wholeIndex),
+                                Unique = true,
+                              }),
                         };
 
       return collection.Indexes.CreateManyAsync(sessionHandle,

@@ -53,12 +53,15 @@ namespace ArmoniK.Core.Storage
                                                                          cancellationToken);
 
       var futureDependenciesData = taskData.Dependencies.Select(async id =>
-                                                                        {
-                                                                          var depTaskData = await tableStorage.ReadTaskAsync(new TaskId(taskData.Id){Task = id},
-                                                                                                                             aggregateCts.Token);
-                                                                          return await tableStorage.IsTaskCompleted(depTaskData,
-                                                                                                                    aggregateCts.Token);
-                                                                        }).ToList(); // ToListAsync ensures that all operations have started before processing results
+                                                                {
+                                                                  var depTaskData = await tableStorage.ReadTaskAsync(new(taskData.Id)
+                                                                                                                     {
+                                                                                                                       Task = id,
+                                                                                                                     },
+                                                                                                                     aggregateCts.Token);
+                                                                  return await tableStorage.IsTaskCompleted(depTaskData,
+                                                                                                            aggregateCts.Token);
+                                                                }).ToList(); // ToListAsync ensures that all operations have started before processing results
 
       while (futureDependenciesData.Count > 0)
       {

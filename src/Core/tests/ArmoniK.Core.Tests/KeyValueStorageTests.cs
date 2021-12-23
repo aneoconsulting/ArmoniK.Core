@@ -48,7 +48,12 @@ namespace ArmoniK.Core.Tests
     [TestCase("abc")]
     public void KeySerializer(string suffix)
     {
-      var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
+      var taskId = new TaskId
+                   {
+                     Session    = $"session{suffix}",
+                     SubSession = $"subSession{suffix}",
+                     Task       = $"Task{suffix}",
+                   };
 
       Assert.AreEqual(taskId,
                       KeyValueStorage<TaskId, Lease>.KeyParser.ParseFrom(taskId.ToByteArray()));
@@ -59,10 +64,19 @@ namespace ArmoniK.Core.Tests
     [TestCase("abc")]
     public void ValueSerializer(string suffix)
     {
-      var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
+      var taskId = new TaskId
+                   {
+                     Session    = $"session{suffix}",
+                     SubSession = $"subSession{suffix}",
+                     Task       = $"Task{suffix}",
+                   };
 
       var lease = new Lease
-                  { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
+                  {
+                    Id             = taskId,
+                    ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow),
+                    LeaseId        = $"leaseId{suffix}",
+                  };
 
       Assert.AreEqual(lease,
                       KeyValueStorage<TaskId, Lease>.ValueParser.ParseFrom(lease.ToByteArray()));
@@ -78,7 +92,12 @@ namespace ArmoniK.Core.Tests
       var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object,
                                                    NullLogger<KeyValueStorage<TaskId, Lease>>.Instance);
 
-      var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
+      var taskId = new TaskId
+                   {
+                     Session    = $"session{suffix}",
+                     SubSession = $"subSession{suffix}",
+                     Task       = $"Task{suffix}",
+                   };
 
       var serializedKey = kvs.SerializeKey(taskId);
 
@@ -99,10 +118,19 @@ namespace ArmoniK.Core.Tests
     [TestCase("abc")]
     public async Task TryGetValuesForwardsToObjectStorage(string suffix)
     {
-      var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
+      var taskId = new TaskId
+                   {
+                     Session    = $"session{suffix}",
+                     SubSession = $"subSession{suffix}",
+                     Task       = $"Task{suffix}",
+                   };
 
       var lease = new Lease
-                  { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
+                  {
+                    Id             = taskId,
+                    ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow),
+                    LeaseId        = $"leaseId{suffix}",
+                  };
 
       var objectStorageMock = new Mock<IObjectStorage>();
 
@@ -130,10 +158,19 @@ namespace ArmoniK.Core.Tests
     [TestCase("abc")]
     public async Task AddOrUpdateForwardsToObjectStorage(string suffix)
     {
-      var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
+      var taskId = new TaskId
+                   {
+                     Session    = $"session{suffix}",
+                     SubSession = $"subSession{suffix}",
+                     Task       = $"Task{suffix}",
+                   };
 
       var lease = new Lease
-                  { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
+                  {
+                    Id             = taskId,
+                    ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow),
+                    LeaseId        = $"leaseId{suffix}",
+                  };
 
       var objectStorageMock = new Mock<IObjectStorage>();
 
@@ -160,10 +197,19 @@ namespace ArmoniK.Core.Tests
     [TestCase("abc")]
     public async Task TryDeleteAsyncForwardsToObjectStorage(string suffix)
     {
-      var taskId = new TaskId { Session = $"session{suffix}", SubSession = $"subSession{suffix}", Task = $"Task{suffix}" };
+      var taskId = new TaskId
+                   {
+                     Session    = $"session{suffix}",
+                     SubSession = $"subSession{suffix}",
+                     Task       = $"Task{suffix}",
+                   };
 
       var lease = new Lease
-                  { Id = taskId, ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow), LeaseId = $"leaseId{suffix}" };
+                  {
+                    Id             = taskId,
+                    ExpirationDate = Timestamp.FromDateTime(DateTime.UtcNow),
+                    LeaseId        = $"leaseId{suffix}",
+                  };
 
       var objectStorageMock = new Mock<IObjectStorage>();
 

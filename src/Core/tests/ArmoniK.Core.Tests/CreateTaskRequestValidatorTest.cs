@@ -26,7 +26,6 @@ using System.Text;
 
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.gRPC.Validators;
-using ArmoniK.Core.Storage;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -45,29 +44,27 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -75,31 +72,27 @@ namespace ArmoniK.Core.Tests
       Assert.IsTrue(validator_.Validate(ctr).IsValid);
     }
 
-    #region SessionId
-
     [Test]
     public void MissingSessionIdShouldFail()
     {
       var ctr = new CreateTaskRequest
                 {
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -112,28 +105,26 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -146,29 +137,27 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = string.Empty,
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -181,29 +170,27 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "      ",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -216,28 +203,26 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session = "Session",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -250,29 +235,27 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = string.Empty,
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -285,29 +268,27 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "      ",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -315,16 +296,12 @@ namespace ArmoniK.Core.Tests
       Assert.IsFalse(validator_.Validate(ctr).IsValid);
     }
 
-    #endregion
-
-    #region TaskOptions
-
     [Test]
     public void EmptyIdTadShouldBeValid()
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
@@ -333,81 +310,76 @@ namespace ArmoniK.Core.Tests
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
 
       Assert.IsFalse(validator_.Validate(ctr).IsValid);
-    } 
+    }
 
     [Test]
     public void UndefinedTaskOptionShouldFail()
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = string.Empty,
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
 
       Assert.IsTrue(validator_.Validate(ctr).IsValid);
-    } 
-    
+    }
+
     [Test]
     public void UndefinedIdTadShouldBeValid()
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -420,97 +392,91 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
-                                  IdTag       = "Tag",
-                                  MaxRetries  = 1,
-                                  Options     = { },
-                                  Priority    = 1,
+                                  IdTag      = "Tag",
+                                  MaxRetries = 1,
+                                  Priority   = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
 
       Assert.IsTrue(validator_.Validate(ctr).IsValid);
     }
-    
+
     [Test]
     public void UndefinedMaxRetriesShouldFail()
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
 
       Assert.IsFalse(validator_.Validate(ctr).IsValid);
     }
-    
+
     [Test]
     public void ZeroMaxRetryShouldFail()
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 0,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -523,29 +489,27 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = -6,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -559,12 +523,12 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
@@ -575,12 +539,11 @@ namespace ArmoniK.Core.Tests
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -593,28 +556,26 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -627,29 +588,27 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
-                                  Priority = 0,
+                                  Priority    = 0,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -662,29 +621,27 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
-                                  Priority = -6,
+                                  Priority    = -6,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -697,29 +654,27 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
-                                  Priority = 100,
+                                  Priority    = 100,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -732,26 +687,25 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
-                                  MaxRetries  = 1,
-                                  Priority = 1,
+                                  MaxRetries = 1,
+                                  Priority   = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom("payload",
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
@@ -759,26 +713,21 @@ namespace ArmoniK.Core.Tests
       Assert.IsTrue(validator_.Validate(ctr).IsValid);
     }
 
-    #endregion
-
-    #region TaskRequest
-
     [Test]
     public void UndefinedTaskRequestShouldFail()
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                 };
@@ -791,22 +740,18 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
-                  TaskRequests =
-                  {
-                  },
                 };
 
       Assert.IsFalse(validator_.Validate(ctr).IsValid);
@@ -817,25 +762,21 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
-                    new TaskRequest
-                    {
-                      DependenciesTaskIds = { },
-                    },
+                    new TaskRequest(),
                   },
                 };
 
@@ -847,69 +788,61 @@ namespace ArmoniK.Core.Tests
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
-                                {
-                                },
-                      DependenciesTaskIds = { },
+                      Payload = new(),
                     },
                   },
                 };
 
       Assert.IsFalse(validator_.Validate(ctr).IsValid);
     }
+
     [Test]
     public void EmptyDataShouldFail()
     {
       var ctr = new CreateTaskRequest
                 {
-                  SessionId = new SessionId
+                  SessionId = new()
                               {
                                 Session    = "Session",
                                 SubSession = "SubSession",
                               },
-                  TaskOptions = new TaskOptions
+                  TaskOptions = new()
                                 {
                                   IdTag       = "Tag",
                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                   MaxRetries  = 1,
-                                  Options     = { },
                                   Priority    = 1,
                                 },
                   TaskRequests =
                   {
                     new TaskRequest
                     {
-                      Payload = new Payload
+                      Payload = new()
                                 {
                                   Data = ByteString.CopyFrom(string.Empty,
                                                              Encoding.ASCII),
                                 },
-                      DependenciesTaskIds = { },
                     },
                   },
                 };
 
       Assert.IsFalse(validator_.Validate(ctr).IsValid);
     }
-
-    #endregion
-
   }
 }

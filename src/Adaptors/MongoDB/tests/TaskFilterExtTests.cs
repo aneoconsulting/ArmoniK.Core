@@ -107,7 +107,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     {
       var func = new TaskFilter
                  {
-                   IncludedStatuses = { TaskStatus.Completed },
+                   IncludedStatuses =
+                   {
+                     TaskStatus.Completed,
+                   },
                  }
                 .ToFilterExpression()
                 .Compile(true);
@@ -125,7 +128,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     {
       var func = new TaskFilter
                  {
-                   ExcludedStatuses = { TaskStatus.Completed },
+                   ExcludedStatuses =
+                   {
+                     TaskStatus.Completed,
+                   },
                  }
                 .ToFilterExpression()
                 .Compile();
@@ -187,7 +193,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     {
       var func = new TaskFilter
                  {
-                   IncludedStatuses = { TaskStatus.Completed },
+                   IncludedStatuses =
+                   {
+                     TaskStatus.Completed,
+                   },
                  }
                 .ToFilterExpression()
                 .Compile();
@@ -205,7 +214,10 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     {
       var func = new TaskFilter
                  {
-                   ExcludedStatuses = { TaskStatus.Completed },
+                   ExcludedStatuses =
+                   {
+                     TaskStatus.Completed,
+                   },
                  }
                 .ToFilterExpression()
                 .Compile();
@@ -439,7 +451,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     {
       var func = new TaskFilter
                  {
-                   SessionId = string.Empty,
+                   SessionId    = string.Empty,
                    SubSessionId = string.Empty,
                  }
                 .ToFilterExpression()
@@ -447,17 +459,16 @@ namespace ArmoniK.Adapters.MongoDB.Tests
 
       var model = new TaskDataModel
                   {
-                    SessionId = null,
-                    SubSessionId = null,
-                    Dependencies = null,
-                    Options = null,
+                    SessionId          = null,
+                    SubSessionId       = null,
+                    Dependencies       = null,
+                    Options            = null,
                     ParentsSubSessions = null,
-                    Payload = null,
-                    TaskId = null,
+                    Payload            = null,
+                    TaskId             = null,
                   };
 
       Assert.IsTrue(func(model));
     }
-
   }
 }

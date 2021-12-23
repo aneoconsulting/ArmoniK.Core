@@ -22,11 +22,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core;
-using ArmoniK.Core.gRPC;
+using ArmoniK.Core.Exceptions;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 using ArmoniK.Core.Utils;
@@ -38,6 +39,7 @@ using Grpc.Core;
 using Microsoft.Extensions.Logging;
 
 using KeyNotFoundException = ArmoniK.Core.Exceptions.KeyNotFoundException;
+using TaskCanceledException = ArmoniK.Core.Exceptions.TaskCanceledException;
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Control.Services
@@ -73,16 +75,16 @@ namespace ArmoniK.Control.Services
       }
       catch (KeyNotFoundException e)
       {
-        throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.FailedPrecondition,
+                                   e.Message));
       }
       catch (Exception e)
       {
-        throw new RpcException(new Status(StatusCode.Unknown,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.Unknown,
+                                   e.Message));
       }
 
-      return new Empty();
+      return new();
     }
 
     public override async Task<Empty> CancelTask(TaskFilter request, ServerCallContext context)
@@ -95,16 +97,16 @@ namespace ArmoniK.Control.Services
       }
       catch (KeyNotFoundException e)
       {
-        throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.FailedPrecondition,
+                                   e.Message));
       }
       catch (Exception e)
       {
-        throw new RpcException(new Status(StatusCode.Unknown,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.Unknown,
+                                   e.Message));
       }
 
-      return new Empty();
+      return new();
     }
 
     public override async Task<Empty> CloseSession(SessionId request, ServerCallContext context)
@@ -117,16 +119,16 @@ namespace ArmoniK.Control.Services
       }
       catch (KeyNotFoundException e)
       {
-        throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.FailedPrecondition,
+                                   e.Message));
       }
       catch (Exception e)
       {
-        throw new RpcException(new Status(StatusCode.Unknown,
-                                          e.Message));
+        throw new RpcException(new(StatusCode.Unknown,
+                                   e.Message));
       }
 
-      return new Empty();
+      return new();
     }
 
     public override Task<SessionId> CreateSession(SessionOptions request, ServerCallContext context)
@@ -143,7 +145,7 @@ namespace ArmoniK.Control.Services
       var options = request.TaskOptions ??
                     await tableStorage_.GetDefaultTaskOption(request.SessionId,
                                                              context
-                                                               .CancellationToken);
+                                                              .CancellationToken);
 
       var inits = await tableStorage_.InitializeTaskCreation(request.SessionId,
                                                              options,
@@ -153,18 +155,25 @@ namespace ArmoniK.Control.Services
 
       await using var finalizer = AsyncDisposable.Create(async () => await tableStorage_.FinalizeTaskCreation(new TaskFilter
                                                                                                               {
-                                                                                                                SessionId    = request.SessionId.Session,
-                                                                                                                SubSessionId = request.SessionId.SubSession,
+                                                                                                                SessionId = request.SessionId.Session,
+                                                                                                                SubSessionId = request.SessionId
+                                                                                                                                      .SubSession,
                                                                                                                 IncludedTaskIds =
                                                                                                                 {
-                                                                                                                  inits.Select(tuple => tuple.id.Task),
+                                                                                                                  inits.Select(tuple
+                                                                                                                                 => tuple
+                                                                                                                                   .id
+                                                                                                                                   .Task),
                                                                                                                 },
                                                                                                               },
                                                                                                               context.CancellationToken));
 
       var payloadsUpdateTask = inits.Where(tuple => !tuple.HasPayload)
                                     .Select(tuple => taskPayloadStorage_.AddOrUpdateAsync(tuple.id,
-                                                                                          new Payload { Data = ByteString.CopyFrom(tuple.Payload) },
+                                                                                          new()
+                                                                                          {
+                                                                                            Data = ByteString.CopyFrom(tuple.Payload),
+                                                                                          },
                                                                                           context.CancellationToken))
                                     .WhenAll();
 
@@ -186,7 +195,17 @@ namespace ArmoniK.Control.Services
       using var _ = logger_.LogFunction();
       var count = await tableStorage_.CountTasksAsync(request,
                                                       context.CancellationToken);
-      return new Count { Value = count };
+      return new()
+             {
+               Values =
+               {
+                 count.Select(tuple => new StatusCount
+                                       {
+                                         Status = tuple.Status,
+                                         Count  = tuple.Count,
+                                       }),
+               },
+             };
     }
 
     public override async Task<TaskIdList> ListTask(TaskFilter        request,
@@ -195,7 +214,7 @@ namespace ArmoniK.Control.Services
       using var _ = logger_.LogFunction();
 
       var list = await tableStorage_.ListTasksAsync(request,
-                                                context.CancellationToken).ToListAsync(context.CancellationToken);
+                                                    context.CancellationToken).ToListAsync(context.CancellationToken);
 
       var output = new TaskIdList();
       output.TaskIds.Add(list);
@@ -214,10 +233,13 @@ namespace ArmoniK.Control.Services
 
       await foreach (var tid in listAsync)
       {
-        var localFilter = new TaskFilter(request) { SubSessionId = tid.Task };
+        var localFilter = new TaskFilter(request)
+                          {
+                            SubSessionId = tid.Task,
+                          };
         localFilter.IncludedTaskIds.Clear();
         var localList = await ListSubTasks(localFilter,
-                                     context);
+                                           context);
         wholeList.TaskIds.Add(tid);
         wholeList.TaskIds.Add(localList.TaskIds);
       }
@@ -226,28 +248,28 @@ namespace ArmoniK.Control.Services
     }
 
     /// <inheritdoc />
-    public override async Task<Count> GetSubTasksCount(TaskFilter request, ServerCallContext context) 
+    public override async Task<Count> GetSubTasksCount(TaskFilter request, ServerCallContext context)
 
     {
       using var _ = logger_.LogFunction();
 
-
-      var listAsync = tableStorage_.ListTasksAsync(request,
-                                                   context.CancellationToken);
-
-      var wholeCount = await listAsync.SelectAwait(async id =>
-                                             {
-                                               var localFilter = new TaskFilter(request) { SubSessionId = id.Task };
-                                               localFilter.IncludedTaskIds.Clear();
-                                               return (await ListSubTasks(localFilter,
-                                                                          context)).TaskIds.Count + 1;
-                                             }).SumAsync(i => i);
-
-      return new Count{ Value = wholeCount };
+      var count = await tableStorage_.CountSubTasksAsync(request,
+                                                         context.CancellationToken);
+      return new()
+             {
+               Values =
+               {
+                 count.Select(tuple => new StatusCount
+                                       {
+                                         Status = tuple.Status,
+                                         Count  = tuple.Count,
+                                       }),
+               },
+             };
     }
 
-    public override async Task<MultiplePayloadReply> TryGetResult(TaskFilter                              request,
-                                                                  ServerCallContext                       context)
+    public override async Task<MultiplePayloadReply> TryGetResult(TaskFilter        request,
+                                                                  ServerCallContext context)
     {
       using var            _                    = logger_.LogFunction();
       MultiplePayloadReply multiplePayloadReply = new();
@@ -257,76 +279,117 @@ namespace ArmoniK.Control.Services
       {
         var result = await taskResultStorage_.TryGetValuesAsync(taskId,
                                                                 context.CancellationToken);
-        var reply = new SinglePayloadReply { TaskId = taskId, Data = new Payload { Data = result.Result } };
+        var reply = new SinglePayloadReply
+                    {
+                      TaskId = taskId,
+                      Data = new()
+                             {
+                               Data = result.Result,
+                             },
+                    };
         multiplePayloadReply.Payloads.Add(reply);
       }
+
       return multiplePayloadReply;
     }
 
-    public override async Task<Empty> WaitForCompletion(TaskFilter request, ServerCallContext context)
+    public override async Task<Count> WaitForCompletion(WaitRequest request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
 
-      // TODO: optimize by filtering based on the task statuses
-      // TODO: optimize by filtering based on the number of retries
-      var taskIds = tableStorage_.ListTasksAsync(request,
-                                                 context.CancellationToken);
-      await foreach (var taskId in taskIds)
-      {
-        await WaitForSingleTaskCompletion(taskId, context);
-      }
+      Task<IEnumerable<(TaskStatus Status, int Count)>> CountUpdateFunc()
+        => tableStorage_.CountTasksAsync(request.Filter,
+                                         context.CancellationToken);
 
-      return new Empty();
+      return await WaitForCompletionCore(request,
+                                         CountUpdateFunc);
     }
 
-    private async Task WaitForSingleTaskCompletion(TaskId taskId, ServerCallContext context)
+    private async Task<Count> WaitForCompletionCore(WaitRequest request,
+                                                    Func<Task<IEnumerable<(TaskStatus Status, int Count)>>>
+                                                      countUpdateFunc)
     {
-      using var _ = logger_.LogFunction(taskId.ToPrintableId());
-      bool completed;
-      do
+      while (true)
       {
-        var taskData = await tableStorage_.ReadTaskAsync(taskId,
-                                                      context.CancellationToken);
-        logger_.LogInformation("Task {id} has status {status}, retry : {retry}, max {max}",
-                               taskId,
-                               taskData.Status,
-                               taskData.Retries,
-                               taskData.Options.MaxRetries);
-        completed = taskData.Status == TaskStatus.Completed ||
-                    taskData.Status == TaskStatus.Canceled;
-        if (!completed)
-        {
-          logger_.LogInformation("Task {id} is not completed. Will wait",
-                                 taskId);
-          await Task.Delay(tableStorage_.PollingDelay);
-        }
-      } while (!completed);
+        var counts       = await countUpdateFunc();
+        var notCompleted = 0;
 
-      logger_.LogInformation("Task {id} has been completed",
-                             taskId);
+        // ReSharper disable once PossibleMultipleEnumeration
+        foreach (var (status, count) in counts)
+        {
+          switch (status)
+          {
+            case TaskStatus.Creating:
+              notCompleted += count;
+              break;
+            case TaskStatus.Submitted:
+              notCompleted += count;
+              break;
+            case TaskStatus.Dispatched:
+              notCompleted += count;
+              break;
+            case TaskStatus.Completed:
+              break;
+            case TaskStatus.Failed:
+              notCompleted += count;
+              if (request.ThrowOnTaskCancellation && count > 0) throw new TaskCanceledException("A task was cancelled during execution");
+              break;
+            case TaskStatus.Timeout:
+              notCompleted += count;
+              break;
+            case TaskStatus.Canceling:
+              notCompleted += count;
+              break;
+            case TaskStatus.Canceled:
+              notCompleted += count;
+              if (request.ThrowOnTaskCancellation && count > 0) throw new TaskCanceledException("A task was cancelled during execution");
+              break;
+            case TaskStatus.Processing:
+              notCompleted += count;
+              break;
+            case TaskStatus.WaitingForChildren:
+              notCompleted += count;
+              break;
+            case TaskStatus.Error:
+              notCompleted += count;
+              break;
+            default:
+              throw new ArmoniKException($"Unknown TaskStatus {status}");
+          }
+        }
+
+        if (notCompleted == 0)
+        {
+          var output = new Count();
+          // ReSharper disable once PossibleMultipleEnumeration
+          output.Values.AddRange(counts.Select(tuple => new StatusCount
+                                                        {
+                                                          Count  = tuple.Count,
+                                                          Status = tuple.Status,
+                                                        }));
+          logger_.LogDebug("All sub tasks have completed. Returning count={count}",
+                           output);
+          return output;
+        }
+
+        await Task.Delay(tableStorage_.PollingDelay);
+      }
     }
 
     /// <inheritdoc />
-    public override async Task<Empty> WaitForSubTasksCompletion(TaskFilter request, ServerCallContext context)
+    public override async Task<Count> WaitForSubTasksCompletion(WaitRequest request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
-      var taskIds = tableStorage_.ListTasksAsync(request,
-                                                 context.CancellationToken);
 
-      await foreach (var id in taskIds)
-      {
-        await WaitForSingleTaskCompletion(id,
-                                          context);
-        var localFilter = new TaskFilter(request) { SubSessionId = id.Task };
-        localFilter.IncludedTaskIds.Clear();
-        logger_.LogDebug("localFilter: {localFilter}",
-                         localFilter);
+      await WaitForCompletion(request,
+                              context);
 
-        await WaitForSubTasksCompletion(localFilter,
-                                        context);
-      }
+      Task<IEnumerable<(TaskStatus Status, int Count)>> CountUpdateFunc()
+        => tableStorage_.CountSubTasksAsync(request.Filter,
+                                            context.CancellationToken);
 
-      return new Empty();
+      return await WaitForCompletionCore(request,
+                                         CountUpdateFunc);
     }
   }
 }

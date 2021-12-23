@@ -96,16 +96,12 @@ namespace ArmoniK.Adapters.MongoDB
                                               .Ascending(qmm => qmm.SubmissionDate);
 
         var filter = Builders<QueueMessageModel>.Filter
-                                                .Or(
-                                                    Builders<QueueMessageModel>.Filter.Exists(model => model.OwnedUntil,
+                                                .Or(Builders<QueueMessageModel>.Filter.Exists(model => model.OwnedUntil,
                                                                                               false),
-                                                    Builders<QueueMessageModel>.Filter.Where(model => model.OwnedUntil == default ||
-                                                                                                      model.OwnedUntil < DateTime.UtcNow)
-                                                   );
-        
+                                                    Builders<QueueMessageModel>.Filter.Where(model => model.OwnedUntil < DateTime.UtcNow));
+
         logger_.LogDebug("Trying to get a new message from Mongo queue");
-        var message = await queueCollection.FindOneAndUpdateAsync(
-                                                                  filter,
+        var message = await queueCollection.FindOneAndUpdateAsync(filter,
                                                                   updateDefinition,
                                                                   new FindOneAndUpdateOptions<
                                                                     QueueMessageModel>
@@ -120,17 +116,16 @@ namespace ArmoniK.Adapters.MongoDB
         {
           nbPulledMessage++;
           yield return new LockedQueueMessage(this,
-                                             message.MessageId,
-                                             message.TaskId,
-                                             logger_,
-                                             CancellationToken.None);
+                                              message.MessageId,
+                                              message.TaskId,
+                                              logger_,
+                                              CancellationToken.None);
         }
         else
         {
           await Task.Delay(PollPeriodicity,
                            cancellationToken);
         }
-
       }
     }
 
@@ -140,9 +135,8 @@ namespace ArmoniK.Adapters.MongoDB
       using var _               = logger_.LogFunction(id);
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
-      await queueCollection.FindOneAndDeleteAsync(
-        qmm => qmm.MessageId == id && qmm.OwnerId == ownerId_,
-        cancellationToken: cancellationToken);
+      await queueCollection.FindOneAndDeleteAsync(qmm => qmm.MessageId == id && qmm.OwnerId == ownerId_,
+                                                  cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -155,17 +149,16 @@ namespace ArmoniK.Adapters.MongoDB
                                                         .Set(qmdm => qmdm.OwnedUntil,
                                                              DateTime.UtcNow + LockRefreshExtension);
 
-      var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(
-        qmdm => qmdm.MessageId == id &&
-                qmdm.OwnerId == ownerId_,
-        updateDefinition,
-        new FindOneAndUpdateOptions<QueueMessageModel>
-        {
-          ReturnDocument = ReturnDocument.After,
-          IsUpsert       = false,
-        },
-        cancellationToken
-      );
+      var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(qmdm => qmdm.MessageId == id &&
+                                                                                           qmdm.OwnerId == ownerId_,
+                                                                                   updateDefinition,
+                                                                                   new FindOneAndUpdateOptions<QueueMessageModel>
+                                                                                   {
+                                                                                     ReturnDocument =
+                                                                                       ReturnDocument.After,
+                                                                                     IsUpsert = false,
+                                                                                   },
+                                                                                   cancellationToken);
       return message is not null;
     }
 
@@ -178,11 +171,11 @@ namespace ArmoniK.Adapters.MongoDB
       var       queueCollection = await queueCollectionProvider_.GetAsync();
 
       var qmms = messages.Select(message => new QueueMessageModel
-      {
-        TaskId         = message,
-        Priority       = priority,
-        SubmissionDate = DateTime.UtcNow,
-      });
+                                            {
+                                              TaskId         = message,
+                                              Priority       = priority,
+                                              SubmissionDate = DateTime.UtcNow,
+                                            });
 
       await queueCollection.InsertManyAsync(qmms,
                                             cancellationToken: cancellationToken);
@@ -200,11 +193,9 @@ namespace ArmoniK.Adapters.MongoDB
                                                         .Set(qmm => qmm.SubmissionDate,
                                                              DateTime.UtcNow);
 
-      await queueCollection.FindOneAndUpdateAsync(
-        qmm => qmm.MessageId == id,
-        updateDefinition,
-        cancellationToken: cancellationToken
-      );
+      await queueCollection.FindOneAndUpdateAsync(qmm => qmm.MessageId == id,
+                                                  updateDefinition,
+                                                  cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -230,9 +221,10 @@ namespace ArmoniK.Adapters.MongoDB
                                                                              qmdm.OwnerId == ownerId_,
                                                                      updateDefinition,
                                                                      new FindOneAndUpdateOptions<QueueMessageModel>
-                                                                       { IsUpsert = false },
-                                                                     cancellationToken
-      );
+                                                                     {
+                                                                       IsUpsert = false,
+                                                                     },
+                                                                     cancellationToken);
     }
   }
 }
