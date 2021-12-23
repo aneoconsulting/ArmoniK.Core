@@ -311,12 +311,12 @@ namespace ArmoniK.Control.Services
     {
       while (true)
       {
-        var counts = await countUpdateFunc();
+        var counts       = await countUpdateFunc();
+        var notCompleted = 0;
 
         // ReSharper disable once PossibleMultipleEnumeration
         foreach (var (status, count) in counts)
         {
-          var notCompleted = 0;
           switch (status)
           {
             case TaskStatus.Creating:
@@ -356,23 +356,23 @@ namespace ArmoniK.Control.Services
             default:
               throw new ArmoniKException($"Unknown TaskStatus {status}");
           }
-
-          if (notCompleted == 0)
-          {
-            var output = new Count();
-            // ReSharper disable once PossibleMultipleEnumeration
-            output.Values.AddRange(counts.Select(tuple => new StatusCount
-                                                          {
-                                                            Count  = tuple.Count,
-                                                            Status = tuple.Status,
-                                                          }));
-            logger_.LogDebug("All sub tasks have completed. Returning count={count}",
-                             output);
-            return output;
-          }
-
-          await Task.Delay(tableStorage_.PollingDelay);
         }
+
+        if (notCompleted == 0)
+        {
+          var output = new Count();
+          // ReSharper disable once PossibleMultipleEnumeration
+          output.Values.AddRange(counts.Select(tuple => new StatusCount
+                                                        {
+                                                          Count  = tuple.Count,
+                                                          Status = tuple.Status,
+                                                        }));
+          logger_.LogDebug("All sub tasks have completed. Returning count={count}",
+                           output);
+          return output;
+        }
+
+        await Task.Delay(tableStorage_.PollingDelay);
       }
     }
 
