@@ -112,7 +112,7 @@ namespace ArmoniK.Core.gRPC
       }
       catch (Exception e)
       {
-        await Task.Delay(TimeSpan.FromHours(2));
+        //await Task.Delay(TimeSpan.FromHours(2));
         if (!HandleExceptions(e,
                               asyncUnaryCall.GetStatus().StatusCode))
           throw;
