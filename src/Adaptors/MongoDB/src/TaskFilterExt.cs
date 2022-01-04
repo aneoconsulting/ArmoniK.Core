@@ -37,7 +37,6 @@ namespace ArmoniK.Adapters.MongoDB
 
     public static Expression<Func<TaskDataModel, bool>> ToFilterExpression(this TaskFilter filter)
     {
-
       var x = Expression.Parameter(typeof(TaskDataModel),
                                    "model");
 
@@ -45,7 +44,7 @@ namespace ArmoniK.Adapters.MongoDB
       var output = (Expression)Expression.Constant(true,
                                                    typeof(bool));
 
-      if(!string.IsNullOrEmpty(filter.SessionId))
+      if (!string.IsNullOrEmpty(filter.SessionId))
         output = Expression.And(output,
                                 ExpressionsBuilders.FieldFilterInternal(model => model.SessionId,
                                                                         new[] { filter.SessionId },
@@ -89,9 +88,6 @@ namespace ArmoniK.Adapters.MongoDB
 
       return (Expression<Func<TaskDataModel, bool>>)Expression.Lambda(output,
                                                                       x);
-
-
     }
-
   }
 }

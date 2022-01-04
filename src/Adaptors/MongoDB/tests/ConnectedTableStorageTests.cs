@@ -75,29 +75,35 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       services.AddLogging();
 
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
+      var provider = services.BuildServiceProvider(new ServiceProviderOptions
+                                                   {
+                                                     ValidateOnBuild = true,
+                                                   });
 
       var table = provider.GetRequiredService<TableStorage>();
 
       Assert.AreEqual(0,
-                      table.CountTasksAsync(new TaskFilter()).Result);
+                      table.CountTasksAsync(new()).Result);
 
-      var session = table.CreateSessionAsync(new SessionOptions
+      var session = table.CreateSessionAsync(new()
                                              {
-                                               DefaultTaskOption = new TaskOptions(),
+                                               DefaultTaskOption = new(),
                                                IdTag             = "tag",
                                              }).Result;
 
       var (_, _, _) = table.InitializeTaskCreation(session,
-                                                   new TaskOptions(), 
-                                                   new []
+                                                   new(),
+                                                   new[]
                                                    {
-                                                     new TaskRequest(){ Payload = new Payload()}
+                                                     new TaskRequest
+                                                     {
+                                                       Payload = new(),
+                                                     },
                                                    }).Result.Single();
 
 
       Assert.AreEqual(1,
-                      table.CountTasksAsync(new TaskFilter
+                      table.CountTasksAsync(new()
                                             {
                                               SessionId    = session.Session,
                                               SubSessionId = session.SubSession,

@@ -29,12 +29,9 @@ using ArmoniK.Core.Injection;
 using ArmoniK.Core.Injection.Options;
 
 using Grpc.Core;
-using Grpc.Net.Client;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
-using GrpcChannel = ArmoniK.Core.Injection.Options.GrpcChannel;
 
 namespace ArmoniK.Core.gRPC
 {
@@ -85,7 +82,7 @@ namespace ArmoniK.Core.gRPC
                                };
 
       return Grpc.Net.Client.GrpcChannel.ForAddress("http://localhost",
-                                                    new GrpcChannelOptions
+                                                    new()
                                                     {
                                                       HttpHandler = socketsHttpHandler,
                                                     });

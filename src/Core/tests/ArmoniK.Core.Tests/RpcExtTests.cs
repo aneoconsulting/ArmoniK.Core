@@ -84,26 +84,25 @@ namespace ArmoniK.Core.Tests
     }
 
 
-
     [Test]
     public void ThrowCancelledExceptionWhenCallWasCancelled()
     {
       Assert.Throws<TaskCanceledException>(() => RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
-                                            StatusCode.Cancelled));
+                                                                         StatusCode.Cancelled));
     }
 
     [Test]
     public void ThrowTimeoutExceptionWhenCallReachedDeadline()
     {
       Assert.Throws<TimeoutException>(() => RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
-                                            StatusCode.DeadlineExceeded));
+                                                                    StatusCode.DeadlineExceeded));
     }
 
     [Test]
     public void ThrowCancelledExceptionWhenCallWasCancelledAggregated()
     {
       Assert.Throws<TaskCanceledException>(() => RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
-                                                                                                StatusCode.Cancelled));
+                                                                         StatusCode.Cancelled));
     }
 
     [Test]
@@ -112,6 +111,5 @@ namespace ArmoniK.Core.Tests
       Assert.Throws<TimeoutException>(() => RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
                                                                     StatusCode.DeadlineExceeded));
     }
-
   }
 }

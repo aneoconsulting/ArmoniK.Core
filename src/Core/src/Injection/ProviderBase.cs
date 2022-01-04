@@ -31,10 +31,7 @@ namespace ArmoniK.Core.Injection
     private readonly Func<Task<T>> builder_;
     private          T             object_;
 
-    protected ProviderBase(Func<Task<T>> builder)
-    {
-      builder_ = builder;
-    }
+    protected ProviderBase(Func<Task<T>> builder) => builder_ = builder;
 
     public async ValueTask<T> GetAsync()
     {

@@ -120,13 +120,12 @@ namespace ArmoniK.Core.gRPC
         throw new ArmoniKException("An exception occurred during the rpc call but has been handled",
                                    e);
       }
-
     }
 
-    public static bool IsValid(this Lease lease) 
+    public static bool IsValid(this Lease lease)
       => !string.IsNullOrEmpty(lease.LeaseId) && lease.ExpirationDate.CompareTo(Timestamp.FromDateTime(DateTime.UtcNow)) > 0;
 
-    public static string ToPrintableId(this TaskId taskId) 
+    public static string ToPrintableId(this TaskId taskId)
       => $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
   }
 }

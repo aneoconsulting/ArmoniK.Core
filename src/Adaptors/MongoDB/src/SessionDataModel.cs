@@ -33,7 +33,20 @@ namespace ArmoniK.Adapters.MongoDB
 {
   public class SessionDataModel : IMongoDataModel<SessionDataModel>, ITaggedId
   {
-    public string IdTag { get; set; }
+    static SessionDataModel()
+    {
+      if (!BsonClassMap.IsClassMapRegistered(typeof(SessionDataModel)))
+        BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
+                                                        {
+                                                          cm.MapIdProperty(nameof(SubSessionId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
+                                                          cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
+                                                          cm.MapProperty(nameof(ParentsId)).SetIgnoreIfDefault(true);
+                                                          cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
+                                                          cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
+                                                          cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                          cm.SetIgnoreExtraElements(true);
+                                                        });
+    }
 
     public string SessionId { get; set; }
 
@@ -64,32 +77,27 @@ namespace ArmoniK.Adapters.MongoDB
       var indexModels = new CreateIndexModel<SessionDataModel>[]
                         {
                           new(sessionIndex,
-                              new CreateIndexOptions { Name = nameof(sessionIndex) }),
+                              new()
+                              {
+                                Name = nameof(sessionIndex),
+                              }),
                           new(sessionSubSessionIndex,
-                              new CreateIndexOptions { Name = nameof(sessionSubSessionIndex), Unique = true }),
+                              new()
+                              {
+                                Name   = nameof(sessionSubSessionIndex),
+                                Unique = true,
+                              }),
                           new(sessionParentIndex,
-                              new CreateIndexOptions { Name = nameof(sessionParentIndex) }),
+                              new()
+                              {
+                                Name = nameof(sessionParentIndex),
+                              }),
                         };
 
       return collection.Indexes.CreateManyAsync(sessionHandle,
                                                 indexModels);
     }
 
-    static SessionDataModel()
-    {
-      if (!BsonClassMap.IsClassMapRegistered(typeof(SessionDataModel)))
-        BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
-                                                        {
-                                                          cm.MapIdProperty(nameof(SubSessionId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
-                                                          cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                          cm.MapProperty(nameof(ParentsId)).SetIgnoreIfDefault(true);
-                                                          cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
-                                                          cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
-                                                          cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
-                                                          cm.SetIgnoreExtraElements(true);
-                                                        });
-
-    }
-    
+    public string IdTag { get; set; }
   }
 }

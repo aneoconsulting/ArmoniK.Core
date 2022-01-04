@@ -77,20 +77,17 @@ namespace ArmoniK.Compute.PollingAgent
                 };
       return Host.CreateDefaultBuilder(args)
                  .ConfigureHostConfiguration(builder => builder.SetBasePath(env.ContentRootPath)
-                                                               .AddJsonFile(
-                                                                            "appsettings.json",
+                                                               .AddJsonFile("appsettings.json",
                                                                             true,
                                                                             true)
-                                                               .AddJsonFile(
-                                                                            $"appsettings.{env.EnvironmentName}.json",
+                                                               .AddJsonFile($"appsettings.{env.EnvironmentName}.json",
                                                                             true)
                                                                .AddEnvironmentVariables()
                                                                .AddCommandLine(args))
                  .UseSerilog((context, services, config) => config
                                                            .ReadFrom.Configuration(context.Configuration)
                                                            .ReadFrom.Services(services)
-                                                           .Enrich.FromLogContext()
-                            )
+                                                           .Enrich.FromLogContext())
                  .ConfigureServices((hostContext, services) =>
                                     {
                                       services.AddLogging()

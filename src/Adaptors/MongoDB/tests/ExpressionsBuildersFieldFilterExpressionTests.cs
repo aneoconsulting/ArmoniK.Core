@@ -34,10 +34,12 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldRecognizeSession()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.SessionId,
-                                                          new[] { "Session" }).Compile();
+                                                           new[] { "Session" }).Compile();
 
       var model = new TaskDataModel
-                  { SessionId = "Session" };
+                  {
+                    SessionId = "Session",
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -50,7 +52,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                     .Compile();
 
       var model = new TaskDataModel
-                  { SessionId = "OtherSession" };
+                  {
+                    SessionId = "OtherSession",
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -64,7 +68,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                     .Compile();
 
       var model = new TaskDataModel
-                  { SessionId = "Session" };
+                  {
+                    SessionId = "Session",
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -78,7 +84,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                     .Compile();
 
       var model = new TaskDataModel
-                  { SessionId = "OtherSession" };
+                  {
+                    SessionId = "OtherSession",
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -91,7 +99,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                     .Compile();
 
       var model = new TaskDataModel
-                  { SubSessionId = "SubSession" };
+                  {
+                    SubSessionId = "SubSession",
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -100,12 +110,14 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldExcludeSubSession()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
-                                                           new[] { "SubSession" }, 
+                                                           new[] { "SubSession" },
                                                            false)
                                     .Compile();
 
       var model = new TaskDataModel
-                  { SubSessionId = "SubSession" };
+                  {
+                    SubSessionId = "SubSession",
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -118,7 +130,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                     .Compile();
 
       var model = new TaskDataModel
-                  { SubSessionId = "SubSession" };
+                  {
+                    SubSessionId = "SubSession",
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -132,7 +146,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                     .Compile();
 
       var model = new TaskDataModel
-                  { SubSessionId = "SubSession" };
+                  {
+                    SubSessionId = "SubSession",
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -145,7 +161,9 @@ namespace ArmoniK.Adapters.MongoDB.Tests
                                     .Compile();
 
       var model = new TaskDataModel
-                  { SubSessionId = "OtherSubSession" };
+                  {
+                    SubSessionId = "OtherSubSession",
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -154,12 +172,14 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldIncludeOtherSubSession()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
-                                                                new[] { "SubSession" },
-                                                          false)
-                                   .Compile(true);
+                                                           new[] { "SubSession" },
+                                                           false)
+                                    .Compile(true);
 
       var model = new TaskDataModel
-                  { SubSessionId = "OtherSubSession" };
+                  {
+                    SubSessionId = "OtherSubSession",
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -168,11 +188,13 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldRejectOtherMultipleSubSession()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
-                                                                new[] { "SubSession", "SubSession2" })
-                                   .Compile();
+                                                           new[] { "SubSession", "SubSession2" })
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { SubSessionId = "OtherSubSession" };
+                  {
+                    SubSessionId = "OtherSubSession",
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -181,25 +203,29 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldIncludeOtherMultipleSubSession()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
-                                                                new[] { "SubSession", "SubSession2" },
-                                                          false)
-                                   .Compile();
+                                                           new[] { "SubSession", "SubSession2" },
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { SubSessionId = "OtherSubSession" };
+                  {
+                    SubSessionId = "OtherSubSession",
+                  };
 
       Assert.IsTrue(func(model));
     }
-    
+
     [Test]
     public void ShouldRecognizeStatus()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                                new[] { TaskStatus.Completed })
-                                   .Compile();
+                                                           new[] { TaskStatus.Completed })
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { Status = TaskStatus.Completed };
+                  {
+                    Status = TaskStatus.Completed,
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -208,12 +234,14 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldExcludeStatus()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                                new[] { TaskStatus.Completed }, 
-                                                          false)
-                                   .Compile();
+                                                           new[] { TaskStatus.Completed },
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { Status = TaskStatus.Completed };
+                  {
+                    Status = TaskStatus.Completed,
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -222,11 +250,13 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldRecognizeMultipleStatus()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                                new[] { TaskStatus.Completed, TaskStatus.Canceled })
-                                   .Compile();
+                                                           new[] { TaskStatus.Completed, TaskStatus.Canceled })
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { Status = TaskStatus.Completed };
+                  {
+                    Status = TaskStatus.Completed,
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -235,12 +265,14 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldExcludeMultipleStatus()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                                new[] { TaskStatus.Completed, TaskStatus.Canceled },
-                                                          false)
-                                   .Compile();
+                                                           new[] { TaskStatus.Completed, TaskStatus.Canceled },
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { Status = TaskStatus.Completed };
+                  {
+                    Status = TaskStatus.Completed,
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -249,11 +281,13 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldRejectOtherStatus()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                                new[] { TaskStatus.Completed })
-                                   .Compile();
+                                                           new[] { TaskStatus.Completed })
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { Status = TaskStatus.Canceled };
+                  {
+                    Status = TaskStatus.Canceled,
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -262,12 +296,14 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldIncludeOtherStatus()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                                new[] { TaskStatus.Completed },
-                                                          false)
-                                   .Compile(true);
+                                                           new[] { TaskStatus.Completed },
+                                                           false)
+                                    .Compile(true);
 
       var model = new TaskDataModel
-                  { Status = TaskStatus.Canceled };
+                  {
+                    Status = TaskStatus.Canceled,
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -276,11 +312,13 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldRejectOtherMultipleStatus()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                                new[] { TaskStatus.Completed, TaskStatus.Canceling })
-                                   .Compile();
+                                                           new[] { TaskStatus.Completed, TaskStatus.Canceling })
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { Status = TaskStatus.Canceled };
+                  {
+                    Status = TaskStatus.Canceled,
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -289,12 +327,14 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldIncludeOtherMultipleStatus()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                                new[] { TaskStatus.Completed, TaskStatus.Canceling },
-                                                          false)
-                                   .Compile();
+                                                           new[] { TaskStatus.Completed, TaskStatus.Canceling },
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { Status = TaskStatus.Canceled };
+                  {
+                    Status = TaskStatus.Canceled,
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -303,11 +343,13 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldRecognizeTask()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                                new[] { "Task" })
-                                   .Compile();
+                                                           new[] { "Task" })
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { TaskId = "Task" };
+                  {
+                    TaskId = "Task",
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -316,12 +358,14 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldExcludeTask()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                                new[] { "Task" }, 
-                                                          false)
-                                   .Compile();
+                                                           new[] { "Task" },
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { TaskId = "Task" };
+                  {
+                    TaskId = "Task",
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -330,11 +374,13 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldRecognizeMultipleTask()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                                new[] { "Task", "Task2" })
-                                   .Compile();
+                                                           new[] { "Task", "Task2" })
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { TaskId = "Task" };
+                  {
+                    TaskId = "Task",
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -343,12 +389,14 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldExcludeMultipleTask()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                                new[] { "Task", "Task2" },
-                                                          false)
-                                   .Compile();
+                                                           new[] { "Task", "Task2" },
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { TaskId = "Task" };
+                  {
+                    TaskId = "Task",
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -357,11 +405,13 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldRejectOtherTask()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                                new[] { "Task" })
-                                   .Compile();
+                                                           new[] { "Task" })
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { TaskId = "OtherTask" };
+                  {
+                    TaskId = "OtherTask",
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -370,12 +420,14 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldIncludeOtherTask()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                                new[] { "Task" },
-                                                          false)
-                                   .Compile(true);
+                                                           new[] { "Task" },
+                                                           false)
+                                    .Compile(true);
 
       var model = new TaskDataModel
-                  { TaskId = "OtherTask" };
+                  {
+                    TaskId = "OtherTask",
+                  };
 
       Assert.IsTrue(func(model));
     }
@@ -384,11 +436,13 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldRejectOtherMultipleTask()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                                new[] { "Task", "Task2" })
-                                   .Compile();
+                                                           new[] { "Task", "Task2" })
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { TaskId = "OtherTask" };
+                  {
+                    TaskId = "OtherTask",
+                  };
 
       Assert.IsFalse(func(model));
     }
@@ -397,12 +451,14 @@ namespace ArmoniK.Adapters.MongoDB.Tests
     public void ShouldIncludeOtherMultipleTask()
     {
       var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                                new[] { "Task", "Task2" },
-                                                          false)
-                                   .Compile();
+                                                           new[] { "Task", "Task2" },
+                                                           false)
+                                    .Compile();
 
       var model = new TaskDataModel
-                  { TaskId = "OtherTask" };
+                  {
+                    TaskId = "OtherTask",
+                  };
 
       Assert.IsTrue(func(model));
     }

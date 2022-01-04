@@ -59,7 +59,7 @@ namespace ArmoniK.Core.gRPC
         throw;
       }
 
-      return new ComputerService.ComputerServiceClient(channel);
+      return new(channel);
     }
   }
 }
