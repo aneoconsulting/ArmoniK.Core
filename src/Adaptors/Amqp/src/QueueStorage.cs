@@ -53,7 +53,7 @@ namespace ArmoniK.Adapters.Amqp
       MaxPriority = options.Value.MaxPriority;
       logger_     = logger;
 
-      var nbLinks = (MaxPriority + 3) / 3;
+      var nbLinks = (MaxPriority + 9) / 10;
 
       senders_ = Enumerable.Range(0,
                                   nbLinks)
@@ -67,11 +67,25 @@ namespace ArmoniK.Adapters.Amqp
       receivers_ = Enumerable.Range(0,
                                     nbLinks)
                              .Select(i => new AsyncLazy<IReceiverLink>(async ()
-                                                                         => new
+                                                                         =>
+                                                                       {
+                                                                         var receiver =  new
                                                                            ReceiverLink(await sessionProvider.GetAsync(),
                                                                                         $"ReceiverLink{i}",
-                                                                                        $"q{i}")))
+                                                                                        $"q{i}");
+                                                                         receiver.SetCredit(10);
+                                                                         return receiver;
+                                                                       }))
                              .ToArray();
+    }
+
+    /// <inheritdoc />
+    public Task Init(CancellationToken cancellationToken)
+    {
+      var senders = Task.WhenAll(senders_.Select(async lazy => await lazy));
+      var receivers = Task.WhenAll(receivers_.Select(async lazy => await lazy));
+      return Task.WhenAll(senders,
+                          receivers);
     }
 
     /// <inheritdoc />
@@ -90,11 +104,13 @@ namespace ArmoniK.Adapters.Amqp
         {
           cancellationToken.ThrowIfCancellationRequested();
           var receiver = await receivers_[i];
-          var message  = await receiver.ReceiveAsync(TimeSpan.FromSeconds(5));
-          if (message is null) continue;
+          var message  = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100));
+          if (message is null)
+          {
+            logger_.LogDebug("Message is null receiver {i}", i);
+            continue;
+          }
 
-          logger_.LogDebug("Read message with id={id}",
-                           message.Properties.MessageId);
           if (TaskId.Parser.ParseFrom(message.Body as byte[]) is not TaskId taskId)
           {
             logger_.LogError("Body of message with Id={id} is not a TaskId",
@@ -104,8 +120,6 @@ namespace ArmoniK.Adapters.Amqp
 
           nbPulledMessage++;
 
-          logger_.LogDebug("Read message with id={id}",
-                           message.Properties.MessageId);
           yield return new QueueMessage(message,
                                         await senders_[i],
                                         receiver,
@@ -125,13 +139,14 @@ namespace ArmoniK.Adapters.Amqp
                                            int                 priority          = 1,
                                            CancellationToken   cancellationToken = default)
     {
-      var sender = await senders_[priority / 3];
+      var sender = await senders_[priority / 10];
       await Task.WhenAll(messages.Select(id => sender.SendAsync(new(id.ToByteArray())
                                                                 {
                                                                   Header = new()
                                                                            {
-                                                                             Priority = (byte)((priority % 3) * 4),
+                                                                             Priority = (byte)((priority % 10)),
                                                                            },
+                                                                  Properties = new (),
                                                                 })));
     }
   }

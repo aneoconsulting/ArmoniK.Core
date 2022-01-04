@@ -70,6 +70,10 @@ namespace ArmoniK.Adapters.MongoDB
     public bool AreMessagesUnique => true;
 
     /// <inheritdoc />
+    public async Task Init(CancellationToken cancellationToken) 
+      => await queueCollectionProvider_.GetAsync();
+
+    /// <inheritdoc />
     public int MaxPriority => int.MaxValue;
 
     /// <inheritdoc />

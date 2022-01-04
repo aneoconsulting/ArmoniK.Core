@@ -138,5 +138,13 @@ namespace ArmoniK.Adapters.MongoDB
                                                        cancellationToken);
       return res.DeletedCount > 0;
     }
+
+    /// <inheritdoc />
+    public async Task Init(CancellationToken cancellationToken)
+    {
+      var session    = sessionProvider_.GetAsync();
+      await objectCollectionProvider_.GetAsync();
+      await session;
+    }
   }
 }

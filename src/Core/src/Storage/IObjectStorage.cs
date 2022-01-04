@@ -32,6 +32,8 @@ namespace ArmoniK.Core.Storage
 
     Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default);
 
-    Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default);
+    Task<bool> TryDeleteAsync(string  key, CancellationToken cancellationToken = default);
+
+    Task Init(CancellationToken cancellationToken);
   }
 }

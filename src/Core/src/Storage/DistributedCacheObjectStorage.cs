@@ -72,5 +72,8 @@ namespace ArmoniK.Core.Storage
         return false;
       }
     }
+
+    /// <inheritdoc />
+    public Task Init(CancellationToken cancellationToken) => Task.CompletedTask;
   }
 }

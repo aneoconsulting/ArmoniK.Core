@@ -88,5 +88,8 @@ namespace ArmoniK.Core.Storage
       return objectStorage_.TryDeleteAsync(serializedKey,
                                            cancellationToken);
     }
+
+    public Task Init(CancellationToken cancellationToken)
+      => objectStorage_.Init(cancellationToken);
   }
 }

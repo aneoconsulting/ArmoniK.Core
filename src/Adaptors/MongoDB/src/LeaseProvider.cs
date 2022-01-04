@@ -66,6 +66,16 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public TimeSpan AcquisitionDuration { get; }
 
+
+
+    /// <inheritdoc />
+    public async Task Init(CancellationToken cancellationToken)
+    {
+      var collectionTask = leaseCollectionProvider_.GetAsync();
+      await sessionProvider_.GetAsync();
+      await collectionTask;
+    }
+
     /// <inheritdoc />
     public async Task<Lease> TryAcquireLeaseAsync(TaskId id, CancellationToken cancellationToken = default)
     {

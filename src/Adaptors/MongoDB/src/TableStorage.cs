@@ -220,6 +220,16 @@ namespace ArmoniK.Adapters.MongoDB
       return output;
     }
 
+    /// <inheritdoc />
+    public async Task Init(CancellationToken cancellationToken)
+    {
+      var session        = sessionProvider_.GetAsync();
+      var taskCollection = taskCollectionProvider_.GetAsync();
+      await sessionCollectionProvider_.GetAsync();
+      await session;
+      await taskCollection;
+    }
+
     public async Task<SessionId> CreateSessionAsync(SessionOptions    sessionOptions,
                                                     CancellationToken cancellationToken = default)
     {
