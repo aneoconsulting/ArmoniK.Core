@@ -91,7 +91,8 @@ namespace ArmoniK.Adapters.MongoDB
                                                         .SetOnInsert(odm => odm.Id,
                                                                      $"{key}{idx}");
 
-        taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>(odm => odm.Key == key && odm.ChunkIdx == idx,
+        var localIdx = idx;
+        taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>(odm => odm.Key == key && odm.ChunkIdx == localIdx,
                                                                              updateDefinition,
                                                                              new FindOneAndUpdateOptions<ObjectDataModel>
                                                                              {
@@ -117,10 +118,10 @@ namespace ArmoniK.Adapters.MongoDB
       var sessionHandle = await sessionProvider_.GetAsync();
       var objectCollection = await objectCollectionProvider_.GetAsync();
 
-      var chunks = AsyncCursorSourceExt.ToAsyncEnumerable<byte[]>(objectCollection.AsQueryable(sessionHandle)
-                                                                             .Where(odm => odm.Key == key)
-                                                                             .OrderBy(odm => odm.ChunkIdx)
-                                                                             .Select(odm => odm.Chunk));
+      var chunks = AsyncCursorSourceExt.ToAsyncEnumerable(objectCollection.AsQueryable(sessionHandle)
+                                                                          .Where(odm => odm.Key == key)
+                                                                          .OrderBy(odm => odm.ChunkIdx)
+                                                                          .Select(odm => odm.Chunk));
 
       var buffer = new List<byte>(chunkSize_);
       await foreach (var chunk in chunks.WithCancellation(cancellationToken))
