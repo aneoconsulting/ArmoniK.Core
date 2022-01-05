@@ -19,9 +19,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>Portable</DebugType>
+    <DebugType>Embedded</DebugType>
     <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!--<SymbolPackageFormat>snupkg</SymbolPackageFormat>-->
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
 
