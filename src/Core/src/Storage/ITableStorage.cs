@@ -75,5 +75,7 @@ namespace ArmoniK.Core.Storage
     Task<IEnumerable<(TaskStatus Status, int Count)>> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
 
     Task<IEnumerable<(TaskStatus Status, int Count)>> CountSubTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
+
+    Task Init(CancellationToken cancellationToken);
   }
 }

@@ -31,6 +31,8 @@ namespace ArmoniK.Core.Storage
 {
   public interface IQueueStorageBase
   {
+    Task Init(CancellationToken cancellationToken);
+
     int MaxPriority { get; }
 
     IAsyncEnumerable<IQueueMessage> PullAsync(int nbMessages, CancellationToken cancellationToken = default);

@@ -21,17 +21,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Injection;
+using ArmoniK.Core.gRPC.V1;
 
-using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Table
 {
-  public class SessionProvider : ProviderBase<IClientSessionHandle>
+  public static class MongoQueryableExt
   {
-    public SessionProvider(IMongoClient client) :
-      base(() => client.StartSessionAsync())
-    {
-    }
+    public static IMongoQueryable<TaskDataModel> FilterQuery(this IMongoQueryable<TaskDataModel> taskQueryable,
+                                                             TaskFilter filter)
+      => taskQueryable.Where(filter.ToFilterExpression());
   }
 }

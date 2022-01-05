@@ -23,10 +23,12 @@
 
 using System.Threading.Tasks;
 
+using ArmoniK.Adapters.MongoDB.Common;
+
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Object
 {
   public class ObjectDataModel : IMongoDataModel<ObjectDataModel>
   {
@@ -48,12 +50,12 @@ namespace ArmoniK.Adapters.MongoDB
 
     /// <inheritdoc />
     public Task InitializeIndexesAsync(
-      IClientSessionHandle              sessionHandle,
+      IClientSessionHandle sessionHandle,
       IMongoCollection<ObjectDataModel> collection)
     {
-      var keyIndex      = Builders<ObjectDataModel>.IndexKeys.Text(model => model.Key);
+      var keyIndex = Builders<ObjectDataModel>.IndexKeys.Text(model => model.Key);
       var chunkIdxIndex = Builders<ObjectDataModel>.IndexKeys.Text(model => model.ChunkIdx);
-      var iDIndex       = Builders<ObjectDataModel>.IndexKeys.Text(model => model.Id);
+      var iDIndex = Builders<ObjectDataModel>.IndexKeys.Text(model => model.Id);
       var combinedIndex = Builders<ObjectDataModel>.IndexKeys.Combine(keyIndex,
                                                                       chunkIdxIndex);
 

@@ -74,8 +74,24 @@ namespace ArmoniK.Compute.PollingAgent
       messageBatchSize_   = options.Value.MessageBatchSize;
     }
 
+    private async Task Init(CancellationToken cancellationToken)
+    {
+      var client      = clientProvider_.GetAsync();
+      var queue       = queueStorage_.Init(cancellationToken);
+      var table       = tableStorage_.Init(cancellationToken);
+      var taskPayload = taskPayloadStorage_.Init(cancellationToken);
+      var taskResult  = taskResultStorage_.Init(cancellationToken);
+      await client;
+      await queue;
+      await table;
+      await taskPayload;
+      await taskResult;
+    }
+
     public async Task MainLoop(CancellationToken cancellationToken)
     {
+      await Init(cancellationToken);
+
       cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
       try
       {
@@ -239,6 +255,12 @@ namespace ArmoniK.Compute.PollingAgent
                                                                }
                                                              }
                                                            }
+                                                         }
+                                                         catch (Exception e)
+                                                         {
+                                                           logger_.LogWarning(e,
+                                                                              "Error while prefetching task");
+                                                           throw;
                                                          }
                                                          finally
                                                          {

@@ -98,6 +98,11 @@ namespace ArmoniK.Core.Storage
     }
 
     /// <inheritdoc />
+    public Task Init(CancellationToken cancellationToken)
+      => Task.WhenAll(leaseProvider_.Init(cancellationToken),
+                      lockedQueueStorage_.Init(cancellationToken));
+
+    /// <inheritdoc />
     public int MaxPriority => lockedQueueStorage_.MaxPriority;
 
     /// <inheritdoc />

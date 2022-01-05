@@ -72,7 +72,14 @@ namespace ArmoniK.Adapters.Amqp
       switch (Status)
       {
         case QueueMessageStatus.Postponed:
-          await sender_.SendAsync(message_);
+          await sender_.SendAsync(new (message_.Body)
+                                  {
+                                    Header = new()
+                                             {
+                                               Priority = message_.Header.Priority,
+                                             },
+                                    Properties = new(),
+                                  });
           receiver_.Accept(message_);
           break;
         case QueueMessageStatus.Failed:

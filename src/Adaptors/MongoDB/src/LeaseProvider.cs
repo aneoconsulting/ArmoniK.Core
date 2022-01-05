@@ -25,6 +25,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Adapters.MongoDB.Common;
+using ArmoniK.Adapters.MongoDB.Lease;
 using ArmoniK.Core;
 using ArmoniK.Core.gRPC;
 using ArmoniK.Core.gRPC.V1;
@@ -45,19 +47,19 @@ namespace ArmoniK.Adapters.MongoDB
   public class LeaseProvider : ILeaseProvider
   {
     private readonly MongoCollectionProvider<LeaseDataModel> leaseCollectionProvider_;
-    private readonly ILogger<LeaseProvider>                  logger_;
-    private readonly SessionProvider                         sessionProvider_;
+    private readonly ILogger<LeaseProvider> logger_;
+    private readonly SessionProvider sessionProvider_;
 
-    public LeaseProvider(IOptions<Options.LeaseProvider>         options,
+    public LeaseProvider(IOptions<Options.LeaseProvider> options,
                          MongoCollectionProvider<LeaseDataModel> leaseCollectionProvider,
-                         SessionProvider                         sessionProvider,
-                         ILogger<LeaseProvider>                  logger)
+                         SessionProvider sessionProvider,
+                         ILogger<LeaseProvider> logger)
     {
-      AcquisitionPeriod        = options.Value.AcquisitionPeriod;
-      AcquisitionDuration      = options.Value.AcquisitionDuration;
+      AcquisitionPeriod = options.Value.AcquisitionPeriod;
+      AcquisitionDuration = options.Value.AcquisitionDuration;
       leaseCollectionProvider_ = leaseCollectionProvider;
-      sessionProvider_         = sessionProvider;
-      logger_                  = logger;
+      sessionProvider_ = sessionProvider;
+      logger_ = logger;
     }
 
     /// <inheritdoc />
@@ -66,14 +68,24 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public TimeSpan AcquisitionDuration { get; }
 
+
+
     /// <inheritdoc />
-    public async Task<Lease> TryAcquireLeaseAsync(TaskId id, CancellationToken cancellationToken = default)
+    public async Task Init(CancellationToken cancellationToken)
+    {
+      var collectionTask = leaseCollectionProvider_.GetAsync();
+      await sessionProvider_.GetAsync();
+      await collectionTask;
+    }
+
+    /// <inheritdoc />
+    public async Task<Core.gRPC.V1.Lease> TryAcquireLeaseAsync(TaskId id, CancellationToken cancellationToken = default)
     {
       using var _ = logger_.LogFunction(id.ToPrintableId());
       logger_.LogDebug("Trying to acquire lease for task {id}",
                        id);
-      var key             = id.ToPrintableId();
-      var leaseId         = Guid.NewGuid().ToString();
+      var key = id.ToPrintableId();
+      var leaseId = Guid.NewGuid().ToString();
       var leaseCollection = await leaseCollectionProvider_.GetAsync();
 
       var updateDefinitionBuilder = new UpdateDefinitionBuilder<LeaseDataModel>();
@@ -89,7 +101,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                                             updateDefinition,
                                                                             new FindOneAndUpdateOptions<LeaseDataModel>
                                                                             {
-                                                                              IsUpsert       = true,
+                                                                              IsUpsert = true,
                                                                               ReturnDocument = ReturnDocument.After,
                                                                             },
                                                                             cancellationToken);
@@ -99,31 +111,31 @@ namespace ArmoniK.Adapters.MongoDB
                                leaseId,
                                id);
         return new()
-               {
-                 ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt),
-                 Id             = id,
-                 LeaseId        = leaseId,
-               };
+        {
+          ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt),
+          Id = id,
+          LeaseId = leaseId,
+        };
       }
 
       logger_.LogWarning("Could not acquire lease for task {id}",
                          id);
       return new()
-             {
-               Id             = id,
-               LeaseId        = string.Empty,
-               ExpirationDate = new(),
-             };
+      {
+        Id = id,
+        LeaseId = string.Empty,
+        ExpirationDate = new(),
+      };
     }
 
     /// <inheritdoc />
-    public async Task<Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default)
+    public async Task<Core.gRPC.V1.Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default)
     {
       using var _ = logger_.LogFunction(id.ToPrintableId());
       logger_.LogDebug("Trying to renew lease {leaseId} for task {id}",
                        leaseId,
                        id);
-      var key             = id.ToPrintableId();
+      var key = id.ToPrintableId();
       var leaseCollection = await leaseCollectionProvider_.GetAsync();
 
       var updateDefinition = new UpdateDefinitionBuilder<LeaseDataModel>().Set(ldm => ldm.ExpiresAt,
@@ -135,7 +147,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                                             new FindOneAndUpdateOptions<LeaseDataModel>
                                                                             {
                                                                               ReturnDocument = ReturnDocument.After,
-                                                                              MaxTime        = TimeSpan.FromSeconds(1),
+                                                                              MaxTime = TimeSpan.FromSeconds(1),
                                                                             },
                                                                             cancellationToken);
       if (leaseId == res.Lock)
@@ -144,22 +156,22 @@ namespace ArmoniK.Adapters.MongoDB
                                leaseId,
                                id);
         return new()
-               {
-                 Id             = id,
-                 LeaseId        = leaseId,
-                 ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt),
-               };
+        {
+          Id = id,
+          LeaseId = leaseId,
+          ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt),
+        };
       }
 
       logger_.LogInformation("Could not renew lease {leaseId} for task {id}",
                              leaseId,
                              id);
       return new()
-             {
-               Id             = id,
-               LeaseId        = string.Empty,
-               ExpirationDate = new(),
-             };
+      {
+        Id = id,
+        LeaseId = string.Empty,
+        ExpirationDate = new(),
+      };
     }
 
     /// <inheritdoc />
@@ -169,7 +181,7 @@ namespace ArmoniK.Adapters.MongoDB
       logger_.LogDebug("Trying to release lease {leaseId} for task {id}",
                        leaseId,
                        id);
-      var key             = id.ToPrintableId();
+      var key = id.ToPrintableId();
       var leaseCollection = await leaseCollectionProvider_.GetAsync();
 
       var res = await leaseCollection.FindOneAndDeleteAsync(await sessionProvider_.GetAsync(),

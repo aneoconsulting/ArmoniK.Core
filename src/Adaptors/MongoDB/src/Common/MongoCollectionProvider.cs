@@ -31,7 +31,7 @@ using Microsoft.Extensions.Options;
 
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Common
 {
   [PublicAPI]
   public class MongoCollectionProvider<TDataModel>

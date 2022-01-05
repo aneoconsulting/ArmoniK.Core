@@ -21,16 +21,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.gRPC.V1;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.IdGenerators;
 
-using MongoDB.Driver.Linq;
-
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Table
 {
-  public static class MongoCollectionExt
+  public class TaggedIdGenerator : IIdGenerator
   {
-    public static IMongoQueryable<TaskDataModel> FilterQuery(this IMongoQueryable<TaskDataModel> taskQueryable,
-                                                             TaskFilter                          filter)
-      => taskQueryable.Where(filter.ToFilterExpression());
+    private static CombGuidGenerator Generator => CombGuidGenerator.Instance;
+
+    /// <inheritdoc />
+    public object GenerateId(object container, object document)
+      => $"{(document as ITaggedId)?.IdTag}{Generator.GenerateId(container, document)}";
+
+    /// <inheritdoc />
+    public bool IsEmpty(object id) => id == null || ((string)id).EndsWith("00000000-0000-0000-0000-000000000000");
   }
 }

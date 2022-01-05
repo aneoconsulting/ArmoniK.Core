@@ -24,12 +24,13 @@
 using System;
 using System.Threading.Tasks;
 
+using ArmoniK.Adapters.MongoDB.Common;
 using ArmoniK.Core.gRPC.V1;
 
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Queue
 {
   public class QueueMessageModel : IMongoDataModel<QueueMessageModel>
   {
@@ -60,13 +61,13 @@ namespace ArmoniK.Adapters.MongoDB
 
     /// <inheritdoc />
     public Task InitializeIndexesAsync(
-      IClientSessionHandle                sessionHandle,
+      IClientSessionHandle sessionHandle,
       IMongoCollection<QueueMessageModel> collection)
     {
-      var messageIdIndex  = Builders<QueueMessageModel>.IndexKeys.Text(model => model.MessageId);
-      var ownerIdIndex    = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnerId);
+      var messageIdIndex = Builders<QueueMessageModel>.IndexKeys.Text(model => model.MessageId);
+      var ownerIdIndex = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnerId);
       var submissionIndex = Builders<QueueMessageModel>.IndexKeys.Ascending(model => model.SubmissionDate);
-      var priorityIndex   = Builders<QueueMessageModel>.IndexKeys.Descending(model => model.Priority);
+      var priorityIndex = Builders<QueueMessageModel>.IndexKeys.Descending(model => model.Priority);
       var ownedUntilIndex = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnedUntil);
       var pullIndex = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
                                                                     submissionIndex);

@@ -24,10 +24,12 @@
 using System;
 using System.Threading.Tasks;
 
+using ArmoniK.Adapters.MongoDB.Common;
+
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Lease
 {
   public class LeaseDataModel : IMongoDataModel<LeaseDataModel>
   {
@@ -47,10 +49,10 @@ namespace ArmoniK.Adapters.MongoDB
 
     /// <inheritdoc />
     public Task InitializeIndexesAsync(
-      IClientSessionHandle             sessionHandle,
+      IClientSessionHandle sessionHandle,
       IMongoCollection<LeaseDataModel> collection)
     {
-      var keyIndex  = Builders<LeaseDataModel>.IndexKeys.Text(model => model.Key);
+      var keyIndex = Builders<LeaseDataModel>.IndexKeys.Text(model => model.Key);
       var lockIndex = Builders<LeaseDataModel>.IndexKeys.Text(model => model.Lock);
       var wholeIndex = Builders<LeaseDataModel>.IndexKeys.Combine(keyIndex,
                                                                   lockIndex);

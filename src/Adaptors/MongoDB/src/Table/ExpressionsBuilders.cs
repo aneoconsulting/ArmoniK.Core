@@ -27,13 +27,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Table
 {
   public static class ExpressionsBuilders
   {
     public static Expression<Func<TaskDataModel, bool>> FieldFilterExpression<TField>(Expression<Func<TaskDataModel, TField>> expression,
-                                                                                      IList<TField>                           values,
-                                                                                      bool                                    include = true)
+                                                                                      IList<TField> values,
+                                                                                      bool include = true)
     {
       var x = Expression.Parameter(typeof(TaskDataModel),
                                    "model");
@@ -47,9 +47,9 @@ namespace ArmoniK.Adapters.MongoDB
 
 
     public static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel, TField>> expression,
-                                                         IList<TField>                           values,
-                                                         bool                                    include,
-                                                         Expression                              x)
+                                                         IList<TField> values,
+                                                         bool include,
+                                                         Expression x)
     {
       if (!values.Any())
         return Expression.Constant(true);

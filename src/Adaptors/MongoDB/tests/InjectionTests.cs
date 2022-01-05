@@ -24,7 +24,6 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Adapters.MongoDB.Options;
 using ArmoniK.Core.Storage;
 
 using Microsoft.Extensions.Configuration;
@@ -180,7 +179,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       var provider = services.BuildServiceProvider();
 
-      var options = provider.GetRequiredService<IOptions<QueueStorage>>();
+      var options = provider.GetRequiredService<IOptions<Options.QueueStorage>>();
 
       Assert.NotNull(options.Value);
     }
@@ -192,7 +191,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       var provider = services.BuildServiceProvider();
 
-      var options = provider.GetRequiredService<IOptions<QueueStorage>>();
+      var options = provider.GetRequiredService<IOptions<Options.QueueStorage>>();
 
       Assert.AreEqual(TimeSpan.FromMinutes(50),
                       options.Value.LockRefreshExtension);
@@ -205,7 +204,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       var provider = services.BuildServiceProvider();
 
-      var options = provider.GetRequiredService<IOptions<QueueStorage>>();
+      var options = provider.GetRequiredService<IOptions<Options.QueueStorage>>();
 
       Assert.AreEqual(TimeSpan.FromSeconds(50),
                       options.Value.PollPeriodicity);
@@ -218,7 +217,7 @@ namespace ArmoniK.Adapters.MongoDB.Tests
       services.AddMongoComponents(configuration_);
       var provider = services.BuildServiceProvider();
 
-      var options = provider.GetRequiredService<IOptions<QueueStorage>>();
+      var options = provider.GetRequiredService<IOptions<Options.QueueStorage>>();
 
       Assert.AreEqual(TimeSpan.FromMinutes(20),
                       options.Value.LockRefreshPeriodicity);

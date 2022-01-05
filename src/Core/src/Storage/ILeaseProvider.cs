@@ -46,6 +46,7 @@ namespace ArmoniK.Core.Storage
 
     Task<Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default);
 
-    Task ReleaseLease(TaskId id, string leaseId, CancellationToken cancellationToken = default);
+    Task ReleaseLease(TaskId    id, string leaseId, CancellationToken cancellationToken = default);
+    Task Init(CancellationToken cancellationToken);
   }
 }

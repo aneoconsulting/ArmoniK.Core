@@ -27,9 +27,9 @@ using System.Threading.Tasks;
 
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Common
 {
-  public static class AsyncCursorSourceExtensions
+  public static class AsyncCursorSourceExt
   {
     public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(
       this IAsyncCursorSource<T> asyncCursorSource)
