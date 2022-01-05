@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using ArmoniK.Adapters.MongoDB.Common;
 using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf;
@@ -34,7 +35,7 @@ using MongoDB.Driver;
 
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Table
 {
   public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaggedId
   {
@@ -81,16 +82,14 @@ namespace ArmoniK.Adapters.MongoDB
     public string CollectionName => "tasks";
 
     /// <inheritdoc />
-    public Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,
+    public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle,
                                        IMongoCollection<TaskDataModel> collection)
     {
-      var sessionIndex    = Builders<TaskDataModel>.IndexKeys.Text(model => model.SessionId);
+      var sessionIndex = Builders<TaskDataModel>.IndexKeys.Text(model => model.SessionId);
       var subSessionIndex = Builders<TaskDataModel>.IndexKeys.Text(model => model.SubSessionId);
-      var taskIndex       = Builders<TaskDataModel>.IndexKeys.Text(model => model.TaskId);
-      var statusIndex     = Builders<TaskDataModel>.IndexKeys.Text(model => model.Status);
-      var taskIdIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
-                                                                  subSessionIndex,
-                                                                  taskIndex);
+      var statusIndex = Builders<TaskDataModel>.IndexKeys.Text(model => model.Status);
+      var sessionSubSessionIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
+                                                                  subSessionIndex);
       var sessionStatusIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
                                                                          statusIndex);
 
@@ -101,10 +100,10 @@ namespace ArmoniK.Adapters.MongoDB
                               {
                                 Name = nameof(sessionIndex),
                               }),
-                          new(taskIdIndex,
+                          new(sessionSubSessionIndex,
                               new()
                               {
-                                Name   = nameof(taskIdIndex),
+                                Name   = nameof(sessionSubSessionIndex),
                                 Unique = true,
                               }),
                           new(sessionStatusIndex,
@@ -122,32 +121,32 @@ namespace ArmoniK.Adapters.MongoDB
     public string IdTag => Options.IdTag;
 
     public TaskData ToTaskData() => new()
-                                    {
-                                      Id = new()
-                                           {
-                                             Session    = SessionId,
-                                             SubSession = SubSessionId,
-                                             Task       = TaskId,
-                                           },
-                                      IsPayloadAvailable = HasPayload,
-                                      Payload = new()
-                                                {
-                                                  Data = ByteString.CopyFrom(Payload),
-                                                },
-                                      Options = Options,
-                                      Retries = Retries,
-                                      Status  = Status,
-                                      Dependencies =
+    {
+      Id = new()
+      {
+        Session = SessionId,
+        SubSession = SubSessionId,
+        Task = TaskId,
+      },
+      IsPayloadAvailable = HasPayload,
+      Payload = new()
+      {
+        Data = ByteString.CopyFrom(Payload),
+      },
+      Options = Options,
+      Retries = Retries,
+      Status = Status,
+      Dependencies =
                                       {
                                         Dependencies,
                                       },
-                                    };
+    };
 
     public TaskId GetTaskId() => new()
-                                 {
-                                   Session    = SessionId,
-                                   SubSession = SubSessionId,
-                                   Task       = TaskId,
-                                 };
+    {
+      Session = SessionId,
+      SubSession = SubSessionId,
+      Task = TaskId,
+    };
   }
 }

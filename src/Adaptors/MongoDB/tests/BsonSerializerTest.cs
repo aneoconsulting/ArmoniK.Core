@@ -24,6 +24,7 @@
 using System;
 using System.Linq;
 
+using ArmoniK.Adapters.MongoDB.Table;
 using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf.WellKnownTypes;

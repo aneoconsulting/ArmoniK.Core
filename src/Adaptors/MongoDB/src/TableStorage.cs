@@ -29,6 +29,8 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Adapters.MongoDB.Common;
+using ArmoniK.Adapters.MongoDB.Table;
 using ArmoniK.Core;
 using ArmoniK.Core.Exceptions;
 using ArmoniK.Core.gRPC;
@@ -52,24 +54,24 @@ namespace ArmoniK.Adapters.MongoDB
   //TODO : wrap all exceptions into ArmoniKExceptions
   public class TableStorage : ITableStorage
   {
-    private readonly ILogger<TableStorage>                     logger_;
+    private readonly ILogger<TableStorage> logger_;
     private readonly MongoCollectionProvider<SessionDataModel> sessionCollectionProvider_;
-    private readonly SessionProvider                           sessionProvider_;
-    private readonly MongoCollectionProvider<TaskDataModel>    taskCollectionProvider_;
+    private readonly SessionProvider sessionProvider_;
+    private readonly MongoCollectionProvider<TaskDataModel> taskCollectionProvider_;
 
     public TableStorage(
       MongoCollectionProvider<SessionDataModel> sessionCollectionProvider,
-      MongoCollectionProvider<TaskDataModel>    taskCollectionProvider,
-      SessionProvider                           sessionProvider,
-      IOptions<Options.TableStorage>            options,
-      ILogger<TableStorage>                     logger
+      MongoCollectionProvider<TaskDataModel> taskCollectionProvider,
+      SessionProvider sessionProvider,
+      IOptions<Options.TableStorage> options,
+      ILogger<TableStorage> logger
     )
     {
       sessionCollectionProvider_ = sessionCollectionProvider;
-      taskCollectionProvider_    = taskCollectionProvider;
-      sessionProvider_           = sessionProvider;
-      PollingDelay               = options.Value.PollingDelay;
-      logger_                    = logger;
+      taskCollectionProvider_ = taskCollectionProvider;
+      sessionProvider_ = sessionProvider;
+      PollingDelay = options.Value.PollingDelay;
+      logger_ = logger;
     }
 
     public TimeSpan PollingDelay { get; }
@@ -77,14 +79,15 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task CancelSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
-      using var _                 = logger_.LogFunction(sessionId.ToString());
-      var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction(sessionId.ToString());
+      var sessionCollection = await sessionCollectionProvider_.GetAsync();
 
       var filterDefinition = Builders<SessionDataModel>.Filter
                                                        .Where(sdm => sessionId.Session == sdm.SessionId &&
                                                                      (sessionId.SubSession == sdm.SubSessionId ||
-                                                                      (sdm.ParentsId.Any(id => id == sessionId.SubSession) &&
-                                                                       !sdm.IsClosed)));
+                                                                      Enumerable.Any<string>(sdm.ParentIds,
+                                                                                        id => id == sessionId.SubSession) &&
+                                                                       !sdm.IsClosed));
 
       var updateDefinition = Builders<SessionDataModel>.Update
                                                        .Set(model => model.IsCancelled,
@@ -101,13 +104,14 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task CloseSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
-      using var _                 = logger_.LogFunction(sessionId.ToString());
-      var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction(sessionId.ToString());
+      var sessionCollection = await sessionCollectionProvider_.GetAsync();
 
       var filterDefinition = Builders<SessionDataModel>.Filter
                                                        .Where(sdm => sessionId.Session == sdm.SessionId &&
                                                                      (sessionId.SubSession == sdm.SubSessionId ||
-                                                                      sdm.ParentsId.Any(id => id == sessionId.SubSession)));
+                                                                      Enumerable.Any<string>(sdm.ParentIds,
+                                                                                        id => id == sessionId.SubSession)));
 
       var definitionBuilder = new UpdateDefinitionBuilder<SessionDataModel>();
 
@@ -123,22 +127,22 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task<IEnumerable<(TaskStatus Status, int Count)>> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction();
-      var       sessionHandle  = await sessionProvider_.GetAsync();
-      var       taskCollection = await taskCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction();
+      var sessionHandle = await sessionProvider_.GetAsync();
+      var taskCollection = await taskCollectionProvider_.GetAsync();
 
-      var res = await taskCollection.AsQueryable(sessionHandle)
-                                    .FilterQuery(filter)
-                                    .Select(model => new
-                                                     {
-                                                       model.Status,
-                                                       Id = model.TaskId,
-                                                     })
-                                    .GroupBy(model => model.Status)
-                                    .Select(models => new
+      var res = await MongoQueryable.Select(MongoQueryable.GroupBy(MongoQueryable.Select(taskCollection.AsQueryable(sessionHandle)
+                                                                                                       .FilterQuery(filter),
+                                                                                         model => new
+                                                                                                  {
+                                                                                                    model.Status,
+                                                                                                    Id = model.TaskId,
+                                                                                                  }),
+                                                                   model => model.Status),
+                                            models => new
                                                       {
                                                         Status = models.Key,
-                                                        Count  = models.Count(),
+                                                        Count = models.Count(),
                                                       })
                                     .ToListAsync(cancellationToken);
 
@@ -148,31 +152,31 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task<IEnumerable<(TaskStatus Status, int Count)>> CountSubTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction();
-      var       sessionHandle  = await sessionProvider_.GetAsync();
-      var       taskCollection = await taskCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction();
+      var sessionHandle = await sessionProvider_.GetAsync();
+      var taskCollection = await taskCollectionProvider_.GetAsync();
 
       var rootTaskFilter = new TaskFilter(filter);
       rootTaskFilter.ExcludedStatuses.Clear();
       rootTaskFilter.IncludedStatuses.Clear();
 
-      var rootTaskListTask = taskCollection.AsQueryable(sessionHandle)
-                                           .FilterQuery(rootTaskFilter)
-                                           .Select(model => model.TaskId)
-                                           .ToListAsync(cancellationToken);
+      var rootTaskListTask = IAsyncCursorSourceExtensions.ToListAsync<string>(taskCollection.AsQueryable(sessionHandle)
+                                                                                       .FilterQuery(rootTaskFilter)
+                                                                                       .Select(model => model.TaskId),
+                                                                         cancellationToken);
 
-      var rootCountTask = taskCollection.AsQueryable(sessionHandle)
-                                        .FilterQuery(filter)
-                                        .Select(model => new
-                                                         {
-                                                           model.Status,
-                                                           Id = model.TaskId,
-                                                         })
-                                        .GroupBy(model => model.Status)
-                                        .Select(models => new
+      var rootCountTask = MongoQueryable.Select(MongoQueryable.GroupBy(MongoQueryable.Select(taskCollection.AsQueryable(sessionHandle)
+                                                                                                           .FilterQuery(filter),
+                                                                                             model => new
+                                                                                                      {
+                                                                                                        model.Status,
+                                                                                                        Id = model.TaskId,
+                                                                                                      }),
+                                                                       model => model.Status),
+                                                models => new
                                                           {
                                                             Status = models.Key,
-                                                            Count  = models.Count(),
+                                                            Count = models.Count(),
                                                           })
                                         .ToListAsync(cancellationToken);
 
@@ -184,24 +188,24 @@ namespace ArmoniK.Adapters.MongoDB
       var filterExpression = BuildChildrenFilterExpression(rootTaskList);
 
       var childrenTaskFilter = new TaskFilter(filter)
-                               {
-                                 SubSessionId = string.Empty,
-                               };
+      {
+        SubSessionId = string.Empty,
+      };
       childrenTaskFilter.IncludedTaskIds.Clear();
       childrenTaskFilter.ExcludedTaskIds.Clear();
 
-      var childrenCountTask = taskCollection.AsQueryable(sessionHandle)
-                                            .Where(filterExpression)
-                                            .FilterQuery(childrenTaskFilter)
-                                            .GroupBy(model => model.Status)
-                                            .Select(models => new
+      var childrenCountTask = MongoQueryable.Select(taskCollection.AsQueryable(sessionHandle)
+                                                                  .Where(filterExpression)
+                                                                  .FilterQuery(childrenTaskFilter)
+                                                                  .GroupBy(model => model.Status),
+                                                    models => new
                                                               {
                                                                 Status = models.Key,
-                                                                Count  = models.Count(),
+                                                                Count = models.Count(),
                                                               })
                                             .ToListAsync(cancellationToken);
 
-      var rootCount     = await rootCountTask;
+      var rootCount = await rootCountTask;
       var childrenCount = await childrenCountTask;
 
       logger_.LogDebug("RootCount:{rootCount}",
@@ -223,20 +227,20 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task Init(CancellationToken cancellationToken)
     {
-      var session        = sessionProvider_.GetAsync();
+      var session = sessionProvider_.GetAsync();
       var taskCollection = taskCollectionProvider_.GetAsync();
       await sessionCollectionProvider_.GetAsync();
       await session;
       await taskCollection;
     }
 
-    public async Task<SessionId> CreateSessionAsync(SessionOptions    sessionOptions,
+    public async Task<SessionId> CreateSessionAsync(SessionOptions sessionOptions,
                                                     CancellationToken cancellationToken = default)
     {
-      using var _                               = logger_.LogFunction();
-      var       sessionHandle                   = await sessionProvider_.GetAsync();
-      var       sessionCollection               = await sessionCollectionProvider_.GetAsync();
-      var       sessionOptionsDefaultTaskOption = sessionOptions.DefaultTaskOption;
+      using var _ = logger_.LogFunction();
+      var sessionHandle = await sessionProvider_.GetAsync();
+      var sessionCollection = await sessionCollectionProvider_.GetAsync();
+      var sessionOptionsDefaultTaskOption = sessionOptions.DefaultTaskOption;
 
 
       List<string> parents = new();
@@ -247,7 +251,7 @@ namespace ArmoniK.Adapters.MongoDB
                                        .Where(x => x.SessionId == sessionOptions.ParentTask.Session &&
                                                    x.SubSessionId == sessionOptions.ParentTask.SubSession)
                                        .FirstAsync(cancellationToken);
-        parents.AddRange(t.ParentsId);
+        parents.AddRange(t.ParentIds);
 
         parents.Add(sessionOptions.ParentTask.SubSession);
 
@@ -260,16 +264,16 @@ namespace ArmoniK.Adapters.MongoDB
       }
 
       var data = new SessionDataModel
-                 {
-                   IdTag       = sessionOptions.IdTag,
-                   IsCancelled = false,
-                   IsClosed    = false,
-                   Options     = sessionOptionsDefaultTaskOption,
-                   ParentsId   = parents,
-                 };
+      {
+        IdTag = sessionOptions.IdTag,
+        IsCancelled = false,
+        IsClosed = false,
+        Options = sessionOptionsDefaultTaskOption,
+        ParentIds = parents,
+      };
       if (sessionOptions.ParentTask is not null)
       {
-        data.SessionId    = sessionOptions.ParentTask.Session;
+        data.SessionId = sessionOptions.ParentTask.Session;
         data.SubSessionId = sessionOptions.ParentTask.Task;
       }
 
@@ -288,16 +292,16 @@ namespace ArmoniK.Adapters.MongoDB
       }
 
       return new()
-             {
-               Session    = data.SessionId,
-               SubSession = data.SubSessionId,
-             };
+      {
+        Session = data.SessionId,
+        SubSession = data.SubSessionId,
+      };
     }
 
     public async Task DeleteTaskAsync(TaskId id, CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction(id.ToPrintableId());
-      var       taskCollection = await taskCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction(id.ToPrintableId());
+      var taskCollection = await taskCollectionProvider_.GetAsync();
 
       await taskCollection.DeleteOneAsync(tdm => tdm.SessionId == id.Task &&
                                                  tdm.SubSessionId == id.SubSession &&
@@ -306,12 +310,12 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
     /// <inheritdoc />
-    public async Task<int> UpdateTaskStatusAsync(TaskFilter        filter,
-                                                 TaskStatus        status,
+    public async Task<int> UpdateTaskStatusAsync(TaskFilter filter,
+                                                 TaskStatus status,
                                                  CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction();
-      var       taskCollection = await taskCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction();
+      var taskCollection = await taskCollectionProvider_.GetAsync();
 
       var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,
                                                                               status);
@@ -327,8 +331,8 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task IncreaseRetryCounterAsync(TaskId id, CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction(id.ToPrintableId());
-      var       taskCollection = await taskCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction(id.ToPrintableId());
+      var taskCollection = await taskCollectionProvider_.GetAsync();
 
       var updateDefinition = Builders<TaskDataModel>.Update
                                                     .Inc(tdm => tdm.Retries,
@@ -349,37 +353,37 @@ namespace ArmoniK.Adapters.MongoDB
     }
 
     public async Task<IEnumerable<(TaskId id, bool HasPayload, byte[] Payload)>> InitializeTaskCreation(
-      SessionId                session,
-      TaskOptions              options,
+      SessionId session,
+      TaskOptions options,
       IEnumerable<TaskRequest> requests,
-      CancellationToken        cancellationToken = default)
+      CancellationToken cancellationToken = default)
     {
-      using var _                 = logger_.LogFunction(session.ToString());
-      var       sessionHandle     = await sessionProvider_.GetAsync();
-      var       taskCollection    = await taskCollectionProvider_.GetAsync();
-      var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction(session.ToString());
+      var sessionHandle = await sessionProvider_.GetAsync();
+      var taskCollection = await taskCollectionProvider_.GetAsync();
+      var sessionCollection = await sessionCollectionProvider_.GetAsync();
 
       var parents = (await sessionCollection.AsQueryable(sessionHandle)
                                             .Where(model => model.SubSessionId == session.SubSession)
-                                            .Select(model => model.ParentsId)
-                                            .FirstAsync(cancellationToken)).Select(id => id)
-                                                                           .ToList();
+                                            .Select(model => model.ParentIds)
+                                            .FirstAsync<List<string>>(cancellationToken)).Select(id => id)
+                                                                                         .ToList();
 
 
       var taskDataModels = requests.Select(request =>
                                            {
                                              var isPayloadStored = request.Payload.CalculateSize() < 12000000;
                                              var tdm = new TaskDataModel
-                                                       {
-                                                         HasPayload         = isPayloadStored,
-                                                         Options            = options,
-                                                         Retries            = 0,
-                                                         SessionId          = session.Session,
-                                                         SubSessionId       = session.SubSession,
-                                                         Status             = TaskStatus.Creating,
-                                                         Dependencies       = request.DependenciesTaskIds,
-                                                         ParentsSubSessions = parents,
-                                                       };
+                                             {
+                                               HasPayload = isPayloadStored,
+                                               Options = options,
+                                               Retries = 0,
+                                               SessionId = session.Session,
+                                               SubSessionId = session.SubSession,
+                                               Status = TaskStatus.Creating,
+                                               Dependencies = request.DependenciesTaskIds,
+                                               ParentsSubSessions = parents,
+                                             };
                                              if (isPayloadStored)
                                                tdm.Payload = request.Payload.Data.ToByteArray();
 
@@ -398,31 +402,31 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task<bool> IsSessionCancelledAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
-      using var _                 = logger_.LogFunction(sessionId.ToString());
-      var       sessionHandle     = await sessionProvider_.GetAsync();
-      var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction(sessionId.ToString());
+      var sessionHandle = await sessionProvider_.GetAsync();
+      var sessionCollection = await sessionCollectionProvider_.GetAsync();
 
 
       return await sessionCollection.AsQueryable(sessionHandle)
                                     .Where(x => x.IsCancelled &&
                                                 x.SessionId == sessionId.Session &&
-                                                (x.SubSessionId == sessionId.SubSession || x.ParentsId.Contains(sessionId.SubSession)))
+                                                (x.SubSessionId == sessionId.SubSession || x.ParentIds.Contains(sessionId.SubSession)))
                                     .Select(x => 1)
-                                    .AnyAsync(cancellationToken);
+                                    .AnyAsync<int>(cancellationToken);
     }
 
     public async Task<bool> IsSessionClosedAsync(SessionId sessionId, CancellationToken cancellationToken = default)
     {
-      using var _                 = logger_.LogFunction(sessionId.ToString());
-      var       sessionHandle     = await sessionProvider_.GetAsync();
-      var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction(sessionId.ToString());
+      var sessionHandle = await sessionProvider_.GetAsync();
+      var sessionCollection = await sessionCollectionProvider_.GetAsync();
       if (!string.IsNullOrEmpty(sessionId.SubSession))
         return await sessionCollection.AsQueryable(sessionHandle)
                                       .Where(x => x.IsClosed &&
                                                   x.SessionId == sessionId.Session &&
-                                                  (x.SubSessionId == sessionId.SubSession || x.ParentsId.Contains(sessionId.SubSession)))
+                                                  (x.SubSessionId == sessionId.SubSession || x.ParentIds.Contains(sessionId.SubSession)))
                                       .Select(x => 1)
-                                      .AnyAsync(cancellationToken);
+                                      .AnyAsync<int>(cancellationToken);
 
       return await sessionCollection.AsQueryable(sessionHandle)
                                     .Where(x => x.SessionId == sessionId.Session && !x.IsClosed)
@@ -440,19 +444,18 @@ namespace ArmoniK.Adapters.MongoDB
                                                          [EnumeratorCancellation] CancellationToken cancellationToken =
                                                            default)
     {
-      using var _              = logger_.LogFunction();
-      var       sessionHandle  = await sessionProvider_.GetAsync();
-      var       taskCollection = await taskCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction();
+      var sessionHandle = await sessionProvider_.GetAsync();
+      var taskCollection = await taskCollectionProvider_.GetAsync();
 
-      var output = taskCollection.AsQueryable(sessionHandle)
-                                 .FilterQuery(filter)
-                                 .Select(x => new TaskId
-                                              {
-                                                Session    = x.SessionId,
-                                                SubSession = x.SubSessionId,
-                                                Task       = x.TaskId,
-                                              })
-                                 .ToAsyncEnumerable();
+      var output = AsyncCursorSourceExt.ToAsyncEnumerable<TaskId>(taskCollection.AsQueryable(sessionHandle)
+                                                                           .FilterQuery(filter)
+                                                                           .Select(x => new TaskId
+                                                                                        {
+                                                                                          Session    = x.SessionId,
+                                                                                          SubSession = x.SubSessionId,
+                                                                                          Task       = x.TaskId,
+                                                                                        }));
 
       await foreach (var taskId in output.WithCancellation(cancellationToken))
         yield return taskId;
@@ -460,9 +463,9 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task<TaskData> ReadTaskAsync(TaskId id, CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction(id.ToPrintableId());
-      var       sessionHandle  = await sessionProvider_.GetAsync();
-      var       taskCollection = await taskCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction(id.ToPrintableId());
+      var sessionHandle = await sessionProvider_.GetAsync();
+      var taskCollection = await taskCollectionProvider_.GetAsync();
 
       var res = await taskCollection.AsQueryable(sessionHandle)
                                     .Where(tdm => tdm.SessionId == id.Session &&
@@ -475,12 +478,12 @@ namespace ArmoniK.Adapters.MongoDB
       return taskData;
     }
 
-    public async Task UpdateTaskStatusAsync(TaskId            id,
-                                            TaskStatus        status,
+    public async Task UpdateTaskStatusAsync(TaskId id,
+                                            TaskStatus status,
                                             CancellationToken cancellationToken = default)
     {
-      using var _              = logger_.LogFunction(id.ToPrintableId());
-      var       taskCollection = await taskCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction(id.ToPrintableId());
+      var taskCollection = await taskCollectionProvider_.GetAsync();
 
       var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,
                                                                               status);
@@ -506,15 +509,15 @@ namespace ArmoniK.Adapters.MongoDB
 
     public async Task<TaskOptions> GetDefaultTaskOption(SessionId sessionId, CancellationToken cancellationToken)
     {
-      using var _                 = logger_.LogFunction(sessionId.ToString());
-      var       sessionHandle     = await sessionProvider_.GetAsync();
-      var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+      using var _ = logger_.LogFunction(sessionId.ToString());
+      var sessionHandle = await sessionProvider_.GetAsync();
+      var sessionCollection = await sessionCollectionProvider_.GetAsync();
 
       return await sessionCollection.AsQueryable(sessionHandle)
                                     .Where(sdm => sdm.SessionId == sessionId.Session &&
                                                   sdm.SubSessionId == sessionId.SubSession)
                                     .Select(sdm => sdm.Options)
-                                    .FirstAsync(cancellationToken);
+                                    .FirstAsync<TaskOptions>(cancellationToken);
     }
 
     public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IList<string> rootTaskList)
@@ -526,7 +529,8 @@ namespace ArmoniK.Adapters.MongoDB
 
       return model => rootTaskList.Contains(model.SubSessionId) ||
                       // ReSharper disable once ConvertClosureToMethodGroup for better handling by MongoDriver visitor
-                      model.ParentsSubSessions.Any(parentSubSession => rootTaskList.Contains(parentSubSession));
+                      Enumerable.Any<string>(model.ParentsSubSessions,
+                                        parentSubSession => rootTaskList.Contains(parentSubSession));
     }
   }
 }

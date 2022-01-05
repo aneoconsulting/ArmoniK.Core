@@ -24,12 +24,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using ArmoniK.Adapters.MongoDB.Common;
 using ArmoniK.Core.gRPC.V1;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Table
 {
   public class SessionDataModel : IMongoDataModel<SessionDataModel>, ITaggedId
   {
@@ -40,7 +41,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                         {
                                                           cm.MapIdProperty(nameof(SubSessionId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
                                                           cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                          cm.MapProperty(nameof(ParentsId)).SetIgnoreIfDefault(true);
+                                                          cm.MapProperty(nameof(ParentIds)).SetIgnoreIfDefault(true);
                                                           cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
                                                           cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
                                                           cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
@@ -52,7 +53,7 @@ namespace ArmoniK.Adapters.MongoDB
 
     public string SubSessionId { get; set; }
 
-    public List<string> ParentsId { get; set; }
+    public List<string> ParentIds { get; set; }
 
     public bool IsClosed { get; set; }
 
@@ -66,11 +67,8 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionDataModel> collection)
     {
-      var sessionIndex    = Builders<SessionDataModel>.IndexKeys.Text(model => model.SessionId);
-      var subSessionIndex = Builders<SessionDataModel>.IndexKeys.Text(model => model.SubSessionId);
-      var parentsIndex    = Builders<SessionDataModel>.IndexKeys.Text("ParentsId.Id");
-      var sessionSubSessionIndex = Builders<SessionDataModel>.IndexKeys.Combine(sessionIndex,
-                                                                                subSessionIndex);
+      var sessionIndex = Builders<SessionDataModel>.IndexKeys.Text(model => model.SessionId);
+      var parentsIndex = Builders<SessionDataModel>.IndexKeys.Text("ParentIds.Id");
       var sessionParentIndex = Builders<SessionDataModel>.IndexKeys.Combine(sessionIndex,
                                                                             parentsIndex);
 
@@ -80,12 +78,6 @@ namespace ArmoniK.Adapters.MongoDB
                               new()
                               {
                                 Name = nameof(sessionIndex),
-                              }),
-                          new(sessionSubSessionIndex,
-                              new()
-                              {
-                                Name   = nameof(sessionSubSessionIndex),
-                                Unique = true,
                               }),
                           new(sessionParentIndex,
                               new()

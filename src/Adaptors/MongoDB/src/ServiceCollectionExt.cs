@@ -21,7 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Adapters.MongoDB.Options;
+using ArmoniK.Adapters.MongoDB.Common;
 using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
@@ -48,7 +48,7 @@ namespace ArmoniK.Adapters.MongoDB
     )
     {
       serviceCollection.Configure<Options.MongoDB>(configuration.GetSection(Options.MongoDB.SettingSection))
-                       .Configure<QueueStorage>(configuration.GetSection(QueueStorage.SettingSection))
+                       .Configure<Options.QueueStorage>(configuration.GetSection(Options.QueueStorage.SettingSection))
                        .Configure<Options.TableStorage>(configuration.GetSection(Options.TableStorage.SettingSection))
                        .Configure<Options.LeaseProvider>(configuration.GetSection(Options.LeaseProvider.SettingSection))
                        .Configure<Options.ObjectStorage>(configuration.GetSection(Options.ObjectStorage.SettingSection))

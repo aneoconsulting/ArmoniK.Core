@@ -21,21 +21,46 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
+using Google.Protobuf;
+
 using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.IdGenerators;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Adapters.MongoDB.Table
 {
-  public class StringCombGuidGenerator : IIdGenerator
+  public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()
   {
-    private static CombGuidGenerator Generator => CombGuidGenerator.Instance;
+    /// <inheritdoc />
+    object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+      => Deserialize(context,
+                     args);
 
     /// <inheritdoc />
-    public object GenerateId(object container, object document) => $"{Generator.GenerateId(container, document)}";
+    public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, T value)
+    {
+      context.Writer.WriteString(value.ToString());
+    }
 
     /// <inheritdoc />
-    public bool IsEmpty(object id) => id == null || ((string)id).Equals("00000000-0000-0000-0000-000000000000");
+    public T Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+    {
+      var parser = new JsonParser(JsonParser.Settings.Default);
+      return parser.Parse<T>(context.Reader.ReadString());
+    }
 
-    public static string GenerateId() => $"{Generator.GenerateId(null, null)}";
+    /// <inheritdoc />
+    public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
+    {
+      if (value is T t)
+        Serialize(context,
+                  args,
+                  t);
+      else
+        throw new("Not supported type");
+    }
+
+    /// <inheritdoc />
+    public Type ValueType => typeof(T);
   }
 }

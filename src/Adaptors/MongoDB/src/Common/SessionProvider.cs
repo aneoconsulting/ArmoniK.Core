@@ -21,10 +21,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Adapters.MongoDB
+using ArmoniK.Core.Injection;
+
+using MongoDB.Driver;
+
+namespace ArmoniK.Adapters.MongoDB.Common
 {
-  public interface ITaggedId
+  public class SessionProvider : ProviderBase<IClientSessionHandle>
   {
-    public string IdTag { get; }
+    public SessionProvider(IMongoClient client) :
+      base(() => client.StartSessionAsync())
+    {
+    }
   }
 }
