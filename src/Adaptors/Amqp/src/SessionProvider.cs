@@ -39,7 +39,8 @@ namespace ArmoniK.Adapters.Amqp
         var connection = await Connection.Factory.CreateAsync(new(options.Value.Host,
                                                                   options.Value.Port,
                                                                   options.Value.User,
-                                                                  options.Value.Password));
+                                                                  options.Value.Password,
+                                                                  scheme: "AMQP"));
         return new(connection);
       })
     {
