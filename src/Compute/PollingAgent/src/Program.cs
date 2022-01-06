@@ -82,6 +82,7 @@ namespace ArmoniK.Compute.PollingAgent
                                                                             true)
                                                                .AddJsonFile($"appsettings.{env.EnvironmentName}.json",
                                                                             true)
+                                                               .AddJsonFile("/amqp/credentials.json", true, true)
                                                                .AddEnvironmentVariables()
                                                                .AddCommandLine(args))
                  .UseSerilog((context, services, config) => config

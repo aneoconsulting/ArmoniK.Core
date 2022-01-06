@@ -35,10 +35,13 @@ namespace ArmoniK.Adapters.Amqp
     /// <inheritdoc />
     public SessionProvider(IOptions<Options.Amqp> options)
       : base(async () =>
-             {
-               var connection = await Connection.Factory.CreateAsync(new(options.Value.Address));
-               return new(connection);
-             })
+      {
+        var connection = await Connection.Factory.CreateAsync(new(options.Value.Host,
+                                                                  options.Value.Port,
+                                                                  options.Value.User,
+                                                                  options.Value.Password));
+        return new(connection);
+      })
     {
     }
   }
