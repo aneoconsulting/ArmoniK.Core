@@ -1,10 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Versions.xml" />
-
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <Version>$(ArmonikVersion)</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Company>ANEO</Company>
 		<Copyright>Copyright (C) ANEO, 2021-2021</Copyright>
@@ -53,10 +50,5 @@
       <Link>gRPC\Protos\TaskStatus.proto</Link>
     </Protobuf>
   </ItemGroup>
-
-
-  <Target Name="DeleteLocalCache" BeforeTargets="Pack">
-    <RemoveDir Directories="$(NugetPackageRoot)/$(PackageId.ToLower())/$(ArmonikVersion)" />
-  </Target>
 
 </Project>

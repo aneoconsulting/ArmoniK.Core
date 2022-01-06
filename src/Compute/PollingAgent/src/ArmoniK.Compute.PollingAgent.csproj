@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
-  <Import Project="..\..\..\..\Versions.xml" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,7 +10,6 @@
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <DockerfileContext>..\..\..\..</DockerfileContext>
 
-    <Version>$(ArmonikVersion)</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
     <PackageOutputPath>..\..\..\..\publish</PackageOutputPath>
@@ -45,10 +43,5 @@
     <ProjectReference Include="..\..\..\Adaptors\MongoDB\src\ArmoniK.Adapters.MongoDB.csproj" />
     <ProjectReference Include="..\..\..\Core\src\ArmoniK.Core.csproj" />
   </ItemGroup>
-
-
-  <Target Name="DeleteLocalCache" BeforeTargets="Pack">
-    <RemoveDir Directories="$(NugetPackageRoot)/$(PackageId.ToLower())/$(ArmonikVersion)" />
-  </Target>
 
 </Project>
