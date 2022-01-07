@@ -25,6 +25,7 @@ using Amqp;
 
 using ArmoniK.Core.Injection;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Adapters.Amqp
@@ -36,10 +37,13 @@ namespace ArmoniK.Adapters.Amqp
     public SessionProvider(IOptions<Options.Amqp> options)
       : base(async () =>
       {
+        var builder = new ConfigurationBuilder()
+                      .AddJsonFile(options.Value.CredentialsPath).Build();
+        var section = builder.GetSection(Options.Amqp.SettingSection);
         var connection = await Connection.Factory.CreateAsync(new(options.Value.Host,
                                                                   options.Value.Port,
-                                                                  options.Value.User,
-                                                                  options.Value.Password,
+                                                                  section.GetValue<string>("User"),
+                                                                  section.GetValue<string>("Password"),
                                                                   scheme: "AMQP"));
         return new(connection);
       })

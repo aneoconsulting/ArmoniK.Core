@@ -47,9 +47,6 @@ namespace ArmoniK.Control
                                 true)
                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json",
                                 true)
-                   .AddJsonFile("/amqp/credentials.json",
-                                true,
-                                true)
                    .AddEnvironmentVariables();
 
 
