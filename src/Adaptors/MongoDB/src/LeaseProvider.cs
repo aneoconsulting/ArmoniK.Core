@@ -37,7 +37,6 @@ using Google.Protobuf.WellKnownTypes;
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using MongoDB.Driver;
 
@@ -50,13 +49,13 @@ namespace ArmoniK.Adapters.MongoDB
     private readonly ILogger<LeaseProvider> logger_;
     private readonly SessionProvider sessionProvider_;
 
-    public LeaseProvider(IOptions<Options.LeaseProvider> options,
+    public LeaseProvider(Options.LeaseProvider options,
                          MongoCollectionProvider<LeaseDataModel> leaseCollectionProvider,
                          SessionProvider sessionProvider,
                          ILogger<LeaseProvider> logger)
     {
-      AcquisitionPeriod = options.Value.AcquisitionPeriod;
-      AcquisitionDuration = options.Value.AcquisitionDuration;
+      AcquisitionPeriod = options.AcquisitionPeriod;
+      AcquisitionDuration = options.AcquisitionDuration;
       leaseCollectionProvider_ = leaseCollectionProvider;
       sessionProvider_ = sessionProvider;
       logger_ = logger;
@@ -73,10 +72,22 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task Init(CancellationToken cancellationToken)
     {
-      var collectionTask = leaseCollectionProvider_.GetAsync();
-      await sessionProvider_.GetAsync();
-      await collectionTask;
+      if (!isInitialized_)
+      {
+        var collectionTask = leaseCollectionProvider_.GetAsync();
+        await sessionProvider_.GetAsync();
+        await collectionTask;
+        isInitialized_ = true;
+      }
     }
+
+
+    private bool isInitialized_ = false;
+
+    /// <inheritdoc />
+    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+
+
 
     /// <inheritdoc />
     public async Task<Core.gRPC.V1.Lease> TryAcquireLeaseAsync(TaskId id, CancellationToken cancellationToken = default)

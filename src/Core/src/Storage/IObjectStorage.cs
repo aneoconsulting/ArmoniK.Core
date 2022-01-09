@@ -26,14 +26,12 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Storage
 {
-  public interface IObjectStorage
+  public interface IObjectStorage : IInitializable
   {
     Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default);
 
     Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default);
 
     Task<bool> TryDeleteAsync(string  key, CancellationToken cancellationToken = default);
-
-    Task Init(CancellationToken cancellationToken);
   }
 }

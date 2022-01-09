@@ -32,6 +32,8 @@ namespace ArmoniK.Adapters.MongoDB.Object
 {
   public class ObjectDataModel : IMongoDataModel<ObjectDataModel>
   {
+    public const string Collection = "Object";
+
     [BsonId]
     public string Id => $"{Key}{ChunkIdx}";
 
@@ -44,9 +46,9 @@ namespace ArmoniK.Adapters.MongoDB.Object
     [BsonElement]
     public int ChunkIdx { get; set; }
 
-    [BsonIgnore]
     /// <inheritdoc />
-    public string CollectionName { get; } = "Object";
+    [BsonIgnore]
+    public string CollectionName { get; } = Collection;
 
     /// <inheritdoc />
     public Task InitializeIndexesAsync(

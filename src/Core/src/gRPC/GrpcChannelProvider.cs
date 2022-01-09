@@ -37,11 +37,12 @@ namespace ArmoniK.Core.gRPC
 {
   public class GrpcChannelProvider : ProviderBase<ChannelBase>
   {
-    public GrpcChannelProvider(IOptions<GrpcChannel> options, ILogger<GrpcChannelProvider> logger)
-      : base(options.Value.SocketType == GrpcSocketType.Web
-               ? () => Task.FromResult(BuildWebGrpcChannel(options.Value.Address,
+    // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+    public GrpcChannelProvider(GrpcChannel options, ILogger<GrpcChannelProvider> logger)
+      : base(options.SocketType == GrpcSocketType.Web
+               ? () => Task.FromResult(BuildWebGrpcChannel(options.Address,
                                                            logger))
-               : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Value.Address,
+               : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Address,
                                                                   logger)))
     {
     }

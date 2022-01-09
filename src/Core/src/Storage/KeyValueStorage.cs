@@ -34,7 +34,7 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
-  public class KeyValueStorage<TKey, TValue>
+  public class KeyValueStorage<TKey, TValue> : IInitializable
     where TValue : IMessage<TValue>, new()
     where TKey : IMessage<TKey>, new()
   {
@@ -89,7 +89,11 @@ namespace ArmoniK.Core.Storage
                                            cancellationToken);
     }
 
+    /// <inheritdoc />
     public Task Init(CancellationToken cancellationToken)
       => objectStorage_.Init(cancellationToken);
+
+    /// <inheritdoc />
+    public ValueTask<bool> Check(HealthCheckTag tag) => objectStorage_.Check(tag);
   }
 }

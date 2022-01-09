@@ -80,13 +80,22 @@ namespace ArmoniK.Adapters.Amqp
     }
 
     /// <inheritdoc />
-    public Task Init(CancellationToken cancellationToken)
+    public async Task Init(CancellationToken cancellationToken)
     {
-      var senders = Task.WhenAll(senders_.Select(async lazy => await lazy));
-      var receivers = Task.WhenAll(receivers_.Select(async lazy => await lazy));
-      return Task.WhenAll(senders,
-                          receivers);
+      if (!isInitialized_)
+      {
+        var senders   = Task.WhenAll(senders_.Select(async lazy => await lazy));
+        var receivers = Task.WhenAll(receivers_.Select(async lazy => await lazy));
+        await Task.WhenAll(senders,
+                            receivers);
+        isInitialized_ = true;
+      }
     }
+
+    private bool isInitialized_ = false;
+
+    /// <inheritdoc />
+    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
 
     /// <inheritdoc />
     public int MaxPriority { get; }

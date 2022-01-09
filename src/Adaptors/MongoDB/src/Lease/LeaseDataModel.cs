@@ -33,6 +33,8 @@ namespace ArmoniK.Adapters.MongoDB.Lease
 {
   public class LeaseDataModel : IMongoDataModel<LeaseDataModel>
   {
+    public const string Collection = "Lease";
+
     [BsonId]
     public string Key { get; set; }
 
@@ -45,7 +47,7 @@ namespace ArmoniK.Adapters.MongoDB.Lease
     public DateTime ExpiresAt { get; set; }
 
     /// <inheritdoc />
-    public string CollectionName { get; } = "Lease";
+    public string CollectionName { get; } = Collection;
 
     /// <inheritdoc />
     public Task InitializeIndexesAsync(

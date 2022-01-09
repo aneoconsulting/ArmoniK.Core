@@ -35,7 +35,7 @@ using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 namespace ArmoniK.Core.Storage
 {
   [PublicAPI]
-  public interface ITableStorage
+  public interface ITableStorage : IInitializable
   {
     TimeSpan PollingDelay { get; }
 
@@ -75,7 +75,5 @@ namespace ArmoniK.Core.Storage
     Task<IEnumerable<(TaskStatus Status, int Count)>> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
 
     Task<IEnumerable<(TaskStatus Status, int Count)>> CountSubTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
-
-    Task Init(CancellationToken cancellationToken);
   }
 }

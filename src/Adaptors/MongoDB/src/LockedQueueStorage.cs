@@ -35,7 +35,6 @@ using ArmoniK.Core.gRPC.V1;
 using ArmoniK.Core.Storage;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using MongoDB.Driver;
 
@@ -48,14 +47,14 @@ namespace ArmoniK.Adapters.MongoDB
     private readonly MongoCollectionProvider<QueueMessageModel> queueCollectionProvider_;
 
     public LockedQueueStorage(MongoCollectionProvider<QueueMessageModel> queueCollectionProvider,
-                              IOptions<Options.QueueStorage>             options,
+                              Options.QueueStorage                       options,
                               ILogger<LockedQueueStorage>                logger)
     {
       queueCollectionProvider_ = queueCollectionProvider;
-      logger_ = logger;
-      LockRefreshExtension = options.Value.LockRefreshExtension;
-      PollPeriodicity = options.Value.PollPeriodicity;
-      LockRefreshPeriodicity = options.Value.LockRefreshPeriodicity;
+      logger_                  = logger;
+      LockRefreshExtension     = options.LockRefreshExtension;
+      PollPeriodicity          = options.PollPeriodicity;
+      LockRefreshPeriodicity   = options.LockRefreshPeriodicity;
     }
 
 
@@ -72,7 +71,18 @@ namespace ArmoniK.Adapters.MongoDB
 
     /// <inheritdoc />
     public async Task Init(CancellationToken cancellationToken)
-      => await queueCollectionProvider_.GetAsync();
+    {
+      if(!isInitialized_)
+        await queueCollectionProvider_.GetAsync();
+
+      isInitialized_ = true;
+    }
+
+
+    private bool isInitialized_ = false;
+
+    /// <inheritdoc />
+    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
 
     /// <inheritdoc />
     public int MaxPriority => int.MaxValue;

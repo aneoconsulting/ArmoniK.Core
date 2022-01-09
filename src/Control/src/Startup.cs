@@ -24,9 +24,11 @@
 using ArmoniK.Adapters.Amqp;
 using ArmoniK.Adapters.MongoDB;
 using ArmoniK.Control.Services;
+using ArmoniK.Core;
 using ArmoniK.Core.Injection;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,7 +55,7 @@ namespace ArmoniK.Control
       Configuration = builder.Build();
     }
 
-    public IConfiguration Configuration { get; }
+    private IConfiguration Configuration { get; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
     // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -74,9 +76,24 @@ namespace ArmoniK.Control
 
       app.UseRouting();
 
+
       app.UseEndpoints(endpoints =>
                        {
+
+                         endpoints.MapHealthChecks("/startup",
+                                                   new()
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                                                   });
+
+                         endpoints.MapHealthChecks("/liveness",
+                                                   new()
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                                                   });
+
                          endpoints.MapGrpcService<ClientService>();
+                         endpoints.MapGrpcService<GrpcHealthCheckService>();
                        });
     }
   }

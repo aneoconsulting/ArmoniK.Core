@@ -1,6 +1,6 @@
-// This file is part of the ArmoniK project
+﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -21,18 +21,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading;
-using System.Threading.Tasks;
+using ArmoniK.Core.gRPC;
 
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ArmoniK.Compute.PollingAgent;
-
-public class Worker : BackgroundService
+namespace ArmoniK.Control
 {
-  private readonly Pollster pollster_;
-
-  public Worker(Pollster pollster) => pollster_ = pollster;
-
-  protected override Task ExecuteAsync(CancellationToken stoppingToken) => pollster_.MainLoopPrefetch(stoppingToken);
+  public class GrpcHealthCheckService : GrpcHealthCheckServiceBase
+  {
+    /// <inheritdoc />
+    public GrpcHealthCheckService(HealthCheckService healthCheckService) 
+      : base(healthCheckService, new []{"ArmoniK.Core.gRPC.V1.ClientService"}
+            )
+    {
+    }
+  }
 }

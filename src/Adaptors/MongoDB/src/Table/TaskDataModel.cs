@@ -39,6 +39,8 @@ namespace ArmoniK.Adapters.MongoDB.Table
 {
   public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaggedId
   {
+    public const string Collection = "tasks";
+
     static TaskDataModel()
     {
       if (!BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
@@ -79,7 +81,7 @@ namespace ArmoniK.Adapters.MongoDB.Table
     public IList<string> ParentsSubSessions { get; set; } = Array.Empty<string>();
 
     /// <inheritdoc />
-    public string CollectionName => "tasks";
+    public string CollectionName => Collection;
 
     /// <inheritdoc />
     public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle,

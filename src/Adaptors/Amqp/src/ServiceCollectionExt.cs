@@ -21,6 +21,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using Amqp;
+
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
 
@@ -28,6 +30,7 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Adapters.Amqp
 {
@@ -39,13 +42,24 @@ namespace ArmoniK.Adapters.Amqp
       IConfiguration          configuration
     )
     {
-      serviceCollection.Configure<Options.Amqp>(configuration.GetSection(Options.Amqp.SettingSection))
-                       .AddSingleton<SessionProvider>();
+      var amqpOptions     = configuration.GetValue<Options.Amqp>(Options.Amqp.SettingSection);
+      var sessionProvider = new SessionProvider(amqpOptions);
+      serviceCollection.AddSingleton(sessionProvider);
 
       var components = configuration.GetSection(Components.SettingSection);
 
       if (components["QueueStorage"] == "ArmoniK.Adapters.Amqp.QueueStorage")
+      {
         serviceCollection.AddSingleton<IQueueStorage, QueueStorage>();
+
+        serviceCollection.AddHealthChecks()
+                         .AddAsyncCheck("AmqpHealthCheck",
+                                        async () =>
+                                        {
+                                          var t = await sessionProvider.GetAsync();
+                                          return t.SessionState == SessionState.Opened ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy();
+                                        });
+      }
 
       return serviceCollection;
     }

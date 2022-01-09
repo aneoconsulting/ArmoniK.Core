@@ -29,9 +29,8 @@ using ArmoniK.Core.gRPC.V1;
 
 namespace ArmoniK.Core.Storage
 {
-  public interface IQueueStorageBase
+  public interface IQueueStorageBase : IInitializable
   {
-    Task Init(CancellationToken cancellationToken);
 
     int MaxPriority { get; }
 

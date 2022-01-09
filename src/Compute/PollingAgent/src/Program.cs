@@ -26,78 +26,99 @@ using System.IO;
 
 using ArmoniK.Adapters.Amqp;
 using ArmoniK.Adapters.MongoDB;
-using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Core;
 using ArmoniK.Core.Injection;
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Hosting.Internal;
 
 using Serilog;
 using Serilog.Events;
-using Serilog.Formatting.Compact;
 
-namespace ArmoniK.Compute.PollingAgent
+namespace ArmoniK.Compute.PollingAgent;
+
+public static class Program
 {
-  public static class Program
+  public static int Main(string[] args)
   {
-    public static int Main(string[] args)
-    {
-      Log.Logger = new LoggerConfiguration()
-                  .MinimumLevel.Override("Microsoft",
-                                         LogEventLevel.Information)
-                  .Enrich.FromLogContext()
-                  .WriteTo.Console(new CompactJsonFormatter())
-                  .CreateBootstrapLogger();
+    Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Override("Microsoft",
+                                       LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateBootstrapLogger();
 
-      try
-      {
-        Log.Information("Starting host");
-        CreateHostBuilder(args).Build().Run();
-        return 0;
-      }
-      catch (Exception ex)
-      {
-        Log.Fatal(ex,
-                  "Host terminated unexpectedly");
-        return 1;
-      }
-      finally
-      {
-        Log.CloseAndFlush();
-      }
+    try
+    {
+      Log.Information("Starting host");
+
+      var builder = WebApplication.CreateBuilder(args);
+
+      builder.Configuration
+             .SetBasePath(Directory.GetCurrentDirectory())
+             .AddJsonFile("appsettings.json",
+                          true,
+                          true)
+             .AddJsonFile("/amqp/credentials.json",
+                          true,
+                          true)
+             .AddEnvironmentVariables()
+             .AddCommandLine(args);
+
+      builder.Host
+             .UseSerilog((context, services, config)
+                           => config
+                             .ReadFrom.Configuration(context.Configuration)
+                             .ReadFrom.Services(services)
+                             .Enrich.FromLogContext());
+
+      builder.Services
+             .AddLogging()
+             .AddArmoniKCore(builder.Configuration)
+             .AddMongoComponents(builder.Configuration)
+             .AddAmqp(builder.Configuration)
+             .AddHostedService<Worker>()
+             .AddSingleton<Pollster>();
+
+      var app = builder.Build();
+
+      app.UseRouting();
+
+      app.UseEndpoints(endpoints =>
+                       {
+
+                         endpoints.MapHealthChecks("/startup",
+                                                   new()
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                                                   });
+
+                         endpoints.MapHealthChecks("/liveness",
+                                                   new()
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                                                   });
+
+                         endpoints.MapHealthChecks("/readiness",
+                                                   new()
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
+                                                   });
+                       });
+
+      app.Run();
+      return 0;
     }
-
-    public static IHostBuilder CreateHostBuilder(string[] args)
+    catch (Exception ex)
     {
-      var env = new HostingEnvironment
-                {
-                  ContentRootPath = Directory.GetCurrentDirectory(),
-                };
-      return Host.CreateDefaultBuilder(args)
-                 .ConfigureHostConfiguration(builder => builder.SetBasePath(env.ContentRootPath)
-                                                               .AddJsonFile("appsettings.json",
-                                                                            true,
-                                                                            true)
-                                                               .AddJsonFile($"appsettings.{env.EnvironmentName}.json",
-                                                                            true)
-                                                               .AddEnvironmentVariables()
-                                                               .AddCommandLine(args))
-                 .UseSerilog((context, services, config) => config
-                                                           .ReadFrom.Configuration(context.Configuration)
-                                                           .ReadFrom.Services(services)
-                                                           .Enrich.FromLogContext())
-                 .ConfigureServices((hostContext, services) =>
-                                    {
-                                      services.AddLogging()
-                                              .AddArmoniKCore(hostContext.Configuration)
-                                              .AddMongoComponents(hostContext.Configuration)
-                                              .AddAmqp(hostContext.Configuration)
-                                              .AddHostedService<Worker>()
-                                              .AddSingleton<Pollster>()
-                                              .AddSingleton<ComputerService.ComputerServiceClient>();
-                                    });
+      Log.Fatal(ex,
+                "Host terminated unexpectedly");
+      return 1;
+    }
+    finally
+    {
+      Log.CloseAndFlush();
     }
   }
 }

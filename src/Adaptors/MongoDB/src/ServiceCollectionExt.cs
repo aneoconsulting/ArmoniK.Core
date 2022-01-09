@@ -22,7 +22,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Adapters.MongoDB.Common;
-using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Core;
+using ArmoniK.Core.Injection;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
 
@@ -31,7 +32,6 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -43,65 +43,93 @@ namespace ArmoniK.Adapters.MongoDB
   {
     [PublicAPI]
     public static IServiceCollection AddMongoComponents(
-      this IServiceCollection serviceCollection,
+      this IServiceCollection services,
       IConfiguration          configuration
     )
     {
-      serviceCollection.Configure<Options.MongoDB>(configuration.GetSection(Options.MongoDB.SettingSection))
-                       .Configure<Options.QueueStorage>(configuration.GetSection(Options.QueueStorage.SettingSection))
-                       .Configure<Options.TableStorage>(configuration.GetSection(Options.TableStorage.SettingSection))
-                       .Configure<Options.LeaseProvider>(configuration.GetSection(Options.LeaseProvider.SettingSection))
-                       .Configure<Options.ObjectStorage>(configuration.GetSection(Options.ObjectStorage.SettingSection))
-                       .AddTransient<IMongoClient>(provider =>
-                                                   {
-                                                     var options             = provider.GetRequiredService<IOptions<Options.MongoDB>>();
-                                                     var logger              = provider.GetRequiredService<ILogger<IMongoClient>>();
-                                                     var mongoConnectionUrl  = new MongoUrl(options.Value.ConnectionString);
-                                                     var mongoClientSettings = MongoClientSettings.FromUrl(mongoConnectionUrl);
-                                                     mongoClientSettings.ClusterConfigurator = cb =>
-                                                                                               {
-                                                                                                 cb.Subscribe<CommandStartedEvent>(e =>
-                                                                                                                                   {
-                                                                                                                                     if (logger
-                                                                                                                                        .IsEnabled(LogLevel.Trace))
-                                                                                                                                       logger
-                                                                                                                                        .LogTrace("{CommandName} - {Command}",
-                                                                                                                                                  e.CommandName,
-                                                                                                                                                  e.Command.ToJson());
-                                                                                                                                   });
-                                                                                               };
-                                                     return new MongoClient(mongoClientSettings);
-                                                   })
-                       .AddTransient(provider =>
-                                     {
-                                       var options = provider.GetRequiredService<IOptions<Options.MongoDB>>();
-                                       return provider.GetRequiredService<IMongoClient>().GetDatabase(options.Value.DatabaseName);
-                                     })
-                       .AddSingleton<SessionProvider>()
-                       .AddSingleton(typeof(MongoCollectionProvider<>))
-                       .AddTransient<TableStorage>()
-                       .AddTransient<LeaseProvider>()
-                       .AddTransient<ObjectStorage>()
-                       .AddTransient<KeyValueStorage<TaskId, ComputeReply>>()
-                       .AddTransient<KeyValueStorage<TaskId, Payload>>()
-                       .AddTransient<LockedQueueStorage>();
 
       var components = configuration.GetSection(Components.SettingSection);
 
+      var isMongoRequired = false;
+
       if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
-        serviceCollection.AddTransient<ITableStorage, TableStorage>();
+      {
+        services.AddOption<Options.TableStorage>(configuration,
+                                                 Options.TableStorage.SettingSection)
+                .AddTransient<TableStorage>()
+                .AddTransientWithHealthCheck<ITableStorage, TableStorage>($"MongoDB.{nameof(TableStorage)}");
+
+        isMongoRequired = true;
+      }
 
       if (components["QueueStorage"] == "ArmoniK.Adapters.MongoDB.LockedQueueStorage")
-        serviceCollection.AddTransient<IQueueStorage, LockedWrapperQueueStorage>()
-                         .AddTransient<ILockedQueueStorage, LockedQueueStorage>();
+      {
+        services.AddOption<Options.QueueStorage>(configuration,
+                                                 Options.QueueStorage.SettingSection)
+                .AddTransientWithHealthCheck<LockedQueueStorage>($"MongoDB.{nameof(LockedQueueStorage)}")
+                .AddTransientWithHealthCheck<IQueueStorage, LockedWrapperQueueStorage>($"MongoDB.{nameof(LockedWrapperQueueStorage)}")
+                .AddTransient<ILockedQueueStorage, LockedQueueStorage>();
+
+        isMongoRequired = true;
+      }
 
       if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
-        serviceCollection.AddTransient<IObjectStorage, ObjectStorage>();
+      {
+        services.AddOption<Options.ObjectStorage>(configuration,
+                                                  Options.ObjectStorage.SettingSection)
+                .AddTransient<ObjectStorage>()
+                .AddTransientWithHealthCheck<IObjectStorage, ObjectStorage>($"MongoDB.{nameof(LockedWrapperQueueStorage)}");
+
+        isMongoRequired = true;
+      }
 
       if (components["LeaseProvider"] == "ArmoniK.Adapters.MongoDB.LeaseProvider")
-        serviceCollection.AddTransient<ILeaseProvider, LeaseProvider>();
+      {
+        services.AddOption<Options.LeaseProvider>(configuration,
+                                                  Options.LeaseProvider.SettingSection)
+                .AddTransient<LeaseProvider>()
+                .AddTransientWithHealthCheck<ILeaseProvider, LeaseProvider>($"MongoDB.{nameof(LockedWrapperQueueStorage)}");
 
-      return serviceCollection;
+        isMongoRequired = true;
+      }
+
+      if (isMongoRequired)
+      {
+        services.AddOption<Options.MongoDB>(configuration,
+                                            Options.MongoDB.SettingSection,
+                                            out var mongoOptions)
+                .AddTransient<IMongoClient>(provider =>
+                                            {
+                                              var logger  = provider.GetRequiredService<ILogger<IMongoClient>>();
+                                              var setting = MongoClientSettings.FromConnectionString(mongoOptions.ConnectionString);
+
+                                              if (logger.IsEnabled(LogLevel.Trace))
+                                              {
+                                                setting.ClusterConfigurator = cb =>
+                                                                              {
+                                                                                cb.Subscribe<CommandStartedEvent>(e =>
+                                                                                                                  {
+                                                                                                                    logger
+                                                                                                                     .LogTrace("{CommandName} - {Command}",
+                                                                                                                               e.CommandName,
+                                                                                                                               e.Command.ToJson());
+                                                                                                                  });
+                                                                              };
+                                              }
+
+                                              return new MongoClient(setting);
+                                            })
+                .AddTransient(provider => provider.GetRequiredService<IMongoClient>().GetDatabase(mongoOptions.DatabaseName))
+                .AddSingleton(typeof(MongoCollectionProvider<>))
+                .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}")
+                .AddHealthChecks()
+                .AddMongoDb(mongoOptions.ConnectionString,
+                            mongoOptions.DatabaseName,
+                            "MongoDb Connection",
+                            tags: new[] { nameof(HealthCheckTag.Startup), nameof(HealthCheckTag.Liveness), nameof(HealthCheckTag.Readiness) });
+      }
+
+      return services;
     }
   }
 }

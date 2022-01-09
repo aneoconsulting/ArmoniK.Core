@@ -34,6 +34,8 @@ namespace ArmoniK.Adapters.MongoDB.Queue
 {
   public class QueueMessageModel : IMongoDataModel<QueueMessageModel>
   {
+    public const string Collection = "Queue";
+
     [BsonId(IdGenerator = typeof(StringCombGuidGenerator))]
     public string MessageId { get; set; }
 
@@ -57,7 +59,7 @@ namespace ArmoniK.Adapters.MongoDB.Queue
     public DateTime OwnedUntil { get; set; }
 
     /// <inheritdoc />
-    public string CollectionName { get; } = "Queue";
+    public string CollectionName { get; } = Collection;
 
     /// <inheritdoc />
     public Task InitializeIndexesAsync(

@@ -34,6 +34,8 @@ namespace ArmoniK.Adapters.MongoDB.Table
 {
   public class SessionDataModel : IMongoDataModel<SessionDataModel>, ITaggedId
   {
+    public const string Collection = "SessionData";
+
     static SessionDataModel()
     {
       if (!BsonClassMap.IsClassMapRegistered(typeof(SessionDataModel)))
@@ -62,7 +64,7 @@ namespace ArmoniK.Adapters.MongoDB.Table
     public TaskOptions Options { get; set; }
 
     /// <inheritdoc />
-    public string CollectionName { get; } = "SessionData";
+    public string CollectionName { get; } = Collection;
 
     /// <inheritdoc />
     public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionDataModel> collection)

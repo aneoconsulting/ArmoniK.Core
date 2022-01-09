@@ -319,7 +319,7 @@ namespace ArmoniK.Core.Tests
                   },
                 };
 
-      Assert.IsFalse(validator_.Validate(ctr).IsValid);
+      Assert.IsTrue(validator_.Validate(ctr).IsValid);
     }
 
     [Test]

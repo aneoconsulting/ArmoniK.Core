@@ -29,7 +29,7 @@ using ArmoniK.Core.gRPC.V1;
 
 namespace ArmoniK.Core.Storage
 {
-  public interface ILeaseProvider
+  public interface ILeaseProvider : IInitializable
   {
     TimeSpan AcquisitionPeriod { get; }
 
@@ -47,6 +47,5 @@ namespace ArmoniK.Core.Storage
     Task<Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default);
 
     Task ReleaseLease(TaskId    id, string leaseId, CancellationToken cancellationToken = default);
-    Task Init(CancellationToken cancellationToken);
   }
 }

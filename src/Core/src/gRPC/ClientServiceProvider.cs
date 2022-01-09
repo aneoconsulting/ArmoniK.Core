@@ -29,10 +29,13 @@ using ArmoniK.Core.Injection;
 
 using Grpc.Core;
 
+using JetBrains.Annotations;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.gRPC
 {
+  [PublicAPI]
   public class ClientServiceProvider : ProviderBase<ComputerService.ComputerServiceClient>
   {
     /// <inheritdoc />

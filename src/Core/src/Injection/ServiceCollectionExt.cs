@@ -28,23 +28,197 @@ using ArmoniK.Core.Storage;
 
 using Calzolari.Grpc.AspNetCore.Validation;
 
+using JetBrains.Annotations;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+using System;
 
 namespace ArmoniK.Core.Injection
 {
+
+  public static class ConfigurationExt
+  {
+    public static T GetRequiredValue<T>(this IConfiguration configuration, string key) 
+      => configuration.GetRequiredSection(key).Get<T>();
+  }
+
   public static class ServiceCollectionExt
   {
+    [PublicAPI]
+    public static IServiceCollection AddOption<T>(this IServiceCollection services,
+                                                  IConfiguration          configuration,
+                                                  string                  key) where T : class
+      => services.AddSingleton(configuration.GetRequiredValue<T>(key));
+
+
+    [PublicAPI]
+    public static IServiceCollection AddOption<T>(this IServiceCollection services,
+                                                  IConfiguration          configuration,
+                                                  string                  key,
+                                                  out T option) where T : class
+    {
+      option = configuration.GetRequiredValue<T>(key);
+      return services.AddSingleton(option);
+    }
+
+    [PublicAPI]
     public static IServiceCollection AddArmoniKCore(this IServiceCollection services,
                                                     IConfiguration          configuration)
-      => services.Configure<ComputePlan>(configuration.GetSection(ComputePlan.SettingSection))
-                 .Configure<GrpcChannel>(configuration.GetSection(GrpcChannel.SettingSection))
-                 .Configure<Components>(configuration.GetSection(Components.SettingSection))
-                 .AddSingleton<GrpcChannelProvider>()
-                 .AddSingleton<ClientServiceProvider>()
-                 .AddTransient<IObjectStorage, DistributedCacheObjectStorage>()
-                 .AddSingleton(typeof(KeyValueStorage<,>));
+    {
+      services.AddTransient<IObjectStorage, DistributedCacheObjectStorage>()
+              .AddSingleton(typeof(KeyValueStorage<,>));
 
+      var computePlanComponent = configuration.GetSection(ComputePlan.SettingSection);
+      if (computePlanComponent.Exists())
+      {
+        var computePlanOptions   = computePlanComponent.Get<ComputePlan>();
+
+        if (computePlanOptions.GrpcChannel is not null)
+        {
+          services.AddSingleton(computePlanOptions)
+                  .AddSingleton(computePlanOptions.GrpcChannel)
+                  .AddOption<Components>(configuration,
+                                         Components.SettingSection)
+                  .AddSingletonWithHealthCheck<GrpcChannelProvider>(nameof(GrpcChannelProvider))
+                  .AddSingletonWithHealthCheck<ClientServiceProvider>(nameof(ClientServiceProvider));
+        }
+      }
+
+
+      return services;
+    }
+
+    [PublicAPI]
+    public static IServiceCollection AddSingletonWithHealthCheck<T>(this IServiceCollection services, string checkName)
+      where T : class, IHealthCheckProvider
+    {
+      services.AddSingleton<T>();
+
+      services.AddHealthChecks()
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Startup)}",
+                       provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                   HealthCheckTag.Startup),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Startup) }))
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
+                       provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                   HealthCheckTag.Liveness),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Liveness) }))
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
+                       provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                   HealthCheckTag.Readiness),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Readiness) }));
+      return services;
+    }
+
+    [PublicAPI]
+    public static IServiceCollection AddSingletonWithHealthCheck<TService, TImplementation>(this IServiceCollection services, string checkName)
+      where TImplementation : class, IHealthCheckProvider, TService where TService : class
+    {
+      services.AddSingleton<TService, TImplementation>();
+
+      services.AddHealthChecks()
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Startup)}",
+                       provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                   HealthCheckTag.Startup),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Startup) }))
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
+                       provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                   HealthCheckTag.Liveness),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Liveness) }))
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
+                       provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                   HealthCheckTag.Readiness),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Readiness) }));
+      return services;
+    }
+
+    [PublicAPI]
+    public static IServiceCollection AddTransientWithHealthCheck<T>(this IServiceCollection services, string checkName)
+      where T : class, IHealthCheckProvider
+    {
+      services.AddTransient<T>();
+
+      services.AddHealthChecks()
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Startup)}",
+                       provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                   HealthCheckTag.Startup),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Startup) }))
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
+                       provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                   HealthCheckTag.Liveness),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Liveness) }))
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
+                       provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                   HealthCheckTag.Readiness),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Readiness) }));
+      return services;
+    }
+
+    [PublicAPI]
+    public static IServiceCollection AddTransientWithHealthCheck<TService, TImplementation>(this IServiceCollection services, string checkName)
+      where TImplementation : class, IHealthCheckProvider, TService where TService : class
+    {
+      services.AddTransient<TService, TImplementation>();
+
+      services.AddHealthChecks()
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Startup)}",
+                       provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                   HealthCheckTag.Startup),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Startup) }))
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
+                       provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                   HealthCheckTag.Liveness),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Liveness) }))
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
+                       provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                   HealthCheckTag.Readiness),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Readiness) }));
+      return services;
+    }
+
+    public static IServiceCollection AddTransientWithHealthCheck<TService>(
+      this IServiceCollection          services,
+      Func<IServiceProvider, TService> implementationFactory,
+      string checkName)
+      where TService : class, IHealthCheckProvider
+    {
+      services.AddTransient(implementationFactory);
+
+      services.AddHealthChecks()
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Startup)}",
+                       provider => new HealthCheck(provider.GetRequiredService<TService>(),
+                                                   HealthCheckTag.Startup),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Startup) }))
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
+                       provider => new HealthCheck(provider.GetRequiredService<TService>(),
+                                                   HealthCheckTag.Liveness),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Liveness) }))
+              .Add(new($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
+                       provider => new HealthCheck(provider.GetRequiredService<TService>(),
+                                                   HealthCheckTag.Readiness),
+                       HealthStatus.Unhealthy,
+                       new[] { nameof(HealthCheckTag.Readiness) }));
+      return services;
+    }
+
+    [PublicAPI]
     public static IServiceCollection ValidateGrpcRequests(this IServiceCollection services)
     {
       return services.AddGrpc(options =>

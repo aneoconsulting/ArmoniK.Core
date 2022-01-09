@@ -75,5 +75,8 @@ namespace ArmoniK.Core.Storage
 
     /// <inheritdoc />
     public Task Init(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <inheritdoc />
+    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(true);
   }
 }

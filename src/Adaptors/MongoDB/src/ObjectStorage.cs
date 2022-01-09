@@ -144,9 +144,19 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task Init(CancellationToken cancellationToken)
     {
-      var session = sessionProvider_.GetAsync();
-      await objectCollectionProvider_.GetAsync();
-      await session;
+      if (!isInitialized_)
+      {
+        var session = sessionProvider_.GetAsync();
+        await objectCollectionProvider_.GetAsync();
+        await session;
+        isInitialized_ = true;
+      }
     }
+
+
+    private bool isInitialized_ = false;
+
+    /// <inheritdoc />
+    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
   }
 }

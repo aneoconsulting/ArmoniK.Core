@@ -40,7 +40,6 @@ using ArmoniK.Core.Storage;
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -63,14 +62,14 @@ namespace ArmoniK.Adapters.MongoDB
       MongoCollectionProvider<SessionDataModel> sessionCollectionProvider,
       MongoCollectionProvider<TaskDataModel> taskCollectionProvider,
       SessionProvider sessionProvider,
-      IOptions<Options.TableStorage> options,
+      Options.TableStorage options,
       ILogger<TableStorage> logger
     )
     {
       sessionCollectionProvider_ = sessionCollectionProvider;
       taskCollectionProvider_ = taskCollectionProvider;
       sessionProvider_ = sessionProvider;
-      PollingDelay = options.Value.PollingDelay;
+      PollingDelay = options.PollingDelay;
       logger_ = logger;
     }
 
@@ -85,7 +84,7 @@ namespace ArmoniK.Adapters.MongoDB
       var filterDefinition = Builders<SessionDataModel>.Filter
                                                        .Where(sdm => sessionId.Session == sdm.SessionId &&
                                                                      (sessionId.SubSession == sdm.SubSessionId ||
-                                                                      Enumerable.Any<string>(sdm.ParentIds,
+                                                                      Enumerable.Any(sdm.ParentIds,
                                                                                         id => id == sessionId.SubSession) &&
                                                                        !sdm.IsClosed));
 
@@ -110,7 +109,7 @@ namespace ArmoniK.Adapters.MongoDB
       var filterDefinition = Builders<SessionDataModel>.Filter
                                                        .Where(sdm => sessionId.Session == sdm.SessionId &&
                                                                      (sessionId.SubSession == sdm.SubSessionId ||
-                                                                      Enumerable.Any<string>(sdm.ParentIds,
+                                                                      Enumerable.Any(sdm.ParentIds,
                                                                                         id => id == sessionId.SubSession)));
 
       var definitionBuilder = new UpdateDefinitionBuilder<SessionDataModel>();
@@ -160,7 +159,7 @@ namespace ArmoniK.Adapters.MongoDB
       rootTaskFilter.ExcludedStatuses.Clear();
       rootTaskFilter.IncludedStatuses.Clear();
 
-      var rootTaskListTask = IAsyncCursorSourceExtensions.ToListAsync<string>(taskCollection.AsQueryable(sessionHandle)
+      var rootTaskListTask = IAsyncCursorSourceExtensions.ToListAsync(taskCollection.AsQueryable(sessionHandle)
                                                                                        .FilterQuery(rootTaskFilter)
                                                                                        .Select(model => model.TaskId),
                                                                          cancellationToken);
@@ -222,16 +221,6 @@ namespace ArmoniK.Adapters.MongoDB
                        output);
 
       return output;
-    }
-
-    /// <inheritdoc />
-    public async Task Init(CancellationToken cancellationToken)
-    {
-      var session = sessionProvider_.GetAsync();
-      var taskCollection = taskCollectionProvider_.GetAsync();
-      await sessionCollectionProvider_.GetAsync();
-      await session;
-      await taskCollection;
     }
 
     public async Task<SessionId> CreateSessionAsync(SessionOptions sessionOptions,
@@ -366,7 +355,7 @@ namespace ArmoniK.Adapters.MongoDB
       var parents = (await sessionCollection.AsQueryable(sessionHandle)
                                             .Where(model => model.SubSessionId == session.SubSession)
                                             .Select(model => model.ParentIds)
-                                            .FirstAsync<List<string>>(cancellationToken)).Select(id => id)
+                                            .FirstAsync(cancellationToken)).Select(id => id)
                                                                                          .ToList();
 
 
@@ -412,7 +401,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                 x.SessionId == sessionId.Session &&
                                                 (x.SubSessionId == sessionId.SubSession || x.ParentIds.Contains(sessionId.SubSession)))
                                     .Select(x => 1)
-                                    .AnyAsync<int>(cancellationToken);
+                                    .AnyAsync(cancellationToken);
     }
 
     public async Task<bool> IsSessionClosedAsync(SessionId sessionId, CancellationToken cancellationToken = default)
@@ -426,7 +415,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                   x.SessionId == sessionId.Session &&
                                                   (x.SubSessionId == sessionId.SubSession || x.ParentIds.Contains(sessionId.SubSession)))
                                       .Select(x => 1)
-                                      .AnyAsync<int>(cancellationToken);
+                                      .AnyAsync(cancellationToken);
 
       return await sessionCollection.AsQueryable(sessionHandle)
                                     .Where(x => x.SessionId == sessionId.Session && !x.IsClosed)
@@ -448,7 +437,7 @@ namespace ArmoniK.Adapters.MongoDB
       var sessionHandle = await sessionProvider_.GetAsync();
       var taskCollection = await taskCollectionProvider_.GetAsync();
 
-      var output = AsyncCursorSourceExt.ToAsyncEnumerable<TaskId>(taskCollection.AsQueryable(sessionHandle)
+      var output = AsyncCursorSourceExt.ToAsyncEnumerable(taskCollection.AsQueryable(sessionHandle)
                                                                            .FilterQuery(filter)
                                                                            .Select(x => new TaskId
                                                                                         {
@@ -517,7 +506,7 @@ namespace ArmoniK.Adapters.MongoDB
                                     .Where(sdm => sdm.SessionId == sessionId.Session &&
                                                   sdm.SubSessionId == sessionId.SubSession)
                                     .Select(sdm => sdm.Options)
-                                    .FirstAsync<TaskOptions>(cancellationToken);
+                                    .FirstAsync(cancellationToken);
     }
 
     public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IList<string> rootTaskList)
@@ -529,8 +518,26 @@ namespace ArmoniK.Adapters.MongoDB
 
       return model => rootTaskList.Contains(model.SubSessionId) ||
                       // ReSharper disable once ConvertClosureToMethodGroup for better handling by MongoDriver visitor
-                      Enumerable.Any<string>(model.ParentsSubSessions,
-                                        parentSubSession => rootTaskList.Contains(parentSubSession));
+                      model.ParentsSubSessions.Any(parentSubSession => rootTaskList.Contains(parentSubSession));
     }
+
+    /// <inheritdoc />
+    public async Task Init(CancellationToken cancellationToken)
+    {
+      if (!isInitialized_)
+      {
+        var session        = sessionProvider_.GetAsync();
+        var taskCollection = taskCollectionProvider_.GetAsync();
+        await sessionCollectionProvider_.GetAsync();
+        await session;
+        await taskCollection;
+        isInitialized_ = true;
+      }
+    }
+
+
+    private bool isInitialized_ = false;
+    /// <inheritdoc />
+    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
   }
 }

@@ -23,10 +23,11 @@
 
 using System;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace ArmoniK.Core.Injection
 {
-  public abstract class ProviderBase<T>
+  public abstract class ProviderBase<T> : IHealthCheckProvider
   {
     private readonly Func<Task<T>> builder_;
     private          T             object_;
@@ -48,5 +49,8 @@ namespace ArmoniK.Core.Injection
 
       return object_;
     }
+
+    /// <inheritdoc />
+    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(object_ is not null);
   }
 }

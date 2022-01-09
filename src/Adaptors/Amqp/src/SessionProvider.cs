@@ -34,16 +34,16 @@ namespace ArmoniK.Adapters.Amqp
   public class SessionProvider : ProviderBase<Session>
   {
     /// <inheritdoc />
-    public SessionProvider(IOptions<Options.Amqp> options)
+    public SessionProvider(Options.Amqp options)
       : base(async () =>
       {
         var builder = new ConfigurationBuilder()
-                      .AddJsonFile(options.Value.CredentialsPath).Build();
+                      .AddJsonFile(options.CredentialsPath).Build();
         var section = builder.GetSection(Options.Amqp.SettingSection);
-        var connection = await Connection.Factory.CreateAsync(new(options.Value.Host,
-                                                                  options.Value.Port,
-                                                                  section.GetValue<string>("User"),
-                                                                  section.GetValue<string>("Password"),
+        var connection = await Connection.Factory.CreateAsync(new(options.Host,
+                                                                  options.Port,
+                                                                  options.User,
+                                                                  options.Password,
                                                                   scheme: "AMQP"));
         return new(connection);
       })

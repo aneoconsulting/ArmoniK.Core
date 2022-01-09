@@ -98,9 +98,20 @@ namespace ArmoniK.Core.Storage
     }
 
     /// <inheritdoc />
-    public Task Init(CancellationToken cancellationToken)
-      => Task.WhenAll(leaseProvider_.Init(cancellationToken),
-                      lockedQueueStorage_.Init(cancellationToken));
+    public async Task Init(CancellationToken cancellationToken)
+    {
+      if(!isInitialized_)
+        await Task.WhenAll(leaseProvider_.Init(cancellationToken),
+                          lockedQueueStorage_.Init(cancellationToken));
+
+      isInitialized_ = true;
+    }
+
+
+    private bool isInitialized_ = false;
+
+    /// <inheritdoc />
+    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
 
     /// <inheritdoc />
     public int MaxPriority => lockedQueueStorage_.MaxPriority;
