@@ -40,16 +40,16 @@ namespace ArmoniK.Adapters.Amqp
     [PublicAPI]
     public static IServiceCollection AddAmqp(
       this IServiceCollection serviceCollection,
-      ConfigurationManager          configuration
+      ConfigurationManager    configuration
     )
     {
-      var amqpOptions     = configuration.GetValue<Options.Amqp>(Options.Amqp.SettingSection);
+      serviceCollection.Configure<Options.Amqp>(configuration.GetSection(Options.Amqp.SettingSection));
+      var amqpOptions = configuration.GetValue<Options.Amqp>(Options.Amqp.SettingSection);
 
-      if(!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
+      if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
         configuration.AddJsonFile(amqpOptions.CredentialsPath);
 
       amqpOptions = configuration.GetValue<Options.Amqp>(Options.Amqp.SettingSection);
-
       var sessionProvider = new SessionProvider(amqpOptions);
       serviceCollection.AddSingleton(sessionProvider);
 
