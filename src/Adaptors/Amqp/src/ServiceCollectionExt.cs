@@ -23,6 +23,7 @@
 
 using Amqp;
 
+using ArmoniK.Core.Injection;
 using ArmoniK.Core.Injection.Options;
 using ArmoniK.Core.Storage;
 
@@ -43,20 +44,21 @@ namespace ArmoniK.Adapters.Amqp
       ConfigurationManager    configuration
     )
     {
-      serviceCollection.Configure<Options.Amqp>(configuration.GetSection(Options.Amqp.SettingSection));
-      var amqpOptions = configuration.GetValue<Options.Amqp>(Options.Amqp.SettingSection);
-
-      if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
-        configuration.AddJsonFile(amqpOptions.CredentialsPath);
-
-      amqpOptions = configuration.GetValue<Options.Amqp>(Options.Amqp.SettingSection);
-      var sessionProvider = new SessionProvider(amqpOptions);
-      serviceCollection.AddSingleton(sessionProvider);
-
       var components = configuration.GetSection(Components.SettingSection);
 
       if (components["QueueStorage"] == "ArmoniK.Adapters.Amqp.QueueStorage")
       {
+        var amqpOptions = configuration.GetRequiredValue<Options.Amqp>(Options.Amqp.SettingSection);
+
+        if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
+          configuration.AddJsonFile(amqpOptions.CredentialsPath);
+
+        amqpOptions = configuration.GetValue<Options.Amqp>(Options.Amqp.SettingSection);
+        var sessionProvider = new SessionProvider(amqpOptions);
+
+        serviceCollection.AddSingleton(amqpOptions);
+        serviceCollection.AddSingleton(sessionProvider);
+
         serviceCollection.AddSingleton<IQueueStorage, QueueStorage>();
 
         serviceCollection.AddHealthChecks()
