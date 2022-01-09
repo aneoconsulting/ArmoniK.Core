@@ -21,6 +21,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using Amqp;
 
 using ArmoniK.Core.Injection;
@@ -37,9 +39,6 @@ namespace ArmoniK.Adapters.Amqp
     public SessionProvider(Options.Amqp options)
       : base(async () =>
       {
-        var builder = new ConfigurationBuilder()
-                      .AddJsonFile(options.CredentialsPath).Build();
-        var section = builder.GetSection(Options.Amqp.SettingSection);
         var connection = await Connection.Factory.CreateAsync(new(options.Host,
                                                                   options.Port,
                                                                   options.User,
@@ -48,6 +47,18 @@ namespace ArmoniK.Adapters.Amqp
         return new(connection);
       })
     {
+      if (string.IsNullOrEmpty(options.Host))
+        throw new ArgumentNullException(nameof(options),
+                                        $"Contains a null or empty {nameof(options.Host)} field");
+      if (options.Port == 0)
+        throw new ArgumentNullException(nameof(options),
+                                        $"Contains a zero {nameof(options.Port)} field");
+      if (string.IsNullOrEmpty(options.User))
+        throw new ArgumentNullException(nameof(options),
+                                        $"Contains a null or empty {nameof(options.User)} field");
+      if (string.IsNullOrEmpty(options.Password))
+        throw new ArgumentNullException(nameof(options),
+                                        $"Contains a null or empty {nameof(options.Password)} field");
     }
   }
 }

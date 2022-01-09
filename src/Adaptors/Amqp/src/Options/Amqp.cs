@@ -29,6 +29,8 @@ namespace ArmoniK.Adapters.Amqp.Options
 
     public string Host { get; set; }
     public string CredentialsPath { get; set; }
+    public string User { get; set; }
+    public string Password { get; set; }
     public int Port { get; set; }
     public int MaxPriority { get; set; }
   }

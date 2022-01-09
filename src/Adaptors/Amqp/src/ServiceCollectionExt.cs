@@ -31,6 +31,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Adapters.Amqp
 {
@@ -39,10 +40,16 @@ namespace ArmoniK.Adapters.Amqp
     [PublicAPI]
     public static IServiceCollection AddAmqp(
       this IServiceCollection serviceCollection,
-      IConfiguration          configuration
+      ConfigurationManager          configuration
     )
     {
       var amqpOptions     = configuration.GetValue<Options.Amqp>(Options.Amqp.SettingSection);
+
+      if(!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
+        configuration.AddJsonFile(amqpOptions.CredentialsPath);
+
+      amqpOptions = configuration.GetValue<Options.Amqp>(Options.Amqp.SettingSection);
+
       var sessionProvider = new SessionProvider(amqpOptions);
       serviceCollection.AddSingleton(sessionProvider);
 

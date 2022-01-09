@@ -22,59 +22,105 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
 
-using Microsoft.AspNetCore.Hosting;
+using ArmoniK.Adapters.Amqp;
+using ArmoniK.Adapters.MongoDB;
+using ArmoniK.Control.Services;
+using ArmoniK.Core;
+using ArmoniK.Core.Injection;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 using Serilog;
 using Serilog.Events;
 
-namespace ArmoniK.Control
+namespace ArmoniK.Control;
+
+public static class Program
 {
-  public class Program
+  public static int Main(string[] args)
   {
-    public static int Main(string[] args)
+    Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Override("Microsoft",
+                                       LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateBootstrapLogger();
+
+    try
     {
-      Log.Logger = new LoggerConfiguration()
-                  .MinimumLevel.Override("Microsoft",
-                                         LogEventLevel.Information)
-                  .Enrich.FromLogContext()
-                  .WriteTo.Console()
-                  .CreateBootstrapLogger();
+      Log.Information("Starting web host");
 
-      try
-      {
-        Log.Information("Starting web host");
-        CreateHostBuilder(args).Build().Run();
-        return 0;
-      }
-      catch (Exception ex)
-      {
-        Log.Fatal(ex,
-                  "Host terminated unexpectedly");
-        return 1;
-      }
-      finally
-      {
-        Log.CloseAndFlush();
-      }
+
+      var builder = WebApplication.CreateBuilder(args);
+
+      builder.Configuration
+             .SetBasePath(Directory.GetCurrentDirectory())
+             .AddJsonFile("appsettings.json",
+                          true,
+                          true)
+             .AddEnvironmentVariables()
+             .AddCommandLine(args);
+
+
+
+      builder.Host
+             .UseSerilog((context, services, config)
+                           => config
+                             .ReadFrom.Configuration(context.Configuration)
+                             .ReadFrom.Services(services)
+                             .Enrich.FromLogContext());
+
+      builder.Services
+             .AddMongoComponents(builder.Configuration)
+             .AddAmqp(builder.Configuration)
+             .ValidateGrpcRequests();
+
+
+      var app = builder.Build();
+
+      if (app.Environment.IsDevelopment())
+        app.UseDeveloperExceptionPage();
+
+      app.UseSerilogRequestLogging();
+
+      app.UseRouting();
+
+
+      app.UseEndpoints(endpoints =>
+                       {
+
+                         endpoints.MapHealthChecks("/startup",
+                                                   new()
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                                                   });
+
+                         endpoints.MapHealthChecks("/liveness",
+                                                   new()
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                                                   });
+
+                         //readiness uses grpc to ensure corresponding features are ok.
+                         endpoints.MapGrpcService<GrpcHealthCheckService>();
+
+                         endpoints.MapGrpcService<ClientService>();
+                       });
+      return 0;
     }
-
-    // Additional configuration is required to successfully run gRPC on macOS.
-    // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-      Host.CreateDefaultBuilder(args)
-          .UseSerilog((context, services, configuration) => configuration
-                                                           .ReadFrom.Configuration(context.Configuration)
-                                                           .ReadFrom.Services(services)
-                                                           .MinimumLevel
-                                                           .Override("Microsoft.AspNetCore",
-                                                                     LogEventLevel.Debug)
-                                                           .Enrich.FromLogContext())
-          .ConfigureWebHostDefaults(webBuilder =>
-                                    {
-                                      webBuilder.UseStartup<Startup>()
-                                                .ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 2097152000);
-                                    });
+    catch (Exception ex)
+    {
+      Log.Fatal(ex,
+                "Host terminated unexpectedly");
+      return 1;
+    }
+    finally
+    {
+      Log.CloseAndFlush();
+    }
   }
 }

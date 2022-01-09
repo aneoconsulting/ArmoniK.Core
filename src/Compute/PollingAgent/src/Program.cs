@@ -60,9 +60,6 @@ public static class Program
              .AddJsonFile("appsettings.json",
                           true,
                           true)
-             .AddJsonFile("/amqp/credentials.json",
-                          true,
-                          true)
              .AddEnvironmentVariables()
              .AddCommandLine(args);
 
