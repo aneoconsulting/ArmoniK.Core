@@ -53,7 +53,7 @@ namespace ArmoniK.Adapters.Amqp
         if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
           configuration.AddJsonFile(amqpOptions.CredentialsPath);
 
-        amqpOptions = configuration.GetValue<Options.Amqp>(Options.Amqp.SettingSection);
+        amqpOptions = configuration.GetRequiredValue<Options.Amqp>(Options.Amqp.SettingSection);
         var sessionProvider = new SessionProvider(amqpOptions);
 
         serviceCollection.AddSingleton(amqpOptions);
