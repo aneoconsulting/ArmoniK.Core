@@ -44,16 +44,19 @@ namespace ArmoniK.Adapters.Amqp
 {
   public class QueueStorage : IQueueStorage
   {
+      private const int MaxInternalQueuePriority = 10; 
+
     private readonly ILogger<QueueStorage>      logger_;
     private readonly AsyncLazy<IReceiverLink>[] receivers_;
     private readonly AsyncLazy<ISenderLink>[]   senders_;
 
     public QueueStorage(IOptions<Options.Amqp> options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
     {
+
       MaxPriority = options.Value.MaxPriority;
       logger_     = logger;
 
-      var nbLinks = (MaxPriority + 9) / 10;
+      var nbLinks = (MaxPriority + MaxInternalQueuePriority-1) / MaxInternalQueuePriority;
 
       senders_ = Enumerable.Range(0,
                                   nbLinks)
@@ -148,12 +151,19 @@ namespace ArmoniK.Adapters.Amqp
                                            int                 priority          = 1,
                                            CancellationToken   cancellationToken = default)
     {
-      var sender = await senders_[priority / 10];
+      using var _      = logger_.LogFunction();
+
+      logger_.LogDebug("Priority is {priority} ; will use queue #{queueId} with internal priority {internal priority}", 
+                       priority, 
+                       priority/ MaxInternalQueuePriority,
+                       priority % MaxInternalQueuePriority);
+
+      var       sender = await senders_[priority / MaxInternalQueuePriority];
       await Task.WhenAll(messages.Select(id => sender.SendAsync(new(id.ToByteArray())
                                                                 {
                                                                   Header = new()
                                                                            {
-                                                                             Priority = (byte)((priority % 10)),
+                                                                             Priority = (byte)(priority % MaxInternalQueuePriority),
                                                                            },
                                                                   Properties = new (),
                                                                 })));

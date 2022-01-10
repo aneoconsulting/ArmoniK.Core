@@ -142,10 +142,19 @@ namespace ArmoniK.Control.Services
     {
       using var _ = logger_.LogFunction();
 
+
       var options = request.TaskOptions ??
                     await tableStorage_.GetDefaultTaskOption(request.SessionId,
                                                              context
                                                               .CancellationToken);
+
+      if (options.Priority >= lockedQueueStorage_.MaxPriority)
+      {
+        context.Status = new (StatusCode.InvalidArgument,
+                                    $"Max priority is {lockedQueueStorage_.MaxPriority}");
+        return null;
+      }
+
 
       var inits = await tableStorage_.InitializeTaskCreation(request.SessionId,
                                                              options,
