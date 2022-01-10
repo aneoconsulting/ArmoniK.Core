@@ -50,10 +50,10 @@ namespace ArmoniK.Adapters.Amqp
     private readonly AsyncLazy<IReceiverLink>[] receivers_;
     private readonly AsyncLazy<ISenderLink>[]   senders_;
 
-    public QueueStorage(IOptions<Options.Amqp> options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
+    public QueueStorage(Options.Amqp options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
     {
 
-      MaxPriority = options.Value.MaxPriority;
+      MaxPriority = options.MaxPriority;
       logger_     = logger;
 
       var nbLinks = (MaxPriority + MaxInternalQueuePriority-1) / MaxInternalQueuePriority;
