@@ -141,6 +141,16 @@ namespace ArmoniK.Control.Services
     public override async Task<CreateTaskReply> CreateTask(CreateTaskRequest request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
+      if (context.CancellationToken.IsCancellationRequested)
+      {
+        logger_.LogError($"{nameof(context)}.{nameof(ServerCallContext.CancellationToken)} was triggered when entering");
+        context.CancellationToken.ThrowIfCancellationRequested();
+      }
+
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
 
 
       var options = request.TaskOptions ??
