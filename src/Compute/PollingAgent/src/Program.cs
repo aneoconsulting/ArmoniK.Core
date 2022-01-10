@@ -30,11 +30,11 @@ using ArmoniK.Core;
 using ArmoniK.Core.Injection;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Serilog;
-using Serilog.Events;
 
 namespace ArmoniK.Compute.PollingAgent;
 
@@ -77,6 +77,8 @@ public static class Program
              .AddAmqp(builder.Configuration)
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>();
+
+      builder.WebHost.UseUrls("http://0.0.0.0:5555");
 
       var app = builder.Build();
 
