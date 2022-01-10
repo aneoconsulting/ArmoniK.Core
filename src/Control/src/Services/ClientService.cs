@@ -68,6 +68,12 @@ namespace ArmoniK.Control.Services
     public override async Task<Empty> CancelSession(SessionId request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
+
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
+
       try
       {
         await tableStorage_.CancelSessionAsync(request,
@@ -90,6 +96,12 @@ namespace ArmoniK.Control.Services
     public override async Task<Empty> CancelTask(TaskFilter request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
+
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
+
       try
       {
         await tableStorage_.CancelTask(request,
@@ -112,6 +124,13 @@ namespace ArmoniK.Control.Services
     public override async Task<Empty> CloseSession(SessionId request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
+
+
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
+
       try
       {
         await tableStorage_.CloseSessionAsync(request,
@@ -134,6 +153,12 @@ namespace ArmoniK.Control.Services
     public override Task<SessionId> CreateSession(SessionOptions request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
+
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
+
       return tableStorage_.CreateSessionAsync(request,
                                               context.CancellationToken);
     }
@@ -141,11 +166,6 @@ namespace ArmoniK.Control.Services
     public override async Task<CreateTaskReply> CreateTask(CreateTaskRequest request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
-      if (context.CancellationToken.IsCancellationRequested)
-      {
-        logger_.LogError($"{nameof(context)}.{nameof(ServerCallContext.CancellationToken)} was triggered when entering");
-        context.CancellationToken.ThrowIfCancellationRequested();
-      }
 
       if (logger_.IsEnabled(LogLevel.Trace))
       {
@@ -212,6 +232,12 @@ namespace ArmoniK.Control.Services
     public override async Task<Count> GetTasksCount(TaskFilter request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
+
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
+
       var count = await tableStorage_.CountTasksAsync(request,
                                                       context.CancellationToken);
       return new()
@@ -232,6 +258,11 @@ namespace ArmoniK.Control.Services
     {
       using var _ = logger_.LogFunction();
 
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
+
       var list = await tableStorage_.ListTasksAsync(request,
                                                     context.CancellationToken).ToListAsync(context.CancellationToken);
 
@@ -244,6 +275,11 @@ namespace ArmoniK.Control.Services
     public override async Task<TaskIdList> ListSubTasks(TaskFilter request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
+
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
 
       TaskIdList wholeList = new();
 
@@ -272,6 +308,11 @@ namespace ArmoniK.Control.Services
     {
       using var _ = logger_.LogFunction();
 
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
+
       var count = await tableStorage_.CountSubTasksAsync(request,
                                                          context.CancellationToken);
       return new()
@@ -291,6 +332,12 @@ namespace ArmoniK.Control.Services
                                                                   ServerCallContext context)
     {
       using var            _                    = logger_.LogFunction();
+
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
+
       MultiplePayloadReply multiplePayloadReply = new();
       await foreach (var taskId in tableStorage_.ListTasksAsync(request,
                                                                 context.CancellationToken)
@@ -315,6 +362,12 @@ namespace ArmoniK.Control.Services
     public override async Task<Count> WaitForCompletion(WaitRequest request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
+
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
+
 
       Task<IEnumerable<(TaskStatus Status, int Count)>> CountUpdateFunc()
         => tableStorage_.CountTasksAsync(request.Filter,
@@ -399,6 +452,11 @@ namespace ArmoniK.Control.Services
     public override async Task<Count> WaitForSubTasksCompletion(WaitRequest request, ServerCallContext context)
     {
       using var _ = logger_.LogFunction();
+
+      if (logger_.IsEnabled(LogLevel.Trace))
+      {
+        context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      }
 
       await WaitForCompletion(request,
                               context);
