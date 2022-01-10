@@ -78,7 +78,7 @@ namespace ArmoniK.Adapters.MongoDB
         services.AddOption<Options.ObjectStorage>(configuration,
                                                   Options.ObjectStorage.SettingSection)
                 .AddTransient<ObjectStorage>()
-                .AddTransientWithHealthCheck<IObjectStorage, ObjectStorage>($"MongoDB.{nameof(LockedWrapperQueueStorage)}");
+                .AddTransientWithHealthCheck<IObjectStorage, ObjectStorage>($"MongoDB.{nameof(ObjectStorage)}");
 
         isMongoRequired = true;
       }
@@ -88,7 +88,7 @@ namespace ArmoniK.Adapters.MongoDB
         services.AddOption<Options.LeaseProvider>(configuration,
                                                   Options.LeaseProvider.SettingSection)
                 .AddTransient<LeaseProvider>()
-                .AddTransientWithHealthCheck<ILeaseProvider, LeaseProvider>($"MongoDB.{nameof(LockedWrapperQueueStorage)}");
+                .AddTransientWithHealthCheck<ILeaseProvider, LeaseProvider>($"MongoDB.{nameof(LeaseProvider)}");
 
         isMongoRequired = true;
       }
