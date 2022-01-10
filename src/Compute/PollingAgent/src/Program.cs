@@ -53,6 +53,8 @@ public static class Program
 
       var builder = WebApplication.CreateBuilder(args);
 
+      builder.Logging.AddSerilog();
+
       builder.Configuration
              .SetBasePath(Directory.GetCurrentDirectory())
              .AddJsonFile("appsettings.json",
