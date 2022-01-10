@@ -33,6 +33,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 using Serilog;
 
@@ -68,7 +69,8 @@ public static class Program
                            => config
                              .ReadFrom.Configuration(context.Configuration)
                              .ReadFrom.Services(services)
-                             .Enrich.FromLogContext());
+                             .Enrich.FromLogContext())
+             .ConfigureWebHostDefaults(_ => {});
 
       builder.Services
              .AddLogging()
@@ -77,8 +79,6 @@ public static class Program
              .AddAmqp(builder.Configuration)
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>();
-
-      builder.WebHost.UseUrls("http://0.0.0.0:5555");
 
       var app = builder.Build();
 
