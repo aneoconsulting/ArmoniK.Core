@@ -47,7 +47,6 @@ namespace ArmoniK.Adapters.MongoDB
       IConfiguration          configuration
     )
     {
-
       var components = configuration.GetSection(Components.SettingSection);
 
       var isMongoRequired = false;
@@ -99,26 +98,26 @@ namespace ArmoniK.Adapters.MongoDB
                                             Options.MongoDB.SettingSection,
                                             out var mongoOptions)
                 .AddTransient<IMongoClient>(provider =>
-                                            {
-                                              var logger  = provider.GetRequiredService<ILogger<IMongoClient>>();
-                                              var setting = MongoClientSettings.FromConnectionString(mongoOptions.ConnectionString);
+                {
+                  var logger  = provider.GetRequiredService<ILogger<IMongoClient>>();
+                  var setting = MongoClientSettings.FromConnectionString(mongoOptions.ConnectionString);
 
-                                              if (logger.IsEnabled(LogLevel.Trace))
-                                              {
-                                                setting.ClusterConfigurator = cb =>
-                                                                              {
-                                                                                cb.Subscribe<CommandStartedEvent>(e =>
-                                                                                                                  {
-                                                                                                                    logger
-                                                                                                                     .LogTrace("{CommandName} - {Command}",
-                                                                                                                               e.CommandName,
-                                                                                                                               e.Command.ToJson());
-                                                                                                                  });
-                                                                              };
-                                              }
+                  if (logger.IsEnabled(LogLevel.Trace))
+                  {
+                    setting.ClusterConfigurator = cb =>
+                    {
+                      cb.Subscribe<CommandStartedEvent>(e =>
+                      {
+                        logger
+                          .LogTrace("{CommandName} - {Command}",
+                                    e.CommandName,
+                                    e.Command.ToJson());
+                      });
+                    };
+                  }
 
-                                              return new MongoClient(setting);
-                                            })
+                  return new MongoClient(setting);
+                })
                 .AddTransient(provider => provider.GetRequiredService<IMongoClient>().GetDatabase(mongoOptions.DatabaseName))
                 .AddSingleton(typeof(MongoCollectionProvider<>))
                 .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}")
