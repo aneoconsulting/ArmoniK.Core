@@ -32,6 +32,7 @@ using ArmoniK.Core.Injection;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Serilog;
@@ -66,7 +67,6 @@ public static class Program
              .AddCommandLine(args);
 
 
-
       builder.Host
              .UseSerilog((context, services, config)
                            => config
@@ -75,6 +75,7 @@ public static class Program
                              .Enrich.FromLogContext());
 
       builder.Services
+             .AddLogging()
              .AddMongoComponents(builder.Configuration)
              .AddAmqp(builder.Configuration)
              .ValidateGrpcRequests();
