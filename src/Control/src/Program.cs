@@ -111,6 +111,8 @@ public static class Program
 
                          endpoints.MapGrpcService<ClientService>();
                        });
+      app.Run();
+
       return 0;
     }
     catch (Exception ex)
