@@ -34,6 +34,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 using Serilog;
 using Serilog.Events;
@@ -56,8 +57,6 @@ public static class Program
 
       var builder = WebApplication.CreateBuilder(args);
 
-      builder.Logging.AddSerilog();
-
       builder.Configuration
              .SetBasePath(Directory.GetCurrentDirectory())
              .AddJsonFile("appsettings.json",
@@ -65,6 +64,13 @@ public static class Program
                           true)
              .AddEnvironmentVariables()
              .AddCommandLine(args);
+
+      builder.Logging.AddSerilog();
+
+      var logger = LoggerFactory.Create(loggingBuilder =>
+                                          loggingBuilder.AddConfiguration(builder.Configuration)
+                                                        .AddSerilog())
+                                .CreateLogger("root");
 
 
       builder.Host
@@ -78,7 +84,8 @@ public static class Program
              .AddLogging()
              .AddArmoniKCore(builder.Configuration)
              .AddMongoComponents(builder.Configuration)
-             .AddAmqp(builder.Configuration)
+             .AddAmqp(builder.Configuration,
+                      logger)
              .ValidateGrpcRequests();
 
 
