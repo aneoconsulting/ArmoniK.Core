@@ -76,6 +76,7 @@ public static class Program
 
       builder.Services
              .AddLogging()
+             .AddArmoniKCore(builder.Configuration)
              .AddMongoComponents(builder.Configuration)
              .AddAmqp(builder.Configuration)
              .ValidateGrpcRequests();
