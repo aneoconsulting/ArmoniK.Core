@@ -23,6 +23,7 @@
 
 using System;
 using System.IO;
+using System.Net;
 
 using ArmoniK.Adapters.Amqp;
 using ArmoniK.Adapters.MongoDB;
@@ -69,8 +70,7 @@ public static class Program
                            => config
                              .ReadFrom.Configuration(context.Configuration)
                              .ReadFrom.Services(services)
-                             .Enrich.FromLogContext())
-             .ConfigureWebHostDefaults(_ => {});
+                             .Enrich.FromLogContext());
 
       builder.Services
              .AddLogging()
@@ -79,6 +79,15 @@ public static class Program
              .AddAmqp(builder.Configuration)
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>();
+
+      builder.WebHost
+             .UseConfiguration(builder.Configuration)
+             .UseKestrel(options =>
+                         {
+
+                           options.Listen(IPAddress.Loopback,
+                                          8989);
+                         });
 
       var app = builder.Build();
 
