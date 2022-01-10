@@ -25,6 +25,7 @@
 	<s:Int64 x:Key="/Default/CodeStyle/CodeFormatting/ProtobufCodeFormatting/INDENT_SIZE/@EntryValue">2</s:Int64>
 	<s:Int64 x:Key="/Default/CodeStyle/CodeFormatting/ProtobufCodeFormatting/TAB_WIDTH/@EntryValue">2</s:Int64>
 	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/ProtobufCodeFormatting/USE_INDENT_FROM_VS/@EntryValue">False</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeStyle/EditorConfig/SyncToVisualStudio/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/CodeStyle/FileHeader/FileHeaderText/@EntryValue">This file is part of the ArmoniK project&#xD;
 &#xD;
 Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.&#xD;
