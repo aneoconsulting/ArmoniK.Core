@@ -21,6 +21,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using ArmoniK.Adapters.MongoDB.Common;
 using ArmoniK.Core;
 using ArmoniK.Core.Injection;
@@ -96,28 +98,37 @@ namespace ArmoniK.Adapters.MongoDB
       {
         services.AddOption<Options.MongoDB>(configuration,
                                             Options.MongoDB.SettingSection,
-                                            out var mongoOptions)
-                .AddTransient<IMongoClient>(provider =>
-                {
-                  var logger  = provider.GetRequiredService<ILogger<IMongoClient>>();
-                  var setting = MongoClientSettings.FromConnectionString(mongoOptions.ConnectionString);
+                                            out var mongoOptions);
 
-                  if (logger.IsEnabled(LogLevel.Trace))
-                  {
-                    setting.ClusterConfigurator = cb =>
-                    {
-                      cb.Subscribe<CommandStartedEvent>(e =>
-                      {
-                        logger
-                          .LogTrace("{CommandName} - {Command}",
-                                    e.CommandName,
-                                    e.Command.ToJson());
-                      });
-                    };
-                  }
+        if (string.IsNullOrEmpty(mongoOptions.ConnectionString))
+          throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
+                                                $"{nameof(Options.MongoDB.ConnectionString)} is not defined.");
 
-                  return new MongoClient(setting);
-                })
+        if (string.IsNullOrEmpty(mongoOptions.DatabaseName))
+          throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
+                                                $"{nameof(Options.MongoDB.DatabaseName)} is not defined.");
+
+        services.AddTransient<IMongoClient>(provider =>
+                                            {
+                                              var logger  = provider.GetRequiredService<ILogger<IMongoClient>>();
+                                              var setting = MongoClientSettings.FromConnectionString(mongoOptions.ConnectionString);
+
+                                              if (logger.IsEnabled(LogLevel.Trace))
+                                              {
+                                                setting.ClusterConfigurator = cb =>
+                                                                              {
+                                                                                cb.Subscribe<CommandStartedEvent>(e =>
+                                                                                                                  {
+                                                                                                                    logger
+                                                                                                                     .LogTrace("{CommandName} - {Command}",
+                                                                                                                               e.CommandName,
+                                                                                                                               e.Command.ToJson());
+                                                                                                                  });
+                                                                              };
+                                              }
+
+                                              return new MongoClient(setting);
+                                            })
                 .AddTransient(provider => provider.GetRequiredService<IMongoClient>().GetDatabase(mongoOptions.DatabaseName))
                 .AddSingleton(typeof(MongoCollectionProvider<>))
                 .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}")

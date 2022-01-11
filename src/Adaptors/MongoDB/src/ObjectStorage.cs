@@ -54,6 +54,10 @@ namespace ArmoniK.Adapters.MongoDB
                          ILogger<ObjectStorage>                   logger,
                          Options.ObjectStorage                    options)
     {
+      if(options.ChunkSize == 0)
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"Minimum value for {nameof(Options.ObjectStorage.ChunkSize)} is 1.");
+
       sessionProvider_          = sessionProvider;
       objectCollectionProvider_ = objectCollectionProvider;
       chunkSize_                = options.ChunkSize;

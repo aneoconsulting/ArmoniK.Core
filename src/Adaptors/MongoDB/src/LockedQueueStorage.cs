@@ -50,6 +50,18 @@ namespace ArmoniK.Adapters.MongoDB
                               Options.QueueStorage                       options,
                               ILogger<LockedQueueStorage>                logger)
     {
+      if (options.LockRefreshExtension == TimeSpan.Zero)
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.QueueStorage.LockRefreshExtension)} is not defined.");
+
+      if (options.PollPeriodicity == TimeSpan.Zero)
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.QueueStorage.PollPeriodicity)} is not defined.");
+
+      if (options.LockRefreshPeriodicity == TimeSpan.Zero)
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.QueueStorage.LockRefreshPeriodicity)} is not defined.");
+
       queueCollectionProvider_ = queueCollectionProvider;
       logger_                  = logger;
       LockRefreshExtension     = options.LockRefreshExtension;

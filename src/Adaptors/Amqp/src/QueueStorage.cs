@@ -52,6 +52,26 @@ namespace ArmoniK.Adapters.Amqp
 
     public QueueStorage(Options.Amqp options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
     {
+      if (string.IsNullOrEmpty(options.Host))
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.Amqp.Host)} is not defined.");
+
+      if (string.IsNullOrEmpty(options.User))
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.Amqp.User)} is not defined.");
+
+      if (string.IsNullOrEmpty(options.Password))
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.Amqp.Password)} is not defined.");
+
+      if (options.Port == 0)
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.Amqp.Port)} is not defined.");
+
+      if (options.MaxPriority < 1)
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"Minimum value for {nameof(Options.Amqp.MaxPriority)} is 1.");
+
 
       MaxPriority = options.MaxPriority;
       logger_     = logger;

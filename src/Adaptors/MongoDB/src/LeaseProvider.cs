@@ -54,6 +54,13 @@ namespace ArmoniK.Adapters.MongoDB
                          SessionProvider sessionProvider,
                          ILogger<LeaseProvider> logger)
     {
+      if(options.AcquisitionDuration == TimeSpan.Zero)
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.LeaseProvider.AcquisitionDuration)} is not defined.");
+      if(options.AcquisitionPeriod == TimeSpan.Zero)
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.LeaseProvider.AcquisitionDuration)} is not defined.");
+
       AcquisitionPeriod = options.AcquisitionPeriod;
       AcquisitionDuration = options.AcquisitionDuration;
       leaseCollectionProvider_ = leaseCollectionProvider;

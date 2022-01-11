@@ -21,8 +21,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using JetBrains.Annotations;
+
 namespace ArmoniK.Adapters.Amqp.Options
 {
+  [PublicAPI]
   public class Amqp
   {
     public const string SettingSection = nameof(Amqp);

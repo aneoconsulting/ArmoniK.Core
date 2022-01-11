@@ -63,6 +63,10 @@ public class Pollster
                   ClientServiceProvider                 clientProvider,
                   IHostApplicationLifetime              lifeTime)
   {
+    if (options.MessageBatchSize < 1)
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
+
     logger_             = logger;
     queueStorage_       = queueStorage;
     tableStorage_       = tableStorage;

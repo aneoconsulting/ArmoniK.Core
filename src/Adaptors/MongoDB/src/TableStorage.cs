@@ -66,6 +66,10 @@ namespace ArmoniK.Adapters.MongoDB
       ILogger<TableStorage> logger
     )
     {
+      if (options.PollingDelay == TimeSpan.Zero)
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.TableStorage.PollingDelay)} is not defined.");
+
       sessionCollectionProvider_ = sessionCollectionProvider;
       taskCollectionProvider_ = taskCollectionProvider;
       sessionProvider_ = sessionProvider;
