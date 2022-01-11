@@ -68,20 +68,19 @@ public static class Program
 
       builder.Logging.AddSerilog();
 
-      var loggerConfiguration = new LoggerConfiguration()
-                   .ReadFrom.Configuration(builder.Configuration)
-                   .Enrich.FromLogContext()
-                   .WriteTo.Console();
-      var logProvider = new SerilogLoggerProvider(loggerConfiguration.CreateLogger());
-      var logger = new LoggerFactory(new[] { logProvider })
+
+      var serilogLogger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
+                                                   .Enrich.FromLogContext()
+                                                   .CreateLogger();
+
+      var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(serilogLogger))
                                 .CreateLogger("root");
 
       builder.Host
              .UseSerilog((context, services, config)
-                           => config
-                             .ReadFrom.Configuration(context.Configuration)
-                             .ReadFrom.Services(services)
-                             .Enrich.FromLogContext());
+                           => config.ReadFrom.Configuration(context.Configuration)
+                                    .ReadFrom.Services(services)
+                                    .Enrich.FromLogContext());
 
       builder.Services
              .AddLogging()
@@ -96,7 +95,6 @@ public static class Program
              .UseConfiguration(builder.Configuration)
              .UseKestrel(options =>
                          {
-
                            options.Listen(IPAddress.Loopback,
                                           8989);
                          });
@@ -126,7 +124,6 @@ public static class Program
                                                      Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
                                                    });
                        });
-
       app.Run();
       return 0;
     }
