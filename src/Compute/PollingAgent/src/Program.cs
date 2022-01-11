@@ -38,6 +38,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
+using Serilog.Extensions.Logging;
 
 namespace ArmoniK.Compute.PollingAgent;
 
@@ -67,9 +68,12 @@ public static class Program
 
       builder.Logging.AddSerilog();
 
-      var logger = LoggerFactory.Create(loggingBuilder =>
-                                          loggingBuilder.AddConfiguration(builder.Configuration)
-                                                        .AddSerilog())
+      var loggerConfiguration = new LoggerConfiguration()
+                   .ReadFrom.Configuration(builder.Configuration)
+                   .Enrich.FromLogContext()
+                   .WriteTo.Console();
+      var logProvider = new SerilogLoggerProvider(loggerConfiguration.CreateLogger());
+      var logger = new LoggerFactory(new[] { logProvider })
                                 .CreateLogger("root");
 
       builder.Host

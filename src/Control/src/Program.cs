@@ -38,6 +38,7 @@ using Microsoft.Extensions.Logging;
 
 using Serilog;
 using Serilog.Events;
+using Serilog.Extensions.Logging;
 
 namespace ArmoniK.Control;
 
@@ -67,10 +68,13 @@ public static class Program
 
       builder.Logging.AddSerilog();
 
-      var logger = LoggerFactory.Create(loggingBuilder =>
-                                          loggingBuilder.AddConfiguration(builder.Configuration)
-                                                        .AddSerilog())
-                                .CreateLogger("root");
+      var loggerConfiguration = new LoggerConfiguration()
+                                .ReadFrom.Configuration(builder.Configuration)
+                                .Enrich.FromLogContext()
+                                .WriteTo.Console();
+      var logProvider = new SerilogLoggerProvider(loggerConfiguration.CreateLogger());
+      var logger = new LoggerFactory(new[] { logProvider })
+        .CreateLogger("root");
 
 
       builder.Host
