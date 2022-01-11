@@ -36,7 +36,6 @@ using ArmoniK.Core.Storage;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using TaskCanceledException = ArmoniK.Core.Exceptions.TaskCanceledException;
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
@@ -56,7 +55,7 @@ public class Pollster
   private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
 
   public Pollster(ILogger<Pollster>                     logger,
-                  IOptions<ComputePlan>                 options,
+                  ComputePlan                           options,
                   IQueueStorage                         queueStorage,
                   ITableStorage                         tableStorage,
                   KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
@@ -71,7 +70,7 @@ public class Pollster
     taskPayloadStorage_ = taskPayloadStorage;
     clientProvider_     = clientProvider;
     lifeTime_           = lifeTime;
-    messageBatchSize_   = options.Value.MessageBatchSize;
+    messageBatchSize_   = options.MessageBatchSize;
   }
 
   private async Task Init(CancellationToken cancellationToken)
@@ -97,13 +96,13 @@ public class Pollster
     {
       var prefetchChannel =
         Channel.CreateBounded<(TaskData taskData, IQueueMessage message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
-                                                                                                        {
-                                                                                                          SingleReader                  = true,
-                                                                                                          SingleWriter                  = true,
-                                                                                                          FullMode                      = BoundedChannelFullMode.Wait,
-                                                                                                          Capacity                      = 1,
-                                                                                                          AllowSynchronousContinuations = false,
-                                                                                                        });
+        {
+          SingleReader                  = true,
+          SingleWriter                  = true,
+          FullMode                      = BoundedChannelFullMode.Wait,
+          Capacity                      = 1,
+          AllowSynchronousContinuations = false,
+        });
 
       logger_.LogInformation("Prefetching loop started.");
 
@@ -186,13 +185,13 @@ public class Pollster
     {
       var prefetchChannel =
         Channel.CreateBounded<(TaskData taskData, IQueueMessage message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
-                                                                                                        {
-                                                                                                          SingleReader                  = true,
-                                                                                                          SingleWriter                  = true,
-                                                                                                          FullMode                      = BoundedChannelFullMode.Wait,
-                                                                                                          Capacity                      = 1,
-                                                                                                          AllowSynchronousContinuations = false,
-                                                                                                        });
+        {
+          SingleReader                  = true,
+          SingleWriter                  = true,
+          FullMode                      = BoundedChannelFullMode.Wait,
+          Capacity                      = 1,
+          AllowSynchronousContinuations = false,
+        });
 
       var prefetchTask = Task<Task>.Factory.StartNew(async () =>
                                                      {
@@ -463,16 +462,16 @@ public class Pollster
                                                                CancellationToken.None);
 
     var request = new ComputeRequest
-                  {
-                    Session    = taskData.Id.Session,
-                    Subsession = taskData.Id.SubSession,
-                    TaskId     = taskData.Id.Task,
-                    Payload    = taskData.Payload.Data,
-                    Dependencies =
-                    {
-                      taskData.Dependencies,
-                    },
-                  };
+    {
+      Session    = taskData.Id.Session,
+      Subsession = taskData.Id.SubSession,
+      TaskId     = taskData.Id.Task,
+      Payload    = taskData.Payload.Data,
+      Dependencies =
+      {
+        taskData.Dependencies,
+      },
+    };
     request.TaskOptions.Add(taskData.Options.Options);
 
     logger_.LogDebug("Get client connection to the worker");

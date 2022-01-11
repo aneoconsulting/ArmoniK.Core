@@ -35,7 +35,6 @@ using ArmoniK.Core.Storage;
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -45,28 +44,28 @@ namespace ArmoniK.Adapters.MongoDB
   [PublicAPI]
   public class ObjectStorage : IObjectStorage
   {
-    private readonly int chunkSize_;
-    private readonly ILogger<ObjectStorage> logger_;
+    private readonly int                                      chunkSize_;
+    private readonly ILogger<ObjectStorage>                   logger_;
     private readonly MongoCollectionProvider<ObjectDataModel> objectCollectionProvider_;
-    private readonly SessionProvider sessionProvider_;
+    private readonly SessionProvider                          sessionProvider_;
 
-    public ObjectStorage(SessionProvider sessionProvider,
+    public ObjectStorage(SessionProvider                          sessionProvider,
                          MongoCollectionProvider<ObjectDataModel> objectCollectionProvider,
-                         ILogger<ObjectStorage> logger,
-                         IOptions<Options.ObjectStorage> options)
+                         ILogger<ObjectStorage>                   logger,
+                         Options.ObjectStorage                    options)
     {
-      sessionProvider_ = sessionProvider;
+      sessionProvider_          = sessionProvider;
       objectCollectionProvider_ = objectCollectionProvider;
-      chunkSize_ = options.Value.ChunkSize;
-      logger_ = logger;
+      chunkSize_                = options.ChunkSize;
+      logger_                   = logger;
     }
 
 
     /// <inheritdoc />
     public async Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default)
     {
-      using var _ = logger_.LogFunction(key);
-      var objectCollection = await objectCollectionProvider_.GetAsync();
+      using var _                = logger_.LogFunction(key);
+      var       objectCollection = await objectCollectionProvider_.GetAsync();
 
       var taskList = new List<Task<ObjectDataModel>>();
       for (var (pos, idx) = (0, 0); pos < value.Length; idx += 1)
@@ -97,7 +96,7 @@ namespace ArmoniK.Adapters.MongoDB
                                                                              new FindOneAndUpdateOptions<ObjectDataModel>
                                                                              {
                                                                                ReturnDocument = ReturnDocument.After,
-                                                                               IsUpsert = true,
+                                                                               IsUpsert       = true,
                                                                              },
                                                                              cancellationToken));
       }
@@ -114,9 +113,9 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default)
     {
-      using var _ = logger_.LogFunction(key);
-      var sessionHandle = await sessionProvider_.GetAsync();
-      var objectCollection = await objectCollectionProvider_.GetAsync();
+      using var _                = logger_.LogFunction(key);
+      var       sessionHandle    = await sessionProvider_.GetAsync();
+      var       objectCollection = await objectCollectionProvider_.GetAsync();
 
       var chunks = AsyncCursorSourceExt.ToAsyncEnumerable(objectCollection.AsQueryable(sessionHandle)
                                                                           .Where(odm => odm.Key == key)
@@ -133,8 +132,8 @@ namespace ArmoniK.Adapters.MongoDB
     /// <inheritdoc />
     public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
     {
-      using var _ = logger_.LogFunction(key);
-      var objectCollection = await objectCollectionProvider_.GetAsync();
+      using var _                = logger_.LogFunction(key);
+      var       objectCollection = await objectCollectionProvider_.GetAsync();
 
       var res = await objectCollection.DeleteManyAsync(odm => odm.Key == key,
                                                        cancellationToken);
