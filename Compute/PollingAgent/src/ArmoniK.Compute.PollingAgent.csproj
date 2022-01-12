@@ -40,7 +40,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Adaptors\Amqp\src\ArmoniK.Adapters.Amqp.csproj" />
     <ProjectReference Include="..\..\..\Adaptors\MongoDB\src\ArmoniK.Adapters.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\ArmoniK.Core.csproj" />
+    <ProjectReference Include="..\..\..\Common\src\ArmoniK.Common.csproj" />
   </ItemGroup>
 
 </Project>

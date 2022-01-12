@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ArmoniK.Core.csproj" />
+    <ProjectReference Include="..\src\ArmoniK.Common.csproj" />
   </ItemGroup>
 
 </Project>

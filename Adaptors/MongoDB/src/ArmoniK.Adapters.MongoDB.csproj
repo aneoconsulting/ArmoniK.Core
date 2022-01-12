@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Core\src\ArmoniK.Core.csproj" />
+    <ProjectReference Include="..\..\..\Common\src\ArmoniK.Common.csproj" />
   </ItemGroup>
 
 </Project>
