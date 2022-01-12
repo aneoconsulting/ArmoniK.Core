@@ -23,10 +23,9 @@
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Storage
+namespace ArmoniK.Core.Common.Storage;
+
+[PublicAPI]
+public interface IQueueStorage : IQueueStorageBase
 {
-  [PublicAPI]
-  public interface IQueueStorage : IQueueStorageBase
-  {
-  }
 }

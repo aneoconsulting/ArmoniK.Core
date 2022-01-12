@@ -31,69 +31,68 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Storage
+namespace ArmoniK.Core.Common.Storage;
+
+[PublicAPI]
+public class KeyValueStorage<TKey, TValue> : IInitializable
+  where TValue : IMessage<TValue>, new()
+  where TKey : IMessage<TKey>, new()
 {
-  [PublicAPI]
-  public class KeyValueStorage<TKey, TValue> : IInitializable
-    where TValue : IMessage<TValue>, new()
-    where TKey : IMessage<TKey>, new()
+  public static readonly MessageParser<TKey>                    KeyParser   = new(() => new());
+  public static readonly MessageParser<TValue>                  ValueParser = new(() => new());
+  private readonly       string                                 keyPrefix_;
+  private readonly       ILogger<KeyValueStorage<TKey, TValue>> logger_;
+  private readonly       IObjectStorage                         objectStorage_;
+
+  public KeyValueStorage(IObjectStorage objectStorage, ILogger<KeyValueStorage<TKey, TValue>> logger)
   {
-    public static readonly MessageParser<TKey>                    KeyParser   = new(() => new());
-    public static readonly MessageParser<TValue>                  ValueParser = new(() => new());
-    private readonly       string                                 keyPrefix_;
-    private readonly       ILogger<KeyValueStorage<TKey, TValue>> logger_;
-    private readonly       IObjectStorage                         objectStorage_;
-
-    public KeyValueStorage(IObjectStorage objectStorage, ILogger<KeyValueStorage<TKey, TValue>> logger)
-    {
-      keyPrefix_     = $"{typeof(TKey).Name}{typeof(TValue)}";
-      objectStorage_ = objectStorage;
-      logger_        = logger;
-    }
-
-    public string SerializeKey(TKey key) => $"{keyPrefix_}{HttpUtility.UrlEncode(key.ToByteArray())}";
-
-    public TKey DeserializeKey(string stringKey)
-    {
-      var cleanedKey = HttpUtility.UrlDecodeToBytes(stringKey[keyPrefix_.Length..]);
-
-      var key = KeyParser.ParseFrom(cleanedKey);
-      return key;
-    }
-
-
-    public Task AddOrUpdateAsync(TKey key, TValue value, CancellationToken cancellationToken = default)
-    {
-      var       serializedKey   = SerializeKey(key);
-      using var _               = logger_.LogFunction(serializedKey);
-      var       serializedValue = value.ToByteArray();
-      return objectStorage_.AddOrUpdateAsync(serializedKey,
-                                             serializedValue,
-                                             cancellationToken);
-    }
-
-    public async Task<TValue> TryGetValuesAsync(TKey key, CancellationToken cancellationToken = default)
-    {
-      var       serializedKey = SerializeKey(key);
-      using var _             = logger_.LogFunction(serializedKey);
-      var serializedOutput = await objectStorage_.TryGetValuesAsync(serializedKey,
-                                                                    cancellationToken);
-      return ValueParser.ParseFrom(serializedOutput);
-    }
-
-    public Task<bool> TryDeleteAsync(TKey key, CancellationToken cancellationToken = default)
-    {
-      var       serializedKey = SerializeKey(key);
-      using var _             = logger_.LogFunction(serializedKey);
-      return objectStorage_.TryDeleteAsync(serializedKey,
-                                           cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task Init(CancellationToken cancellationToken)
-      => objectStorage_.Init(cancellationToken);
-
-    /// <inheritdoc />
-    public ValueTask<bool> Check(HealthCheckTag tag) => objectStorage_.Check(tag);
+    keyPrefix_     = $"{typeof(TKey).Name}{typeof(TValue)}";
+    objectStorage_ = objectStorage;
+    logger_        = logger;
   }
+
+  public string SerializeKey(TKey key) => $"{keyPrefix_}{HttpUtility.UrlEncode(key.ToByteArray())}";
+
+  public TKey DeserializeKey(string stringKey)
+  {
+    var cleanedKey = HttpUtility.UrlDecodeToBytes(stringKey[keyPrefix_.Length..]);
+
+    var key = KeyParser.ParseFrom(cleanedKey);
+    return key;
+  }
+
+
+  public Task AddOrUpdateAsync(TKey key, TValue value, CancellationToken cancellationToken = default)
+  {
+    var       serializedKey   = SerializeKey(key);
+    using var _               = logger_.LogFunction(serializedKey);
+    var       serializedValue = value.ToByteArray();
+    return objectStorage_.AddOrUpdateAsync(serializedKey,
+                                           serializedValue,
+                                           cancellationToken);
+  }
+
+  public async Task<TValue> TryGetValuesAsync(TKey key, CancellationToken cancellationToken = default)
+  {
+    var       serializedKey = SerializeKey(key);
+    using var _             = logger_.LogFunction(serializedKey);
+    var serializedOutput = await objectStorage_.TryGetValuesAsync(serializedKey,
+                                                                  cancellationToken);
+    return ValueParser.ParseFrom(serializedOutput);
+  }
+
+  public Task<bool> TryDeleteAsync(TKey key, CancellationToken cancellationToken = default)
+  {
+    var       serializedKey = SerializeKey(key);
+    using var _             = logger_.LogFunction(serializedKey);
+    return objectStorage_.TryDeleteAsync(serializedKey,
+                                         cancellationToken);
+  }
+
+  /// <inheritdoc />
+  public Task Init(CancellationToken cancellationToken)
+    => objectStorage_.Init(cancellationToken);
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => objectStorage_.Check(tag);
 }

@@ -31,48 +31,47 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ArmoniK.Core.gRPC
+namespace ArmoniK.Core.Common.gRPC;
+
+[PublicAPI]
+public abstract class GrpcHealthCheckServiceBase : Health.HealthBase
 {
-  [PublicAPI]
-  public abstract class GrpcHealthCheckServiceBase : Health.HealthBase
+  private readonly HealthCheckService healthCheckService_;
+  private readonly string[]           grpcServices_;
+
+  protected GrpcHealthCheckServiceBase(HealthCheckService healthCheckService, string[] grpcServices)
   {
-    private readonly HealthCheckService healthCheckService_;
-    private readonly string[]           grpcServices_;
+    healthCheckService_ = healthCheckService;
+    grpcServices_       = grpcServices;
+  }
 
-    protected GrpcHealthCheckServiceBase(HealthCheckService healthCheckService, string[] grpcServices)
+  public override async Task<HealthCheckResponse> Check(HealthCheckRequest request, ServerCallContext context)
+  {
+    if (string.IsNullOrEmpty(request.Service) || grpcServices_.Contains(request.Service))
     {
-      healthCheckService_ = healthCheckService;
-      grpcServices_       = grpcServices;
-    }
+      var healthReport = await healthCheckService_.CheckHealthAsync(registration => registration.Tags.Contains(nameof(HealthCheckTag.Readiness)),
+                                                                    context.CancellationToken);
 
-    public override async Task<HealthCheckResponse> Check(HealthCheckRequest request, ServerCallContext context)
-    {
-      if (string.IsNullOrEmpty(request.Service) || grpcServices_.Contains(request.Service))
+      if (healthReport.Status == HealthStatus.Healthy)
       {
-        var healthReport = await healthCheckService_.CheckHealthAsync(registration => registration.Tags.Contains(nameof(HealthCheckTag.Readiness)),
-                                                                      context.CancellationToken);
-
-        if (healthReport.Status == HealthStatus.Healthy)
-        {
-          context.Status = Status.DefaultSuccess;
-          return new()
-                 {
-                   Status = HealthCheckResponse.Types.ServingStatus.Serving,
-                 };
-        }
-
         context.Status = Status.DefaultSuccess;
         return new()
                {
-                 Status = HealthCheckResponse.Types.ServingStatus.NotServing,
+                 Status = HealthCheckResponse.Types.ServingStatus.Serving,
                };
       }
 
       context.Status = Status.DefaultSuccess;
       return new()
              {
-               Status = HealthCheckResponse.Types.ServingStatus.Unknown,
+               Status = HealthCheckResponse.Types.ServingStatus.NotServing,
              };
     }
+
+    context.Status = Status.DefaultSuccess;
+    return new()
+           {
+             Status = HealthCheckResponse.Types.ServingStatus.Unknown,
+           };
   }
 }

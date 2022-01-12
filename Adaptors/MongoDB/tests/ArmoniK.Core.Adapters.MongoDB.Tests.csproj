@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\ArmoniK.Adapters.MongoDB.csproj" />
+    <ProjectReference Include="..\src\ArmoniK.Core.Adapters.MongoDB.csproj" />
   </ItemGroup>
 
 </Project>

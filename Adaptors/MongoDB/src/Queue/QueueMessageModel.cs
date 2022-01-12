@@ -24,90 +24,89 @@
 using System;
 using System.Threading.Tasks;
 
-using ArmoniK.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.gRPC.V1;
 
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB.Queue
+namespace ArmoniK.Core.Adapters.MongoDB.Queue;
+
+public class QueueMessageModel : IMongoDataModel<QueueMessageModel>
 {
-  public class QueueMessageModel : IMongoDataModel<QueueMessageModel>
+  public const string Collection = "Queue";
+
+  [BsonId(IdGenerator = typeof(StringCombGuidGenerator))]
+  public string MessageId { get; set; }
+
+  [BsonRequired]
+  [BsonElement]
+  public TaskId TaskId { get; set; }
+
+  [BsonElement]
+  public string OwnerId { get; set; }
+
+  [BsonRequired]
+  [BsonElement]
+  public DateTime SubmissionDate { get; set; }
+
+  [BsonElement]
+  public int Priority { get; set; }
+
+  [BsonIgnoreIfDefault]
+  [BsonDateTimeOptions(Kind = DateTimeKind.Utc,
+                       DateOnly = false)]
+  public DateTime OwnedUntil { get; set; }
+
+  /// <inheritdoc />
+  public string CollectionName { get; } = Collection;
+
+  /// <inheritdoc />
+  public Task InitializeIndexesAsync(
+    IClientSessionHandle                sessionHandle,
+    IMongoCollection<QueueMessageModel> collection)
   {
-    public const string Collection = "Queue";
-
-    [BsonId(IdGenerator = typeof(StringCombGuidGenerator))]
-    public string MessageId { get; set; }
-
-    [BsonRequired]
-    [BsonElement]
-    public TaskId TaskId { get; set; }
-
-    [BsonElement]
-    public string OwnerId { get; set; }
-
-    [BsonRequired]
-    [BsonElement]
-    public DateTime SubmissionDate { get; set; }
-
-    [BsonElement]
-    public int Priority { get; set; }
-
-    [BsonIgnoreIfDefault]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc,
-                         DateOnly = false)]
-    public DateTime OwnedUntil { get; set; }
-
-    /// <inheritdoc />
-    public string CollectionName { get; } = Collection;
-
-    /// <inheritdoc />
-    public Task InitializeIndexesAsync(
-      IClientSessionHandle sessionHandle,
-      IMongoCollection<QueueMessageModel> collection)
-    {
-      var messageIdIndex = Builders<QueueMessageModel>.IndexKeys.Text(model => model.MessageId);
-      var ownerIdIndex = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnerId);
-      var submissionIndex = Builders<QueueMessageModel>.IndexKeys.Ascending(model => model.SubmissionDate);
-      var priorityIndex = Builders<QueueMessageModel>.IndexKeys.Descending(model => model.Priority);
-      var ownedUntilIndex = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnedUntil);
-      var pullIndex = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
-                                                                    submissionIndex);
-      var pullIndex2 = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
-                                                                     submissionIndex,
-                                                                     ownedUntilIndex);
-      var lockedIndex = Builders<QueueMessageModel>.IndexKeys.Combine(messageIdIndex,
-                                                                      ownerIdIndex);
+    var messageIdIndex  = Builders<QueueMessageModel>.IndexKeys.Text(model => model.MessageId);
+    var ownerIdIndex    = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnerId);
+    var submissionIndex = Builders<QueueMessageModel>.IndexKeys.Ascending(model => model.SubmissionDate);
+    var priorityIndex   = Builders<QueueMessageModel>.IndexKeys.Descending(model => model.Priority);
+    var ownedUntilIndex = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnedUntil);
+    var pullIndex = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
+                                                                  submissionIndex);
+    var pullIndex2 = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
+                                                                   submissionIndex,
+                                                                   ownedUntilIndex);
+    var lockedIndex = Builders<QueueMessageModel>.IndexKeys.Combine(messageIdIndex,
+                                                                    ownerIdIndex);
 
 
-      var indexModels = new CreateIndexModel<QueueMessageModel>[]
-                        {
-                          new(pullIndex,
-                              new()
-                              {
-                                Name = nameof(pullIndex),
-                              }),
-                          new(pullIndex2,
-                              new()
-                              {
-                                Name = nameof(pullIndex2),
-                              }),
-                          new(lockedIndex,
-                              new()
-                              {
-                                Name   = nameof(lockedIndex),
-                                Unique = true,
-                              }),
-                          new(messageIdIndex,
-                              new()
-                              {
-                                Name   = nameof(messageIdIndex),
-                                Unique = true,
-                              }),
-                        };
+    var indexModels = new CreateIndexModel<QueueMessageModel>[]
+                      {
+                        new(pullIndex,
+                            new()
+                            {
+                              Name = nameof(pullIndex),
+                            }),
+                        new(pullIndex2,
+                            new()
+                            {
+                              Name = nameof(pullIndex2),
+                            }),
+                        new(lockedIndex,
+                            new()
+                            {
+                              Name   = nameof(lockedIndex),
+                              Unique = true,
+                            }),
+                        new(messageIdIndex,
+                            new()
+                            {
+                              Name   = nameof(messageIdIndex),
+                              Unique = true,
+                            }),
+                      };
 
-      return collection.Indexes.CreateManyAsync(sessionHandle,
-                                                indexModels);
-    }
+    return collection.Indexes.CreateManyAsync(sessionHandle,
+                                              indexModels);
   }
 }

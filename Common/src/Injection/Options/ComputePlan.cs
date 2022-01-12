@@ -23,15 +23,14 @@
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Injection.Options
+namespace ArmoniK.Core.Common.Injection.Options;
+
+[PublicAPI]
+public class ComputePlan
 {
-  [PublicAPI]
-  public class ComputePlan
-  {
-    public const string SettingSection = nameof(ComputePlan);
+  public const string SettingSection = nameof(ComputePlan);
 
-    public GrpcChannel GrpcChannel { get; set; }
+  public GrpcChannel GrpcChannel { get; set; }
 
-    public int MessageBatchSize { get; set; }
-  }
+  public int MessageBatchSize { get; set; }
 }

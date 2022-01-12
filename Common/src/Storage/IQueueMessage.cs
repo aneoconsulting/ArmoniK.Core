@@ -26,25 +26,24 @@ using System.Threading;
 
 using ArmoniK.Core.gRPC.V1;
 
-namespace ArmoniK.Core.Storage
+namespace ArmoniK.Core.Common.Storage;
+
+public enum QueueMessageStatus
 {
-  public enum QueueMessageStatus
-  {
-    Failed,
-    Waiting = Failed,
-    Running = Failed,
-    Postponed,
-    Processed,
-    Cancelled = Processed,
-    Poisonous,
-  }
+  Failed,
+  Waiting = Failed,
+  Running = Failed,
+  Postponed,
+  Processed,
+  Cancelled = Processed,
+  Poisonous,
+}
 
-  public interface IQueueMessage : IAsyncDisposable
-  {
-    CancellationToken CancellationToken { get; }
-    string            MessageId         { get; }
-    TaskId            TaskId            { get; }
+public interface IQueueMessage : IAsyncDisposable
+{
+  CancellationToken CancellationToken { get; }
+  string            MessageId         { get; }
+  TaskId            TaskId            { get; }
 
-    QueueMessageStatus Status { get; set; }
-  }
+  QueueMessageStatus Status { get; set; }
 }

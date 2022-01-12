@@ -25,17 +25,16 @@ using System;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Adapters.MongoDB.Options
+namespace ArmoniK.Core.Adapters.MongoDB.Options;
+
+[PublicAPI]
+public class QueueStorage
 {
-  [PublicAPI]
-  public class QueueStorage
-  {
-    public const string SettingSection = nameof(MongoDB) + ":" + nameof(QueueStorage);
+  public const string SettingSection = nameof(MongoDB) + ":" + nameof(QueueStorage);
 
-    public TimeSpan LockRefreshPeriodicity { get; set; } = TimeSpan.FromMinutes(2);
+  public TimeSpan LockRefreshPeriodicity { get; set; } = TimeSpan.FromMinutes(2);
 
-    public TimeSpan PollPeriodicity { get; set; } = TimeSpan.FromSeconds(5);
+  public TimeSpan PollPeriodicity { get; set; } = TimeSpan.FromSeconds(5);
 
-    public TimeSpan LockRefreshExtension { get; set; } = TimeSpan.FromMinutes(5);
-  }
+  public TimeSpan LockRefreshExtension { get; set; } = TimeSpan.FromMinutes(5);
 }

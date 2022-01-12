@@ -24,10 +24,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core
+namespace ArmoniK.Core.Common;
+
+public interface IInitializable : IHealthCheckProvider
 {
-  public interface IInitializable : IHealthCheckProvider
-  {
-    Task Init(CancellationToken cancellationToken);
-  }
+  Task Init(CancellationToken cancellationToken);
 }

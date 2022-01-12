@@ -23,18 +23,17 @@
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Adapters.Amqp.Options
-{
-  [PublicAPI]
-  public class Amqp
-  {
-    public const string SettingSection = nameof(Amqp);
+namespace ArmoniK.Core.Adapters.Amqp.Options;
 
-    public string Host { get; set; }
-    public string CredentialsPath { get; set; }
-    public string User { get; set; }
-    public string Password { get; set; }
-    public int Port { get; set; }
-    public int MaxPriority { get; set; }
-  }
+[PublicAPI]
+public class Amqp
+{
+  public const string SettingSection = nameof(Amqp);
+
+  public string Host            { get; set; }
+  public string CredentialsPath { get; set; }
+  public string User            { get; set; }
+  public string Password        { get; set; }
+  public int    Port            { get; set; }
+  public int    MaxPriority     { get; set; }
 }

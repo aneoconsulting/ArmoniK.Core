@@ -25,40 +25,36 @@ using System;
 
 using Amqp;
 
-using ArmoniK.Core.Injection;
+using ArmoniK.Core.Common.Injection;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+namespace ArmoniK.Core.Adapters.Amqp;
 
-namespace ArmoniK.Adapters.Amqp
+// ReSharper disable once ClassNeverInstantiated.Global
+public class SessionProvider : ProviderBase<Session>
 {
-  // ReSharper disable once ClassNeverInstantiated.Global
-  public class SessionProvider : ProviderBase<Session>
+  /// <inheritdoc />
+  public SessionProvider(Options.Amqp options)
+    : base(async () =>
+           {
+             var connection = await Connection.Factory.CreateAsync(new(options.Host,
+                                                                       options.Port,
+                                                                       options.User,
+                                                                       options.Password,
+                                                                       scheme: "AMQP"));
+             return new(connection);
+           })
   {
-    /// <inheritdoc />
-    public SessionProvider(Options.Amqp options)
-      : base(async () =>
-      {
-        var connection = await Connection.Factory.CreateAsync(new(options.Host,
-                                                                  options.Port,
-                                                                  options.User,
-                                                                  options.Password,
-                                                                  scheme: "AMQP"));
-        return new(connection);
-      })
-    {
-      if (string.IsNullOrEmpty(options.Host))
-        throw new ArgumentNullException(nameof(options),
-                                        $"Contains a null or empty {nameof(options.Host)} field");
-      if (options.Port == 0)
-        throw new ArgumentNullException(nameof(options),
-                                        $"Contains a zero {nameof(options.Port)} field");
-      if (string.IsNullOrEmpty(options.User))
-        throw new ArgumentNullException(nameof(options),
-                                        $"Contains a null or empty {nameof(options.User)} field");
-      if (string.IsNullOrEmpty(options.Password))
-        throw new ArgumentNullException(nameof(options),
-                                        $"Contains a null or empty {nameof(options.Password)} field");
-    }
+    if (string.IsNullOrEmpty(options.Host))
+      throw new ArgumentNullException(nameof(options),
+                                      $"Contains a null or empty {nameof(options.Host)} field");
+    if (options.Port == 0)
+      throw new ArgumentNullException(nameof(options),
+                                      $"Contains a zero {nameof(options.Port)} field");
+    if (string.IsNullOrEmpty(options.User))
+      throw new ArgumentNullException(nameof(options),
+                                      $"Contains a null or empty {nameof(options.User)} field");
+    if (string.IsNullOrEmpty(options.Password))
+      throw new ArgumentNullException(nameof(options),
+                                      $"Contains a null or empty {nameof(options.Password)} field");
   }
 }

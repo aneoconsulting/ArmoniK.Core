@@ -25,13 +25,12 @@ using System.Threading.Tasks;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Storage
-{
-  [PublicAPI]
-  public interface IFactory<T>
-  {
-    T Create();
+namespace ArmoniK.Core.Common.Storage;
 
-    Task<T> CreateAsync();
-  }
+[PublicAPI]
+public interface IFactory<T>
+{
+  T Create();
+
+  Task<T> CreateAsync();
 }

@@ -24,8 +24,8 @@
 using System;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.gRPC.V1;
-using ArmoniK.Core.Injection;
 
 using Grpc.Core;
 
@@ -33,36 +33,35 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.gRPC
+namespace ArmoniK.Core.Common.gRPC;
+
+[PublicAPI]
+public class ClientServiceProvider : ProviderBase<ComputerService.ComputerServiceClient>
 {
-  [PublicAPI]
-  public class ClientServiceProvider : ProviderBase<ComputerService.ComputerServiceClient>
+  /// <inheritdoc />
+  public ClientServiceProvider(GrpcChannelProvider channelProvider, ILogger<ClientServiceProvider> logger) :
+    base(() => BuildClientService(channelProvider,
+                                  logger))
   {
-    /// <inheritdoc />
-    public ClientServiceProvider(GrpcChannelProvider channelProvider, ILogger<ClientServiceProvider> logger) :
-      base(() => BuildClientService(channelProvider,
-                                    logger))
+  }
+
+  private static async Task<ComputerService.ComputerServiceClient> BuildClientService(
+    GrpcChannelProvider channelProvider,
+    ILogger             logger)
+  {
+    using var   _ = logger.LogFunction();
+    ChannelBase channel;
+    try
     {
+      channel = await channelProvider.GetAsync();
+    }
+    catch (Exception e)
+    {
+      logger.LogError(e,
+                      "Could not create grpc channel");
+      throw;
     }
 
-    private static async Task<ComputerService.ComputerServiceClient> BuildClientService(
-      GrpcChannelProvider channelProvider,
-      ILogger             logger)
-    {
-      using var   _ = logger.LogFunction();
-      ChannelBase channel;
-      try
-      {
-        channel = await channelProvider.GetAsync();
-      }
-      catch (Exception e)
-      {
-        logger.LogError(e,
-                        "Could not create grpc channel");
-        throw;
-      }
-
-      return new(channel);
-    }
+    return new(channel);
   }
 }

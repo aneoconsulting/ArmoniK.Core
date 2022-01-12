@@ -24,11 +24,11 @@
 using System;
 using System.IO;
 
-using ArmoniK.Adapters.Amqp;
-using ArmoniK.Adapters.MongoDB;
-using ArmoniK.Control.Services;
-using ArmoniK.Core;
-using ArmoniK.Core.Injection;
+using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.Amqp;
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Control.Submitter.Services;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -37,10 +37,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
-using Serilog.Events;
-using Serilog.Extensions.Logging;
 
-namespace ArmoniK.Control;
+namespace ArmoniK.Core.Control.Submitter;
 
 public static class Program
 {

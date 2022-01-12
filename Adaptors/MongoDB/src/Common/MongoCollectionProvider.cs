@@ -24,56 +24,55 @@
 using System;
 using System.Threading;
 
-using ArmoniK.Core.Injection;
+using ArmoniK.Core.Common.Injection;
 
 using JetBrains.Annotations;
 
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB.Common
+namespace ArmoniK.Core.Adapters.MongoDB.Common;
+
+[PublicAPI]
+public class MongoCollectionProvider<TDataModel>
+  : ProviderBase<IMongoCollection<TDataModel>>
+  where TDataModel : IMongoDataModel<TDataModel>, new()
 {
-  [PublicAPI]
-  public class MongoCollectionProvider<TDataModel>
-    : ProviderBase<IMongoCollection<TDataModel>>
-    where TDataModel : IMongoDataModel<TDataModel>, new()
+  public MongoCollectionProvider(Options.MongoDB   options,
+                                 SessionProvider   sessionProvider,
+                                 IMongoDatabase    mongoDatabase,
+                                 CancellationToken cancellationToken = default) :
+    base(async () =>
+         {
+           var model = new TDataModel();
+           try
+           {
+             await mongoDatabase.CreateCollectionAsync(model.CollectionName,
+                                                       new CreateCollectionOptions<TDataModel>
+                                                       {
+                                                         ExpireAfter = options.DataRetention,
+                                                       },
+                                                       cancellationToken);
+           }
+           catch (MongoCommandException)
+           {
+           }
+
+           var output  = mongoDatabase.GetCollection<TDataModel>(model.CollectionName);
+           var session = await sessionProvider.GetAsync();
+           try
+           {
+             await model.InitializeIndexesAsync(session,
+                                                output);
+           }
+           catch (MongoCommandException)
+           {
+           }
+
+           return output;
+         })
   {
-    public MongoCollectionProvider(Options.MongoDB   options,
-                                   SessionProvider   sessionProvider,
-                                   IMongoDatabase    mongoDatabase,
-                                   CancellationToken cancellationToken = default) :
-      base(async () =>
-      {
-        var model = new TDataModel();
-        try
-        {
-          await mongoDatabase.CreateCollectionAsync(model.CollectionName,
-                                                    new CreateCollectionOptions<TDataModel>
-                                                    {
-                                                      ExpireAfter = options.DataRetention,
-                                                    },
-                                                    cancellationToken);
-        }
-        catch (MongoCommandException)
-        {
-        }
-
-        var output  = mongoDatabase.GetCollection<TDataModel>(model.CollectionName);
-        var session = await sessionProvider.GetAsync();
-        try
-        {
-          await model.InitializeIndexesAsync(session,
-                                             output);
-        }
-        catch (MongoCommandException)
-        {
-        }
-
-        return output;
-      })
-    {
-      if (options.DataRetention == TimeSpan.Zero)
-        throw new ArgumentOutOfRangeException(nameof(options),
-                                              $"{nameof(Options.MongoDB.DataRetention)} is not defined.");
-    }
+    if (options.DataRetention == TimeSpan.Zero)
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.MongoDB.DataRetention)} is not defined.");
   }
 }

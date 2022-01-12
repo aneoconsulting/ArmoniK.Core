@@ -23,10 +23,10 @@
 
 using Amqp;
 
-using ArmoniK.Core;
-using ArmoniK.Core.Injection;
-using ArmoniK.Core.Injection.Options;
-using ArmoniK.Core.Storage;
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
@@ -34,68 +34,66 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
-namespace ArmoniK.Adapters.Amqp
+namespace ArmoniK.Core.Adapters.Amqp;
+
+public static class ServiceCollectionExt
 {
-  public static class ServiceCollectionExt
+  [PublicAPI]
+  public static IServiceCollection AddAmqp(
+    this IServiceCollection serviceCollection,
+    ConfigurationManager    configuration,
+    ILogger                 logger
+  )
   {
-    [PublicAPI]
-    public static IServiceCollection AddAmqp(
-      this IServiceCollection serviceCollection,
-      ConfigurationManager    configuration,
-      ILogger logger
-    )
+    logger.LogInformation("Configure Amqp client");
+
+    var components = configuration.GetSection(Components.SettingSection);
+
+    if (components["QueueStorage"] == "ArmoniK.Adapters.Amqp.QueueStorage")
     {
-      logger.LogInformation("Configure Amqp client");
+      var amqpOptions = configuration.GetRequiredValue<Options.Amqp>(Options.Amqp.SettingSection);
 
-      var components = configuration.GetSection(Components.SettingSection);
+      using var _ = logger.BeginNamedScope("AMQP configuration",
+                                           ("host", amqpOptions.Host),
+                                           ("port", amqpOptions.Port));
 
-      if (components["QueueStorage"] == "ArmoniK.Adapters.Amqp.QueueStorage")
+      if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
       {
-        var amqpOptions = configuration.GetRequiredValue<Options.Amqp>(Options.Amqp.SettingSection);
-
-        using var _ = logger.BeginNamedScope("AMQP configuration",
-                                             ("host", amqpOptions.Host),
-                                             ("port", amqpOptions.Port));
-
-        if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
-        {
-          configuration.AddJsonFile(amqpOptions.CredentialsPath);
-          logger.LogTrace("Loaded amqp credentials from file {path}",
-                                amqpOptions.CredentialsPath);
-        }
-        else
-        {
-          logger.LogTrace("No credential path provided");
-        }
-
-        serviceCollection.AddOption(configuration,
-                                    Options.Amqp.SettingSection,
-                                    out amqpOptions);
-
-        var sessionProvider = new SessionProvider(amqpOptions);
-
-        serviceCollection.AddSingleton(sessionProvider);
-
-        serviceCollection.AddSingleton<IQueueStorage, QueueStorage>();
-
-        serviceCollection.AddHealthChecks()
-                         .AddAsyncCheck("AmqpHealthCheck",
-                                        async () =>
-                                        {
-                                          var t = await sessionProvider.GetAsync();
-                                          return t.SessionState == SessionState.Opened ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy();
-                                        });
-
-        logger.LogInformation("Amqp configuration complete");
+        configuration.AddJsonFile(amqpOptions.CredentialsPath);
+        logger.LogTrace("Loaded amqp credentials from file {path}",
+                        amqpOptions.CredentialsPath);
       }
       else
       {
-        logger.LogInformation("Nothing to configure");
+        logger.LogTrace("No credential path provided");
       }
 
-      return serviceCollection;
+      serviceCollection.AddOption(configuration,
+                                  Options.Amqp.SettingSection,
+                                  out amqpOptions);
+
+      var sessionProvider = new SessionProvider(amqpOptions);
+
+      serviceCollection.AddSingleton(sessionProvider);
+
+      serviceCollection.AddSingleton<IQueueStorage, QueueStorage>();
+
+      serviceCollection.AddHealthChecks()
+                       .AddAsyncCheck("AmqpHealthCheck",
+                                      async () =>
+                                      {
+                                        var t = await sessionProvider.GetAsync();
+                                        return t.SessionState == SessionState.Opened ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy();
+                                      });
+
+      logger.LogInformation("Amqp configuration complete");
     }
+    else
+    {
+      logger.LogInformation("Nothing to configure");
+    }
+
+    return serviceCollection;
   }
 }

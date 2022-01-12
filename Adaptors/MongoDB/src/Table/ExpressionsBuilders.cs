@@ -27,62 +27,61 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ArmoniK.Adapters.MongoDB.Table
+namespace ArmoniK.Core.Adapters.MongoDB.Table;
+
+public static class ExpressionsBuilders
 {
-  public static class ExpressionsBuilders
+  public static Expression<Func<TaskDataModel, bool>> FieldFilterExpression<TField>(Expression<Func<TaskDataModel, TField>> expression,
+                                                                                    IList<TField>                           values,
+                                                                                    bool                                    include = true)
   {
-    public static Expression<Func<TaskDataModel, bool>> FieldFilterExpression<TField>(Expression<Func<TaskDataModel, TField>> expression,
-                                                                                      IList<TField> values,
-                                                                                      bool include = true)
-    {
-      var x = Expression.Parameter(typeof(TaskDataModel),
-                                   "model");
+    var x = Expression.Parameter(typeof(TaskDataModel),
+                                 "model");
 
-      return (Expression<Func<TaskDataModel, bool>>)Expression.Lambda(FieldFilterInternal(expression,
-                                                                                          values,
-                                                                                          include,
-                                                                                          x),
-                                                                      x);
+    return (Expression<Func<TaskDataModel, bool>>)Expression.Lambda(FieldFilterInternal(expression,
+                                                                                        values,
+                                                                                        include,
+                                                                                        x),
+                                                                    x);
+  }
+
+
+  public static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel, TField>> expression,
+                                                       IList<TField>                           values,
+                                                       bool                                    include,
+                                                       Expression                              x)
+  {
+    if (!values.Any())
+      return Expression.Constant(true);
+
+    var fieldName = ((MemberExpression)expression.Body).Member.Name;
+
+    var property = Expression.Property(x,
+                                       typeof(TaskDataModel),
+                                       fieldName);
+
+    if (values.Count == 1)
+    {
+      return include
+               ? Expression.Equal(property,
+                                  Expression.Constant(values[0]))
+               : Expression.NotEqual(property,
+                                     Expression.Constant(values[0]));
     }
 
+    var containsMethodInfo = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)
+                                               .Single(m => m.Name == nameof(Enumerable.Contains) &&
+                                                            m.GetParameters().Length == 2)
+                                               .GetGenericMethodDefinition()
+                                               .MakeGenericMethod(typeof(TField));
 
-    public static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel, TField>> expression,
-                                                         IList<TField> values,
-                                                         bool include,
-                                                         Expression x)
-    {
-      if (!values.Any())
-        return Expression.Constant(true);
+    var valueExpr = Expression.Constant(values);
 
-      var fieldName = ((MemberExpression)expression.Body).Member.Name;
+    var body = Expression.Call(null,
+                               containsMethodInfo,
+                               valueExpr,
+                               property);
 
-      var property = Expression.Property(x,
-                                         typeof(TaskDataModel),
-                                         fieldName);
-
-      if (values.Count == 1)
-      {
-        return include
-                 ? Expression.Equal(property,
-                                    Expression.Constant(values[0]))
-                 : Expression.NotEqual(property,
-                                       Expression.Constant(values[0]));
-      }
-
-      var containsMethodInfo = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)
-                                                 .Single(m => m.Name == nameof(Enumerable.Contains) &&
-                                                              m.GetParameters().Length == 2)
-                                                 .GetGenericMethodDefinition()
-                                                 .MakeGenericMethod(typeof(TField));
-
-      var valueExpr = Expression.Constant(values);
-
-      var body = Expression.Call(null,
-                                        containsMethodInfo,
-                                        valueExpr,
-                                        property);
-
-      return include ? body : Expression.Not(body);
-    }
+    return include ? body : Expression.Not(body);
   }
 }

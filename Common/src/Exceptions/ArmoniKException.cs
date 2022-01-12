@@ -24,26 +24,25 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace ArmoniK.Core.Exceptions
+namespace ArmoniK.Core.Common.Exceptions;
+
+public class ArmoniKException : Exception
 {
-  public class ArmoniKException : Exception
+  public ArmoniKException()
   {
-    public ArmoniKException()
-    {
-    }
+  }
 
-    public ArmoniKException(string message) : base(message)
-    {
-    }
+  public ArmoniKException(string message) : base(message)
+  {
+  }
 
-    public ArmoniKException(string message, Exception innerException) : base(message,
-                                                                             innerException)
-    {
-    }
+  public ArmoniKException(string message, Exception innerException) : base(message,
+                                                                           innerException)
+  {
+  }
 
-    protected ArmoniKException(SerializationInfo info, StreamingContext context) : base(info,
-                                                                                        context)
-    {
-    }
+  protected ArmoniKException(SerializationInfo info, StreamingContext context) : base(info,
+                                                                                      context)
+  {
   }
 }

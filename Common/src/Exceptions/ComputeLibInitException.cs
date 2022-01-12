@@ -24,27 +24,26 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace ArmoniK.Core.Exceptions
+namespace ArmoniK.Core.Common.Exceptions;
+
+[Serializable]
+public class ComputeLibInitException : ArmoniKException
 {
-  [Serializable]
-  public class ComputeLibInitException : ArmoniKException
+  public ComputeLibInitException()
   {
-    public ComputeLibInitException()
-    {
-    }
+  }
 
-    public ComputeLibInitException(string message) : base(message)
-    {
-    }
+  public ComputeLibInitException(string message) : base(message)
+  {
+  }
 
-    public ComputeLibInitException(string message, Exception innerException) : base(message,
-                                                                                    innerException)
-    {
-    }
+  public ComputeLibInitException(string message, Exception innerException) : base(message,
+                                                                                  innerException)
+  {
+  }
 
-    protected ComputeLibInitException(SerializationInfo info, StreamingContext context) : base(info,
-                                                                                               context)
-    {
-    }
+  protected ComputeLibInitException(SerializationInfo info, StreamingContext context) : base(info,
+                                                                                             context)
+  {
   }
 }

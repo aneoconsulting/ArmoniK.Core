@@ -24,26 +24,25 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace ArmoniK.Core.Exceptions
+namespace ArmoniK.Core.Common.Exceptions;
+
+public class KeyNotFoundException : ArmoniKException
 {
-  public class KeyNotFoundException : ArmoniKException
+  public KeyNotFoundException()
   {
-    public KeyNotFoundException()
-    {
-    }
+  }
 
-    public KeyNotFoundException(string message) : base(message)
-    {
-    }
+  public KeyNotFoundException(string message) : base(message)
+  {
+  }
 
-    public KeyNotFoundException(string message, Exception innerException) : base(message,
-                                                                                 innerException)
-    {
-    }
+  public KeyNotFoundException(string message, Exception innerException) : base(message,
+                                                                               innerException)
+  {
+  }
 
-    protected KeyNotFoundException(SerializationInfo info, StreamingContext context) : base(info,
-                                                                                            context)
-    {
-    }
+  protected KeyNotFoundException(SerializationInfo info, StreamingContext context) : base(info,
+                                                                                          context)
+  {
   }
 }

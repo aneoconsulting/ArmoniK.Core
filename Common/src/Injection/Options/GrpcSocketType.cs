@@ -21,11 +21,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Injection.Options
+namespace ArmoniK.Core.Common.Injection.Options;
+
+public enum GrpcSocketType
 {
-  public enum GrpcSocketType
-  {
-    Web,
-    UnixSocket,
-  }
+  Web,
+  UnixSocket,
 }

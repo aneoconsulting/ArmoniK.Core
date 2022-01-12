@@ -21,455 +21,454 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Adapters.MongoDB.Table;
+using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.gRPC.V1;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Adapters.MongoDB.Tests
+namespace ArmoniK.Core.Adapters.MongoDB.Tests;
+
+[TestFixture(TestOf = typeof(TaskFilterExt))]
+internal class TaskFilterExtTests
 {
-  [TestFixture(TestOf = typeof(TaskFilterExt))]
-  internal class TaskFilterExtTests
+  [Test]
+  public void ShouldRecognizeSession()
   {
-    [Test]
-    public void ShouldRecognizeSession()
-    {
-      var func = new TaskFilter
+    var func = new TaskFilter
+               {
+                 SessionId = "Session",
+               }
+              .ToFilterExpression()
+              .Compile();
+
+    var model = new TaskDataModel
+                {
+                  SessionId = "Session",
+                };
+
+    Assert.IsTrue(func(model));
+  }
+
+  [Test]
+  public void ShouldRejectOtherSession()
+  {
+    var func = new TaskFilter
+               {
+                 SessionId = "Session",
+               }
+              .ToFilterExpression()
+              .Compile();
+
+    var model = new TaskDataModel
+                {
+                  SessionId = "OtherSession",
+                };
+
+    Assert.IsFalse(func(model));
+  }
+
+  [Test]
+  public void ShouldRecognizeSubSession()
+  {
+    var func = new TaskFilter
+               {
+                 SubSessionId = "SubSession",
+               }
+              .ToFilterExpression()
+              .Compile();
+
+    var model = new TaskDataModel
+                {
+                  SubSessionId = "SubSession",
+                };
+
+    Assert.IsTrue(func(model));
+  }
+
+  [Test]
+  public void ShouldRejectOtherSubSession()
+  {
+    var func = new TaskFilter
+               {
+                 SubSessionId = "SubSession",
+               }
+              .ToFilterExpression()
+              .Compile();
+
+    var model = new TaskDataModel
+                {
+                  SubSessionId = "OtherSubSession",
+                };
+
+    Assert.IsFalse(func(model));
+  }
+
+  [Test]
+  public void ShouldRecognizeStatus()
+  {
+    var func = new TaskFilter
+               {
+                 IncludedStatuses =
                  {
-                   SessionId = "Session",
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   TaskStatus.Completed,
+                 },
+               }
+              .ToFilterExpression()
+              .Compile(true);
 
-      var model = new TaskDataModel
-                  {
-                    SessionId = "Session",
-                  };
+    var model = new TaskDataModel
+                {
+                  Status = TaskStatus.Completed,
+                };
 
-      Assert.IsTrue(func(model));
-    }
+    Assert.IsTrue(func(model));
+  }
 
-    [Test]
-    public void ShouldRejectOtherSession()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldExcludeStatus()
+  {
+    var func = new TaskFilter
+               {
+                 ExcludedStatuses =
                  {
-                   SessionId = "Session",
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   TaskStatus.Completed,
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    SessionId = "OtherSession",
-                  };
+    var model = new TaskDataModel
+                {
+                  Status = TaskStatus.Completed,
+                };
 
-      Assert.IsFalse(func(model));
-    }
+    Assert.IsFalse(func(model));
+  }
 
-    [Test]
-    public void ShouldRecognizeSubSession()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldRecognizeMultipleStatus()
+  {
+    var func = new TaskFilter
+               {
+                 IncludedStatuses =
                  {
-                   SubSessionId = "SubSession",
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   TaskStatus.Completed,
+                   TaskStatus.Canceled,
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    SubSessionId = "SubSession",
-                  };
+    var model = new TaskDataModel
+                {
+                  Status = TaskStatus.Completed,
+                };
 
-      Assert.IsTrue(func(model));
-    }
+    Assert.IsTrue(func(model));
+  }
 
-    [Test]
-    public void ShouldRejectOtherSubSession()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldExcludeMultipleStatus()
+  {
+    var func = new TaskFilter
+               {
+                 ExcludedStatuses =
                  {
-                   SubSessionId = "SubSession",
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   TaskStatus.Completed,
+                   TaskStatus.Canceled,
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    SubSessionId = "OtherSubSession",
-                  };
+    var model = new TaskDataModel
+                {
+                  Status = TaskStatus.Completed,
+                };
 
-      Assert.IsFalse(func(model));
-    }
+    Assert.IsFalse(func(model));
+  }
 
-    [Test]
-    public void ShouldRecognizeStatus()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldRejectOtherStatus()
+  {
+    var func = new TaskFilter
+               {
+                 IncludedStatuses =
                  {
-                   IncludedStatuses =
-                   {
-                     TaskStatus.Completed,
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile(true);
+                   TaskStatus.Completed,
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    Status = TaskStatus.Completed,
-                  };
+    var model = new TaskDataModel
+                {
+                  Status = TaskStatus.Canceled,
+                };
 
-      Assert.IsTrue(func(model));
-    }
+    Assert.IsFalse(func(model));
+  }
 
-    [Test]
-    public void ShouldExcludeStatus()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldIncludeOtherStatus()
+  {
+    var func = new TaskFilter
+               {
+                 ExcludedStatuses =
                  {
-                   ExcludedStatuses =
-                   {
-                     TaskStatus.Completed,
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   TaskStatus.Completed,
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    Status = TaskStatus.Completed,
-                  };
+    var model = new TaskDataModel
+                {
+                  Status = TaskStatus.Canceled,
+                };
 
-      Assert.IsFalse(func(model));
-    }
+    Assert.IsTrue(func(model));
+  }
 
-    [Test]
-    public void ShouldRecognizeMultipleStatus()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldRejectOtherMultipleStatus()
+  {
+    var func = new TaskFilter
+               {
+                 IncludedStatuses =
                  {
-                   IncludedStatuses =
-                   {
-                     TaskStatus.Completed,
-                     TaskStatus.Canceled,
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   TaskStatus.Completed,
+                   TaskStatus.Canceling,
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    Status = TaskStatus.Completed,
-                  };
+    var model = new TaskDataModel
+                {
+                  Status = TaskStatus.Canceled,
+                };
 
-      Assert.IsTrue(func(model));
-    }
+    Assert.IsFalse(func(model));
+  }
 
-    [Test]
-    public void ShouldExcludeMultipleStatus()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldIncludeOtherMultipleStatus()
+  {
+    var func = new TaskFilter
+               {
+                 ExcludedStatuses =
                  {
-                   ExcludedStatuses =
-                   {
-                     TaskStatus.Completed,
-                     TaskStatus.Canceled,
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   TaskStatus.Completed,
+                   TaskStatus.Canceling,
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    Status = TaskStatus.Completed,
-                  };
+    var model = new TaskDataModel
+                {
+                  Status = TaskStatus.Canceled,
+                };
 
-      Assert.IsFalse(func(model));
-    }
+    Assert.IsTrue(func(model));
+  }
 
-    [Test]
-    public void ShouldRejectOtherStatus()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldRecognizeTask()
+  {
+    var func = new TaskFilter
+               {
+                 IncludedTaskIds =
                  {
-                   IncludedStatuses =
-                   {
-                     TaskStatus.Completed,
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   "Task",
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    Status = TaskStatus.Canceled,
-                  };
+    var model = new TaskDataModel
+                {
+                  TaskId = "Task",
+                };
 
-      Assert.IsFalse(func(model));
-    }
+    Assert.IsTrue(func(model));
+  }
 
-    [Test]
-    public void ShouldIncludeOtherStatus()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldExcludeTask()
+  {
+    var func = new TaskFilter
+               {
+                 ExcludedTaskIds =
                  {
-                   ExcludedStatuses =
-                   {
-                     TaskStatus.Completed,
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   "Task",
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    Status = TaskStatus.Canceled,
-                  };
+    var model = new TaskDataModel
+                {
+                  TaskId = "Task",
+                };
 
-      Assert.IsTrue(func(model));
-    }
+    Assert.IsFalse(func(model));
+  }
 
-    [Test]
-    public void ShouldRejectOtherMultipleStatus()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldRecognizeMultipleTask()
+  {
+    var func = new TaskFilter
+               {
+                 IncludedTaskIds =
                  {
-                   IncludedStatuses =
-                   {
-                     TaskStatus.Completed,
-                     TaskStatus.Canceling,
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   "Task",
+                   "Task2",
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    Status = TaskStatus.Canceled,
-                  };
+    var model = new TaskDataModel
+                {
+                  TaskId = "Task",
+                };
 
-      Assert.IsFalse(func(model));
-    }
+    Assert.IsTrue(func(model));
+  }
 
-    [Test]
-    public void ShouldIncludeOtherMultipleStatus()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldExcludeMultipleTask()
+  {
+    var func = new TaskFilter
+               {
+                 ExcludedTaskIds =
                  {
-                   ExcludedStatuses =
-                   {
-                     TaskStatus.Completed,
-                     TaskStatus.Canceling,
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   "Task",
+                   "Task2",
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    Status = TaskStatus.Canceled,
-                  };
+    var model = new TaskDataModel
+                {
+                  TaskId = "Task",
+                };
 
-      Assert.IsTrue(func(model));
-    }
+    Assert.IsFalse(func(model));
+  }
 
-    [Test]
-    public void ShouldRecognizeTask()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldRejectOtherTask()
+  {
+    var func = new TaskFilter
+               {
+                 IncludedTaskIds =
                  {
-                   IncludedTaskIds =
-                   {
-                     "Task",
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   "Task",
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    TaskId = "Task",
-                  };
+    var model = new TaskDataModel
+                {
+                  TaskId = "OtherTask",
+                };
 
-      Assert.IsTrue(func(model));
-    }
+    Assert.IsFalse(func(model));
+  }
 
-    [Test]
-    public void ShouldExcludeTask()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldIncludeOtherTask()
+  {
+    var func = new TaskFilter
+               {
+                 ExcludedTaskIds =
                  {
-                   ExcludedTaskIds =
-                   {
-                     "Task",
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   "Task",
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    TaskId = "Task",
-                  };
+    var model = new TaskDataModel
+                {
+                  TaskId = "OtherTask",
+                };
 
-      Assert.IsFalse(func(model));
-    }
+    Assert.IsTrue(func(model));
+  }
 
-    [Test]
-    public void ShouldRecognizeMultipleTask()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldRejectOtherMultipleTask()
+  {
+    var func = new TaskFilter
+               {
+                 IncludedTaskIds =
                  {
-                   IncludedTaskIds =
-                   {
-                     "Task",
-                     "Task2",
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   "Task",
+                   "Task2",
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    TaskId = "Task",
-                  };
+    var model = new TaskDataModel
+                {
+                  TaskId = "OtherTask",
+                };
 
-      Assert.IsTrue(func(model));
-    }
+    Assert.IsFalse(func(model));
+  }
 
-    [Test]
-    public void ShouldExcludeMultipleTask()
-    {
-      var func = new TaskFilter
+  [Test]
+  public void ShouldIncludeOtherMultipleTask()
+  {
+    var func = new TaskFilter
+               {
+                 ExcludedTaskIds =
                  {
-                   ExcludedTaskIds =
-                   {
-                     "Task",
-                     "Task2",
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+                   "Task",
+                   "Task2",
+                 },
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    TaskId = "Task",
-                  };
+    var model = new TaskDataModel
+                {
+                  TaskId = "OtherTask",
+                };
 
-      Assert.IsFalse(func(model));
-    }
+    Assert.IsTrue(func(model));
+  }
 
-    [Test]
-    public void ShouldRejectOtherTask()
-    {
-      var func = new TaskFilter
-                 {
-                   IncludedTaskIds =
-                   {
-                     "Task",
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
+  [Test]
+  public void AllNullShouldPass()
+  {
+    var func = new TaskFilter
+               {
+                 SessionId    = string.Empty,
+                 SubSessionId = string.Empty,
+               }
+              .ToFilterExpression()
+              .Compile();
 
-      var model = new TaskDataModel
-                  {
-                    TaskId = "OtherTask",
-                  };
+    var model = new TaskDataModel
+                {
+                  SessionId          = null,
+                  SubSessionId       = null,
+                  Dependencies       = null,
+                  Options            = null,
+                  ParentsSubSessions = null,
+                  Payload            = null,
+                  TaskId             = null,
+                };
 
-      Assert.IsFalse(func(model));
-    }
-
-    [Test]
-    public void ShouldIncludeOtherTask()
-    {
-      var func = new TaskFilter
-                 {
-                   ExcludedTaskIds =
-                   {
-                     "Task",
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
-
-      var model = new TaskDataModel
-                  {
-                    TaskId = "OtherTask",
-                  };
-
-      Assert.IsTrue(func(model));
-    }
-
-    [Test]
-    public void ShouldRejectOtherMultipleTask()
-    {
-      var func = new TaskFilter
-                 {
-                   IncludedTaskIds =
-                   {
-                     "Task",
-                     "Task2",
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
-
-      var model = new TaskDataModel
-                  {
-                    TaskId = "OtherTask",
-                  };
-
-      Assert.IsFalse(func(model));
-    }
-
-    [Test]
-    public void ShouldIncludeOtherMultipleTask()
-    {
-      var func = new TaskFilter
-                 {
-                   ExcludedTaskIds =
-                   {
-                     "Task",
-                     "Task2",
-                   },
-                 }
-                .ToFilterExpression()
-                .Compile();
-
-      var model = new TaskDataModel
-                  {
-                    TaskId = "OtherTask",
-                  };
-
-      Assert.IsTrue(func(model));
-    }
-
-    [Test]
-    public void AllNullShouldPass()
-    {
-      var func = new TaskFilter
-                 {
-                   SessionId    = string.Empty,
-                   SubSessionId = string.Empty,
-                 }
-                .ToFilterExpression()
-                .Compile();
-
-      var model = new TaskDataModel
-                  {
-                    SessionId          = null,
-                    SubSessionId       = null,
-                    Dependencies       = null,
-                    Options            = null,
-                    ParentsSubSessions = null,
-                    Payload            = null,
-                    TaskId             = null,
-                  };
-
-      Assert.IsTrue(func(model));
-    }
+    Assert.IsTrue(func(model));
   }
 }

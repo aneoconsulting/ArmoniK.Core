@@ -27,77 +27,76 @@ using System.Threading.Tasks;
 
 using Amqp;
 
-using ArmoniK.Core;
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.gRPC.V1;
-using ArmoniK.Core.Storage;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Adapters.Amqp
+namespace ArmoniK.Core.Adapters.Amqp;
+
+public class QueueMessage : IQueueMessage
 {
-  public class QueueMessage : IQueueMessage
+  private readonly ILogger       logger_;
+  private readonly Message       message_;
+  private readonly IReceiverLink receiver_;
+  private readonly ISenderLink   sender_;
+
+  public QueueMessage(Message message, ISenderLink sender, IReceiverLink receiver, TaskId taskId, ILogger logger, CancellationToken cancellationToken)
   {
-    private readonly ILogger       logger_;
-    private readonly Message       message_;
-    private readonly IReceiverLink receiver_;
-    private readonly ISenderLink   sender_;
+    message_          = message;
+    sender_           = sender;
+    receiver_         = receiver;
+    logger_           = logger;
+    TaskId            = taskId;
+    CancellationToken = cancellationToken;
+  }
 
-    public QueueMessage(Message message, ISenderLink sender, IReceiverLink receiver, TaskId taskId, ILogger logger, CancellationToken cancellationToken)
+  /// <inheritdoc />
+  public CancellationToken CancellationToken { get; }
+
+  /// <inheritdoc />
+  public string MessageId => message_.Properties.MessageId;
+
+  /// <inheritdoc />
+  public TaskId TaskId { get; }
+
+  /// <inheritdoc />
+  public QueueMessageStatus Status { get; set; }
+
+  /// <inheritdoc />
+  public async ValueTask DisposeAsync()
+  {
+    logger_.LogFunction(MessageId,
+                        functionName: $"{nameof(QueueStorage)}.{nameof(DisposeAsync)}");
+    switch (Status)
     {
-      message_          = message;
-      sender_           = sender;
-      receiver_         = receiver;
-      logger_           = logger;
-      TaskId            = taskId;
-      CancellationToken = cancellationToken;
+      case QueueMessageStatus.Postponed:
+        await sender_.SendAsync(new(message_.Body)
+                                {
+                                  Header = new()
+                                           {
+                                             Priority = message_.Header.Priority,
+                                           },
+                                  Properties = new(),
+                                });
+        receiver_.Accept(message_);
+        break;
+      case QueueMessageStatus.Failed:
+        receiver_.Release(message_);
+        break;
+      case QueueMessageStatus.Processed:
+        receiver_.Accept(message_);
+        break;
+      case QueueMessageStatus.Poisonous:
+        receiver_.Reject(message_);
+        break;
+      default:
+        throw new ArgumentOutOfRangeException(nameof(Status),
+                                              Status,
+                                              null);
     }
 
-    /// <inheritdoc />
-    public CancellationToken CancellationToken { get; }
-
-    /// <inheritdoc />
-    public string MessageId => message_.Properties.MessageId;
-
-    /// <inheritdoc />
-    public TaskId TaskId { get; }
-
-    /// <inheritdoc />
-    public QueueMessageStatus Status { get; set; }
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-      logger_.LogFunction(MessageId,
-                          functionName: $"{nameof(QueueStorage)}.{nameof(DisposeAsync)}");
-      switch (Status)
-      {
-        case QueueMessageStatus.Postponed:
-          await sender_.SendAsync(new (message_.Body)
-                                  {
-                                    Header = new()
-                                             {
-                                               Priority = message_.Header.Priority,
-                                             },
-                                    Properties = new(),
-                                  });
-          receiver_.Accept(message_);
-          break;
-        case QueueMessageStatus.Failed:
-          receiver_.Release(message_);
-          break;
-        case QueueMessageStatus.Processed:
-          receiver_.Accept(message_);
-          break;
-        case QueueMessageStatus.Poisonous:
-          receiver_.Reject(message_);
-          break;
-        default:
-          throw new ArgumentOutOfRangeException(nameof(Status),
-                                                Status,
-                                                null);
-      }
-
-      GC.SuppressFinalize(this);
-    }
+    GC.SuppressFinalize(this);
   }
 }

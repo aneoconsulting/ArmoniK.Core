@@ -32,48 +32,47 @@ using JetBrains.Annotations;
 
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Core.Storage
+namespace ArmoniK.Core.Common.Storage;
+
+[PublicAPI]
+public interface ITableStorage : IInitializable
 {
-  [PublicAPI]
-  public interface ITableStorage : IInitializable
-  {
-    TimeSpan PollingDelay { get; }
+  TimeSpan PollingDelay { get; }
 
-    Task<SessionId> CreateSessionAsync(SessionOptions sessionOptions, CancellationToken cancellationToken = default);
+  Task<SessionId> CreateSessionAsync(SessionOptions sessionOptions, CancellationToken cancellationToken = default);
 
-    Task CloseSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
+  Task CloseSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task CancelSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
+  Task CancelSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task<bool> IsSessionCancelledAsync(SessionId sessionId, CancellationToken cancellationToken = default);
+  Task<bool> IsSessionCancelledAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task<bool> IsSessionClosedAsync(SessionId sessionId, CancellationToken cancellationToken = default);
+  Task<bool> IsSessionClosedAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task DeleteSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
+  Task DeleteSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    Task<TaskOptions> GetDefaultTaskOption(SessionId sessionId, CancellationToken cancellationToken = default);
+  Task<TaskOptions> GetDefaultTaskOption(SessionId sessionId, CancellationToken cancellationToken = default);
 
-    public Task<IEnumerable<(TaskId id, bool HasPayload, byte[] Payload)>> InitializeTaskCreation(SessionId   session,
-                                                                                                  TaskOptions options,
-                                                                                                  IEnumerable<TaskRequest>
-                                                                                                    requests,
-                                                                                                  CancellationToken
-                                                                                                    cancellationToken = default);
+  public Task<IEnumerable<(TaskId id, bool HasPayload, byte[] Payload)>> InitializeTaskCreation(SessionId   session,
+                                                                                                TaskOptions options,
+                                                                                                IEnumerable<TaskRequest>
+                                                                                                  requests,
+                                                                                                CancellationToken
+                                                                                                  cancellationToken = default);
 
-    Task<TaskData> ReadTaskAsync(TaskId id, CancellationToken cancellationToken = default);
+  Task<TaskData> ReadTaskAsync(TaskId id, CancellationToken cancellationToken = default);
 
-    Task UpdateTaskStatusAsync(TaskId id, TaskStatus status, CancellationToken cancellationToken = default);
+  Task UpdateTaskStatusAsync(TaskId id, TaskStatus status, CancellationToken cancellationToken = default);
 
-    Task<int> UpdateTaskStatusAsync(TaskFilter filter, TaskStatus status, CancellationToken cancellationToken = default);
+  Task<int> UpdateTaskStatusAsync(TaskFilter filter, TaskStatus status, CancellationToken cancellationToken = default);
 
-    Task IncreaseRetryCounterAsync(TaskId id, CancellationToken cancellationToken = default);
+  Task IncreaseRetryCounterAsync(TaskId id, CancellationToken cancellationToken = default);
 
-    Task DeleteTaskAsync(TaskId id, CancellationToken cancellationToken = default);
+  Task DeleteTaskAsync(TaskId id, CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<TaskId> ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
+  IAsyncEnumerable<TaskId> ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<(TaskStatus Status, int Count)>> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
+  Task<IEnumerable<(TaskStatus Status, int Count)>> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<(TaskStatus Status, int Count)>> CountSubTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
-  }
+  Task<IEnumerable<(TaskStatus Status, int Count)>> CountSubTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
 }

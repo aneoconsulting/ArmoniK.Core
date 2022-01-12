@@ -21,19 +21,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.gRPC;
+using ArmoniK.Core.Common.gRPC;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ArmoniK.Control
+namespace ArmoniK.Core.Control.Submitter;
+
+public class GrpcHealthCheckService : GrpcHealthCheckServiceBase
 {
-  public class GrpcHealthCheckService : GrpcHealthCheckServiceBase
+  /// <inheritdoc />
+  public GrpcHealthCheckService(HealthCheckService healthCheckService) 
+    : base(healthCheckService, new []{"ArmoniK.Core.gRPC.V1.ClientService"}
+          )
   {
-    /// <inheritdoc />
-    public GrpcHealthCheckService(HealthCheckService healthCheckService) 
-      : base(healthCheckService, new []{"ArmoniK.Core.gRPC.V1.ClientService"}
-            )
-    {
-    }
   }
 }

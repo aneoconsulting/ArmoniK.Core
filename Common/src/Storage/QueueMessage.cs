@@ -31,42 +31,41 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Storage
+namespace ArmoniK.Core.Common.Storage;
+
+[PublicAPI]
+public class QueueMessage : IQueueMessage
 {
-  [PublicAPI]
-  public class QueueMessage : IQueueMessage
+  private readonly Func<QueueMessageStatus, Task> disposeFunc_;
+  private readonly ILogger                        logger_;
+
+  public QueueMessage(string                         messageId,
+                      TaskId                         taskId,
+                      Func<QueueMessageStatus, Task> disposeFunc,
+                      ILogger                        logger,
+                      CancellationToken              cancellationToken)
   {
-    private readonly Func<QueueMessageStatus, Task> disposeFunc_;
-    private readonly ILogger                        logger_;
+    disposeFunc_      = disposeFunc;
+    logger_           = logger;
+    MessageId         = messageId;
+    TaskId            = taskId;
+    CancellationToken = cancellationToken;
+  }
 
-    public QueueMessage(string                         messageId,
-                        TaskId                         taskId,
-                        Func<QueueMessageStatus, Task> disposeFunc,
-                        ILogger                        logger,
-                        CancellationToken              cancellationToken)
-    {
-      disposeFunc_      = disposeFunc;
-      logger_           = logger;
-      MessageId         = messageId;
-      TaskId            = taskId;
-      CancellationToken = cancellationToken;
-    }
+  public string MessageId { get; init; }
+  public TaskId TaskId    { get; init; }
 
-    public string MessageId { get; init; }
-    public TaskId TaskId    { get; init; }
+  /// <inheritdoc />
+  public QueueMessageStatus Status { get; set; }
 
-    /// <inheritdoc />
-    public QueueMessageStatus Status { get; set; }
+  public CancellationToken CancellationToken { get; init; }
 
-    public CancellationToken CancellationToken { get; init; }
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-      using var _ = logger_.LogFunction(MessageId,
-                                        functionName: $"{nameof(QueueMessage)}.{nameof(DisposeAsync)}");
-      await disposeFunc_(Status);
-      GC.SuppressFinalize(this);
-    }
+  /// <inheritdoc />
+  public async ValueTask DisposeAsync()
+  {
+    using var _ = logger_.LogFunction(MessageId,
+                                      functionName: $"{nameof(QueueMessage)}.{nameof(DisposeAsync)}");
+    await disposeFunc_(Status);
+    GC.SuppressFinalize(this);
   }
 }

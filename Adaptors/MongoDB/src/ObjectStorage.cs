@@ -27,10 +27,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Adapters.MongoDB.Common;
-using ArmoniK.Adapters.MongoDB.Object;
-using ArmoniK.Core;
-using ArmoniK.Core.Storage;
+using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Object;
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
@@ -39,127 +39,127 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Core.Adapters.MongoDB;
+
+[PublicAPI]
+public class ObjectStorage : IObjectStorage
 {
-  [PublicAPI]
-  public class ObjectStorage : IObjectStorage
+  public int ChunkSize { get; }
+
+  private readonly ILogger<ObjectStorage>                   logger_;
+  private readonly MongoCollectionProvider<ObjectDataModel> objectCollectionProvider_;
+  private readonly SessionProvider                          sessionProvider_;
+
+  public ObjectStorage(SessionProvider                          sessionProvider,
+                       MongoCollectionProvider<ObjectDataModel> objectCollectionProvider,
+                       ILogger<ObjectStorage>                   logger,
+                       Options.ObjectStorage                    options)
   {
-    private readonly int                                      chunkSize_;
-    private readonly ILogger<ObjectStorage>                   logger_;
-    private readonly MongoCollectionProvider<ObjectDataModel> objectCollectionProvider_;
-    private readonly SessionProvider                          sessionProvider_;
+    if (options.ChunkSize == 0)
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"Minimum value for {nameof(Options.ObjectStorage.ChunkSize)} is 1.");
 
-    public ObjectStorage(SessionProvider                          sessionProvider,
-                         MongoCollectionProvider<ObjectDataModel> objectCollectionProvider,
-                         ILogger<ObjectStorage>                   logger,
-                         Options.ObjectStorage                    options)
-    {
-      if(options.ChunkSize == 0)
-        throw new ArgumentOutOfRangeException(nameof(options),
-                                              $"Minimum value for {nameof(Options.ObjectStorage.ChunkSize)} is 1.");
-
-      sessionProvider_          = sessionProvider;
-      objectCollectionProvider_ = objectCollectionProvider;
-      chunkSize_                = options.ChunkSize;
-      logger_                   = logger;
-    }
-
-
-    /// <inheritdoc />
-    public async Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default)
-    {
-      using var _                = logger_.LogFunction(key);
-      var       objectCollection = await objectCollectionProvider_.GetAsync();
-
-      var taskList = new List<Task<ObjectDataModel>>();
-      for (var (pos, idx) = (0, 0); pos < value.Length; idx += 1)
-      {
-        var chunkSize = Math.Min(value.Length - pos,
-                                 chunkSize_);
-        var chunk = new byte[chunkSize];
-        Array.Copy(value,
-                   pos,
-                   chunk,
-                   0,
-                   chunkSize);
-        pos += chunkSize;
-
-        var updateDefinition = Builders<ObjectDataModel>.Update
-                                                        .SetOnInsert(odm => odm.Chunk,
-                                                                     chunk)
-                                                        .SetOnInsert(odm => odm.ChunkIdx,
-                                                                     idx)
-                                                        .SetOnInsert(odm => odm.Key,
-                                                                     key)
-                                                        .SetOnInsert(odm => odm.Id,
-                                                                     $"{key}{idx}");
-
-        var localIdx = idx;
-        taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>(odm => odm.Key == key && odm.ChunkIdx == localIdx,
-                                                                             updateDefinition,
-                                                                             new FindOneAndUpdateOptions<ObjectDataModel>
-                                                                             {
-                                                                               ReturnDocument = ReturnDocument.After,
-                                                                               IsUpsert       = true,
-                                                                             },
-                                                                             cancellationToken));
-      }
-
-      await Task.WhenAll(taskList);
-      if (taskList.Any(task => task.Result is null))
-      {
-        logger_.LogError("Could not write value in DB for key {key}",
-                         key);
-        throw new InvalidOperationException("Could not write value in DB");
-      }
-    }
-
-    /// <inheritdoc />
-    public async Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default)
-    {
-      using var _                = logger_.LogFunction(key);
-      var       sessionHandle    = await sessionProvider_.GetAsync();
-      var       objectCollection = await objectCollectionProvider_.GetAsync();
-
-      var chunks = AsyncCursorSourceExt.ToAsyncEnumerable(objectCollection.AsQueryable(sessionHandle)
-                                                                          .Where(odm => odm.Key == key)
-                                                                          .OrderBy(odm => odm.ChunkIdx)
-                                                                          .Select(odm => odm.Chunk));
-
-      var buffer = new List<byte>(chunkSize_);
-      await foreach (var chunk in chunks.WithCancellation(cancellationToken))
-        buffer.AddRange(chunk);
-
-      return buffer.ToArray();
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
-    {
-      using var _                = logger_.LogFunction(key);
-      var       objectCollection = await objectCollectionProvider_.GetAsync();
-
-      var res = await objectCollection.DeleteManyAsync(odm => odm.Key == key,
-                                                       cancellationToken);
-      return res.DeletedCount > 0;
-    }
-
-    /// <inheritdoc />
-    public async Task Init(CancellationToken cancellationToken)
-    {
-      if (!isInitialized_)
-      {
-        var session = sessionProvider_.GetAsync();
-        await objectCollectionProvider_.GetAsync();
-        await session;
-        isInitialized_ = true;
-      }
-    }
-
-
-    private bool isInitialized_ = false;
-
-    /// <inheritdoc />
-    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+    sessionProvider_          = sessionProvider;
+    objectCollectionProvider_ = objectCollectionProvider;
+    ChunkSize                 = options.ChunkSize;
+    logger_                   = logger;
   }
+
+
+  /// <inheritdoc />
+  public async Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction(key);
+    var       objectCollection = await objectCollectionProvider_.GetAsync();
+
+    var taskList = new List<Task<ObjectDataModel>>();
+    for (var (pos, idx) = (0, 0); pos < value.Length; idx += 1)
+    {
+      var chunkSize = Math.Min(value.Length - pos,
+                               ChunkSize);
+      var chunk = new byte[chunkSize];
+      Array.Copy(value,
+                 pos,
+                 chunk,
+                 0,
+                 chunkSize);
+      pos += chunkSize;
+
+      var updateDefinition = Builders<ObjectDataModel>.Update
+                                                      .SetOnInsert(odm => odm.Chunk,
+                                                                   chunk)
+                                                      .SetOnInsert(odm => odm.ChunkIdx,
+                                                                   idx)
+                                                      .SetOnInsert(odm => odm.Key,
+                                                                   key)
+                                                      .SetOnInsert(odm => odm.Id,
+                                                                   $"{key}{idx}");
+
+      var localIdx = idx;
+      taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>(odm => odm.Key == key && odm.ChunkIdx == localIdx,
+                                                                           updateDefinition,
+                                                                           new FindOneAndUpdateOptions<ObjectDataModel>
+                                                                           {
+                                                                             ReturnDocument = ReturnDocument.After,
+                                                                             IsUpsert       = true,
+                                                                           },
+                                                                           cancellationToken));
+    }
+
+    await Task.WhenAll(taskList);
+    if (taskList.Any(task => task.Result is null))
+    {
+      logger_.LogError("Could not write value in DB for key {key}",
+                       key);
+      throw new InvalidOperationException("Could not write value in DB");
+    }
+  }
+
+  /// <inheritdoc />
+  public async Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction(key);
+    var       sessionHandle    = await sessionProvider_.GetAsync();
+    var       objectCollection = await objectCollectionProvider_.GetAsync();
+
+    var chunks = AsyncCursorSourceExt.ToAsyncEnumerable(objectCollection.AsQueryable(sessionHandle)
+                                                                        .Where(odm => odm.Key == key)
+                                                                        .OrderBy(odm => odm.ChunkIdx)
+                                                                        .Select(odm => odm.Chunk));
+
+    var buffer = new List<byte>(ChunkSize);
+    await foreach (var chunk in chunks.WithCancellation(cancellationToken))
+      buffer.AddRange(chunk);
+
+    return buffer.ToArray();
+  }
+
+  /// <inheritdoc />
+  public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction(key);
+    var       objectCollection = await objectCollectionProvider_.GetAsync();
+
+    var res = await objectCollection.DeleteManyAsync(odm => odm.Key == key,
+                                                     cancellationToken);
+    return res.DeletedCount > 0;
+  }
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      var session = sessionProvider_.GetAsync();
+      await objectCollectionProvider_.GetAsync();
+      await session;
+      isInitialized_ = true;
+    }
+  }
+
+
+  private bool isInitialized_ = false;
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
 }

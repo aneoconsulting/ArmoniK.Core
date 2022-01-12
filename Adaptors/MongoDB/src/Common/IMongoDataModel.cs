@@ -26,14 +26,13 @@ using System.Threading.Tasks;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB.Common
-{
-  public interface IMongoDataModel<T>
-  {
-    [BsonIgnore]
-    string CollectionName { get; }
+namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
-    Task InitializeIndexesAsync(IClientSessionHandle sessionHandle,
-                                IMongoCollection<T>  collection);
-  }
+public interface IMongoDataModel<T>
+{
+  [BsonIgnore]
+  string CollectionName { get; }
+
+  Task InitializeIndexesAsync(IClientSessionHandle sessionHandle,
+                              IMongoCollection<T>  collection);
 }

@@ -25,13 +25,12 @@ using ArmoniK.Core.gRPC.V1;
 
 using FluentValidation;
 
-namespace ArmoniK.Core.gRPC.Validators
+namespace ArmoniK.Core.Common.gRPC.Validators;
+
+public class PayloadValidator : AbstractValidator<Payload>
 {
-  public class PayloadValidator : AbstractValidator<Payload>
+  public PayloadValidator()
   {
-    public PayloadValidator()
-    {
-      RuleFor(o => o.Data).NotEmpty();
-    }
+    RuleFor(o => o.Data).NotEmpty();
   }
 }

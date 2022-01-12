@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Hosting;
 
-namespace ArmoniK.Compute.PollingAgent;
+namespace ArmoniK.Core.Compute.PollingAgent;
 
 public class Worker : BackgroundService
 {

@@ -24,26 +24,25 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace ArmoniK.Core.Exceptions
+namespace ArmoniK.Core.Common.Exceptions;
+
+public class TimeoutException : ArmoniKException
 {
-  public class TimeoutException : ArmoniKException
+  public TimeoutException()
   {
-    public TimeoutException()
-    {
-    }
+  }
 
-    public TimeoutException(string message) : base(message)
-    {
-    }
+  public TimeoutException(string message) : base(message)
+  {
+  }
 
-    public TimeoutException(string message, Exception innerException) : base(message,
-                                                                             innerException)
-    {
-    }
+  public TimeoutException(string message, Exception innerException) : base(message,
+                                                                           innerException)
+  {
+  }
 
-    protected TimeoutException(SerializationInfo info, StreamingContext context) : base(info,
-                                                                                        context)
-    {
-    }
+  protected TimeoutException(SerializationInfo info, StreamingContext context) : base(info,
+                                                                                      context)
+  {
   }
 }

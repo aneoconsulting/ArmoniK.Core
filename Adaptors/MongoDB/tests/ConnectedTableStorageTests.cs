@@ -32,82 +32,81 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Adapters.MongoDB.Tests
+namespace ArmoniK.Core.Adapters.MongoDB.Tests;
+
+[TestFixture]
+[Ignore("Require a deployed database")]
+internal class ConnectedTableStorageTests
 {
-  [TestFixture]
-  [Ignore("Require a deployed database")]
-  internal class ConnectedTableStorageTests
+  [SetUp]
+  public void SetUp()
   {
-    [SetUp]
-    public void SetUp()
-    {
-      Dictionary<string, string> baseConfig = new()
-                                              {
-                                                { "MongoDB:ConnectionString", "mongodb://localhost" },
-                                                { "MongoDB:DatabaseName", "database" },
-                                                { "MongoDB:DataRetention", "10.00:00:00" },
-                                                { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
-                                                { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
-                                                { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
-                                                { "MongoDB:ObjectStorage:ChunkSize", "100000" },
-                                                { "MongoDB:LockedQueueStorage:LockRefreshPeriodicity", "00:20:00" },
-                                                { "MongoDB:LockedQueueStorage:PollPeriodicity", "00:00:50" },
-                                                { "MongoDB:LockedQueueStorage:LockRefreshExtension", "00:50:00" },
-                                              };
-
-      var configSource = new MemoryConfigurationSource
-                         {
-                           InitialData = baseConfig,
-                         };
-
-      var builder = new ConfigurationBuilder()
-       .Add(configSource);
-
-      configuration_ = builder.Build();
-    }
-
-    private IConfiguration configuration_;
-
-    [Test]
-    public void AddOneTaskAndCount()
-    {
-      var services = new ServiceCollection();
-      services.AddMongoComponents(configuration_);
-      services.AddLogging();
-
-      var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                   {
-                                                     ValidateOnBuild = true,
-                                                   });
-
-      var table = provider.GetRequiredService<TableStorage>();
-
-      Assert.AreEqual(0,
-                      table.CountTasksAsync(new()).Result);
-
-      var session = table.CreateSessionAsync(new()
-                                             {
-                                               DefaultTaskOption = new(),
-                                               IdTag             = "tag",
-                                             }).Result;
-
-      var (_, _, _) = table.InitializeTaskCreation(session,
-                                                   new(),
-                                                   new[]
-                                                   {
-                                                     new TaskRequest
-                                                     {
-                                                       Payload = new(),
-                                                     },
-                                                   }).Result.Single();
-
-
-      Assert.AreEqual(1,
-                      table.CountTasksAsync(new()
+    Dictionary<string, string> baseConfig = new()
                                             {
-                                              SessionId    = session.Session,
-                                              SubSessionId = session.SubSession,
-                                            }).Result);
-    }
+                                              { "MongoDB:ConnectionString", "mongodb://localhost" },
+                                              { "MongoDB:DatabaseName", "database" },
+                                              { "MongoDB:DataRetention", "10.00:00:00" },
+                                              { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
+                                              { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
+                                              { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
+                                              { "MongoDB:ObjectStorage:ChunkSize", "100000" },
+                                              { "MongoDB:LockedQueueStorage:LockRefreshPeriodicity", "00:20:00" },
+                                              { "MongoDB:LockedQueueStorage:PollPeriodicity", "00:00:50" },
+                                              { "MongoDB:LockedQueueStorage:LockRefreshExtension", "00:50:00" },
+                                            };
+
+    var configSource = new MemoryConfigurationSource
+                       {
+                         InitialData = baseConfig,
+                       };
+
+    var builder = new ConfigurationBuilder()
+     .Add(configSource);
+
+    configuration_ = builder.Build();
+  }
+
+  private IConfiguration configuration_;
+
+  [Test]
+  public void AddOneTaskAndCount()
+  {
+    var services = new ServiceCollection();
+    services.AddMongoComponents(configuration_);
+    services.AddLogging();
+
+    var provider = services.BuildServiceProvider(new ServiceProviderOptions
+                                                 {
+                                                   ValidateOnBuild = true,
+                                                 });
+
+    var table = provider.GetRequiredService<TableStorage>();
+
+    Assert.AreEqual(0,
+                    table.CountTasksAsync(new()).Result);
+
+    var session = table.CreateSessionAsync(new()
+                                           {
+                                             DefaultTaskOption = new(),
+                                             IdTag             = "tag",
+                                           }).Result;
+
+    var (_, _, _) = table.InitializeTaskCreation(session,
+                                                 new(),
+                                                 new[]
+                                                 {
+                                                   new TaskRequest
+                                                   {
+                                                     Payload = new(),
+                                                   },
+                                                 }).Result.Single();
+
+
+    Assert.AreEqual(1,
+                    table.CountTasksAsync(new()
+                                          {
+                                            SessionId    = session.Session,
+                                            SubSessionId = session.SubSession,
+                                          }).Result);
   }
 }

@@ -25,12 +25,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Adapters.MongoDB.Common;
-using ArmoniK.Adapters.MongoDB.Lease;
-using ArmoniK.Core;
-using ArmoniK.Core.gRPC;
+using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Lease;
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.gRPC.V1;
-using ArmoniK.Core.Storage;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -40,175 +40,174 @@ using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB
+namespace ArmoniK.Core.Adapters.MongoDB;
+
+[PublicAPI]
+public class LeaseProvider : ILeaseProvider
 {
-  [PublicAPI]
-  public class LeaseProvider : ILeaseProvider
+  private readonly MongoCollectionProvider<LeaseDataModel> leaseCollectionProvider_;
+  private readonly ILogger<LeaseProvider>                  logger_;
+  private readonly SessionProvider                         sessionProvider_;
+
+  public LeaseProvider(Options.LeaseProvider                   options,
+                       MongoCollectionProvider<LeaseDataModel> leaseCollectionProvider,
+                       SessionProvider                         sessionProvider,
+                       ILogger<LeaseProvider>                  logger)
   {
-    private readonly MongoCollectionProvider<LeaseDataModel> leaseCollectionProvider_;
-    private readonly ILogger<LeaseProvider> logger_;
-    private readonly SessionProvider sessionProvider_;
+    if (options.AcquisitionDuration == TimeSpan.Zero)
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.LeaseProvider.AcquisitionDuration)} is not defined.");
+    if (options.AcquisitionPeriod == TimeSpan.Zero)
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.LeaseProvider.AcquisitionDuration)} is not defined.");
 
-    public LeaseProvider(Options.LeaseProvider options,
-                         MongoCollectionProvider<LeaseDataModel> leaseCollectionProvider,
-                         SessionProvider sessionProvider,
-                         ILogger<LeaseProvider> logger)
+    AcquisitionPeriod        = options.AcquisitionPeriod;
+    AcquisitionDuration      = options.AcquisitionDuration;
+    leaseCollectionProvider_ = leaseCollectionProvider;
+    sessionProvider_         = sessionProvider;
+    logger_                  = logger;
+  }
+
+  /// <inheritdoc />
+  public TimeSpan AcquisitionPeriod { get; }
+
+  /// <inheritdoc />
+  public TimeSpan AcquisitionDuration { get; }
+
+
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
     {
-      if(options.AcquisitionDuration == TimeSpan.Zero)
-        throw new ArgumentOutOfRangeException(nameof(options),
-                                              $"{nameof(Options.LeaseProvider.AcquisitionDuration)} is not defined.");
-      if(options.AcquisitionPeriod == TimeSpan.Zero)
-        throw new ArgumentOutOfRangeException(nameof(options),
-                                              $"{nameof(Options.LeaseProvider.AcquisitionDuration)} is not defined.");
-
-      AcquisitionPeriod = options.AcquisitionPeriod;
-      AcquisitionDuration = options.AcquisitionDuration;
-      leaseCollectionProvider_ = leaseCollectionProvider;
-      sessionProvider_ = sessionProvider;
-      logger_ = logger;
+      var collectionTask = leaseCollectionProvider_.GetAsync();
+      await sessionProvider_.GetAsync();
+      await collectionTask;
+      isInitialized_ = true;
     }
-
-    /// <inheritdoc />
-    public TimeSpan AcquisitionPeriod { get; }
-
-    /// <inheritdoc />
-    public TimeSpan AcquisitionDuration { get; }
+  }
 
 
+  private bool isInitialized_ = false;
 
-    /// <inheritdoc />
-    public async Task Init(CancellationToken cancellationToken)
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+
+
+
+  /// <inheritdoc />
+  public async Task<gRPC.V1.Lease> TryAcquireLeaseAsync(TaskId id, CancellationToken cancellationToken = default)
+  {
+    using var _ = logger_.LogFunction(id.ToPrintableId());
+    logger_.LogDebug("Trying to acquire lease for task {id}",
+                     id);
+    var key             = id.ToPrintableId();
+    var leaseId         = Guid.NewGuid().ToString();
+    var leaseCollection = await leaseCollectionProvider_.GetAsync();
+
+    var updateDefinitionBuilder = new UpdateDefinitionBuilder<LeaseDataModel>();
+    var updateDefinition = updateDefinitionBuilder.SetOnInsert(ldm => ldm.ExpiresAt,
+                                                               DateTime.UtcNow + AcquisitionDuration)
+                                                  .SetOnInsert(ldm => ldm.Lock,
+                                                               leaseId)
+                                                  .SetOnInsert(ldm => ldm.Key,
+                                                               key);
+
+    var res = await leaseCollection.FindOneAndUpdateAsync<LeaseDataModel>(await sessionProvider_.GetAsync(),
+                                                                          ldm => ldm.Key == key,
+                                                                          updateDefinition,
+                                                                          new FindOneAndUpdateOptions<LeaseDataModel>
+                                                                          {
+                                                                            IsUpsert       = true,
+                                                                            ReturnDocument = ReturnDocument.After,
+                                                                          },
+                                                                          cancellationToken);
+    if (leaseId == res.Lock)
     {
-      if (!isInitialized_)
-      {
-        var collectionTask = leaseCollectionProvider_.GetAsync();
-        await sessionProvider_.GetAsync();
-        await collectionTask;
-        isInitialized_ = true;
-      }
-    }
-
-
-    private bool isInitialized_ = false;
-
-    /// <inheritdoc />
-    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
-
-
-
-    /// <inheritdoc />
-    public async Task<Core.gRPC.V1.Lease> TryAcquireLeaseAsync(TaskId id, CancellationToken cancellationToken = default)
-    {
-      using var _ = logger_.LogFunction(id.ToPrintableId());
-      logger_.LogDebug("Trying to acquire lease for task {id}",
-                       id);
-      var key = id.ToPrintableId();
-      var leaseId = Guid.NewGuid().ToString();
-      var leaseCollection = await leaseCollectionProvider_.GetAsync();
-
-      var updateDefinitionBuilder = new UpdateDefinitionBuilder<LeaseDataModel>();
-      var updateDefinition = updateDefinitionBuilder.SetOnInsert(ldm => ldm.ExpiresAt,
-                                                                 DateTime.UtcNow + AcquisitionDuration)
-                                                    .SetOnInsert(ldm => ldm.Lock,
-                                                                 leaseId)
-                                                    .SetOnInsert(ldm => ldm.Key,
-                                                                 key);
-
-      var res = await leaseCollection.FindOneAndUpdateAsync<LeaseDataModel>(await sessionProvider_.GetAsync(),
-                                                                            ldm => ldm.Key == key,
-                                                                            updateDefinition,
-                                                                            new FindOneAndUpdateOptions<LeaseDataModel>
-                                                                            {
-                                                                              IsUpsert = true,
-                                                                              ReturnDocument = ReturnDocument.After,
-                                                                            },
-                                                                            cancellationToken);
-      if (leaseId == res.Lock)
-      {
-        logger_.LogInformation("Lease {leaseId} acquired for task {id}",
-                               leaseId,
-                               id);
-        return new()
-        {
-          ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt),
-          Id = id,
-          LeaseId = leaseId,
-        };
-      }
-
-      logger_.LogWarning("Could not acquire lease for task {id}",
-                         id);
-      return new()
-      {
-        Id = id,
-        LeaseId = string.Empty,
-        ExpirationDate = new(),
-      };
-    }
-
-    /// <inheritdoc />
-    public async Task<Core.gRPC.V1.Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default)
-    {
-      using var _ = logger_.LogFunction(id.ToPrintableId());
-      logger_.LogDebug("Trying to renew lease {leaseId} for task {id}",
-                       leaseId,
-                       id);
-      var key = id.ToPrintableId();
-      var leaseCollection = await leaseCollectionProvider_.GetAsync();
-
-      var updateDefinition = new UpdateDefinitionBuilder<LeaseDataModel>().Set(ldm => ldm.ExpiresAt,
-                                                                               DateTime.UtcNow + AcquisitionDuration);
-
-      var res = await leaseCollection.FindOneAndUpdateAsync<LeaseDataModel>(await sessionProvider_.GetAsync(),
-                                                                            ldm => ldm.Key == key && ldm.Lock == leaseId,
-                                                                            updateDefinition,
-                                                                            new FindOneAndUpdateOptions<LeaseDataModel>
-                                                                            {
-                                                                              ReturnDocument = ReturnDocument.After,
-                                                                              MaxTime = TimeSpan.FromSeconds(1),
-                                                                            },
-                                                                            cancellationToken);
-      if (leaseId == res.Lock)
-      {
-        logger_.LogInformation("Lease {leaseId} renewed for task {id}",
-                               leaseId,
-                               id);
-        return new()
-        {
-          Id = id,
-          LeaseId = leaseId,
-          ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt),
-        };
-      }
-
-      logger_.LogInformation("Could not renew lease {leaseId} for task {id}",
+      logger_.LogInformation("Lease {leaseId} acquired for task {id}",
                              leaseId,
                              id);
       return new()
-      {
-        Id = id,
-        LeaseId = string.Empty,
-        ExpirationDate = new(),
-      };
+             {
+               ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt),
+               Id             = id,
+               LeaseId        = leaseId,
+             };
     }
 
-    /// <inheritdoc />
-    public async Task ReleaseLease(TaskId id, string leaseId, CancellationToken cancellationToken = default)
-    {
-      using var _ = logger_.LogFunction(id.ToPrintableId());
-      logger_.LogDebug("Trying to release lease {leaseId} for task {id}",
-                       leaseId,
+    logger_.LogWarning("Could not acquire lease for task {id}",
                        id);
-      var key = id.ToPrintableId();
-      var leaseCollection = await leaseCollectionProvider_.GetAsync();
+    return new()
+           {
+             Id             = id,
+             LeaseId        = string.Empty,
+             ExpirationDate = new(),
+           };
+  }
 
-      var res = await leaseCollection.FindOneAndDeleteAsync(await sessionProvider_.GetAsync(),
-                                                            ldm => ldm.Key == key && ldm.Lock == leaseId,
-                                                            cancellationToken: cancellationToken);
-      if (res is null)
-        logger_.LogWarning("Could not release lease {leaseId} for task {id}",
+  /// <inheritdoc />
+  public async Task<gRPC.V1.Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default)
+  {
+    using var _ = logger_.LogFunction(id.ToPrintableId());
+    logger_.LogDebug("Trying to renew lease {leaseId} for task {id}",
+                     leaseId,
+                     id);
+    var key             = id.ToPrintableId();
+    var leaseCollection = await leaseCollectionProvider_.GetAsync();
+
+    var updateDefinition = new UpdateDefinitionBuilder<LeaseDataModel>().Set(ldm => ldm.ExpiresAt,
+                                                                             DateTime.UtcNow + AcquisitionDuration);
+
+    var res = await leaseCollection.FindOneAndUpdateAsync<LeaseDataModel>(await sessionProvider_.GetAsync(),
+                                                                          ldm => ldm.Key == key && ldm.Lock == leaseId,
+                                                                          updateDefinition,
+                                                                          new FindOneAndUpdateOptions<LeaseDataModel>
+                                                                          {
+                                                                            ReturnDocument = ReturnDocument.After,
+                                                                            MaxTime        = TimeSpan.FromSeconds(1),
+                                                                          },
+                                                                          cancellationToken);
+    if (leaseId == res.Lock)
+    {
+      logger_.LogInformation("Lease {leaseId} renewed for task {id}",
+                             leaseId,
+                             id);
+      return new()
+             {
+               Id             = id,
+               LeaseId        = leaseId,
+               ExpirationDate = Timestamp.FromDateTime(res.ExpiresAt),
+             };
+    }
+
+    logger_.LogInformation("Could not renew lease {leaseId} for task {id}",
                            leaseId,
                            id);
-    }
+    return new()
+           {
+             Id             = id,
+             LeaseId        = string.Empty,
+             ExpirationDate = new(),
+           };
+  }
+
+  /// <inheritdoc />
+  public async Task ReleaseLease(TaskId id, string leaseId, CancellationToken cancellationToken = default)
+  {
+    using var _ = logger_.LogFunction(id.ToPrintableId());
+    logger_.LogDebug("Trying to release lease {leaseId} for task {id}",
+                     leaseId,
+                     id);
+    var key             = id.ToPrintableId();
+    var leaseCollection = await leaseCollectionProvider_.GetAsync();
+
+    var res = await leaseCollection.FindOneAndDeleteAsync(await sessionProvider_.GetAsync(),
+                                                          ldm => ldm.Key == key && ldm.Lock == leaseId,
+                                                          cancellationToken: cancellationToken);
+    if (res is null)
+      logger_.LogWarning("Could not release lease {leaseId} for task {id}",
+                         leaseId,
+                         id);
   }
 }

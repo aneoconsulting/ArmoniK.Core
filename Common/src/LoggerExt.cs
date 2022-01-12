@@ -26,51 +26,50 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-using ArmoniK.Core.Utils;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core
+namespace ArmoniK.Core.Common;
+
+public static class LoggerExt
 {
-  public static class LoggerExt
+  public static IDisposable BeginNamedScope(this ILogger                        logger,
+                                            string                              name,
+                                            params ValueTuple<string, object>[] properties)
   {
-    public static IDisposable BeginNamedScope(this ILogger                        logger,
-                                              string                              name,
-                                              params ValueTuple<string, object>[] properties)
-    {
-      var dictionary = properties.ToDictionary(p => p.Item1,
-                                               p => p.Item2);
-      dictionary[name + ".Scope"] = Guid.NewGuid();
-      return logger.BeginScope(dictionary);
-    }
+    var dictionary = properties.ToDictionary(p => p.Item1,
+                                             p => p.Item2);
+    dictionary[name + ".Scope"] = Guid.NewGuid();
+    return logger.BeginScope(dictionary);
+  }
 
-    public static IDisposable BeginPropertyScope(this   ILogger                      logger,
-                                                 params ValueTuple<string, object>[] properties)
-    {
-      var dictionary = properties.ToDictionary(p => p.Item1,
-                                               p => p.Item2);
-      return logger.BeginScope(dictionary);
-    }
+  public static IDisposable BeginPropertyScope(this   ILogger                      logger,
+                                               params ValueTuple<string, object>[] properties)
+  {
+    var dictionary = properties.ToDictionary(p => p.Item1,
+                                             p => p.Item2);
+    return logger.BeginScope(dictionary);
+  }
 
-    public static IDisposable LogFunction(this ILogger              logger,
-                                          string                    id           = "",
-                                          LogLevel                  level        = LogLevel.Trace,
-                                          [CallerMemberName] string functionName = "")
-    {
-      var methodInfo = new StackTrace().GetFrame(1)?.GetMethod();
-      var className  = methodInfo?.ReflectedType?.Name;
+  public static IDisposable LogFunction(this ILogger              logger,
+                                        string                    id           = "",
+                                        LogLevel                  level        = LogLevel.Trace,
+                                        [CallerMemberName] string functionName = "")
+  {
+    var methodInfo = new StackTrace().GetFrame(1)?.GetMethod();
+    var className  = methodInfo?.ReflectedType?.Name;
 
-      logger.Log(level,
-                 "Entering {className}.{functionName} - {id}",
-                 className,
-                 functionName,
-                 id);
+    logger.Log(level,
+               "Entering {className}.{functionName} - {id}",
+               className,
+               functionName,
+               id);
 
-      return Disposable.Create(() => logger.Log(level,
-                                                "Leaving {className}.{functionName} - {id}",
-                                                className,
-                                                functionName,
-                                                id));
-    }
+    return Disposable.Create(() => logger.Log(level,
+                                              "Leaving {className}.{functionName} - {id}",
+                                              className,
+                                              functionName,
+                                              id));
   }
 }

@@ -25,12 +25,11 @@ using ArmoniK.Core.gRPC.V1;
 
 using MongoDB.Driver.Linq;
 
-namespace ArmoniK.Adapters.MongoDB.Table
+namespace ArmoniK.Core.Adapters.MongoDB.Table;
+
+public static class MongoQueryableExt
 {
-  public static class MongoQueryableExt
-  {
-    public static IMongoQueryable<TaskDataModel> FilterQuery(this IMongoQueryable<TaskDataModel> taskQueryable,
-                                                             TaskFilter filter)
-      => taskQueryable.Where(filter.ToFilterExpression());
-  }
+  public static IMongoQueryable<TaskDataModel> FilterQuery(this IMongoQueryable<TaskDataModel> taskQueryable,
+                                                           TaskFilter                          filter)
+    => taskQueryable.Where(filter.ToFilterExpression());
 }

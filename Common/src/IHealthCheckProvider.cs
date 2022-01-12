@@ -25,11 +25,10 @@ using System.Threading.Tasks;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core
+namespace ArmoniK.Core.Common;
+
+[PublicAPI]
+public interface IHealthCheckProvider
 {
-  [PublicAPI]
-  public interface IHealthCheckProvider
-  {
-    ValueTask<bool> Check(HealthCheckTag tag);
-  }
+  ValueTask<bool> Check(HealthCheckTag tag);
 }

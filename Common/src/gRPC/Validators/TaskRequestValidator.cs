@@ -25,13 +25,12 @@ using ArmoniK.Core.gRPC.V1;
 
 using FluentValidation;
 
-namespace ArmoniK.Core.gRPC.Validators
+namespace ArmoniK.Core.Common.gRPC.Validators;
+
+public class TaskRequestValidator : AbstractValidator<TaskRequest>
 {
-  public class TaskRequestValidator : AbstractValidator<TaskRequest>
+  public TaskRequestValidator()
   {
-    public TaskRequestValidator()
-    {
-      RuleFor(r => r.Payload).NotNull().SetValidator(new PayloadValidator()).WithName(nameof(TaskRequest.Payload));
-    }
+    RuleFor(r => r.Payload).NotNull().SetValidator(new PayloadValidator()).WithName(nameof(TaskRequest.Payload));
   }
 }

@@ -25,15 +25,14 @@ using ArmoniK.Core.gRPC.V1;
 
 using FluentValidation;
 
-namespace ArmoniK.Core.gRPC.Validators
+namespace ArmoniK.Core.Common.gRPC.Validators;
+
+public class TaskOptionsValidator : AbstractValidator<TaskOptions>
 {
-  public class TaskOptionsValidator : AbstractValidator<TaskOptions>
+  public TaskOptionsValidator()
   {
-    public TaskOptionsValidator()
-    {
-      RuleFor(o => o.MaxRetries).GreaterThanOrEqualTo(1).WithName(nameof(TaskOptions.MaxRetries));
-      RuleFor(o => o.Priority).GreaterThanOrEqualTo(1).LessThanOrEqualTo(99).WithMessage("Priority should not be null.").GreaterThanOrEqualTo(0)
-                              .WithMessage("Priority should be > 0.").WithName(nameof(TaskOptions.Priority));
-    }
+    RuleFor(o => o.MaxRetries).GreaterThanOrEqualTo(1).WithName(nameof(TaskOptions.MaxRetries));
+    RuleFor(o => o.Priority).GreaterThanOrEqualTo(1).LessThanOrEqualTo(99).WithMessage("Priority should not be null.").GreaterThanOrEqualTo(0)
+                            .WithMessage("Priority should be > 0.").WithName(nameof(TaskOptions.Priority));
   }
 }

@@ -24,74 +24,73 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using ArmoniK.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.gRPC.V1;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB.Table
+namespace ArmoniK.Core.Adapters.MongoDB.Table;
+
+public class SessionDataModel : IMongoDataModel<SessionDataModel>, ITaggedId
 {
-  public class SessionDataModel : IMongoDataModel<SessionDataModel>, ITaggedId
+  public const string Collection = "SessionData";
+
+  static SessionDataModel()
   {
-    public const string Collection = "SessionData";
-
-    static SessionDataModel()
-    {
-      if (!BsonClassMap.IsClassMapRegistered(typeof(SessionDataModel)))
-        BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
-                                                        {
-                                                          cm.MapIdProperty(nameof(SubSessionId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
-                                                          cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                          cm.MapProperty(nameof(ParentIds)).SetIgnoreIfDefault(true);
-                                                          cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
-                                                          cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
-                                                          cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
-                                                          cm.SetIgnoreExtraElements(true);
-                                                        });
-    }
-
-    public string SessionId { get; set; }
-
-    public string SubSessionId { get; set; }
-
-    public List<string> ParentIds { get; set; }
-
-    public bool IsClosed { get; set; }
-
-    public bool IsCancelled { get; set; }
-
-    public TaskOptions Options { get; set; }
-
-    /// <inheritdoc />
-    public string CollectionName { get; } = Collection;
-
-    /// <inheritdoc />
-    public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionDataModel> collection)
-    {
-      var sessionIndex = Builders<SessionDataModel>.IndexKeys.Text(model => model.SessionId);
-      var parentsIndex = Builders<SessionDataModel>.IndexKeys.Text("ParentIds.Id");
-      var sessionParentIndex = Builders<SessionDataModel>.IndexKeys.Combine(sessionIndex,
-                                                                            parentsIndex);
-
-      var indexModels = new CreateIndexModel<SessionDataModel>[]
-                        {
-                          new(sessionIndex,
-                              new()
-                              {
-                                Name = nameof(sessionIndex),
-                              }),
-                          new(sessionParentIndex,
-                              new()
-                              {
-                                Name = nameof(sessionParentIndex),
-                              }),
-                        };
-
-      return collection.Indexes.CreateManyAsync(sessionHandle,
-                                                indexModels);
-    }
-
-    public string IdTag { get; set; }
+    if (!BsonClassMap.IsClassMapRegistered(typeof(SessionDataModel)))
+      BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
+                                                      {
+                                                        cm.MapIdProperty(nameof(SubSessionId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
+                                                        cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(ParentIds)).SetIgnoreIfDefault(true);
+                                                        cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                        cm.SetIgnoreExtraElements(true);
+                                                      });
   }
+
+  public string SessionId { get; set; }
+
+  public string SubSessionId { get; set; }
+
+  public List<string> ParentIds { get; set; }
+
+  public bool IsClosed { get; set; }
+
+  public bool IsCancelled { get; set; }
+
+  public TaskOptions Options { get; set; }
+
+  /// <inheritdoc />
+  public string CollectionName { get; } = Collection;
+
+  /// <inheritdoc />
+  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionDataModel> collection)
+  {
+    var sessionIndex = Builders<SessionDataModel>.IndexKeys.Text(model => model.SessionId);
+    var parentsIndex = Builders<SessionDataModel>.IndexKeys.Text("ParentIds.Id");
+    var sessionParentIndex = Builders<SessionDataModel>.IndexKeys.Combine(sessionIndex,
+                                                                          parentsIndex);
+
+    var indexModels = new CreateIndexModel<SessionDataModel>[]
+                      {
+                        new(sessionIndex,
+                            new()
+                            {
+                              Name = nameof(sessionIndex),
+                            }),
+                        new(sessionParentIndex,
+                            new()
+                            {
+                              Name = nameof(sessionParentIndex),
+                            }),
+                      };
+
+    return collection.Indexes.CreateManyAsync(sessionHandle,
+                                              indexModels);
+  }
+
+  public string IdTag { get; set; }
 }

@@ -25,14 +25,13 @@ using System;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Adapters.MongoDB.Options
-{
-  [PublicAPI]
-  public class LeaseProvider
-  {
-    public const string SettingSection = nameof(MongoDB) + ":" + nameof(LeaseProvider);
+namespace ArmoniK.Core.Adapters.MongoDB.Options;
 
-    public TimeSpan AcquisitionPeriod   { get; set; } = TimeSpan.FromMinutes(2);
-    public TimeSpan AcquisitionDuration { get; set; } = TimeSpan.FromMinutes(5);
-  }
+[PublicAPI]
+public class LeaseProvider
+{
+  public const string SettingSection = nameof(MongoDB) + ":" + nameof(LeaseProvider);
+
+  public TimeSpan AcquisitionPeriod   { get; set; } = TimeSpan.FromMinutes(2);
+  public TimeSpan AcquisitionDuration { get; set; } = TimeSpan.FromMinutes(5);
 }

@@ -27,56 +27,55 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Storage
+namespace ArmoniK.Core.Common.Storage;
+
+public class DistributedCacheObjectStorage : IObjectStorage
 {
-  public class DistributedCacheObjectStorage : IObjectStorage
+  private readonly IDistributedCache                      distributedCache_;
+  private readonly ILogger<DistributedCacheObjectStorage> logger_;
+
+  public DistributedCacheObjectStorage(IDistributedCache distributedCache, ILogger<DistributedCacheObjectStorage> logger)
   {
-    private readonly IDistributedCache                      distributedCache_;
-    private readonly ILogger<DistributedCacheObjectStorage> logger_;
-
-    public DistributedCacheObjectStorage(IDistributedCache distributedCache, ILogger<DistributedCacheObjectStorage> logger)
-    {
-      logger_           = logger;
-      distributedCache_ = distributedCache;
-    }
-
-    /// <inheritdoc />
-    public Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default)
-    {
-      using var _ = logger_.LogFunction();
-      return distributedCache_.SetAsync(key,
-                                        value,
-                                        cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default)
-    {
-      using var _ = logger_.LogFunction();
-      return distributedCache_.GetAsync(key,
-                                        cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
-    {
-      using var _ = logger_.LogFunction();
-      try
-      {
-        await distributedCache_.RemoveAsync(key,
-                                            cancellationToken);
-        return true;
-      }
-      catch
-      {
-        return false;
-      }
-    }
-
-    /// <inheritdoc />
-    public Task Init(CancellationToken cancellationToken) => Task.CompletedTask;
-
-    /// <inheritdoc />
-    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(true);
+    logger_           = logger;
+    distributedCache_ = distributedCache;
   }
+
+  /// <inheritdoc />
+  public Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default)
+  {
+    using var _ = logger_.LogFunction();
+    return distributedCache_.SetAsync(key,
+                                      value,
+                                      cancellationToken);
+  }
+
+  /// <inheritdoc />
+  public Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default)
+  {
+    using var _ = logger_.LogFunction();
+    return distributedCache_.GetAsync(key,
+                                      cancellationToken);
+  }
+
+  /// <inheritdoc />
+  public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
+  {
+    using var _ = logger_.LogFunction();
+    try
+    {
+      await distributedCache_.RemoveAsync(key,
+                                          cancellationToken);
+      return true;
+    }
+    catch
+    {
+      return false;
+    }
+  }
+
+  /// <inheritdoc />
+  public Task Init(CancellationToken cancellationToken) => Task.CompletedTask;
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(true);
 }

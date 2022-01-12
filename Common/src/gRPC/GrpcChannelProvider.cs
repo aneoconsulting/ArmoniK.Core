@@ -25,68 +25,66 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Injection;
-using ArmoniK.Core.Injection.Options;
+using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Injection.Options;
 
 using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
-namespace ArmoniK.Core.gRPC
+namespace ArmoniK.Core.Common.gRPC;
+
+public class GrpcChannelProvider : ProviderBase<ChannelBase>
 {
-  public class GrpcChannelProvider : ProviderBase<ChannelBase>
+  // ReSharper disable once SuggestBaseTypeForParameterInConstructor
+  public GrpcChannelProvider(GrpcChannel options, ILogger<GrpcChannelProvider> logger)
+    : base(options.SocketType == GrpcSocketType.Web
+             ? () => Task.FromResult(BuildWebGrpcChannel(options.Address,
+                                                         logger))
+             : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Address,
+                                                                logger)))
   {
-    // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-    public GrpcChannelProvider(GrpcChannel options, ILogger<GrpcChannelProvider> logger)
-      : base(options.SocketType == GrpcSocketType.Web
-               ? () => Task.FromResult(BuildWebGrpcChannel(options.Address,
-                                                           logger))
-               : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Address,
-                                                                  logger)))
-    {
-    }
+  }
 
-    private static ChannelBase BuildWebGrpcChannel(string address, ILogger logger)
-    {
-      using var _ = logger.LogFunction();
-      return Grpc.Net.Client.GrpcChannel.ForAddress(address);
-    }
+  private static ChannelBase BuildWebGrpcChannel(string address, ILogger logger)
+  {
+    using var _ = logger.LogFunction();
+    return Grpc.Net.Client.GrpcChannel.ForAddress(address);
+  }
 
-    private static ChannelBase BuildUnixSocketGrpcChannel(string address, ILogger logger)
-    {
-      using var _ = logger.LogFunction();
+  private static ChannelBase BuildUnixSocketGrpcChannel(string address, ILogger logger)
+  {
+    using var _ = logger.LogFunction();
 
-      var udsEndPoint = new UnixDomainSocketEndPoint(address);
+    var udsEndPoint = new UnixDomainSocketEndPoint(address);
 
-      var socketsHttpHandler = new SocketsHttpHandler
-                               {
-                                 ConnectCallback = async (unknown, cancellationToken) =>
+    var socketsHttpHandler = new SocketsHttpHandler
+                             {
+                               ConnectCallback = async (unknown, cancellationToken) =>
+                                                 {
+                                                   var socket = new Socket(AddressFamily.Unix,
+                                                                           SocketType.Stream,
+                                                                           ProtocolType.Unspecified);
+
+                                                   try
                                                    {
-                                                     var socket = new Socket(AddressFamily.Unix,
-                                                                             SocketType.Stream,
-                                                                             ProtocolType.Unspecified);
+                                                     await socket.ConnectAsync(udsEndPoint,
+                                                                               cancellationToken).ConfigureAwait(false);
+                                                     return new NetworkStream(socket,
+                                                                              true);
+                                                   }
+                                                   catch
+                                                   {
+                                                     socket.Dispose();
+                                                     throw;
+                                                   }
+                                                 },
+                             };
 
-                                                     try
-                                                     {
-                                                       await socket.ConnectAsync(udsEndPoint,
-                                                                                 cancellationToken).ConfigureAwait(false);
-                                                       return new NetworkStream(socket,
-                                                                                true);
-                                                     }
-                                                     catch
-                                                     {
-                                                       socket.Dispose();
-                                                       throw;
-                                                     }
-                                                   },
-                               };
-
-      return Grpc.Net.Client.GrpcChannel.ForAddress("http://localhost",
-                                                    new()
-                                                    {
-                                                      HttpHandler = socketsHttpHandler,
-                                                    });
-    }
+    return Grpc.Net.Client.GrpcChannel.ForAddress("http://localhost",
+                                                  new()
+                                                  {
+                                                    HttpHandler = socketsHttpHandler,
+                                                  });
   }
 }

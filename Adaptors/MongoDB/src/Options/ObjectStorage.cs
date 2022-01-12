@@ -23,13 +23,12 @@
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Adapters.MongoDB.Options
-{
-  [PublicAPI]
-  public class ObjectStorage
-  {
-    public const string SettingSection = nameof(MongoDB) + ":" + nameof(ObjectStorage);
+namespace ArmoniK.Core.Adapters.MongoDB.Options;
 
-    public int ChunkSize { get; set; } = 14500000;
-  }
+[PublicAPI]
+public class ObjectStorage
+{
+  public const string SettingSection = nameof(MongoDB) + ":" + nameof(ObjectStorage);
+
+  public int ChunkSize { get; set; } = 14500000;
 }

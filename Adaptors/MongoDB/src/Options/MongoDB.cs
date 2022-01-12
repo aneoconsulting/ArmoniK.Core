@@ -23,27 +23,28 @@
 
 using System;
 
+using ArmoniK.Core.Adapters.MongoDB;
+
 using JetBrains.Annotations;
 
-namespace ArmoniK.Adapters.MongoDB.Options
+namespace ArmoniK.Core.Adapters.MongoDB.Options;
+
+[PublicAPI]
+public class MongoDB
 {
-  [PublicAPI]
-  public class MongoDB
-  {
-    public const string SettingSection = nameof(MongoDB);
+  public const string SettingSection = nameof(MongoDB);
 
-    public string ConnectionString { get; set; }
+  public string ConnectionString { get; set; }
 
-    public string DatabaseName { get; set; } = "ArmoniK";
+  public string DatabaseName { get; set; } = "ArmoniK";
 
-    public TimeSpan DataRetention { get; set; } = TimeSpan.FromDays(15);
+  public TimeSpan DataRetention { get; set; } = TimeSpan.FromDays(15);
 
-    public TableStorage TableStorage { get; set; }
+  public TableStorage TableStorage { get; set; }
 
-    public LeaseProvider LeaseProvider { get; set; }
+  public LeaseProvider LeaseProvider { get; set; }
 
-    public ObjectStorage ObjectStorage { get; set; }
+  public ObjectStorage ObjectStorage { get; set; }
 
-    public QueueStorage QueueStorage { get; set; }
-  }
+  public QueueStorage QueueStorage { get; set; }
 }

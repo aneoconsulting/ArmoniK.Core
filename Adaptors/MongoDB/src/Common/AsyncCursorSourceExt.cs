@@ -27,66 +27,65 @@ using System.Threading.Tasks;
 
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB.Common
+namespace ArmoniK.Core.Adapters.MongoDB.Common;
+
+public static class AsyncCursorSourceExt
 {
-  public static class AsyncCursorSourceExt
+  public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(
+    this IAsyncCursorSource<T> asyncCursorSource)
+    => new AsyncEnumerableAdapter<T>(asyncCursorSource);
+
+  private class AsyncEnumerableAdapter<T> : IAsyncEnumerable<T>
   {
-    public static IAsyncEnumerable<T> ToAsyncEnumerable<T>(
-      this IAsyncCursorSource<T> asyncCursorSource)
-      => new AsyncEnumerableAdapter<T>(asyncCursorSource);
+    private readonly IAsyncCursorSource<T> asyncCursorSource_;
 
-    private class AsyncEnumerableAdapter<T> : IAsyncEnumerable<T>
+    public AsyncEnumerableAdapter(IAsyncCursorSource<T> asyncCursorSource) => asyncCursorSource_ = asyncCursorSource;
+
+    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+      new AsyncEnumeratorAdapter<T>(asyncCursorSource_,
+                                    cancellationToken);
+  }
+
+  private class AsyncEnumeratorAdapter<T> : IAsyncEnumerator<T>
+  {
+    private readonly IAsyncCursorSource<T> asyncCursorSource_;
+    private readonly CancellationToken     cancellationToken_;
+    private          IAsyncCursor<T>       asyncCursor_;
+    private          IEnumerator<T>        batchEnumerator_;
+
+    public AsyncEnumeratorAdapter(IAsyncCursorSource<T> asyncCursorSource, CancellationToken cancellationToken = default)
     {
-      private readonly IAsyncCursorSource<T> asyncCursorSource_;
-
-      public AsyncEnumerableAdapter(IAsyncCursorSource<T> asyncCursorSource) => asyncCursorSource_ = asyncCursorSource;
-
-      public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
-        new AsyncEnumeratorAdapter<T>(asyncCursorSource_,
-                                      cancellationToken);
+      asyncCursorSource_ = asyncCursorSource;
+      cancellationToken_ = cancellationToken;
     }
 
-    private class AsyncEnumeratorAdapter<T> : IAsyncEnumerator<T>
+    public T Current => batchEnumerator_.Current;
+
+    public async ValueTask<bool> MoveNextAsync()
     {
-      private readonly IAsyncCursorSource<T> asyncCursorSource_;
-      private readonly CancellationToken     cancellationToken_;
-      private          IAsyncCursor<T>       asyncCursor_;
-      private          IEnumerator<T>        batchEnumerator_;
+      if (asyncCursor_ == null)
+        asyncCursor_ = await asyncCursorSource_.ToCursorAsync(cancellationToken_);
 
-      public AsyncEnumeratorAdapter(IAsyncCursorSource<T> asyncCursorSource, CancellationToken cancellationToken = default)
+      if (batchEnumerator_ != null &&
+          batchEnumerator_.MoveNext())
+        return true;
+
+      if (asyncCursor_ != null &&
+          await asyncCursor_.MoveNextAsync(cancellationToken_))
       {
-        asyncCursorSource_ = asyncCursorSource;
-        cancellationToken_ = cancellationToken;
+        batchEnumerator_?.Dispose();
+        batchEnumerator_ = asyncCursor_.Current.GetEnumerator();
+        return batchEnumerator_.MoveNext();
       }
 
-      public T Current => batchEnumerator_.Current;
+      return false;
+    }
 
-      public async ValueTask<bool> MoveNextAsync()
-      {
-        if (asyncCursor_ == null)
-          asyncCursor_ = await asyncCursorSource_.ToCursorAsync(cancellationToken_);
-
-        if (batchEnumerator_ != null &&
-            batchEnumerator_.MoveNext())
-          return true;
-
-        if (asyncCursor_ != null &&
-            await asyncCursor_.MoveNextAsync(cancellationToken_))
-        {
-          batchEnumerator_?.Dispose();
-          batchEnumerator_ = asyncCursor_.Current.GetEnumerator();
-          return batchEnumerator_.MoveNext();
-        }
-
-        return false;
-      }
-
-      public ValueTask DisposeAsync()
-      {
-        asyncCursor_?.Dispose();
-        asyncCursor_ = null;
-        return ValueTask.CompletedTask;
-      }
+    public ValueTask DisposeAsync()
+    {
+      asyncCursor_?.Dispose();
+      asyncCursor_ = null;
+      return ValueTask.CompletedTask;
     }
   }
 }

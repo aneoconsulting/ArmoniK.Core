@@ -25,15 +25,14 @@ using ArmoniK.Core.gRPC.V1;
 
 using FluentValidation;
 
-namespace ArmoniK.Core.gRPC.Validators
+namespace ArmoniK.Core.Common.gRPC.Validators;
+
+public class TaskIdValidator : AbstractValidator<TaskId>
 {
-  public class TaskIdValidator : AbstractValidator<TaskId>
+  public TaskIdValidator()
   {
-    public TaskIdValidator()
-    {
-      RuleFor(o => o.Session).NotEmpty().WithMessage("Session should not be null").WithName(nameof(TaskId.Session));
-      RuleFor(o => o.SubSession).NotEmpty().WithMessage("SubSession should not be null").WithName(nameof(TaskId.SubSession));
-      RuleFor(o => o.Task).NotEmpty().WithMessage("Task should not be null").WithName(nameof(TaskId.Task));
-    }
+    RuleFor(o => o.Session).NotEmpty().WithMessage("Session should not be null").WithName(nameof(TaskId.Session));
+    RuleFor(o => o.SubSession).NotEmpty().WithMessage("SubSession should not be null").WithName(nameof(TaskId.SubSession));
+    RuleFor(o => o.Task).NotEmpty().WithMessage("Task should not be null").WithName(nameof(TaskId.Task));
   }
 }

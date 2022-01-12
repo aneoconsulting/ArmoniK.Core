@@ -25,14 +25,13 @@ using ArmoniK.Core.gRPC.V1;
 
 using FluentValidation;
 
-namespace ArmoniK.Core.gRPC.Validators
+namespace ArmoniK.Core.Common.gRPC.Validators;
+
+public class SessionIdValidator : AbstractValidator<SessionId>
 {
-  public class SessionIdValidator : AbstractValidator<SessionId>
+  public SessionIdValidator()
   {
-    public SessionIdValidator()
-    {
-      RuleFor(o => o.Session).NotEmpty().WithName(nameof(SessionId.Session));
-      RuleFor(o => o.SubSession).NotEmpty().WithName(nameof(SessionId.SubSession));
-    }
+    RuleFor(o => o.Session).NotEmpty().WithName(nameof(SessionId.Session));
+    RuleFor(o => o.SubSession).NotEmpty().WithName(nameof(SessionId.SubSession));
   }
 }

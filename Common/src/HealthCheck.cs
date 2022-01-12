@@ -29,36 +29,35 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ArmoniK.Core
+namespace ArmoniK.Core.Common;
+
+[PublicAPI]
+public class HealthCheck : IHealthCheck
 {
-  [PublicAPI]
-  public class HealthCheck : IHealthCheck
+  private readonly IHealthCheckProvider healthCheckProvider_;
+  private readonly HealthCheckTag       tag_;
+
+  public HealthCheck(IHealthCheckProvider healthCheckProvider, HealthCheckTag tag)
   {
-    private readonly IHealthCheckProvider healthCheckProvider_;
-    private readonly HealthCheckTag       tag_;
-
-    public HealthCheck(IHealthCheckProvider healthCheckProvider, HealthCheckTag tag)
-    {
-      healthCheckProvider_ = healthCheckProvider;
-      tag_            = tag;
-    }
+    healthCheckProvider_ = healthCheckProvider;
+    tag_                 = tag;
+  }
 
 
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    /// <inheritdoc />
-    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = new CancellationToken())
-    {
-      if(await healthCheckProvider_.Check(tag_))
-        return HealthCheckResult.Healthy();
+  /// <exception cref="ArgumentOutOfRangeException"></exception>
+  /// <inheritdoc />
+  public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = new CancellationToken())
+  {
+    if(await healthCheckProvider_.Check(tag_))
+      return HealthCheckResult.Healthy();
 
-      return context.Registration.FailureStatus switch
-             {
-               HealthStatus.Unhealthy => HealthCheckResult.Unhealthy(),
-               HealthStatus.Degraded  => HealthCheckResult.Degraded(),
-               HealthStatus.Healthy   => HealthCheckResult.Healthy(),
-               _ => throw new ArgumentOutOfRangeException(nameof(context),
-                                                          "Context has been registered with a non supported FailureStatus")
-             };
-    }
+    return context.Registration.FailureStatus switch
+           {
+             HealthStatus.Unhealthy => HealthCheckResult.Unhealthy(),
+             HealthStatus.Degraded  => HealthCheckResult.Degraded(),
+             HealthStatus.Healthy   => HealthCheckResult.Healthy(),
+             _ => throw new ArgumentOutOfRangeException(nameof(context),
+                                                        "Context has been registered with a non supported FailureStatus")
+           };
   }
 }

@@ -9,25 +9,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compute", "Compute", "{36BB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{CD412C3D-63D0-4726-B4C3-FEF701E4DCAF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Adaptors", "Adaptors", "{1A9BCE53-79D0-4761-B3A2-6967B610FA94}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Adapters", "Adapters", "{1A9BCE53-79D0-4761-B3A2-6967B610FA94}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Common", "Common\src\ArmoniK.Common.csproj", "{B7CA43B2-BB7F-46B1-9516-7CAFBC89816C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Common", "Common\src\ArmoniK.Core.Common.csproj", "{B7CA43B2-BB7F-46B1-9516-7CAFBC89816C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Control", "Control", "{0E809C1E-CBF5-42E4-8624-2E244A52E422}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Common.Tests", "Common\tests\ArmoniK.Common.Tests.csproj", "{707FF74D-C1AF-44CC-ACB0-533B11684710}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Common.Tests", "Common\tests\ArmoniK.Core.Common.Tests.csproj", "{707FF74D-C1AF-44CC-ACB0-533B11684710}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Adapters", "Adapters", "{2D548C40-6260-4A4E-9C56-E8A80C639E13}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Adapters.Amqp", "Adaptors\Amqp\src\ArmoniK.Adapters.Amqp.csproj", "{30F9056A-8FE3-4971-94A7-1113225E951B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.Amqp", "Adaptors\Amqp\src\ArmoniK.Core.Adapters.Amqp.csproj", "{30F9056A-8FE3-4971-94A7-1113225E951B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Adapters.MongoDB", "Adaptors\MongoDB\src\ArmoniK.Adapters.MongoDB.csproj", "{15EC4DEA-8FB6-4394-8E6F-EEF96A8F0FF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.MongoDB", "Adaptors\MongoDB\src\ArmoniK.Core.Adapters.MongoDB.csproj", "{15EC4DEA-8FB6-4394-8E6F-EEF96A8F0FF2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Compute.PollingAgent", "Compute\PollingAgent\src\ArmoniK.Compute.PollingAgent.csproj", "{CAF59DC7-ED7B-4FA5-9031-4590282ACA0F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Compute.PollingAgent", "Compute\PollingAgent\src\ArmoniK.Core.Compute.PollingAgent.csproj", "{CAF59DC7-ED7B-4FA5-9031-4590282ACA0F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Control.Submitter", "Control\Submitter\src\ArmoniK.Control.Submitter.csproj", "{235087F2-A0EA-431A-9A15-B121F181D071}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Control.Submitter", "Control\Submitter\src\ArmoniK.Core.Control.Submitter.csproj", "{235087F2-A0EA-431A-9A15-B121F181D071}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Adapters.MongoDB.Tests", "Adaptors\MongoDB\tests\ArmoniK.Adapters.MongoDB.Tests.csproj", "{0AFE4810-2178-461D-BF84-4C562A2137FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.MongoDB.Tests", "Adaptors\MongoDB\tests\ArmoniK.Core.Adapters.MongoDB.Tests.csproj", "{0AFE4810-2178-461D-BF84-4C562A2137FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

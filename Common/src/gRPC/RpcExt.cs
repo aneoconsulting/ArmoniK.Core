@@ -25,7 +25,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Exceptions;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf.WellKnownTypes;
@@ -34,98 +34,97 @@ using Grpc.Core;
 
 using JetBrains.Annotations;
 
-using TaskCanceledException = ArmoniK.Core.Exceptions.TaskCanceledException;
-using TimeoutException = ArmoniK.Core.Exceptions.TimeoutException;
+using TaskCanceledException = ArmoniK.Core.Common.Exceptions.TaskCanceledException;
+using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
 
-namespace ArmoniK.Core.gRPC
+namespace ArmoniK.Core.Common.gRPC;
+
+public static class RpcExt
 {
-  public static class RpcExt
+  public static bool HandleExceptions(Exception e, StatusCode status)
   {
-    public static bool HandleExceptions(Exception e, StatusCode status)
+    switch (e)
     {
-      switch (e)
+      case RpcException:
       {
-        case RpcException:
+        switch (status)
         {
-          switch (status)
-          {
-            case StatusCode.DeadlineExceeded:
-              throw new TimeoutException("Deadline Exceeded",
-                                         e);
-            case StatusCode.OK:
-              break;
-            case StatusCode.Cancelled:
-              throw new TaskCanceledException("Operation Cancelled",
-                                              e);
-            case StatusCode.Unknown:
-              break;
-            case StatusCode.InvalidArgument:
-              break;
-            case StatusCode.NotFound:
-              break;
-            case StatusCode.AlreadyExists:
-              break;
-            case StatusCode.PermissionDenied:
-              break;
-            case StatusCode.Unauthenticated:
-              break;
-            case StatusCode.ResourceExhausted:
-              break;
-            case StatusCode.FailedPrecondition:
-              break;
-            case StatusCode.Aborted:
-              break;
-            case StatusCode.OutOfRange:
-              break;
-            case StatusCode.Unimplemented:
-              break;
-            case StatusCode.Internal:
-              break;
-            case StatusCode.Unavailable:
-              break;
-            case StatusCode.DataLoss:
-              break;
-            default:
-              throw new ArmoniKException("An error occurred while computing the request",
-                                         e);
-          }
-
-          return true;
+          case StatusCode.DeadlineExceeded:
+            throw new TimeoutException("Deadline Exceeded",
+                                       e);
+          case StatusCode.OK:
+            break;
+          case StatusCode.Cancelled:
+            throw new TaskCanceledException("Operation Cancelled",
+                                            e);
+          case StatusCode.Unknown:
+            break;
+          case StatusCode.InvalidArgument:
+            break;
+          case StatusCode.NotFound:
+            break;
+          case StatusCode.AlreadyExists:
+            break;
+          case StatusCode.PermissionDenied:
+            break;
+          case StatusCode.Unauthenticated:
+            break;
+          case StatusCode.ResourceExhausted:
+            break;
+          case StatusCode.FailedPrecondition:
+            break;
+          case StatusCode.Aborted:
+            break;
+          case StatusCode.OutOfRange:
+            break;
+          case StatusCode.Unimplemented:
+            break;
+          case StatusCode.Internal:
+            break;
+          case StatusCode.Unavailable:
+            break;
+          case StatusCode.DataLoss:
+            break;
+          default:
+            throw new ArmoniKException("An error occurred while computing the request",
+                                       e);
         }
-        case AggregateException ae:
-        {
-          return ae.InnerExceptions.All(ie => HandleExceptions(ie,
-                                                               status));
-        }
-        default:
-          Console.WriteLine($"Type of Exception is {e.GetType()}");
-          return false;
-      }
-    }
 
-    public static async Task<TMessage> WrapRpcException<TMessage>([NotNull] this AsyncUnaryCall<TMessage> asyncUnaryCall)
-    {
-      try
+        return true;
+      }
+      case AggregateException ae:
       {
-        await asyncUnaryCall;
-        return asyncUnaryCall.ResponseAsync.Result;
+        return ae.InnerExceptions.All(ie => HandleExceptions(ie,
+                                                             status));
       }
-      catch (Exception e)
-      {
-        //await Task.Delay(TimeSpan.FromHours(2));
-        if (!HandleExceptions(e,
-                              asyncUnaryCall.GetStatus().StatusCode))
-          throw;
-
-        throw new ArmoniKException("An exception occurred during the rpc call but has been handled",
-                                   e);
-      }
+      default:
+        Console.WriteLine($"Type of Exception is {e.GetType()}");
+        return false;
     }
-
-    public static bool IsValid(this Lease lease)
-      => !string.IsNullOrEmpty(lease.LeaseId) && lease.ExpirationDate.CompareTo(Timestamp.FromDateTime(DateTime.UtcNow)) > 0;
-
-    public static string ToPrintableId(this TaskId taskId)
-      => $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
   }
+
+  public static async Task<TMessage> WrapRpcException<TMessage>([NotNull] this AsyncUnaryCall<TMessage> asyncUnaryCall)
+  {
+    try
+    {
+      await asyncUnaryCall;
+      return asyncUnaryCall.ResponseAsync.Result;
+    }
+    catch (Exception e)
+    {
+      //await Task.Delay(TimeSpan.FromHours(2));
+      if (!HandleExceptions(e,
+                            asyncUnaryCall.GetStatus().StatusCode))
+        throw;
+
+      throw new ArmoniKException("An exception occurred during the rpc call but has been handled",
+                                 e);
+    }
+  }
+
+  public static bool IsValid(this Lease lease)
+    => !string.IsNullOrEmpty(lease.LeaseId) && lease.ExpirationDate.CompareTo(Timestamp.FromDateTime(DateTime.UtcNow)) > 0;
+
+  public static string ToPrintableId(this TaskId taskId)
+    => $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
 }

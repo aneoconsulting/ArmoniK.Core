@@ -25,13 +25,12 @@ using System;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Adapters.MongoDB.Options
-{
-  [PublicAPI]
-  public class TableStorage
-  {
-    public const string SettingSection = nameof(MongoDB) + ":" + nameof(TableStorage);
+namespace ArmoniK.Core.Adapters.MongoDB.Options;
 
-    public TimeSpan PollingDelay { get; set; } = TimeSpan.FromSeconds(5);
-  }
+[PublicAPI]
+public class TableStorage
+{
+  public const string SettingSection = nameof(MongoDB) + ":" + nameof(TableStorage);
+
+  public TimeSpan PollingDelay { get; set; } = TimeSpan.FromSeconds(5);
 }

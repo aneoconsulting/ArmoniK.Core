@@ -25,22 +25,20 @@ using System;
 using System.IO;
 using System.Net;
 
-using ArmoniK.Adapters.Amqp;
-using ArmoniK.Adapters.MongoDB;
-using ArmoniK.Core;
-using ArmoniK.Core.Injection;
+using ArmoniK.Core.Adapters.Amqp;
+using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Injection;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
-using Serilog.Extensions.Logging;
 
-namespace ArmoniK.Compute.PollingAgent;
+namespace ArmoniK.Core.Compute.PollingAgent;
 
 public static class Program
 {

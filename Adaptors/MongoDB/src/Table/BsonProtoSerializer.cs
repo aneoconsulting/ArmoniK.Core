@@ -27,40 +27,39 @@ using Google.Protobuf;
 
 using MongoDB.Bson.Serialization;
 
-namespace ArmoniK.Adapters.MongoDB.Table
+namespace ArmoniK.Core.Adapters.MongoDB.Table;
+
+public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()
 {
-  public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()
+  /// <inheritdoc />
+  object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+    => Deserialize(context,
+                   args);
+
+  /// <inheritdoc />
+  public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, T value)
   {
-    /// <inheritdoc />
-    object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-      => Deserialize(context,
-                     args);
-
-    /// <inheritdoc />
-    public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, T value)
-    {
-      context.Writer.WriteString(value.ToString());
-    }
-
-    /// <inheritdoc />
-    public T Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-    {
-      var parser = new JsonParser(JsonParser.Settings.Default);
-      return parser.Parse<T>(context.Reader.ReadString());
-    }
-
-    /// <inheritdoc />
-    public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
-    {
-      if (value is T t)
-        Serialize(context,
-                  args,
-                  t);
-      else
-        throw new("Not supported type");
-    }
-
-    /// <inheritdoc />
-    public Type ValueType => typeof(T);
+    context.Writer.WriteString(value.ToString());
   }
+
+  /// <inheritdoc />
+  public T Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+  {
+    var parser = new JsonParser(JsonParser.Settings.Default);
+    return parser.Parse<T>(context.Reader.ReadString());
+  }
+
+  /// <inheritdoc />
+  public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
+  {
+    if (value is T t)
+      Serialize(context,
+                args,
+                t);
+    else
+      throw new("Not supported type");
+  }
+
+  /// <inheritdoc />
+  public Type ValueType => typeof(T);
 }

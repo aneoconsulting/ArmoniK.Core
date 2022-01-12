@@ -24,59 +24,58 @@
 using System;
 using System.Threading.Tasks;
 
-using ArmoniK.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Common;
 
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB.Lease
+namespace ArmoniK.Core.Adapters.MongoDB.Lease;
+
+public class LeaseDataModel : IMongoDataModel<LeaseDataModel>
 {
-  public class LeaseDataModel : IMongoDataModel<LeaseDataModel>
+  public const string Collection = "Lease";
+
+  [BsonId]
+  public string Key { get; set; }
+
+  [BsonElement]
+  public string Lock { get; set; }
+
+  [BsonElement]
+  [BsonDateTimeOptions(Kind = DateTimeKind.Utc,
+                       DateOnly = false)]
+  public DateTime ExpiresAt { get; set; }
+
+  /// <inheritdoc />
+  public string CollectionName { get; } = Collection;
+
+  /// <inheritdoc />
+  public Task InitializeIndexesAsync(
+    IClientSessionHandle             sessionHandle,
+    IMongoCollection<LeaseDataModel> collection)
   {
-    public const string Collection = "Lease";
+    var keyIndex  = Builders<LeaseDataModel>.IndexKeys.Text(model => model.Key);
+    var lockIndex = Builders<LeaseDataModel>.IndexKeys.Text(model => model.Lock);
+    var wholeIndex = Builders<LeaseDataModel>.IndexKeys.Combine(keyIndex,
+                                                                lockIndex);
 
-    [BsonId]
-    public string Key { get; set; }
+    var indexModels = new CreateIndexModel<LeaseDataModel>[]
+                      {
+                        new(keyIndex,
+                            new()
+                            {
+                              Name   = nameof(keyIndex),
+                              Unique = true,
+                            }),
+                        new(wholeIndex,
+                            new()
+                            {
+                              Name   = nameof(wholeIndex),
+                              Unique = true,
+                            }),
+                      };
 
-    [BsonElement]
-    public string Lock { get; set; }
-
-    [BsonElement]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc,
-                         DateOnly = false)]
-    public DateTime ExpiresAt { get; set; }
-
-    /// <inheritdoc />
-    public string CollectionName { get; } = Collection;
-
-    /// <inheritdoc />
-    public Task InitializeIndexesAsync(
-      IClientSessionHandle sessionHandle,
-      IMongoCollection<LeaseDataModel> collection)
-    {
-      var keyIndex = Builders<LeaseDataModel>.IndexKeys.Text(model => model.Key);
-      var lockIndex = Builders<LeaseDataModel>.IndexKeys.Text(model => model.Lock);
-      var wholeIndex = Builders<LeaseDataModel>.IndexKeys.Combine(keyIndex,
-                                                                  lockIndex);
-
-      var indexModels = new CreateIndexModel<LeaseDataModel>[]
-                        {
-                          new(keyIndex,
-                              new()
-                              {
-                                Name   = nameof(keyIndex),
-                                Unique = true,
-                              }),
-                          new(wholeIndex,
-                              new()
-                              {
-                                Name   = nameof(wholeIndex),
-                                Unique = true,
-                              }),
-                        };
-
-      return collection.Indexes.CreateManyAsync(sessionHandle,
-                                                indexModels);
-    }
+    return collection.Indexes.CreateManyAsync(sessionHandle,
+                                              indexModels);
   }
 }

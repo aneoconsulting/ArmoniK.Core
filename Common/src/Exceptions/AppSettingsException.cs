@@ -26,27 +26,26 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace ArmoniK.Core.Exceptions
+namespace ArmoniK.Core.Common.Exceptions;
+
+[Serializable]
+public class AppSettingsException : ArmoniKException
 {
-  [Serializable]
-  public class AppSettingsException : ArmoniKException
+  public AppSettingsException()
   {
-    public AppSettingsException()
-    {
-    }
+  }
 
-    public AppSettingsException(string? message) : base(message)
-    {
-    }
+  public AppSettingsException(string? message) : base(message)
+  {
+  }
 
-    public AppSettingsException(string? message, Exception? innerException) : base(message,
-                                                                                   innerException)
-    {
-    }
+  public AppSettingsException(string? message, Exception? innerException) : base(message,
+                                                                                 innerException)
+  {
+  }
 
-    protected AppSettingsException(SerializationInfo info, StreamingContext context) : base(info,
-                                                                                            context)
-    {
-    }
+  protected AppSettingsException(SerializationInfo info, StreamingContext context) : base(info,
+                                                                                          context)
+  {
   }
 }

@@ -23,34 +23,32 @@
 
 using System;
 using System.Threading.Tasks;
-using System.Transactions;
 
-namespace ArmoniK.Core.Injection
+namespace ArmoniK.Core.Common.Injection;
+
+public abstract class ProviderBase<T> : IHealthCheckProvider
 {
-  public abstract class ProviderBase<T> : IHealthCheckProvider
+  private readonly Func<Task<T>> builder_;
+  private          T             object_;
+
+  protected ProviderBase(Func<Task<T>> builder) => builder_ = builder;
+
+  public async ValueTask<T> GetAsync()
   {
-    private readonly Func<Task<T>> builder_;
-    private          T             object_;
-
-    protected ProviderBase(Func<Task<T>> builder) => builder_ = builder;
-
-    public async ValueTask<T> GetAsync()
+    if (object_ is null)
     {
-      if (object_ is null)
+      Task<T> task;
+      lock (this)
       {
-        Task<T> task;
-        lock (this)
-        {
-          task = object_ is null ? builder_() : Task.FromResult(object_);
-        }
-
-        object_ = await task;
+        task = object_ is null ? builder_() : Task.FromResult(object_);
       }
 
-      return object_;
+      object_ = await task;
     }
 
-    /// <inheritdoc />
-    public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(object_ is not null);
+    return object_;
   }
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(object_ is not null);
 }

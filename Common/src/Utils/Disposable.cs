@@ -26,55 +26,54 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Utils
+namespace ArmoniK.Core.Common.Utils;
+
+public static class TaskExt
 {
-  public static class TaskExt
-  {
-    public static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> enumerable) => Task.WhenAll(enumerable);
-    public static Task      WhenAll(this    IEnumerable<Task>    enumerable) => Task.WhenAll(enumerable);
+  public static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> enumerable) => Task.WhenAll(enumerable);
+  public static Task      WhenAll(this    IEnumerable<Task>    enumerable) => Task.WhenAll(enumerable);
 
-    public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> enumerableTask) => (await enumerableTask).ToList();
+  public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> enumerableTask) => (await enumerableTask).ToList();
+}
+
+public static class DisposableExt
+{
+  public static IAsyncDisposable Merge(this IEnumerable<IAsyncDisposable> disposables)
+  {
+    return AsyncDisposable.Create(async () => await disposables.Select(async disposable => await disposable.DisposeAsync())
+                                                               .WhenAll());
   }
+}
 
-  public static class DisposableExt
+public static class Disposable
+{
+  public static IDisposable Create(Action action) => new DisposableImpl(action);
+
+  private class DisposableImpl : IDisposable
   {
-    public static IAsyncDisposable Merge(this IEnumerable<IAsyncDisposable> disposables)
+    private readonly Action action_;
+
+    public DisposableImpl(Action action) => action_ = action;
+
+    /// <inheritdoc />
+    public void Dispose()
     {
-      return AsyncDisposable.Create(async () => await disposables.Select(async disposable => await disposable.DisposeAsync())
-                                                                 .WhenAll());
+      action_();
     }
   }
+}
 
-  public static class Disposable
+public static class AsyncDisposable
+{
+  public static IAsyncDisposable Create(Func<ValueTask> action) => new AsyncDisposableImpl(action);
+
+  private class AsyncDisposableImpl : IAsyncDisposable
   {
-    public static IDisposable Create(Action action) => new DisposableImpl(action);
+    private readonly Func<ValueTask> action_;
 
-    private class DisposableImpl : IDisposable
-    {
-      private readonly Action action_;
+    public AsyncDisposableImpl(Func<ValueTask> action) => action_ = action;
 
-      public DisposableImpl(Action action) => action_ = action;
-
-      /// <inheritdoc />
-      public void Dispose()
-      {
-        action_();
-      }
-    }
-  }
-
-  public static class AsyncDisposable
-  {
-    public static IAsyncDisposable Create(Func<ValueTask> action) => new AsyncDisposableImpl(action);
-
-    private class AsyncDisposableImpl : IAsyncDisposable
-    {
-      private readonly Func<ValueTask> action_;
-
-      public AsyncDisposableImpl(Func<ValueTask> action) => action_ = action;
-
-      /// <inheritdoc />
-      public ValueTask DisposeAsync() => action_();
-    }
+    /// <inheritdoc />
+    public ValueTask DisposeAsync() => action_();
   }
 }

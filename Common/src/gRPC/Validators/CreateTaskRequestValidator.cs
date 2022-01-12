@@ -27,17 +27,16 @@ using FluentValidation;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core.gRPC.Validators
+namespace ArmoniK.Core.Common.gRPC.Validators;
+
+[UsedImplicitly]
+public class CreateTaskRequestValidator : AbstractValidator<CreateTaskRequest>
 {
-  [UsedImplicitly]
-  public class CreateTaskRequestValidator : AbstractValidator<CreateTaskRequest>
+  public CreateTaskRequestValidator()
   {
-    public CreateTaskRequestValidator()
-    {
-      RuleFor(r => r.SessionId).NotEmpty().SetValidator(new SessionIdValidator());
-      RuleFor(r => r.TaskOptions).SetValidator(new TaskOptionsValidator());
-      RuleFor(request => request.TaskRequests).NotEmpty();
-      RuleForEach(request => request.TaskRequests).NotEmpty().SetValidator(new TaskRequestValidator());
-    }
+    RuleFor(r => r.SessionId).NotEmpty().SetValidator(new SessionIdValidator());
+    RuleFor(r => r.TaskOptions).SetValidator(new TaskOptionsValidator());
+    RuleFor(request => request.TaskRequests).NotEmpty();
+    RuleForEach(request => request.TaskRequests).NotEmpty().SetValidator(new TaskRequestValidator());
   }
 }

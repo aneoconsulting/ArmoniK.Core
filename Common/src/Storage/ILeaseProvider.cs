@@ -27,25 +27,24 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.gRPC.V1;
 
-namespace ArmoniK.Core.Storage
+namespace ArmoniK.Core.Common.Storage;
+
+public interface ILeaseProvider : IInitializable
 {
-  public interface ILeaseProvider : IInitializable
-  {
-    TimeSpan AcquisitionPeriod { get; }
+  TimeSpan AcquisitionPeriod { get; }
 
-    TimeSpan AcquisitionDuration { get; }
+  TimeSpan AcquisitionDuration { get; }
 
-    /// <summary>
-    ///   Try to acquire a lease to process the task. If processing will last after the expiration date, the Lease will have to
-    ///   be renewed.
-    /// </summary>
-    /// <param name="id">The Id of the task to process.</param>
-    /// <param name="cancellationToken">Cancellation token for the request</param>
-    /// <returns>The lease to be used for renewal or an empty leaseId and past expiration in case of failure</returns>
-    Task<Lease> TryAcquireLeaseAsync(TaskId id, CancellationToken cancellationToken = default);
+  /// <summary>
+  ///   Try to acquire a lease to process the task. If processing will last after the expiration date, the Lease will have to
+  ///   be renewed.
+  /// </summary>
+  /// <param name="id">The Id of the task to process.</param>
+  /// <param name="cancellationToken">Cancellation token for the request</param>
+  /// <returns>The lease to be used for renewal or an empty leaseId and past expiration in case of failure</returns>
+  Task<Lease> TryAcquireLeaseAsync(TaskId id, CancellationToken cancellationToken = default);
 
-    Task<Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default);
+  Task<Lease> TryRenewLease(TaskId id, string leaseId, CancellationToken cancellationToken = default);
 
-    Task ReleaseLease(TaskId    id, string leaseId, CancellationToken cancellationToken = default);
-  }
+  Task ReleaseLease(TaskId id, string leaseId, CancellationToken cancellationToken = default);
 }

@@ -25,66 +25,65 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.gRPC;
+using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.gRPC.V1;
-using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Storage
+namespace ArmoniK.Core.Common.Storage;
+
+public class LeaseHandler : IAsyncDisposable
 {
-  public class LeaseHandler : IAsyncDisposable
+  private readonly CancellationToken cancellationToken_;
+  private readonly ILeaseProvider    leaseProvider_;
+  private readonly ILogger           logger_;
+  private readonly TaskId            taskId_;
+  private          Heart             heart_;
+  private          string            leaseId_;
+
+  public LeaseHandler(ILeaseProvider    leaseProvider,
+                      TaskId            taskId,
+                      ILogger           logger,
+                      CancellationToken cancellationToken = default)
   {
-    private readonly CancellationToken cancellationToken_;
-    private readonly ILeaseProvider    leaseProvider_;
-    private readonly ILogger           logger_;
-    private readonly TaskId            taskId_;
-    private          Heart             heart_;
-    private          string            leaseId_;
+    leaseProvider_     = leaseProvider;
+    taskId_            = taskId;
+    cancellationToken_ = cancellationToken;
+    logger_            = logger;
+  }
 
-    public LeaseHandler(ILeaseProvider    leaseProvider,
-                        TaskId            taskId,
-                        ILogger           logger,
-                        CancellationToken cancellationToken = default)
-    {
-      leaseProvider_     = leaseProvider;
-      taskId_            = taskId;
-      cancellationToken_ = cancellationToken;
-      logger_            = logger;
-    }
+  public CancellationToken LeaseExpired => heart_.HeartStopped;
 
-    public CancellationToken LeaseExpired => heart_.HeartStopped;
+  /// <inheritdoc />
+  public async ValueTask DisposeAsync()
+  {
+    using var _ = logger_.LogFunction(taskId_.ToPrintableId());
+    if (!heart_.HeartStopped.IsCancellationRequested)
+      await heart_.Stop();
+    await leaseProvider_.ReleaseLease(taskId_,
+                                      leaseId_,
+                                      cancellationToken_);
+    GC.SuppressFinalize(this);
+  }
 
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-      using var _ = logger_.LogFunction(taskId_.ToPrintableId());
-      if (!heart_.HeartStopped.IsCancellationRequested)
-        await heart_.Stop();
-      await leaseProvider_.ReleaseLease(taskId_,
-                                        leaseId_,
-                                        cancellationToken_);
-      GC.SuppressFinalize(this);
-    }
+  public async Task Start()
+  {
+    using var _ = logger_.LogFunction(taskId_.ToPrintableId());
+    var lease = await leaseProvider_.TryAcquireLeaseAsync(taskId_,
+                                                          cancellationToken_);
+    leaseId_ = lease.LeaseId;
+    heart_ = new(async ct =>
+                 {
+                   var renewedLease = await leaseProvider_.TryRenewLease(taskId_,
+                                                                         leaseId_,
+                                                                         ct);
+                   return renewedLease.IsValid();
+                 },
+                 leaseProvider_.AcquisitionPeriod,
+                 cancellationToken_);
 
-    public async Task Start()
-    {
-      using var _ = logger_.LogFunction(taskId_.ToPrintableId());
-      var lease = await leaseProvider_.TryAcquireLeaseAsync(taskId_,
-                                                            cancellationToken_);
-      leaseId_ = lease.LeaseId;
-      heart_ = new(async ct =>
-                   {
-                     var renewedLease = await leaseProvider_.TryRenewLease(taskId_,
-                                                                           leaseId_,
-                                                                           ct);
-                     return renewedLease.IsValid();
-                   },
-                   leaseProvider_.AcquisitionPeriod,
-                   cancellationToken_);
-
-      if (lease.IsValid())
-        heart_.Start();
-    }
+    if (lease.IsValid())
+      heart_.Start();
   }
 }

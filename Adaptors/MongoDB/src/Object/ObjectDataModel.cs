@@ -23,68 +23,67 @@
 
 using System.Threading.Tasks;
 
-using ArmoniK.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Common;
 
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
-namespace ArmoniK.Adapters.MongoDB.Object
+namespace ArmoniK.Core.Adapters.MongoDB.Object;
+
+public class ObjectDataModel : IMongoDataModel<ObjectDataModel>
 {
-  public class ObjectDataModel : IMongoDataModel<ObjectDataModel>
+  public const string Collection = "Object";
+
+  [BsonId]
+  public string Id => $"{Key}{ChunkIdx}";
+
+  [BsonElement]
+  public string Key { get; set; }
+
+  [BsonElement]
+  public byte[] Chunk { get; set; }
+
+  [BsonElement]
+  public int ChunkIdx { get; set; }
+
+  /// <inheritdoc />
+  [BsonIgnore]
+  public string CollectionName { get; } = Collection;
+
+  /// <inheritdoc />
+  public Task InitializeIndexesAsync(
+    IClientSessionHandle              sessionHandle,
+    IMongoCollection<ObjectDataModel> collection)
   {
-    public const string Collection = "Object";
-
-    [BsonId]
-    public string Id => $"{Key}{ChunkIdx}";
-
-    [BsonElement]
-    public string Key { get; set; }
-
-    [BsonElement]
-    public byte[] Chunk { get; set; }
-
-    [BsonElement]
-    public int ChunkIdx { get; set; }
-
-    /// <inheritdoc />
-    [BsonIgnore]
-    public string CollectionName { get; } = Collection;
-
-    /// <inheritdoc />
-    public Task InitializeIndexesAsync(
-      IClientSessionHandle sessionHandle,
-      IMongoCollection<ObjectDataModel> collection)
-    {
-      var keyIndex = Builders<ObjectDataModel>.IndexKeys.Text(model => model.Key);
-      var chunkIdxIndex = Builders<ObjectDataModel>.IndexKeys.Text(model => model.ChunkIdx);
-      var iDIndex = Builders<ObjectDataModel>.IndexKeys.Text(model => model.Id);
-      var combinedIndex = Builders<ObjectDataModel>.IndexKeys.Combine(keyIndex,
-                                                                      chunkIdxIndex);
+    var keyIndex      = Builders<ObjectDataModel>.IndexKeys.Text(model => model.Key);
+    var chunkIdxIndex = Builders<ObjectDataModel>.IndexKeys.Text(model => model.ChunkIdx);
+    var iDIndex       = Builders<ObjectDataModel>.IndexKeys.Text(model => model.Id);
+    var combinedIndex = Builders<ObjectDataModel>.IndexKeys.Combine(keyIndex,
+                                                                    chunkIdxIndex);
 
 
-      var indexModels = new CreateIndexModel<ObjectDataModel>[]
-                        {
-                          new(iDIndex,
-                              new()
-                              {
-                                Name   = nameof(iDIndex),
-                                Unique = true,
-                              }),
-                          new(keyIndex,
-                              new()
-                              {
-                                Name = nameof(keyIndex),
-                              }),
-                          new(combinedIndex,
-                              new()
-                              {
-                                Name   = nameof(combinedIndex),
-                                Unique = true,
-                              }),
-                        };
+    var indexModels = new CreateIndexModel<ObjectDataModel>[]
+                      {
+                        new(iDIndex,
+                            new()
+                            {
+                              Name   = nameof(iDIndex),
+                              Unique = true,
+                            }),
+                        new(keyIndex,
+                            new()
+                            {
+                              Name = nameof(keyIndex),
+                            }),
+                        new(combinedIndex,
+                            new()
+                            {
+                              Name   = nameof(combinedIndex),
+                              Unique = true,
+                            }),
+                      };
 
-      return collection.Indexes.CreateManyAsync(sessionHandle,
-                                                indexModels);
-    }
+    return collection.Indexes.CreateManyAsync(sessionHandle,
+                                              indexModels);
   }
 }

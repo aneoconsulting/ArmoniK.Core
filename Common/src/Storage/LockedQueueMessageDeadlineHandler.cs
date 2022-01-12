@@ -25,49 +25,48 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Utils;
+using ArmoniK.Core.Common.Utils;
 
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Storage
+namespace ArmoniK.Core.Common.Storage;
+
+[PublicAPI]
+public class LockedQueueMessageDeadlineHandler : IAsyncDisposable
 {
-  [PublicAPI]
-  public class LockedQueueMessageDeadlineHandler : IAsyncDisposable
+  private readonly CancellationToken   cancellationToken_;
+  private readonly Heart               heart_;
+  private readonly string              id_;
+  private readonly ILockedQueueStorage lockedQueueStorage_;
+  private readonly ILogger             logger_;
+
+  public LockedQueueMessageDeadlineHandler(ILockedQueueStorage lockedQueueStorage,
+                                           string              id,
+                                           ILogger             logger,
+                                           CancellationToken   cancellationToken = default)
   {
-    private readonly CancellationToken   cancellationToken_;
-    private readonly Heart               heart_;
-    private readonly string              id_;
-    private readonly ILockedQueueStorage lockedQueueStorage_;
-    private readonly ILogger             logger_;
+    lockedQueueStorage_ = lockedQueueStorage;
+    id_                 = id;
+    cancellationToken_  = cancellationToken;
+    heart_ = new(async ct => await lockedQueueStorage_.RenewDeadlineAsync(id_,
+                                                                          ct),
+                 lockedQueueStorage_.LockRefreshPeriodicity,
+                 cancellationToken_);
+    heart_.Start();
+    logger_ = logger;
+  }
 
-    public LockedQueueMessageDeadlineHandler(ILockedQueueStorage lockedQueueStorage,
-                                             string              id,
-                                             ILogger             logger,
-                                             CancellationToken   cancellationToken = default)
-    {
-      lockedQueueStorage_ = lockedQueueStorage;
-      id_                 = id;
-      cancellationToken_  = cancellationToken;
-      heart_ = new(async ct => await lockedQueueStorage_.RenewDeadlineAsync(id_,
-                                                                            ct),
-                   lockedQueueStorage_.LockRefreshPeriodicity,
-                   cancellationToken_);
-      heart_.Start();
-      logger_ = logger;
-    }
+  public CancellationToken MessageLockLost => heart_.HeartStopped;
 
-    public CancellationToken MessageLockLost => heart_.HeartStopped;
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-      using var _ = logger_.LogFunction(id_,
-                                        functionName: $"{nameof(LockedQueueMessageDeadlineHandler)}.{nameof(DisposeAsync)}");
-      if (!heart_.HeartStopped.IsCancellationRequested)
-        await heart_.Stop();
-      GC.SuppressFinalize(this);
-    }
+  /// <inheritdoc />
+  public async ValueTask DisposeAsync()
+  {
+    using var _ = logger_.LogFunction(id_,
+                                      functionName: $"{nameof(LockedQueueMessageDeadlineHandler)}.{nameof(DisposeAsync)}");
+    if (!heart_.HeartStopped.IsCancellationRequested)
+      await heart_.Stop();
+    GC.SuppressFinalize(this);
   }
 }

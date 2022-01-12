@@ -29,18 +29,17 @@ using FluentValidation;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core.gRPC.Validators
-{
-  [UsedImplicitly]
-  public class TaskFilterValidator : AbstractValidator<TaskFilter>
-  {
-    public TaskFilterValidator()
-    {
-      RuleFor(tf => tf).Must(filter => filter.IncludedTaskIds.All(id => !filter.ExcludedTaskIds.Contains(id)))
-                       .WithMessage($"Content of {nameof(TaskFilter.IncludedTaskIds)} and {nameof(TaskFilter.ExcludedTaskIds)} must not overlap.");
+namespace ArmoniK.Core.Common.gRPC.Validators;
 
-      RuleFor(tf => tf).Must(filter => filter.IncludedStatuses.All(status => !filter.ExcludedStatuses.Contains(status)))
-                       .WithMessage($"Content of {nameof(TaskFilter.IncludedStatuses)} and {nameof(TaskFilter.ExcludedStatuses)} must not overlap.");
-    }
+[UsedImplicitly]
+public class TaskFilterValidator : AbstractValidator<TaskFilter>
+{
+  public TaskFilterValidator()
+  {
+    RuleFor(tf => tf).Must(filter => filter.IncludedTaskIds.All(id => !filter.ExcludedTaskIds.Contains(id)))
+                     .WithMessage($"Content of {nameof(TaskFilter.IncludedTaskIds)} and {nameof(TaskFilter.ExcludedTaskIds)} must not overlap.");
+
+    RuleFor(tf => tf).Must(filter => filter.IncludedStatuses.All(status => !filter.ExcludedStatuses.Contains(status)))
+                     .WithMessage($"Content of {nameof(TaskFilter.IncludedStatuses)} and {nameof(TaskFilter.ExcludedStatuses)} must not overlap.");
   }
 }

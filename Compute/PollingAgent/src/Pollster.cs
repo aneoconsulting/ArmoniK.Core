@@ -27,21 +27,21 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-using ArmoniK.Core;
-using ArmoniK.Core.Exceptions;
-using ArmoniK.Core.gRPC;
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.gRPC.V1;
-using ArmoniK.Core.Injection.Options;
-using ArmoniK.Core.Storage;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using TaskCanceledException = ArmoniK.Core.Exceptions.TaskCanceledException;
+using TaskCanceledException = ArmoniK.Core.Common.Exceptions.TaskCanceledException;
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
-using TimeoutException = ArmoniK.Core.Exceptions.TimeoutException;
+using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
 
-namespace ArmoniK.Compute.PollingAgent;
+namespace ArmoniK.Core.Compute.PollingAgent;
 
 public class Pollster
 {

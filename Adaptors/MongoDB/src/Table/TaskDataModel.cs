@@ -25,7 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using ArmoniK.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf;
@@ -35,120 +35,119 @@ using MongoDB.Driver;
 
 using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Adapters.MongoDB.Table
+namespace ArmoniK.Core.Adapters.MongoDB.Table;
+
+public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaggedId
 {
-  public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaggedId
+  public const string Collection = "tasks";
+
+  static TaskDataModel()
   {
-    public const string Collection = "tasks";
-
-    static TaskDataModel()
-    {
-      if (!BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
-        BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
-                                                     {
-                                                       cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
-                                                       cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(SubSessionId)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
-                                                       cm.MapProperty(nameof(Status)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Retries)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
-                                                       cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                       cm.MapProperty(nameof(ParentsSubSessions)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                       cm.SetIgnoreExtraElements(true);
-                                                     });
-    }
-
-    public string SessionId { get; set; }
-
-    public string SubSessionId { get; set; }
-
-    public string TaskId { get; set; }
-
-    public TaskOptions Options { get; set; }
-
-    public TaskStatus Status { get; set; }
-
-    public int Retries { get; set; }
-
-    public bool HasPayload { get; set; }
-
-    public byte[] Payload { get; set; }
-
-    public IList<string> Dependencies { get; set; } = Array.Empty<string>();
-
-    public IList<string> ParentsSubSessions { get; set; } = Array.Empty<string>();
-
-    /// <inheritdoc />
-    public string CollectionName => Collection;
-
-    /// <inheritdoc />
-    public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle,
-                                       IMongoCollection<TaskDataModel> collection)
-    {
-      var sessionIndex = Builders<TaskDataModel>.IndexKeys.Text(model => model.SessionId);
-      var subSessionIndex = Builders<TaskDataModel>.IndexKeys.Text(model => model.SubSessionId);
-      var statusIndex = Builders<TaskDataModel>.IndexKeys.Text(model => model.Status);
-      var sessionSubSessionIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
-                                                                  subSessionIndex);
-      var sessionStatusIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
-                                                                         statusIndex);
-
-      var indexModels = new CreateIndexModel<TaskDataModel>[]
-                        {
-                          new(sessionIndex,
-                              new()
-                              {
-                                Name = nameof(sessionIndex),
-                              }),
-                          new(sessionSubSessionIndex,
-                              new()
-                              {
-                                Name   = nameof(sessionSubSessionIndex),
-                                Unique = true,
-                              }),
-                          new(sessionStatusIndex,
-                              new()
-                              {
-                                Name = nameof(sessionStatusIndex),
-                              }),
-                        };
-
-      return collection.Indexes.CreateManyAsync(sessionHandle,
-                                                indexModels);
-    }
-
-    /// <inheritdoc />
-    public string IdTag => Options.IdTag;
-
-    public TaskData ToTaskData() => new()
-    {
-      Id = new()
-      {
-        Session = SessionId,
-        SubSession = SubSessionId,
-        Task = TaskId,
-      },
-      IsPayloadAvailable = HasPayload,
-      Payload = new()
-      {
-        Data = ByteString.CopyFrom(Payload),
-      },
-      Options = Options,
-      Retries = Retries,
-      Status = Status,
-      Dependencies =
-                                      {
-                                        Dependencies,
-                                      },
-    };
-
-    public TaskId GetTaskId() => new()
-    {
-      Session = SessionId,
-      SubSession = SubSessionId,
-      Task = TaskId,
-    };
+    if (!BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
+      BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
+                                                   {
+                                                     cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
+                                                     cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(SubSessionId)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                     cm.MapProperty(nameof(Status)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(Retries)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
+                                                     cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                     cm.MapProperty(nameof(ParentsSubSessions)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                     cm.SetIgnoreExtraElements(true);
+                                                   });
   }
+
+  public string SessionId { get; set; }
+
+  public string SubSessionId { get; set; }
+
+  public string TaskId { get; set; }
+
+  public TaskOptions Options { get; set; }
+
+  public TaskStatus Status { get; set; }
+
+  public int Retries { get; set; }
+
+  public bool HasPayload { get; set; }
+
+  public byte[] Payload { get; set; }
+
+  public IList<string> Dependencies { get; set; } = Array.Empty<string>();
+
+  public IList<string> ParentsSubSessions { get; set; } = Array.Empty<string>();
+
+  /// <inheritdoc />
+  public string CollectionName => Collection;
+
+  /// <inheritdoc />
+  public Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,
+                                     IMongoCollection<TaskDataModel> collection)
+  {
+    var sessionIndex    = Builders<TaskDataModel>.IndexKeys.Text(model => model.SessionId);
+    var subSessionIndex = Builders<TaskDataModel>.IndexKeys.Text(model => model.SubSessionId);
+    var statusIndex     = Builders<TaskDataModel>.IndexKeys.Text(model => model.Status);
+    var sessionSubSessionIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
+                                                                           subSessionIndex);
+    var sessionStatusIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
+                                                                       statusIndex);
+
+    var indexModels = new CreateIndexModel<TaskDataModel>[]
+                      {
+                        new(sessionIndex,
+                            new()
+                            {
+                              Name = nameof(sessionIndex),
+                            }),
+                        new(sessionSubSessionIndex,
+                            new()
+                            {
+                              Name   = nameof(sessionSubSessionIndex),
+                              Unique = true,
+                            }),
+                        new(sessionStatusIndex,
+                            new()
+                            {
+                              Name = nameof(sessionStatusIndex),
+                            }),
+                      };
+
+    return collection.Indexes.CreateManyAsync(sessionHandle,
+                                              indexModels);
+  }
+
+  /// <inheritdoc />
+  public string IdTag => Options.IdTag;
+
+  public TaskData ToTaskData() => new()
+                                  {
+                                    Id = new()
+                                         {
+                                           Session    = SessionId,
+                                           SubSession = SubSessionId,
+                                           Task       = TaskId,
+                                         },
+                                    IsPayloadAvailable = HasPayload,
+                                    Payload = new()
+                                              {
+                                                Data = ByteString.CopyFrom(Payload),
+                                              },
+                                    Options = Options,
+                                    Retries = Retries,
+                                    Status  = Status,
+                                    Dependencies =
+                                    {
+                                      Dependencies,
+                                    },
+                                  };
+
+  public TaskId GetTaskId() => new()
+                               {
+                                 Session    = SessionId,
+                                 SubSession = SubSessionId,
+                                 Task       = TaskId,
+                               };
 }
