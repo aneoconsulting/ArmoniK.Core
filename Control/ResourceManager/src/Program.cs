@@ -25,11 +25,10 @@ using System;
 using System.IO;
 
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Injection;
-using ArmoniK.Core.Control.Submitter.Services;
+using ArmoniK.Core.Control.ResourceManager.Services;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -39,7 +38,7 @@ using Microsoft.Extensions.Logging;
 
 using Serilog;
 
-namespace ArmoniK.Core.Control.Submitter;
+namespace ArmoniK.Core.Control.ResourceManager;
 
 public static class Program
 {
@@ -84,8 +83,6 @@ public static class Program
              .AddLogging()
              .AddArmoniKCore(builder.Configuration)
              .AddMongoComponents(builder.Configuration)
-             .AddAmqp(builder.Configuration,
-                      logger)
              .ValidateGrpcRequests();
 
 
@@ -117,7 +114,7 @@ public static class Program
                          //readiness uses grpc to ensure corresponding features are ok.
                          endpoints.MapGrpcService<GrpcHealthCheckService>();
 
-                         endpoints.MapGrpcService<ClientService>();
+                         endpoints.MapGrpcService<ResourceManagerService>();
                        });
       app.Run();
 

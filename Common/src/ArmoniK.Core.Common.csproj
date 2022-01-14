@@ -44,6 +44,9 @@
     <Protobuf Include="..\..\Protos\V1\ClientService.proto" GrpcServices="Server">
       <Link>gRPC\Protos\ClientService.proto</Link>
     </Protobuf>
+    <Protobuf Include="..\..\Protos\V1\resources_manager_service.proto" GrpcServices="Server">
+      <Link>gRPC\Protos\resources_manager_service.proto</Link>
+    </Protobuf>
     <Protobuf Include="..\..\Protos\V1\Objects.proto" GrpcServices="Message">
       <Link>gRPC\Protos\Objects.proto</Link>
     </Protobuf>

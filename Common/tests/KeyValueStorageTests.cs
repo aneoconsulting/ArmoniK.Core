@@ -135,7 +135,7 @@ public class KeyValueStorageTests
     var objectStorageMock = new Mock<IObjectStorage>();
 
     Expression<Func<IObjectStorage, Task<byte[]>>> expression = storage
-                                                                  => storage.TryGetValuesAsync(It.IsAny<string>(),
+                                                                  => storage.GetValuesAsync(It.IsAny<string>(),
                                                                                                It.IsAny<CancellationToken>());
 
     objectStorageMock.Setup(expression)
@@ -144,7 +144,7 @@ public class KeyValueStorageTests
     var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object,
                                                  NullLogger<KeyValueStorage<TaskId, Lease>>.Instance);
 
-    var obtainedLeaseValue = await kvs.TryGetValuesAsync(taskId,
+    var obtainedLeaseValue = await kvs.GetValuesAsync(taskId,
                                                          CancellationToken.None);
 
     objectStorageMock.Verify(expression,
@@ -195,7 +195,7 @@ public class KeyValueStorageTests
   [TestCase("suffix1")]
   [TestCase("suffix2")]
   [TestCase("abc")]
-  public async Task TryDeleteAsyncForwardsToObjectStorage(string suffix)
+  public async Task DeleteAsyncForwardsToObjectStorage(string suffix)
   {
     var taskId = new TaskId
                  {
@@ -213,8 +213,8 @@ public class KeyValueStorageTests
 
     var objectStorageMock = new Mock<IObjectStorage>();
 
-    Expression<Func<IObjectStorage, Task<bool>>> expression = storage
-                                                                => storage.TryDeleteAsync(It.IsAny<string>(),
+    Expression<Func<IObjectStorage, Task>> expression = storage
+                                                                => storage.DeleteAsync(It.IsAny<string>(),
                                                                                           It.IsAny<CancellationToken>());
 
     objectStorageMock.Setup(expression);
@@ -222,7 +222,7 @@ public class KeyValueStorageTests
     var kvs = new KeyValueStorage<TaskId, Lease>(objectStorageMock.Object,
                                                  NullLogger<KeyValueStorage<TaskId, Lease>>.Instance);
 
-    await kvs.TryDeleteAsync(taskId,
+    await kvs.DeleteAsync(taskId,
                              CancellationToken.None);
 
     objectStorageMock.Verify(expression,

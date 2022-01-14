@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -116,7 +117,7 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default)
+  public async Task<byte[]> GetValuesAsync(string key, CancellationToken cancellationToken = default)
   {
     using var _                = logger_.LogFunction(key);
     var       sessionHandle    = await sessionProvider_.GetAsync();
@@ -135,14 +136,26 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
+  public async Task DeleteAsync(string key, CancellationToken cancellationToken = default)
   {
     using var _                = logger_.LogFunction(key);
     var       objectCollection = await objectCollectionProvider_.GetAsync();
 
-    var res = await objectCollection.DeleteManyAsync(odm => odm.Key == key,
+    await objectCollection.DeleteManyAsync(odm => odm.Key == key,
                                                      cancellationToken);
-    return res.DeletedCount > 0;
+  }
+
+  /// <inheritdoc />
+  public async IAsyncEnumerable<string> ListKeysAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction();
+    var       sessionHandle    = await sessionProvider_.GetAsync();
+    var       objectCollection = await objectCollectionProvider_.GetAsync();
+
+    await foreach (var key in AsyncCursorSourceExt.ToAsyncEnumerable(objectCollection.AsQueryable(sessionHandle)
+                                                                                     .Select(model => model.Key))
+                                                  .WithCancellation(cancellationToken))
+      yield return key;
   }
 
   /// <inheritdoc />

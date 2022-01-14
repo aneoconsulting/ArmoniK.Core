@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +31,9 @@ public interface IObjectStorage : IInitializable
 {
   Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default);
 
-  Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default);
+  Task<byte[]> GetValuesAsync(string key, CancellationToken cancellationToken = default);
 
-  Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default);
+  Task DeleteAsync(string key, CancellationToken cancellationToken = default);
+
+  IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default);
 }

@@ -611,7 +611,7 @@ public class Pollster
     if (!taskData.IsPayloadAvailable)
     {
       logger_.LogInformation("Start retrieving payload");
-      var payload = await taskPayloadStorage_.TryGetValuesAsync(taskData.Id,
+      var payload = await taskPayloadStorage_.GetValuesAsync(taskData.Id,
                                                                 combinedCt);
       logger_.LogInformation("Payload retrieved");
       taskData.Payload            = payload;

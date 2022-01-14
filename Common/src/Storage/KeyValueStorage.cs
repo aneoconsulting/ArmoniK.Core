@@ -72,20 +72,20 @@ public class KeyValueStorage<TKey, TValue> : IInitializable
                                            cancellationToken);
   }
 
-  public async Task<TValue> TryGetValuesAsync(TKey key, CancellationToken cancellationToken = default)
+  public async Task<TValue> GetValuesAsync(TKey key, CancellationToken cancellationToken = default)
   {
     var       serializedKey = SerializeKey(key);
     using var _             = logger_.LogFunction(serializedKey);
-    var serializedOutput = await objectStorage_.TryGetValuesAsync(serializedKey,
+    var serializedOutput = await objectStorage_.GetValuesAsync(serializedKey,
                                                                   cancellationToken);
     return ValueParser.ParseFrom(serializedOutput);
   }
 
-  public Task<bool> TryDeleteAsync(TKey key, CancellationToken cancellationToken = default)
+  public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
   {
     var       serializedKey = SerializeKey(key);
     using var _             = logger_.LogFunction(serializedKey);
-    return objectStorage_.TryDeleteAsync(serializedKey,
+    return objectStorage_.DeleteAsync(serializedKey,
                                          cancellationToken);
   }
 

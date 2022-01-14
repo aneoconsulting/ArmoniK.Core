@@ -44,7 +44,7 @@ using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Control.Submitter.Services;
 
-public class ClientService : Core.gRPC.V1.ClientService.ClientServiceBase
+public class ClientService : gRPC.V1.ClientService.ClientServiceBase
 {
   private readonly IQueueStorage                         lockedQueueStorage_;
   private readonly ILogger<ClientService>                logger_;
@@ -343,7 +343,7 @@ public class ClientService : Core.gRPC.V1.ClientService.ClientServiceBase
                                                               context.CancellationToken)
                                               .WithCancellation(context.CancellationToken))
     {
-      var result = await taskResultStorage_.TryGetValuesAsync(taskId,
+      var result = await taskResultStorage_.GetValuesAsync(taskId,
                                                               context.CancellationToken);
       var reply = new SinglePayloadReply
                   {
