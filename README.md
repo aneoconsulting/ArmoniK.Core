@@ -1,3 +1,6 @@
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-green.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
+
 # Project components
 
 This page intends to describe the different software projetcs and components used for ArmoniK 

@@ -35,6 +35,7 @@ using NUnit.Framework;
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 [TestFixture]
+[Category("Integration")]
 [Ignore("Require a deployed database")]
 internal class ConnectedTableStorageTests
 {
@@ -44,7 +45,7 @@ internal class ConnectedTableStorageTests
     Dictionary<string, string> baseConfig = new()
                                             {
                                               { "MongoDB:ConnectionString", "mongodb://localhost" },
-                                              { "MongoDB:DatabaseName", "database" },
+                                              { "MongoDB:DatabaseName", "ConnectedTableStorageTests" },
                                               { "MongoDB:DataRetention", "10.00:00:00" },
                                               { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
                                               { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
