@@ -133,7 +133,7 @@ internal class InjectionTests
     services.AddMongoComponents(configuration_);
     var provider = services.BuildServiceProvider();
 
-    var options = provider.GetRequiredService<TableStorage>();
+    var options = provider.GetRequiredService<Options.TableStorage>();
 
     Assert.NotNull(options);
   }
@@ -145,7 +145,7 @@ internal class InjectionTests
     services.AddMongoComponents(configuration_);
     var provider = services.BuildServiceProvider();
 
-    var options = provider.GetRequiredService<TableStorage>();
+    var options = provider.GetRequiredService<Options.TableStorage>();
 
     Assert.AreEqual(TimeSpan.FromSeconds(10),
                     options.PollingDelay);
@@ -158,7 +158,7 @@ internal class InjectionTests
     services.AddMongoComponents(configuration_);
     var provider = services.BuildServiceProvider();
 
-    var options = provider.GetRequiredService<ObjectStorage>();
+    var options = provider.GetRequiredService<Options.ObjectStorage>();
 
     Assert.NotNull(options);
   }
@@ -170,7 +170,7 @@ internal class InjectionTests
     services.AddMongoComponents(configuration_);
     var provider = services.BuildServiceProvider();
 
-    var options = provider.GetRequiredService<ObjectStorage>();
+    var options = provider.GetRequiredService<Options.ObjectStorage>();
 
     Assert.AreEqual(100000,
                     options.ChunkSize);
@@ -183,7 +183,7 @@ internal class InjectionTests
     services.AddMongoComponents(configuration_);
     var provider = services.BuildServiceProvider();
 
-    var options = provider.GetRequiredService<QueueStorage>();
+    var options = provider.GetRequiredService<Options.QueueStorage>();
 
     Assert.NotNull(options);
   }
@@ -195,7 +195,7 @@ internal class InjectionTests
     services.AddMongoComponents(configuration_);
     var provider = services.BuildServiceProvider();
 
-    var options = provider.GetRequiredService<QueueStorage>();
+    var options = provider.GetRequiredService<Options.QueueStorage>();
 
     Assert.AreEqual(TimeSpan.FromMinutes(50),
                     options.LockRefreshExtension);
@@ -234,7 +234,7 @@ internal class InjectionTests
     services.AddMongoComponents(configuration_);
     var provider = services.BuildServiceProvider();
 
-    var options = provider.GetRequiredService<LeaseProvider>();
+    var options = provider.GetRequiredService<Options.LeaseProvider>();
 
     Assert.NotNull(options);
   }
@@ -246,7 +246,7 @@ internal class InjectionTests
     services.AddMongoComponents(configuration_);
     var provider = services.BuildServiceProvider();
 
-    var options = provider.GetRequiredService<LeaseProvider>();
+    var options = provider.GetRequiredService<Options.LeaseProvider>();
 
     Assert.AreEqual(TimeSpan.FromMinutes(20),
                     options.AcquisitionPeriod);
@@ -259,7 +259,7 @@ internal class InjectionTests
     services.AddMongoComponents(configuration_);
     var provider = services.BuildServiceProvider();
 
-    var options = provider.GetRequiredService<LeaseProvider>();
+    var options = provider.GetRequiredService<Options.LeaseProvider>();
 
     Assert.AreEqual(TimeSpan.FromMinutes(50),
                     options.AcquisitionDuration);
