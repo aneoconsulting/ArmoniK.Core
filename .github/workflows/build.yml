@@ -1,0 +1,132 @@
+name: DeployTest
+
+on:
+  push:
+    paths:
+      - 'Adaptors/**'
+      - 'Common/**'
+      - 'Compute/**'
+      - 'Control/**'
+      - '.github/workflows/**'
+
+jobs:
+  versionning:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.genver.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+        fetch-depth: 0
+
+    - name: Generate Version
+      id: genver
+      run: |
+        VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=master --dev-branch=dev) 
+        echo "::set-output name=version::$VERSION"
+        echo $VERSION
+
+  buildProjects:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+        submodules: true
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.x
+
+    - name: Build the package
+      run: |
+        dotnet build Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj -c Release
+        dotnet build Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj -c Release
+        dotnet build Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj -c Release
+        dotnet build Common/src/ArmoniK.Core.Common.csproj -c Release
+        dotnet build Common/tests/ArmoniK.Core.Common.Tests.csproj -c Release
+        dotnet build Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj -c Release
+        dotnet build Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj -c Release
+
+    - name: Run tests
+      run: |
+        dotnet test Common/tests/ArmoniK.Core.Common.Tests.csproj
+        dotnet test Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj
+
+  buildControl:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - buildProjects
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+        submodules: true
+
+    - name: login
+      run: |
+        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
+
+    - name: build
+      run: |
+        echo $VERSION
+        docker build -t dockerhubaneo/armonik_control:$VERSION -f Control/Submitter/src/Dockerfile .
+
+    - name: push
+      run: |
+        docker push dockerhubaneo/armonik_control:$VERSION
+
+  buildAgent:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - buildProjects
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+        submodules: true
+
+    - name: login
+      run: |
+        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
+
+    - name: Build
+      run: |
+        echo $VERSION
+        docker build -t dockerhubaneo/armonik_pollingagent:$VERSION -f ./Compute/PollingAgent/src/Dockerfile .
+
+    - name: push
+      run: |
+        docker push dockerhubaneo/armonik_pollingagent:$VERSION
+
+  tag:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs:
+      - versionning
+      - buildAgent
+      - buildControl
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+
+    - name: tag
+      run: |
+        git tag $VERSION
+        git push origin $VERSION
