@@ -30,10 +30,14 @@ using ArmoniK.Core.Common.Injection.Options;
 
 using Grpc.Core;
 
+using JetBrains.Annotations;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC;
 
+
+[UsedImplicitly]
 public class GrpcChannelProvider : ProviderBase<ChannelBase>
 {
   // ReSharper disable once SuggestBaseTypeForParameterInConstructor
