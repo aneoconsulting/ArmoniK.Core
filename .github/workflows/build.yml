@@ -140,13 +140,43 @@ jobs:
       run: |
         docker push dockerhubaneo/armonik_pollingagent:$VERSION
 
+  testInfraWorker:
+    needs:
+      - versionning
+      - buildAgent
+      - buildControl
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aneoconsulting/ArmoniK/.github/actions/test-worker@JG/workflows
+        with:
+          version: JG/workflows
+          control-plane-image: dockerhubaneo/armonik_control
+          control-plane-tag: ${{ needs.versionning.outputs.version }}
+          polling-agent-image: dockerhubaneo/armonik_pollingagent
+          polling-agent-tag: ${{ needs.versionning.outputs.version }}
+
+  testInfraMock:
+    needs:
+      - versionning
+      - buildAgent
+      - buildControl
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aneoconsulting/ArmoniK/.github/actions/test-mock@JG/workflows
+        with:
+          version: JG/workflows
+          control-plane-image: dockerhubaneo/armonik_control
+          control-plane-tag: ${{ needs.versionning.outputs.version }}
+          polling-agent-image: dockerhubaneo/armonik_pollingagent
+          polling-agent-tag: ${{ needs.versionning.outputs.version }}
+
   tag:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/release' }}
     needs:
       - versionning
-      - buildAgent
-      - buildControl
+      - testInfraWorker
+      - testInfraMock
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
