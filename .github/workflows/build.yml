@@ -8,6 +8,8 @@ on:
       - 'Compute/**'
       - 'Control/**'
       - '.github/workflows/**'
+    tags-ignore:
+      - "**"
 
 jobs:
   versionning:
