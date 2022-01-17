@@ -147,9 +147,9 @@ jobs:
       - buildControl
     runs-on: ubuntu-latest
     steps:
-      - uses: aneoconsulting/ArmoniK/.github/actions/test-worker@JG/workflows
+      - uses: aneoconsulting/ArmoniK/.github/actions/test-worker@main
         with:
-          version: JG/workflows
+          version: main
           control-plane-image: dockerhubaneo/armonik_control
           control-plane-tag: ${{ needs.versionning.outputs.version }}
           polling-agent-image: dockerhubaneo/armonik_pollingagent
@@ -162,9 +162,9 @@ jobs:
       - buildControl
     runs-on: ubuntu-latest
     steps:
-      - uses: aneoconsulting/ArmoniK/.github/actions/test-mock@JG/workflows
+      - uses: aneoconsulting/ArmoniK/.github/actions/test-mock@main
         with:
-          version: JG/workflows
+          version: main
           control-plane-image: dockerhubaneo/armonik_control
           control-plane-tag: ${{ needs.versionning.outputs.version }}
           polling-agent-image: dockerhubaneo/armonik_pollingagent
