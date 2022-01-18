@@ -83,8 +83,6 @@ public static class Program
                                     .Enrich.FromLogContext());
 
       builder.Services
-             .AddGrpc()
-             .Services
              .AddLogging()
              .AddArmoniKCore(builder.Configuration)
              .AddMongoComponents(builder.Configuration)
@@ -129,9 +127,6 @@ public static class Program
                                   {
                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
                                   });
-
-        if (app.Environment.IsDevelopment())
-          endpoints.MapGrpcReflectionService();
       });
       app.Run();
       return 0;
