@@ -33,6 +33,7 @@ using ArmoniK.Core.Common.Injection;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -100,7 +101,8 @@ public static class Program
              .UseKestrel(options =>
              {
                options.Listen(IPAddress.Loopback,
-                              8989);
+                              8989,
+                              listenOptions => listenOptions.Protocols = HttpProtocols.Http1);
              });
 
       var app = builder.Build();
