@@ -83,6 +83,8 @@ public static class Program
                                     .Enrich.FromLogContext());
 
       builder.Services
+             .AddGrpc()
+             .Services
              .AddLogging()
              .AddArmoniKCore(builder.Configuration)
              .AddMongoComponents(builder.Configuration)
