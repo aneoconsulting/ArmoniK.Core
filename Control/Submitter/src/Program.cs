@@ -94,10 +94,7 @@ public static class Program
       var app = builder.Build();
 
       if (app.Environment.IsDevelopment())
-      {
         app.UseDeveloperExceptionPage();
-        app.MapGrpcReflectionService();
-      }
 
       app.UseSerilogRequestLogging();
 
@@ -123,6 +120,9 @@ public static class Program
                          endpoints.MapGrpcService<GrpcHealthCheckService>();
 
                          endpoints.MapGrpcService<ClientService>();
+
+                         if (app.Environment.IsDevelopment())
+                           endpoints.MapGrpcReflectionService();
                        });
       app.Run();
 

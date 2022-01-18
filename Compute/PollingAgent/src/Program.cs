@@ -47,9 +47,9 @@ public static class Program
   public static int Main(string[] args)
   {
     Log.Logger = new LoggerConfiguration()
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .CreateBootstrapLogger();
+                 .Enrich.FromLogContext()
+                 .WriteTo.Console()
+                 .CreateBootstrapLogger();
 
     try
     {
@@ -98,42 +98,41 @@ public static class Program
       builder.WebHost
              .UseConfiguration(builder.Configuration)
              .UseKestrel(options =>
-                         {
-                           options.Listen(IPAddress.Loopback,
-                                          8989);
-                         });
+             {
+               options.Listen(IPAddress.Loopback,
+                              8989);
+             });
 
       var app = builder.Build();
 
       app.UseRouting();
 
       if (app.Environment.IsDevelopment())
-      {
         app.UseDeveloperExceptionPage();
-        app.MapGrpcReflectionService();
-      }
 
       app.UseEndpoints(endpoints =>
-                       {
+      {
+        endpoints.MapHealthChecks("/startup",
+                                  new()
+                                  {
+                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                                  });
 
-                         endpoints.MapHealthChecks("/startup",
-                                                   new()
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
-                                                   });
+        endpoints.MapHealthChecks("/liveness",
+                                  new()
+                                  {
+                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                                  });
 
-                         endpoints.MapHealthChecks("/liveness",
-                                                   new()
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
-                                                   });
+        endpoints.MapHealthChecks("/readiness",
+                                  new()
+                                  {
+                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
+                                  });
 
-                         endpoints.MapHealthChecks("/readiness",
-                                                   new()
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
-                                                   });
-                       });
+        if (app.Environment.IsDevelopment())
+          endpoints.MapGrpcReflectionService();
+      });
       app.Run();
       return 0;
     }
