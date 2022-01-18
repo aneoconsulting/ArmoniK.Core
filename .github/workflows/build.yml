@@ -8,6 +8,8 @@ on:
       - 'Compute/**'
       - 'Control/**'
       - '.github/workflows/**'
+    branches:
+      - '**'
 
 jobs:
   versionning:
