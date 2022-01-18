@@ -234,6 +234,7 @@ public static class ServiceCollectionExt
                    .AddValidator<TaskOptionsValidator>()
                    .AddValidator<TaskRequestValidator>()
                    .AddValidator<TaskFilterValidator>()
+                   .AddGrpcReflection()
                    .AddGrpcValidation();
   }
 }

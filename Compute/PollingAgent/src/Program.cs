@@ -35,6 +35,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
@@ -103,6 +104,12 @@ public static class Program
       var app = builder.Build();
 
       app.UseRouting();
+
+      if (app.Environment.IsDevelopment())
+      {
+        app.UseDeveloperExceptionPage();
+        app.MapGrpcReflectionService();
+      }
 
       app.UseEndpoints(endpoints =>
                        {
