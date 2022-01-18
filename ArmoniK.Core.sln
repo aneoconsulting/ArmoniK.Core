@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Control.Submit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.MongoDB.Tests", "Adaptors\MongoDB\tests\ArmoniK.Core.Adapters.MongoDB.Tests.csproj", "{0AFE4810-2178-461D-BF84-4C562A2137FA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.Redis", "Adaptors\Redis\src\ArmoniK.Core.Adapters.Redis.csproj", "{36F24B13-BFE4-4CCE-B989-357A6991D0AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,14 @@ Global
 		{0AFE4810-2178-461D-BF84-4C562A2137FA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0AFE4810-2178-461D-BF84-4C562A2137FA}.Release|x64.ActiveCfg = Release|Any CPU
 		{0AFE4810-2178-461D-BF84-4C562A2137FA}.Release|x64.Build.0 = Release|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Debug|x64.Build.0 = Debug|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Release|x64.ActiveCfg = Release|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +119,7 @@ Global
 		{CAF59DC7-ED7B-4FA5-9031-4590282ACA0F} = {36BBA44F-9A2F-413B-971D-C347BAF87B2A}
 		{235087F2-A0EA-431A-9A15-B121F181D071} = {0E809C1E-CBF5-42E4-8624-2E244A52E422}
 		{0AFE4810-2178-461D-BF84-4C562A2137FA} = {2D548C40-6260-4A4E-9C56-E8A80C639E13}
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA} = {1A9BCE53-79D0-4761-B3A2-6967B610FA94}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1285A466-2AF6-43E6-8DCC-2F93A5D5F02E}

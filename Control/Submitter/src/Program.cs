@@ -26,6 +26,7 @@ using System.IO;
 
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Amqp;
+using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Control.Submitter.Services;
@@ -85,6 +86,8 @@ public static class Program
              .AddMongoComponents(builder.Configuration)
              .AddAmqp(builder.Configuration,
                       logger)
+             .AddRedis(builder.Configuration,
+                       logger)
              .ValidateGrpcRequests();
 
 

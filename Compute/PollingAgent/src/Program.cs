@@ -27,6 +27,7 @@ using System.Net;
 
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
 
@@ -86,6 +87,8 @@ public static class Program
              .AddMongoComponents(builder.Configuration)
              .AddAmqp(builder.Configuration,
                       logger)
+             .AddRedis(builder.Configuration,
+                       logger)
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>();
 

@@ -8,8 +8,6 @@ on:
       - 'Compute/**'
       - 'Control/**'
       - '.github/workflows/**'
-    tags-ignore:
-      - "**"
 
 jobs:
   versionning:
@@ -172,6 +170,21 @@ jobs:
           polling-agent-image: dockerhubaneo/armonik_pollingagent
           polling-agent-tag: ${{ needs.versionning.outputs.version }}
 
+  testInfraMockV3:
+    needs:
+      - versionning
+      - buildAgent
+      - buildControl
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aneoconsulting/ArmoniK/.github/actions/test-mock-v3@main
+        with:
+          version: main
+          control-plane-image: dockerhubaneo/armonik_control
+          control-plane-tag: ${{ needs.versionning.outputs.version }}
+          polling-agent-image: dockerhubaneo/armonik_pollingagent
+          polling-agent-tag: ${{ needs.versionning.outputs.version }}
+
   tag:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/release' }}
@@ -179,6 +192,7 @@ jobs:
       - versionning
       - testInfraWorker
       - testInfraMock
+      - testInfraMockV3
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
