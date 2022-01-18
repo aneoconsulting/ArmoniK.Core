@@ -93,6 +93,8 @@ public static class Program
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>();
 
+      builder.Services.AddHealthChecks();
+
       builder.WebHost
              .UseConfiguration(builder.Configuration)
              .UseKestrel(options =>
