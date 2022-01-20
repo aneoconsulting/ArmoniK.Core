@@ -25,19 +25,19 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
+using TaskStatus = System.Threading.Tasks.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table;
 
-public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaggedId
+public class TaskDataModel : IMongoDataModel<TaskDataModel>
 {
   public const string Collection = "tasks";
 
@@ -119,35 +119,9 @@ public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaggedId
                                               indexModels);
   }
 
-  /// <inheritdoc />
-  public string IdTag => Options.IdTag;
-
-  public TaskData ToTaskData() => new()
-                                  {
-                                    Id = new()
-                                         {
-                                           Session    = SessionId,
-                                           SubSession = SubSessionId,
-                                           Task       = TaskId,
-                                         },
-                                    IsPayloadAvailable = HasPayload,
-                                    Payload = new()
-                                              {
-                                                Data = ByteString.CopyFrom(Payload),
-                                              },
-                                    Options = Options,
-                                    Retries = Retries,
-                                    Status  = Status,
-                                    Dependencies =
-                                    {
-                                      Dependencies,
-                                    },
-                                  };
-
   public TaskId GetTaskId() => new()
                                {
                                  Session    = SessionId,
-                                 SubSession = SubSessionId,
                                  Task       = TaskId,
                                };
 }

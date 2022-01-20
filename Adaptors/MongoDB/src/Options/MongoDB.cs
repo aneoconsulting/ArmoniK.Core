@@ -23,8 +23,6 @@
 
 using System;
 
-using ArmoniK.Core.Adapters.MongoDB;
-
 using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Options;

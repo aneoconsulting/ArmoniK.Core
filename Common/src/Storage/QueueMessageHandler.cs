@@ -25,8 +25,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.gRPC.V1;
-
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
@@ -34,13 +32,13 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Common.Storage;
 
 [PublicAPI]
-public class QueueMessage : IQueueMessage
+public class QueueMessageHandler : IQueueMessageHandler
 {
   private readonly Func<QueueMessageStatus, Task> disposeFunc_;
   private readonly ILogger                        logger_;
 
-  public QueueMessage(string                         messageId,
-                      TaskId                         taskId,
+  public QueueMessageHandler(string                         messageId,
+                      string                         taskId,
                       Func<QueueMessageStatus, Task> disposeFunc,
                       ILogger                        logger,
                       CancellationToken              cancellationToken)
@@ -53,7 +51,7 @@ public class QueueMessage : IQueueMessage
   }
 
   public string MessageId { get; init; }
-  public TaskId TaskId    { get; init; }
+  public string TaskId    { get; init; }
 
   /// <inheritdoc />
   public QueueMessageStatus Status { get; set; }
@@ -64,7 +62,7 @@ public class QueueMessage : IQueueMessage
   public async ValueTask DisposeAsync()
   {
     using var _ = logger_.LogFunction(MessageId,
-                                      functionName: $"{nameof(QueueMessage)}.{nameof(DisposeAsync)}");
+                                      functionName: $"{nameof(QueueMessageHandler)}.{nameof(DisposeAsync)}");
     await disposeFunc_(Status);
     GC.SuppressFinalize(this);
   }

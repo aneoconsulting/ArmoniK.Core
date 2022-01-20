@@ -67,9 +67,6 @@ public static class ServiceCollectionExt
   public static IServiceCollection AddArmoniKCore(this IServiceCollection services,
                                                   IConfiguration          configuration)
   {
-    services.AddTransient<IObjectStorage, DistributedCacheObjectStorage>()
-            .AddSingleton(typeof(KeyValueStorage<,>));
-
     var computePlanComponent = configuration.GetSection(ComputePlan.SettingSection);
     if (computePlanComponent.Exists())
     {
@@ -82,7 +79,7 @@ public static class ServiceCollectionExt
                 .AddOption<Components>(configuration,
                                        Components.SettingSection)
                 .AddSingletonWithHealthCheck<GrpcChannelProvider>(nameof(GrpcChannelProvider))
-                .AddSingletonWithHealthCheck<ClientServiceProvider>(nameof(ClientServiceProvider));
+                .AddSingletonWithHealthCheck<WorkerClientProvider>(nameof(WorkerClientProvider));
       }
     }
 
@@ -226,13 +223,9 @@ public static class ServiceCollectionExt
                               options.MaxReceiveMessageSize = null;
                             })
                    .Services
-                   .AddValidator<CreateTaskRequestValidator>()
-                   .AddValidator<PayloadValidator>()
-                   .AddValidator<SessionIdValidator>()
-                   .AddValidator<SessionOptionsValidator>()
-                   .AddValidator<TaskIdValidator>()
+                   .AddValidator<CreateLargeTaskRequestValidator>()
+                   .AddValidator<CreateSessionRequestValidator>()
                    .AddValidator<TaskOptionsValidator>()
-                   .AddValidator<TaskRequestValidator>()
                    .AddValidator<TaskFilterValidator>()
                    .AddGrpcValidation();
   }

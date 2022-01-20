@@ -25,7 +25,6 @@ using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.gRPC.V1;
 
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;

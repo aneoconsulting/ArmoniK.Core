@@ -28,9 +28,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Lease;
 using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf.WellKnownTypes;
 

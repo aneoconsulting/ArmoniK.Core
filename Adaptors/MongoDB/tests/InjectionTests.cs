@@ -33,10 +33,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
-using LeaseProvider = ArmoniK.Core.Adapters.MongoDB.Options.LeaseProvider;
-using ObjectStorage = ArmoniK.Core.Adapters.MongoDB.Options.ObjectStorage;
-using TableStorage = ArmoniK.Core.Adapters.MongoDB.Options.TableStorage;
-
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 [TestFixture]

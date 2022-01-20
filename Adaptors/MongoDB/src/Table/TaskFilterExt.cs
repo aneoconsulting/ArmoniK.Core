@@ -25,8 +25,6 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 
-using ArmoniK.Core.gRPC.V1;
-
 namespace ArmoniK.Core.Adapters.MongoDB.Table;
 
 public static class TaskFilterExt

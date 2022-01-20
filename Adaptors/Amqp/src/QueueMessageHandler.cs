@@ -25,32 +25,37 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.gRPC.V1;
+using Amqp;
+
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Adapters.Amqp;
 
-public class LockedQueueMessage : IQueueMessage
+public class QueueMessageHandler : IQueueMessageHandler
 {
-  private readonly CancellationToken   cancellationToken_;
-  private readonly ILockedQueueStorage lockedQueueStorage_;
-  private readonly ILogger             logger_;
+  private readonly ILogger       logger_;
+  private readonly Message       message_;
+  private readonly IReceiverLink receiver_;
+  private readonly ISenderLink   sender_;
 
-  public LockedQueueMessage(ILockedQueueStorage lockedQueueStorage, string messageId, TaskId taskId, ILogger logger, CancellationToken cancellationToken)
+  public QueueMessageHandler(Message message, ISenderLink sender, IReceiverLink receiver, TaskId taskId, ILogger logger, CancellationToken cancellationToken)
   {
-    lockedQueueStorage_ = lockedQueueStorage;
-    logger_             = logger;
-    MessageId           = messageId;
-    TaskId              = taskId;
-    cancellationToken_  = cancellationToken;
+    message_          = message;
+    sender_           = sender;
+    receiver_         = receiver;
+    logger_           = logger;
+    TaskId            = taskId;
+    CancellationToken = cancellationToken;
   }
 
   /// <inheritdoc />
-  public CancellationToken CancellationToken => CancellationToken.None;
+  public CancellationToken CancellationToken { get; }
 
   /// <inheritdoc />
-  public string MessageId { get; }
+  public string MessageId => message_.Properties.MessageId;
 
   /// <inheritdoc />
   public TaskId TaskId { get; }
@@ -61,28 +66,34 @@ public class LockedQueueMessage : IQueueMessage
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
-    using var _ = logger_.LogFunction(MessageId,
-                                      functionName: $"{nameof(LockedQueueMessage)}.{nameof(DisposeAsync)}");
+    logger_.LogFunction(MessageId,
+                        functionName: $"{nameof(QueueStorage)}.{nameof(DisposeAsync)}");
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
-        await lockedQueueStorage_.RequeueMessageAsync(MessageId,
-                                                      cancellationToken_);
+        await sender_.SendAsync(new(message_.Body)
+                                {
+                                  Header = new()
+                                           {
+                                             Priority = message_.Header.Priority,
+                                           },
+                                  Properties = new(),
+                                });
+        receiver_.Accept(message_);
         break;
       case QueueMessageStatus.Failed:
-        await lockedQueueStorage_.ReleaseMessageAsync(MessageId,
-                                                      cancellationToken_);
+        receiver_.Release(message_);
         break;
       case QueueMessageStatus.Processed:
-        await lockedQueueStorage_.MessageProcessedAsync(MessageId,
-                                                        cancellationToken_);
+        receiver_.Accept(message_);
         break;
       case QueueMessageStatus.Poisonous:
-        await lockedQueueStorage_.MessageRejectedAsync(MessageId,
-                                                       cancellationToken_);
+        receiver_.Reject(message_);
         break;
       default:
-        throw new ArgumentOutOfRangeException();
+        throw new ArgumentOutOfRangeException(nameof(Status),
+                                              Status,
+                                              null);
     }
 
     GC.SuppressFinalize(this);

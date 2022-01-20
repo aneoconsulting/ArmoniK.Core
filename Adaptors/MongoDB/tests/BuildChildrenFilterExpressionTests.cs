@@ -25,7 +25,6 @@ using System;
 using System.Linq;
 
 using ArmoniK.Core.Adapters.MongoDB.Table;
-using ArmoniK.Core.gRPC.V1;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;

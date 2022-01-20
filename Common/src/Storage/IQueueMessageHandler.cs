@@ -21,17 +21,31 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.gRPC.V1;
+using System;
+using System.Threading;
 
-using FluentValidation;
+using ArmoniK.Core.Common.gRPC.DataModel;
 
-namespace ArmoniK.Core.Common.gRPC.Validators;
+namespace ArmoniK.Core.Common.Storage;
 
-public class SessionIdValidator : AbstractValidator<SessionId>
+public enum QueueMessageStatus
 {
-  public SessionIdValidator()
-  {
-    RuleFor(o => o.Session).NotEmpty().WithName(nameof(SessionId.Session));
-    RuleFor(o => o.SubSession).NotEmpty().WithName(nameof(SessionId.SubSession));
-  }
+  Failed,
+  Waiting = Failed,
+  Running = Failed,
+  Postponed,
+  Processed,
+  Cancelled = Processed,
+  Poisonous,
+}
+
+public interface IQueueMessageHandler : IAsyncDisposable
+{
+  CancellationToken CancellationToken { get; }
+
+  string MessageId { get; }
+
+  string TaskId { get; }
+
+  QueueMessageStatus Status { get; set; }
 }

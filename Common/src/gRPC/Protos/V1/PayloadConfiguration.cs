@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -21,29 +21,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Threading;
+// ReSharper disable once CheckNamespace
+namespace ArmoniK.Api.gRPC.V1;
 
-using ArmoniK.Core.gRPC.V1;
-
-namespace ArmoniK.Core.Common.Storage;
-
-public enum QueueMessageStatus
+public static class PayloadConfiguration
 {
-  Failed,
-  Waiting = Failed,
-  Running = Failed,
-  Postponed,
-  Processed,
-  Cancelled = Processed,
-  Poisonous,
-}
-
-public interface IQueueMessage : IAsyncDisposable
-{
-  CancellationToken CancellationToken { get; }
-  string            MessageId         { get; }
-  TaskId            TaskId            { get; }
-
-  QueueMessageStatus Status { get; set; }
+  public const int MaxChunkSize = 84000;
 }

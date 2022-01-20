@@ -24,8 +24,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using ArmoniK.Core.gRPC.V1;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;

@@ -25,14 +25,14 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.gRPC.V1;
-
-using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
 using JetBrains.Annotations;
+
+using Microsoft.Extensions.Logging;
 
 using TaskCanceledException = ArmoniK.Core.Common.Exceptions.TaskCanceledException;
 using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
@@ -122,9 +122,18 @@ public static class RpcExt
     }
   }
 
-  public static bool IsValid(this Lease lease)
-    => !string.IsNullOrEmpty(lease.LeaseId) && lease.ExpirationDate.CompareTo(Timestamp.FromDateTime(DateTime.UtcNow)) > 0;
+  public static async Task ForceMoveNext<T>(this IAsyncStreamReader<T> stream, string error, ILogger logger) where T : class
+  {
+    if (!await stream.MoveNext())
+    {
+      var exception = new RpcException(new(StatusCode.InvalidArgument,
+                                           error));
+      logger.LogError(exception,
+                       "Invalid stream");
+      throw exception;
+    }
+  }
 
   public static string ToPrintableId(this TaskId taskId)
-    => $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
+    => $"{taskId.Session}|{taskId.Task}";
 }

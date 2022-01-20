@@ -31,7 +31,7 @@ public class GrpcHealthCheckService : GrpcHealthCheckServiceBase
 {
   /// <inheritdoc />
   public GrpcHealthCheckService(HealthCheckService healthCheckService) 
-    : base(healthCheckService, new []{"ArmoniK.Core.gRPC.V1.ClientService"}
+    : base(healthCheckService, new []{"ArmoniK.Core.gRPC.V1.Submitter"}
           )
   {
   }

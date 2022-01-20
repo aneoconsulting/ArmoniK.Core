@@ -21,29 +21,47 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading;
+using System;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Injection;
+
+using Grpc.Core;
+
+using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Common.gRPC;
 
-public static class LeaseProviderExt
+[PublicAPI]
+public class WorkerClientProvider : ProviderBase<Worker.WorkerClient>
 {
-  public static async Task<LeaseHandler> GetLeaseHandlerAsync(this ILeaseProvider leaseProvider,
-                                                              TaskId              taskId,
-                                                              ILogger             logger,
-                                                              CancellationToken   cancellationToken = default)
+  /// <inheritdoc />
+  public WorkerClientProvider(GrpcChannelProvider channelProvider, ILogger<WorkerClientProvider> logger) :
+    base(() => BuildWorkerClient(channelProvider,
+                                  logger))
   {
-    using var _ = logger.LogFunction(taskId.ToPrintableId());
-    var output = new LeaseHandler(leaseProvider,
-                                  taskId,
-                                  logger,
-                                  cancellationToken);
-    await output.Start();
-    return output;
+  }
+
+  private static async Task<Worker.WorkerClient> BuildWorkerClient(
+    GrpcChannelProvider channelProvider,
+    ILogger             logger)
+  {
+    using var   _ = logger.LogFunction();
+    ChannelBase channel;
+    try
+    {
+      channel = await channelProvider.GetAsync();
+    }
+    catch (Exception e)
+    {
+      logger.LogError(e,
+                      "Could not create grpc channel");
+      throw;
+    }
+
+    return new(channel);
   }
 }

@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -21,20 +21,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.gRPC.V1;
+using System;
+using System.Collections.Generic;
 
-using FluentValidation;
+using ArmoniK.Api.gRPC.V1;
 
-using JetBrains.Annotations;
+namespace ArmoniK.Core.Common.Storage;
 
-namespace ArmoniK.Core.Common.gRPC.Validators;
-
-[UsedImplicitly]
-public class SessionOptionsValidator : AbstractValidator<SessionOptions>
+public interface IDispatch
 {
-  public SessionOptionsValidator()
-  {
-    RuleFor(o => o.DefaultTaskOption).NotEmpty()
-                                     .SetValidator(new TaskOptionsValidator());
-  }
+  string Id          { get; }
+  string TaskId      { get; }
+  int    Attempt     { get; }
+  string ErrorDetail { get; }
+
+  DateTime TimeToLive { get; }
+
+  IEnumerable<KeyValuePair<TaskStatus, DateTime>> Statuses { get; }
+
+  DateTime CreationDate { get; }
 }

@@ -21,22 +21,80 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Api.gRPC.V1;
 
 using FluentValidation;
 
-using JetBrains.Annotations;
-
 namespace ArmoniK.Core.Common.gRPC.Validators;
 
-[UsedImplicitly]
-public class CreateTaskRequestValidator : AbstractValidator<CreateTaskRequest>
+public class CreateSmallTaskRequestValidator : AbstractValidator<CreateSmallTaskRequest>
 {
-  public CreateTaskRequestValidator()
+  public CreateSmallTaskRequestValidator()
   {
-    RuleFor(r => r.SessionId).NotEmpty().SetValidator(new SessionIdValidator());
+    RuleFor(r => r.SessionId).NotEmpty();
     RuleFor(r => r.TaskOptions).SetValidator(new TaskOptionsValidator());
     RuleFor(request => request.TaskRequests).NotEmpty();
     RuleForEach(request => request.TaskRequests).NotEmpty().SetValidator(new TaskRequestValidator());
   }
+
+
+  public class TaskRequestValidator : AbstractValidator<CreateSmallTaskRequest.Types.TaskRequest>
+  {
+    public TaskRequestValidator()
+    {
+      RuleFor(r => r.DataDependencies).NotNull();
+      RuleFor(r => r.ExpectedOutputKeys).NotNull();
+      RuleFor(r => r.Payload).NotNull()
+                             .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize)
+                             .WithName(nameof(CreateSmallTaskRequest.Types.TaskRequest.Payload));
+    }
+  }
+}
+
+
+public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTaskRequest>
+{
+  public CreateLargeTaskRequestValidator()
+  {
+    RuleFor(r => r.RequestTypeCase).Must(oneOfCase => oneOfCase != CreateLargeTaskRequest.RequestTypeOneofCase.None);
+    RuleFor(r => r.InitRequest).NotNull()
+                               .SetValidator(new CreateLargeTaskInitRequestValidator())
+                               .When(r => r.RequestTypeCase == CreateLargeTaskRequest.RequestTypeOneofCase.InitRequest);
+    RuleFor(r => r.InitTask).NotNull()
+                            .SetValidator(new CreateLargeTaskInitTaskValidator())
+                            .When(r => r.RequestTypeCase == CreateLargeTaskRequest.RequestTypeOneofCase.InitTask);
+  }
+
+
+  private class CreateLargeTaskInitRequestValidator : AbstractValidator<CreateLargeTaskRequest.Types.InitRequest>
+  {
+    public CreateLargeTaskInitRequestValidator()
+    {
+      RuleFor(r => r.SessionId).NotEmpty();
+      RuleFor(r => r.TaskOptions).SetValidator(new TaskOptionsValidator());
+    }
+  }
+
+  private class CreateLargeTaskInitTaskValidator : AbstractValidator<CreateLargeTaskRequest.Types.InitTaskRequest>
+  {
+    public CreateLargeTaskInitTaskValidator()
+    {
+      RuleFor(r => r.DataDependencies).NotNull();
+      RuleFor(r => r.ExpectedOutputKeys).NotNull();
+      RuleFor(r => r.Id).NotNull().NotEmpty();
+      RuleFor(r => r.PayloadChunk).NotNull()
+                             .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize);
+    }
+  }
+
+  private class CreateLargeTaskPayloadValidator : AbstractValidator<CreateLargeTaskRequest.Types.PayloadRequest>
+  {
+    public CreateLargeTaskPayloadValidator()
+    {
+      RuleFor(r => r.PayloadChunk).NotNull()
+                             .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize);
+    }
+  }
+
+
 }

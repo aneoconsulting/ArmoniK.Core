@@ -28,7 +28,6 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
-using ArmoniK.Core.Control.Submitter.Services;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -116,7 +115,7 @@ public static class Program
                          //readiness uses grpc to ensure corresponding features are ok.
                          endpoints.MapGrpcService<GrpcHealthCheckService>();
 
-                         endpoints.MapGrpcService<ClientService>();
+                         endpoints.MapGrpcService<Services.Submitter>();
                        });
       app.Run();
 

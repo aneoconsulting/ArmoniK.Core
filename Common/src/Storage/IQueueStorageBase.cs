@@ -25,8 +25,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.gRPC.V1;
-
 namespace ArmoniK.Core.Common.Storage;
 
 public interface IQueueStorageBase : IInitializable
@@ -34,7 +32,7 @@ public interface IQueueStorageBase : IInitializable
 
   int MaxPriority { get; }
 
-  IAsyncEnumerable<IQueueMessage> PullAsync(int nbMessages, CancellationToken cancellationToken = default);
+  IAsyncEnumerable<IQueueMessageHandler> PullAsync(int nbMessages, CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Submit new messages
@@ -43,7 +41,7 @@ public interface IQueueStorageBase : IInitializable
   /// <param name="priority"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
+  Task EnqueueMessagesAsync(IEnumerable<string> messages,
                             int                 priority          = 1,
                             CancellationToken   cancellationToken = default);
 }

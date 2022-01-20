@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -21,16 +21,29 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.gRPC.V1;
+using System;
+using System.Collections.Generic;
 
-using FluentValidation;
+using ArmoniK.Api.gRPC.V1;
 
-namespace ArmoniK.Core.Common.gRPC.Validators;
+namespace ArmoniK.Core.Common.Storage;
 
-public class TaskRequestValidator : AbstractValidator<TaskRequest>
+public interface ITaskData
 {
-  public TaskRequestValidator()
-  {
-    RuleFor(r => r.Payload).NotNull().SetValidator(new PayloadValidator()).WithName(nameof(TaskRequest.Payload));
-  }
+  string SessionId { get; }
+
+  string ParentTaskId { get; }
+
+  string        TaskId           { get; }
+  IList<string> DataDependencies { get; }
+
+  bool HasPayload { get; }
+
+  byte[] Payload { get; }
+
+  TaskStatus Status { get; }
+
+  TaskOptions Options { get; }
+
+  DateTime CreationDate { get; }
 }

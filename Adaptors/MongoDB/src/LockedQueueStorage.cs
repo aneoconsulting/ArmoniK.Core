@@ -33,7 +33,6 @@ using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Adapters.MongoDB.Queue;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.gRPC.V1;
 
 using Microsoft.Extensions.Logging;
 
@@ -101,7 +100,7 @@ public class LockedQueueStorage : ILockedQueueStorage
   public int MaxPriority => int.MaxValue;
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessage> PullAsync(
+  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(
     int                                        nbMessages,
     [EnumeratorCancellation] CancellationToken cancellationToken = default
   )
@@ -128,7 +127,7 @@ public class LockedQueueStorage : ILockedQueueStorage
                                                                                             false),
                                                   Builders<QueueMessageModel>.Filter.Where(model => model.OwnedUntil < DateTime.UtcNow));
 
-      logger_.LogDebug("Trying to get a new message from Mongo queue");
+      logger_.LogDebug("Trying to get a new messageHandler from Mongo queue");
       var message = await queueCollection.FindOneAndUpdateAsync(filter,
                                                                 updateDefinition,
                                                                 new FindOneAndUpdateOptions<
@@ -143,7 +142,7 @@ public class LockedQueueStorage : ILockedQueueStorage
       if (message is not null)
       {
         nbPulledMessage++;
-        yield return new LockedQueueMessage(this,
+        yield return new LockedQueueMessageHandler(this,
                                             message.MessageId,
                                             message.TaskId,
                                             logger_,

@@ -21,16 +21,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Core.Common.Tests;
 
-using FluentValidation;
+using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.gRPC.Validators;
+namespace ArmoniK.Core.Adapters.Memory.Tests;
 
-public class PayloadValidator : AbstractValidator<Payload>
+[TestFixture]
+public class TableStorageTests : TableStorageTestBase
 {
-  public PayloadValidator()
+  [SetUp]
+  public void Setup()
   {
-    RuleFor(o => o.Data).NotEmpty();
+    TableStorage = new TableStorage();
   }
 }

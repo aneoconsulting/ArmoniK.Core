@@ -24,8 +24,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.gRPC.V1;
-
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
@@ -36,7 +34,7 @@ namespace ArmoniK.Core.Common.Storage;
 public static class LockedQueueStorageExt
 {
   public static Task EnqueueAsync(this ILockedQueueStorage lockedQueueStorage,
-                                  TaskId                   message,
+                                  string                   message,
                                   int                      priority,
                                   CancellationToken        cancellationToken = default)
     => lockedQueueStorage.EnqueueMessagesAsync(new[] { message },

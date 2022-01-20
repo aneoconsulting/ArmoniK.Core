@@ -21,7 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Api.gRPC.V1;
 
 using FluentValidation;
 
@@ -32,7 +32,9 @@ public class TaskOptionsValidator : AbstractValidator<TaskOptions>
   public TaskOptionsValidator()
   {
     RuleFor(o => o.MaxRetries).GreaterThanOrEqualTo(1).WithName(nameof(TaskOptions.MaxRetries));
-    RuleFor(o => o.Priority).GreaterThanOrEqualTo(1).LessThanOrEqualTo(99).WithMessage("Priority should not be null.").GreaterThanOrEqualTo(0)
-                            .WithMessage("Priority should be > 0.").WithName(nameof(TaskOptions.Priority));
+    RuleFor(o => o.Priority).GreaterThanOrEqualTo(1)
+                            .LessThanOrEqualTo(99)
+                            .WithMessage("Priority should be included between 1 and 99")
+                            .WithName(nameof(TaskOptions.Priority));
   }
 }

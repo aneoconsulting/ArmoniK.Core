@@ -24,8 +24,8 @@
 using System;
 using System.Text;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.gRPC.Validators;
-using ArmoniK.Core.gRPC.V1;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -34,37 +34,29 @@ using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests;
 
-[TestFixture(TestOf = typeof(CreateTaskRequestValidator))]
-public class CreateTaskRequestValidatorTest
+[TestFixture(TestOf = typeof(CreateSmallTaskRequestValidator))]
+public class CreateSmallTaskRequestValidatorTest
 {
-  private readonly CreateTaskRequestValidator validator_ = new();
+  private readonly CreateSmallTaskRequestValidator validator_ = new();
 
   [Test]
   public void CompleteRequestShouldBeValid()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
+                    Payload = ByteString.CopyFrom("payload",
                                                            Encoding.ASCII),
-                              },
                   },
                 },
               };
@@ -75,56 +67,20 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void MissingSessionIdShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
-                  },
-                },
-              };
-
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
-  }
-
-  [Test]
-  public void MissingSessionShouldFail()
-  {
-    var ctr = new CreateTaskRequest
-              {
-                SessionId = new()
-                            {
-                              SubSession = "SubSession",
-                            },
-                TaskOptions = new()
-                              {
-                                IdTag       = "Tag",
-                                MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-                                MaxRetries  = 1,
-                                Priority    = 1,
-                              },
-                TaskRequests =
-                {
-                  new TaskRequest
-                  {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -135,29 +91,21 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void EmptySessionShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = string.Empty,
-                              SubSession = "SubSession",
-                            },
+                SessionId = string.Empty,
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -168,250 +116,64 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void BlankSessionShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "      ",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "      ",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
 
     Assert.IsFalse(validator_.Validate(ctr).IsValid);
-  }
-
-  [Test]
-  public void MissingSubSessionShouldFail()
-  {
-    var ctr = new CreateTaskRequest
-              {
-                SessionId = new()
-                            {
-                              Session = "Session",
-                            },
-                TaskOptions = new()
-                              {
-                                IdTag       = "Tag",
-                                MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-                                MaxRetries  = 1,
-                                Priority    = 1,
-                              },
-                TaskRequests =
-                {
-                  new TaskRequest
-                  {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
-                  },
-                },
-              };
-
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
-  }
-
-  [Test]
-  public void EmptySubSessionShouldFail()
-  {
-    var ctr = new CreateTaskRequest
-              {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = string.Empty,
-                            },
-                TaskOptions = new()
-                              {
-                                IdTag       = "Tag",
-                                MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-                                MaxRetries  = 1,
-                                Priority    = 1,
-                              },
-                TaskRequests =
-                {
-                  new TaskRequest
-                  {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
-                  },
-                },
-              };
-
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
-  }
-
-  [Test]
-  public void BlankSubSessionShouldFail()
-  {
-    var ctr = new CreateTaskRequest
-              {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "      ",
-                            },
-                TaskOptions = new()
-                              {
-                                IdTag       = "Tag",
-                                MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-                                MaxRetries  = 1,
-                                Priority    = 1,
-                              },
-                TaskRequests =
-                {
-                  new TaskRequest
-                  {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
-                  },
-                },
-              };
-
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
-  }
-
-  [Test]
-  public void EmptyIdTadShouldBeValid()
-  {
-    var ctr = new CreateTaskRequest
-              {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
-                TaskRequests =
-                {
-                  new TaskRequest
-                  {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
-                  },
-                },
-              };
-
-    Assert.IsTrue(validator_.Validate(ctr).IsValid);
   }
 
   [Test]
   public void UndefinedTaskOptionShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
-                TaskOptions = new()
-                              {
-                                IdTag       = string.Empty,
-                                MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-                                MaxRetries  = 1,
-                                Priority    = 1,
-                              },
+                SessionId = "Session",
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
 
-    Assert.IsTrue(validator_.Validate(ctr).IsValid);
-  }
-
-  [Test]
-  public void UndefinedIdTadShouldBeValid()
-  {
-    var ctr = new CreateTaskRequest
-              {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
-                TaskOptions = new()
-                              {
-                                MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-                                MaxRetries  = 1,
-                                Priority    = 1,
-                              },
-                TaskRequests =
-                {
-                  new TaskRequest
-                  {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
-                  },
-                },
-              };
-
-    Assert.IsTrue(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr).IsValid);
   }
 
   [Test]
   public void UndefinedMaxDurationShouldBeValid()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag      = "Tag",
                                 MaxRetries = 1,
                                 Priority   = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -422,28 +184,20 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void UndefinedMaxRetriesShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 Priority    = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -454,29 +208,21 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void ZeroMaxRetryShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 0,
                                 Priority    = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -487,29 +233,21 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void NegativeMaxRetryShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = -6,
                                 Priority    = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -521,29 +259,21 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void UndefinedOptionsShouldBeValid()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -554,28 +284,20 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void UndefinedPriorityShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -586,29 +308,21 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void ZeroPriorityShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 0,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -619,29 +333,21 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void NegativePriorityShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = -6,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -652,29 +358,21 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void TooBigPriorityShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 100,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -685,13 +383,9 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void OnlyMaxRetryAndPriorityDefinedShouldBeValid()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
                                 MaxRetries = 1,
@@ -699,13 +393,10 @@ public class CreateTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
                   },
                 },
               };
@@ -716,16 +407,11 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void UndefinedTaskRequestShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 1,
@@ -738,16 +424,11 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void EmptyTaskRequestShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 1,
@@ -760,23 +441,18 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void UndefinedPayloadShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest(),
+                  new CreateSmallTaskRequest.Types.TaskRequest(),
                 },
               };
 
@@ -786,58 +462,20 @@ public class CreateTaskRequestValidatorTest
   [Test]
   public void EmptyPayloadShouldFail()
   {
-    var ctr = new CreateTaskRequest
+    var ctr = new CreateSmallTaskRequest
               {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
+                SessionId = "Session",
                 TaskOptions = new()
                               {
-                                IdTag       = "Tag",
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
                                 Priority    = 1,
                               },
                 TaskRequests =
                 {
-                  new TaskRequest
+                  new CreateSmallTaskRequest.Types.TaskRequest
                   {
-                    Payload = new(),
-                  },
-                },
-              };
-
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
-  }
-
-  [Test]
-  public void EmptyDataShouldFail()
-  {
-    var ctr = new CreateTaskRequest
-              {
-                SessionId = new()
-                            {
-                              Session    = "Session",
-                              SubSession = "SubSession",
-                            },
-                TaskOptions = new()
-                              {
-                                IdTag       = "Tag",
-                                MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-                                MaxRetries  = 1,
-                                Priority    = 1,
-                              },
-                TaskRequests =
-                {
-                  new TaskRequest
-                  {
-                    Payload = new()
-                              {
-                                Data = ByteString.CopyFrom(string.Empty,
-                                                           Encoding.ASCII),
-                              },
+                    Payload = ByteString.Empty,
                   },
                 },
               };

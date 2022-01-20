@@ -33,9 +33,6 @@ using Amqp;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
-using ArmoniK.Core.gRPC.V1;
-
-using Google.Protobuf;
 
 using Microsoft.Extensions.Logging;
 
@@ -123,7 +120,7 @@ public class QueueStorage : IQueueStorage
   public int MaxPriority { get; }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessage> PullAsync(int nbMessages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int nbMessages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _               = logger_.LogFunction();
     var       nbPulledMessage = 0;
@@ -144,14 +141,14 @@ public class QueueStorage : IQueueStorage
 
         if (TaskId.Parser.ParseFrom(message.Body as byte[]) is not TaskId taskId)
         {
-          logger_.LogError("Body of message with Id={id} is not a TaskId",
+          logger_.LogError("Body of messageHandler with Id={id} is not a TaskId",
                            message.Properties.MessageId);
           continue;
         }
 
         nbPulledMessage++;
 
-        yield return new QueueMessage(message,
+        yield return new QueueMessageHandler(message,
                                       await senders_[i],
                                       receiver,
                                       taskId,

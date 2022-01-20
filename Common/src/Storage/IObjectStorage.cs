@@ -21,16 +21,38 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public interface IObjectStorage : IInitializable
+public interface IObjectStorageFactory : IInitializable
 {
-  Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default);
+  IObjectStorage CreateObjectStorage(string objectStorageName);
+}
 
-  Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default);
+public static class ObjectStorageFactoryExt
+{
+  public static IObjectStorage CreatePayloadStorage(this IObjectStorageFactory factory, string session)
+    => factory.CreateObjectStorage($"payloads/{session}");
+  public static IObjectStorage CreateResultStorage(this IObjectStorageFactory factory, string session)
+    => factory.CreateObjectStorage($"results/{session}");
+  public static IObjectStorage CreateResourcesStorage(this IObjectStorageFactory factory)
+    => factory.CreateObjectStorage("resources/");
+}
+
+
+public interface IObjectStorage
+{
+  Task AddOrUpdateAsync(string key, IAsyncEnumerable<byte[]> valueChunks, CancellationToken cancellationToken = default);
+
+  Task AddOrUpdateAsync(string key, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default);
+
+  IAsyncEnumerable<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default);
 
   Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default);
+
+  IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default);
 }
