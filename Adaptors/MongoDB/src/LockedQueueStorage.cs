@@ -190,7 +190,7 @@ public class LockedQueueStorage : ILockedQueueStorage
   }
 
   /// <inheritdoc />
-  public async Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
+  public async Task EnqueueMessagesAsync(IEnumerable<string> messages,
                                          int                 priority          = 1,
                                          CancellationToken   cancellationToken = default)
   {

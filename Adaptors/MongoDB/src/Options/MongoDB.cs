@@ -40,8 +40,6 @@ public class MongoDB
 
   public TableStorage TableStorage { get; set; }
 
-  public LeaseProvider LeaseProvider { get; set; }
-
   public ObjectStorage ObjectStorage { get; set; }
 
   public QueueStorage QueueStorage { get; set; }

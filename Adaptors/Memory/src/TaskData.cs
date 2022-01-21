@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -22,44 +22,43 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
-using Google.Protobuf;
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Storage;
 
-using MongoDB.Bson.Serialization;
+namespace ArmoniK.Core.Adapters.Memory;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table;
-
-public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()
+public class TaskData : ITaskData
 {
-  /// <inheritdoc />
-  object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-    => Deserialize(context,
-                   args);
 
   /// <inheritdoc />
-  public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, T value)
-  {
-    context.Writer.WriteString(value.ToString());
-  }
+  public string SessionId { get; init; }
 
   /// <inheritdoc />
-  public T Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
-  {
-    var parser = new JsonParser(JsonParser.Settings.Default);
-    return parser.Parse<T>(context.Reader.ReadString());
-  }
+  public string ParentTaskId { get; init; }
 
   /// <inheritdoc />
-  public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
-  {
-    if (value is T t)
-      Serialize(context,
-                args,
-                t);
-    else
-      throw new("Not supported type");
-  }
+  public string TaskId { get; init; }
+
+  public List<string> DataDependencies { get; } = new();
 
   /// <inheritdoc />
-  public Type ValueType => typeof(T);
+  IList<string> ITaskData.DataDependencies => DataDependencies;
+
+  /// <inheritdoc />
+  public bool HasPayload => true;
+
+  public byte[] Payload { get; init; }
+
+  /// <inheritdoc />
+  public TaskStatus Status { get; set; }
+
+  /// <inheritdoc />
+  public TaskOptions Options { get; init; }
+
+  /// <inheritdoc />
+  public DateTime CreationDate { get; } = DateTime.UtcNow;
+
+  public IDispatch Dispatch { get; set; }
 }

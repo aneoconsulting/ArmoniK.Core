@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -21,19 +21,29 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.IdGenerators;
+using System;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table;
+using ArmoniK.Core.Common.Storage;
 
-public class TaggedIdGenerator : IIdGenerator
+namespace ArmoniK.Core.Adapters.Memory;
+
+public class Result : IResult
 {
-  private static CombGuidGenerator Generator => CombGuidGenerator.Instance;
+  /// <inheritdoc />
+  public string SessionId { get; init; }
 
   /// <inheritdoc />
-  public object GenerateId(object container, object document)
-    => $"{(document as ITaggedId)?.IdTag}{Generator.GenerateId(container, document)}";
+  public string Key { get; init; }
 
   /// <inheritdoc />
-  public bool IsEmpty(object id) => id == null || ((string)id).EndsWith("00000000-0000-0000-0000-000000000000");
+  public string Owner { get; set; }
+
+  /// <inheritdoc />
+  public bool IsResultAvailable { get; set; }
+
+  /// <inheritdoc />
+  public byte[] Data { get; set; }
+
+  /// <inheritdoc />
+  public DateTime CreationDate { get; } = DateTime.UtcNow;
 }

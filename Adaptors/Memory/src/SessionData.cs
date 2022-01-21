@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -22,19 +22,25 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 
-using JetBrains.Annotations;
+using ArmoniK.Api.gRPC.V1;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Options;
+namespace ArmoniK.Core.Adapters.Memory;
 
-[PublicAPI]
-public class TableStorage
+public class SessionData
 {
-  public const string SettingSection = nameof(MongoDB) + ":" + nameof(TableStorage);
+  public ConcurrentBag<string> ChildrenSessions { get; } = new();
 
-  public TimeSpan PollingDelay { get; set; } = TimeSpan.FromSeconds(5);
+  public ConcurrentBag<string> AncestorSessions { get; } = new();
 
-  public TimeSpan DispatchAcquisitionPeriod   { get; set; } = TimeSpan.FromMinutes(2);
-  
-  public TimeSpan DispatchAcquisitionDuration { get; set; } = TimeSpan.FromMinutes(5);
+  public string SessionId { get; init; }
+
+  public string ParentTaskId { get; init; }
+
+  public bool IsCancelled { get; set; }
+
+  public TaskOptions DefaultTaskOptions { get; init; }
+
+  public DateTime CreationDate { get; } = DateTime.UtcNow;
 }

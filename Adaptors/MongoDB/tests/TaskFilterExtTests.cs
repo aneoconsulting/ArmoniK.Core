@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Adapters.MongoDB.Table;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 using NUnit.Framework;
 
@@ -463,7 +464,7 @@ internal class TaskFilterExtTests
                   SubSessionId       = null,
                   Dependencies       = null,
                   Options            = null,
-                  ParentsSubSessions = null,
+                  Ancestors = null,
                   Payload            = null,
                   TaskId             = null,
                 };

@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -67,71 +68,69 @@ public class ObjectStorage : IObjectStorage
 
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string key, byte[] value, CancellationToken cancellationToken = default)
+  public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<byte[]> valueChunks, CancellationToken cancellationToken = default)
   {
     using var _                = logger_.LogFunction(key);
     var       objectCollection = await objectCollectionProvider_.GetAsync();
 
-    var taskList = new List<Task<ObjectDataModel>>();
-    for (var (pos, idx) = (0, 0); pos < value.Length; idx += 1)
+    var taskList = new List<Task>();
+
+    var idx = 0;
+    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken))
     {
-      var chunkSize = Math.Min(value.Length - pos,
-                               ChunkSize);
-      var chunk = new byte[chunkSize];
-      Array.Copy(value,
-                 pos,
-                 chunk,
-                 0,
-                 chunkSize);
-      pos += chunkSize;
-
-      var updateDefinition = Builders<ObjectDataModel>.Update
-                                                      .SetOnInsert(odm => odm.Chunk,
-                                                                   chunk)
-                                                      .SetOnInsert(odm => odm.ChunkIdx,
-                                                                   idx)
-                                                      .SetOnInsert(odm => odm.Key,
-                                                                   key)
-                                                      .SetOnInsert(odm => odm.Id,
-                                                                   $"{key}{idx}");
-
-      var localIdx = idx;
-      taskList.Add(objectCollection.FindOneAndUpdateAsync<ObjectDataModel>(odm => odm.Key == key && odm.ChunkIdx == localIdx,
-                                                                           updateDefinition,
-                                                                           new FindOneAndUpdateOptions<ObjectDataModel>
-                                                                           {
-                                                                             ReturnDocument = ReturnDocument.After,
-                                                                             IsUpsert       = true,
-                                                                           },
-                                                                           cancellationToken));
+      taskList.Add(objectCollection.InsertOneAsync(new()
+                                                   {
+                                                     Chunk    = chunk,
+                                                     ChunkIdx = idx,
+                                                     Key      = key,
+                                                   },
+                                                   cancellationToken: cancellationToken));
+      ++idx;
     }
 
     await Task.WhenAll(taskList);
-    if (taskList.Any(task => task.Result is null))
-    {
-      logger_.LogError("Could not write value in DB for key {key}",
-                       key);
-      throw new InvalidOperationException("Could not write value in DB");
-    }
   }
 
   /// <inheritdoc />
-  public async Task<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default)
+  public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction(key);
+    var       objectCollection = await objectCollectionProvider_.GetAsync();
+
+    var taskList = new List<Task>();
+
+    var idx = 0;
+    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken))
+    {
+      taskList.Add(objectCollection.InsertOneAsync(new()
+                                                   {
+                                                     Chunk    = chunk.ToArray(),
+                                                     ChunkIdx = idx,
+                                                     Key      = key,
+                                                   },
+                                                   cancellationToken: cancellationToken));
+      ++idx;
+    }
+
+    await Task.WhenAll(taskList);
+  }
+
+  /// <inheritdoc />
+  async IAsyncEnumerable<byte[]> IObjectStorage.TryGetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     using var _                = logger_.LogFunction(key);
     var       sessionHandle    = await sessionProvider_.GetAsync();
     var       objectCollection = await objectCollectionProvider_.GetAsync();
 
-    var chunks = AsyncCursorSourceExt.ToAsyncEnumerable(objectCollection.AsQueryable(sessionHandle)
-                                                                        .Where(odm => odm.Key == key)
-                                                                        .OrderBy(odm => odm.ChunkIdx)
-                                                                        .Select(odm => odm.Chunk));
 
-    var buffer = new List<byte>(ChunkSize);
-    await foreach (var chunk in chunks.WithCancellation(cancellationToken))
-      buffer.AddRange(chunk);
 
-    return buffer.ToArray();
+    await foreach (var chunk in objectCollection.AsQueryable(sessionHandle)
+                                                .Where(odm => odm.Key == key)
+                                                .OrderBy(odm => odm.ChunkIdx)
+                                                .Select(odm => odm.Chunk)
+                                                .ToAsyncEnumerable()
+                                                .WithCancellation(cancellationToken))
+      yield return chunk;
   }
 
   /// <inheritdoc />
@@ -146,20 +145,18 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public async IAsyncEnumerable<string> ListKeysAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    if (!isInitialized_)
-    {
-      var session = sessionProvider_.GetAsync();
-      await objectCollectionProvider_.GetAsync();
-      await session;
-      isInitialized_ = true;
-    }
+    using var _                = logger_.LogFunction();
+    var       sessionHandle    = await sessionProvider_.GetAsync();
+    var       objectCollection = await objectCollectionProvider_.GetAsync();
+
+    await foreach (var key in objectCollection.AsQueryable(sessionHandle)
+                                              .Where(odm => odm.ChunkIdx == 0)
+                                              .Select(odm => odm.Key)
+                                              .ToAsyncEnumerable()
+                                              .WithCancellation(cancellationToken))
+      yield return key;
+
   }
-
-
-  private bool isInitialized_ = false;
-
-  /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
 }

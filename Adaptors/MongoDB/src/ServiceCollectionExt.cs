@@ -75,26 +75,6 @@ public static class ServiceCollectionExt
       isMongoRequired = true;
     }
 
-    if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
-    {
-      services.AddOption<Options.ObjectStorage>(configuration,
-                                                Options.ObjectStorage.SettingSection)
-              .AddTransient<ObjectStorage>()
-              .AddTransientWithHealthCheck<IObjectStorage, ObjectStorage>($"MongoDB.{nameof(ObjectStorage)}");
-
-      isMongoRequired = true;
-    }
-
-    if (components["LeaseProvider"] == "ArmoniK.Adapters.MongoDB.LeaseProvider")
-    {
-      services.AddOption<Options.LeaseProvider>(configuration,
-                                                Options.LeaseProvider.SettingSection)
-              .AddTransient<LeaseProvider>()
-              .AddTransientWithHealthCheck<ILeaseProvider, LeaseProvider>($"MongoDB.{nameof(LeaseProvider)}");
-
-      isMongoRequired = true;
-    }
-
     if (isMongoRequired)
     {
       services.AddOption<Options.MongoDB>(configuration,

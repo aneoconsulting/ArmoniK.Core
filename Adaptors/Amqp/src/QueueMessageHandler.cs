@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 
 using Amqp;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
@@ -41,7 +42,7 @@ public class QueueMessageHandler : IQueueMessageHandler
   private readonly IReceiverLink receiver_;
   private readonly ISenderLink   sender_;
 
-  public QueueMessageHandler(Message message, ISenderLink sender, IReceiverLink receiver, TaskId taskId, ILogger logger, CancellationToken cancellationToken)
+  public QueueMessageHandler(Message message, ISenderLink sender, IReceiverLink receiver, string taskId, ILogger logger, CancellationToken cancellationToken)
   {
     message_          = message;
     sender_           = sender;
@@ -58,7 +59,7 @@ public class QueueMessageHandler : IQueueMessageHandler
   public string MessageId => message_.Properties.MessageId;
 
   /// <inheritdoc />
-  public TaskId TaskId { get; }
+  public string TaskId { get; }
 
   /// <inheritdoc />
   public QueueMessageStatus Status { get; set; }

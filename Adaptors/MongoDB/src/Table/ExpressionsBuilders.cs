@@ -27,6 +27,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+
 namespace ArmoniK.Core.Adapters.MongoDB.Table;
 
 public static class ExpressionsBuilders

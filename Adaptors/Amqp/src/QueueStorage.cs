@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,6 +34,8 @@ using Amqp;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
+
+using Google.Protobuf;
 
 using Microsoft.Extensions.Logging;
 
@@ -135,25 +138,19 @@ public class QueueStorage : IQueueStorage
         var message  = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100));
         if (message is null)
         {
-          logger_.LogDebug("Message is null receiver {i}", i);
-          continue;
-        }
-
-        if (TaskId.Parser.ParseFrom(message.Body as byte[]) is not TaskId taskId)
-        {
-          logger_.LogError("Body of messageHandler with Id={id} is not a TaskId",
-                           message.Properties.MessageId);
+          logger_.LogDebug("Message is null receiver {i}",
+                           i);
           continue;
         }
 
         nbPulledMessage++;
 
         yield return new QueueMessageHandler(message,
-                                      await senders_[i],
-                                      receiver,
-                                      taskId,
-                                      logger_,
-                                      cancellationToken);
+                                             await senders_[i],
+                                             receiver,
+                                             Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
+                                             logger_,
+                                             cancellationToken);
 
         break;
       }
@@ -163,7 +160,7 @@ public class QueueStorage : IQueueStorage
   }
 
   /// <inheritdoc />
-  public async Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
+  public async Task EnqueueMessagesAsync(IEnumerable<string> messages,
                                          int                 priority          = 1,
                                          CancellationToken   cancellationToken = default)
   {
@@ -175,7 +172,7 @@ public class QueueStorage : IQueueStorage
                      priority % MaxInternalQueuePriority);
 
     var sender = await senders_[priority / MaxInternalQueuePriority];
-    await Task.WhenAll(messages.Select(id => sender.SendAsync(new(id.ToByteArray())
+    await Task.WhenAll(messages.Select(id => sender.SendAsync(new(Encoding.UTF8.GetBytes(id))
                                                               {
                                                                 Header = new()
                                                                          {

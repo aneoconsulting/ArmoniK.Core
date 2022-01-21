@@ -29,8 +29,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -43,56 +45,122 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
+
+using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
+using SessionId = ArmoniK.Api.gRPC.V1.SessionId;
+using TaskFilter = ArmoniK.Api.gRPC.V1.TaskFilter;
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
 [PublicAPI]
-//TODO : wrap all exceptions into ArmoniKExceptions
 public class TableStorage : ITableStorage
 {
-  private readonly ILogger<TableStorage>                     logger_;
-  private readonly MongoCollectionProvider<SessionDataModel> sessionCollectionProvider_;
-  private readonly SessionProvider                           sessionProvider_;
-  private readonly MongoCollectionProvider<TaskDataModel>    taskCollectionProvider_;
+  private readonly ILogger<TableStorage>                                      logger_;
+  private readonly MongoCollectionProvider<SessionDataModel>                  sessionCollectionProvider_;
+  private readonly SessionProvider                                            sessionProvider_;
+  private readonly MongoCollectionProvider<TaskDataModel>                     taskCollectionProvider_;
+  private readonly MongoCollectionProvider<DispatchDataModel> dispatchCollectionProvider_;
+  private readonly MongoCollectionProvider<ResultDataModel>                   resultCollectionProvider_;
 
   public TableStorage(
-    MongoCollectionProvider<SessionDataModel> sessionCollectionProvider,
-    MongoCollectionProvider<TaskDataModel>    taskCollectionProvider,
-    SessionProvider                           sessionProvider,
-    Options.TableStorage                      options,
-    ILogger<TableStorage>                     logger
+    MongoCollectionProvider<SessionDataModel>  sessionCollectionProvider,
+    MongoCollectionProvider<TaskDataModel>     taskCollectionProvider,
+    MongoCollectionProvider<DispatchDataModel> dispatchCollectionProvider,
+    MongoCollectionProvider<ResultDataModel>   resultCollectionProvider,
+    SessionProvider                            sessionProvider,
+    Options.TableStorage                       options,
+    ILogger<TableStorage>                      logger
   )
   {
     if (options.PollingDelay == TimeSpan.Zero)
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.TableStorage.PollingDelay)} is not defined.");
 
-    sessionCollectionProvider_ = sessionCollectionProvider;
-    taskCollectionProvider_    = taskCollectionProvider;
-    sessionProvider_           = sessionProvider;
-    PollingDelay               = options.PollingDelay;
-    logger_                    = logger;
+    sessionCollectionProvider_  = sessionCollectionProvider;
+    taskCollectionProvider_     = taskCollectionProvider;
+    dispatchCollectionProvider_ = dispatchCollectionProvider;
+    resultCollectionProvider_   = resultCollectionProvider;
+    sessionProvider_            = sessionProvider;
+    PollingDelay                = options.PollingDelay;
+    DispatchAcquisitionDuration = options.DispatchAcquisitionDuration;
+    DispatchAcquisitionPeriod   = options.DispatchAcquisitionPeriod;
+    logger_                     = logger;
   }
 
-  public TimeSpan PollingDelay { get; }
+  public TimeSpan DispatchAcquisitionPeriod { get; set; }
+
+  public TimeSpan DispatchAcquisitionDuration { get; set; }
+
+  public TimeSpan PollingDelay       { get; }
+
+  /// <inheritdoc />
+  public TimeSpan DispatchTimeToLive { get; set; }
 
 
+  /// <inheritdoc />
+  public async Task<CreateSessionReply> CreateSessionAsync(CreateSessionRequest sessionRequest, CancellationToken cancellationToken = default)
+  {
+        using var _                               = logger_.LogFunction();
+    var       sessionHandle                   = await sessionProvider_.GetAsync();
+    var       sessionCollection               = await sessionCollectionProvider_.GetAsync();
+
+    SessionDataModel data;
+    if (sessionRequest.SessionTypeCase == CreateSessionRequest.SessionTypeOneofCase.Root)
+    {
+
+      data = new ()
+             {
+               IsCancelled  = false,
+               Options      = sessionRequest.Root.DefaultTaskOption,
+               SessionId    = sessionRequest.Root.Id,
+               ParentTaskId = sessionRequest.Root.Id,
+             };
+    }
+    else
+    {
+      List<string> ancestors = new();
+
+      var t = await sessionCollection.AsQueryable(sessionHandle)
+                                     .Where(x => x.SessionId == sessionRequest.SubSession.RootId &&
+                                                 x.ParentTaskId == sessionRequest.SubSession.ParentTaskId)
+                                     .FirstAsync(cancellationToken);
+      ancestors.AddRange(t.Ancestors);
+
+      ancestors.Add(sessionRequest.SubSession.ParentTaskId);
+
+      data = new ()
+             {
+               IsCancelled  = false,
+               Options      = t.Options,
+               Ancestors    = ancestors,
+               ParentTaskId = sessionRequest.SubSession.ParentTaskId,
+               SessionId    = sessionRequest.SubSession.RootId,
+             };
+    }
+
+    await sessionCollection.InsertOneAsync(data,
+                                           cancellationToken: cancellationToken);
+
+    return new()
+           {
+             Ok = new(),
+           };
+  }
+
+  /// <inheritdoc />
   public async Task CancelSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default)
   {
     using var _                 = logger_.LogFunction(sessionId.ToString());
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
     var filterDefinition = Builders<SessionDataModel>.Filter
-                                                     .Where(sdm => sessionId.Session == sdm.SessionId &&
-                                                                   (sessionId.SubSession == sdm.SubSessionId ||
-                                                                    sdm.ParentIds.Any(id => id == sessionId.SubSession) &&
-                                                                    !sdm.IsClosed));
+                                                     .Where(sdm => sessionId.Session == sdm.SessionId ||
+                                                                   (sessionId.ParentTaskId == sessionId.Session ||
+                                                                    sdm.Ancestors.Any(id => id == sessionId.ParentTaskId)));
 
     var updateDefinition = Builders<SessionDataModel>.Update
                                                      .Set(model => model.IsCancelled,
-                                                          true)
-                                                     .Set(model => model.IsClosed,
                                                           true);
 
     var res = await sessionCollection.UpdateOneAsync(filterDefinition,
@@ -101,75 +169,114 @@ public class TableStorage : ITableStorage
     if (res.MatchedCount < 1)
       throw new InvalidOperationException("No open session found. Was the session closed?");
   }
-
-  public async Task CloseSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default)
+  
+  /// <inheritdoc />
+  public async Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
+                                                  TaskStatus        status,
+                                                  CancellationToken cancellationToken = default)
   {
-    using var _                 = logger_.LogFunction(sessionId.ToString());
-    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+    using var _              = logger_.LogFunction();
+    var       sessionHandle  = await sessionProvider_.GetAsync();
+    var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-    var filterDefinition = Builders<SessionDataModel>.Filter
-                                                     .Where(sdm => sessionId.Session == sdm.SessionId &&
-                                                                   (sessionId.SubSession == sdm.SubSessionId ||
-                                                                    sdm.ParentIds.Any(id => id == sessionId.SubSession)));
 
-    var definitionBuilder = new UpdateDefinitionBuilder<SessionDataModel>();
+    var rootTaskFilter = new TaskFilter();
+    if (filter.IdsCase == TaskFilter.IdsOneofCase.Known)
+    {
+      rootTaskFilter.Known = filter.Known;
+    }
+    else
+    {
+      rootTaskFilter.Unknown = filter.Unknown;
+    }
 
-    var updateDefinition = definitionBuilder.Set(model => model.IsClosed,
-                                                 true);
+    var rootTaskListTask = taskCollection.AsQueryable(sessionHandle)
+                                         .FilterQuery(rootTaskFilter)
+                                         .Select(model => model.TaskId)
+                                         .ToListAsync(cancellationToken);
 
-    var res = await sessionCollection.UpdateOneAsync(filterDefinition,
-                                                     updateDefinition,
-                                                     cancellationToken: cancellationToken);
-    if (res.MatchedCount < 1)
-      throw new InvalidOperationException("No open session found. Was the session already closed?");
+    var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,
+                                                                            status);
+
+    if (filter.StatusesCase == TaskFilter.StatusesOneofCase.Included)
+    {
+      if (filter.Included.IncludedStatuses.Contains(TaskStatus.Completed) ||
+          filter.Included.IncludedStatuses.Contains(TaskStatus.Canceled) ||
+          filter.Included.IncludedStatuses.Contains(TaskStatus.Failed))
+      {
+        throw new ArgumentException("Completed, Canceled and Failed are definitive statuses and they cannot be overwritten",
+                                    nameof(filter));
+      }
+    }
+    else
+    {
+      if (!filter.Excluded.IncludedStatuses.Contains(TaskStatus.Completed))
+        filter.Excluded.IncludedStatuses.Add(TaskStatus.Completed);
+      if (!filter.Excluded.IncludedStatuses.Contains(TaskStatus.Canceled))
+        filter.Excluded.IncludedStatuses.Add(TaskStatus.Canceled);
+      if (!filter.Excluded.IncludedStatuses.Contains(TaskStatus.Failed))
+        filter.Excluded.IncludedStatuses.Add(TaskStatus.Failed);
+    }
+
+
+    var rootResultTask = taskCollection.UpdateManyAsync(filter.ToFilterExpression(),
+                                                      updateDefinition,
+                                                      cancellationToken: cancellationToken);
+
+
+    var filterExpression = BuildChildrenFilterExpression(await rootTaskListTask);
+
+    var childrenTaskFilter = new TaskFilter(filter)
+                             {
+                               Unknown = new(),
+                             };
+    var childrenUpdateFilter = Builders<TaskDataModel>.Filter.And(filterExpression,
+                                       childrenTaskFilter.ToFilterExpression());
+
+    var childrenResultTask = taskCollection.UpdateManyAsync(childrenUpdateFilter,
+                                                            updateDefinition,
+                                                            cancellationToken: cancellationToken);
+
+
+
+    return (int)((await rootResultTask).MatchedCount + (await childrenResultTask).MatchedCount);
   }
 
+  /// <inheritdoc />
   public async Task<IEnumerable<(TaskStatus Status, int Count)>> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default)
   {
     using var _              = logger_.LogFunction();
     var       sessionHandle  = await sessionProvider_.GetAsync();
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-    var res = await taskCollection.AsQueryable(sessionHandle)
-                                  .FilterQuery(filter).Select(model => new
-                                                                       {
-                                                                         model.Status,
-                                                                         Id = model.TaskId,
-                                                                       }).GroupBy(model => model.Status).Select(models => new
-                                                                                                                          {
-                                                                                                                            Status = models.Key,
-                                                                                                                            Count  = models.Count(),
-                                                                                                                          })
-                                  .ToListAsync(cancellationToken);
-
-    return res.Select(arg => (arg.Status, arg.Count));
-  }
-
-
-  public async Task<IEnumerable<(TaskStatus Status, int Count)>> CountSubTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default)
-  {
-    using var _              = logger_.LogFunction();
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
-
-    var rootTaskFilter = new TaskFilter(filter);
-    rootTaskFilter.ExcludedStatuses.Clear();
-    rootTaskFilter.IncludedStatuses.Clear();
+    var rootTaskFilter = new TaskFilter();
+    if (filter.IdsCase == TaskFilter.IdsOneofCase.Known)
+    {
+      rootTaskFilter.Known = filter.Known;
+    }
+    else
+    {
+      rootTaskFilter.Unknown = filter.Unknown;
+    }
 
     var rootTaskListTask = taskCollection.AsQueryable(sessionHandle)
                                          .FilterQuery(rootTaskFilter)
-                                         .Select(model => model.TaskId).ToListAsync(cancellationToken);
+                                         .Select(model => model.TaskId)
+                                         .ToListAsync(cancellationToken);
 
     var rootCountTask = taskCollection.AsQueryable(sessionHandle)
-                                      .FilterQuery(filter).Select(model => new
-                                                                           {
-                                                                             model.Status,
-                                                                             Id = model.TaskId,
-                                                                           }).GroupBy(model => model.Status).Select(models => new
-                                                                                                                              {
-                                                                                                                                Status = models.Key,
-                                                                                                                                Count  = models.Count(),
-                                                                                                                              })
+                                      .FilterQuery(filter)
+                                      .Select(model => new
+                                                       {
+                                                         model.Status,
+                                                         Id = model.TaskId,
+                                                       })
+                                      .GroupBy(model => model.Status)
+                                      .Select(models => new
+                                                        {
+                                                          Status = models.Key,
+                                                          Count  = models.Count(),
+                                                        })
                                       .ToListAsync(cancellationToken);
 
     var rootTaskList = await rootTaskListTask;
@@ -181,19 +288,18 @@ public class TableStorage : ITableStorage
 
     var childrenTaskFilter = new TaskFilter(filter)
                              {
-                               SubSessionId = string.Empty,
+                               Unknown = new(),
                              };
-    childrenTaskFilter.IncludedTaskIds.Clear();
-    childrenTaskFilter.ExcludedTaskIds.Clear();
 
     var childrenCountTask = taskCollection.AsQueryable(sessionHandle)
                                           .Where(filterExpression)
                                           .FilterQuery(childrenTaskFilter)
-                                          .GroupBy(model => model.Status).Select(models => new
-                                                                                           {
-                                                                                             Status = models.Key,
-                                                                                             Count  = models.Count(),
-                                                                                           })
+                                          .GroupBy(model => model.Status)
+                                          .Select(models => new
+                                                            {
+                                                              Status = models.Key,
+                                                              Count  = models.Count(),
+                                                            })
                                           .ToListAsync(cancellationToken);
 
     var rootCount     = await rootCountTask;
@@ -215,171 +321,243 @@ public class TableStorage : ITableStorage
     return output;
   }
 
-  public async Task<SessionId> CreateSessionAsync(SessionOptions    sessionOptions,
-                                                  CancellationToken cancellationToken = default)
+  /// <inheritdoc />
+  public async Task DeleteTaskAsync(string id, CancellationToken cancellationToken = default)
   {
-    using var _                               = logger_.LogFunction();
-    var       sessionHandle                   = await sessionProvider_.GetAsync();
-    var       sessionCollection               = await sessionCollectionProvider_.GetAsync();
-    var       sessionOptionsDefaultTaskOption = sessionOptions.DefaultTaskOption;
-
-
-    List<string> parents = new();
-
-    if (sessionOptions.ParentTask is not null)
-    {
-      var t = await sessionCollection.AsQueryable(sessionHandle)
-                                     .Where(x => x.SessionId == sessionOptions.ParentTask.Session &&
-                                                 x.SubSessionId == sessionOptions.ParentTask.SubSession)
-                                     .FirstAsync(cancellationToken);
-      parents.AddRange(t.ParentIds);
-
-      parents.Add(sessionOptions.ParentTask.SubSession);
-
-      if (sessionOptionsDefaultTaskOption is null)
-      {
-        sessionOptionsDefaultTaskOption = t.Options;
-        if (sessionOptionsDefaultTaskOption is null)
-          throw new NullReferenceException();
-      }
-    }
-
-    var data = new SessionDataModel
-               {
-                 IdTag       = sessionOptions.IdTag,
-                 IsCancelled = false,
-                 IsClosed    = false,
-                 Options     = sessionOptionsDefaultTaskOption,
-                 ParentIds   = parents,
-               };
-    if (sessionOptions.ParentTask is not null)
-    {
-      data.SessionId    = sessionOptions.ParentTask.Session;
-      data.SubSessionId = sessionOptions.ParentTask.Task;
-    }
-
-    await sessionCollection.InsertOneAsync(data,
-                                           cancellationToken: cancellationToken);
-
-    if (sessionOptions.ParentTask is null)
-    {
-      data.SessionId = data.SubSessionId;
-      var updateDefinition = Builders<SessionDataModel>.Update
-                                                       .Set(model => model.SessionId,
-                                                            data.SessionId);
-      await sessionCollection.UpdateOneAsync(x => x.SubSessionId == data.SubSessionId,
-                                             updateDefinition,
-                                             cancellationToken: cancellationToken);
-    }
-
-    return new()
-           {
-             Session    = data.SessionId,
-             SubSession = data.SubSessionId,
-           };
-  }
-
-  public async Task DeleteTaskAsync(TaskId id, CancellationToken cancellationToken = default)
-  {
-    using var _              = logger_.LogFunction(id.ToPrintableId());
+    using var _              = logger_.LogFunction(id);
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-    await taskCollection.DeleteOneAsync(tdm => tdm.SessionId == id.Task &&
-                                               tdm.SubSessionId == id.SubSession &&
-                                               tdm.TaskId == id.Task,
+    await taskCollection.DeleteOneAsync(tdm => tdm.TaskId == id,
                                         cancellationToken);
   }
 
   /// <inheritdoc />
-  public async Task<int> UpdateTaskStatusAsync(TaskFilter        filter,
-                                               TaskStatus        status,
-                                               CancellationToken cancellationToken = default)
+  public async Task<bool> TryAcquireDispatchAsync(string            dispatchId,
+                                                  string            taskId,
+                                                  DateTime          ttl,
+                                                  string            podId             = "",
+                                                  string            nodeId            = "",
+                                                  CancellationToken cancellationToken = default)
   {
-    using var _              = logger_.LogFunction();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(taskId, properties:(nameof(dispatchId),dispatchId));
 
-    var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,
-                                                                            status);
+    var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
-    filter.ExcludedStatuses.Add(TaskStatus.Completed);
-    filter.ExcludedStatuses.Add(TaskStatus.Canceled);
+    var updateDefinition = Builders<DispatchDataModel>.Update
+                                                      .SetOnInsert(model => model.TimeToLive,
+                                                                   DateTime.UtcNow + DispatchAcquisitionDuration)
+                                                      .SetOnInsert(model => model.Id,
+                                                                   dispatchId)
+                                                      .SetOnInsert(model => model.Attempt,
+                                                                   1)
+                                                      .SetOnInsert(model => model.CreationDate,
+                                                                   DateTime.UtcNow)
+                                                      .SetOnInsert(model => model.TaskId,
+                                                                   taskId);
 
-    var result = await taskCollection.UpdateManyAsync(filter.ToFilterExpression(),
-                                                      updateDefinition,
-                                                      cancellationToken: cancellationToken);
-    return (int)result.MatchedCount;
-  }
+    var res = await dispatchCollection.FindOneAndUpdateAsync<DispatchDataModel>(model => model.TaskId == taskId && model.TimeToLive > DateTime.UtcNow,
+                                                                          updateDefinition,
+                                                                          new FindOneAndUpdateOptions<DispatchDataModel>
+                                                                          {
+                                                                            IsUpsert       = true,
+                                                                            ReturnDocument = ReturnDocument.After,
+                                                                          },
+                                                                          cancellationToken);
 
-  public async Task IncreaseRetryCounterAsync(TaskId id, CancellationToken cancellationToken = default)
-  {
-    using var _              = logger_.LogFunction(id.ToPrintableId());
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
-
-    var updateDefinition = Builders<TaskDataModel>.Update
-                                                  .Inc(tdm => tdm.Retries,
-                                                       1);
-
-    var res = await taskCollection.UpdateManyAsync(tdm => tdm.SessionId == id.Session &&
-                                                          tdm.SubSessionId == id.SubSession &&
-                                                          tdm.TaskId == id.Task,
-                                                   updateDefinition,
-                                                   cancellationToken: cancellationToken);
-    switch (res.MatchedCount)
+    if (dispatchId == res.Id)
     {
-      case 0:
-        throw new ArmoniKException("Task not found");
-      case > 1:
-        throw new ArmoniKException("Multiple tasks modified");
+      logger_.LogInformation("Dispatch {dispatchId} acquired for task {id}",
+                             dispatchId,
+                             taskId);
+
+      var oldDispatchUpdates = Builders<DispatchDataModel>.Update
+                                                          .Set(model => model.TimeToLive,
+                                                               DateTime.MinValue)
+                                                          .AddToSet(model => model.Statuses,
+                                                                    new(TaskStatus.Failed,
+                                                                        DateTime.UtcNow,
+                                                                        "Dispatch Ttl expired"));
+
+      var olds = await dispatchCollection.UpdateManyAsync(model => model.TaskId == taskId && model.Id != dispatchId,
+                                                          oldDispatchUpdates,
+                                                          cancellationToken: cancellationToken);
+
+      if (olds.ModifiedCount > 0)
+        await dispatchCollection.FindOneAndUpdateAsync(model => model.Id == dispatchId,
+                                                       Builders<DispatchDataModel>.Update
+                                                                                  .Set(m => m.Attempt,
+                                                                                       olds.ModifiedCount + 1),
+                                                       cancellationToken: cancellationToken);
+      return true;
     }
+
+    logger_.LogInformation("Could not acquire lease for task {id}",
+                           taskId);
+    return false;
   }
 
-  public async Task<IEnumerable<(TaskId id, bool HasPayload, byte[] Payload)>> InitializeTaskCreation(
-    SessionId                session,
-    TaskOptions              options,
-    IEnumerable<TaskRequest> requests,
-    CancellationToken        cancellationToken = default)
+  /// <inheritdoc />
+  public async Task DeleteDispatch(string id, CancellationToken cancellationToken = default)
   {
-    using var _                 = logger_.LogFunction(session.ToString());
-    var       sessionHandle     = await sessionProvider_.GetAsync();
-    var       taskCollection    = await taskCollectionProvider_.GetAsync();
-    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
-
-    var parents = (await sessionCollection.AsQueryable(sessionHandle)
-                                          .Where(model => model.SubSessionId == session.SubSession)
-                                          .Select(model => model.ParentIds)
-                                          .FirstAsync(cancellationToken)).Select(id => id)
-                                                                         .ToList();
-
-
-    var taskDataModels = requests.Select(request =>
-                                         {
-                                           var isPayloadStored = request.Payload.CalculateSize() < 12000000;
-                                           var tdm = new TaskDataModel
-                                                     {
-                                                       HasPayload         = isPayloadStored,
-                                                       Options            = options,
-                                                       Retries            = 0,
-                                                       SessionId          = session.Session,
-                                                       SubSessionId       = session.SubSession,
-                                                       Status             = TaskStatus.Creating,
-                                                       Dependencies       = request.DependenciesTaskIds,
-                                                       ParentsSubSessions = parents,
-                                                     };
-                                           if (isPayloadStored)
-                                             tdm.Payload = request.Payload.Data.ToByteArray();
-
-                                           logger_.LogDebug("Stored {size} bytes for task",
-                                                            tdm.ToBson().Length);
-
-                                           return tdm;
-                                         })
-                                 .ToList();
-
-    await taskCollection.InsertManyAsync(taskDataModels,
-                                         cancellationToken: cancellationToken);
-
-    return taskDataModels.Select(tdm => (tdm.GetTaskId(), tdm.HasPayload, tdm.Payload));
+    using var _                  = logger_.LogFunction(id);
+    var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+    await dispatchCollection.DeleteOneAsync(model => model.Id == id,
+                                            cancellationToken);
   }
+
+  /// <inheritdoc />
+  public async Task UpdateDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default)
+  {
+    using var _                  = logger_.LogFunction(id);
+    var       taskCollection     = await taskCollectionProvider_.GetAsync();
+    var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+
+    var updateDefinition = Builders<DispatchDataModel>.Update
+                                                      .AddToSet(model => model.Statuses,
+                                                                new(status,
+                                                                    DateTime.UtcNow,
+                                                                    string.Empty));
+
+    var res = await dispatchCollection.FindOneAndUpdateAsync<DispatchDataModel>(model => model.Id == id && model.TimeToLive > DateTime.UtcNow,
+                                                                                updateDefinition,
+                                                                                new FindOneAndUpdateOptions<DispatchDataModel>
+                                                                                {
+                                                                                  IsUpsert       = false,
+                                                                                  ReturnDocument = ReturnDocument.After,
+                                                                                },
+                                                                                cancellationToken);
+
+    if (res == null)
+      throw new KeyNotFoundException();
+
+    await taskCollection.FindOneAndUpdateAsync(model => model.TaskId == res.TaskId,
+                                               Builders<TaskDataModel>.Update
+                                                                      .Set(model => model.Status,
+                                                                           status),
+                                               cancellationToken: cancellationToken);
+  }
+
+  /// <inheritdoc />
+  public async Task ExtendDispatchTtl(string id, DateTime newTtl, CancellationToken cancellationToken = default)
+  {
+    using var _                  = logger_.LogFunction(id);
+    var       taskCollection     = await taskCollectionProvider_.GetAsync();
+    var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+
+    var updateDefinition = Builders<DispatchDataModel>.Update
+                                                      .Set(model => model.TimeToLive,
+                                                           DateTime.UtcNow + DispatchAcquisitionDuration);
+
+    var res = await dispatchCollection.FindOneAndUpdateAsync<DispatchDataModel>(model => model.Id == id && model.TimeToLive > DateTime.UtcNow,
+                                                                                updateDefinition,
+                                                                                new FindOneAndUpdateOptions<DispatchDataModel>
+                                                                                {
+                                                                                  IsUpsert       = false,
+                                                                                  ReturnDocument = ReturnDocument.After,
+                                                                                },
+                                                                                cancellationToken);
+
+    if (res == null)
+      throw new KeyNotFoundException();
+  }
+
+  /// <inheritdoc />
+  public async IAsyncEnumerable<string> ListDispatchAsync(string taskId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  {
+    using var _                  = logger_.LogFunction(taskId);
+    var       sessionHandle      = await sessionProvider_.GetAsync();
+    var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+
+    await foreach (var dispatch in dispatchCollection.AsQueryable(sessionHandle)
+                                                     .Where(model => model.TaskId == taskId)
+                                                     .Select(model => model.Id)
+                                                     .ToAsyncEnumerable()
+                                                     .WithCancellation(cancellationToken))
+      yield return dispatch;
+  }
+
+  /// <inheritdoc />
+  public async Task<IDispatch> GetDispatchAsync(string dispatchId, CancellationToken cancellationToken = default)
+  {
+    using var _                  = logger_.LogFunction(dispatchId);
+    var       sessionHandle      = await sessionProvider_.GetAsync();
+    var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+
+    return await dispatchCollection.AsQueryable(sessionHandle)
+                                   .Where(model => model.Id == dispatchId)
+                                   .FirstAsync(cancellationToken);
+  }
+
+  /// <inheritdoc />
+  public async IAsyncEnumerable<string> ListResultsAsync(string sessionId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction(sessionId);
+    var       sessionHandle    = await sessionProvider_.GetAsync();
+    var       resultCollection = await resultCollectionProvider_.GetAsync();
+
+    await foreach (var result in resultCollection.AsQueryable(sessionHandle)
+                                                 .Where(model => model.SessionId == sessionId)
+                                                 .Select(model => model.Id)
+                                                 .ToAsyncEnumerable()
+                                                 .WithCancellation(cancellationToken))
+      yield return result;
+  }
+
+  /// <inheritdoc />
+  public async Task<IResult> GetResult(string sessionId, string key, CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction(key);
+    var       sessionHandle    = await sessionProvider_.GetAsync();
+    var       resultCollection = await resultCollectionProvider_.GetAsync();
+
+    return await resultCollection.AsQueryable(sessionHandle)
+                                 .Where(model => model.Id == key)
+                                 .FirstAsync(cancellationToken);
+  }
+
+  /// <inheritdoc />
+  public async Task SetResult(string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction(key);
+    var       resultCollection = await resultCollectionProvider_.GetAsync();
+
+    var res =await resultCollection.UpdateOneAsync(Builders<ResultDataModel>.Filter
+                                                                   .Where(model => model.Key == key && model.Owner == ownerTaskId),
+                                          Builders<ResultDataModel>.Update
+                                                                   .Set(model => model.IsResultAvailable,
+                                                                        true)
+                                                                   .Set(model => model.Data,
+                                                                        smallPayload),
+                                          cancellationToken: cancellationToken);
+    if (res.ModifiedCount == 0)
+      throw new KeyNotFoundException();
+  }
+
+  /// <inheritdoc />
+  public async Task DeleteResult(string session, string key, CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction(key);
+    var       resultCollection = await resultCollectionProvider_.GetAsync();
+
+    await resultCollection.DeleteOneAsync(model => model.Key == key && model.SessionId == session,
+                                          cancellationToken);
+  }
+
+  /// <inheritdoc />
+  public async Task DeleteResults(string sessionId, CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction();
+    var       resultCollection = await resultCollectionProvider_.GetAsync();
+
+    await resultCollection.DeleteManyAsync(model => model.SessionId == sessionId,
+                                          cancellationToken);
+  }
+
+
+
+
+
+
 
   public async Task<bool> IsSessionCancelledAsync(SessionId sessionId, CancellationToken cancellationToken = default)
   {
@@ -389,91 +567,141 @@ public class TableStorage : ITableStorage
 
 
     return await sessionCollection.AsQueryable(sessionHandle)
-                                  .Where(x => x.IsCancelled &&
-                                              x.SessionId == sessionId.Session &&
-                                              (x.SubSessionId == sessionId.SubSession || x.ParentIds.Contains(sessionId.SubSession)))
-                                  .Select(x => 1)
-                                  .AnyAsync(cancellationToken);
-  }
-
-  public async Task<bool> IsSessionClosedAsync(SessionId sessionId, CancellationToken cancellationToken = default)
-  {
-    using var _                 = logger_.LogFunction(sessionId.ToString());
-    var       sessionHandle     = await sessionProvider_.GetAsync();
-    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
-    if (!string.IsNullOrEmpty(sessionId.SubSession))
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(x => x.IsClosed &&
-                                                x.SessionId == sessionId.Session &&
-                                                (x.SubSessionId == sessionId.SubSession || x.ParentIds.Contains(sessionId.SubSession)))
-                                    .Select(x => 1)
-                                    .AnyAsync(cancellationToken);
-
-    return await sessionCollection.AsQueryable(sessionHandle)
-                                  .Where(x => x.SessionId == sessionId.Session && !x.IsClosed)
+                                  .Where(x => x.IsCancelled && x.SessionId == sessionId.Session)
                                   .AnyAsync(cancellationToken);
   }
 
   /// <inheritdoc />
-  public Task DeleteSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<string> ListSessionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(sessionId.ToString());
-    throw new NotImplementedException();
+    using var _                 = logger_.LogFunction();
+    var       sessionHandle     = await sessionProvider_.GetAsync();
+    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+
+    await foreach (var session in sessionCollection.AsQueryable(sessionHandle)
+                                                                                          .Select(model => model.SessionId)
+                                                                                          .Distinct()
+                                                                                          .ToAsyncEnumerable()
+                                                   .WithCancellation(cancellationToken))
+      yield return session;
   }
 
-  public async IAsyncEnumerable<TaskId> ListTasksAsync(TaskFilter filter,
-                                                       [EnumeratorCancellation] CancellationToken cancellationToken =
-                                                         default)
+  /// <inheritdoc />
+  public async Task<TaskOptions> GetDefaultTaskOption(string sessionId, string parentTaskId, CancellationToken cancellationToken = default)
   {
-    using var _              = logger_.LogFunction();
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    using var _                 = logger_.LogFunction(sessionId);
+    var       sessionHandle     = await sessionProvider_.GetAsync();
+    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-    var output = AsyncCursorSourceExt.ToAsyncEnumerable(taskCollection.AsQueryable(sessionHandle)
-                                                                      .FilterQuery(filter)
-                                                                      .Select(x => new TaskId
-                                                                                   {
-                                                                                     Session    = x.SessionId,
-                                                                                     SubSession = x.SubSessionId,
-                                                                                     Task       = x.TaskId,
-                                                                                   }));
-
-    await foreach (var taskId in output.WithCancellation(cancellationToken))
-      yield return taskId;
-  }
-
-  public async Task<TaskData> ReadTaskAsync(TaskId id, CancellationToken cancellationToken = default)
-  {
-    using var _              = logger_.LogFunction(id.ToPrintableId());
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
-
-    var res = await taskCollection.AsQueryable(sessionHandle)
-                                  .Where(tdm => tdm.SessionId == id.Session &&
-                                                tdm.SubSessionId == id.SubSession &&
-                                                tdm.TaskId == id.Task)
+    return await sessionCollection.AsQueryable(sessionHandle)
+                                  .Where(sdm => sdm.ParentTaskId == parentTaskId)
+                                  .Select(sdm => sdm.Options)
                                   .FirstAsync(cancellationToken);
-    var taskData = res.ToTaskData();
-    logger_.LogDebug("Read {size} bytes for taskData from base",
-                     taskData.CalculateSize());
-    return taskData;
   }
 
-  public async Task UpdateTaskStatusAsync(TaskId            id,
+  /// <inheritdoc />
+  public async Task InitializeTaskCreation(string                                                session,
+                                           string                                                parentTaskId,
+                                           TaskOptions                                           options,
+                                           IEnumerable<CreateSmallTaskRequest.Types.TaskRequest> requests,
+                                           CancellationToken                                     cancellationToken = default)
+  {
+    using var _                 = logger_.LogFunction($"{session}.{parentTaskId}");
+    var       sessionHandle     = await sessionProvider_.GetAsync();
+    var       taskCollection    = await taskCollectionProvider_.GetAsync();
+    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+    var       resultCollection  = await resultCollectionProvider_.GetAsync();
+
+
+    var parents = await sessionCollection.AsQueryable(sessionHandle)
+                                         .Where(model => model.ParentTaskId == parentTaskId)
+                                         .Select(model => model.Ancestors)
+                                         .FirstAsync(cancellationToken);
+
+    options ??= await sessionCollection.AsQueryable(sessionHandle)
+                                       .Where(model => model.ParentTaskId == parentTaskId)
+                                       .Select(model => model.Options)
+                                       .FirstAsync(cancellationToken);
+
+    var taskDataModels = requests.Select(request =>
+                                         {
+                                           var tdm = new TaskDataModel
+                                                     {
+                                                       HasPayload       = request.Payload is not null,
+                                                       Options          = options,
+                                                       SessionId        = session,
+                                                       Status           = TaskStatus.Creating,
+                                                       Ancestors        = parents,
+                                                       Payload          = request.Payload?.ToByteArray(),
+                                                       ParentTaskId     = parentTaskId,
+                                                       DataDependencies = request.DataDependencies,
+                                                       TaskId           = request.Id,
+                                                     };
+
+                                           logger_.LogDebug("Stored {size} bytes for task",
+                                                            tdm.ToBson().Length);
+                                           var resultUpdateDefinition = Builders<ResultDataModel>.Update
+                                                                                                 .Set(model => model.Owner,
+                                                                                                      request.Id);
+
+                                             var resultFilter = Builders<ResultDataModel>.Filter
+                                                                                         .Where(model => model.SessionId == session &&
+                                                                                                         request.ExpectedOutputKeys.Contains(model.Key));
+
+                                           var resultWriter = request.ExpectedOutputKeys.Count switch
+                                                          {
+                                                            1 => new UpdateOneModel<ResultDataModel>(resultFilter,
+                                                                                                     resultUpdateDefinition),
+                                                            > 1 => new UpdateManyModel<ResultDataModel>(resultFilter,
+                                                                                                        resultUpdateDefinition),
+                                                            _ => null as WriteModel<ResultDataModel>,
+                                                          };
+
+                                           return (TaskDataModel: tdm, WriterModel:resultWriter);
+                                         })
+                                 .ToList();
+
+    await taskCollection.InsertManyAsync(taskDataModels.Select(tuple => tuple.TaskDataModel),
+                                         cancellationToken: cancellationToken);
+
+    await resultCollection.BulkWriteAsync(taskDataModels.Select(tuple => tuple.WriterModel),
+                                          new()
+                                          {
+                                            IsOrdered = false,
+                                          },
+                                          cancellationToken);
+
+  }
+
+  /// <inheritdoc />
+  public async Task<ITaskData> ReadTaskAsync(string id, CancellationToken cancellationToken = default)
+  {
+    using var _              = logger_.LogFunction(id);
+    var       sessionHandle  = await sessionProvider_.GetAsync();
+    var       taskCollection = await taskCollectionProvider_.GetAsync();
+
+    return await taskCollection.AsQueryable(sessionHandle)
+                                  .Where(tdm => tdm.TaskId == id)
+                                  .FirstAsync(cancellationToken);
+  }
+
+  /// <inheritdoc />
+  IAsyncEnumerable<string> ITableStorage.ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+  /// <inheritdoc />
+  public async Task UpdateTaskStatusAsync(string            id,
                                           TaskStatus        status,
                                           CancellationToken cancellationToken = default)
   {
-    using var _              = logger_.LogFunction(id.ToPrintableId());
+    using var _              = logger_.LogFunction(id);
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,
                                                                             status);
     logger_.LogDebug("update task {task} to status {status}",
-                     id.ToPrintableId(),
+                     id,
                      status);
-    var res = await taskCollection.UpdateManyAsync(x => x.SessionId == id.Session &&
-                                                        x.SubSessionId == id.SubSession &&
-                                                        x.TaskId == id.Task &&
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id &&
                                                         x.Status != TaskStatus.Completed &&
                                                         x.Status != TaskStatus.Canceled,
                                                    updateDefinition,
@@ -482,35 +710,30 @@ public class TableStorage : ITableStorage
     switch (res.MatchedCount)
     {
       case 0:
-        throw new ArmoniKException($"Task not found - {id.ToPrintableId()}");
+        throw new ArmoniKException($"Task not found - {id}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }
   }
 
-  public async Task<TaskOptions> GetDefaultTaskOption(SessionId sessionId, CancellationToken cancellationToken)
+  /// <inheritdoc />
+  public Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default)
   {
-    using var _                 = logger_.LogFunction(sessionId.ToString());
-    var       sessionHandle     = await sessionProvider_.GetAsync();
-    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
-
-    return await sessionCollection.AsQueryable(sessionHandle)
-                                  .Where(sdm => sdm.SessionId == sessionId.Session &&
-                                                sdm.SubSessionId == sessionId.SubSession)
-                                  .Select(sdm => sdm.Options)
-                                  .FirstAsync(cancellationToken);
+    using var _ = logger_.LogFunction(sessionId.ToString());
+    throw new NotImplementedException();
   }
+  
 
   public static Expression<Func<TaskDataModel, bool>> BuildChildrenFilterExpression(IList<string> rootTaskList)
   {
     if (rootTaskList is null || !rootTaskList.Any())
       return model => false;
     if (rootTaskList.Count == 1)
-      return model => rootTaskList[0] == model.SubSessionId || model.ParentsSubSessions.Contains(rootTaskList[0]);
+      return model => rootTaskList[0] == model.ParentTaskId || model.Ancestors.Contains(rootTaskList[0]);
 
-    return model => rootTaskList.Contains(model.SubSessionId) ||
+    return model => rootTaskList.Contains(model.ParentTaskId) ||
                     // ReSharper disable once ConvertClosureToMethodGroup for better handling by MongoDriver visitor
-                    model.ParentsSubSessions.Any(parentSubSession => rootTaskList.Contains(parentSubSession));
+                    model.Ancestors.Any(parentSubSession => rootTaskList.Contains(parentSubSession));
   }
 
   /// <inheritdoc />

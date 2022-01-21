@@ -27,58 +27,63 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
-
-using Google.Protobuf;
+using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-using TaskStatus = System.Threading.Tasks.TaskStatus;
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table;
+namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public class TaskDataModel : IMongoDataModel<TaskDataModel>
+public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaskData
 {
-  public const string Collection = "tasks";
+  public const string                 Collection = nameof(TaskDataModel);
 
   static TaskDataModel()
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
       BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
                                                    {
-                                                     cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
+                                                     cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(SubSessionId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                     cm.MapProperty(nameof(ParentTaskId)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(DataDependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
                                                      cm.MapProperty(nameof(Status)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(Retries)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                     cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
-                                                     cm.MapProperty(nameof(Dependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                     cm.MapProperty(nameof(ParentsSubSessions)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                     cm.MapProperty(nameof(Ancestors)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
                                                      cm.SetIgnoreExtraElements(true);
                                                    });
   }
 
-  public string SessionId { get; set; }
+  /// <inheritdoc />
+  public string        TaskId           { get; set; }
 
-  public string SubSessionId { get; set; }
+  /// <inheritdoc />
+  public string SessionId    { get; set; }
 
-  public string TaskId { get; set; }
+  /// <inheritdoc />
+  public string ParentTaskId { get; set; }
 
-  public TaskOptions Options { get; set; }
+  /// <inheritdoc />
+  public IList<string> DataDependencies { get; set; }
 
+  /// <inheritdoc />
   public TaskStatus Status { get; set; }
 
-  public int Retries { get; set; }
+  public TaskOptions Options      { get; set; }
+
+  /// <inheritdoc />
+  public DateTime CreationDate { get; set; }
 
   public bool HasPayload { get; set; }
 
   public byte[] Payload { get; set; }
 
-  public IList<string> Dependencies { get; set; } = Array.Empty<string>();
-
-  public IList<string> ParentsSubSessions { get; set; } = Array.Empty<string>();
+  public IList<string> Ancestors { get; set; } = Array.Empty<string>();
 
   /// <inheritdoc />
   public string CollectionName => Collection;
@@ -88,10 +93,7 @@ public class TaskDataModel : IMongoDataModel<TaskDataModel>
                                      IMongoCollection<TaskDataModel> collection)
   {
     var sessionIndex    = Builders<TaskDataModel>.IndexKeys.Text(model => model.SessionId);
-    var subSessionIndex = Builders<TaskDataModel>.IndexKeys.Text(model => model.SubSessionId);
     var statusIndex     = Builders<TaskDataModel>.IndexKeys.Text(model => model.Status);
-    var sessionSubSessionIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
-                                                                           subSessionIndex);
     var sessionStatusIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
                                                                        statusIndex);
 
@@ -101,12 +103,6 @@ public class TaskDataModel : IMongoDataModel<TaskDataModel>
                             new()
                             {
                               Name = nameof(sessionIndex),
-                            }),
-                        new(sessionSubSessionIndex,
-                            new()
-                            {
-                              Name   = nameof(sessionSubSessionIndex),
-                              Unique = true,
                             }),
                         new(sessionStatusIndex,
                             new()
@@ -118,10 +114,4 @@ public class TaskDataModel : IMongoDataModel<TaskDataModel>
     return collection.Indexes.CreateManyAsync(sessionHandle,
                                               indexModels);
   }
-
-  public TaskId GetTaskId() => new()
-                               {
-                                 Session    = SessionId,
-                                 Task       = TaskId,
-                               };
 }

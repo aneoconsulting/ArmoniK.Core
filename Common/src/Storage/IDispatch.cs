@@ -30,14 +30,17 @@ namespace ArmoniK.Core.Common.Storage;
 
 public interface IDispatch
 {
+  public record StatusTime(TaskStatus Status, DateTime Date, string Details)
+  {
+  }
+
   string Id          { get; }
   string TaskId      { get; }
   int    Attempt     { get; }
-  string ErrorDetail { get; }
 
   DateTime TimeToLive { get; }
 
-  IEnumerable<KeyValuePair<TaskStatus, DateTime>> Statuses { get; }
+  IEnumerable<StatusTime> Statuses { get; }
 
   DateTime CreationDate { get; }
 }

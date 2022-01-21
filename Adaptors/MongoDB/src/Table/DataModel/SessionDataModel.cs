@@ -24,6 +24,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 
 using MongoDB.Bson.Serialization;
@@ -31,7 +32,7 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table;
 
-public class SessionDataModel : IMongoDataModel<SessionDataModel>, ITaggedId
+public class SessionDataModel : IMongoDataModel<SessionDataModel>
 {
   public const string Collection = "SessionData";
 
@@ -40,23 +41,21 @@ public class SessionDataModel : IMongoDataModel<SessionDataModel>, ITaggedId
     if (!BsonClassMap.IsClassMapRegistered(typeof(SessionDataModel)))
       BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
                                                       {
-                                                        cm.MapIdProperty(nameof(SubSessionId)).SetIsRequired(true).SetIdGenerator(new TaggedIdGenerator());
                                                         cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(ParentIds)).SetIgnoreIfDefault(true);
-                                                        cm.MapProperty(nameof(IsClosed)).SetIsRequired(true);
+                                                        cm.MapIdProperty(nameof(ParentTaskId)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(Ancestors)).SetIgnoreIfDefault(true);
                                                         cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
                                                         cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
                                                         cm.SetIgnoreExtraElements(true);
                                                       });
   }
 
+
   public string SessionId { get; set; }
 
-  public string SubSessionId { get; set; }
+  public string ParentTaskId { get; set; }
 
-  public List<string> ParentIds { get; set; }
-
-  public bool IsClosed { get; set; }
+  public List<string> Ancestors { get; set; }
 
   public bool IsCancelled { get; set; }
 
@@ -69,7 +68,7 @@ public class SessionDataModel : IMongoDataModel<SessionDataModel>, ITaggedId
   public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionDataModel> collection)
   {
     var sessionIndex = Builders<SessionDataModel>.IndexKeys.Text(model => model.SessionId);
-    var parentsIndex = Builders<SessionDataModel>.IndexKeys.Text("ParentIds.Id");
+    var parentsIndex = Builders<SessionDataModel>.IndexKeys.Text("Ancestors.Id");
     var sessionParentIndex = Builders<SessionDataModel>.IndexKeys.Combine(sessionIndex,
                                                                           parentsIndex);
 
@@ -90,6 +89,4 @@ public class SessionDataModel : IMongoDataModel<SessionDataModel>, ITaggedId
     return collection.Indexes.CreateManyAsync(sessionHandle,
                                               indexModels);
   }
-
-  public string IdTag { get; set; }
 }

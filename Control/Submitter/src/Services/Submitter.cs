@@ -157,7 +157,8 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
 
 
     var options = request.TaskOptions ??
-                  await tableStorage_.GetDefaultTaskOption(request.SessionId,
+                  await tableStorage_.GetDefaultTaskOption(request.SessionId, 
+                                                           request.ParentTaskId,
                                                            context
                                                             .CancellationToken);
 
@@ -227,6 +228,7 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
 
     var options = initRequest.TaskOptions ??
                   await tableStorage_.GetDefaultTaskOption(initRequest.SessionId,
+                                                           initRequest.ParentTaskId,
                                                            context
                                                             .CancellationToken);
 

@@ -25,6 +25,9 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+
 namespace ArmoniK.Core.Adapters.MongoDB.Table;
 
 public static class TaskFilterExt
@@ -42,47 +45,68 @@ public static class TaskFilterExt
     var output = (Expression)Expression.Constant(true,
                                                  typeof(bool));
 
-    if (!string.IsNullOrEmpty(filter.SessionId))
-      output = Expression.And(output,
-                              ExpressionsBuilders.FieldFilterInternal(model => model.SessionId,
-                                                                      new[] { filter.SessionId },
-                                                                      true,
-                                                                      x));
+    switch (filter.IdsCase)
+    {
+      case TaskFilter.IdsOneofCase.Unknown:
+      {
+        if (!string.IsNullOrEmpty(filter.Unknown.SessionId))
+          output = Expression.And(output,
+                                  ExpressionsBuilders.FieldFilterInternal(model => model.SessionId,
+                                                                          new[] { filter.Unknown.SessionId },
+                                                                          true,
+                                                                          x));
 
-    if (!string.IsNullOrEmpty(filter.SubSessionId))
-      output = Expression.And(output,
-                              ExpressionsBuilders.FieldFilterInternal(model => model.SubSessionId,
-                                                                      new[] { filter.SubSessionId },
-                                                                      true,
-                                                                      x));
+        if (filter.Unknown.ExcludedTaskIds is not null && filter.Unknown.ExcludedTaskIds.Any())
+          output = Expression.And(output,
+                                  ExpressionsBuilders.FieldFilterInternal(model => model.TaskId,
+                                                                          filter.Unknown.ExcludedTaskIds,
+                                                                          false,
+                                                                          x));
+        break;
+      }
+      case TaskFilter.IdsOneofCase.Known:
+      {
+        if (filter.Known.TaskIds is not null && filter.Known.TaskIds.Any())
+          output = Expression.And(output,
+                                  ExpressionsBuilders.FieldFilterInternal(model => model.TaskId,
+                                                                          filter.Known.TaskIds,
+                                                                          true,
+                                                                          x));
+        break;
+      }
+      default:
+        throw new ArgumentException($"{nameof(TaskFilter.IdsCase)} must be either {nameof(TaskFilter.IdsOneofCase.Known)} or {nameof(TaskFilter.IdsOneofCase.Unknown)}",
+                                    nameof(filter));
+    }
 
-    if (filter.IncludedTaskIds is not null && filter.IncludedTaskIds.Any())
-      output = Expression.And(output,
-                              ExpressionsBuilders.FieldFilterInternal(model => model.TaskId,
-                                                                      filter.IncludedTaskIds,
-                                                                      true,
-                                                                      x));
+    switch (filter.StatusesCase)
+    {
+      case TaskFilter.StatusesOneofCase.Included:
+      {
+        if (filter.Included.IncludedStatuses is not null && filter.Included.IncludedStatuses.Any())
+          output = Expression.And(output,
+                                  ExpressionsBuilders.FieldFilterInternal(model => model.Status,
+                                                                          filter.Included.IncludedStatuses,
+                                                                          true,
+                                                                          x));
+        break;
+      }
+      case TaskFilter.StatusesOneofCase.Excluded:
+      {
+        if (filter.Excluded.IncludedStatuses is not null && filter.Excluded.IncludedStatuses.Any())
+          output = Expression.And(output,
+                                  ExpressionsBuilders.FieldFilterInternal(model => model.Status,
+                                                                          filter.Excluded.IncludedStatuses,
+                                                                          false,
+                                                                          x));
+        break;
+      }
+      default:
+        throw new ArgumentException($"{nameof(TaskFilter.StatusesCase)} must be either {nameof(TaskFilter.StatusesOneofCase.Included)} or {nameof(TaskFilter.StatusesOneofCase.Excluded)}",
+                                    nameof(filter));
 
-    if (filter.ExcludedTaskIds is not null && filter.ExcludedTaskIds.Any())
-      output = Expression.And(output,
-                              ExpressionsBuilders.FieldFilterInternal(model => model.TaskId,
-                                                                      filter.ExcludedTaskIds,
-                                                                      false,
-                                                                      x));
+    }
 
-    if (filter.IncludedStatuses is not null && filter.IncludedStatuses.Any())
-      output = Expression.And(output,
-                              ExpressionsBuilders.FieldFilterInternal(model => model.Status,
-                                                                      filter.IncludedStatuses,
-                                                                      true,
-                                                                      x));
-
-    if (filter.ExcludedStatuses is not null && filter.ExcludedStatuses.Any())
-      output = Expression.And(output,
-                              ExpressionsBuilders.FieldFilterInternal(model => model.Status,
-                                                                      filter.ExcludedStatuses,
-                                                                      false,
-                                                                      x));
 
     return (Expression<Func<TaskDataModel, bool>>)Expression.Lambda(output,
                                                                     x);

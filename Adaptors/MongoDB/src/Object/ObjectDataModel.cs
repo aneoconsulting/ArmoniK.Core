@@ -35,7 +35,7 @@ public class ObjectDataModel : IMongoDataModel<ObjectDataModel>
   public const string Collection = "Object";
 
   [BsonId]
-  public string Id => $"{Key}{ChunkIdx}";
+  public string Id => $"{Key}.{ChunkIdx}";
 
   [BsonElement]
   public string Key { get; set; }

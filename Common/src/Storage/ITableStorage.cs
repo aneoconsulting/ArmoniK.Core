@@ -49,7 +49,7 @@ public interface ITableStorage : IInitializable
 
   Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default);
 
-  Task<TaskOptions> GetDefaultTaskOption(string sessionId, CancellationToken cancellationToken = default);
+  Task<TaskOptions> GetDefaultTaskOption(string sessionId, string parentTaskId, CancellationToken cancellationToken = default);
 
   public Task InitializeTaskCreation(string                                                session,
                                      string                                                parentTaskId,
@@ -83,11 +83,11 @@ public interface ITableStorage : IInitializable
 
   IAsyncEnumerable<string> ListResultsAsync(string sessionId, CancellationToken cancellationToken = default);
 
-  Task<IResult> GetResult(string key, CancellationToken cancellationToken = default);
+  Task<IResult> GetResult(string sessionId, string key, CancellationToken cancellationToken = default);
 
   Task SetResult(string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default);
 
-  Task DeleteResult(string key, CancellationToken cancellationToken = default);
+  Task DeleteResult(string session, string key, CancellationToken cancellationToken = default);
 
   Task DeleteResults(string sessionId, CancellationToken cancellationToken = default);
 }

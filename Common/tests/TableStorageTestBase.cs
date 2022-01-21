@@ -55,11 +55,11 @@ public abstract class TableStorageTestBase
                                    .ContainsAsync(id));
 
     Assert.AreEqual(CreateSessionReply.ResultOneofCase.Ok,
-                    await TableStorage.CreateSessionAsync(new()
+                    (await TableStorage.CreateSessionAsync(new()
                                                           {
                                                             Root = new()
                                                                    {
-                                                                     Id = "Id",
+                                                                     Id = id,
                                                             DefaultTaskOption = new()
                                                                                 {
                                                                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
@@ -67,7 +67,7 @@ public abstract class TableStorageTestBase
                                                                                   Priority    = 2,
                                                                                 },
                                                                    },
-                                                          }));
+                                                          })).ResultCase);
 
     Assert.True(await TableStorage.ListSessionsAsync()
                                   .ContainsAsync(id));
@@ -148,11 +148,11 @@ public abstract class TableStorageTestBase
                                    .ContainsAsync(sessionId1));
 
     Assert.AreEqual(CreateSessionReply.ResultOneofCase.Ok,
-                    await TableStorage.CreateSessionAsync(new()
+                    (await TableStorage.CreateSessionAsync(new()
                                                           {
                                                             Root = new()
                                                                    {
-                                                                     Id = "Id",
+                                                                     Id = sessionId1,
                                                                      DefaultTaskOption = new()
                                                                                          {
                                                                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
@@ -160,7 +160,7 @@ public abstract class TableStorageTestBase
                                                                                            Priority    = 2,
                                                                                          },
                                                                    },
-                                                          }));
+                                                          })).ResultCase);
 
 
     // check that session can be listed
@@ -216,7 +216,8 @@ public abstract class TableStorageTestBase
                                                         CancellationToken.None)
                                       .ContainsAsync(o3));
       {
-        var result = await TableStorage.GetResult(o1);
+        var result = await TableStorage.GetResult(sessionId1,
+                                                  o1);
         Assert.AreEqual(t1,
                         result.Owner);
         Assert.AreEqual(o1,
@@ -227,7 +228,8 @@ public abstract class TableStorageTestBase
                         result.SessionId);
       }
       {
-        var result = await TableStorage.GetResult(o2);
+        var result = await TableStorage.GetResult(sessionId1,
+                                                  o2);
         Assert.AreEqual(t1,
                         result.Owner);
         Assert.AreEqual(o2,
@@ -238,7 +240,8 @@ public abstract class TableStorageTestBase
                         result.SessionId);
       }
       {
-        var result = await TableStorage.GetResult(o3);
+        var result = await TableStorage.GetResult(sessionId1,
+                                                  o3);
         Assert.AreEqual(t1,
                         result.Owner);
         Assert.AreEqual(o3,
@@ -378,7 +381,7 @@ public abstract class TableStorageTestBase
 
     // check that another dispatch cannot be acquired
     {
-      Assert.ThrowsAsync<Exception>(() => TableStorage.GetDispatchAsync("fakeDispatchId",
+      Assert.ThrowsAsync<KeyNotFoundException>(() => TableStorage.GetDispatchAsync("fakeDispatchId",
                                                                         CancellationToken.None));
     }
 
@@ -435,7 +438,7 @@ public abstract class TableStorageTestBase
       Assert.NotNull(dispatch);
       Assert.Contains(TaskStatus.Processing,
                       dispatch.Statuses
-                              .Select(pair => pair.Key)
+                              .Select(pair => pair.Status)
                               .ToList());
 
       Assert.AreEqual(t1,
@@ -474,14 +477,14 @@ public abstract class TableStorageTestBase
 
     // create a new session s2 with parentId=t1
     Assert.AreEqual(CreateSessionReply.ResultOneofCase.Ok,
-                    await TableStorage.CreateSessionAsync(new()
+                    (await TableStorage.CreateSessionAsync(new()
                                                           {
                                                             SubSession = new()
                                                                          {
                                                                            RootId       = sessionId1,
                                                                            ParentTaskId = t1,
                                                                          },
-                                                          }));
+                                                          })).ResultCase);
 
 
     // create 3 tasks :
@@ -577,7 +580,8 @@ public abstract class TableStorageTestBase
 
     // check that the ownership of o1 and o3 has changed
     {
-      var result = await TableStorage.GetResult(o1);
+      var result = await TableStorage.GetResult(sessionId1,
+                                                o1);
       Assert.AreEqual(t2,
                       result.Owner);
       Assert.AreEqual(o1,
@@ -588,7 +592,8 @@ public abstract class TableStorageTestBase
                       result.SessionId);
     }
     {
-      var result = await TableStorage.GetResult(o3);
+      var result = await TableStorage.GetResult(sessionId1,
+                                                o3);
       Assert.AreEqual(t4,
                       result.Owner);
       Assert.AreEqual(o3,
@@ -617,7 +622,7 @@ public abstract class TableStorageTestBase
       Assert.DoesNotThrow(() => Assert.AreEqual(1,
                                                 count.Single(tuple => tuple.Status == TaskStatus.Processing).Count));
       Assert.DoesNotThrow(() => Assert.AreEqual(3,
-                                                count.Single(tuple => tuple.Status == TaskStatus.Submitted).Count));
+                                                count.Single(tuple => tuple.Status == TaskStatus.Creating).Count));
     }
 
     // complete t1 status and provide result for o2
@@ -667,19 +672,21 @@ public abstract class TableStorageTestBase
       Assert.DoesNotThrow(() => Assert.AreEqual(1,
                                                 count.Single(tuple => tuple.Status == TaskStatus.Completed).Count));
       Assert.DoesNotThrow(() => Assert.AreEqual(3,
-                                                count.Single(tuple => tuple.Status == TaskStatus.Submitted).Count));
+                                                count.Single(tuple => tuple.Status == TaskStatus.Creating).Count));
     }
 
     // check that o2 can be retrieved
     {
-      Assert.IsTrue((await TableStorage.GetResult(o2)).IsResultAvailable);
+      Assert.IsTrue((await TableStorage.GetResult(sessionId1,
+                                                  o2)).IsResultAvailable);
     }
 
 
     // check that o1 and o3 cannot be retrieved
     {
-      Assert.IsFalse((await TableStorage.GetResult(o1)).IsResultAvailable);
-      Assert.IsFalse((await TableStorage.GetResult(o3)).IsResultAvailable);
+      Assert.IsFalse((await TableStorage.GetResult(sessionId1,o1)).IsResultAvailable);
+      Assert.IsFalse((await TableStorage.GetResult(sessionId1,
+                                                   o3)).IsResultAvailable);
     }
   }
 }

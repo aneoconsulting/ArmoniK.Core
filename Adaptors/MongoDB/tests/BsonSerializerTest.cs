@@ -25,6 +25,7 @@ using System;
 using System.Linq;
 
 using ArmoniK.Core.Adapters.MongoDB.Table;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 using Google.Protobuf.WellKnownTypes;
 

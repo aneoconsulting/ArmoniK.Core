@@ -40,7 +40,7 @@ public class QueueMessageModel : IMongoDataModel<QueueMessageModel>
 
   [BsonRequired]
   [BsonElement]
-  public TaskId TaskId { get; set; }
+  public string TaskId { get; set; }
 
   [BsonElement]
   public string OwnerId { get; set; }

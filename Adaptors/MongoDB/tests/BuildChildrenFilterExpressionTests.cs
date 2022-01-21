@@ -25,6 +25,7 @@ using System;
 using System.Linq;
 
 using ArmoniK.Core.Adapters.MongoDB.Table;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -63,7 +64,7 @@ internal class BuildChildrenFilterExpressionTests
     var tdm = new TaskDataModel
               {
                 TaskId             = "taskId1",
-                ParentsSubSessions = Array.Empty<string>(),
+                Ancestors = Array.Empty<string>(),
               };
 
     Assert.IsFalse(filter(tdm));
@@ -80,7 +81,7 @@ internal class BuildChildrenFilterExpressionTests
     var tdm = new TaskDataModel
               {
                 TaskId             = "taskId1",
-                ParentsSubSessions = new[] { "parent0" },
+                Ancestors = new[] { "parent0" },
               };
 
     Assert.IsFalse(filter(tdm));
@@ -97,7 +98,7 @@ internal class BuildChildrenFilterExpressionTests
     var tdm = new TaskDataModel
               {
                 TaskId             = "taskId1",
-                ParentsSubSessions = new[] { "parent1" },
+                Ancestors = new[] { "parent1" },
               };
 
     Assert.IsTrue(filter(tdm));
@@ -114,7 +115,7 @@ internal class BuildChildrenFilterExpressionTests
     var tdm = new TaskDataModel
               {
                 TaskId             = "taskId1",
-                ParentsSubSessions = new[] { "parent0" },
+                Ancestors = new[] { "parent0" },
               };
 
     Assert.IsFalse(filter(tdm));
@@ -129,7 +130,7 @@ internal class BuildChildrenFilterExpressionTests
     var tdm = new TaskDataModel
               {
                 TaskId             = "taskId1",
-                ParentsSubSessions = new[] { "parent0" },
+                Ancestors = new[] { "parent0" },
               };
 
     Assert.IsFalse(filter(tdm));
@@ -161,7 +162,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId          = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId       = "908c6ead-2dba-465d-88ca-ae030165cb71",
                              Status             = TaskStatus.Completed,
-                             ParentsSubSessions = new[] { "8aec804b-834c-44cd-900a-ae030165cae1" },
+                             Ancestors = new[] { "8aec804b-834c-44cd-900a-ae030165cae1" },
                            },
                            new()
                            {
@@ -169,7 +170,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId          = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId       = "908c6ead-2dba-465d-88ca-ae030165cb71",
                              Status             = TaskStatus.Failed,
-                             ParentsSubSessions = new[] { "8aec804b-834c-44cd-900a-ae030165cae1" },
+                             Ancestors = new[] { "8aec804b-834c-44cd-900a-ae030165cae1" },
                            },
                            new()
                            {
@@ -177,7 +178,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId          = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId       = "49da1bd5-578d-4abf-83a0-ae030165d365",
                              Status             = TaskStatus.Completed,
-                             ParentsSubSessions = new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71" },
+                             Ancestors = new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71" },
                            },
                            new()
                            {
@@ -185,7 +186,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId          = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId       = "49da1bd5-578d-4abf-83a0-ae030165d365",
                              Status             = TaskStatus.Completed,
-                             ParentsSubSessions = new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71" },
+                             Ancestors = new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71" },
                            },
                            new()
                            {
@@ -193,7 +194,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId          = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId       = "49da1bd5-578d-4abf-83a0-ae030165d365",
                              Status             = TaskStatus.Failed,
-                             ParentsSubSessions = new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71" },
+                             Ancestors = new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71" },
                            },
                            new()
                            {
@@ -201,7 +202,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "c5beb772-7274-4c62-8ca0-ae030165d4c9",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365" },
                            },
                            new()
@@ -210,7 +211,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "c5beb772-7274-4c62-8ca0-ae030165d4c9",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365" },
                            },
                            new()
@@ -219,7 +220,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "c5beb772-7274-4c62-8ca0-ae030165d4c9",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365" },
                            },
                            new()
@@ -228,7 +229,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "c5beb772-7274-4c62-8ca0-ae030165d4c9",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365" },
                            },
                            new()
@@ -237,7 +238,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "c5beb772-7274-4c62-8ca0-ae030165d4c9",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365" },
                            },
                            new()
@@ -246,7 +247,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "c5beb772-7274-4c62-8ca0-ae030165d4c9",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[] { "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365" },
                            },
                            new()
@@ -255,7 +256,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "7fcb43d7-6905-44f7-b78f-ae030165d70a",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[]
                                {
                                  "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365",
@@ -268,7 +269,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "7fcb43d7-6905-44f7-b78f-ae030165d70a",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[]
                                {
                                  "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365",
@@ -281,7 +282,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "7fcb43d7-6905-44f7-b78f-ae030165d70a",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[]
                                {
                                  "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365",
@@ -294,7 +295,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "7fcb43d7-6905-44f7-b78f-ae030165d70a",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[]
                                {
                                  "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365",
@@ -307,7 +308,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "7fcb43d7-6905-44f7-b78f-ae030165d70a",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[]
                                {
                                  "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365",
@@ -320,7 +321,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "7fcb43d7-6905-44f7-b78f-ae030165d70a",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[]
                                {
                                  "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365",
@@ -333,7 +334,7 @@ internal class BuildChildrenFilterExpressionTests
                              SessionId    = "8aec804b-834c-44cd-900a-ae030165cae1",
                              SubSessionId = "7fcb43d7-6905-44f7-b78f-ae030165d70a",
                              Status       = TaskStatus.Completed,
-                             ParentsSubSessions =
+                             Ancestors =
                                new[]
                                {
                                  "8aec804b-834c-44cd-900a-ae030165cae1", "908c6ead-2dba-465d-88ca-ae030165cb71", "49da1bd5-578d-4abf-83a0-ae030165d365",

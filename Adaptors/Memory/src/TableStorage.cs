@@ -39,105 +39,6 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
-public class SessionData
-{
-  public ConcurrentBag<string> ChildrenSessions { get; } = new();
-
-  public ConcurrentBag<string> AncestorSessions { get; } = new();
-
-  public string SessionId    { get; init; }
-
-  public string ParentTaskId { get; init; }
-
-  public bool IsCancelled { get; set; }
-
-  public TaskOptions DefaultTaskOptions { get; init; }
-
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
-}
-
-public class TaskData : ITaskData
-{
-
-  /// <inheritdoc />
-  public string SessionId { get; init; }
-
-  /// <inheritdoc />
-  public string ParentTaskId { get; init; }
-
-  /// <inheritdoc />
-  public string TaskId { get; init; }
-
-  public List<string> DataDependencies { get; } = new();
-
-  /// <inheritdoc />
-  IList<string> ITaskData.DataDependencies => DataDependencies;
-
-  /// <inheritdoc />
-  public bool HasPayload => true;
-
-  public byte[] Payload { get; init; }
-
-  /// <inheritdoc />
-  public TaskStatus Status { get; set; }
-
-  /// <inheritdoc />
-  public TaskOptions Options { get; init; }
-
-  /// <inheritdoc />
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
-
-  public IDispatch Dispatch { get; set; }
-}
-
-public class Result : IResult
-{
-  /// <inheritdoc />
-  public string SessionId { get; init; }
-
-  /// <inheritdoc />
-  public string Key { get; init; }
-
-  /// <inheritdoc />
-  public string Owner { get; init; }
-
-  /// <inheritdoc />
-  public bool IsResultAvailable { get; set; }
-
-  /// <inheritdoc />
-  public byte[] Data { get; set; }
-
-  /// <inheritdoc />
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
-}
-
-public class Dispatch : IDispatch
-{
-  /// <inheritdoc />
-  public string Id { get; init; }
-
-  /// <inheritdoc />
-  public string TaskId { get; init; }
-
-  /// <inheritdoc />
-  public int Attempt { get; set; }
-
-  /// <inheritdoc />
-  public string ErrorDetail { get; set; }
-
-  /// <inheritdoc />
-  public DateTime TimeToLive { get; set; }
-
-  public ConcurrentDictionary<TaskStatus, DateTime> Statuses { get; } = new();
-
-  /// <inheritdoc />
-  IEnumerable<KeyValuePair<TaskStatus, DateTime>> IDispatch.Statuses => Statuses;
-
-  /// <inheritdoc />
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
-}
-
-
 public class TableStorage : ITableStorage
 {
   private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, SessionData>> sessions_ = new();
@@ -254,8 +155,8 @@ public class TableStorage : ITableStorage
   }
 
   /// <inheritdoc />
-  public Task<TaskOptions> GetDefaultTaskOption(string sessionId, CancellationToken cancellationToken = default)
-    => Task.FromResult(sessions_[sessionId][sessionId].DefaultTaskOptions);
+  public Task<TaskOptions> GetDefaultTaskOption(string sessionId, string parentId, CancellationToken cancellationToken = default)
+    => Task.FromResult(sessions_[sessionId][parentId].DefaultTaskOptions);
 
   /// <inheritdoc />
   public Task InitializeTaskCreation(string                                                session,
@@ -282,14 +183,14 @@ public class TableStorage : ITableStorage
       {
         foreach (var key in taskRequest.ExpectedOutputKeys)
         {
-          results_.TryAdd(key,
-                          new()
+          var result = results_.GetOrAdd(key,
+                          (_)=>new ()
                           {
                             Key               = key,
                             IsResultAvailable = false,
-                            Owner             = taskRequest.Id,
                             SessionId         = session,
                           });
+          result.Owner = taskRequest.Id;
         }
       }
       else
@@ -310,7 +211,11 @@ public class TableStorage : ITableStorage
     => tasks_.Values
              .Where(task => filter.IdsCase switch
                             {
-                              TaskFilter.IdsOneofCase.Known => filter.Known.TaskIds.Contains(task.TaskId),
+                              TaskFilter.IdsOneofCase.Known => filter.Known.TaskIds.Contains(task.TaskId) ||
+                                                               filter.Known.TaskIds.Contains(task.ParentTaskId) ||
+                                                               sessions_[task.SessionId][task.ParentTaskId].AncestorSessions
+                                                                                                           .Intersect(filter.Known.TaskIds)
+                                                                                                           .Any(),
                               TaskFilter.IdsOneofCase.Unknown => filter.Unknown.SessionId == task.SessionId &&
                                                                  !filter.Unknown.ExcludedTaskIds.Contains(task.TaskId),
                               _ => throw new ArgumentOutOfRangeException(nameof(filter)),
@@ -394,6 +299,7 @@ public class TableStorage : ITableStorage
                      Id         = dispatchId,
                      TaskId     = taskId,
                      TimeToLive = ttl,
+                     Attempt = 1,
                    };
 
     if (dispatchesPerKey_.TryAdd(dispatchId,
@@ -408,7 +314,10 @@ public class TableStorage : ITableStorage
           if (tasks_[taskId].Dispatch is not null)
           {
             ((Dispatch)tasks_[taskId].Dispatch).TimeToLive = DateTime.MinValue;
+
+            dispatch.Attempt = tasks_[taskId].Dispatch.Attempt + 1;
           }
+
           tasks_[taskId].Dispatch = dispatch;
           return true;
         }
@@ -440,12 +349,14 @@ public class TableStorage : ITableStorage
   /// <inheritdoc />
   public Task UpdateDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default)
   {
-    if(dispatchesPerKey_[id].TimeToLive>DateTime.UtcNow)
+    if (tasks_[dispatchesPerKey_[id].TaskId].Dispatch.Id == id)
     {
-      dispatchesPerKey_[id].Statuses.TryAdd(status,
-                                           DateTime.UtcNow);
-
+      dispatchesPerKey_[id].Statuses.Add(new(status,
+                                             DateTime.UtcNow,
+                                             string.Empty));
+      tasks_[dispatchesPerKey_[id].TaskId].Status = status;
     }
+
     return Task.CompletedTask;
   }
 
@@ -476,7 +387,7 @@ public class TableStorage : ITableStorage
     => results_.Keys.ToAsyncEnumerable();
 
   /// <inheritdoc />
-  public Task<IResult> GetResult(string key, CancellationToken cancellationToken = default) 
+  public Task<IResult> GetResult(string sessionId, string key, CancellationToken cancellationToken = default) 
     => Task.FromResult(results_[key] as IResult);
 
   /// <inheritdoc />
@@ -493,7 +404,7 @@ public class TableStorage : ITableStorage
   }
 
   /// <inheritdoc />
-  public Task DeleteResult(string key, CancellationToken cancellationToken = default)
+  public Task DeleteResult(string session, string key, CancellationToken cancellationToken = default)
   {
     results_.Remove(key,
                     out _);
