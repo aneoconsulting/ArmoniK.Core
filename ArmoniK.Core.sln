@@ -37,6 +37,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.Memor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.Memory.Tests", "Adaptors\Memory\tests\ArmoniK.Core.Adapters.Memory.Tests.csproj", "{9FE051D8-C6FA-42F2-96F1-18471FD27785}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.Redis", "Adaptors\Redis\src\ArmoniK.Core.Adapters.Redis.csproj", "{36F24B13-BFE4-4CCE-B989-357A6991D0AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,6 +127,14 @@ Global
 		{9FE051D8-C6FA-42F2-96F1-18471FD27785}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9FE051D8-C6FA-42F2-96F1-18471FD27785}.Release|x64.ActiveCfg = Release|Any CPU
 		{9FE051D8-C6FA-42F2-96F1-18471FD27785}.Release|x64.Build.0 = Release|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Debug|x64.Build.0 = Debug|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Release|x64.ActiveCfg = Release|Any CPU
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -145,6 +155,7 @@ Global
 		{B245D778-779E-4B78-9672-0BB21AF7D1D9} = {CD6402F1-DDA4-45D8-BB03-B2C9C46A49C8}
 		{AF7ECF9B-1295-469A-8C17-303BAA5CA621} = {1A9BCE53-79D0-4761-B3A2-6967B610FA94}
 		{9FE051D8-C6FA-42F2-96F1-18471FD27785} = {2D548C40-6260-4A4E-9C56-E8A80C639E13}
+		{36F24B13-BFE4-4CCE-B989-357A6991D0AA} = {1A9BCE53-79D0-4761-B3A2-6967B610FA94}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1285A466-2AF6-43E6-8DCC-2F93A5D5F02E}

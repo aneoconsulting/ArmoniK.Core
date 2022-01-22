@@ -27,13 +27,16 @@ using System.Net;
 
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
@@ -45,9 +48,9 @@ public static class Program
   public static int Main(string[] args)
   {
     Log.Logger = new LoggerConfiguration()
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .CreateBootstrapLogger();
+                 .Enrich.FromLogContext()
+                 .WriteTo.Console()
+                 .CreateBootstrapLogger();
 
     try
     {
@@ -86,42 +89,49 @@ public static class Program
              .AddMongoComponents(builder.Configuration)
              .AddAmqp(builder.Configuration,
                       logger)
+             .AddRedis(builder.Configuration,
+                       logger)
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>();
+
+      builder.Services.AddHealthChecks();
 
       builder.WebHost
              .UseConfiguration(builder.Configuration)
              .UseKestrel(options =>
-                         {
-                           options.Listen(IPAddress.Loopback,
-                                          8989);
-                         });
+             {
+               options.Listen(IPAddress.Loopback,
+                              8989,
+                              listenOptions => listenOptions.Protocols = HttpProtocols.Http1);
+             });
 
       var app = builder.Build();
 
       app.UseRouting();
 
+      if (app.Environment.IsDevelopment())
+        app.UseDeveloperExceptionPage();
+
       app.UseEndpoints(endpoints =>
-                       {
+      {
+        endpoints.MapHealthChecks("/startup",
+                                  new()
+                                  {
+                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                                  });
 
-                         endpoints.MapHealthChecks("/startup",
-                                                   new()
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
-                                                   });
+        endpoints.MapHealthChecks("/liveness",
+                                  new()
+                                  {
+                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                                  });
 
-                         endpoints.MapHealthChecks("/liveness",
-                                                   new()
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
-                                                   });
-
-                         endpoints.MapHealthChecks("/readiness",
-                                                   new()
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
-                                                   });
-                       });
+        endpoints.MapHealthChecks("/readiness",
+                                  new()
+                                  {
+                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
+                                  });
+      });
       app.Run();
       return 0;
     }
