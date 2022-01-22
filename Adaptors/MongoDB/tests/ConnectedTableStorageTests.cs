@@ -24,9 +24,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using ArmoniK.Api.gRPC.V1;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 
 using NUnit.Framework;
 
@@ -84,28 +87,39 @@ internal class ConnectedTableStorageTests
     Assert.AreEqual(0,
                     table.CountTasksAsync(new()).Result);
 
+    var sessionId = "AddOneTaskAndCount.sessionId";
+
     var session = table.CreateSessionAsync(new()
                                            {
-                                             DefaultTaskOption = new(),
-                                             IdTag             = "tag",
+                                             Root = new()
+                                                    {
+                                                      DefaultTaskOption = new(),
+                                                      Id                = sessionId,
+                                                    },
                                            }).Result;
 
-    var (_, _, _) = table.InitializeTaskCreation(session,
-                                                 new(),
+    Assert.AreEqual(CreateSessionReply.ResultOneofCase.Ok,session.ResultCase);
+
+    table.InitializeTaskCreation(sessionId,
+                                 sessionId,
+                                 new(),
+                                                 
                                                  new[]
                                                  {
-                                                   new TaskRequest
+                                                   new CreateSmallTaskRequest.Types.TaskRequest
                                                    {
-                                                     Payload = new(),
+                                                     Id      = null,
                                                    },
-                                                 }).Result.Single();
+                                                 }).Wait();
 
 
     Assert.AreEqual(1,
                     table.CountTasksAsync(new()
                                           {
-                                            SessionId    = session.Session,
-                                            SubSessionId = session.SubSession,
+                                            Unknown = new ()
+                                                      {
+                                                        SessionId = sessionId,
+                                                      },
                                           }).Result);
   }
 }

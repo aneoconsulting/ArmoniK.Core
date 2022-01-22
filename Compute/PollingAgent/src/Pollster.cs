@@ -26,9 +26,11 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.gRPC.DataModel;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
@@ -36,43 +38,39 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using TaskCanceledException = ArmoniK.Core.Common.Exceptions.TaskCanceledException;
-using TaskStatus = ArmoniK.Core.gRPC.V1.TaskStatus;
 using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
 
 namespace ArmoniK.Core.Compute.PollingAgent;
 
 public class Pollster
 {
-  private readonly WorkerClientProvider                 workerClientProvider_;
-  private readonly IHostApplicationLifetime              lifeTime_;
-  private readonly ILogger<Pollster>                     logger_;
-  private readonly int                                   messageBatchSize_;
-  private readonly IQueueStorage                         queueStorage_;
-  private readonly ITableStorage                         tableStorage_;
-  private readonly KeyValueStorage<TaskId, Payload>      taskPayloadStorage_;
-  private readonly KeyValueStorage<TaskId, ComputeReply> taskResultStorage_;
+  private readonly WorkerClientProvider     workerClientProvider_;
+  private readonly IHostApplicationLifetime lifeTime_;
+  private readonly ILogger<Pollster>        logger_;
+  private readonly int                      messageBatchSize_;
+  private readonly IQueueStorage            queueStorage_;
+  private readonly ITableStorage            tableStorage_;
+  private readonly IObjectStorageFactory    objectStorageFactory_;
 
-  public Pollster(ILogger<Pollster>                     logger,
-                  ComputePlan                           options,
-                  IQueueStorage                         queueStorage,
-                  ITableStorage                         tableStorage,
-                  KeyValueStorage<TaskId, ComputeReply> taskResultStorage,
-                  KeyValueStorage<TaskId, Payload>      taskPayloadStorage,
-                  WorkerClientProvider                 workerClientProvider,
-                  IHostApplicationLifetime              lifeTime)
+  public Pollster(ILogger<Pollster>        logger,
+                  ComputePlan              options,
+                  IQueueStorage            queueStorage,
+                  ITableStorage            tableStorage,
+                  IObjectStorageFactory    objectStorageFactory,
+                  WorkerClientProvider     workerClientProvider,
+                  IHostApplicationLifetime lifeTime)
   {
     if (options.MessageBatchSize < 1)
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
 
-    logger_             = logger;
-    queueStorage_       = queueStorage;
-    tableStorage_       = tableStorage;
-    taskResultStorage_  = taskResultStorage;
-    taskPayloadStorage_ = taskPayloadStorage;
-    workerClientProvider_     = workerClientProvider;
-    lifeTime_           = lifeTime;
-    messageBatchSize_   = options.MessageBatchSize;
+    logger_               = logger;
+    queueStorage_         = queueStorage;
+    tableStorage_         = tableStorage;
+    objectStorageFactory_ = objectStorageFactory;
+    workerClientProvider_ = workerClientProvider;
+    lifeTime_             = lifeTime;
+    messageBatchSize_     = options.MessageBatchSize;
   }
 
   private async Task Init(CancellationToken cancellationToken)
@@ -336,13 +334,13 @@ public class Pollster
                                                                          combinedCts.Token);
 
     if (isSessionCancelled &&
-        taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.WaitingForChildren))
+        taskData.Status is not (System.Threading.Tasks.TaskStatus.Canceled or System.Threading.Tasks.TaskStatus.Completed or System.Threading.Tasks.TaskStatus.WaitingForChildren))
     {
       logger_.LogInformation("Task is being cancelled");
       // cannot get lease: task is already running elsewhere
       messageHandler.Status = QueueMessageStatus.Cancelled;
       await tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                TaskStatus.Canceled,
+                                                System.Threading.Tasks.TaskStatus.Canceled,
                                                 cancellationToken);
       return true;
     }
@@ -359,12 +357,12 @@ public class Pollster
                                                                },
                                                                ExcludedStatuses =
                                                                {
-                                                                 TaskStatus.Completed,
+                                                                 System.Threading.Tasks.TaskStatus.Completed,
                                                                },
                                                              },
                                                              combinedCts.Token)
                                          .ContinueWith(task => task.Result
-                                                                   .Where(tuple => tuple.Status != TaskStatus.Completed)
+                                                                   .Where(tuple => tuple.Status != System.Threading.Tasks.TaskStatus.Completed)
                                                                    .Sum(tuple => tuple.Count),
                                                        cancellationToken);
     else
@@ -377,7 +375,7 @@ public class Pollster
       logger_.LogInformation("Task has been retried too many times");
       messageHandler.Status = QueueMessageStatus.Poisonous;
       await tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                TaskStatus.Failed,
+                                                System.Threading.Tasks.TaskStatus.Failed,
                                                 CancellationToken.None);
       return false;
     }
@@ -387,40 +385,40 @@ public class Pollster
                      taskData.Status);
     switch (taskData.Status)
     {
-      case TaskStatus.Canceling:
+      case System.Threading.Tasks.TaskStatus.Canceling:
         logger_.LogInformation("Task is being cancelled");
         messageHandler.Status = QueueMessageStatus.Cancelled;
         await tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                  TaskStatus.Canceled,
+                                                  System.Threading.Tasks.TaskStatus.Canceled,
                                                   CancellationToken.None);
         return false;
-      case TaskStatus.Completed:
+      case System.Threading.Tasks.TaskStatus.Completed:
         logger_.LogInformation("Task was already completed");
         messageHandler.Status = QueueMessageStatus.Processed;
         return false;
-      case TaskStatus.Creating:
+      case System.Threading.Tasks.TaskStatus.Creating:
         break;
-      case TaskStatus.Submitted:
+      case System.Threading.Tasks.TaskStatus.Submitted:
         break;
-      case TaskStatus.Dispatched:
+      case System.Threading.Tasks.TaskStatus.Dispatched:
         break;
-      case TaskStatus.Error:
+      case System.Threading.Tasks.TaskStatus.Error:
         logger_.LogInformation("Task was on error elsewhere ; retrying");
         break;
-      case TaskStatus.Timeout:
+      case System.Threading.Tasks.TaskStatus.Timeout:
         logger_.LogInformation("Task was timeout elsewhere ; taking over here");
         break;
-      case TaskStatus.Canceled:
+      case System.Threading.Tasks.TaskStatus.Canceled:
         logger_.LogInformation("Task has been cancelled");
         messageHandler.Status = QueueMessageStatus.Cancelled;
         return false;
-      case TaskStatus.Processing:
+      case System.Threading.Tasks.TaskStatus.Processing:
         logger_.LogInformation("Task is processing elsewhere ; taking over here");
         break;
-      case TaskStatus.WaitingForChildren:
+      case System.Threading.Tasks.TaskStatus.WaitingForChildren:
         logger_.LogInformation("Task was already processed and is waiting for children");
         return false;
-      case TaskStatus.Failed:
+      case System.Threading.Tasks.TaskStatus.Failed:
         logger_.LogInformation("Task is failed");
         messageHandler.Status = QueueMessageStatus.Poisonous;
         break;
@@ -432,7 +430,7 @@ public class Pollster
 
     logger_.LogDebug("Changing task status to 'Dispatched'");
     var updateTask = tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                         TaskStatus.Dispatched,
+                                                         System.Threading.Tasks.TaskStatus.Dispatched,
                                                          combinedCts.Token);
 
     if (await dependencyCheckTask > 0)
@@ -463,7 +461,7 @@ public class Pollster
     var increaseTask = tableStorage_.IncreaseRetryCounterAsync(taskData.Id,
                                                                CancellationToken.None);
 
-    var request = new ComputeRequest
+    var request = new ProcessRequest.Types.ComputeRequest
     {
       Session    = taskData.Id.Session,
       Subsession = taskData.Id.SubSession,
@@ -482,7 +480,7 @@ public class Pollster
 
     logger_.LogDebug("Set task status to Processing");
     var updateTask = tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                         TaskStatus.Processing,
+                                                         System.Threading.Tasks.TaskStatus.Processing,
                                                          combinedCt);
 
     logger_.LogInformation("Send compute request to the worker");
@@ -508,7 +506,7 @@ public class Pollster
       logger_.LogInformation("Data sent.");
       messageHandler.Status = QueueMessageStatus.Processed;
       await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                             TaskStatus.Completed,
+                                                             System.Threading.Tasks.TaskStatus.Completed,
                                                              CancellationToken.None),
                          increaseTask);
     }
@@ -534,7 +532,7 @@ public class Pollster
                          taskData.Id.Session);
         messageHandler.Status = QueueMessageStatus.Failed;
         await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  TaskStatus.Timeout,
+                                                  System.Threading.Tasks.TaskStatus.Timeout,
                                                   CancellationToken.None);
         return true;
       }
@@ -552,7 +550,7 @@ public class Pollster
                          details);
         messageHandler.Status = QueueMessageStatus.Cancelled;
         await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  TaskStatus.Canceling,
+                                                  System.Threading.Tasks.TaskStatus.Canceling,
                                                   CancellationToken.None);
         return true;
       }
@@ -566,7 +564,7 @@ public class Pollster
 
         messageHandler.Status = QueueMessageStatus.Failed;
         await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  TaskStatus.Error,
+                                                  System.Threading.Tasks.TaskStatus.Error,
                                                   CancellationToken.None);
         return true;
       }
@@ -591,7 +589,7 @@ public class Pollster
                          taskData.Id.Session);
         messageHandler.Status = QueueMessageStatus.Failed;
         await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  TaskStatus.Error,
+                                                  System.Threading.Tasks.TaskStatus.Error,
                                                   CancellationToken.None);
         Console.WriteLine(e);
         return false;

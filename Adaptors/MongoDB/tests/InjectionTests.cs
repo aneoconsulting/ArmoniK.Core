@@ -51,8 +51,6 @@ internal class InjectionTests
                                               { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", "database" },
                                               { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DataRetention)}", "10.00:00:00" },
                                               { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage )}:PollingDelay", "00:00:10" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.LeaseProvider)}:AcquisitionPeriod", "00:20:00" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.LeaseProvider)}:AcquisitionDuration", "00:50:00" },
                                               { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:ChunkSize", "100000" },
                                               { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage )}:LockRefreshPeriodicity", "00:20:00" },
                                               { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage )}:PollPeriodicity", "00:00:50" },
@@ -224,44 +222,6 @@ internal class InjectionTests
   }
 
   [Test]
-  public void LeaseOptionsNotNull()
-  {
-    var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
-    var provider = services.BuildServiceProvider();
-
-    var options = provider.GetRequiredService<Options.LeaseProvider>();
-
-    Assert.NotNull(options);
-  }
-
-  [Test]
-  public void ReadLeaseAcquisitionPeriod()
-  {
-    var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
-    var provider = services.BuildServiceProvider();
-
-    var options = provider.GetRequiredService<Options.LeaseProvider>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(20),
-                    options.AcquisitionPeriod);
-  }
-
-  [Test]
-  public void ReadLeaseAcquisitionDuration()
-  {
-    var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
-    var provider = services.BuildServiceProvider();
-
-    var options = provider.GetRequiredService<Options.LeaseProvider>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(50),
-                    options.AcquisitionDuration);
-  }
-
-  [Test]
   public void ValidateProvider()
   {
     var services = new ServiceCollection();
@@ -395,53 +355,6 @@ internal class InjectionTests
   }
 
   [Test]
-  public void BuildLeaseProvider()
-  {
-    var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
-    services.AddLogging();
-
-    var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
-
-    var table = provider.GetRequiredService<LeaseProvider>();
-
-    Assert.NotNull(table);
-  }
-
-  [Test]
-  public void LeaseProviderHasAcquisitionPeriod()
-  {
-    var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
-    services.AddLogging();
-
-    var provider = services.BuildServiceProvider();
-
-    var leaseProvider = provider.GetRequiredService<LeaseProvider>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(20),
-                    leaseProvider.AcquisitionPeriod);
-  }
-
-  [Test]
-  public void LeaseProviderHasAcquisitionDuration()
-  {
-    var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
-    services.AddLogging();
-
-    var provider = services.BuildServiceProvider();
-
-    var leaseProvider = provider.GetRequiredService<LeaseProvider>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(50),
-                    leaseProvider.AcquisitionDuration);
-  }
-
-  [Test]
   public void TableStorageHasBindingToTableStorage()
   {
     Dictionary<string, string> baseConfig = new()
@@ -526,34 +439,5 @@ internal class InjectionTests
     Assert.NotNull(objectStorage);
     Assert.AreEqual(typeof(ObjectStorage),
                     objectStorage.GetType());
-  }
-
-  [Test]
-  public void LeaseProviderHasBindingToLeaseProvider()
-  {
-    Dictionary<string, string> baseConfig = new()
-                                            {
-                                              { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
-                                            };
-    var configSource = new MemoryConfigurationSource
-                       {
-                         InitialData = baseConfig,
-                       };
-
-    var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
-                                            .Add(configSource);
-
-    var configuration = builder.Build();
-
-    var services = new ServiceCollection();
-    services.AddMongoComponents(configuration);
-    services.AddLogging();
-    var provider = services.BuildServiceProvider();
-
-    var leaseProvider = provider.GetRequiredService<ILeaseProvider>();
-
-    Assert.NotNull(leaseProvider);
-    Assert.AreEqual(typeof(LeaseProvider),
-                    leaseProvider.GetType());
   }
 }

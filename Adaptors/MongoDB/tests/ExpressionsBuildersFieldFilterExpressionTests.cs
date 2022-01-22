@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
@@ -95,13 +96,13 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   [Test]
   public void ShouldRecognizeSubSession()
   {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
                                                          new[] { "SubSession" })
                                   .Compile();
 
     var model = new TaskDataModel
                 {
-                  SubSessionId = "SubSession",
+                  ParentTaskId = "SubSession",
                 };
 
     Assert.IsTrue(func(model));
@@ -110,14 +111,14 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   [Test]
   public void ShouldExcludeSubSession()
   {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
                                                          new[] { "SubSession" },
                                                          false)
                                   .Compile();
 
     var model = new TaskDataModel
                 {
-                  SubSessionId = "SubSession",
+                  ParentTaskId = "SubSession",
                 };
 
     Assert.IsFalse(func(model));
@@ -126,13 +127,13 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   [Test]
   public void ShouldRecognizeMultipleSubSession()
   {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
                                                          new[] { "SubSession", "SubSession2" })
                                   .Compile();
 
     var model = new TaskDataModel
                 {
-                  SubSessionId = "SubSession",
+                  ParentTaskId = "SubSession",
                 };
 
     Assert.IsTrue(func(model));
@@ -141,14 +142,14 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   [Test]
   public void ShouldExcludeMultipleSubSession()
   {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
                                                          new[] { "SubSession", "SubSession2" },
                                                          false)
                                   .Compile();
 
     var model = new TaskDataModel
                 {
-                  SubSessionId = "SubSession",
+                  ParentTaskId = "SubSession",
                 };
 
     Assert.IsFalse(func(model));
@@ -157,13 +158,13 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   [Test]
   public void ShouldRejectOtherSubSession()
   {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
                                                          new[] { "SubSession" })
                                   .Compile();
 
     var model = new TaskDataModel
                 {
-                  SubSessionId = "OtherSubSession",
+                  ParentTaskId = "OtherSubSession",
                 };
 
     Assert.IsFalse(func(model));
@@ -172,14 +173,14 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   [Test]
   public void ShouldIncludeOtherSubSession()
   {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
                                                          new[] { "SubSession" },
                                                          false)
                                   .Compile(true);
 
     var model = new TaskDataModel
                 {
-                  SubSessionId = "OtherSubSession",
+                  ParentTaskId = "OtherSubSession",
                 };
 
     Assert.IsTrue(func(model));
@@ -188,13 +189,13 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   [Test]
   public void ShouldRejectOtherMultipleSubSession()
   {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
                                                          new[] { "SubSession", "SubSession2" })
                                   .Compile();
 
     var model = new TaskDataModel
                 {
-                  SubSessionId = "OtherSubSession",
+                  ParentTaskId = "OtherSubSession",
                 };
 
     Assert.IsFalse(func(model));
@@ -203,14 +204,14 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   [Test]
   public void ShouldIncludeOtherMultipleSubSession()
   {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.SubSessionId,
+    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
                                                          new[] { "SubSession", "SubSession2" },
                                                          false)
                                   .Compile();
 
     var model = new TaskDataModel
                 {
-                  SubSessionId = "OtherSubSession",
+                  ParentTaskId = "OtherSubSession",
                 };
 
     Assert.IsTrue(func(model));

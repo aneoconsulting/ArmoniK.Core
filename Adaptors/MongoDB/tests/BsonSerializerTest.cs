@@ -22,8 +22,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
@@ -53,17 +55,26 @@ internal class BsonSerializerTest
                               { "key1", "Value1" },
                               { "key2", "value2" },
                             },
-                            IdTag       = "tag",
+
                             MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(42)),
                             MaxRetries  = 7,
                           },
                 TaskId       = "tid",
                 Payload      = new[] { (byte)1, (byte)2, (byte)3 },
-                Retries      = 3,
                 SessionId    = "ses1",
                 Status       = TaskStatus.Creating,
-                SubSessionId = "sub1",
-                Dependencies = new[] { "dep1", "dep2" },
+                ParentTaskId = "par",
+                CreationDate = DateTime.Now,
+                Ancestors = new List<string>
+                            {
+                              "ancestor1",
+                              "ancestor2",
+                            },
+                DataDependencies = new List<string>
+                                   {
+                                     "dep1",
+                                     "dep2",
+                                   },
               };
 
     var serialized = tdm.ToBson();
@@ -81,9 +92,8 @@ internal class BsonSerializerTest
                     deserialized.Options.Options["key1"]);
     Assert.AreEqual(tdm.Options.Options["key2"],
                     deserialized.Options.Options["key2"]);
-    Assert.IsTrue(tdm.Dependencies.SequenceEqual(deserialized.Dependencies));
-    Assert.AreEqual(tdm.Options.IdTag,
-                    deserialized.Options.IdTag);
+    Assert.IsTrue(tdm.DataDependencies.SequenceEqual(deserialized.DataDependencies));
+    Assert.IsTrue(tdm.Ancestors.SequenceEqual(deserialized.Ancestors));
     Assert.AreEqual(tdm.Options.MaxDuration,
                     deserialized.Options.MaxDuration);
     Assert.AreEqual(tdm.Options.MaxRetries,
@@ -91,12 +101,10 @@ internal class BsonSerializerTest
     Assert.AreEqual(tdm.TaskId,
                     deserialized.TaskId);
     Assert.IsTrue(tdm.Payload.SequenceEqual(deserialized.Payload));
-    Assert.AreEqual(tdm.Retries,
-                    deserialized.Retries);
     Assert.AreEqual(tdm.Status,
                     deserialized.Status);
-    Assert.AreEqual(tdm.SubSessionId,
-                    deserialized.SubSessionId);
+    Assert.AreEqual(tdm.ParentTaskId,
+                    deserialized.ParentTaskId);
     Assert.AreEqual(tdm.SessionId,
                     deserialized.SessionId);
   }

@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
@@ -36,7 +37,10 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 SessionId = "Session",
+                 Unknown = new()
+                           {
+                             SessionId = "Session",
+                           },
                }
               .ToFilterExpression()
               .Compile();
@@ -54,7 +58,10 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 SessionId = "Session",
+                 Unknown = new()
+                           {
+                             SessionId = "Session",
+                           },
                }
               .ToFilterExpression()
               .Compile();
@@ -68,50 +75,17 @@ internal class TaskFilterExtTests
   }
 
   [Test]
-  public void ShouldRecognizeSubSession()
-  {
-    var func = new TaskFilter
-               {
-                 SubSessionId = "SubSession",
-               }
-              .ToFilterExpression()
-              .Compile();
-
-    var model = new TaskDataModel
-                {
-                  SubSessionId = "SubSession",
-                };
-
-    Assert.IsTrue(func(model));
-  }
-
-  [Test]
-  public void ShouldRejectOtherSubSession()
-  {
-    var func = new TaskFilter
-               {
-                 SubSessionId = "SubSession",
-               }
-              .ToFilterExpression()
-              .Compile();
-
-    var model = new TaskDataModel
-                {
-                  SubSessionId = "OtherSubSession",
-                };
-
-    Assert.IsFalse(func(model));
-  }
-
-  [Test]
   public void ShouldRecognizeStatus()
   {
     var func = new TaskFilter
                {
-                 IncludedStatuses =
-                 {
-                   TaskStatus.Completed,
-                 },
+                 Included = new()
+                            {
+                              IncludedStatuses =
+                              {
+                                TaskStatus.Completed,
+                              },
+                            },
                }
               .ToFilterExpression()
               .Compile(true);
@@ -129,10 +103,13 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 ExcludedStatuses =
-                 {
-                   TaskStatus.Completed,
-                 },
+                 Excluded = new()
+                            {
+                              IncludedStatuses =
+                              {
+                                TaskStatus.Completed,
+                              },
+                            },
                }
               .ToFilterExpression()
               .Compile();
@@ -150,11 +127,14 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 IncludedStatuses =
-                 {
-                   TaskStatus.Completed,
-                   TaskStatus.Canceled,
-                 },
+                 Included = new()
+                            {
+                              IncludedStatuses =
+                              {
+                                TaskStatus.Completed,
+                                TaskStatus.Canceled,
+                              },
+                            },
                }
               .ToFilterExpression()
               .Compile();
@@ -172,11 +152,14 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 ExcludedStatuses =
-                 {
-                   TaskStatus.Completed,
-                   TaskStatus.Canceled,
-                 },
+                 Excluded = new()
+                            {
+                              IncludedStatuses =
+                              {
+                                TaskStatus.Completed,
+                                TaskStatus.Canceled,
+                              },
+                            },
                }
               .ToFilterExpression()
               .Compile();
@@ -194,10 +177,13 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 IncludedStatuses =
-                 {
-                   TaskStatus.Completed,
-                 },
+                 Included = new()
+                            {
+                              IncludedStatuses =
+                              {
+                                TaskStatus.Completed,
+                              },
+                            },
                }
               .ToFilterExpression()
               .Compile();
@@ -215,10 +201,13 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 ExcludedStatuses =
-                 {
-                   TaskStatus.Completed,
-                 },
+                 Excluded = new()
+                            {
+                              IncludedStatuses =
+                              {
+                                TaskStatus.Completed,
+                              },
+                            },
                }
               .ToFilterExpression()
               .Compile();
@@ -236,11 +225,14 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 IncludedStatuses =
-                 {
-                   TaskStatus.Completed,
-                   TaskStatus.Canceling,
-                 },
+                 Included = new()
+                            {
+                              IncludedStatuses =
+                              {
+                                TaskStatus.Completed,
+                                TaskStatus.Canceling,
+                              },
+                            },
                }
               .ToFilterExpression()
               .Compile();
@@ -258,11 +250,14 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 ExcludedStatuses =
-                 {
-                   TaskStatus.Completed,
-                   TaskStatus.Canceling,
-                 },
+                 Excluded = new()
+                            {
+                              IncludedStatuses =
+                              {
+                                TaskStatus.Completed,
+                                TaskStatus.Canceling,
+                              },
+                            },
                }
               .ToFilterExpression()
               .Compile();
@@ -280,10 +275,13 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 IncludedTaskIds =
-                 {
-                   "Task",
-                 },
+                 Known = new()
+                         {
+                           TaskIds =
+                           {
+                             "Task",
+                           },
+                         },
                }
               .ToFilterExpression()
               .Compile();
@@ -301,10 +299,13 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 ExcludedTaskIds =
-                 {
-                   "Task",
-                 },
+                 Unknown = new()
+                         {
+                           ExcludedTaskIds =
+                           {
+                             "Task",
+                           },
+                         },
                }
               .ToFilterExpression()
               .Compile();
@@ -322,11 +323,14 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 IncludedTaskIds =
-                 {
-                   "Task",
-                   "Task2",
-                 },
+                 Known = new()
+                         {
+                           TaskIds =
+                           {
+                             "Task",
+                             "Task2",
+                           },
+                         },
                }
               .ToFilterExpression()
               .Compile();
@@ -344,11 +348,14 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 ExcludedTaskIds =
-                 {
-                   "Task",
-                   "Task2",
-                 },
+                 Unknown = new()
+                         {
+                           ExcludedTaskIds =
+                           {
+                             "Task",
+                             "Task2",
+                           },
+                         },
                }
               .ToFilterExpression()
               .Compile();
@@ -366,10 +373,13 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 IncludedTaskIds =
-                 {
-                   "Task",
-                 },
+                 Known = new()
+                         {
+                           TaskIds =
+                           {
+                             "Task",
+                           },
+                         },
                }
               .ToFilterExpression()
               .Compile();
@@ -387,10 +397,13 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 ExcludedTaskIds =
-                 {
-                   "Task",
-                 },
+                 Unknown = new()
+                           {
+                             ExcludedTaskIds =
+                             {
+                               "Task",
+                             },
+                           },
                }
               .ToFilterExpression()
               .Compile();
@@ -408,11 +421,14 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 IncludedTaskIds =
-                 {
-                   "Task",
-                   "Task2",
-                 },
+                 Known = new()
+                         {
+                           TaskIds =
+                           {
+                             "Task",
+                             "Task2",
+                           },
+                         },
                }
               .ToFilterExpression()
               .Compile();
@@ -430,11 +446,14 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 ExcludedTaskIds =
-                 {
-                   "Task",
-                   "Task2",
-                 },
+                 Unknown = new()
+                           {
+                             ExcludedTaskIds =
+                             {
+                               "Task",
+                               "Task2",
+                             },
+                           },
                }
               .ToFilterExpression()
               .Compile();
@@ -442,31 +461,6 @@ internal class TaskFilterExtTests
     var model = new TaskDataModel
                 {
                   TaskId = "OtherTask",
-                };
-
-    Assert.IsTrue(func(model));
-  }
-
-  [Test]
-  public void AllNullShouldPass()
-  {
-    var func = new TaskFilter
-               {
-                 SessionId    = string.Empty,
-                 SubSessionId = string.Empty,
-               }
-              .ToFilterExpression()
-              .Compile();
-
-    var model = new TaskDataModel
-                {
-                  SessionId          = null,
-                  SubSessionId       = null,
-                  Dependencies       = null,
-                  Options            = null,
-                  Ancestors = null,
-                  Payload            = null,
-                  TaskId             = null,
                 };
 
     Assert.IsTrue(func(model));

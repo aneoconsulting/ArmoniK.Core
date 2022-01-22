@@ -76,6 +76,12 @@ public class TableStorage : ITableStorage
     if (options.PollingDelay == TimeSpan.Zero)
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.TableStorage.PollingDelay)} is not defined.");
+    if (options.DispatchAcquisitionDuration == TimeSpan.Zero)
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.TableStorage.DispatchAcquisitionDuration)} is not defined.");
+    if (options.DispatchAcquisitionPeriod == TimeSpan.Zero)
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.TableStorage.DispatchAcquisitionPeriod)} is not defined.");
 
     sessionCollectionProvider_  = sessionCollectionProvider;
     taskCollectionProvider_     = taskCollectionProvider;
