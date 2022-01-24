@@ -25,8 +25,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.gRPC.DataModel;
-
 namespace ArmoniK.Core.Common.Storage;
 
 public class LockedWrapperQueueMessageHandler : IQueueMessageHandler

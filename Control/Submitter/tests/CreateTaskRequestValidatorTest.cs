@@ -39,30 +39,27 @@ using NUnit.Framework;
 
 namespace ArmoniK.Core.Control.Submitter.Tests;
 
-[TestFixture(TestOf = typeof(Services.Submitter))]
+[TestFixture(TestOf = typeof(Common.gRPC.Services.Submitter))]
 public class OpenSession
 {
   [Test]
   public void HappyFlow()
-  {    
+  {
     var request = new CreateSessionRequest()
                   {
-                    Root = new()
-                           {
-                             Id = "Id",
+                    Id = "Id",
                     DefaultTaskOption = new()
                                         {
                                           MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                          MaxRetries = 2,
-                                          Priority = 5,
+                                          MaxRetries  = 2,
+                                          Priority    = 5,
                                         },
-                           },
                   };
 
     var token = CancellationToken.None;
 
     var tableStorageMock = new Mock<ITableStorage>();
-    tableStorageMock.Setup(storage => storage.CreateSessionAsync(request,
+    tableStorageMock.Setup(storage => storage.CreateSessionAsync(request.Id, request.DefaultTaskOption,
                                                                  token))
                     .ReturnsAsync(new CreateSessionReply
                                   {
@@ -76,18 +73,13 @@ public class OpenSession
 
     var objectStorageFactory = new Mock<IObjectStorageFactory>().Object;
 
-    var server = new Services.Submitter(tableStorage,
-                                        lockedQueueStorage,
-                                        objectStorageFactory,
-                                        NullLogger<Services.Submitter>.Instance);
+    var server = new Common.gRPC.Services.Submitter(tableStorage,
+                                                    lockedQueueStorage,
+                                                    objectStorageFactory,
+                                                    NullLogger<Common.gRPC.Services.Submitter>.Instance);
 
-
-
-    var contextMock = new Mock<ServerCallContext>();
-    contextMock.Setup(context => context.CancellationToken).Returns(token);
-    var context = contextMock.Object;
-
-    var reply = server.CreateSession(request, context).Result;
+    var reply = server.CreateSession(request,
+                                     token).Result;
 
     Assert.AreEqual(CreateSessionReply.ResultOneofCase.Ok, reply.ResultCase);
   }

@@ -37,25 +37,48 @@ public interface ITableStorage : IInitializable
 {
   TimeSpan PollingDelay { get; }
 
-  TimeSpan DispatchTimeToLive { get; }
+  TimeSpan DispatchTimeToLiveDuration { get; }
 
-  Task<CreateSessionReply> CreateSessionAsync(CreateSessionRequest sessionRequest, CancellationToken cancellationToken = default);
+  TimeSpan DispatchRefreshPeriod      { get; }
 
-  Task CancelSessionAsync(SessionId sessionId, CancellationToken cancellationToken = default);
+  /*
+   * TODO:
+   * Create the session with visibility = session
+   */
+  Task CreateSessionAsync(string id, TaskOptions defaultOptions, CancellationToken cancellationToken = default);
 
-  Task<bool> IsSessionCancelledAsync(SessionId sessionId, CancellationToken cancellationToken = default);
+  /*
+   * TODO:
+   * Create the session with visibility = dispatchId
+   */
+  Task CreateHiddenSessionAsync(string rootSessionId, string parentTaskId, string dispatchId, CancellationToken cancellationToken = default);
+
+  /*
+   * TODO:
+   * 1. Update the session and dispatch visibilities
+   * 2. Update the tasks and results visibilities
+   * 3. Check the session and dispatch visibilities. If modified, go to 1
+   */
+  Task ChangeSessionVisibilityAsync(string rootSessionId, string oldVisibilityId, string newVisibilityId, CancellationToken cancellationToken = default);
+
+  Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default);
+
+  Task CancelHiddenSessionAsync(string dispatchId, CancellationToken cancellationToken = default);
+
+  Task<bool> IsCancelledAsync(string sessionId, string parentTaskId="", string taskId="", string dispatchId="", CancellationToken cancellationToken = default);
 
   IAsyncEnumerable<string> ListSessionsAsync(CancellationToken cancellationToken = default);
 
   Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default);
 
-  Task<TaskOptions> GetDefaultTaskOption(string sessionId, string parentTaskId, CancellationToken cancellationToken = default);
+  Task<TaskOptions> GetDefaultTaskOptionAsync(string sessionId, string parentTaskId, CancellationToken cancellationToken = default);
 
-  public Task InitializeTaskCreation(string                                                session,
-                                     string                                                parentTaskId,
-                                     TaskOptions                                           options,
-                                     IEnumerable<CreateSmallTaskRequest.Types.TaskRequest> requests,
-                                     CancellationToken                                     cancellationToken = default);
+  public Task InitializeTaskCreationAsync(string                   session,
+                                     string                   parentTaskId,
+                                     string                   dispatchId,
+                                     TaskOptions              options,
+                                     IEnumerable<TaskRequest> requests,
+                                     CancellationToken        cancellationToken = default);
   
   Task<ITaskData> ReadTaskAsync(string id, CancellationToken cancellationToken = default);
 
@@ -69,7 +92,7 @@ public interface ITableStorage : IInitializable
 
   Task DeleteTaskAsync(string id, CancellationToken cancellationToken = default);
 
-  Task<bool> TryAcquireDispatchAsync(string dispatchId, string taskId, DateTime ttl, string podId="", string nodeId = "", CancellationToken cancellationToken = default);
+  Task<bool> TryAcquireDispatchAsync(string dispatchId, string taskId, string podId="", string nodeId = "", CancellationToken cancellationToken = default);
 
   Task DeleteDispatch(string id, CancellationToken cancellationToken = default);
 
@@ -84,6 +107,8 @@ public interface ITableStorage : IInitializable
   IAsyncEnumerable<string> ListResultsAsync(string sessionId, CancellationToken cancellationToken = default);
 
   Task<IResult> GetResult(string sessionId, string key, CancellationToken cancellationToken = default);
+
+  Task<bool> AreResultsAvailableAsync(string sessionId, IEnumerable<string> keys, CancellationToken cancellationToken = default);
 
   Task SetResult(string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default);
 

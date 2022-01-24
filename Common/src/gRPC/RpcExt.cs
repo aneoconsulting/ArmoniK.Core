@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -122,9 +123,9 @@ public static class RpcExt
     }
   }
 
-  public static async Task ForceMoveNext<T>(this IAsyncStreamReader<T> stream, string error, ILogger logger) where T : class
+  public static async Task ForceMoveNext<T>(this IAsyncEnumerator<T> stream, string error, ILogger logger) where T : class
   {
-    if (!await stream.MoveNext())
+    if (!await stream.MoveNextAsync())
     {
       var exception = new RpcException(new(StatusCode.InvalidArgument,
                                            error));

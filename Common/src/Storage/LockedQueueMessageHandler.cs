@@ -25,8 +25,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;

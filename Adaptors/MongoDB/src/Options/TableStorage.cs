@@ -36,5 +36,5 @@ public class TableStorage
 
   public TimeSpan DispatchAcquisitionPeriod   { get; set; } = TimeSpan.FromMinutes(2);
   
-  public TimeSpan DispatchAcquisitionDuration { get; set; } = TimeSpan.FromMinutes(5);
+  public TimeSpan DispatchTimeToLive { get; set; } = TimeSpan.FromMinutes(5);
 }

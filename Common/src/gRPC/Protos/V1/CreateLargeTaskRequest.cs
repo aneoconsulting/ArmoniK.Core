@@ -38,9 +38,9 @@ namespace ArmoniK.Api.gRPC.V1;
 
 public sealed partial class CreateLargeTaskRequest
 {
-  private void CheckCase(RequestTypeOneofCase oneOfCase, ILogger logger, string errorDetails)
+  private void CheckCase(TypeOneofCase oneOfCase, ILogger logger, string errorDetails)
   {
-    if (RequestTypeCase != oneOfCase)
+    if (TypeCase != oneOfCase)
     {
       var exception = new RpcException(new(StatusCode.InvalidArgument,
                                            $"Expected a stream message of type {oneOfCase}: {errorDetails}"));
@@ -53,24 +53,24 @@ public sealed partial class CreateLargeTaskRequest
   public InitRequest GetInitRequest(ILogger logger, string errorDetails)
   {
     logger.LogDebug("reading CreateLargeTaskRequest.{case}",
-                    RequestTypeOneofCase.InitRequest);
-    CheckCase(RequestTypeOneofCase.InitRequest, logger, errorDetails);
+                    TypeOneofCase.InitRequest);
+    CheckCase(TypeOneofCase.InitRequest, logger, errorDetails);
     return InitRequest;
   }
 
   public InitTaskRequest GetInitTask(ILogger logger, string errorDetails)
   {
     logger.LogDebug("reading CreateLargeTaskRequest.{case}",
-                    RequestTypeOneofCase.InitTask);
-    CheckCase(RequestTypeOneofCase.InitTask, logger, errorDetails);
+                    TypeOneofCase.InitTask);
+    CheckCase(TypeOneofCase.InitTask, logger, errorDetails);
     return InitTask;
   }
 
-  public PayloadRequest GetTaskPayload(ILogger logger, string errorDetails)
+  public DataChunk GetTaskPayload(ILogger logger, string errorDetails)
   {
     logger.LogDebug("reading CreateLargeTaskRequest.{case}",
-                    RequestTypeOneofCase.TaskPayload);
-    CheckCase(RequestTypeOneofCase.TaskPayload, logger, errorDetails);
+                    TypeOneofCase.TaskPayload);
+    CheckCase(TypeOneofCase.TaskPayload, logger, errorDetails);
     return TaskPayload;
   }
 

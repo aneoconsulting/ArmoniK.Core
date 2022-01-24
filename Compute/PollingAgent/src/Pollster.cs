@@ -22,22 +22,24 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
+using System.Linq;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.Common.gRPC.DataModel;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using ResultReply = ArmoniK.Api.gRPC.V1.ResultReply;
 using TaskCanceledException = ArmoniK.Core.Common.Exceptions.TaskCanceledException;
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
 
 namespace ArmoniK.Core.Compute.PollingAgent;
@@ -75,16 +77,14 @@ public class Pollster
 
   private async Task Init(CancellationToken cancellationToken)
   {
-    var client      = workerClientProvider_.GetAsync();
-    var queue       = queueStorage_.Init(cancellationToken);
-    var table       = tableStorage_.Init(cancellationToken);
-    var taskPayload = taskPayloadStorage_.Init(cancellationToken);
-    var taskResult  = taskResultStorage_.Init(cancellationToken);
+    var client = workerClientProvider_.GetAsync();
+    var queue  = queueStorage_.Init(cancellationToken);
+    var table  = tableStorage_.Init(cancellationToken);
+    var obj    = objectStorageFactory_.Init(cancellationToken);
     await client;
     await queue;
     await table;
-    await taskPayload;
-    await taskResult;
+    await obj;
   }
 
   public async Task MainLoop(CancellationToken cancellationToken)
@@ -94,213 +94,64 @@ public class Pollster
     cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
     try
     {
-      var prefetchChannel =
-        Channel.CreateBounded<(TaskData taskData, IQueueMessageHandler message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
-        {
-          SingleReader                  = true,
-          SingleWriter                  = true,
-          FullMode                      = BoundedChannelFullMode.Wait,
-          Capacity                      = 1,
-          AllowSynchronousContinuations = false,
-        });
-
-      logger_.LogInformation("Prefetching loop started.");
-
-      try
-      {
-        logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
-        while (!cancellationToken.IsCancellationRequested)
-        {
-          logger_.LogInformation("Trying to fetch messages");
-
-          logger_.LogFunction(functionName:
-                              $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
-          var messages = queueStorage_.PullAsync(messageBatchSize_,
-                                                 cancellationToken);
-
-          await foreach (var message in messages.WithCancellation(cancellationToken))
-          {
-            await using var msg = message;
-
-            using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
-                                                             ("messageHandler", message.MessageId),
-                                                             ("session", message.TaskId.Session),
-                                                             ("task", message.TaskId.Task));
-            logger_.LogDebug("Start a new Task to process the messageHandler");
-
-            var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
-                                                                              cancellationToken);
-            try
-            {
-              logger_.LogDebug("Loading task data");
-              var taskData = await tableStorage_.ReadTaskAsync(message.TaskId,
-                                                               combinedCts.Token);
-
-              if (await CheckPreconditions(message,
-                                           taskData,
-                                           combinedCts,
-                                           cancellationToken))
-              {
-                taskData = await PrefetchPayload(taskData,
-                                                 combinedCts.Token);
-
-                logger_.LogDebug("Start a new Task to process the messageHandler");
-
-                await ProcessTaskAsync(taskData,
-                                       msg,
-                                       combinedCts.Token,
-                                       cancellationToken);
-
-                logger_.LogDebug("Task returned");
-              }
-            }
-            catch (Exception e)
-            {
-              logger_.LogWarning(e,
-                                 "Error with messageHandler {messageId}",
-                                 message.MessageId);
-              throw;
-            }
-          }
-        }
-      }
-      finally
-      {
-        prefetchChannel.Writer.Complete();
-      }
-    }
-    catch (Exception e)
-    {
-      logger_.LogCritical(e,
-                          "Error in pollster");
-    }
-
-    lifeTime_.StopApplication();
-  }
-
-  public async Task MainLoopPrefetch(CancellationToken cancellationToken)
-  {
-    cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
-    try
-    {
-      var prefetchChannel =
-        Channel.CreateBounded<(TaskData taskData, IQueueMessageHandler message, CancellationToken combinedCT)>(new BoundedChannelOptions(1)
-        {
-          SingleReader                  = true,
-          SingleWriter                  = true,
-          FullMode                      = BoundedChannelFullMode.Wait,
-          Capacity                      = 1,
-          AllowSynchronousContinuations = false,
-        });
-
-      var prefetchTask = Task<Task>.Factory.StartNew(async () =>
-                                                     {
-                                                       logger_.LogInformation("Prefetching loop started.");
-
-                                                       try
-                                                       {
-                                                         logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
-                                                         while (!cancellationToken.IsCancellationRequested)
-                                                         {
-                                                           logger_.LogInformation("Trying to fetch messages");
-
-                                                           logger_.LogFunction(functionName:
-                                                                               $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
-                                                           var messages = queueStorage_.PullAsync(messageBatchSize_,
-                                                                                                  cancellationToken);
-
-                                                           await foreach (var message in messages.WithCancellation(cancellationToken))
-                                                           {
-                                                             var dispose = true;
-
-                                                             using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
-                                                                                                              ("messageHandler", message.MessageId),
-                                                                                                              ("session", message.TaskId.Session),
-                                                                                                              ("task", message.TaskId.Task));
-                                                             logger_.LogDebug("Start a new Task to process the messageHandler");
-
-                                                             var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
-                                                                                                                               cancellationToken);
-                                                             try
-                                                             {
-                                                               logger_.LogDebug("Loading task data");
-                                                               var taskData = await tableStorage_.ReadTaskAsync(message.TaskId,
-                                                                                                                combinedCts.Token);
-
-                                                               if (await CheckPreconditions(message,
-                                                                                            taskData,
-                                                                                            combinedCts,
-                                                                                            cancellationToken))
-                                                               {
-                                                                 taskData = await PrefetchPayload(taskData,
-                                                                                                  combinedCts.Token);
-
-                                                                 await prefetchChannel.Writer.WaitToWriteAsync(combinedCts.Token);
-                                                                 await prefetchChannel.Writer.WriteAsync((taskData, message, combinedCts.Token),
-                                                                                                         combinedCts.Token);
-                                                                 dispose = false;
-                                                               }
-                                                             }
-                                                             catch (Exception e)
-                                                             {
-                                                               logger_.LogWarning(e,
-                                                                                  "Error while prefetching messageHandler");
-                                                               throw;
-                                                             }
-                                                             finally
-                                                             {
-                                                               if (dispose)
-                                                                 await message.DisposeAsync();
-                                                             }
-                                                           }
-                                                         }
-                                                       }
-                                                       catch (Exception e)
-                                                       {
-                                                         logger_.LogWarning(e,
-                                                                            "Error while prefetching task");
-                                                         throw;
-                                                       }
-                                                       finally
-                                                       {
-                                                         prefetchChannel.Writer.Complete();
-                                                       }
-                                                     },
-                                                     cancellationToken,
-                                                     TaskCreationOptions.LongRunning,
-                                                     TaskScheduler.Current)
-                                   .Unwrap();
-
-
-      logger_.LogInformation("Processing loop started.");
+      logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
       while (!cancellationToken.IsCancellationRequested)
-        await foreach (var (taskData, message, combinedCt) in prefetchChannel.Reader.ReadAllAsync(cancellationToken).WithCancellation(cancellationToken))
+      {
+        logger_.LogInformation("Trying to fetch messages");
+
+        logger_.LogFunction(functionName:
+                            $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
+        var messages = queueStorage_.PullAsync(messageBatchSize_,
+                                               cancellationToken);
+
+        await foreach (var message in messages.WithCancellation(cancellationToken))
         {
           await using var msg = message;
-          using var scopedLogger = logger_.BeginNamedScope("Process messageHandler",
-                                                           ("messageHandler", msg.MessageId),
-                                                           ("session", msg.TaskId.Session),
-                                                           ("task", msg.TaskId.Task));
+
+          using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
+                                                           ("messageHandler", message.MessageId),
+                                                           ("task", message.TaskId));
           logger_.LogDebug("Start a new Task to process the messageHandler");
 
+          var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
+                                                                            cancellationToken);
           try
           {
-            await ProcessTaskAsync(taskData,
-                                   msg,
-                                   combinedCt,
-                                   cancellationToken);
+            logger_.LogDebug("Loading task data");
+            var taskData = await tableStorage_.ReadTaskAsync(message.TaskId,
+                                                             combinedCts.Token);
+
+            var dispatchHandler = await CheckPreconditions(message,
+                                                           taskData,
+                                                           combinedCts,
+                                                           cancellationToken);
+            if (dispatchHandler is not null)
+            {
+              await using var _ = dispatchHandler;
+
+              taskData = await PrefetchPayload(taskData,
+                                               combinedCts.Token);
+
+              logger_.LogDebug("Start a new Task to process the messageHandler");
+
+              await ProcessTaskAsync(taskData,
+                                     msg,
+                                     combinedCts.Token,
+                                     cancellationToken);
+
+              logger_.LogDebug("Task returned");
+            }
           }
           catch (Exception e)
           {
             logger_.LogWarning(e,
-                               "Error while processing messageHandler");
+                               "Error with messageHandler {messageId}",
+                               message.MessageId);
             throw;
           }
-
-          logger_.LogDebug("Task returned");
         }
+      }
 
-      await prefetchTask;
     }
     catch (Exception e)
     {
@@ -310,118 +161,88 @@ public class Pollster
 
     lifeTime_.StopApplication();
   }
-
-  private async Task<bool> CheckPreconditions(IQueueMessageHandler           messageHandler,
-                                              TaskData                taskData,
-                                              CancellationTokenSource combinedCts,
-                                              CancellationToken       cancellationToken)
+  
+  public async Task<DispatchHandler?> CheckPreconditions(IQueueMessageHandler    messageHandler,
+                                                         ITaskData               taskData,
+                                                         CancellationTokenSource combinedCts,
+                                                         CancellationToken       cancellationToken)
   {
     /*
      * Check preconditions:
      *  - Session is not cancelled
      *  - Task is not cancelled
-     *  - Max number of retries has not been reached
      *  - Task status is OK
      *  - Dependencies have been checked
+     *  - Max number of retries has not been reached
      */
 
     logger_.LogDebug("checking that the session is not cancelled");
     var isSessionCancelled = await tableStorage_.IsSessionCancelledAsync(new()
                                                                          {
-                                                                           Session    = messageHandler.TaskId.Session,
-                                                                           SubSession = messageHandler.TaskId.SubSession,
+                                                                           Session    = taskData.SessionId,
+                                                                           ParentTaskId = taskData.ParentTaskId,
                                                                          },
                                                                          combinedCts.Token);
 
     if (isSessionCancelled &&
-        taskData.Status is not (System.Threading.Tasks.TaskStatus.Canceled or System.Threading.Tasks.TaskStatus.Completed or System.Threading.Tasks.TaskStatus.WaitingForChildren))
+        taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.Error))
     {
       logger_.LogInformation("Task is being cancelled");
-      // cannot get lease: task is already running elsewhere
+
       messageHandler.Status = QueueMessageStatus.Cancelled;
       await tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                System.Threading.Tasks.TaskStatus.Canceled,
+                                                TaskStatus.Canceled,
                                                 cancellationToken);
-      return true;
+      return null;
     }
 
-    Task<int> dependencyCheckTask;
-    if (taskData.Dependencies.Any())
-      dependencyCheckTask = tableStorage_.CountSubTasksAsync(new()
-                                                             {
-                                                               SessionId    = taskData.Id.Session,
-                                                               SubSessionId = taskData.Id.SubSession,
-                                                               IncludedTaskIds =
-                                                               {
-                                                                 taskData.Dependencies,
-                                                               },
-                                                               ExcludedStatuses =
-                                                               {
-                                                                 System.Threading.Tasks.TaskStatus.Completed,
-                                                               },
-                                                             },
-                                                             combinedCts.Token)
-                                         .ContinueWith(task => task.Result
-                                                                   .Where(tuple => tuple.Status != System.Threading.Tasks.TaskStatus.Completed)
-                                                                   .Sum(tuple => tuple.Count),
-                                                       cancellationToken);
+    Task<bool> dependencyCheckTask;
+    if (taskData.DataDependencies.Any())
+      dependencyCheckTask = tableStorage_.AreResultsAvailableAsync(taskData.SessionId,
+                                                                   taskData.DataDependencies,
+                                                                   cancellationToken);
     else
-      dependencyCheckTask = Task.FromResult(0);
-
-
-    logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
-    if (taskData.Retries >= taskData.Options.MaxRetries)
-    {
-      logger_.LogInformation("Task has been retried too many times");
-      messageHandler.Status = QueueMessageStatus.Poisonous;
-      await tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                System.Threading.Tasks.TaskStatus.Failed,
-                                                CancellationToken.None);
-      return false;
-    }
-
+      dependencyCheckTask = Task.FromResult(true);
+    
 
     logger_.LogDebug("Handling the task status ({status})",
                      taskData.Status);
     switch (taskData.Status)
     {
-      case System.Threading.Tasks.TaskStatus.Canceling:
+      case TaskStatus.Canceling:
         logger_.LogInformation("Task is being cancelled");
         messageHandler.Status = QueueMessageStatus.Cancelled;
         await tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                  System.Threading.Tasks.TaskStatus.Canceled,
+                                                  TaskStatus.Canceled,
                                                   CancellationToken.None);
-        return false;
-      case System.Threading.Tasks.TaskStatus.Completed:
+        return null;
+      case TaskStatus.Completed:
         logger_.LogInformation("Task was already completed");
         messageHandler.Status = QueueMessageStatus.Processed;
-        return false;
-      case System.Threading.Tasks.TaskStatus.Creating:
+        return null;
+      case TaskStatus.Creating:
         break;
-      case System.Threading.Tasks.TaskStatus.Submitted:
+      case TaskStatus.Submitted:
         break;
-      case System.Threading.Tasks.TaskStatus.Dispatched:
+      case TaskStatus.Dispatched:
         break;
-      case System.Threading.Tasks.TaskStatus.Error:
+      case TaskStatus.Error:
         logger_.LogInformation("Task was on error elsewhere ; retrying");
         break;
-      case System.Threading.Tasks.TaskStatus.Timeout:
+      case TaskStatus.Timeout:
         logger_.LogInformation("Task was timeout elsewhere ; taking over here");
         break;
-      case System.Threading.Tasks.TaskStatus.Canceled:
+      case TaskStatus.Canceled:
         logger_.LogInformation("Task has been cancelled");
         messageHandler.Status = QueueMessageStatus.Cancelled;
-        return false;
-      case System.Threading.Tasks.TaskStatus.Processing:
+        return null;
+      case TaskStatus.Processing:
         logger_.LogInformation("Task is processing elsewhere ; taking over here");
         break;
-      case System.Threading.Tasks.TaskStatus.WaitingForChildren:
-        logger_.LogInformation("Task was already processed and is waiting for children");
-        return false;
-      case System.Threading.Tasks.TaskStatus.Failed:
+      case TaskStatus.Failed:
         logger_.LogInformation("Task is failed");
         messageHandler.Status = QueueMessageStatus.Poisonous;
-        break;
+        return null;
       default:
         logger_.LogCritical("Task was in an unknown state {state}",
                             taskData.Status);
@@ -430,43 +251,58 @@ public class Pollster
 
     logger_.LogDebug("Changing task status to 'Dispatched'");
     var updateTask = tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                         System.Threading.Tasks.TaskStatus.Dispatched,
+                                                         TaskStatus.Dispatched,
                                                          combinedCts.Token);
 
-    if (await dependencyCheckTask > 0)
+    if (!await dependencyCheckTask)
     {
       logger_.LogInformation("Dependencies are not complete yet.");
       messageHandler.Status = QueueMessageStatus.Postponed;
       await updateTask;
-      return false;
+      return null;
+    }
+
+
+
+    logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
+    var dispatch = await tableStorage_.AcquireDispatchHandler($"{taskData.TaskId}-{DateTime.Now.Ticks}",
+                                                        taskData.TaskId,
+                                                        cancellationToken: cancellationToken);
+
+    if (dispatch.Attempt >= taskData.Options.MaxRetries)
+    {
+      logger_.LogInformation("Task has been retried too many times");
+      messageHandler.Status = QueueMessageStatus.Poisonous;
+      await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
+                                                             TaskStatus.Failed,
+                                                             CancellationToken.None),
+                         dispatch.DisposeAsync().AsTask(),
+                         tableStorage_.DeleteDispatch(dispatch.Id,
+                                                      cancellationToken));
+      return null;
     }
 
 
     logger_.LogInformation("Task preconditions are OK");
     await updateTask;
-    return true;
+    return dispatch;
   }
 
-  private async Task ProcessTaskAsync(TaskData          taskData,
+  private async Task ProcessTaskAsync(ITaskData          taskData,
                                       IQueueMessageHandler     messageHandler,
                                       CancellationToken combinedCt,
                                       CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction(taskData.Id.ToPrintableId());
+    using var _ = logger_.LogFunction(taskData.TaskId);
     /*
      * Compute Task
      */
 
-    logger_.LogInformation("Increasing the retry counter");
-    var increaseTask = tableStorage_.IncreaseRetryCounterAsync(taskData.Id,
-                                                               CancellationToken.None);
-
     var request = new ProcessRequest.Types.ComputeRequest
     {
-      Session    = taskData.Id.Session,
-      Subsession = taskData.Id.SubSession,
-      TaskId     = taskData.Id.Task,
-      Payload    = taskData.Payload.Data,
+      Session    = taskData.SessionId,
+      TaskId     = taskData.TaskId,
+      Payload    = taskData.Payload,
       Dependencies =
       {
         taskData.Dependencies,
@@ -479,12 +315,12 @@ public class Pollster
 
 
     logger_.LogDebug("Set task status to Processing");
-    var updateTask = tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                         System.Threading.Tasks.TaskStatus.Processing,
+    var updateTask = tableStorage_.UpdateTaskStatusAsync(taskData.TaskId,
+                                                         TaskStatus.Processing,
                                                          combinedCt);
 
     logger_.LogInformation("Send compute request to the worker");
-    var call = client.ExecuteAsync(request,
+    var call = client.ProcessAsync(request,
                                    deadline: DateTime.UtcNow +
                                              taskData.Options.MaxDuration.ToTimeSpan(),
                                    cancellationToken: CancellationToken.None);
@@ -500,15 +336,14 @@ public class Pollster
        */
 
       logger_.LogInformation("Sending result to storage.");
-      await taskResultStorage_.AddOrUpdateAsync(taskData.Id,
+      await taskResultStorage_.AddOrUpdateAsync(taskData.TaskId,
                                                 result,
                                                 CancellationToken.None);
       logger_.LogInformation("Data sent.");
       messageHandler.Status = QueueMessageStatus.Processed;
-      await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                             System.Threading.Tasks.TaskStatus.Completed,
-                                                             CancellationToken.None),
-                         increaseTask);
+      await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(taskData.TaskId,
+                                                             TaskStatus.Completed,
+                                                             CancellationToken.None));
     }
     catch (Exception e)
     {
@@ -520,7 +355,7 @@ public class Pollster
     }
   }
 
-  private async Task<bool> HandleExceptionAsync(Exception e, TaskData taskData, IQueueMessageHandler messageHandler, CancellationToken cancellationToken)
+  private async Task<bool> HandleExceptionAsync(Exception e, ITaskData taskData, IQueueMessageHandler messageHandler, CancellationToken cancellationToken)
   {
     switch (e)
     {
@@ -528,11 +363,11 @@ public class Pollster
       {
         logger_.LogError(e,
                          "Deadline exceeded when computing task {taskId} from session {sessionId}",
-                         taskData.Id.Task,
-                         taskData.Id.Session);
+                         taskData.TaskId,
+                         taskData.SessionId);
         messageHandler.Status = QueueMessageStatus.Failed;
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  System.Threading.Tasks.TaskStatus.Timeout,
+        await tableStorage_.UpdateTaskStatusAsync(taskData.TaskId,
+                                                  TaskStatus.Timeout,
                                                   CancellationToken.None);
         return true;
       }
@@ -545,12 +380,12 @@ public class Pollster
 
         logger_.LogError(e,
                          "Execution has been cancelled for task {taskId} from session {sessionId}. {details}",
-                         taskData.Id.Task,
-                         taskData.Id.Session,
+                         taskData.TaskId,
+                         taskData.SessionId,
                          details);
         messageHandler.Status = QueueMessageStatus.Cancelled;
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  System.Threading.Tasks.TaskStatus.Canceling,
+        await tableStorage_.UpdateTaskStatusAsync(taskData.TaskId,
+                                                  TaskStatus.Canceling,
                                                   CancellationToken.None);
         return true;
       }
@@ -558,13 +393,13 @@ public class Pollster
       {
         logger_.LogError(e,
                          "Execution has failed for task {taskId} from session {sessionId}. {details}",
-                         taskData.Id.Task,
-                         taskData.Id.Session,
+                         taskData.TaskId,
+                         taskData.SessionId,
                          e.ToString());
 
         messageHandler.Status = QueueMessageStatus.Failed;
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  System.Threading.Tasks.TaskStatus.Error,
+        await tableStorage_.UpdateTaskStatusAsync(taskData.TaskId,
+                                                  TaskStatus.Error,
                                                   CancellationToken.None);
         return true;
       }
@@ -585,11 +420,11 @@ public class Pollster
       {
         logger_.LogError(e,
                          "Exception encountered when computing task {taskId} from session {sessionId}",
-                         taskData.Id.Task,
-                         taskData.Id.Session);
+                         taskData.TaskId,
+                         taskData.SessionId);
         messageHandler.Status = QueueMessageStatus.Failed;
-        await tableStorage_.UpdateTaskStatusAsync(taskData.Id,
-                                                  System.Threading.Tasks.TaskStatus.Error,
+        await tableStorage_.UpdateTaskStatusAsync(taskData.TaskId,
+                                                  TaskStatus.Error,
                                                   CancellationToken.None);
         Console.WriteLine(e);
         return false;
@@ -597,9 +432,9 @@ public class Pollster
     }
   }
 
-  private async Task<TaskData> PrefetchPayload(TaskData taskData, CancellationToken combinedCt)
+  private async Task<ITaskData> PrefetchPayload(ITaskData taskData, CancellationToken combinedCt)
   {
-    using var _ = logger_.LogFunction(taskData.Id.ToPrintableId());
+    using var _ = logger_.LogFunction(taskData.TaskId);
     /*
      * Prefetch Data
      */
@@ -607,7 +442,7 @@ public class Pollster
     if (!taskData.IsPayloadAvailable)
     {
       logger_.LogInformation("Start retrieving payload");
-      var payload = await taskPayloadStorage_.TryGetValuesAsync(taskData.Id,
+      var payload = await taskPayloadStorage_.TryGetValuesAsync(taskData.TaskId,
                                                                 combinedCt);
       logger_.LogInformation("Payload retrieved");
       taskData.Payload            = payload;

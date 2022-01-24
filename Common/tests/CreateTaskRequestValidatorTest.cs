@@ -53,7 +53,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                            Encoding.ASCII),
@@ -77,7 +77,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -102,7 +102,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -127,7 +127,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -146,7 +146,7 @@ public class CreateSmallTaskRequestValidatorTest
                 SessionId = "Session",
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -170,7 +170,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -194,7 +194,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -219,7 +219,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -244,7 +244,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -270,7 +270,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -294,7 +294,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -319,7 +319,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -344,7 +344,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -369,7 +369,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -393,7 +393,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.CopyFrom("payload",
                                                   Encoding.ASCII),
@@ -452,7 +452,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest(),
+                  new TaskRequest(),
                 },
               };
 
@@ -473,7 +473,7 @@ public class CreateSmallTaskRequestValidatorTest
                               },
                 TaskRequests =
                 {
-                  new CreateSmallTaskRequest.Types.TaskRequest
+                  new TaskRequest
                   {
                     Payload = ByteString.Empty,
                   },

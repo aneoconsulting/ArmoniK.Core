@@ -37,6 +37,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
+using ArmoniK.Core.Control.Submitter.Services;
 
 namespace ArmoniK.Core.Control.Submitter;
 
@@ -118,10 +119,7 @@ public static class Program
                          //readiness uses grpc to ensure corresponding features are ok.
                          endpoints.MapGrpcService<GrpcHealthCheckService>();
 
-                         endpoints.MapGrpcService<Services.Submitter>();
-
-                         if (app.Environment.IsDevelopment())
-                           endpoints.MapGrpcReflectionService();
+                         endpoints.MapGrpcService<GrpcSubmitterService>();
                        });
       app.Run();
 

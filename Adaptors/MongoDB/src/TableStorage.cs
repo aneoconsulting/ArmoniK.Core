@@ -39,6 +39,7 @@ using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Bson;
@@ -56,12 +57,12 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 [PublicAPI]
 public class TableStorage : ITableStorage
 {
-  private readonly ILogger<TableStorage>                                      logger_;
-  private readonly MongoCollectionProvider<SessionDataModel>                  sessionCollectionProvider_;
-  private readonly SessionProvider                                            sessionProvider_;
-  private readonly MongoCollectionProvider<TaskDataModel>                     taskCollectionProvider_;
+  private readonly ILogger<TableStorage>                      logger_;
+  private readonly MongoCollectionProvider<SessionDataModel>  sessionCollectionProvider_;
+  private readonly SessionProvider                            sessionProvider_;
+  private readonly MongoCollectionProvider<TaskDataModel>     taskCollectionProvider_;
   private readonly MongoCollectionProvider<DispatchDataModel> dispatchCollectionProvider_;
-  private readonly MongoCollectionProvider<ResultDataModel>                   resultCollectionProvider_;
+  private readonly MongoCollectionProvider<ResultDataModel>   resultCollectionProvider_;
 
   public TableStorage(
     MongoCollectionProvider<SessionDataModel>  sessionCollectionProvider,
@@ -76,9 +77,9 @@ public class TableStorage : ITableStorage
     if (options.PollingDelay == TimeSpan.Zero)
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.TableStorage.PollingDelay)} is not defined.");
-    if (options.DispatchAcquisitionDuration == TimeSpan.Zero)
+    if (options.DispatchTimeToLive == TimeSpan.Zero)
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.TableStorage.DispatchAcquisitionDuration)} is not defined.");
+                                            $"{nameof(Options.TableStorage.DispatchTimeToLive)} is not defined.");
     if (options.DispatchAcquisitionPeriod == TimeSpan.Zero)
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.TableStorage.DispatchAcquisitionPeriod)} is not defined.");
@@ -89,61 +90,71 @@ public class TableStorage : ITableStorage
     resultCollectionProvider_   = resultCollectionProvider;
     sessionProvider_            = sessionProvider;
     PollingDelay                = options.PollingDelay;
-    DispatchAcquisitionDuration = options.DispatchAcquisitionDuration;
-    DispatchAcquisitionPeriod   = options.DispatchAcquisitionPeriod;
+    DispatchTimeToLiveDuration  = options.DispatchTimeToLive;
+    DispatchRefreshPeriod       = options.DispatchAcquisitionPeriod;
     logger_                     = logger;
   }
 
-  public TimeSpan DispatchAcquisitionPeriod { get; set; }
-
-  public TimeSpan DispatchAcquisitionDuration { get; set; }
+  public TimeSpan DispatchRefreshPeriod { get; }
 
   public TimeSpan PollingDelay       { get; }
 
   /// <inheritdoc />
-  public TimeSpan DispatchTimeToLive { get; set; }
+  public TimeSpan DispatchTimeToLiveDuration { get; }
 
 
   /// <inheritdoc />
-  public async Task<CreateSessionReply> CreateSessionAsync(CreateSessionRequest sessionRequest, CancellationToken cancellationToken = default)
+  public async Task<CreateSessionReply> CreateSessionAsync(string id, TaskOptions defaultOptions, CancellationToken cancellationToken = default)
   {
-        using var _                               = logger_.LogFunction();
+    using var _                               = logger_.LogFunction();
     var       sessionHandle                   = await sessionProvider_.GetAsync();
     var       sessionCollection               = await sessionCollectionProvider_.GetAsync();
 
+    SessionDataModel data = new ()
+                            {
+                              IsCancelled  = false,
+                              Options      = defaultOptions,
+                              SessionId    = id,
+                              ParentTaskId = id,
+                            };
+
+    await sessionCollection.InsertOneAsync(data,
+                                           cancellationToken: cancellationToken);
+
+    return new()
+           {
+             Ok = new(),
+           };
+  }
+
+
+  /// <inheritdoc />
+  public async Task<CreateSessionReply> CreateSessionAsync(string rootId, string parentTaskId, CancellationToken cancellationToken = default)
+  {
+    using var _                 = logger_.LogFunction();
+    var       sessionHandle     = await sessionProvider_.GetAsync();
+    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+
     SessionDataModel data;
-    if (sessionRequest.SessionTypeCase == CreateSessionRequest.SessionTypeOneofCase.Root)
-    {
 
-      data = new ()
-             {
-               IsCancelled  = false,
-               Options      = sessionRequest.Root.DefaultTaskOption,
-               SessionId    = sessionRequest.Root.Id,
-               ParentTaskId = sessionRequest.Root.Id,
-             };
-    }
-    else
-    {
-      List<string> ancestors = new();
+    List<string> ancestors = new();
 
-      var t = await sessionCollection.AsQueryable(sessionHandle)
-                                     .Where(x => x.SessionId == sessionRequest.SubSession.RootId &&
-                                                 x.ParentTaskId == sessionRequest.SubSession.ParentTaskId)
-                                     .FirstAsync(cancellationToken);
-      ancestors.AddRange(t.Ancestors);
+    var t = await sessionCollection.AsQueryable(sessionHandle)
+                                   .Where(x => x.SessionId == rootId &&
+                                               x.ParentTaskId == parentTaskId)
+                                   .FirstAsync(cancellationToken);
+    ancestors.AddRange(t.Ancestors);
 
-      ancestors.Add(sessionRequest.SubSession.ParentTaskId);
+    ancestors.Add(parentTaskId);
 
-      data = new ()
-             {
-               IsCancelled  = false,
-               Options      = t.Options,
-               Ancestors    = ancestors,
-               ParentTaskId = sessionRequest.SubSession.ParentTaskId,
-               SessionId    = sessionRequest.SubSession.RootId,
-             };
-    }
+    data = new()
+           {
+             IsCancelled  = false,
+             Options      = t.Options,
+             Ancestors    = ancestors,
+             ParentTaskId = parentTaskId,
+             SessionId    = rootId,
+           };
 
     await sessionCollection.InsertOneAsync(data,
                                            cancellationToken: cancellationToken);
@@ -330,17 +341,20 @@ public class TableStorage : ITableStorage
   /// <inheritdoc />
   public async Task DeleteTaskAsync(string id, CancellationToken cancellationToken = default)
   {
-    using var _              = logger_.LogFunction(id);
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    using var _                  = logger_.LogFunction(id);
+    var       taskCollection     = await taskCollectionProvider_.GetAsync();
+    var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
-    await taskCollection.DeleteOneAsync(tdm => tdm.TaskId == id,
-                                        cancellationToken);
+    await Task.WhenAll(taskCollection.DeleteOneAsync(tdm => tdm.TaskId == id,
+                                                     cancellationToken),
+                       dispatchCollection.DeleteManyAsync(model => model.TaskId == id,
+                                                          cancellationToken));
+
   }
 
   /// <inheritdoc />
   public async Task<bool> TryAcquireDispatchAsync(string            dispatchId,
                                                   string            taskId,
-                                                  DateTime          ttl,
                                                   string            podId             = "",
                                                   string            nodeId            = "",
                                                   CancellationToken cancellationToken = default)
@@ -351,7 +365,7 @@ public class TableStorage : ITableStorage
 
     var updateDefinition = Builders<DispatchDataModel>.Update
                                                       .SetOnInsert(model => model.TimeToLive,
-                                                                   DateTime.UtcNow + DispatchAcquisitionDuration)
+                                                                   DateTime.UtcNow + DispatchTimeToLiveDuration)
                                                       .SetOnInsert(model => model.Id,
                                                                    dispatchId)
                                                       .SetOnInsert(model => model.Attempt,
@@ -447,12 +461,11 @@ public class TableStorage : ITableStorage
   public async Task ExtendDispatchTtl(string id, DateTime newTtl, CancellationToken cancellationToken = default)
   {
     using var _                  = logger_.LogFunction(id);
-    var       taskCollection     = await taskCollectionProvider_.GetAsync();
     var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
     var updateDefinition = Builders<DispatchDataModel>.Update
                                                       .Set(model => model.TimeToLive,
-                                                           DateTime.UtcNow + DispatchAcquisitionDuration);
+                                                           DateTime.UtcNow + DispatchTimeToLiveDuration);
 
     var res = await dispatchCollection.FindOneAndUpdateAsync<DispatchDataModel>(model => model.Id == id && model.TimeToLive > DateTime.UtcNow,
                                                                                 updateDefinition,
@@ -522,13 +535,25 @@ public class TableStorage : ITableStorage
   }
 
   /// <inheritdoc />
+  public async Task<bool> AreResultsAvailableAsync(string sessionId, IEnumerable<string> keys, CancellationToken cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction(sessionId);
+    var       sessionHandle    = await sessionProvider_.GetAsync();
+    var       resultCollection = await resultCollectionProvider_.GetAsync();
+
+    return !await resultCollection.AsQueryable(sessionHandle)
+                                  .AnyAsync(model => !model.IsResultAvailable,
+                                            cancellationToken);
+  }
+
+  /// <inheritdoc />
   public async Task SetResult(string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default)
   {
     using var _                = logger_.LogFunction(key);
     var       resultCollection = await resultCollectionProvider_.GetAsync();
 
     var res =await resultCollection.UpdateOneAsync(Builders<ResultDataModel>.Filter
-                                                                   .Where(model => model.Key == key && model.Owner == ownerTaskId),
+                                                                   .Where(model => model.Key == key && model.ResponsibilityOwner == ownerTaskId),
                                           Builders<ResultDataModel>.Update
                                                                    .Set(model => model.IsResultAvailable,
                                                                         true)
@@ -593,7 +618,7 @@ public class TableStorage : ITableStorage
   }
 
   /// <inheritdoc />
-  public async Task<TaskOptions> GetDefaultTaskOption(string sessionId, string parentTaskId, CancellationToken cancellationToken = default)
+  public async Task<TaskOptions> GetDefaultTaskOptionAsync(string sessionId, string parentTaskId, CancellationToken cancellationToken = default)
   {
     using var _                 = logger_.LogFunction(sessionId);
     var       sessionHandle     = await sessionProvider_.GetAsync();
@@ -606,13 +631,14 @@ public class TableStorage : ITableStorage
   }
 
   /// <inheritdoc />
-  public async Task InitializeTaskCreation(string                                                session,
-                                           string                                                parentTaskId,
-                                           TaskOptions                                           options,
-                                           IEnumerable<CreateSmallTaskRequest.Types.TaskRequest> requests,
-                                           CancellationToken                                     cancellationToken = default)
+  public async Task InitializeTaskCreationAsync(string                   session,
+                                           string                   parentTaskId,
+                                           string                   dispatchId,
+                                           TaskOptions              options,
+                                           IEnumerable<TaskRequest> requests,
+                                           CancellationToken        cancellationToken = default)
   {
-    using var _                 = logger_.LogFunction($"{session}.{parentTaskId}");
+    using var _                 = logger_.LogFunction($"{session}.{parentTaskId}.{dispatchId}");
     var       sessionHandle     = await sessionProvider_.GetAsync();
     var       taskCollection    = await taskCollectionProvider_.GetAsync();
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
@@ -647,21 +673,23 @@ public class TableStorage : ITableStorage
                                            logger_.LogDebug("Stored {size} bytes for task",
                                                             tdm.ToBson().Length);
                                            var resultUpdateDefinition = Builders<ResultDataModel>.Update
-                                                                                                 .Set(model => model.Owner,
+                                                                                                 .Set(model => model.ResponsibilityOwner,
                                                                                                       request.Id);
 
                                              var resultFilter = Builders<ResultDataModel>.Filter
                                                                                          .Where(model => model.SessionId == session &&
                                                                                                          request.ExpectedOutputKeys.Contains(model.Key));
 
-                                           var resultWriter = request.ExpectedOutputKeys.Count switch
-                                                          {
-                                                            1 => new UpdateOneModel<ResultDataModel>(resultFilter,
-                                                                                                     resultUpdateDefinition),
-                                                            > 1 => new UpdateManyModel<ResultDataModel>(resultFilter,
-                                                                                                        resultUpdateDefinition),
-                                                            _ => null as WriteModel<ResultDataModel>,
-                                                          };
+                                           var resultWriter = request.ExpectedOutputKeys
+                                                                     .Select(key => new InsertOneModel<ResultDataModel>(new()
+                                                                                                                                           {
+                                                                                                                                             IsResultAvailable = false,
+                                                                                                                                             Creator = request.Id,
+                                                                                                                                             Key = key,
+                                                                                                                                             ResponsibilityOwner =                                                                                                                                                request.Id,
+                                                                                                                                             SessionId  = session,
+                                                                                                                                             DispatchId = dispatchId,
+                                                                                                                                           }));
 
                                            return (TaskDataModel: tdm, WriterModel:resultWriter);
                                          })
@@ -670,7 +698,7 @@ public class TableStorage : ITableStorage
     await taskCollection.InsertManyAsync(taskDataModels.Select(tuple => tuple.TaskDataModel),
                                          cancellationToken: cancellationToken);
 
-    await resultCollection.BulkWriteAsync(taskDataModels.Select(tuple => tuple.WriterModel),
+    await resultCollection.BulkWriteAsync(taskDataModels.SelectMany(tuple => tuple.WriterModel),
                                           new()
                                           {
                                             IsOrdered = false,
@@ -723,9 +751,10 @@ public class TableStorage : ITableStorage
   }
 
   /// <inheritdoc />
-  public Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+  public async Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(sessionId.ToString());
+    using var _ = logger_.LogFunction(sessionId);
+
     throw new NotImplementedException();
   }
   
@@ -757,7 +786,7 @@ public class TableStorage : ITableStorage
   }
 
 
-  private bool isInitialized_ = false;
+  private bool isInitialized_;
   /// <inheritdoc />
   public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
 }

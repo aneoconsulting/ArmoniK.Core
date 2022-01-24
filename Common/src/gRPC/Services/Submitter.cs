@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -24,14 +24,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.Common.gRPC.DataModel;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -44,21 +42,19 @@ using Microsoft.Extensions.Logging;
 using KeyNotFoundException = ArmoniK.Core.Common.Exceptions.KeyNotFoundException;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Core.Control.Submitter.Services;
+namespace ArmoniK.Core.Common.gRPC.Services;
 
-public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
+public class Submitter : ISubmitter
 {
-  private const int MaxDataChunkSize = PayloadConfiguration.MaxChunkSize;
+  private readonly IQueueStorage                    lockedQueueStorage_;
+  private readonly ILogger<Submitter> logger_;
+  private readonly ITableStorage                    tableStorage_;
+  private readonly IObjectStorageFactory            objectStorageFactory_;
 
-  private readonly IQueueStorage         lockedQueueStorage_;
-  private readonly ILogger<Submitter>    logger_;
-  private readonly ITableStorage         tableStorage_;
-  private readonly IObjectStorageFactory objectStorageFactory_;
-
-  public Submitter(ITableStorage                            tableStorage,
-                   IQueueStorage                            lockedQueueStorage,
+  public Submitter(ITableStorage         tableStorage,
+                   IQueueStorage         lockedQueueStorage,
                    IObjectStorageFactory objectStorageFactory,
-                   ILogger<Submitter>                       logger)
+                   ILogger<Submitter>    logger)
   {
     tableStorage_         = tableStorage;
     objectStorageFactory_ = objectStorageFactory;
@@ -66,29 +62,29 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
     lockedQueueStorage_   = lockedQueueStorage;
   }
 
-  private IObjectStorage ResultStorage(string session) => objectStorageFactory_.CreateResultStorage(session);
+  private IObjectStorage ResultStorage(string  session) => objectStorageFactory_.CreateResultStorage(session);
   private IObjectStorage PayloadStorage(string session) => objectStorageFactory_.CreateResultStorage(session);
 
   /// <inheritdoc />
-  public override Task<ConfigurationReply> GetServiceConfiguration(Empty request, ServerCallContext context)
+  public  Task<ConfigurationReply> GetServiceConfiguration(Empty request, CancellationToken cancellationToken)
     => Task.FromResult(new ConfigurationReply()
                        {
-                         DataChunkMaxSize = MaxDataChunkSize,
+                         DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
                        });
 
-  public override async Task<Empty> CancelSession(SessionId request, ServerCallContext context)
+  public  async Task<Empty> CancelSession(SessionId request, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction();
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
-      context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
     try
     {
       await tableStorage_.CancelSessionAsync(request,
-                                             context.CancellationToken);
+                                             cancellationToken);
     }
     catch (KeyNotFoundException e)
     {
@@ -104,19 +100,19 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
     return new();
   }
 
-  public override async Task<Empty> CancelTask(TaskFilter request, ServerCallContext context)
+  public  async Task<Empty> CancelTask(TaskFilter request, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction();
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
-      context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
     try
     {
       await tableStorage_.CancelTask(request,
-                                     context.CancellationToken);
+                                     cancellationToken);
     }
     catch (KeyNotFoundException e)
     {
@@ -133,34 +129,34 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
   }
 
   /// <inheritdoc />
-  public override Task<CreateSessionReply> CreateSession(CreateSessionRequest request, ServerCallContext context) 
+  public  Task<CreateSessionReply> CreateSession(CreateSessionRequest request, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction();
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
-      context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    return tableStorage_.CreateSessionAsync(request,
-                                            context.CancellationToken);
+    return tableStorage_.CreateSessionAsync(request.Id,
+                                            request.DefaultTaskOption,
+                                            cancellationToken);
   }
 
-  public override async Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request, ServerCallContext context)
+  public  async Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction();
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
-      context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
 
     var options = request.TaskOptions ??
-                  await tableStorage_.GetDefaultTaskOption(request.SessionId, 
+                  await tableStorage_.GetDefaultTaskOptionAsync(request.SessionId,
                                                            request.ParentTaskId,
-                                                           context
-                                                            .CancellationToken);
+                                                           cancellationToken);
 
     if (options.Priority >= lockedQueueStorage_.MaxPriority)
     {
@@ -177,11 +173,12 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
                                  $"Too big payload for task {taskRequest.Id}. Please use {nameof(CreateLargeTasks)} instead."));
     }
 
-    await tableStorage_.InitializeTaskCreation(request.SessionId,
+    await tableStorage_.InitializeTaskCreationAsync(request.SessionId,
                                                request.ParentTaskId,
+                                               TODO,
                                                options,
                                                request.TaskRequests,
-                                               context.CancellationToken);
+                                               cancellationToken);
 
     var finalizationFilter = new TaskFilter
                              {
@@ -194,14 +191,14 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
                                        },
                              };
     await using var finalizer = AsyncDisposable.Create(async () => await tableStorage_.FinalizeTaskCreation(finalizationFilter,
-                                                                                                            context.CancellationToken)
+                                                                                                            cancellationToken)
                                                       );
 
 
 
     await lockedQueueStorage_.EnqueueMessagesAsync(request.TaskRequests.Select(taskRequest => taskRequest.Id),
-                                                               options.Priority,
-                                                               context.CancellationToken);
+                                                   options.Priority,
+                                                   cancellationToken);
 
     return new()
            {
@@ -210,27 +207,28 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
   }
 
   /// <inheritdoc />
-  public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream, ServerCallContext context)
+  public  async Task<CreateTaskReply> CreateLargeTasks(IAsyncEnumerable<CreateLargeTaskRequest> requestStream, CancellationToken cancellationToken)
   {
     using var logFunction = logger_.LogFunction();
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
-      context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    await requestStream.ForceMoveNext("Stream finished with no element",
+    var requestEnumerator = requestStream.GetAsyncEnumerator(cancellationToken);
+
+    await requestEnumerator.ForceMoveNext("Stream finished with no element",
                                       logger_);
 
-    var initRequest = requestStream.Current.GetInitRequest(logger_,
+    var initRequest = requestEnumerator.Current.GetInitRequest(logger_,
                                                            "first message should initiate the request");
     using var sessionScope = logger_.BeginPropertyScope(("Session", initRequest.SessionId));
 
     var options = initRequest.TaskOptions ??
-                  await tableStorage_.GetDefaultTaskOption(initRequest.SessionId,
+                  await tableStorage_.GetDefaultTaskOptionAsync(initRequest.SessionId,
                                                            initRequest.ParentTaskId,
-                                                           context
-                                                            .CancellationToken);
+                                                           cancellationToken);
 
     if (options.Priority >= lockedQueueStorage_.MaxPriority)
     {
@@ -241,12 +239,12 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
       throw exception;
     }
 
-    var taskRequests       = new List<CreateSmallTaskRequest.Types.TaskRequest>();
+    var taskRequests       = new List<TaskRequest>();
     var payloadUploadTasks = new List<Task>();
 
-    while (await requestStream.MoveNext())
+    while (await requestEnumerator.MoveNextAsync())
     {
-      var initTaskRequest = requestStream.Current.GetInitTask(logger_,
+      var initTaskRequest = requestEnumerator.Current.GetInitTask(logger_,
                                                               "first message after initialization of end of payload must be a task initialization");
 
       taskRequests.Add(new()
@@ -260,34 +258,37 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
                          {
                            initTaskRequest.ExpectedOutputKeys,
                          },
-                         Payload = initTaskRequest.PayloadComplete ? initTaskRequest.PayloadChunk : null,
+                         Payload = initTaskRequest.PayloadChunk.DataComplete ? initTaskRequest.PayloadChunk.Data : null,
                        });
 
 
 
-      if (!initTaskRequest.PayloadComplete)
+      if (!initTaskRequest.PayloadChunk.DataComplete)
       {
         var pipe = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
 
         payloadUploadTasks.Add(PayloadStorage(initRequest.SessionId).AddOrUpdateAsync(initTaskRequest.Id,
-                                                                          pipe.Reader.ReadAllAsync()));
+                                                                                      pipe.Reader.ReadAllAsync(cancellationToken),
+                                                                                      cancellationToken));
 
-        await pipe.Writer.WriteAsync(initTaskRequest.PayloadChunk.Memory);
+        await pipe.Writer.WriteAsync(initTaskRequest.PayloadChunk.Data.Memory,
+                                     cancellationToken);
 
         var continuePayload = true;
 
         while (continuePayload)
         {
 
-          await requestStream.ForceMoveNext("Previous message had incomplete PayloadChunk. Need a payload message.",
+          await requestEnumerator.ForceMoveNext("Previous message had incomplete PayloadChunk. Need a payload message.",
                                             logger_);
 
-          var payload = requestStream.Current.GetTaskPayload(logger_,
+          var payload = requestEnumerator.Current.GetTaskPayload(logger_,
                                                              "payload from previous message was not complete, need a payload message.");
 
-          await pipe.Writer.WriteAsync(payload.PayloadChunk.Memory);
+          await pipe.Writer.WriteAsync(payload.Data.Memory,
+                                       cancellationToken);
 
-          continuePayload = !payload.PayloadComplete;
+          continuePayload = !payload.DataComplete;
         }
 
         pipe.Writer.Complete();
@@ -296,11 +297,12 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
       }
     }
 
-    await tableStorage_.InitializeTaskCreation(initRequest.SessionId,
+    await tableStorage_.InitializeTaskCreationAsync(initRequest.SessionId,
                                                initRequest.ParentTaskId,
+                                               TODO,
                                                options,
                                                taskRequests,
-                                               context.CancellationToken);
+                                               cancellationToken);
 
 
     var finalizationFilter = new TaskFilter
@@ -314,12 +316,12 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
                                        },
                              };
     await using var finalizer = AsyncDisposable.Create(async () => await tableStorage_.FinalizeTaskCreation(finalizationFilter,
-                                                                                                            context.CancellationToken));
+                                                                                                            cancellationToken));
 
 
     var enqueueTask = lockedQueueStorage_.EnqueueMessagesAsync(taskRequests.Select(taskRequest => taskRequest.Id),
                                                                options.Priority,
-                                                               context.CancellationToken);
+                                                               cancellationToken);
 
     await Task.WhenAll(enqueueTask,
                        Task.WhenAll(payloadUploadTasks));
@@ -331,20 +333,20 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
              Successfull = new(),
            };
   }
-  
+
   /// <inheritdoc />
-  public override async Task<Count> CountTasks(TaskFilter request, ServerCallContext context)
+  public  async Task<Count> CountTasks(TaskFilter request, CancellationToken cancellationToken)
 
   {
     using var _ = logger_.LogFunction();
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
-      context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
     var count = await tableStorage_.CountTasksAsync(request,
-                                                    context.CancellationToken);
+                                                    cancellationToken);
     return new()
            {
              Values =
@@ -359,10 +361,10 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
   }
 
   /// <inheritdoc />
-  public override async Task TryGetResult(ResultRequest request, IServerStreamWriter<ResultReply> responseStream, ServerCallContext context)
+  public  async Task TryGetResult(ResultRequest request, IServerStreamWriter<ResultReply> responseStream, CancellationToken cancellationToken)
   {
     var storage = ResultStorage(request.Session);
-    await foreach(var chunk in storage.TryGetValuesAsync(request.Key, context.CancellationToken))
+    await foreach (var chunk in storage.TryGetValuesAsync(request.Key, cancellationToken))
     {
       await responseStream.WriteAsync(new()
                                       {
@@ -370,20 +372,20 @@ public class Submitter : Api.gRPC.V1.Submitter.SubmitterBase
                                       });
     }
   }
-  
-  public override async Task<Count> WaitForCompletion(WaitRequest request, ServerCallContext context)
+
+  public  async Task<Count> WaitForCompletion(WaitRequest request, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction();
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
-      context.CancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
+      cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
 
     Task<IEnumerable<(TaskStatus Status, int Count)>> CountUpdateFunc()
       => tableStorage_.CountTasksAsync(request.Filter,
-                                       context.CancellationToken);
+                                       cancellationToken);
 
     return await WaitForCompletionCore(request,
                                        CountUpdateFunc);

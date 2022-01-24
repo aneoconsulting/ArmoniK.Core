@@ -183,8 +183,9 @@ public abstract class TableStorageTestBase
                                                          CancellationToken.None).ContainsAsync(o4));
 
 
-      await TableStorage.InitializeTaskCreation(sessionId1,
+      await TableStorage.InitializeTaskCreationAsync(sessionId1,
                                                 sessionId1,
+                                                TODO,
                                                 new()
                                                 {
                                                   
@@ -194,7 +195,7 @@ public abstract class TableStorageTestBase
                                                 },
                                                 new[]
                                                 {
-                                                  new CreateSmallTaskRequest.Types.TaskRequest()
+                                                  new TaskRequest()
                                                   {
                                                     Id = t1,
                                                     ExpectedOutputKeys =
@@ -492,8 +493,9 @@ public abstract class TableStorageTestBase
     //  t3 has its own output o4
     //  t4 depends on the o1, o2 and o4 ; it take ownership of o3
     {
-      await TableStorage.InitializeTaskCreation(sessionId1,
+      await TableStorage.InitializeTaskCreationAsync(sessionId1,
                                                 t1,
+                                                TODO,
                                                 new()
                                                 {
                                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(3)),
@@ -502,7 +504,7 @@ public abstract class TableStorageTestBase
                                                 },
                                                 new[]
                                                 {
-                                                  new CreateSmallTaskRequest.Types.TaskRequest
+                                                  new TaskRequest
                                                   {
                                                     Id = t2,
                                                     ExpectedOutputKeys =
@@ -510,7 +512,7 @@ public abstract class TableStorageTestBase
                                                       o1,
                                                     },
                                                   },
-                                                  new CreateSmallTaskRequest.Types.TaskRequest
+                                                  new TaskRequest
                                                   {
                                                     Id = t3,
                                                     ExpectedOutputKeys =
@@ -518,7 +520,7 @@ public abstract class TableStorageTestBase
                                                       o4,
                                                     },
                                                   },
-                                                  new CreateSmallTaskRequest.Types.TaskRequest
+                                                  new TaskRequest
                                                   {
                                                     Id = t4,
                                                     ExpectedOutputKeys =

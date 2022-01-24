@@ -27,11 +27,40 @@ namespace ArmoniK.Core.Common.Storage;
 
 public interface IResult
 {
+  /// <summary>
+  /// Id of the session that produces and consumes this data
+  /// </summary>
   string SessionId         { get; }
+  /// <summary>
+  /// When created, the object is only visible to the subtask created by the dispatch that generated it.
+  /// When the value is equal to <see cref="SessionId"/>, the object is visible to the whole session.
+  /// The value is updated at the end of the execution of the corresponding dispatch.
+  /// </summary>
+  string DispatchId        { get; }
+  /// <summary>
+  /// Key to reference and access this result
+  /// </summary>
   string Key               { get; }
-  string Owner             { get; }
+  /// <summary>
+  /// Id of the first task that was supposed to generate this result.
+  /// The responsibility of generating this result may have been forwarded to <see cref="Owner"/>
+  /// </summary>
+  string Creator             { get; }
+  /// <summary>
+  /// Id of the task that is responsible of generating this result.
+  /// </summary>
+  string ResponsibilityOwner             { get; }
+  /// <summary>
+  /// if <value>true</value>, the result is available, either in <see cref="Data"/> or in an other storage
+  /// </summary>
   bool   IsResultAvailable { get; }
-  byte[] Data            { get; }
-
+  /// <summary>
+  /// When <see cref="IsResultAvailable"/> is <value>true</value>, <c>Data</c> can contain the result.
+  /// If the value is <value>null</value>, the data is stored in the configured <c>resultStorage</c>.
+  /// </summary>
+  byte[] Data              { get; }
+  /// <summary>
+  /// Date of creation of the current object.
+  /// </summary>
   DateTime CreationDate { get; }
 }

@@ -27,6 +27,8 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Storage;
 
+using JetBrains.Annotations;
+
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
@@ -34,6 +36,7 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 public class ResultDataModel : IMongoDataModel<ResultDataModel>, IResult
 {
+  [PublicAPI]
   public const string Collection = nameof(ResultDataModel);
 
   static ResultDataModel()
@@ -43,8 +46,10 @@ public class ResultDataModel : IMongoDataModel<ResultDataModel>, IResult
                                                      {
                                                        cm.MapIdProperty(nameof(Id)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(DispatchId)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(Key)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Owner)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(Creator)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(ResponsibilityOwner)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(IsResultAvailable)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(Data)).SetIgnoreIfDefault(true);
                                                        cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
@@ -54,28 +59,34 @@ public class ResultDataModel : IMongoDataModel<ResultDataModel>, IResult
 
   /// <inheritdoc />
   public string CollectionName => Collection;
-
-  public string Id => $"{SessionId}.{Key}";
-
-  /// <inheritdoc />
-  public string SessionId { get; set; }
-
-  /// <inheritdoc />
-  public string Key { get; set; }
+  /// <summary>
+  /// Database Id of the object. 
+  /// </summary>
+  public string Id => $"{SessionId}.{Key}.{DispatchId}";
 
   /// <inheritdoc />
-  public string Owner { get; set; }
+  public string SessionId { get; init; }
 
   /// <inheritdoc />
-  public bool IsResultAvailable { get; set; }
+  public string DispatchId { get; init; }
 
   /// <inheritdoc />
-  public byte[] Data { get; set; }
+  public string Key { get; init; }
 
   /// <inheritdoc />
-  public DateTime CreationDate { get; set; } = DateTime.UtcNow;
+  public string Creator             { get; init; }
 
+  /// <inheritdoc />
+  public string ResponsibilityOwner { get; init; }
 
+  /// <inheritdoc />
+  public bool IsResultAvailable { get; init; }
+
+  /// <inheritdoc />
+  public byte[] Data { get; init; }
+
+  /// <inheritdoc />
+  public DateTime CreationDate { get; } = DateTime.UtcNow;
 
   /// <inheritdoc />
   public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<ResultDataModel> collection) => throw new NotImplementedException();

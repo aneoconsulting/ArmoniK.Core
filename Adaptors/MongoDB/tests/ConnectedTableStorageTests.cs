@@ -89,28 +89,22 @@ internal class ConnectedTableStorageTests
 
     var sessionId = "AddOneTaskAndCount.sessionId";
 
-    var session = table.CreateSessionAsync(new()
-                                           {
-                                             Root = new()
-                                                    {
-                                                      DefaultTaskOption = new(),
-                                                      Id                = sessionId,
-                                                    },
-                                           }).Result;
+    var session = table.CreateSessionAsync(sessionId, new TaskOptions()).Result;
 
     Assert.AreEqual(CreateSessionReply.ResultOneofCase.Ok,session.ResultCase);
 
-    table.InitializeTaskCreation(sessionId,
+    table.InitializeTaskCreationAsync(sessionId,
                                  sessionId,
                                  new(),
                                                  
                                                  new[]
                                                  {
-                                                   new CreateSmallTaskRequest.Types.TaskRequest
+                                                   new TaskRequest
                                                    {
-                                                     Id      = null,
+                                                     Id = null,
                                                    },
-                                                 }).Wait();
+                                                 },
+                                 TODO).Wait();
 
 
     Assert.AreEqual(1,

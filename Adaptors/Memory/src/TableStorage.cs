@@ -62,7 +62,7 @@ public class TableStorage : ITableStorage
   public TimeSpan PollingDelay { get; } = TimeSpan.FromMilliseconds(50);
 
   /// <inheritdoc />
-  public TimeSpan DispatchTimeToLive { get; } = TimeSpan.FromHours(1);
+  public TimeSpan DispatchTimeToLiveDuration { get; } = TimeSpan.FromHours(1);
 
   /// <inheritdoc />
   public Task<CreateSessionReply> CreateSessionAsync(CreateSessionRequest sessionRequest, CancellationToken cancellationToken = default)
@@ -155,15 +155,16 @@ public class TableStorage : ITableStorage
   }
 
   /// <inheritdoc />
-  public Task<TaskOptions> GetDefaultTaskOption(string sessionId, string parentId, CancellationToken cancellationToken = default)
+  public Task<TaskOptions> GetDefaultTaskOptionAsync(string sessionId, string parentId, CancellationToken cancellationToken = default)
     => Task.FromResult(sessions_[sessionId][parentId].DefaultTaskOptions);
 
   /// <inheritdoc />
-  public Task InitializeTaskCreation(string                                                session,
-                                     string                                                parentTaskId,
-                                     TaskOptions                                           options,
-                                     IEnumerable<CreateSmallTaskRequest.Types.TaskRequest> requests,
-                                     CancellationToken                                     cancellationToken = default)
+  public Task InitializeTaskCreationAsync(string                   session,
+                                     string                   parentTaskId,
+                                     string                   dispatchId,
+                                     TaskOptions              options,
+                                     IEnumerable<TaskRequest> requests,
+                                     CancellationToken        cancellationToken = bad)
   {
     var errors = new List<string>();
     foreach (var taskRequest in requests)

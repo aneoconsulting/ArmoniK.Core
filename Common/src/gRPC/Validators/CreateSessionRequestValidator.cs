@@ -34,23 +34,8 @@ public class CreateSessionRequestValidator : AbstractValidator<CreateSessionRequ
 {
   public CreateSessionRequestValidator()
   {
-    RuleFor(request => request.SessionTypeCase).NotEqual(CreateSessionRequest.SessionTypeOneofCase.None);
-
-    RuleFor(request => request.Root).NotNull()
-                                                      .When(request => request.SessionTypeCase == CreateSessionRequest.SessionTypeOneofCase.Root);
-    RuleFor(request => request.Root.DefaultTaskOption).SetValidator(new TaskOptionsValidator())
-                                                      .When(request => request.SessionTypeCase == CreateSessionRequest.SessionTypeOneofCase.Root);
-    RuleFor(request => request.Root.Id).NotNull()
-                                       .NotEmpty()
-                                       .When(request => request.SessionTypeCase == CreateSessionRequest.SessionTypeOneofCase.Root);
-
-    RuleFor(request => request.SubSession).NotNull()
-                                                      .When(request => request.SessionTypeCase == CreateSessionRequest.SessionTypeOneofCase.SubSession);
-    RuleFor(request => request.SubSession.ParentTaskId).NotNull()
-                                             .NotEmpty()
-                                             .When(request => request.SessionTypeCase == CreateSessionRequest.SessionTypeOneofCase.SubSession);
-    RuleFor(request => request.SubSession.RootId).NotNull()
-                                             .NotEmpty()
-                                             .When(request => request.SessionTypeCase == CreateSessionRequest.SessionTypeOneofCase.SubSession);
+    RuleFor(request => request.DefaultTaskOption).SetValidator(new TaskOptionsValidator());
+    RuleFor(request => request.Id).NotNull()
+                                  .NotEmpty();
   }
 }

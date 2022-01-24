@@ -36,7 +36,7 @@ using NUnit.Framework;
 
 namespace ArmoniK.Core.Control.Submitter.Tests;
 
-[TestFixture(TestOf = typeof(Services.Submitter))]
+[TestFixture(TestOf = typeof(Common.gRPC.Services.Submitter))]
 public class GetServiceConfiguration
 {
   [Test]
@@ -50,17 +50,13 @@ public class GetServiceConfiguration
 
     var objectStorageFactory = new Mock<IObjectStorageFactory>().Object;
 
-    var server = new Services.Submitter(tableStorage,
-                                        lockedQueueStorage,
-                                        objectStorageFactory,
-                                        NullLogger<Services.Submitter>.Instance);
-
-    var contextMock = new Mock<ServerCallContext>();
-    contextMock.Setup(context => context.CancellationToken).Returns(token);
-    var context = contextMock.Object;
+    var server = new Common.gRPC.Services.Submitter(tableStorage,
+                                                    lockedQueueStorage,
+                                                    objectStorageFactory,
+                                                    NullLogger<Common.gRPC.Services.Submitter>.Instance);
 
     var reply = server.GetServiceConfiguration(new(),
-                                               context).Result;
+                                               token).Result;
 
     Assert.AreEqual(PayloadConfiguration.MaxChunkSize,
                     reply.DataChunkMaxSize);

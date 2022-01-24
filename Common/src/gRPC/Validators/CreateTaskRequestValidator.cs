@@ -38,7 +38,7 @@ public class CreateSmallTaskRequestValidator : AbstractValidator<CreateSmallTask
   }
 
 
-  public class TaskRequestValidator : AbstractValidator<CreateSmallTaskRequest.Types.TaskRequest>
+  public class TaskRequestValidator : AbstractValidator<TaskRequest>
   {
     public TaskRequestValidator()
     {
@@ -46,7 +46,7 @@ public class CreateSmallTaskRequestValidator : AbstractValidator<CreateSmallTask
       RuleFor(r => r.ExpectedOutputKeys).NotNull();
       RuleFor(r => r.Payload).NotNull()
                              .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize)
-                             .WithName(nameof(CreateSmallTaskRequest.Types.TaskRequest.Payload));
+                             .WithName(nameof(TaskRequest.Payload));
     }
   }
 }
@@ -56,13 +56,13 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
 {
   public CreateLargeTaskRequestValidator()
   {
-    RuleFor(r => r.RequestTypeCase).Must(oneOfCase => oneOfCase != CreateLargeTaskRequest.RequestTypeOneofCase.None);
+    RuleFor(r => r.TypeCase).Must(oneOfCase => oneOfCase != CreateLargeTaskRequest.TypeOneofCase.None);
     RuleFor(r => r.InitRequest).NotNull()
                                .SetValidator(new CreateLargeTaskInitRequestValidator())
-                               .When(r => r.RequestTypeCase == CreateLargeTaskRequest.RequestTypeOneofCase.InitRequest);
+                               .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.InitRequest);
     RuleFor(r => r.InitTask).NotNull()
                             .SetValidator(new CreateLargeTaskInitTaskValidator())
-                            .When(r => r.RequestTypeCase == CreateLargeTaskRequest.RequestTypeOneofCase.InitTask);
+                            .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.InitTask);
   }
 
 
@@ -75,24 +75,23 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
     }
   }
 
-  private class CreateLargeTaskInitTaskValidator : AbstractValidator<CreateLargeTaskRequest.Types.InitTaskRequest>
+  private class CreateLargeTaskInitTaskValidator : AbstractValidator<InitTaskRequest>
   {
     public CreateLargeTaskInitTaskValidator()
     {
       RuleFor(r => r.DataDependencies).NotNull();
       RuleFor(r => r.ExpectedOutputKeys).NotNull();
       RuleFor(r => r.Id).NotNull().NotEmpty();
-      RuleFor(r => r.PayloadChunk).NotNull()
-                             .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize);
+      RuleFor(r => r.PayloadChunk).NotNull().SetValidator(new DataChunkValidator());
     }
   }
 
-  private class CreateLargeTaskPayloadValidator : AbstractValidator<CreateLargeTaskRequest.Types.PayloadRequest>
+  private class DataChunkValidator : AbstractValidator<DataChunk>
   {
-    public CreateLargeTaskPayloadValidator()
+    public DataChunkValidator()
     {
-      RuleFor(r => r.PayloadChunk).NotNull()
-                             .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize);
+      RuleFor(r => r.Data).NotNull()
+                          .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize);
     }
   }
 

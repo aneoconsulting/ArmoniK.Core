@@ -31,13 +31,12 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
 
-[PublicAPI]
 public class QueueMessageHandler : IQueueMessageHandler
 {
   private readonly Func<QueueMessageStatus, Task> disposeFunc_;
   private readonly ILogger                        logger_;
 
-  public QueueMessageHandler(string                         messageId,
+  public QueueMessageHandler(string                  messageId,
                       string                         taskId,
                       Func<QueueMessageStatus, Task> disposeFunc,
                       ILogger                        logger,
