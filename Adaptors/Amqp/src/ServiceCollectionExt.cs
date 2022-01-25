@@ -21,6 +21,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Security.Cryptography.X509Certificates;
+
 using Amqp;
 
 using ArmoniK.Core.Common;
@@ -63,17 +66,41 @@ public static class ServiceCollectionExt
         configuration.AddJsonFile(amqpOptions.CredentialsPath);
         logger.LogTrace("Loaded amqp credentials from file {path}",
                         amqpOptions.CredentialsPath);
+
+        serviceCollection.AddOption(configuration,
+                                    Options.Amqp.SettingSection,
+                                    out amqpOptions);
+
+        if (!string.IsNullOrEmpty(amqpOptions.CaPath))
+        {
+          X509Store                  localTrustStore       = new X509Store(StoreName.Root);
+          X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
+          try
+          {
+            certificateCollection.Import(amqpOptions.CaPath);
+            localTrustStore.Open(OpenFlags.ReadWrite);
+            localTrustStore.AddRange(certificateCollection);
+            logger.LogTrace("Imported AMQP certificate from file {path}",
+                            amqpOptions.CaPath);
+          }
+          catch (Exception ex)
+          {
+            logger.LogError("Root certificate import failed: {error}",
+                            ex.Message);
+            throw;
+          }
+          finally
+          {
+            localTrustStore.Close();
+          }
+        }
       }
       else
       {
         logger.LogTrace("No credential path provided");
       }
 
-      serviceCollection.AddOption(configuration,
-                                  Options.Amqp.SettingSection,
-                                  out amqpOptions);
-
-      var sessionProvider = new SessionProvider(amqpOptions);
+      var sessionProvider = new SessionProvider(amqpOptions, logger);
 
       serviceCollection.AddSingleton(sessionProvider);
 

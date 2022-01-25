@@ -22,10 +22,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 using Amqp;
 
 using ArmoniK.Core.Common.Injection;
+
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
@@ -33,16 +37,32 @@ namespace ArmoniK.Core.Adapters.Amqp;
 public class SessionProvider : ProviderBase<Session>
 {
   /// <inheritdoc />
-  public SessionProvider(Options.Amqp options)
+  public SessionProvider(Options.Amqp options, ILogger logger)
     : base(async () =>
-           {
-             var connection = await Connection.Factory.CreateAsync(new(options.Host,
-                                                                       options.Port,
-                                                                       options.User,
-                                                                       options.Password,
-                                                                       scheme: "AMQP"));
-             return new(connection);
-           })
+    {
+      var address = new Address(options.Host,
+                                options.Port,
+                                options.User,
+                                options.Password,
+                                scheme: options.Scheme);
+
+      var connectionFactory = new ConnectionFactory
+      {
+        SSL =
+        {
+          RemoteCertificateValidationCallback = delegate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
+          {
+            if (errors == SslPolicyErrors.RemoteCertificateNameMismatch && options.AllowHostMismatch)
+            {
+              return true;
+            }
+            return errors == SslPolicyErrors.None;
+          },
+        },
+      };
+
+      return new(await connectionFactory.CreateAsync(address));
+    })
   {
     if (string.IsNullOrEmpty(options.Host))
       throw new ArgumentNullException(nameof(options),
@@ -56,5 +76,8 @@ public class SessionProvider : ProviderBase<Session>
     if (string.IsNullOrEmpty(options.Password))
       throw new ArgumentNullException(nameof(options),
                                       $"Contains a null or empty {nameof(options.Password)} field");
+    if (string.IsNullOrEmpty(options.Scheme))
+      throw new ArgumentNullException(nameof(options),
+                                      $"Contains a null or empty {nameof(options.Scheme)} field");
   }
 }

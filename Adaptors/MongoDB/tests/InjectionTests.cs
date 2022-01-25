@@ -30,6 +30,8 @@ using ArmoniK.Core.Common.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
 
@@ -46,41 +48,45 @@ internal class InjectionTests
   public void SetUp()
   {
     Dictionary<string, string> baseConfig = new()
-                                            {
-                                              { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
-                                              { "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage" },
-                                              { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
-                                              { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ConnectionString)}", "mongodb://localhost" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", "database" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DataRetention)}", "10.00:00:00" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage )}:PollingDelay", "00:00:10" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.LeaseProvider)}:AcquisitionPeriod", "00:20:00" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.LeaseProvider)}:AcquisitionDuration", "00:50:00" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:ChunkSize", "100000" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage )}:LockRefreshPeriodicity", "00:20:00" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage )}:PollPeriodicity", "00:00:50" },
-                                              { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage )}:LockRefreshExtension", "00:50:00" },
-                                            };
+    {
+      { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
+      { "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage" },
+      { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
+      { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Host)}", "localhost" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Port)}", "3232" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Tls)}", "true" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.User)}", "user" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Password)}", "password" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.CredentialsPath)}", "" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.CAFile)}", "/credentials/ca" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ReplicaSet)}", "rs0" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", "database" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DataRetention)}", "10.00:00:00" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.LeaseProvider)}:AcquisitionPeriod", "00:20:00" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.LeaseProvider)}:AcquisitionDuration", "00:50:00" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:ChunkSize", "100000" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshPeriodicity", "00:20:00" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:PollPeriodicity", "00:00:50" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshExtension", "00:50:00" },
+    };
 
-    var configSource = new MemoryConfigurationSource
-                       {
-                         InitialData = baseConfig,
-                       };
+    configuration_ = new ConfigurationManager();
+    configuration_.AddInMemoryCollection(baseConfig);
 
-    var builder = new ConfigurationBuilder()
-     .Add(configSource);
-
-    configuration_ = builder.Build();
+    logger_ = NullLogger.Instance;
   }
 
-  private IConfiguration configuration_;
+  private ConfigurationManager configuration_;
+  private ILogger              logger_;
 
   [Test]
   public void MongoDbOptionsNotNull()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.MongoDB>();
@@ -89,23 +95,109 @@ internal class InjectionTests
   }
 
   [Test]
-  public void ReadMongoDbConnectionString()
+  public void ReadMongoDbHost()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual("mongodb://localhost",
-                    options.ConnectionString);
+    Assert.AreEqual("localhost",
+                    options.Host);
+  }
+
+  [Test]
+  public void ReadMongoDbUser()
+  {
+    var services = new ServiceCollection();
+    services.AddMongoComponents(configuration_,
+                                logger_);
+    var provider = services.BuildServiceProvider();
+
+    var options = provider.GetRequiredService<Options.MongoDB>();
+
+    Assert.AreEqual("user",
+                    options.User);
+  }
+
+  [Test]
+  public void ReadMongoDbPassword()
+  {
+    var services = new ServiceCollection();
+    services.AddMongoComponents(configuration_,
+                                logger_);
+    var provider = services.BuildServiceProvider();
+
+    var options = provider.GetRequiredService<Options.MongoDB>();
+
+    Assert.AreEqual("password",
+                    options.Password);
+  }
+
+  [Test]
+  public void ReadMongoDbCredentialsPath()
+  {
+    var services = new ServiceCollection();
+    services.AddMongoComponents(configuration_,
+                                logger_);
+    var provider = services.BuildServiceProvider();
+
+    var options = provider.GetRequiredService<Options.MongoDB>();
+
+    Assert.AreEqual("",
+                    options.CredentialsPath);
+  }
+
+  [Test]
+  public void ReadMongoDbCAFile()
+  {
+    var services = new ServiceCollection();
+    services.AddMongoComponents(configuration_,
+                                logger_);
+    var provider = services.BuildServiceProvider();
+
+    var options = provider.GetRequiredService<Options.MongoDB>();
+
+    Assert.AreEqual("/credentials/ca",
+                    options.CAFile);
+  }
+
+  [Test]
+  public void ReadMongoDbPort()
+  {
+    var services = new ServiceCollection();
+    services.AddMongoComponents(configuration_,
+                                logger_);
+    var provider = services.BuildServiceProvider();
+
+    var options = provider.GetRequiredService<Options.MongoDB>();
+
+    Assert.AreEqual(3232,
+                    options.Port);
+  }
+
+  [Test]
+  public void ReadMongoDbTls()
+  {
+    var services = new ServiceCollection();
+    services.AddMongoComponents(configuration_,
+                                logger_);
+    var provider = services.BuildServiceProvider();
+
+    var options = provider.GetRequiredService<Options.MongoDB>();
+
+    Assert.AreEqual(true,
+                    options.Tls);
   }
 
   [Test]
   public void ReadMongoDbDatabaseName()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.MongoDB>();
@@ -117,7 +209,8 @@ internal class InjectionTests
   public void ReadMongoDbDataRetention()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.MongoDB>();
@@ -130,7 +223,8 @@ internal class InjectionTests
   public void TableOptionsNotNull()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.TableStorage>();
@@ -142,7 +236,8 @@ internal class InjectionTests
   public void ReadTablePollingDelay()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.TableStorage>();
@@ -155,7 +250,8 @@ internal class InjectionTests
   public void ObjectOptionsNotNull()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.ObjectStorage>();
@@ -167,7 +263,8 @@ internal class InjectionTests
   public void ReadObjectChunkSize()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.ObjectStorage>();
@@ -180,7 +277,8 @@ internal class InjectionTests
   public void QueueOptionsNotNull()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.QueueStorage>();
@@ -192,7 +290,8 @@ internal class InjectionTests
   public void ReadQueueLockRefreshExtension()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.QueueStorage>();
@@ -205,7 +304,8 @@ internal class InjectionTests
   public void ReadQueuePollPeriodicity()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<QueueStorage>();
@@ -218,7 +318,8 @@ internal class InjectionTests
   public void ReadQueueLockRefreshPeriodicity()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<QueueStorage>();
@@ -231,7 +332,8 @@ internal class InjectionTests
   public void LeaseOptionsNotNull()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.LeaseProvider>();
@@ -243,7 +345,8 @@ internal class InjectionTests
   public void ReadLeaseAcquisitionPeriod()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.LeaseProvider>();
@@ -256,7 +359,8 @@ internal class InjectionTests
   public void ReadLeaseAcquisitionDuration()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     var provider = services.BuildServiceProvider();
 
     var options = provider.GetRequiredService<Options.LeaseProvider>();
@@ -269,26 +373,28 @@ internal class InjectionTests
   public void ValidateProvider()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var _ = services.BuildServiceProvider(new ServiceProviderOptions
-                                          {
-                                            ValidateOnBuild = true,
-                                          });
+    {
+      ValidateOnBuild = true,
+    });
   }
 
   [Test]
   public void BuildTableStorage()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
+    {
+      ValidateOnBuild = true,
+    });
 
     var table = provider.GetRequiredService<TableStorage>();
 
@@ -299,7 +405,8 @@ internal class InjectionTests
   public void TableStorageHasPollingDelay()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider();
@@ -314,13 +421,14 @@ internal class InjectionTests
   public void BuildObjectStorage()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
+    {
+      ValidateOnBuild = true,
+    });
 
     var objectStorage = provider.GetRequiredService<ObjectStorage>();
 
@@ -331,13 +439,14 @@ internal class InjectionTests
   public void BuildQueueStorage()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
+    {
+      ValidateOnBuild = true,
+    });
 
     var queue = provider.GetRequiredService<LockedQueueStorage>();
 
@@ -348,13 +457,14 @@ internal class InjectionTests
   public void QueueStorageHasLockRefreshExtension()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
+    {
+      ValidateOnBuild = true,
+    });
 
     var queue = provider.GetRequiredService<LockedQueueStorage>();
 
@@ -366,13 +476,14 @@ internal class InjectionTests
   public void QueueStorageHasPollPeriodicity()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
+    {
+      ValidateOnBuild = true,
+    });
 
     var queue = provider.GetRequiredService<LockedQueueStorage>();
 
@@ -384,13 +495,14 @@ internal class InjectionTests
   public void QueueStorageHasLockRefreshPeriodicity()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
+    {
+      ValidateOnBuild = true,
+    });
 
     var queue = provider.GetRequiredService<LockedQueueStorage>();
 
@@ -402,13 +514,14 @@ internal class InjectionTests
   public void BuildLeaseProvider()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
+    {
+      ValidateOnBuild = true,
+    });
 
     var table = provider.GetRequiredService<LeaseProvider>();
 
@@ -419,7 +532,8 @@ internal class InjectionTests
   public void LeaseProviderHasAcquisitionPeriod()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider();
@@ -434,7 +548,8 @@ internal class InjectionTests
   public void LeaseProviderHasAcquisitionDuration()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider();
@@ -449,21 +564,14 @@ internal class InjectionTests
   public void TableStorageHasBindingToTableStorage()
   {
     Dictionary<string, string> baseConfig = new()
-                                            {
-                                              { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
-                                            };
-    var configSource = new MemoryConfigurationSource
-                       {
-                         InitialData = baseConfig,
-                       };
-
-    var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
-                                            .Add(configSource);
-
-    var configuration = builder.Build();
+    {
+      { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
+    };
+    configuration_.AddInMemoryCollection(baseConfig);
 
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
     var provider = services.BuildServiceProvider();
 
@@ -478,21 +586,15 @@ internal class InjectionTests
   public void QueueStorageHasBindingToQueueStorage()
   {
     Dictionary<string, string> baseConfig = new()
-                                            {
-                                              { "Components:LockedQueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage" },
-                                            };
-    var configSource = new MemoryConfigurationSource
-                       {
-                         InitialData = baseConfig,
-                       };
+    {
+      { "Components:LockedQueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage" },
+    };
 
-    var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
-                                            .Add(configSource);
-
-    var configuration = builder.Build();
+    configuration_.AddInMemoryCollection(baseConfig);
 
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
     var provider = services.BuildServiceProvider();
 
@@ -507,21 +609,14 @@ internal class InjectionTests
   public void ObjectStorageHasBindingToObjectStorage()
   {
     Dictionary<string, string> baseConfig = new()
-                                            {
-                                              { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
-                                            };
-    var configSource = new MemoryConfigurationSource
-                       {
-                         InitialData = baseConfig,
-                       };
-
-    var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
-                                            .Add(configSource);
-
-    var configuration = builder.Build();
+    {
+      { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
+    };
+    configuration_.AddInMemoryCollection(baseConfig);
 
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
     var provider = services.BuildServiceProvider();
 
@@ -536,21 +631,15 @@ internal class InjectionTests
   public void LeaseProviderHasBindingToLeaseProvider()
   {
     Dictionary<string, string> baseConfig = new()
-                                            {
-                                              { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
-                                            };
-    var configSource = new MemoryConfigurationSource
-                       {
-                         InitialData = baseConfig,
-                       };
+    {
+      { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
+    };
 
-    var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
-                                            .Add(configSource);
-
-    var configuration = builder.Build();
+    configuration_.AddInMemoryCollection(baseConfig);
 
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
     var provider = services.BuildServiceProvider();
 

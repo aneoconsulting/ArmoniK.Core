@@ -29,8 +29,11 @@ using ArmoniK.Core.gRPC.V1;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
+
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
@@ -42,43 +45,39 @@ internal class ConnectedTableStorageTests
   public void SetUp()
   {
     Dictionary<string, string> baseConfig = new()
-                                            {
-                                              { "MongoDB:ConnectionString", "mongodb://localhost" },
-                                              { "MongoDB:DatabaseName", "database" },
-                                              { "MongoDB:DataRetention", "10.00:00:00" },
-                                              { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
-                                              { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
-                                              { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
-                                              { "MongoDB:ObjectStorage:ChunkSize", "100000" },
-                                              { "MongoDB:LockedQueueStorage:LockRefreshPeriodicity", "00:20:00" },
-                                              { "MongoDB:LockedQueueStorage:PollPeriodicity", "00:00:50" },
-                                              { "MongoDB:LockedQueueStorage:LockRefreshExtension", "00:50:00" },
-                                            };
+    {
+      { "MongoDB:ConnectionString", "mongodb://localhost" },
+      { "MongoDB:DatabaseName", "database" },
+      { "MongoDB:DataRetention", "10.00:00:00" },
+      { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
+      { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
+      { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
+      { "MongoDB:ObjectStorage:ChunkSize", "100000" },
+      { "MongoDB:LockedQueueStorage:LockRefreshPeriodicity", "00:20:00" },
+      { "MongoDB:LockedQueueStorage:PollPeriodicity", "00:00:50" },
+      { "MongoDB:LockedQueueStorage:LockRefreshExtension", "00:50:00" },
+    };
 
-    var configSource = new MemoryConfigurationSource
-                       {
-                         InitialData = baseConfig,
-                       };
-
-    var builder = new ConfigurationBuilder()
-     .Add(configSource);
-
-    configuration_ = builder.Build();
+    configuration_ = new ConfigurationManager();
+    configuration_.AddInMemoryCollection(baseConfig);
+    logger_ = NullLogger.Instance;
   }
 
-  private IConfiguration configuration_;
+  private ConfigurationManager configuration_;
+  private ILogger              logger_;
 
   [Test]
   public void AddOneTaskAndCount()
   {
     var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_);
+    services.AddMongoComponents(configuration_,
+                                logger_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
+    {
+      ValidateOnBuild = true,
+    });
 
     var table = provider.GetRequiredService<TableStorage>();
 
@@ -86,10 +85,10 @@ internal class ConnectedTableStorageTests
                     table.CountTasksAsync(new()).Result);
 
     var session = table.CreateSessionAsync(new()
-                                           {
-                                             DefaultTaskOption = new(),
-                                             IdTag             = "tag",
-                                           }).Result;
+    {
+      DefaultTaskOption = new(),
+      IdTag             = "tag",
+    }).Result;
 
     var (_, _, _) = table.InitializeTaskCreation(session,
                                                  new(),
@@ -104,9 +103,9 @@ internal class ConnectedTableStorageTests
 
     Assert.AreEqual(1,
                     table.CountTasksAsync(new()
-                                          {
-                                            SessionId    = session.Session,
-                                            SubSessionId = session.SubSession,
-                                          }).Result);
+                    {
+                      SessionId    = session.Session,
+                      SubSessionId = session.SubSession,
+                    }).Result);
   }
 }

@@ -86,7 +86,8 @@ public static class Program
       builder.Services
              .AddLogging()
              .AddArmoniKCore(builder.Configuration)
-             .AddMongoComponents(builder.Configuration)
+             .AddMongoComponents(builder.Configuration,
+                                 logger)
              .AddAmqp(builder.Configuration,
                       logger)
              .AddRedis(builder.Configuration,

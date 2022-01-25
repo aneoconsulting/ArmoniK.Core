@@ -22,10 +22,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.IO;
-using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
@@ -46,67 +46,80 @@ namespace ArmoniK.Core.Adapters.Redis
     [PublicAPI]
     public static IServiceCollection AddRedis(
       this IServiceCollection serviceCollection,
-      IConfiguration          configuration,
+      ConfigurationManager    configuration,
       ILogger                 logger)
     {
-      var redisOptions = configuration.GetSection(Options.Redis.SettingSection).Get<Options.Redis>();
-
-      serviceCollection.AddStackExchangeRedisCache(options =>
-      {
-        options.ConfigurationOptions = new()
-        {
-          ClientName = redisOptions.ClientName,
-          ReconnectRetryPolicy = new ExponentialRetry(10),
-          Ssl                  = true,
-          EndPoints =
-          {
-            redisOptions.EndpointUrl,
-          },
-          SslHost            = redisOptions.SslHost,
-          AbortOnConnectFail = true,
-          ConnectTimeout     = redisOptions.Timeout,
-          //CheckCertificateRevocation = xx,
-          //SslProtocols               = xx,
-        };
-        logger.LogDebug("setup connection to Redis at {EndpointUrl}", redisOptions.EndpointUrl);
-
-        if (!File.Exists(redisOptions.CaCertPath))
-        {
-          logger.LogError(redisOptions.CaCertPath + " was not found !");
-          throw new FileNotFoundException(redisOptions.CaCertPath + " was not found !");
-        }
-
-        if (!File.Exists(redisOptions.ClientPfxPath))
-        {
-          logger.LogError(redisOptions.ClientPfxPath + " was not found !");
-          throw new FileNotFoundException(redisOptions.ClientPfxPath + " was not found !");
-        }
-
-        options.ConfigurationOptions.CertificateValidation += (sender, certificate, chain, sslPolicyErrors) =>
-        {
-          X509Certificate2 certificateAuthority = new(redisOptions.CaCertPath);
-          if (sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors)
-          {
-            var root = chain.ChainElements[^1].Certificate;
-            return certificateAuthority.Equals(root);
-          }
-
-          return sslPolicyErrors == SslPolicyErrors.None;
-        };
-
-        options.ConfigurationOptions.CertificateSelection += delegate
-        {
-          var cert = new X509Certificate2(redisOptions.ClientPfxPath);
-          return cert;
-        };
-
-        //options.InstanceName = redisOptions.InstanceName;
-      });
-
       var components = configuration.GetSection(Components.SettingSection);
 
       if (components["ObjectStorage"] == "ArmoniK.Adapters.Redis.ObjectStorage")
       {
+        serviceCollection.AddOption<Options.Redis>(configuration,
+                                                   Options.Redis.SettingSection,
+                                                   out var redisOptions);
+
+        using var _ = logger.BeginNamedScope("MongoDB configuration",
+                                             ("EndpointUrl", redisOptions.EndpointUrl));
+
+        if (!string.IsNullOrEmpty(redisOptions.CredentialsPath))
+        {
+          configuration.AddJsonFile(redisOptions.CredentialsPath);
+
+          serviceCollection.AddOption(configuration,
+                                      Options.Redis.SettingSection,
+                                      out redisOptions);
+
+          logger.LogTrace("Loaded Redis credentials from file {path}",
+                          redisOptions.CredentialsPath);
+
+          if (!string.IsNullOrEmpty(redisOptions.CaPath))
+          {
+            X509Store                  localTrustStore       = new X509Store(StoreName.Root);
+            X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
+            try
+            {
+              certificateCollection.Import(redisOptions.CaPath);
+              localTrustStore.Open(OpenFlags.ReadWrite);
+              localTrustStore.AddRange(certificateCollection);
+              logger.LogTrace("Imported mongodb certificate from file {path}",
+                              redisOptions.CaPath);
+            }
+            catch (Exception ex)
+            {
+              logger.LogError("Root certificate import failed: {error}",
+                              ex.Message);
+              throw;
+            }
+            finally
+            {
+              localTrustStore.Close();
+            }
+          }
+
+        }
+
+        serviceCollection.AddStackExchangeRedisCache(options =>
+        {
+          options.ConfigurationOptions = new()
+          {
+            ClientName           = redisOptions.ClientName,
+            ReconnectRetryPolicy = new ExponentialRetry(10),
+            Ssl                  = redisOptions.Ssl,
+            EndPoints =
+            {
+              redisOptions.EndpointUrl,
+            },
+            SslHost            = redisOptions.SslHost,
+            AbortOnConnectFail = true,
+            ConnectTimeout     = redisOptions.Timeout,
+            Password           = redisOptions.Password,
+            User               = redisOptions.User,
+          };
+          logger.LogDebug("setup connection to Redis at {EndpointUrl}",
+                          redisOptions.EndpointUrl);
+
+          options.InstanceName = redisOptions.InstanceName;
+        });
+
         serviceCollection.AddSingleton<IDistributedCache, RedisCache>();
         serviceCollection.AddSingleton<IObjectStorage, DistributedCacheObjectStorage>();
       }

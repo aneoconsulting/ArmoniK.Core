@@ -34,7 +34,25 @@ public class MongoDB
 {
   public const string SettingSection = nameof(MongoDB);
 
-  public string ConnectionString { get; set; }
+  public bool Tls { get; set; }
+
+  public bool AllowInsecureTls { get; set; }
+
+  public bool DirectConnection { get; set; }
+
+  public string ReplicaSet { get; set; }
+
+  public string Host { get; set; }
+
+  public int Port { get; set; }
+
+  public string CAFile { get; set; }
+
+  public string CredentialsPath { get; set; }
+
+  public string User { get; set; }
+
+  public string Password { get; set; }
 
   public string DatabaseName { get; set; } = "ArmoniK";
 
