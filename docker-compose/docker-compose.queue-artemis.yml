@@ -9,6 +9,8 @@ services:
       ARTEMIS_MAX_MEMORY: "2000M"
       ARTEMIS_USERNAME: "guest"
       ARTEMIS_PASSWORD: "guest"
+    networks:
+      - armonik-backend
     ports:
       - 5672:5672
       - 8161:8161
