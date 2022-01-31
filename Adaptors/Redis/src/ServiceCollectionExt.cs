@@ -57,7 +57,7 @@ namespace ArmoniK.Core.Adapters.Redis
                                                    Options.Redis.SettingSection,
                                                    out var redisOptions);
 
-        using var _ = logger.BeginNamedScope("MongoDB configuration",
+        using var _ = logger.BeginNamedScope("Redis configuration",
                                              ("EndpointUrl", redisOptions.EndpointUrl));
 
         if (!string.IsNullOrEmpty(redisOptions.CredentialsPath))
@@ -80,7 +80,7 @@ namespace ArmoniK.Core.Adapters.Redis
               certificateCollection.Import(redisOptions.CaPath);
               localTrustStore.Open(OpenFlags.ReadWrite);
               localTrustStore.AddRange(certificateCollection);
-              logger.LogTrace("Imported mongodb certificate from file {path}",
+              logger.LogTrace("Imported Redis certificate from file {path}",
                               redisOptions.CaPath);
             }
             catch (Exception ex)
@@ -94,7 +94,6 @@ namespace ArmoniK.Core.Adapters.Redis
               localTrustStore.Close();
             }
           }
-
         }
 
         serviceCollection.AddStackExchangeRedisCache(options =>
@@ -104,18 +103,19 @@ namespace ArmoniK.Core.Adapters.Redis
             ClientName           = redisOptions.ClientName,
             ReconnectRetryPolicy = new ExponentialRetry(10),
             Ssl                  = redisOptions.Ssl,
-            EndPoints =
-            {
-              redisOptions.EndpointUrl,
-            },
-            SslHost            = redisOptions.SslHost,
-            AbortOnConnectFail = true,
-            ConnectTimeout     = redisOptions.Timeout,
-            Password           = redisOptions.Password,
-            User               = redisOptions.User,
+            AbortOnConnectFail   = true,
+            SslHost              = redisOptions.SslHost,
+            Password             = redisOptions.Password,
+            User                 = redisOptions.User,
           };
-          logger.LogDebug("setup connection to Redis at {EndpointUrl}",
-                          redisOptions.EndpointUrl);
+          options.ConfigurationOptions.EndPoints.Add(redisOptions.EndpointUrl);
+
+          if (redisOptions.Timeout > 0)
+            options.ConfigurationOptions.ConnectTimeout = redisOptions.Timeout;
+
+          logger.LogDebug("setup connection to Redis at {EndpointUrl} with user {user}",
+                          redisOptions.EndpointUrl,
+                          redisOptions.User);
 
           options.InstanceName = redisOptions.InstanceName;
         });

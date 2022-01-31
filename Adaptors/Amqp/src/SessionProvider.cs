@@ -24,6 +24,7 @@
 using System;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 
 using Amqp;
 
@@ -46,22 +47,44 @@ public class SessionProvider : ProviderBase<Session>
                                 options.Password,
                                 scheme: options.Scheme);
 
-      var connectionFactory = new ConnectionFactory
+      var connectionFactory = new ConnectionFactory();
+      if (options.Scheme.Equals("AMQPS"))
       {
-        SSL =
+        connectionFactory.SSL.RemoteCertificateValidationCallback = delegate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {
-          RemoteCertificateValidationCallback = delegate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
+          switch (errors)
           {
-            if (errors == SslPolicyErrors.RemoteCertificateNameMismatch && options.AllowHostMismatch)
-            {
+            case SslPolicyErrors.RemoteCertificateNameMismatch when options.AllowHostMismatch:
+            case SslPolicyErrors.None:
               return true;
-            }
-            return errors == SslPolicyErrors.None;
-          },
-        },
-      };
+            default:
+              logger.LogError("SSL error : {error}",
+                              errors);
+              return false;
+          }
+        };
+      }
 
-      return new(await connectionFactory.CreateAsync(address));
+      Session session;
+
+      int retries = 10;
+      while (true)
+      {
+        try
+        {
+          session = new Session(await connectionFactory.CreateAsync(address));
+          break;
+        }
+        catch (Exception e)
+        {
+          if (--retries == 0)
+            throw;
+          Thread.Sleep(1000);
+        }
+      }
+
+
+      return session;
     })
   {
     if (string.IsNullOrEmpty(options.Host))

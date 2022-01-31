@@ -67,8 +67,7 @@ public static class ServiceCollectionExt
   public static IServiceCollection AddArmoniKCore(this IServiceCollection services,
                                                   IConfiguration          configuration)
   {
-    services.AddTransient<IObjectStorage, DistributedCacheObjectStorage>()
-            .AddSingleton(typeof(KeyValueStorage<,>));
+    services.AddSingleton(typeof(KeyValueStorage<,>));
 
     var computePlanComponent = configuration.GetSection(ComputePlan.SettingSection);
     if (computePlanComponent.Exists())

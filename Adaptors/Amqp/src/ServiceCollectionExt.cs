@@ -55,7 +55,9 @@ public static class ServiceCollectionExt
 
     if (components["QueueStorage"] == "ArmoniK.Adapters.Amqp.QueueStorage")
     {
-      var amqpOptions = configuration.GetRequiredValue<Options.Amqp>(Options.Amqp.SettingSection);
+      serviceCollection.AddOption<Options.Amqp>(configuration,
+                                                Options.Amqp.SettingSection,
+                                                out var amqpOptions);
 
       using var _ = logger.BeginNamedScope("AMQP configuration",
                                            ("host", amqpOptions.Host),

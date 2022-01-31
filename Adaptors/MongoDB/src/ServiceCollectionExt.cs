@@ -160,40 +160,25 @@ public static class ServiceCollectionExt
         logger.LogTrace("No credentials provided");
       }
 
-
-      //var mongoUrl = new MongoUrlBuilder
-      //{
-      //  Scheme         = ConnectionStringScheme.MongoDB,
-      //  Password       = mongoOptions.Password,
-      //  Username       = mongoOptions.User,
-      //  UseTls         = mongoOptions.Tls,
-      //  ReplicaSetName = mongoOptions.ReplicaSet,
-      //  Server = new MongoServerAddress(mongoOptions.Host,
-      //                                  mongoOptions.Port),
-      //  ReadPreference = ReadPreference.Nearest,
-      //  DatabaseName   = mongoOptions.DatabaseName,
-      //};
-
-      //var settings = MongoClientSettings.FromUrl(mongoUrl.ToMongoUrl());
-
-      //settings.SslSettings = new SslSettings
-      //{
-      //  ClientCertificates         = certificateCollection,
-      //  CheckCertificateRevocation = true,
-      //  EnabledSslProtocols        = System.Security.Authentication.SslProtocols.None,
-      //};
-
-      //settings.SslSettings.ClientCertificateSelectionCallback =
-      //  (sender, host, certificates, certificate, issuers) => settings.SslSettings.ClientCertificates.ToList()[0];
-      //settings.SslSettings.ServerCertificateValidationCallback = (sender, certificate, chain, errors) => true;
-
-      string template = "mongodb://{0}:{1}@{2}:{3}/{4}";
-      string connectionString = String.Format(template,
-                                              mongoOptions.User,
-                                              mongoOptions.Password,
-                                              mongoOptions.Host,
-                                              mongoOptions.Port,
-                                              mongoOptions.DatabaseName);
+      string connectionString = null;
+      if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
+      {
+        string template = "mongodb://{0}:{1}/{2}";
+        connectionString = String.Format(template,
+                                         mongoOptions.Host,
+                                         mongoOptions.Port,
+                                         mongoOptions.DatabaseName);
+      }
+      else
+      {
+        string template = "mongodb://{0}:{1}@{2}:{3}/{4}";
+        connectionString = String.Format(template,
+                                         mongoOptions.User,
+                                         mongoOptions.Password,
+                                         mongoOptions.Host,
+                                         mongoOptions.Port,
+                                         mongoOptions.DatabaseName);
+      }
 
       var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
       settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
