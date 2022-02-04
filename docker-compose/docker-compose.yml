@@ -37,6 +37,7 @@ services:
       - Amqp__Port=5672
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
+      - Serilog__MinimumLevel=Verbose
 
   armonik.compute.pollingagent:
     image: ${DOCKER_REGISTRY-}armonikpollingagent
@@ -59,6 +60,7 @@ services:
       - Amqp__Port=5672
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
+      - Serilog__MinimumLevel=Verbose
 
   armonik.compute.worker:
     image: dockerhubaneo/armonik_worker_htcmock_v3

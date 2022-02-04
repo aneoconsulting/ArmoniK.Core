@@ -40,6 +40,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
+using Serilog.Formatting.Compact;
 
 namespace ArmoniK.Core.Compute.PollingAgent;
 
@@ -58,7 +59,6 @@ public static class Program
 
       var builder = WebApplication.CreateBuilder(args);
 
-
       builder.Configuration
              .SetBasePath(Directory.GetCurrentDirectory())
              .AddJsonFile("appsettings.json",
@@ -67,10 +67,8 @@ public static class Program
              .AddEnvironmentVariables()
              .AddCommandLine(args);
 
-      builder.Logging.AddSerilog();
-
-
       var serilogLogger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
+                                                   .WriteTo.Console(new CompactJsonFormatter())
                                                    .Enrich.FromLogContext()
                                                    .CreateLogger();
 
@@ -78,10 +76,7 @@ public static class Program
                                 .CreateLogger("root");
 
       builder.Host
-             .UseSerilog((context, services, config)
-                           => config.ReadFrom.Configuration(context.Configuration)
-                                    .ReadFrom.Services(services)
-                                    .Enrich.FromLogContext());
+             .UseSerilog(serilogLogger);
 
       builder.Services
              .AddLogging()
