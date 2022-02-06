@@ -54,6 +54,7 @@ public class DispatchDataModel : IMongoDataModel<DispatchDataModel>, IDispatch
                                                          cm.MapProperty(nameof(TimeToLive)).SetIsRequired(true);
                                                          cm.MapProperty(nameof(Statuses)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<KeyValuePair<TaskStatus, DateTime>>());
                                                          cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
+                                                         cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
                                                          cm.SetIgnoreExtraElements(true);
                                                        });
 
@@ -87,6 +88,9 @@ public class DispatchDataModel : IMongoDataModel<DispatchDataModel>, IDispatch
 
   /// <inheritdoc />
   public DateTime CreationDate { get; set; } = DateTime.UtcNow;
+
+  /// <inheritdoc />
+  public string SessionId    { get; set; }
 
 
   /// <inheritdoc />

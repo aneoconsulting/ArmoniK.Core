@@ -21,8 +21,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Channels;
 
 using ArmoniK.Api.gRPC.V1;
 
@@ -30,18 +32,48 @@ using Grpc.Core;
 
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Storage;
+
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+
 namespace ArmoniK.Core.Common.gRPC.Services
 {
+  public record TaskRequest(
+    string                                 Id,
+    IEnumerable<string>                    ExpectedOutputKeys,
+    IEnumerable<string>                    DataDependencies,
+    IAsyncEnumerable<ReadOnlyMemory<byte>> PayloadChunks
+  );
+
   public interface ISubmitter
   {
-    Task<Empty> CancelSession(SessionId request, CancellationToken cancellationToken);
-    Task<Empty> CancelTask(TaskFilter request, CancellationToken cancellationToken);
+    Task CancelSession(string sessionId, CancellationToken cancellationToken);
+
+    Task CancelDispatchSessionAsync(string dispatchId, CancellationToken cancellationToken);
+
+    Task CancelTasks(TaskFilter request, CancellationToken cancellationToken);
+
     Task<Count> CountTasks(TaskFilter request, CancellationToken cancellationToken);
-    Task<CreateTaskReply> CreateLargeTasks(IAsyncEnumerable<CreateLargeTaskRequest> requestStream, CancellationToken cancellationToken);
-    Task<CreateSessionReply> CreateSession(CreateSessionRequest request, CancellationToken cancellationToken);
-    Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request, CancellationToken cancellationToken);
+
+    Task<CreateSessionReply> CreateSession(string sessionId, TaskOptions defaultTaskOptions, CancellationToken cancellationToken);
+
+    Task<CreateTaskReply> CreateTasks(string                        sessionId,
+                                      string                        parentId,
+                                      string                        dispatchId,
+                                      TaskOptions                   options,
+                                      IAsyncEnumerable<TaskRequest> taskRequests,
+                                      CancellationToken             cancellationToken);
+
     Task<ConfigurationReply> GetServiceConfiguration(Empty request, CancellationToken cancellationToken);
+
     Task TryGetResult(ResultRequest request, IServerStreamWriter<ResultReply> responseStream, CancellationToken cancellationToken);
+
     Task<Count> WaitForCompletion(WaitRequest request, CancellationToken cancellationToken);
+
+    Task UpdateTaskStatusAsync(string            id,
+                               TaskStatus        status,
+                               CancellationToken cancellationToken = default);
+
+    Task FinalizeDispatch(string taskId, IDispatch dispatchId, Output output, CancellationToken cancellationToken);
   }
 }

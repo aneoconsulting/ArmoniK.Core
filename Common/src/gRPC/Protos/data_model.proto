@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-option csharp_namespace = "ArmoniK.Core.Common.gRPC.DataModel";
-package ArmoniK.Core.Common.gRPC.DataModel;
-
-message Payload{
-  bytes data = 1;
-}

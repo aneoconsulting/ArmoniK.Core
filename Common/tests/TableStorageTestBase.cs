@@ -352,9 +352,10 @@ public abstract class TableStorageTestBase
 
     // acquire a dispatch for the task
     {
-      Assert.IsTrue(await TableStorage.TryAcquireDispatchAsync(t1d1,
+      Assert.IsTrue(await TableStorage.TryAcquireDispatchAsync(TODO,
                                                                t1,
-                                                               ttlT1D1));
+                                                               t1d1,
+                                                               podId: ttlT1D1));
     }
 
 
@@ -428,7 +429,7 @@ public abstract class TableStorageTestBase
 
     // set t1 to running and check the status and list tasks and count tasks
     {
-      await TableStorage.UpdateDispatch(t1d1,
+      await TableStorage.AddStatusToDispatch(t1d1,
                                         TaskStatus.Processing,
                                         CancellationToken.None);
 

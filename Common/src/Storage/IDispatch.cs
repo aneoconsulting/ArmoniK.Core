@@ -43,4 +43,5 @@ public interface IDispatch
   IEnumerable<StatusTime> Statuses { get; }
 
   DateTime CreationDate { get; }
+  string   SessionId    { get; }
 }

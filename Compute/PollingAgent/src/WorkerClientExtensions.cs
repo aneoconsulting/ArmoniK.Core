@@ -34,10 +34,75 @@ using Google.Protobuf;
 
 using Grpc.Core;
 
+using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
+
 namespace ArmoniK.Core.Compute.PollingAgent;
 
 public static class WorkerClientExtensions
 {
+  public static async IAsyncEnumerable<TaskRequest> ReconstituteTaskRequest(
+    this                     IAsyncEnumerable<ProcessReply> stream,
+    [EnumeratorCancellation] CancellationToken              cancellationToken)
+  {
+    var enumerator = stream.GetAsyncEnumerator(cancellationToken);
+
+    var isLastTask  = false;
+    var isLastChunk = false;
+
+    Channel<ReadOnlyMemory<byte>>? channel = null;
+    while (!await enumerator.MoveNextAsync(cancellationToken))
+    {
+      var current = enumerator.Current;
+
+      if (current.CreateLargeTask.TypeCase == ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitTask)
+      {
+        if (channel is not null && !isLastChunk)
+        {
+          throw new InvalidOperationException("stream contained expected message.");
+        }
+
+        channel?.Writer.Complete();
+
+        channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new()
+                                                                {
+                                                                  SingleWriter = true,
+                                                                  SingleReader = true,
+                                                                });
+
+        yield return new(current.CreateLargeTask.InitTask.Id,
+                         current.CreateLargeTask.InitTask.ExpectedOutputKeys,
+                         current.CreateLargeTask.InitTask.DataDependencies,
+                         channel.Reader.ReadAllAsync(cancellationToken));
+        await channel.Writer.WriteAsync(current.CreateLargeTask.InitTask.PayloadChunk.Data.Memory,
+                                        cancellationToken);
+
+        isLastTask  = current.CreateLargeTask.InitTask.LastTask;
+        isLastChunk = current.CreateLargeTask.InitTask.PayloadChunk.DataComplete;
+      }
+      else if (current.CreateLargeTask.TypeCase == ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.TaskPayload)
+      {
+        if (channel is null || isLastChunk)
+        {
+          throw new InvalidOperationException("stream contained expected message.");
+        }
+
+        await channel.Writer.WriteAsync(current.CreateLargeTask.TaskPayload.Data.Memory,
+                                        cancellationToken);
+
+        isLastChunk = current.CreateLargeTask.TaskPayload.DataComplete;
+
+      }
+    }
+
+    if (channel is not null && (!isLastTask || !isLastChunk))
+    {
+      throw new InvalidOperationException("stream ended unexpectedly.");
+    }
+
+    channel?.Writer.Complete();
+
+  }
+
   public static async IAsyncEnumerable<(ProcessReply First, IAsyncEnumerable<ProcessReply> Stream)> Separate(
     this                     IAsyncStreamReader<ProcessReply> stream,
     [EnumeratorCancellation] CancellationToken                cancellationToken)
@@ -68,15 +133,11 @@ public static class WorkerClientExtensions
         case ProcessReply.TypeOneofCase.Output:
           switch (reply.Output.TypeCase)
           {
-            case ProcessReply.Types.Output.TypeOneofCase.Init when reply.Output.Init.ResultTypeCase == ProcessReply.Types.Output.Types.Init.ResultTypeOneofCase.Error:
-            case ProcessReply.Types.Output.TypeOneofCase.Init
-              when reply.Output.Init.ResultTypeCase == ProcessReply.Types.Output.Types.Init.ResultTypeOneofCase.OutputChunk &&
-                   reply.Output.Init.OutputChunk.DataComplete:
-            case ProcessReply.Types.Output.TypeOneofCase.Data when reply.Output.Data.DataComplete:
+            case Output.TypeOneofCase.Error:
+            case Output.TypeOneofCase.Ok:
               CloseChannel();
               break;
-            case ProcessReply.Types.Output.TypeOneofCase.None:
-            case ProcessReply.Types.Output.TypeOneofCase.Init when reply.Output.Init.ResultTypeCase == ProcessReply.Types.Output.Types.Init.ResultTypeOneofCase.None:
+            case Output.TypeOneofCase.None:
             default:
               ThrowInChannel();
               break;
@@ -100,19 +161,21 @@ public static class WorkerClientExtensions
         case ProcessReply.TypeOneofCase.CreateLargeTask:
           switch (reply.CreateLargeTask.TypeCase)
           {
-            case CreateLargeTaskRequest.TypeOneofCase.InitRequest:
+            case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitRequest:
               break;
-            case CreateLargeTaskRequest.TypeOneofCase.InitTask when reply.CreateLargeTask.InitTask.PayloadComplete && reply.CreateLargeTask.InitTask.LastTask:
+            case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitTask
+              when reply.CreateLargeTask.InitTask.PayloadChunk.DataComplete && reply.CreateLargeTask.InitTask.LastTask:
               CloseChannel();
               break;
-            case CreateLargeTaskRequest.TypeOneofCase.InitTask when !reply.CreateLargeTask.InitTask.PayloadComplete && reply.CreateLargeTask.InitTask.LastTask:
+            case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitTask
+              when !reply.CreateLargeTask.InitTask.PayloadChunk.DataComplete && reply.CreateLargeTask.InitTask.LastTask:
               isLastLargeRequest = true;
               break;
-            case CreateLargeTaskRequest.TypeOneofCase.TaskPayload when reply.CreateLargeTask.TaskPayload.PayloadComplete && isLastLargeRequest:
+            case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.TaskPayload when reply.CreateLargeTask.TaskPayload.DataComplete && isLastLargeRequest:
               CloseChannel();
               isLastLargeRequest = false;
               break;
-            case CreateLargeTaskRequest.TypeOneofCase.None:
+            case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.None:
             default:
               ThrowInChannel();
               break;
@@ -142,7 +205,7 @@ public static class WorkerClientExtensions
     void ThrowInChannel()
     {
       var error = new ArgumentOutOfRangeException(nameof(ProcessReply),
-                                                  $"received either a \"None\" or an unknown reply type in the stream.");
+                                                  "received either a \"None\" or an unknown reply type in the stream.");
       outputChannel.Writer.Complete(error);
       throw error;
     }

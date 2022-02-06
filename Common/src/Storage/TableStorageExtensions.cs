@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,25 +29,25 @@ namespace ArmoniK.Core.Common.Storage;
 
 public static class TableStorageExtensions
 {
-  public static async Task< DispatchHandler> AcquireDispatchHandler(this ITableStorage tableStorage,
-                                                                    string             dispatchId,
-                                                                    string             taskId,
-                                                                    string             podId             = "",
-                                                                    string             nodeId            = "",
-                                                                    CancellationToken  cancellationToken = default)
+  public static async Task<DispatchHandler> AcquireDispatchHandler(this ITableStorage          tableStorage,
+                                                                   string                      dispatchId,
+                                                                   string                      taskId,
+                                                                   string                      sessionId,
+                                                                   IDictionary<string, string> metadata,
+                                                                   CancellationToken           cancellationToken = default)
   {
-    var isAcquired = await tableStorage.TryAcquireDispatchAsync(dispatchId,
+    var isAcquired = await tableStorage.TryAcquireDispatchAsync(sessionId,
                                                                 taskId,
-                                                                podId,
-                                                                nodeId,
+                                                                dispatchId,
+                                                                metadata,
                                                                 cancellationToken);
 
     var dispatch = await tableStorage.GetDispatchAsync(dispatchId,
                                                        cancellationToken);
     if (isAcquired)
-      return new DispatchHandler(dispatch,
-                                 tableStorage,
-                                 cancellationToken);
+      return new(dispatch,
+                 tableStorage,
+                 cancellationToken);
 
     return null;
   }

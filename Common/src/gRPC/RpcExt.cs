@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -42,6 +43,40 @@ namespace ArmoniK.Core.Common.gRPC;
 
 public static class RpcExt
 {
+  public static void ThrowIfError(this Status status)
+  {
+    switch (status.StatusCode)
+    {
+      case StatusCode.OK:
+        return;
+      case StatusCode.DeadlineExceeded:
+        throw new TimeoutException("Deadline Exceeded. " + status.Detail);
+      case StatusCode.Cancelled:
+        throw new TaskCanceledException("Operation Cancelled. " + status.Detail);
+      case StatusCode.InvalidArgument:
+        throw new ArmoniKException("Invalid argument in gRPC call. " + status.Detail);
+      case StatusCode.NotFound:
+        throw new ArmoniKException("Could not find gRPC method. " + status.Detail);
+      case StatusCode.PermissionDenied:
+        throw new ArmoniKException("Permission denied in gRPC method. " + status.Detail);
+      case StatusCode.Unauthenticated:
+        throw new ArmoniKException("Could not authenticate in gRPC method. " + status.Detail);
+      case StatusCode.Unimplemented:
+        throw new ArmoniKException("Method called was not implemented." + status.Detail);
+      case StatusCode.Internal:
+      case StatusCode.Unavailable:
+      case StatusCode.DataLoss:
+      case StatusCode.Unknown:
+      case StatusCode.AlreadyExists:
+      case StatusCode.ResourceExhausted:
+      case StatusCode.FailedPrecondition:
+      case StatusCode.Aborted:
+      case StatusCode.OutOfRange:
+      default:
+        throw new ArmoniKException("An error occurred while computing the request. " + status.Detail);
+    }
+  }
+
   public static bool HandleExceptions(Exception e, StatusCode status)
   {
     switch (e)
@@ -123,9 +158,9 @@ public static class RpcExt
     }
   }
 
-  public static async Task ForceMoveNext<T>(this IAsyncEnumerator<T> stream, string error, ILogger logger) where T : class
+  public static async Task ForceMoveNext<T>(this IAsyncEnumerator<T> stream, string error, ILogger logger, CancellationToken cancellationToken) where T : class
   {
-    if (!await stream.MoveNextAsync())
+    if (!await stream.MoveNextAsync(cancellationToken))
     {
       var exception = new RpcException(new(StatusCode.InvalidArgument,
                                            error));

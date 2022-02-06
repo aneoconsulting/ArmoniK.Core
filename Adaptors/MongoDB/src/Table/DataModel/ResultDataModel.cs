@@ -46,13 +46,12 @@ public class ResultDataModel : IMongoDataModel<ResultDataModel>, IResult
                                                      {
                                                        cm.MapIdProperty(nameof(Id)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(DispatchId)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(Key)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Creator)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(ResponsibilityOwner)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(OwnerTaskId)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(OriginDispatchId)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(IsResultAvailable)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Data)).SetIgnoreIfDefault(true);
                                                        cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(Data)).SetIgnoreIfDefault(true);
                                                        cm.SetIgnoreExtraElements(true);
                                                      });
   }
@@ -62,31 +61,28 @@ public class ResultDataModel : IMongoDataModel<ResultDataModel>, IResult
   /// <summary>
   /// Database Id of the object. 
   /// </summary>
-  public string Id => $"{SessionId}.{Key}.{DispatchId}";
+  public string Id => $"{SessionId}.{Key}";
 
   /// <inheritdoc />
   public string SessionId { get; init; }
 
   /// <inheritdoc />
-  public string DispatchId { get; init; }
-
-  /// <inheritdoc />
   public string Key { get; init; }
 
   /// <inheritdoc />
-  public string Creator             { get; init; }
+  public string OwnerTaskId { get; init; }
 
   /// <inheritdoc />
-  public string ResponsibilityOwner { get; init; }
+  public string OriginDispatchId { get; init; }
 
   /// <inheritdoc />
   public bool IsResultAvailable { get; init; }
 
   /// <inheritdoc />
-  public byte[] Data { get; init; }
+  public DateTime CreationDate { get; } = DateTime.UtcNow;
 
   /// <inheritdoc />
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
+  public byte[] Data { get; init; }
 
   /// <inheritdoc />
   public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<ResultDataModel> collection) => throw new NotImplementedException();

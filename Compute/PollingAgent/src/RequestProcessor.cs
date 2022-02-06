@@ -23,14 +23,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
-
-using Google.Protobuf;
 
 using Grpc.Core;
 
@@ -39,190 +40,217 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 using Submitter = ArmoniK.Core.Common.gRPC.Services.Submitter;
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Compute.PollingAgent;
 
 public class RequestProcessor
 {
-  private readonly Api.gRPC.V1.Worker.WorkerClient            workerClient_;
-  private readonly ILogger<RequestProcessor>                  logger_;
-  private readonly IObjectStorage                             resultStorage_;
-  private readonly IObjectStorage                             payloadStorage_;
-  private readonly IObjectStorage                             resourcesStorage_;
-  private readonly ITaskData                                  taskData_;
-  private readonly Queue<ProcessRequest.Types.ComputeRequest> computeRequests_ = new();
-  private readonly Submitter                                  submitter_;
+  private static readonly ActivitySource ActivitySource = new($"{typeof(RequestProcessor).FullName}");
 
-  public RequestProcessor(ITaskData                       taskData, 
-                          Api.gRPC.V1.Worker.WorkerClient workerClient, 
-                          IObjectStorageFactory           objectStorageFactory, 
-                          ILogger<RequestProcessor>       logger,
-                          Submitter                       submitter)
+  private readonly WorkerClientProvider      workerClientProvider_;
+  private readonly IObjectStorageFactory     objectStorageFactory_;
+  private readonly ILogger<RequestProcessor> logger_;
+  private readonly IObjectStorage            resourcesStorage_;
+  private readonly Submitter                 submitter_;
+
+  public RequestProcessor(
+    WorkerClientProvider      workerClientProvider,
+    IObjectStorageFactory     objectStorageFactory,
+    ILogger<RequestProcessor> logger,
+    Submitter                 submitter)
   {
-    workerClient_   = workerClient;
-    taskData_       = taskData;
-    logger_         = logger;
-    submitter_ = submitter;
-
-
-    resultStorage_    = objectStorageFactory.CreateResultStorage(taskData_.SessionId);
-    payloadStorage_   = objectStorageFactory.CreatePayloadStorage(taskData_.SessionId);
-    resourcesStorage_ = objectStorageFactory.CreateResourcesStorage();
+    workerClientProvider_ = workerClientProvider;
+    objectStorageFactory_ = objectStorageFactory;
+    logger_               = logger;
+    submitter_            = submitter;
+    resourcesStorage_     = objectStorageFactory.CreateResourcesStorage();
   }
 
-  public async Task PrefetchTask(CancellationToken cancellationToken)
+  public async Task<List<Task>> ProcessAsync(IQueueMessageHandler messageHandler,
+                                             ITaskData taskData,
+                                             IDispatch dispatch,
+                                             Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
+                                             CancellationToken cancellationToken)
   {
-    List<ByteString> payloadChunks;
-
-    if (taskData_.HasPayload)
+    try
     {
-      payloadChunks = new()
-                      {
-                        UnsafeByteOperations.UnsafeWrap(taskData_.Payload),
-                      };
+      return await ProcessInternalsAsync(taskData,
+                                         dispatch,
+                                         computeRequests,
+                                         cancellationToken);
     }
-    else
+    catch (Exception e)
     {
-      payloadChunks = await payloadStorage_.TryGetValuesAsync(taskData_.TaskId,
-                                                        cancellationToken)
-                                     .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                     .ToListAsync(cancellationToken);
-    }
+      await submitter_.CancelDispatchSessionAsync(dispatch.Id, cancellationToken);
+      Console.WriteLine(e);
 
-
-    computeRequests_.Enqueue(new()
-                             {
-                               InitRequest = new()
-                                             {
-                                               TaskId    = taskData_.TaskId,
-                                               SessionId = taskData_.SessionId,
-                                               TaskOptions =
-                                               {
-                                                 taskData_.Options.Options,
-                                               },
-                                               Payload = new()
-                                                         {
-                                                           DataComplete = payloadChunks.Count == 1,
-                                                           Data         = payloadChunks[0],
-                                                         },
-                                             },
-                             });
-
-
-    if (payloadChunks.Count > 1)
-    {
-
-      for (var i = 1; i < payloadChunks.Count - 1; i++)
+      if (!await HandleExceptionAsync(e,
+                                      taskData,
+                                      messageHandler,
+                                      cancellationToken))
       {
-        computeRequests_.Enqueue(new()
-                                 {
-                                   Payload = new()
-                                          {
-                                            Data         = payloadChunks[i],
-                                            DataComplete = false,
-                                          },
-                                 });
+        throw;
       }
 
-      computeRequests_.Enqueue(new()
-                               {
-                                 Payload = new()
-                                        {
-                                          Data         = payloadChunks[^1],
-                                          DataComplete = true,
-                                        },
-                               });
+      throw new ArmoniKException("An error occurred while executing. Error has been managed.");
     }
-
-    foreach (var dataDependency in taskData_.DataDependencies)
-    {
-      var dependencyChunks = await resultStorage_.TryGetValuesAsync(dataDependency,
-                                                                    cancellationToken)
-                                                 .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                                 .ToListAsync(cancellationToken);
-
-
-      computeRequests_.Enqueue(new()
-                               {
-                                 InitData = new()
-                                            {
-                                              Key = dataDependency,
-                                              DataChunk = new()
-                                                          {
-                                                            Data         = dependencyChunks[0],
-                                                            DataComplete = dependencyChunks.Count == 1,
-                                                          },
-                                            },
-                               });
-
-      if (dependencyChunks.Count > 1)
-      {
-        for (var i = 1; i < dependencyChunks.Count - 1; i++)
-        {
-          computeRequests_.Enqueue(new()
-                                   {
-                                     Data = new()
-                                            {
-                                              Data         = dependencyChunks[i],
-                                              DataComplete = false,
-                                            },
-                                   });
-        }
-
-        computeRequests_.Enqueue(new()
-                                 {
-                                   Data = new()
-                                          {
-                                            Data         = dependencyChunks[^1],
-                                            DataComplete = true,
-                                          },
-                                 });
-      }
-    }
-
   }
 
-  public async Task ProcessTask(DateTime                                         deadline, 
-                                CancellationToken                                cancellationToken)
+  
+  [PublicAPI]
+  private async Task<bool> HandleExceptionAsync(Exception e, ITaskData taskData, IQueueMessageHandler messageHandler, CancellationToken cancellationToken)
   {
-    using var stream = workerClient_.Process(deadline: deadline,
-                                             cancellationToken: cancellationToken);
+    switch (e)
+    {
+      case System.TimeoutException:
+      {
+        logger_.LogError(e,
+                         "Deadline exceeded when computing task {taskId} from session {sessionId}",
+                         taskData.TaskId,
+                         taskData.SessionId);
+        messageHandler.Status = QueueMessageStatus.Failed;
+        await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
+                                               TaskStatus.Timeout,
+                                               CancellationToken.None);
+        return true;
+      }
+      case System.Threading.Tasks.TaskCanceledException:
+      {
+        var details = string.Empty;
+
+        if (messageHandler.CancellationToken.IsCancellationRequested) details += "Message was cancelled. ";
+        if (cancellationToken.IsCancellationRequested) details                += "Root token was cancelled. ";
+
+        logger_.LogError(e,
+                         "Execution has been cancelled for task {taskId} from session {sessionId}. {details}",
+                         taskData.TaskId,
+                         taskData.SessionId,
+                         details);
+        messageHandler.Status = QueueMessageStatus.Cancelled;
+        await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
+                                               TaskStatus.Canceling,
+                                               CancellationToken.None);
+        return true;
+      }
+      case ArmoniKException:
+      {
+        logger_.LogError(e,
+                         "Execution has failed for task {taskId} from session {sessionId}. {details}",
+                         taskData.TaskId,
+                         taskData.SessionId,
+                         e.ToString());
+
+        messageHandler.Status = QueueMessageStatus.Failed;
+        await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
+                                               TaskStatus.Error,
+                                               CancellationToken.None);
+        return true;
+      }
+      case AggregateException ae:
+      {
+        foreach (var ie in ae.InnerExceptions)
+          // If the exception was not handled, lazily allocate a list of unhandled
+          // exceptions (to be rethrown later) and add it.
+          if (!await HandleExceptionAsync(ie,
+                                          taskData,
+                                          messageHandler,
+                                          cancellationToken))
+            return false;
+
+        return true;
+      }
+      default:
+      {
+        logger_.LogError(e,
+                         "Exception encountered when computing task {taskId} from session {sessionId}",
+                         taskData.TaskId,
+                         taskData.SessionId);
+        messageHandler.Status = QueueMessageStatus.Failed;
+        await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
+                                               TaskStatus.Error,
+                                               CancellationToken.None);
+        Console.WriteLine(e);
+        return false;
+      }
+    }
+  }
+
+
+  public async Task<List<Task>> ProcessInternalsAsync(ITaskData                         taskData,
+                                                      IDispatch                         dispatch,
+                                             Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
+                                             CancellationToken                          cancellationToken)
+  {
+    using var activity = ActivitySource.StartActivity($"{nameof(ProcessAsync)}");
+
+    var workerClient = await workerClientProvider_.GetAsync();
+
+    logger_.LogDebug("Set task status to Processing");
+    var updateTask = submitter_.UpdateTaskStatusAsync(taskData.TaskId,
+                                                      TaskStatus.Processing,
+                                                      cancellationToken);
+
+    using var stream = workerClient.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration.ToTimeSpan(),
+                                            cancellationToken: cancellationToken);
+
+    var resultStorage = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
 
     stream.RequestStream.WriteOptions = new(WriteFlags.NoCompress);
-
-    // send the compute requests
-    while (computeRequests_.TryDequeue(out var computeRequest))
     {
-      await stream.RequestStream.WriteAsync(new()
-                                            {
-                                              Compute = computeRequest,
-                                            });
+      using var activity2 = ActivitySource.StartActivity($"{nameof(ProcessAsync)}.SendComputeRequests");
+      // send the compute requests
+      while (computeRequests.TryDequeue(out var computeRequest))
+      {
+        await stream.RequestStream.WriteAsync(new()
+                                              {
+                                                Compute = computeRequest,
+                                              });
+      }
     }
 
+    var output = new List<Task>()
+                 {
+                   updateTask,
+                 };
+
+    var isComplete = false;
     // process incoming messages
     await foreach (var (first, singleReplyStream) in stream.ResponseStream.Separate(cancellationToken))
     {
+      if (isComplete)
+      {
+        throw new InvalidOperationException("Unexpected message from the worker after sending the task output");
+      }
 
       switch (first.TypeCase)
       {
         case ProcessReply.TypeOneofCase.None:
-          throw new ArgumentOutOfRangeException(nameof(ProcessReply), $"received a {nameof(ProcessReply.TypeOneofCase.None)} reply type.");
+          throw new ArgumentOutOfRangeException(nameof(ProcessReply),
+                                                $"received a {nameof(ProcessReply.TypeOneofCase.None)} reply type.");
         case ProcessReply.TypeOneofCase.Output:
-          await StoreOutputAsync(first,
-                                 singleReplyStream,
-                                 cancellationToken);
+          output.Add(submitter_.FinalizeDispatch(taskData.TaskId,
+                                                 dispatch,
+                                                 first.Output,
+                                                 cancellationToken));
+          isComplete = true;
           break;
         case ProcessReply.TypeOneofCase.Result:
-          await StoreResultAsync(first,
-                                 singleReplyStream,
-                                 cancellationToken);
+          output.Add(StoreResultAsync(resultStorage,
+                                      first,
+                                      singleReplyStream,
+                                      cancellationToken));
           break;
         case ProcessReply.TypeOneofCase.CreateSmallTask:
-          await SubmitSmallTasksAsync(first,
+          await SubmitSmallTasksAsync(taskData,
+                                      dispatch.Id,
+                                      first,
                                       cancellationToken);
           break;
         case ProcessReply.TypeOneofCase.CreateLargeTask:
-          await SubmitLargeTasksAsync(first.RequestId,
+          await SubmitLargeTasksAsync(taskData,
+                                      dispatch.Id,
+                                      first,
                                       singleReplyStream,
                                       cancellationToken);
           break;
@@ -232,33 +260,39 @@ public class RequestProcessor
                                       cancellationToken);
           break;
         case ProcessReply.TypeOneofCase.CommonData:
-        {
           await ProvideCommonDataAsync(stream.RequestStream,
                                        first);
           break;
-        }
         case ProcessReply.TypeOneofCase.DirectData:
-        {
           await ProvideDirectDataAsync(stream.RequestStream,
                                        first);
           break;
-        }
         default:
-          throw new ArgumentOutOfRangeException(nameof(ProcessReply));
+          throw new ArgumentOutOfRangeException(nameof(ProcessReply),
+                                                "Unexpected message type in the stream. Wrong proto definition has been used ?");
       }
     }
+
+    stream.GetStatus().ThrowIfError();
+
+    if(!isComplete)
+      throw new InvalidOperationException("Unexpected end of stream from the worker");
+
+    return output;
+
   }
 
 
   private async Task ProvideResourcesAsync(IAsyncStreamWriter<ProcessRequest> requestStream, ProcessReply processReply, CancellationToken cancellationToken)
   {
+    using var activity = ActivitySource.StartActivity($"{nameof(ProvideResourcesAsync)}");
     var bytes = resourcesStorage_.TryGetValuesAsync(processReply.Resource.Key,
-                                                          cancellationToken);
+                                                    cancellationToken);
 
     await foreach (var dataReply in bytes.ToDataReply(processReply.RequestId,
-                                                            processReply.Resource.Key,
-                                                            cancellationToken)
-                                               .WithCancellation(cancellationToken))
+                                                      processReply.Resource.Key,
+                                                      cancellationToken)
+                                         .WithCancellation(cancellationToken))
     {
       await requestStream.WriteAsync(new()
                                      {
@@ -269,92 +303,87 @@ public class RequestProcessor
 
   [PublicAPI]
   public Task ProvideDirectDataAsync(IAsyncStreamWriter<ProcessRequest> streamRequestStream, ProcessReply reply)
-    => streamRequestStream.WriteAsync(new()
-                                      {
-                                        DirectData = new()
-                                                     {
-                                                       ReplyId = reply.RequestId,
-                                                       Init = new()
-                                                              {
-                                                                Key   = reply.CommonData.Key,
-                                                                Error = "Common data are not supported yet",
-                                                              },
-                                                     },
-                                      });
+  {
+    using var activity = ActivitySource.StartActivity($"{nameof(ProvideDirectDataAsync)}");
+    return streamRequestStream.WriteAsync(new()
+                                          {
+                                            DirectData = new()
+                                                         {
+                                                           ReplyId = reply.RequestId,
+                                                           Init = new()
+                                                                  {
+                                                                    Key   = reply.CommonData.Key,
+                                                                    Error = "Common data are not supported yet",
+                                                                  },
+                                                         },
+                                          });
+  }
 
   [PublicAPI]
   public Task ProvideCommonDataAsync(IAsyncStreamWriter<ProcessRequest> streamRequestStream, ProcessReply reply)
-    => streamRequestStream.WriteAsync(new()
-                                      {
-                                        CommonData = new()
-                                                     {
-                                                       ReplyId = reply.RequestId,
-                                                       Init = new()
-                                                              {
-                                                                Key   = reply.CommonData.Key,
-                                                                Error = "Common data are not supported yet",
-                                                              },
-                                                     },
-                                      });
+  {
+    using var activity = ActivitySource.StartActivity($"{nameof(ProvideCommonDataAsync)}");
+    return streamRequestStream.WriteAsync(new()
+                                          {
+                                            CommonData = new()
+                                                         {
+                                                           ReplyId = reply.RequestId,
+                                                           Init = new()
+                                                                  {
+                                                                    Key   = reply.CommonData.Key,
+                                                                    Error = "Common data are not supported yet",
+                                                                  },
+                                                         },
+                                          });
+  }
 
 
+  [PublicAPI]
+  public Task SubmitLargeTasksAsync(ITaskData                      taskData,
+                                    string                         dispatchId,
+                                    ProcessReply                   first,
+                                    IAsyncEnumerable<ProcessReply> singleReplyStream,
+                                    CancellationToken              cancellationToken)
+  {
+    using var activity = ActivitySource.StartActivity($"{nameof(SubmitLargeTasksAsync)}");
+    return submitter_.CreateTasks(taskData.SessionId,
+                                  taskData.TaskId,
+                                  dispatchId,
+                                  first.CreateLargeTask.InitRequest.TaskOptions,
+                                  singleReplyStream.Skip(1)
+                                                   .ReconstituteTaskRequest(cancellationToken),
+                                  cancellationToken);
+  }
 
+  [PublicAPI]
+  public Task SubmitSmallTasksAsync(ITaskData         taskData,
+                                    string            dispatchId,
+                                    ProcessReply      request,
+                                    CancellationToken cancellationToken)
+  {
+    using var activity = ActivitySource.StartActivity($"{nameof(SubmitSmallTasksAsync)}");
+    return submitter_.CreateTasks(taskData.SessionId,
+                                  taskData.ParentTaskId,
+                                  dispatchId,
+                                  request.CreateSmallTask.TaskOptions,
+                                  request.CreateSmallTask.TaskRequests
+                                         .ToAsyncEnumerable()
+                                         .Select(taskRequest => new Common.gRPC.Services.TaskRequest(taskRequest.Id,
+                                                                                                     taskRequest.ExpectedOutputKeys,
+                                                                                                     taskRequest.DataDependencies,
+                                                                                                     new[] { taskRequest.Payload.Memory }.ToAsyncEnumerable())),
+                                  cancellationToken);
+  }
 
-  private Task SubmitLargeTasksAsync(string requestId, IAsyncEnumerable<ProcessReply> singleReplyStream, CancellationToken cancellationToken)
-    => submitter_.CreateLargeTasks(singleReplyStream.Select(reply =>
-                                                            {
-                                                              switch (reply.CreateLargeTask.TypeCase)
-                                                              {
-                                                                case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitRequest:
-                                                                  return new CreateLargeTaskRequest()
-                                                                         {
-                                                                           InitRequest = new()
-                                                                                         {
-                                                                                           SessionId    = taskData_.SessionId,
-                                                                                           ParentTaskId = taskData_.ParentTaskId,
-                                                                                           TaskOptions  = reply.CreateLargeTask.InitRequest.TaskOptions,
-                                                                                         },
-                                                                         };
-                                                                case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitTask:
-                                                                  return new()
-                                                                         {
-                                                                           InitTask = reply.CreateLargeTask.InitTask,
-                                                                         };
-                                                                case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.TaskPayload:
-                                                                  return new()
-                                                                         {
-                                                                           TaskPayload = reply.CreateLargeTask.TaskPayload,
-                                                                         };
-                                                                default:
-                                                                  throw new ArgumentOutOfRangeException();
-                                                              }
-                                                            }), cancellationToken);
-
-  private Task SubmitSmallTasksAsync(ProcessReply request, CancellationToken cancellationToken)
-    => submitter_.CreateSmallTasks(new()
-                                   {
-                                     SessionId    = taskData_.SessionId,
-                                     ParentTaskId = taskData_.ParentTaskId,
-                                     TaskOptions  = request.CreateSmallTask.TaskOptions,
-                                     TaskRequests =
-                                     {
-                                       request.CreateSmallTask.TaskRequests,
-                                     },
-                                   },
-                                   cancellationToken);
-
-  private Task StoreResultAsync(ProcessReply first, IAsyncEnumerable<ProcessReply> singleReplyStream, CancellationToken cancellationToken)
-    => resultStorage_.AddOrUpdateAsync(first.Result.Init.Key,
-                                       singleReplyStream.Select(reply => reply.Result.TypeCase == ProcessReply.Types.Result.TypeOneofCase.Init
-                                                                           ? reply.Result.Init.ResultChunk.Data.Memory
-                                                                           : reply.Result.Data.Data.Memory),
-                                       cancellationToken);
-
-  private Task StoreOutputAsync(ProcessReply first, IAsyncEnumerable<ProcessReply> singleReplyStream, CancellationToken cancellationToken)
-    => payloadStorage_.AddOrUpdateAsync(first.Result.Init.Key,
-                                       singleReplyStream.Select(reply => reply.Result.TypeCase == ProcessReply.Types.Result.TypeOneofCase.Init
-                                                                           ? reply.Result.Init.ResultChunk.Data.Memory
-                                                                           : reply.Result.Data.Data.Memory),
-                                       cancellationToken);
+  [PublicAPI]
+  public Task StoreResultAsync(IObjectStorage resultStorage, ProcessReply first, IAsyncEnumerable<ProcessReply> singleReplyStream, CancellationToken cancellationToken)
+  {
+    using var activity = ActivitySource.StartActivity($"{nameof(StoreResultAsync)}");
+    return resultStorage.AddOrUpdateAsync(first.Result.Init.Key,
+                                          singleReplyStream.Select(reply => reply.Result.TypeCase == ProcessReply.Types.Result.TypeOneofCase.Init
+                                                                              ? reply.Result.Init.ResultChunk.Data.Memory
+                                                                              : reply.Result.Data.Data.Memory),
+                                          cancellationToken);
+  }
 
 }

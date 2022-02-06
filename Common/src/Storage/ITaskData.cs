@@ -34,8 +34,13 @@ public interface ITaskData
 
   string ParentTaskId { get; }
 
+  string DispatchId { get; }
+
   string        TaskId           { get; }
+
   IList<string> DataDependencies { get; }
+
+  IList<string> ExpectedOutput { get; }
 
   bool HasPayload { get; }
 

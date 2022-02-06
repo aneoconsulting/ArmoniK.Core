@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -42,8 +43,8 @@ public class SessionDataModel : IMongoDataModel<SessionDataModel>
       BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
                                                       {
                                                         cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                        cm.MapIdProperty(nameof(ParentTaskId)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(Ancestors)).SetIgnoreIfDefault(true);
+                                                        cm.MapProperty(nameof(DispatchId)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(AncestorsDispatchId)).SetIgnoreIfDefault(true);
                                                         cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
                                                         cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
                                                         cm.SetIgnoreExtraElements(true);
@@ -53,9 +54,9 @@ public class SessionDataModel : IMongoDataModel<SessionDataModel>
 
   public string SessionId { get; set; }
 
-  public string ParentTaskId { get; set; }
+  public string DispatchId { get; set; }
 
-  public List<string> Ancestors { get; set; }
+  public IEnumerable<string> AncestorsDispatchId { get; set; }
 
   public bool IsCancelled { get; set; }
 
@@ -68,9 +69,7 @@ public class SessionDataModel : IMongoDataModel<SessionDataModel>
   public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionDataModel> collection)
   {
     var sessionIndex = Builders<SessionDataModel>.IndexKeys.Text(model => model.SessionId);
-    var parentsIndex = Builders<SessionDataModel>.IndexKeys.Text("Ancestors.Id");
-    var sessionParentIndex = Builders<SessionDataModel>.IndexKeys.Combine(sessionIndex,
-                                                                          parentsIndex);
+    var dispatchIndex = Builders<SessionDataModel>.IndexKeys.Text(model => model.DispatchId);
 
     var indexModels = new CreateIndexModel<SessionDataModel>[]
                       {
@@ -79,10 +78,10 @@ public class SessionDataModel : IMongoDataModel<SessionDataModel>
                             {
                               Name = nameof(sessionIndex),
                             }),
-                        new(sessionParentIndex,
+                        new(dispatchIndex,
                             new()
                             {
-                              Name = nameof(sessionParentIndex),
+                              Name = nameof(dispatchIndex),
                             }),
                       };
 

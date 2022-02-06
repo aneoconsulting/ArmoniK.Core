@@ -86,4 +86,41 @@ public static class ExpressionsBuilders
 
     return include ? body : Expression.Not(body);
   }
+
+  public static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel, IEnumerable<TField>>> expression,
+                                                       IList<TField>                                        values,
+                                                       bool                                                 include,
+                                                       Expression                                           x)
+  {
+    if (!values.Any())
+      return Expression.Constant(true);
+
+    var fieldName = ((MemberExpression)expression.Body).Member.Name;
+
+    var property = Expression.Property(x,
+                                       typeof(TaskDataModel),
+                                       fieldName);
+
+    var containsMethodInfo = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)
+                                               .Single(m => m.Name == nameof(Enumerable.Contains) &&
+                                                            m.GetParameters().Length == 2)
+                                               .GetGenericMethodDefinition()
+                                               .MakeGenericMethod(typeof(TField));
+
+
+    Expression body = Expression.Call(null,
+                                      containsMethodInfo,
+                                      property,
+                                      Expression.Constant(values[0]));
+
+    body = values.Skip(1)
+                 .Aggregate(body,
+                            (accumulator, value) => Expression.AndAlso(accumulator,
+                                                                       Expression.Call(null,
+                                                                                       containsMethodInfo,
+                                                                                       property,
+                                                                                       Expression.Constant(value))));
+
+    return include ? body : Expression.Not(body);
+  }
 }

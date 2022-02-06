@@ -35,7 +35,7 @@ namespace ArmoniK.Core.Common.Storage;
 
 public static class TableStorageExt
 {
-  public static Task<int> CancelTask(this ITableStorage tableStorage,
+  public static Task<int> CancelTasks(this ITableStorage tableStorage,
                                      TaskFilter         filter,
                                      CancellationToken  cancellationToken = default)
     => tableStorage.UpdateAllTaskStatusAsync(filter,

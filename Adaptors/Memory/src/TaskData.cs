@@ -39,9 +39,15 @@ public class TaskData : ITaskData
   public string ParentTaskId { get; init; }
 
   /// <inheritdoc />
+  public string DispatchId { get; set; }
+
+  /// <inheritdoc />
   public string TaskId { get; init; }
 
-  public List<string> DataDependencies { get; } = new();
+  public List<string>  DataDependencies { get; } = new();
+
+  /// <inheritdoc />
+  public IList<string> ExpectedOutput   { get; set; }
 
   /// <inheritdoc />
   IList<string> ITaskData.DataDependencies => DataDependencies;

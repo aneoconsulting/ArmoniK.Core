@@ -35,50 +35,45 @@ namespace ArmoniK.Core.Common.Storage;
 
 public interface ITableStorage : IInitializable
 {
+ public record TaskRequest(
+  string               Id,
+  IEnumerable<string>  ExpectedOutputKeys,
+  IEnumerable<string>  DataDependencies,
+  ReadOnlyMemory<byte>? PayloadChunk
+ );
+
   TimeSpan PollingDelay { get; }
 
   TimeSpan DispatchTimeToLiveDuration { get; }
 
   TimeSpan DispatchRefreshPeriod      { get; }
-
-  /*
-   * TODO:
-   * Create the session with visibility = session
-   */
+  
   Task CreateSessionAsync(string id, TaskOptions defaultOptions, CancellationToken cancellationToken = default);
-
-  /*
-   * TODO:
-   * Create the session with visibility = dispatchId
-   */
-  Task CreateHiddenSessionAsync(string rootSessionId, string parentTaskId, string dispatchId, CancellationToken cancellationToken = default);
-
-  /*
-   * TODO:
-   * 1. Update the session and dispatch visibilities
-   * 2. Update the tasks and results visibilities
-   * 3. Check the session and dispatch visibilities. If modified, go to 1
-   */
-  Task ChangeSessionVisibilityAsync(string rootSessionId, string oldVisibilityId, string newVisibilityId, CancellationToken cancellationToken = default);
-
+ 
+  Task CreateDispatchedSessionAsync(string rootSessionId, string parentTaskId, string dispatchId, CancellationToken cancellationToken = default);
+ 
   Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default);
 
-  Task CancelHiddenSessionAsync(string dispatchId, CancellationToken cancellationToken = default);
+  Task CancelDispatchAsync(string dispatchId, CancellationToken cancellationToken = default);
 
-  Task<bool> IsCancelledAsync(string sessionId, string parentTaskId="", string taskId="", string dispatchId="", CancellationToken cancellationToken = default);
+  Task<bool> IsSessionCancelledAsync(string sessionId, CancellationToken cancellationToken = default);
+
+  Task<bool> IsDispatchCancelledAsync(string sessionId, string dispatchId, CancellationToken cancellationToken = default);
+
+  Task<bool> IsTaskCancelledAsync(string taskId, CancellationToken cancellationToken = default);
 
   IAsyncEnumerable<string> ListSessionsAsync(CancellationToken cancellationToken = default);
 
   Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default);
 
-  Task<TaskOptions> GetDefaultTaskOptionAsync(string sessionId, string parentTaskId, CancellationToken cancellationToken = default);
+  Task<TaskOptions> GetDefaultTaskOptionAsync(string sessionId, CancellationToken cancellationToken = default);
 
   public Task InitializeTaskCreationAsync(string                   session,
-                                     string                   parentTaskId,
-                                     string                   dispatchId,
-                                     TaskOptions              options,
-                                     IEnumerable<TaskRequest> requests,
-                                     CancellationToken        cancellationToken = default);
+                                          string                   parentTaskId,
+                                          string                   dispatchId,
+                                          TaskOptions              options,
+                                          IEnumerable<TaskRequest> requests,
+                                          CancellationToken        cancellationToken = default);
   
   Task<ITaskData> ReadTaskAsync(string id, CancellationToken cancellationToken = default);
 
@@ -92,13 +87,17 @@ public interface ITableStorage : IInitializable
 
   Task DeleteTaskAsync(string id, CancellationToken cancellationToken = default);
 
-  Task<bool> TryAcquireDispatchAsync(string dispatchId, string taskId, string podId="", string nodeId = "", CancellationToken cancellationToken = default);
+  Task<bool> TryAcquireDispatchAsync(string            sessionId,
+                                     string            taskId,
+                                     string            dispatchId,
+                                     IDictionary<string, string>    metadata, 
+                                     CancellationToken cancellationToken = default);
 
   Task DeleteDispatch(string id, CancellationToken cancellationToken = default);
 
-  Task UpdateDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default);
+  Task AddStatusToDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default);
 
-  Task ExtendDispatchTtl(string id, DateTime newTtl, CancellationToken cancellationToken = default);
+  Task ExtendDispatchTtl(string id, CancellationToken cancellationToken = default);
 
   IAsyncEnumerable<string> ListDispatchAsync(string taskId, CancellationToken cancellationToken = default);
 
@@ -115,4 +114,10 @@ public interface ITableStorage : IInitializable
   Task DeleteResult(string session, string key, CancellationToken cancellationToken = default);
 
   Task DeleteResults(string sessionId, CancellationToken cancellationToken = default);
+
+  Task<string> GetDispatchId(string      taskId,        CancellationToken cancellationToken = default);
+
+  Task ChangeTaskDispatch(string   oldDispatchId, string targetDispatchId, CancellationToken cancellationToken);
+
+  Task ChangeResultDispatch(string oldDispatchId,  string            targetDispatchId, CancellationToken cancellationToken);
 }

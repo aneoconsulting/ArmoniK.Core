@@ -65,6 +65,79 @@ public class TableStorage : ITableStorage
   public TimeSpan DispatchTimeToLiveDuration { get; } = TimeSpan.FromHours(1);
 
   /// <inheritdoc />
+  public       TimeSpan   DispatchRefreshPeriod { get; set; }
+
+  /// <inheritdoc />
+  public Task CreateSessionAsync(string id, TaskOptions defaultOptions, CancellationToken cancellationToken = default)
+  {
+    var sessionData = new SessionData
+                      {
+                        SessionId          = id,
+                        DispatchId         = id,
+                        DefaultTaskOptions = defaultOptions,
+                        IsCancelled        = false,
+                      };
+
+
+
+    var subSessions = new ConcurrentDictionary<string, SessionData>(new[]
+                                                                    {
+                                                                      new KeyValuePair<string, SessionData>(id,
+                                                                                                            sessionData),
+                                                                    });
+    if (!subSessions.TryAdd(id,
+                           sessionData))
+    {
+      throw new InvalidOperationException("Session already exists");
+    }
+
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public Task CreateDispatchedSessionAsync(string rootSessionId, string parentTaskId, string dispatchId, CancellationToken cancellationToken = default)
+  {
+
+    var sessionData = new SessionData
+                      {
+                        SessionId          = rootSessionId,
+                        DispatchId         = dispatchId,
+                        DefaultTaskOptions = defaultOptions,
+                        IsCancelled        = false,
+                      };
+
+
+
+    var subSessions = new ConcurrentDictionary<string, SessionData>(new[]
+                                                                    {
+                                                                      new KeyValuePair<string, SessionData>(id,
+                                                                                                            sessionData),
+                                                                    });
+    if (!subSessions.TryAdd(id,
+                            sessionData))
+    {
+      throw new InvalidOperationException("Session already exists");
+    }
+
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public async Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+  /// <inheritdoc />
+  public async Task CancelDispatchAsync(string dispatchId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+  /// <inheritdoc />
+  public async Task<bool> IsSessionCancelledAsync(string sessionId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+  /// <inheritdoc />
+  public async Task<bool> IsDispatchCancelledAsync(string sessionId, string dispatchId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+  /// <inheritdoc />
+  public async Task<bool> IsTaskCancelledAsync(string taskId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+  /// <inheritdoc />
   public Task<CreateSessionReply> CreateSessionAsync(CreateSessionRequest sessionRequest, CancellationToken cancellationToken = default)
   {
     SessionData sessionData = sessionRequest.SessionTypeCase switch
@@ -155,8 +228,17 @@ public class TableStorage : ITableStorage
   }
 
   /// <inheritdoc />
-  public Task<TaskOptions> GetDefaultTaskOptionAsync(string sessionId, string parentId, CancellationToken cancellationToken = default)
+  public Task<TaskOptions> GetDefaultTaskOptionAsync(string sessionId, CancellationToken cancellationToken = default)
     => Task.FromResult(sessions_[sessionId][parentId].DefaultTaskOptions);
+
+  /// <inheritdoc />
+  public async Task InitializeTaskCreationAsync(string                                 session,
+                                                string                                 parentTaskId,
+                                                string                                 dispatchId,
+                                                TaskOptions                            options,
+                                                IEnumerable<ITableStorage.TaskRequest> requests,
+                                                CancellationToken                      cancellationToken = default)
+    => throw new NotImplementedException();
 
   /// <inheritdoc />
   public Task InitializeTaskCreationAsync(string                   session,
@@ -285,6 +367,9 @@ public class TableStorage : ITableStorage
   }
 
   /// <inheritdoc />
+  public async Task<bool> TryAcquireDispatchAsync(string sessionId, string taskId, string dispatchId, IDictionary<string, string> metadata, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+  /// <inheritdoc />
   public async Task<bool> TryAcquireDispatchAsync(string            dispatchId,
                                             string            taskId,
                                             DateTime          ttl,
@@ -348,7 +433,7 @@ public class TableStorage : ITableStorage
   }
 
   /// <inheritdoc />
-  public Task UpdateDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default)
+  public Task AddStatusToDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default)
   {
     if (tasks_[dispatchesPerKey_[id].TaskId].Dispatch.Id == id)
     {
@@ -360,6 +445,9 @@ public class TableStorage : ITableStorage
 
     return Task.CompletedTask;
   }
+
+  /// <inheritdoc />
+  public async Task ExtendDispatchTtl(string id, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
   /// <inheritdoc />
   public async Task ExtendDispatchTtl(string id, DateTime newTtl, CancellationToken cancellationToken = default)
@@ -390,6 +478,9 @@ public class TableStorage : ITableStorage
   /// <inheritdoc />
   public Task<IResult> GetResult(string sessionId, string key, CancellationToken cancellationToken = default) 
     => Task.FromResult(results_[key] as IResult);
+
+  /// <inheritdoc />
+  public async Task<bool> AreResultsAvailableAsync(string sessionId, IEnumerable<string> keys, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
   /// <inheritdoc />
   public Task SetResult(string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default)
@@ -426,4 +517,13 @@ public class TableStorage : ITableStorage
 
     return Task.CompletedTask;
   }
+
+  /// <inheritdoc />
+  public async Task<string> GetDispatchId(string taskId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+  /// <inheritdoc />
+  public async Task ChangeTaskDispatch(string oldDispatchId, string targetDispatchId, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+  /// <inheritdoc />
+  public async Task ChangeResultDispatch(string oldDispatchId, string targetDispatchId, CancellationToken cancellationToken) => throw new NotImplementedException();
 }

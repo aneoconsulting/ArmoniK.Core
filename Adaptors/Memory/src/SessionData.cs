@@ -30,17 +30,13 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class SessionData
 {
-  public ConcurrentBag<string> ChildrenSessions { get; } = new();
-
-  public ConcurrentBag<string> AncestorSessions { get; } = new();
+  public ConcurrentBag<string> AncestorDispatchIds { get; } = new();
 
   public string SessionId { get; init; }
 
-  public string ParentTaskId { get; init; }
+  public string DispatchId { get; init; }
 
   public bool IsCancelled { get; set; }
 
   public TaskOptions DefaultTaskOptions { get; init; }
-
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
 }

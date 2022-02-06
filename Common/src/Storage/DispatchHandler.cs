@@ -42,14 +42,19 @@ public class DispatchHandler : IDispatch, IAsyncDisposable
     dispatchImplementation_ = dispatchImplementation;
     Heart dispatchRefresher = new(async token =>
                                   {
-                                    await tableStorage.ExtendDispatchTtl(Id,
-                                                                         DateTime.UtcNow + tableStorage.DispatchTimeToLiveDuration,
-                                                                         token);
-                                    return !token.IsCancellationRequested;
+                                    var ttlTask = tableStorage.ExtendDispatchTtl(Id,
+                                                                                 token);
+
+                                    var status = await tableStorage.IsTaskCancelledAsync(TaskId,
+                                                                                         token);
+                                    await ttlTask;
+
+                                    return !status && !token.IsCancellationRequested;
                                   },
                                   tableStorage.DispatchRefreshPeriod,
                                   cancellationToken);
     dispatchRefresher.Start();
+    DispatchCancelled = dispatchRefresher.HeartStopped;
 
     asyncDisposableImplementation_ = AsyncDisposable.Create(async () => { await dispatchRefresher.Stop(); });
   }
@@ -71,6 +76,9 @@ public class DispatchHandler : IDispatch, IAsyncDisposable
 
   /// <inheritdoc />
   public DateTime CreationDate => dispatchImplementation_.CreationDate;
+  
+  /// <inheritdoc />
+  public string SessionId => dispatchImplementation_.SessionId;
 
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
@@ -83,4 +91,6 @@ public class DispatchHandler : IDispatch, IAsyncDisposable
 
     GC.SuppressFinalize(this);
   }
+
+  public CancellationToken DispatchCancelled { get; }
 }

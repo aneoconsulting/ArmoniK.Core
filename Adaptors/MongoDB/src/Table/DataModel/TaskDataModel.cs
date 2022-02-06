@@ -48,42 +48,50 @@ public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaskData
                                                      cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(ParentTaskId)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(DispatchId)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(DataDependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
                                                      cm.MapProperty(nameof(Status)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
                                                      cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
-                                                     cm.MapProperty(nameof(Ancestors)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                     cm.MapProperty(nameof(AncestorDispatchIds)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                     cm.MapProperty(nameof(ExpectedOutput)).SetIsRequired(true);
                                                      cm.SetIgnoreExtraElements(true);
                                                    });
   }
 
   /// <inheritdoc />
-  public string        TaskId           { get; set; }
+  public string        TaskId           { get; init; }
 
   /// <inheritdoc />
-  public string SessionId    { get; set; }
+  public string SessionId    { get; init; }
 
   /// <inheritdoc />
-  public string ParentTaskId { get; set; }
+  public string ParentTaskId { get; init; }
 
   /// <inheritdoc />
-  public IList<string> DataDependencies { get; set; }
+  public string DispatchId { get; init; }
 
   /// <inheritdoc />
-  public TaskStatus Status { get; set; }
-
-  public TaskOptions Options      { get; set; }
+  public IList<string> DataDependencies { get; init; }
 
   /// <inheritdoc />
-  public DateTime CreationDate { get; set; }
+  public IList<string> ExpectedOutput { get; init; }
 
-  public bool HasPayload { get; set; }
+  /// <inheritdoc />
+  public TaskStatus Status { get; init; }
 
-  public byte[] Payload { get; set; }
+  public TaskOptions Options      { get; init; }
 
-  public IList<string> Ancestors { get; set; } = Array.Empty<string>();
+  /// <inheritdoc />
+  public DateTime CreationDate { get; init; }
+
+  public bool HasPayload { get; init; }
+
+  public byte[] Payload { get; init; }
+
+  public IList<string> AncestorDispatchIds { get; init; } = Array.Empty<string>();
 
   /// <inheritdoc />
   public string CollectionName => Collection;

@@ -35,9 +35,14 @@ public class TaskFilterValidator : AbstractValidator<TaskFilter>
   public TaskFilterValidator()
   {
     RuleFor(filter => filter.IdsCase).NotEqual(TaskFilter.IdsOneofCase.None);
-    RuleFor(filter => filter.Included).NotNull()
+    RuleFor(filter => filter.Dispatch).NotNull()
                                       .NotEmpty()
-                                      .When(filter => filter.IdsCase == TaskFilter.IdsOneofCase.Known);
-    RuleFor(filter => filter.StatusesCase).NotEqual(TaskFilter.StatusesOneofCase.None);
+                                      .When(filter => filter.IdsCase == TaskFilter.IdsOneofCase.Dispatch);
+    RuleFor(filter => filter.Session).NotNull()
+                                      .NotEmpty()
+                                      .When(filter => filter.IdsCase == TaskFilter.IdsOneofCase.Session);
+    RuleFor(filter => filter.Task).NotNull()
+                                      .NotEmpty()
+                                      .When(filter => filter.IdsCase == TaskFilter.IdsOneofCase.Task);
   }
 }

@@ -24,8 +24,6 @@
 using System;
 using System.Threading;
 
-using ArmoniK.Core.Common.gRPC.DataModel;
-
 namespace ArmoniK.Core.Common.Storage;
 
 public enum QueueMessageStatus
