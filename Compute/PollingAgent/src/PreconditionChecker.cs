@@ -41,21 +41,32 @@ public class PreconditionChecker
   private static readonly ActivitySource ActivitySource = new($"{typeof(PreconditionChecker).Namespace}.{nameof(PreconditionChecker)}");
 
   private readonly ILogger<PreconditionChecker> logger_;
-  private readonly ITableStorage                tableStorage_;
 
-  public PreconditionChecker(ITableStorage tableStorage, ILogger<PreconditionChecker> logger)
+  private readonly ISessionTable  sessionTable_;
+  private readonly ITaskTable     taskTable_;
+  private readonly IResultTable   resultTable_;
+  private readonly IDispatchTable dispatchTable_;
+
+  public PreconditionChecker(ISessionTable                sessionTable,
+                             ITaskTable                   taskTable,
+                             IResultTable                 resultTable,
+                             IDispatchTable               dispatchTable,
+                             ILogger<PreconditionChecker> logger)
   {
-    tableStorage_ = tableStorage;
-    logger_  = logger;
+    logger_        = logger;
+    sessionTable_  = sessionTable;
+    taskTable_     = taskTable;
+    resultTable_   = resultTable;
+    dispatchTable_ = dispatchTable;
   }
 
-  public async Task<(ITaskData TaskData, DispatchHandler Dispatch)?> CheckPreconditionsAsync(IQueueMessageHandler messageHandler,
-                                                                                       CancellationToken    cancellationToken)
+  public async Task<(TaskData TaskData, DispatchHandler Dispatch)?> CheckPreconditionsAsync(IQueueMessageHandler messageHandler,
+                                                                                            CancellationToken    cancellationToken)
   {
     using var activity = ActivitySource.StartActivity($"{typeof(PreconditionChecker).FullName}");
 
-    var taskData = await tableStorage_.ReadTaskAsync(messageHandler.TaskId,
-                                               cancellationToken);
+    var taskData = await taskTable_.ReadTaskAsync(messageHandler.TaskId,
+                                                  cancellationToken);
     
     /*
      * Check preconditions:
@@ -73,11 +84,13 @@ public class PreconditionChecker
       case TaskStatus.Canceling:
         logger_.LogInformation("Task is being cancelled");
         messageHandler.Status = QueueMessageStatus.Cancelled;
-        await tableStorage_.CancelDispatchAsync(taskData.DispatchId,
+        await sessionTable_.CancelDispatchAsync(taskData.SessionId, taskData.DispatchId,
                                                 cancellationToken);
-        await tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                  TaskStatus.Canceled,
-                                                  CancellationToken.None);
+        await taskTable_.CancelDispatchAsync(taskData.SessionId, taskData.DispatchId,
+                                cancellationToken);
+        await taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
+                                               TaskStatus.Canceled,
+                                               CancellationToken.None);
         return null;
       case TaskStatus.Completed:
         logger_.LogInformation("Task was already completed");
@@ -91,8 +104,12 @@ public class PreconditionChecker
         break;
       case TaskStatus.Error:
         logger_.LogInformation("Task was on error elsewhere ; retrying");
-        await tableStorage_.CancelDispatchAsync(taskData.DispatchId,
-                                                cancellationToken);
+        await taskTable_.CancelDispatchAsync(taskData.SessionId,
+                                             taskData.DispatchId,
+                                             cancellationToken);
+        await taskTable_.CancelDispatchAsync(taskData.SessionId,
+                                             taskData.DispatchId,
+                                             cancellationToken);
         break;
       case TaskStatus.Timeout:
         logger_.LogInformation("Task was timeout elsewhere ; taking over here");
@@ -116,12 +133,12 @@ public class PreconditionChecker
     }
 
     var dependencyCheckTask = taskData.DataDependencies.Any()
-                                ? tableStorage_.AreResultsAvailableAsync(taskData.SessionId,
+                                ? resultTable_.AreResultsAvailableAsync(taskData.SessionId,
                                                                          taskData.DataDependencies,
                                                                          cancellationToken)
                                 : Task.FromResult(true);
 
-    var isSessionCancelled = await tableStorage_.IsSessionCancelledAsync(taskData.SessionId,
+    var isSessionCancelled = await sessionTable_.IsSessionCancelledAsync(taskData.SessionId,
                                                                          cancellationToken);
 
     if (isSessionCancelled &&
@@ -130,7 +147,7 @@ public class PreconditionChecker
       logger_.LogInformation("Task is being cancelled");
 
       messageHandler.Status = QueueMessageStatus.Cancelled;
-      await tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
+      await taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
                                                 TaskStatus.Canceled,
                                                 cancellationToken);
       return null;
@@ -149,33 +166,65 @@ public class PreconditionChecker
 
 
     logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
-    var dispatch = await tableStorage_.AcquireDispatchHandler($"{taskData.TaskId}-{DateTime.Now.Ticks}",
+    var dispatch = await AcquireDispatchHandler($"{taskData.TaskId}-{DateTime.Now.Ticks}",
                                                               taskData.TaskId,
                                                               taskData.SessionId,
                                                               new Dictionary<string, string>(),
-                                                              cancellationToken: cancellationToken);
+                                                              cancellationToken);
+
+    if (dispatch is null)
+    {
+      logger_.LogInformation("Could not acquire dispatch");
+      return null;
+    }
+
 
     if (dispatch.Attempt >= taskData.Options.MaxRetries)
     {
       logger_.LogInformation("Task has been retried too many times");
       messageHandler.Status = QueueMessageStatus.Poisonous;
-      await Task.WhenAll(tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
+      await Task.WhenAll(taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
                                                              TaskStatus.Failed,
                                                              CancellationToken.None),
                          dispatch.DisposeAsync().AsTask(),
-                         tableStorage_.DeleteDispatch(dispatch.Id,
+                         taskTable_.CancelDispatchAsync(taskData.SessionId, dispatch.Id, cancellationToken),
+                         dispatchTable_.DeleteDispatch(dispatch.Id,
                                                       cancellationToken));
       return null;
     }
 
     logger_.LogDebug("Changing task status to 'Dispatched'");
-    var updateTask = tableStorage_.UpdateTaskStatusAsync(messageHandler.TaskId,
+    var updateTask = taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
                                                          TaskStatus.Dispatched,
                                                          cancellationToken);
 
     logger_.LogInformation("Task preconditions are OK");
     await updateTask;
     return (TaskData: taskData, Dispatch: dispatch);
+  }
+
+
+  public async Task<DispatchHandler?> AcquireDispatchHandler(string                      dispatchId,
+                                                             string                      taskId,
+                                                             string                      sessionId,
+                                                             IDictionary<string, string> metadata,
+                                                             CancellationToken           cancellationToken = default)
+  {
+    var isAcquired = await dispatchTable_.TryAcquireDispatchAsync(sessionId,
+                                                                 taskId,
+                                                                 dispatchId,
+                                                                 metadata,
+                                                                 cancellationToken);
+
+    var dispatch = await dispatchTable_.GetDispatchAsync(dispatchId,
+                                                        cancellationToken);
+    if (isAcquired)
+      return new(dispatchTable_,
+                 taskTable_,
+                 dispatch,
+                 cancellationToken);
+
+    return null;
   }
 
 }

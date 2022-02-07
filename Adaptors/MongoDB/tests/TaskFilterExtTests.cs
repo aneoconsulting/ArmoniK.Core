@@ -37,9 +37,12 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 Unknown = new()
+                 Session = new()
                            {
-                             SessionId = "Session",
+                             Ids =
+                             {
+                               "Session",
+                             },
                            },
                }
               .ToFilterExpression()
@@ -58,9 +61,12 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 Unknown = new()
+                 Session = new()
                            {
-                             SessionId = "Session",
+                             Ids =
+                             {
+                               "Session",
+                             },
                            },
                }
               .ToFilterExpression()
@@ -81,7 +87,7 @@ internal class TaskFilterExtTests
                {
                  Included = new()
                             {
-                              IncludedStatuses =
+                              Statuses =
                               {
                                 TaskStatus.Completed,
                               },
@@ -105,7 +111,7 @@ internal class TaskFilterExtTests
                {
                  Excluded = new()
                             {
-                              IncludedStatuses =
+                              Statuses =
                               {
                                 TaskStatus.Completed,
                               },
@@ -129,7 +135,7 @@ internal class TaskFilterExtTests
                {
                  Included = new()
                             {
-                              IncludedStatuses =
+                              Statuses =
                               {
                                 TaskStatus.Completed,
                                 TaskStatus.Canceled,
@@ -154,7 +160,7 @@ internal class TaskFilterExtTests
                {
                  Excluded = new()
                             {
-                              IncludedStatuses =
+                              Statuses =
                               {
                                 TaskStatus.Completed,
                                 TaskStatus.Canceled,
@@ -179,7 +185,7 @@ internal class TaskFilterExtTests
                {
                  Included = new()
                             {
-                              IncludedStatuses =
+                              Statuses =
                               {
                                 TaskStatus.Completed,
                               },
@@ -203,7 +209,7 @@ internal class TaskFilterExtTests
                {
                  Excluded = new()
                             {
-                              IncludedStatuses =
+                              Statuses =
                               {
                                 TaskStatus.Completed,
                               },
@@ -227,7 +233,7 @@ internal class TaskFilterExtTests
                {
                  Included = new()
                             {
-                              IncludedStatuses =
+                              Statuses =
                               {
                                 TaskStatus.Completed,
                                 TaskStatus.Canceling,
@@ -252,7 +258,7 @@ internal class TaskFilterExtTests
                {
                  Excluded = new()
                             {
-                              IncludedStatuses =
+                              Statuses =
                               {
                                 TaskStatus.Completed,
                                 TaskStatus.Canceling,
@@ -275,9 +281,9 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 Known = new()
+                 Task = new()
                          {
-                           TaskIds =
+                           Ids =
                            {
                              "Task",
                            },
@@ -292,30 +298,6 @@ internal class TaskFilterExtTests
                 };
 
     Assert.IsTrue(func(model));
-  }
-
-  [Test]
-  public void ShouldExcludeTask()
-  {
-    var func = new TaskFilter
-               {
-                 Unknown = new()
-                         {
-                           ExcludedTaskIds =
-                           {
-                             "Task",
-                           },
-                         },
-               }
-              .ToFilterExpression()
-              .Compile();
-
-    var model = new TaskDataModel
-                {
-                  TaskId = "Task",
-                };
-
-    Assert.IsFalse(func(model));
   }
 
   [Test]
@@ -323,14 +305,14 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 Known = new()
-                         {
-                           TaskIds =
-                           {
-                             "Task",
-                             "Task2",
-                           },
-                         },
+                 Task = new()
+                        {
+                          Ids =
+                          {
+                            "Task",
+                            "Task2",
+                          },
+                        },
                }
               .ToFilterExpression()
               .Compile();
@@ -341,31 +323,6 @@ internal class TaskFilterExtTests
                 };
 
     Assert.IsTrue(func(model));
-  }
-
-  [Test]
-  public void ShouldExcludeMultipleTask()
-  {
-    var func = new TaskFilter
-               {
-                 Unknown = new()
-                         {
-                           ExcludedTaskIds =
-                           {
-                             "Task",
-                             "Task2",
-                           },
-                         },
-               }
-              .ToFilterExpression()
-              .Compile();
-
-    var model = new TaskDataModel
-                {
-                  TaskId = "Task",
-                };
-
-    Assert.IsFalse(func(model));
   }
 
   [Test]
@@ -373,13 +330,13 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 Known = new()
-                         {
-                           TaskIds =
-                           {
-                             "Task",
-                           },
-                         },
+                 Task = new()
+                        {
+                          Ids =
+                          {
+                            "Task",
+                          },
+                        },
                }
               .ToFilterExpression()
               .Compile();
@@ -390,30 +347,6 @@ internal class TaskFilterExtTests
                 };
 
     Assert.IsFalse(func(model));
-  }
-
-  [Test]
-  public void ShouldIncludeOtherTask()
-  {
-    var func = new TaskFilter
-               {
-                 Unknown = new()
-                           {
-                             ExcludedTaskIds =
-                             {
-                               "Task",
-                             },
-                           },
-               }
-              .ToFilterExpression()
-              .Compile();
-
-    var model = new TaskDataModel
-                {
-                  TaskId = "OtherTask",
-                };
-
-    Assert.IsTrue(func(model));
   }
 
   [Test]
@@ -421,14 +354,14 @@ internal class TaskFilterExtTests
   {
     var func = new TaskFilter
                {
-                 Known = new()
-                         {
-                           TaskIds =
-                           {
-                             "Task",
-                             "Task2",
-                           },
-                         },
+                 Task = new()
+                        {
+                          Ids =
+                          {
+                            "Task",
+                            "Task2",
+                          },
+                        },
                }
               .ToFilterExpression()
               .Compile();
@@ -439,30 +372,5 @@ internal class TaskFilterExtTests
                 };
 
     Assert.IsFalse(func(model));
-  }
-
-  [Test]
-  public void ShouldIncludeOtherMultipleTask()
-  {
-    var func = new TaskFilter
-               {
-                 Unknown = new()
-                           {
-                             ExcludedTaskIds =
-                             {
-                               "Task",
-                               "Task2",
-                             },
-                           },
-               }
-              .ToFilterExpression()
-              .Compile();
-
-    var model = new TaskDataModel
-                {
-                  TaskId = "OtherTask",
-                };
-
-    Assert.IsTrue(func(model));
   }
 }

@@ -51,7 +51,7 @@ public class DataPrefetcher
     logger_               = logger;
   }
 
-  public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(ITaskData taskData, CancellationToken cancellationToken)
+  public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData taskData, CancellationToken cancellationToken)
   {
     using var activity = ActivitySource.StartActivity(nameof(PrefetchDataAsync));
 

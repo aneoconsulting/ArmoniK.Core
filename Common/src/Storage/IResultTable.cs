@@ -21,36 +21,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Common.Storage;
 
-namespace ArmoniK.Core.Adapters.Memory;
-
-public class Dispatch : IDispatch
+public interface IResultTable
 {
-  /// <inheritdoc />
-  public string Id { get; init; }
+  Task<bool> AreResultsAvailableAsync(string sessionId, IEnumerable<string> keys, CancellationToken cancellationToken = default);
 
-  /// <inheritdoc />
-  public string TaskId { get; init; }
+  Task ChangeResultDispatch(string oldDispatchId, string targetDispatchId, CancellationToken cancellationToken);
 
-  /// <inheritdoc />
-  public int Attempt { get; set; }
+  Task Create(IEnumerable<Result> results, CancellationToken cancellationToken = default);
 
-  /// <inheritdoc />
-  public DateTime TimeToLive { get; set; }
+  Task DeleteResult(string session, string key, CancellationToken cancellationToken = default);
 
-  public ConcurrentBag<StatusTime> Statuses { get; } = new();
+  Task DeleteResults(string sessionId, CancellationToken cancellationToken = default);
 
-  /// <inheritdoc />
-  IEnumerable<StatusTime> IDispatch.Statuses => Statuses;
+  Task<Result> GetResult(string sessionId, string key, CancellationToken cancellationToken = default);
 
-  /// <inheritdoc />
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
+  IAsyncEnumerable<string> ListResultsAsync(string sessionId, CancellationToken cancellationToken = default);
 
-  /// <inheritdoc />
-  public string SessionId { get; set; }
+  Task SetResult(string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default);
 }

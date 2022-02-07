@@ -36,65 +36,96 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public class TaskDataModel : IMongoDataModel<TaskDataModel>, ITaskData
+public record TaskDataModel : TaskData, IMongoDataModel<TaskDataModel>
 {
   public const string                 Collection = nameof(TaskDataModel);
 
   static TaskDataModel()
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
+    {
       BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
-                                                   {
-                                                     cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(ParentTaskId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(DispatchId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(DataDependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                     cm.MapProperty(nameof(Status)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
-                                                     cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
-                                                     cm.MapProperty(nameof(AncestorDispatchIds)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                     cm.MapProperty(nameof(ExpectedOutput)).SetIsRequired(true);
-                                                     cm.SetIgnoreExtraElements(true);
-                                                   });
+                                                  {
+                                                    cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true);
+                                                    cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
+                                                    cm.MapProperty(nameof(ParentTaskId)).SetIsRequired(true);
+                                                    cm.MapProperty(nameof(DispatchId)).SetIsRequired(true);
+                                                    cm.MapProperty(nameof(DataDependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                    cm.MapProperty(nameof(Status)).SetIsRequired(true);
+                                                    cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                    cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
+                                                    cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
+                                                    cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
+                                                    cm.MapProperty(nameof(AncestorDispatchIds)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                    cm.MapProperty(nameof(ExpectedOutput)).SetIsRequired(true);
+                                                    cm.SetIgnoreExtraElements(true);
+                                                  });
+    }
+
+    if (!BsonClassMap.IsClassMapRegistered(typeof(TaskStatusCount)))
+    {
+      BsonClassMap.RegisterClassMap<TaskStatusCount>(map =>
+                                                     {
+                                                       map.MapProperty(nameof(TaskStatusCount.Status)).SetIsRequired(true);
+                                                       map.MapProperty(nameof(TaskStatusCount.Count)).SetIsRequired(true);
+                                                     });
+    }
+  }
+
+  public TaskDataModel(string sessionId, string parentTaskId, string dispatchId, string taskId, IList<string> dataDependencies, IList<string> expectedOutput, bool hasPayload, byte[] payload, TaskStatus status, TaskOptions options, IList<string> ancestorDispatchIds) : base(sessionId, parentTaskId, dispatchId, taskId, dataDependencies, expectedOutput, hasPayload, payload, status, options, ancestorDispatchIds)
+  {
+  }
+
+  public TaskDataModel(string        sessionId,
+                       string        parentTaskId,
+                       string        dispatchId,
+                       string        taskId,
+                       IList<string> dataDependencies,
+                       IList<string> expectedOutput,
+                       bool          hasPayload,
+                       byte[]        payload,
+                       TaskStatus    status,
+                       TaskOptions   options,
+                       IList<string> ancestorDispatchIds,
+                       DateTime      creationDate)
+    : base(sessionId,
+           parentTaskId,
+           dispatchId,
+           taskId,
+           dataDependencies,
+           expectedOutput,
+           hasPayload,
+           payload,
+           status,
+           options,
+           ancestorDispatchIds,
+           creationDate)
+  {
+  }
+
+  public TaskDataModel(TaskData original) : base(original)
+  {
+  }
+
+  public TaskDataModel()
+    : base(string.Empty,
+           string.Empty,
+           string.Empty,
+           string.Empty,
+           Array.Empty<string>(),
+           Array.Empty<string>(),
+           false,
+           Array.Empty<byte>(),
+           TaskStatus.Failed,
+           new (),
+           Array.Empty<string>(),
+           default)
+  {
   }
 
   /// <inheritdoc />
-  public string        TaskId           { get; init; }
-
-  /// <inheritdoc />
-  public string SessionId    { get; init; }
-
-  /// <inheritdoc />
-  public string ParentTaskId { get; init; }
-
-  /// <inheritdoc />
-  public string DispatchId { get; init; }
-
-  /// <inheritdoc />
-  public IList<string> DataDependencies { get; init; }
-
-  /// <inheritdoc />
-  public IList<string> ExpectedOutput { get; init; }
-
-  /// <inheritdoc />
-  public TaskStatus Status { get; init; }
-
-  public TaskOptions Options      { get; init; }
-
-  /// <inheritdoc />
-  public DateTime CreationDate { get; init; }
-
-  public bool HasPayload { get; init; }
-
-  public byte[] Payload { get; init; }
-
-  public IList<string> AncestorDispatchIds { get; init; } = Array.Empty<string>();
-
-  /// <inheritdoc />
   public string CollectionName => Collection;
+
 
   /// <inheritdoc />
   public Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,

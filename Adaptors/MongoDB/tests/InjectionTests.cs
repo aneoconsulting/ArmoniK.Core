@@ -355,35 +355,6 @@ internal class InjectionTests
   }
 
   [Test]
-  public void TableStorageHasBindingToTableStorage()
-  {
-    Dictionary<string, string> baseConfig = new()
-                                            {
-                                              { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
-                                            };
-    var configSource = new MemoryConfigurationSource
-                       {
-                         InitialData = baseConfig,
-                       };
-
-    var builder = new ConfigurationBuilder().AddConfiguration(configuration_)
-                                            .Add(configSource);
-
-    var configuration = builder.Build();
-
-    var services = new ServiceCollection();
-    services.AddMongoComponents(configuration);
-    services.AddLogging();
-    var provider = services.BuildServiceProvider();
-
-    var table = provider.GetRequiredService<ITableStorage>();
-
-    Assert.NotNull(table);
-    Assert.AreEqual(typeof(TableStorage),
-                    table.GetType());
-  }
-
-  [Test]
   public void QueueStorageHasBindingToQueueStorage()
   {
     Dictionary<string, string> baseConfig = new()

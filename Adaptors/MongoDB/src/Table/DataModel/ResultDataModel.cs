@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -34,11 +35,8 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public class ResultDataModel : IMongoDataModel<ResultDataModel>, IResult
+public record ResultDataModel : Result, IMongoDataModel<ResultDataModel>
 {
-  [PublicAPI]
-  public const string Collection = nameof(ResultDataModel);
-
   static ResultDataModel()
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(ResultDataModel)))
@@ -51,38 +49,50 @@ public class ResultDataModel : IMongoDataModel<ResultDataModel>, IResult
                                                        cm.MapProperty(nameof(OriginDispatchId)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(IsResultAvailable)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Data)).SetIgnoreIfDefault(true);
+                                                       cm.MapProperty(nameof(Data)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<byte>());
                                                        cm.SetIgnoreExtraElements(true);
                                                      });
   }
 
-  /// <inheritdoc />
-  public string CollectionName => Collection;
+  public ResultDataModel(string   sessionId,
+                         string   key,
+                         string   ownerTaskId,
+                         string   originDispatchId,
+                         bool     isResultAvailable,
+                         DateTime creationDate,
+                         byte[]   data)
+    : base(sessionId,
+           key,
+           ownerTaskId,
+           originDispatchId,
+           isResultAvailable,
+           creationDate,
+           data)
+  {
+  }
+
+  public ResultDataModel(Result original) : base(original)
+  {
+  }
+
+  public ResultDataModel()
+    : base(string.Empty,
+           string.Empty,
+           string.Empty,
+           string.Empty,
+           false,
+           default,
+           Array.Empty<byte>())
+  {
+  }
+
   /// <summary>
   /// Database Id of the object. 
   /// </summary>
   public string Id => $"{SessionId}.{Key}";
 
   /// <inheritdoc />
-  public string SessionId { get; init; }
-
-  /// <inheritdoc />
-  public string Key { get; init; }
-
-  /// <inheritdoc />
-  public string OwnerTaskId { get; init; }
-
-  /// <inheritdoc />
-  public string OriginDispatchId { get; init; }
-
-  /// <inheritdoc />
-  public bool IsResultAvailable { get; init; }
-
-  /// <inheritdoc />
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
-
-  /// <inheritdoc />
-  public byte[] Data { get; init; }
+  public string CollectionName => nameof(ResultDataModel);
 
   /// <inheritdoc />
   public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<ResultDataModel> collection) => throw new NotImplementedException();

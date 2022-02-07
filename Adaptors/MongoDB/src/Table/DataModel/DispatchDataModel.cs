@@ -58,12 +58,12 @@ public class DispatchDataModel : IMongoDataModel<DispatchDataModel>, IDispatch
                                                          cm.SetIgnoreExtraElements(true);
                                                        });
 
-    if(!BsonClassMap.IsClassMapRegistered(typeof(IDispatch.StatusTime)))
-      BsonClassMap.RegisterClassMap<IDispatch.StatusTime>(cm =>
+    if(!BsonClassMap.IsClassMapRegistered(typeof(StatusTime)))
+      BsonClassMap.RegisterClassMap<StatusTime>(cm =>
                                                           {
-                                                            cm.MapProperty(nameof(IDispatch.StatusTime.Date)).SetIsRequired(true);
-                                                            cm.MapProperty(nameof(IDispatch.StatusTime.Status)).SetIsRequired(true);
-                                                            cm.MapProperty(nameof(IDispatch.StatusTime.Details)).SetIgnoreIfDefault(true);
+                                                            cm.MapProperty(nameof(StatusTime.Date)).SetIsRequired(true);
+                                                            cm.MapProperty(nameof(StatusTime.Status)).SetIsRequired(true);
+                                                            cm.MapProperty(nameof(StatusTime.Details)).SetIgnoreIfDefault(true);
                                                             cm.SetIgnoreExtraElements(true);
                                                           });
   }
@@ -84,7 +84,7 @@ public class DispatchDataModel : IMongoDataModel<DispatchDataModel>, IDispatch
   public DateTime TimeToLive { get; set; }
 
   /// <inheritdoc />
-  public IEnumerable<IDispatch.StatusTime> Statuses { get; set; }
+  public IEnumerable<StatusTime> Statuses { get; set; }
 
   /// <inheritdoc />
   public DateTime CreationDate { get; set; } = DateTime.UtcNow;

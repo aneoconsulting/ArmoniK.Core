@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2022. All rights reserved.
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -22,35 +22,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-using ArmoniK.Core.Common.Storage;
 
-namespace ArmoniK.Core.Adapters.Memory;
+namespace ArmoniK.Core.Common.Storage;
 
-public class Dispatch : IDispatch
-{
-  /// <inheritdoc />
-  public string Id { get; init; }
-
-  /// <inheritdoc />
-  public string TaskId { get; init; }
-
-  /// <inheritdoc />
-  public int Attempt { get; set; }
-
-  /// <inheritdoc />
-  public DateTime TimeToLive { get; set; }
-
-  public ConcurrentBag<StatusTime> Statuses { get; } = new();
-
-  /// <inheritdoc />
-  IEnumerable<StatusTime> IDispatch.Statuses => Statuses;
-
-  /// <inheritdoc />
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
-
-  /// <inheritdoc />
-  public string SessionId { get; set; }
-}
+public record TaskRequest(
+    string                Id,
+    IEnumerable<string>   ExpectedOutputKeys,
+    IEnumerable<string>   DataDependencies,
+    ReadOnlyMemory<byte>? PayloadChunk
+  );

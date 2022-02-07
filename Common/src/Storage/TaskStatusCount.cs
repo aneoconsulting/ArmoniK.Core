@@ -21,36 +21,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+using ArmoniK.Api.gRPC.V1;
 
-using ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Common.Storage;
 
-namespace ArmoniK.Core.Adapters.Memory;
-
-public class Dispatch : IDispatch
-{
-  /// <inheritdoc />
-  public string Id { get; init; }
-
-  /// <inheritdoc />
-  public string TaskId { get; init; }
-
-  /// <inheritdoc />
-  public int Attempt { get; set; }
-
-  /// <inheritdoc />
-  public DateTime TimeToLive { get; set; }
-
-  public ConcurrentBag<StatusTime> Statuses { get; } = new();
-
-  /// <inheritdoc />
-  IEnumerable<StatusTime> IDispatch.Statuses => Statuses;
-
-  /// <inheritdoc />
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
-
-  /// <inheritdoc />
-  public string SessionId { get; set; }
-}
+public record TaskStatusCount(TaskStatus Status, int Count);

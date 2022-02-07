@@ -49,7 +49,7 @@ namespace ArmoniK.Core.Common.gRPC.Services
   {
     Task CancelSession(string sessionId, CancellationToken cancellationToken);
 
-    Task CancelDispatchSessionAsync(string dispatchId, CancellationToken cancellationToken);
+    Task CancelDispatchSessionAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken);
 
     Task CancelTasks(TaskFilter request, CancellationToken cancellationToken);
 

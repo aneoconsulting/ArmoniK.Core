@@ -68,7 +68,7 @@ public class RequestProcessor
   }
 
   public async Task<List<Task>> ProcessAsync(IQueueMessageHandler messageHandler,
-                                             ITaskData taskData,
+                                             TaskData taskData,
                                              IDispatch dispatch,
                                              Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
                                              CancellationToken cancellationToken)
@@ -82,7 +82,8 @@ public class RequestProcessor
     }
     catch (Exception e)
     {
-      await submitter_.CancelDispatchSessionAsync(dispatch.Id, cancellationToken);
+      await submitter_.CancelDispatchSessionAsync(taskData.SessionId,
+                                                  dispatch.Id, cancellationToken);
       Console.WriteLine(e);
 
       if (!await HandleExceptionAsync(e,
@@ -99,7 +100,7 @@ public class RequestProcessor
 
   
   [PublicAPI]
-  private async Task<bool> HandleExceptionAsync(Exception e, ITaskData taskData, IQueueMessageHandler messageHandler, CancellationToken cancellationToken)
+  private async Task<bool> HandleExceptionAsync(Exception e, TaskData taskData, IQueueMessageHandler messageHandler, CancellationToken cancellationToken)
   {
     switch (e)
     {
@@ -177,7 +178,7 @@ public class RequestProcessor
   }
 
 
-  public async Task<List<Task>> ProcessInternalsAsync(ITaskData                         taskData,
+  public async Task<List<Task>> ProcessInternalsAsync(TaskData                         taskData,
                                                       IDispatch                         dispatch,
                                              Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
                                              CancellationToken                          cancellationToken)
@@ -339,7 +340,7 @@ public class RequestProcessor
 
 
   [PublicAPI]
-  public Task SubmitLargeTasksAsync(ITaskData                      taskData,
+  public Task SubmitLargeTasksAsync(TaskData                      taskData,
                                     string                         dispatchId,
                                     ProcessReply                   first,
                                     IAsyncEnumerable<ProcessReply> singleReplyStream,
@@ -356,7 +357,7 @@ public class RequestProcessor
   }
 
   [PublicAPI]
-  public Task SubmitSmallTasksAsync(ITaskData         taskData,
+  public Task SubmitSmallTasksAsync(TaskData         taskData,
                                     string            dispatchId,
                                     ProcessReply      request,
                                     CancellationToken cancellationToken)

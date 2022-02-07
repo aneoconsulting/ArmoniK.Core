@@ -25,37 +25,15 @@ using System;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public interface IResult
-{
-  /// <summary>
-  /// Id of the session that produces and consumes this data
-  /// </summary>
-  string SessionId { get; }
+/// <summary>
+/// 
+/// </summary>
+/// <param name="SessionId">Id of the session that produces and consumes this data</param>
+/// <param name="Key">Key to reference and access this result</param>
+/// <param name="OwnerTaskId">Id of the task that is responsible of generating this result.</param>
+/// <param name="OriginDispatchId">Id of the task that is responsible of generating this result.</param>
+/// <param name="IsResultAvailable">if <value>true</value>, the result is available</param>
+/// <param name="CreationDate">Date of creation of the current object.</param>
+/// <param name="Data">Data for the current <paramref name="Key"/></param>
+public record Result(string SessionId, string Key, string OwnerTaskId, string OriginDispatchId, bool IsResultAvailable, DateTime CreationDate, byte[] Data);
 
-  /// <summary>
-  /// Key to reference and access this result
-  /// </summary>
-  string Key { get; }
-
-  /// <summary>
-  /// Id of the task that is responsible of generating this result.
-  /// </summary>
-  string OwnerTaskId { get; }
-
-  /// <summary>
-  /// Id of the task that is responsible of generating this result.
-  /// </summary>
-  string OriginDispatchId { get; }
-
-  /// <summary>
-  /// if <value>true</value>, the result is available
-  /// </summary>
-  bool IsResultAvailable { get; }
-
-  /// <summary>
-  /// Date of creation of the current object.
-  /// </summary>
-  DateTime CreationDate { get; }
-
-  public byte[] Data { get; init; }
-}

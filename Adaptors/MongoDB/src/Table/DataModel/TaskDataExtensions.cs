@@ -21,50 +21,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Storage;
 
-namespace ArmoniK.Core.Adapters.Memory;
+namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public class TaskData : ITaskData
+public static class TaskDataExtensions
 {
+  public static TaskDataModel ToTaskDataModel(this TaskData taskData)
+  {
+    if (taskData is TaskDataModel taskDataModel)
+    {
+      return taskDataModel;
+    }
 
-  /// <inheritdoc />
-  public string SessionId { get; init; }
+    return new(taskData);
 
-  /// <inheritdoc />
-  public string ParentTaskId { get; init; }
-
-  /// <inheritdoc />
-  public string DispatchId { get; set; }
-
-  /// <inheritdoc />
-  public string TaskId { get; init; }
-
-  public List<string>  DataDependencies { get; } = new();
-
-  /// <inheritdoc />
-  public IList<string> ExpectedOutput   { get; set; }
-
-  /// <inheritdoc />
-  IList<string> ITaskData.DataDependencies => DataDependencies;
-
-  /// <inheritdoc />
-  public bool HasPayload => true;
-
-  public byte[] Payload { get; init; }
-
-  /// <inheritdoc />
-  public TaskStatus Status { get; set; }
-
-  /// <inheritdoc />
-  public TaskOptions Options { get; init; }
-
-  /// <inheritdoc />
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
-
-  public IDispatch Dispatch { get; set; }
+  }
 }

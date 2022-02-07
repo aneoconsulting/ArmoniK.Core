@@ -28,27 +28,42 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public interface ITaskData
+public record TaskData(string        SessionId,
+                       string        ParentTaskId,
+                       string        DispatchId,
+                       string        TaskId,
+                       IList<string> DataDependencies,
+                       IList<string> ExpectedOutput,
+                       bool          HasPayload,
+                       byte[]        Payload,
+                       TaskStatus    Status,
+                       TaskOptions   Options,
+                       IList<string> AncestorDispatchIds,
+                       DateTime      CreationDate)
 {
-  string SessionId { get; }
-
-  string ParentTaskId { get; }
-
-  string DispatchId { get; }
-
-  string        TaskId           { get; }
-
-  IList<string> DataDependencies { get; }
-
-  IList<string> ExpectedOutput { get; }
-
-  bool HasPayload { get; }
-
-  byte[] Payload { get; }
-
-  TaskStatus Status { get; }
-
-  TaskOptions Options { get; }
-
-  DateTime CreationDate { get; }
+  public TaskData(string        sessionId,
+                  string        parentTaskId,
+                  string        dispatchId,
+                  string        taskId,
+                  IList<string> dataDependencies,
+                  IList<string> expectedOutput,
+                  bool          hasPayload,
+                  byte[]        payload,
+                  TaskStatus    status,
+                  TaskOptions   options,
+                  IList<string> ancestorDispatchIds)
+    : this(sessionId,
+           parentTaskId,
+           dispatchId,
+           taskId,
+           dataDependencies,
+           expectedOutput,
+           hasPayload,
+           payload,
+           status,
+           options,
+           ancestorDispatchIds,
+           DateTime.UtcNow)
+  {
+  }
 }

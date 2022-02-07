@@ -47,23 +47,31 @@ public class Submitter : ISubmitter
 {
   private readonly IQueueStorage                    lockedQueueStorage_;
   private readonly ILogger<Submitter> logger_;
-  private readonly ITableStorage                    tableStorage_;
   private readonly IObjectStorageFactory            objectStorageFactory_;
 
-  public Submitter(ITableStorage         tableStorage,
-                   IQueueStorage         lockedQueueStorage,
+
+  private readonly ISessionTable  sessionTable_;
+  private readonly ITaskTable     taskTable_;
+  private readonly IResultTable   resultTable_;
+
+  public Submitter(IQueueStorage         lockedQueueStorage,
                    IObjectStorageFactory objectStorageFactory,
-                   ILogger<Submitter>    logger)
+                   ILogger<Submitter>    logger,
+                   ISessionTable         sessionTable,
+                   ITaskTable            taskTable,
+                   IResultTable          resultTable)
   {
-    tableStorage_         = tableStorage;
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
+    sessionTable_         = sessionTable;
+    taskTable_            = taskTable;
+    resultTable_          = resultTable;
     lockedQueueStorage_   = lockedQueueStorage;
+
   }
 
   private IObjectStorage ResultStorage(string  session) => objectStorageFactory_.CreateResultStorage(session);
   private IObjectStorage PayloadStorage(string session) => objectStorageFactory_.CreateResultStorage(session);
-
 
   /// <inheritdoc />
   public  Task<ConfigurationReply> GetServiceConfiguration(Empty request, CancellationToken cancellationToken)
@@ -72,7 +80,8 @@ public class Submitter : ISubmitter
                          DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
                        });
 
-  public  async Task<Empty> CancelSession(string sessionId, CancellationToken cancellationToken)
+  /// <inheritdoc />
+  public  async Task CancelSession(string sessionId, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction();
 
@@ -83,8 +92,13 @@ public class Submitter : ISubmitter
 
     try
     {
-      await tableStorage_.CancelSessionAsync(sessionId,
-                                             cancellationToken);
+      var sessionCancelTask = sessionTable_.CancelSessionAsync(sessionId,
+                                                               cancellationToken);
+
+      await taskTable_.CancelSessionAsync(sessionId,
+                                          cancellationToken);
+
+      await sessionCancelTask;
     }
     catch (KeyNotFoundException e)
     {
@@ -96,41 +110,25 @@ public class Submitter : ISubmitter
       throw new RpcException(new(StatusCode.Unknown,
                                  e.Message));
     }
-
-    return new();
   }
 
   /// <inheritdoc />
-  async Task ISubmitter.CancelDispatchSessionAsync(string dispatchId, CancellationToken cancellationToken)
-  {
-    await CancelDispatchSessionAsync(dispatchId,
-                                cancellationToken);
-  }
-
-  /// <inheritdoc />
-  async Task ISubmitter.CancelTasks(TaskFilter       request,    CancellationToken cancellationToken)
-  {
-    await CancelTasks(request,
-                      cancellationToken);
-  }
-
-  /// <inheritdoc />
-  async Task ISubmitter.CancelSession(string sessionId, CancellationToken cancellationToken)
-  {
-    await CancelSession(sessionId,
-                        cancellationToken);
-  }
-
-  /// <inheritdoc />
-  public async Task<Empty> CancelDispatchSessionAsync(string dispatchId, CancellationToken cancellationToken)
+  public async Task CancelDispatchSessionAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction(dispatchId);
-    await tableStorage_.CancelDispatchAsync(dispatchId,
-                                            cancellationToken);
-    return new();
+    var sessionCancelTask = sessionTable_.CancelDispatchAsync(rootSessionId,
+                                                              dispatchId,
+                                                              cancellationToken);
+
+    await taskTable_.CancelDispatchAsync(rootSessionId,
+                                         dispatchId,
+                                         cancellationToken);
+
+    await sessionCancelTask;
   }
 
-  public  async Task<Empty> CancelTasks(TaskFilter request, CancellationToken cancellationToken)
+  /// <inheritdoc />
+  public async Task CancelTasks(TaskFilter request, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction();
 
@@ -141,8 +139,8 @@ public class Submitter : ISubmitter
 
     try
     {
-      await tableStorage_.CancelTasks(request,
-                                     cancellationToken);
+      await taskTable_.CancelTasks(request,
+                                   cancellationToken);
     }
     catch (KeyNotFoundException e)
     {
@@ -154,8 +152,6 @@ public class Submitter : ISubmitter
       throw new RpcException(new(StatusCode.Unknown,
                                  e.Message));
     }
-
-    return new();
   }
 
   /// <inheritdoc />
@@ -177,7 +173,7 @@ public class Submitter : ISubmitter
       cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    options ??= await tableStorage_.GetDefaultTaskOptionAsync(sessionId,
+    options ??= await sessionTable_.GetDefaultTaskOptionAsync(sessionId,
                                                               cancellationToken);
 
     if (options.Priority >= lockedQueueStorage_.MaxPriority)
@@ -192,7 +188,7 @@ public class Submitter : ISubmitter
 
 
 
-    var requests           = new List<ITableStorage.TaskRequest>();
+    var requests           = new List<Storage.TaskRequest>();
     var payloadUploadTasks = new List<Task>();
 
     await foreach (var taskRequest in taskRequests.WithCancellation(cancellationToken))
@@ -216,7 +212,7 @@ public class Submitter : ISubmitter
       }
     }
 
-    await tableStorage_.InitializeTaskCreationAsync(sessionId,
+    await InitializeTaskCreationAsync(sessionId,
                                                     parentId,
                                                     dispatchId,
                                                     options,
@@ -234,7 +230,7 @@ public class Submitter : ISubmitter
                                         },
                                       },
                              };
-    await using var finalizer = AsyncDisposable.Create(async () => await tableStorage_.FinalizeTaskCreation(finalizationFilter,
+    await using var finalizer = AsyncDisposable.Create(async () => await taskTable_.FinalizeTaskCreation(finalizationFilter,
                                                                                                             cancellationToken));
 
 
@@ -253,6 +249,80 @@ public class Submitter : ISubmitter
            };
   }
 
+  
+  public async Task InitializeTaskCreationAsync(string                           session,
+                                                string                           parentTaskId,
+                                                string                           dispatchId,
+                                                TaskOptions                      options,
+                                                IEnumerable<Storage.TaskRequest> requests,
+                                                CancellationToken                cancellationToken = default)
+  {
+    using var _                = logger_.LogFunction($"{session}.{parentTaskId}.{dispatchId}");
+
+
+    async Task LoadOptions()
+    {
+      options = await sessionTable_.GetDefaultTaskOptionAsync(session,
+                                                              cancellationToken);
+    }
+
+    IList<string> ancestors = null;
+
+    async Task LoadAncestorDispatchIds()
+    {
+      ancestors = await taskTable_.GetTaskAncestorDispatchIds(parentTaskId,
+                                                              cancellationToken);
+
+      ancestors.Add(dispatchId);
+    }
+
+
+    var preload = new List<Task>();
+    if (options is null)
+    {
+
+      preload.Add(LoadOptions());
+    }
+
+    preload.Add(LoadAncestorDispatchIds());
+
+    await Task.WhenAll(preload);
+
+
+    var taskDataModels = requests.Select(request =>
+                                         {
+                                           var tdm = new TaskData(session,
+                                                                  parentTaskId,
+                                                                  dispatchId,
+                                                                  request.Id,
+                                                                  request.DataDependencies.ToList(),
+                                                                  request.ExpectedOutputKeys.ToList(),
+                                                                  request.PayloadChunk is not null,
+                                                                  request.PayloadChunk?.ToArray(),
+                                                                  TaskStatus.Creating,
+                                                                  options,
+                                                                  ancestors);
+
+                                           var resultModel = request.ExpectedOutputKeys
+                                                                    .Select(key => new Result(session,
+                                                                                              key,
+                                                                                              request.Id,
+                                                                                              dispatchId,
+                                                                                              false,
+                                                                                              DateTime.UtcNow,
+                                                                                              Array.Empty<byte>()));
+                                           return (TaskDataModel: tdm, ResultModel: resultModel);
+                                         })
+                                 .ToList();
+
+    await taskTable_.CreateTasks(taskDataModels.Select(tuple => tuple.TaskDataModel),
+                                 cancellationToken);
+
+    await resultTable_.Create(taskDataModels.SelectMany(tuple => tuple.ResultModel),
+                              cancellationToken);
+  }
+
+
   /// <inheritdoc />
   public  async Task<Count> CountTasks(TaskFilter request, CancellationToken cancellationToken)
 
@@ -264,7 +334,7 @@ public class Submitter : ISubmitter
       cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    var count = await tableStorage_.CountTasksAsync(request,
+    var count = await taskTable_.CountTasksAsync(request,
                                                     cancellationToken);
     return new()
            {
@@ -284,7 +354,7 @@ public class Submitter : ISubmitter
   {
     try
     {
-      await tableStorage_.CreateSessionAsync(sessionId,
+      await sessionTable_.CreateSessionAsync(sessionId,
                                              defaultTaskOptions,
                                              cancellationToken);
       return new()
@@ -325,8 +395,8 @@ public class Submitter : ISubmitter
     }
 
 
-    Task<IEnumerable<(TaskStatus Status, int Count)>> CountUpdateFunc()
-      => tableStorage_.CountTasksAsync(request.Filter,
+    Task<IEnumerable<TaskStatusCount>> CountUpdateFunc()
+      => taskTable_.CountTasksAsync(request.Filter,
                                        cancellationToken);
 
     var output          = new Count();
@@ -400,7 +470,7 @@ public class Submitter : ISubmitter
       }
 
 
-      await Task.Delay(tableStorage_.PollingDelay,
+      await Task.Delay(taskTable_.PollingDelay,
                        cancellationToken);
     }
 
@@ -411,29 +481,29 @@ public class Submitter : ISubmitter
   public async Task UpdateTaskStatusAsync(string id, TaskStatus status, CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction();
-    await tableStorage_.UpdateTaskStatusAsync(id,status, cancellationToken);
+    await taskTable_.UpdateTaskStatusAsync(id,status, cancellationToken);
   }
 
   /// <inheritdoc />
   public async Task FinalizeDispatch(string taskId, IDispatch dispatch, Output output, CancellationToken cancellationToken)
   {
     var oldDispatchId = dispatch.Id;
-    var targetDispatchId = await tableStorage_.GetDispatchId(taskId,
-                                                             cancellationToken);
+    var targetDispatchId = await taskTable_.GetTaskDispatchId(taskId,
+                                                              cancellationToken);
     while (oldDispatchId != targetDispatchId)
     {
-      await tableStorage_.ChangeTaskDispatch(oldDispatchId,
+      await taskTable_.ChangeTaskDispatch(oldDispatchId,
                                              targetDispatchId,
                                              cancellationToken);
 
       // to be done after awaiting previous call to ensure proper modification sequencing
-      await tableStorage_.ChangeResultDispatch(oldDispatchId,
+      await resultTable_.ChangeResultDispatch(oldDispatchId,
                                                targetDispatchId,
                                                cancellationToken);
 
       oldDispatchId = targetDispatchId;
-      targetDispatchId = await tableStorage_.GetDispatchId(taskId,
-                                                           cancellationToken);
+      targetDispatchId = await taskTable_.GetTaskDispatchId(taskId,
+                                                            cancellationToken);
     }
   }
 }

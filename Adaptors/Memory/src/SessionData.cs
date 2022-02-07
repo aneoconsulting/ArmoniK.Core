@@ -23,20 +23,28 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
-public class SessionData
+public class SessionData : ISessionData
 {
-  public ConcurrentBag<string> AncestorDispatchIds { get; } = new();
+  public ConcurrentBag<string> AncestorsDispatchId { get; } = new();
 
   public string SessionId { get; init; }
 
   public string DispatchId { get; init; }
 
+  /// <inheritdoc />
+  IEnumerable<string> ISessionData.AncestorsDispatchId => AncestorsDispatchId;
+
   public bool IsCancelled { get; set; }
+
+  /// <inheritdoc />
+  public TaskOptions Options { get; set; }
 
   public TaskOptions DefaultTaskOptions { get; init; }
 }

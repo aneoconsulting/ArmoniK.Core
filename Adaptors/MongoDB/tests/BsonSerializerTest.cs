@@ -65,16 +65,22 @@ internal class BsonSerializerTest
                 Status       = TaskStatus.Creating,
                 ParentTaskId = "par",
                 CreationDate = DateTime.Now,
-                Ancestors = new List<string>
-                            {
-                              "ancestor1",
-                              "ancestor2",
-                            },
                 DataDependencies = new List<string>
                                    {
                                      "dep1",
                                      "dep2",
                                    },
+                AncestorDispatchIds = new List<string>
+                                      {
+                                        "ancestor1",
+                                        "ancestor2",
+                                      },
+                DispatchId = "dispatchId1",
+                ExpectedOutput = new List<string>
+                                 {
+                                   "output1",
+                                   "output2",
+                                 },
               };
 
     var serialized = tdm.ToBson();
@@ -93,7 +99,6 @@ internal class BsonSerializerTest
     Assert.AreEqual(tdm.Options.Options["key2"],
                     deserialized.Options.Options["key2"]);
     Assert.IsTrue(tdm.DataDependencies.SequenceEqual(deserialized.DataDependencies));
-    Assert.IsTrue(tdm.Ancestors.SequenceEqual(deserialized.Ancestors));
     Assert.AreEqual(tdm.Options.MaxDuration,
                     deserialized.Options.MaxDuration);
     Assert.AreEqual(tdm.Options.MaxRetries,
@@ -107,5 +112,9 @@ internal class BsonSerializerTest
                     deserialized.ParentTaskId);
     Assert.AreEqual(tdm.SessionId,
                     deserialized.SessionId);
+    Assert.AreEqual(tdm.DispatchId,
+                    deserialized.DispatchId);
+    Assert.IsTrue(tdm.AncestorDispatchIds.SequenceEqual(deserialized.AncestorDispatchIds));
+    Assert.IsTrue(tdm.ExpectedOutput.SequenceEqual(deserialized.ExpectedOutput));
   }
 }

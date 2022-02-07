@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -21,18 +21,21 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Tests;
+using System.Collections.Generic;
 
-using NUnit.Framework;
+using ArmoniK.Api.gRPC.V1;
 
-namespace ArmoniK.Core.Adapters.Memory.Tests;
+namespace ArmoniK.Core.Common.Storage;
 
-[TestFixture]
-public class TableStorageTests : TableStorageTestBase
+public interface ISessionData
 {
-  [SetUp]
-  public void Setup()
-  {
-    TableStorage = new TableStorage();
-  }
+  string SessionId { get; }
+
+  string DispatchId { get; }
+
+  IEnumerable<string> AncestorsDispatchId { get; }
+
+  bool IsCancelled { get; }
+
+  TaskOptions Options { get; }
 }

@@ -28,11 +28,10 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
+  public record StatusTime(TaskStatus Status, DateTime Date, string Details);
+
 public interface IDispatch
 {
-  public record StatusTime(TaskStatus Status, DateTime Date, string Details)
-  {
-  }
 
   string Id          { get; }
   string TaskId      { get; }

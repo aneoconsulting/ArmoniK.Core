@@ -35,23 +35,26 @@ public class DispatchHandler : IDispatch, IAsyncDisposable
   private readonly IDispatch        dispatchImplementation_;
   private          IAsyncDisposable asyncDisposableImplementation_;
 
-  public DispatchHandler(IDispatch         dispatchImplementation,
-                         ITableStorage     tableStorage,
-                         CancellationToken cancellationToken)
+  public DispatchHandler(
+    IDispatchTable    dispatchTable,
+    ITaskTable        taskTable,
+    IDispatch         dispatchImplementation,
+    CancellationToken cancellationToken)
   {
     dispatchImplementation_ = dispatchImplementation;
+    var        dispatchTable1 = dispatchTable;
     Heart dispatchRefresher = new(async token =>
                                   {
-                                    var ttlTask = tableStorage.ExtendDispatchTtl(Id,
-                                                                                 token);
+                                    var ttlTask = dispatchTable1.ExtendDispatchTtl(Id,
+                                                                                   token);
 
-                                    var status = await tableStorage.IsTaskCancelledAsync(TaskId,
-                                                                                         token);
+                                    var status = await taskTable.IsTaskCancelledAsync(TaskId,
+                                                                                      token);
                                     await ttlTask;
 
                                     return !status && !token.IsCancellationRequested;
                                   },
-                                  tableStorage.DispatchRefreshPeriod,
+                                  dispatchTable1.DispatchRefreshPeriod,
                                   cancellationToken);
     dispatchRefresher.Start();
     DispatchCancelled = dispatchRefresher.HeartStopped;
@@ -72,7 +75,7 @@ public class DispatchHandler : IDispatch, IAsyncDisposable
   public DateTime TimeToLive => dispatchImplementation_.TimeToLive;
 
   /// <inheritdoc />
-  public IEnumerable<IDispatch.StatusTime> Statuses => dispatchImplementation_.Statuses;
+  public IEnumerable<StatusTime> Statuses => dispatchImplementation_.Statuses;
 
   /// <inheritdoc />
   public DateTime CreationDate => dispatchImplementation_.CreationDate;

@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -26,27 +26,25 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 
-using JetBrains.Annotations;
-
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-
 
 namespace ArmoniK.Core.Common.Storage;
 
-public static class TableStorageExt
+public static class TaskTableExtensions
 {
-  public static Task<int> CancelTasks(this ITableStorage tableStorage,
-                                     TaskFilter         filter,
-                                     CancellationToken  cancellationToken = default)
-    => tableStorage.UpdateAllTaskStatusAsync(filter,
+
+  public static Task<int> CancelTasks(this ITaskTable   taskTable,
+                                      TaskFilter        filter,
+                                      CancellationToken cancellationToken = default)
+    => taskTable.UpdateAllTaskStatusAsync(filter,
                                           TaskStatus.Canceling,
                                           cancellationToken);
 
 
-  public static Task FinalizeTaskCreation(this ITableStorage tableStorage,
-                                          TaskFilter         filter,
-                                          CancellationToken  cancellationToken = default)
-    => tableStorage.UpdateAllTaskStatusAsync(filter,
-                                             TaskStatus.Submitted,
-                                             cancellationToken);
+  public static Task FinalizeTaskCreation(this ITaskTable   taskTable,
+                                          TaskFilter        filter,
+                                          CancellationToken cancellationToken = default)
+    => taskTable.UpdateAllTaskStatusAsync(filter,
+                                          TaskStatus.Submitted,
+                                          cancellationToken);
 }

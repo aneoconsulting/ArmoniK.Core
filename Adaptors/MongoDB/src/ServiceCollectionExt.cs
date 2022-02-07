@@ -58,9 +58,10 @@ public static class ServiceCollectionExt
     {
       services.AddOption<Options.TableStorage>(configuration,
                                                Options.TableStorage.SettingSection)
-              .AddTransient<TableStorage>()
-              .AddTransientWithHealthCheck<ITableStorage, TableStorage>($"MongoDB.{nameof(TableStorage)}");
-
+              .AddTransient<ITaskTable, TaskTable>()
+              .AddTransient<ISessionTable, SessionTable>()
+              .AddTransient<IDispatchTable, DispatchTable>()
+              .AddTransient<IResultTable, ResultTable>();
       isMongoRequired = true;
     }
 

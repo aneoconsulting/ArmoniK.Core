@@ -27,13 +27,14 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table;
 
-public class SessionDataModel : IMongoDataModel<SessionDataModel>
+public class SessionDataModel : IMongoDataModel<SessionDataModel>, ISessionData
 {
   public const string Collection = "SessionData";
 
