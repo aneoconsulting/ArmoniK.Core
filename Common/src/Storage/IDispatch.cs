@@ -32,7 +32,6 @@ namespace ArmoniK.Core.Common.Storage;
 
 public interface IDispatch
 {
-
   string Id          { get; }
   string TaskId      { get; }
   int    Attempt     { get; }

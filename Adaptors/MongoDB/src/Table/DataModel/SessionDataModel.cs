@@ -22,7 +22,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -32,7 +31,7 @@ using ArmoniK.Core.Common.Storage;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table;
+namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 public class SessionDataModel : IMongoDataModel<SessionDataModel>, ISessionData
 {

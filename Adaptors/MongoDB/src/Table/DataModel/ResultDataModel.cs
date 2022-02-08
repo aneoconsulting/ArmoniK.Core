@@ -28,8 +28,6 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Storage;
 
-using JetBrains.Annotations;
-
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
@@ -51,6 +49,13 @@ public record ResultDataModel : Result, IMongoDataModel<ResultDataModel>
                                                        cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(Data)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<byte>());
                                                        cm.SetIgnoreExtraElements(true);
+                                                       cm.MapCreator(model => new(model.SessionId,
+                                                                                  model.Key,
+                                                                                  model.OwnerTaskId,
+                                                                                  model.OriginDispatchId,
+                                                                                  model.IsResultAvailable,
+                                                                                  model.CreationDate,
+                                                                                  model.Data));
                                                      });
   }
 

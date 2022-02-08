@@ -45,21 +45,33 @@ public record TaskDataModel : TaskData, IMongoDataModel<TaskDataModel>
     if (!BsonClassMap.IsClassMapRegistered(typeof(TaskDataModel)))
     {
       BsonClassMap.RegisterClassMap<TaskDataModel>(cm =>
-                                                  {
-                                                    cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true);
-                                                    cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                    cm.MapProperty(nameof(ParentTaskId)).SetIsRequired(true);
-                                                    cm.MapProperty(nameof(DispatchId)).SetIsRequired(true);
-                                                    cm.MapProperty(nameof(DataDependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                    cm.MapProperty(nameof(Status)).SetIsRequired(true);
-                                                    cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
-                                                    cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
-                                                    cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
-                                                    cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
-                                                    cm.MapProperty(nameof(AncestorDispatchIds)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                    cm.MapProperty(nameof(ExpectedOutput)).SetIsRequired(true);
-                                                    cm.SetIgnoreExtraElements(true);
-                                                  });
+                                                   {
+                                                     cm.MapIdProperty(nameof(TaskId)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(ParentTaskId)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(DispatchId)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(DataDependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                     cm.MapProperty(nameof(Status)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                     cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(HasPayload)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(Payload)).SetIgnoreIfDefault(true);
+                                                     cm.MapProperty(nameof(AncestorDispatchIds)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
+                                                     cm.MapProperty(nameof(ExpectedOutput)).SetIsRequired(true);
+                                                     cm.SetIgnoreExtraElements(true);
+                                                     cm.MapCreator(model => new(model.SessionId,
+                                                                                model.ParentTaskId,
+                                                                                model.DispatchId,
+                                                                                model.TaskId,
+                                                                                model.DataDependencies,
+                                                                                model.ExpectedOutput,
+                                                                                model.HasPayload,
+                                                                                model.Payload,
+                                                                                model.Status,
+                                                                                model.Options,
+                                                                                model.AncestorDispatchIds,
+                                                                                model.CreationDate));
+                                                   });
     }
 
     if (!BsonClassMap.IsClassMapRegistered(typeof(TaskStatusCount)))
@@ -68,6 +80,8 @@ public record TaskDataModel : TaskData, IMongoDataModel<TaskDataModel>
                                                      {
                                                        map.MapProperty(nameof(TaskStatusCount.Status)).SetIsRequired(true);
                                                        map.MapProperty(nameof(TaskStatusCount.Count)).SetIsRequired(true);
+                                                       map.MapCreator(count => new(count.Status,
+                                                                                   count.Count));
                                                      });
     }
   }

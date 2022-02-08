@@ -26,7 +26,6 @@ using System;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Storage;
 
 using Calzolari.Grpc.AspNetCore.Validation;
 
