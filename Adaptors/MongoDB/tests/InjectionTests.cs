@@ -55,7 +55,7 @@ internal class InjectionTests
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.User)}", "user" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Password)}", "password" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.CredentialsPath)}", "" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.CAFile)}", "/credentials/ca" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.CAFile)}", "" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ReplicaSet)}", "rs0" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", "database" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DataRetention)}", "10.00:00:00" },
@@ -154,7 +154,7 @@ internal class InjectionTests
 
     var options = provider.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual("/credentials/ca",
+    Assert.AreEqual("",
                     options.CAFile);
   }
 
