@@ -20,7 +20,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
         fetch-depth: 0
 
     - name: Generate Version
@@ -41,7 +41,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
         submodules: true
 
     - name: Install .NET Core
@@ -68,7 +68,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
         submodules: true
 
     - name: Install .NET Core
@@ -98,7 +98,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
         submodules: true
 
     - name: login
@@ -126,7 +126,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
         submodules: true
 
     - name: login
@@ -201,7 +201,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
 
     - name: tag
       run: |
