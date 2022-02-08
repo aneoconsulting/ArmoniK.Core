@@ -38,6 +38,7 @@ using Microsoft.Extensions.Logging;
 
 using Serilog;
 using ArmoniK.Core.Control.Submitter.Services;
+using Serilog.Formatting.Compact;
 
 namespace ArmoniK.Core.Control.Submitter;
 
@@ -46,9 +47,9 @@ public static class Program
   public static int Main(string[] args)
   {
     Log.Logger = new LoggerConfiguration()
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .CreateBootstrapLogger();
+                 .Enrich.FromLogContext()
+                 .WriteTo.Console()
+                 .CreateBootstrapLogger();
 
     try
     {
@@ -65,9 +66,8 @@ public static class Program
              .AddEnvironmentVariables()
              .AddCommandLine(args);
 
-      builder.Logging.AddSerilog();
-
       var serilogLogger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
+                                                   .WriteTo.Console(new CompactJsonFormatter())
                                                    .Enrich.FromLogContext()
                                                    .CreateLogger();
 
@@ -75,15 +75,13 @@ public static class Program
                                 .CreateLogger("root");
 
       builder.Host
-             .UseSerilog((context, services, config)
-                           => config.ReadFrom.Configuration(context.Configuration)
-                                    .ReadFrom.Services(services)
-                                    .Enrich.FromLogContext());
+             .UseSerilog(serilogLogger);
 
       builder.Services
              .AddLogging()
              .AddArmoniKCore(builder.Configuration)
-             .AddMongoComponents(builder.Configuration)
+             .AddMongoComponents(builder.Configuration,
+                                 logger)
              .AddAmqp(builder.Configuration,
                       logger)
              .AddRedis(builder.Configuration,
@@ -102,25 +100,27 @@ public static class Program
 
 
       app.UseEndpoints(endpoints =>
-                       {
+      {
+        endpoints.MapHealthChecks("/startup",
+                                  new()
+                                  {
+                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                                  });
 
-                         endpoints.MapHealthChecks("/startup",
-                                                   new()
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
-                                                   });
+        endpoints.MapHealthChecks("/liveness",
+                                  new()
+                                  {
+                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                                  });
 
-                         endpoints.MapHealthChecks("/liveness",
-                                                   new()
-                                                   {
-                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
-                                                   });
+        //readiness uses grpc to ensure corresponding features are ok.
+        endpoints.MapGrpcService<GrpcHealthCheckService>();
 
-                         //readiness uses grpc to ensure corresponding features are ok.
-                         endpoints.MapGrpcService<GrpcHealthCheckService>();
+        endpoints.MapGrpcService<GrpcSubmitterService>();
 
-                         endpoints.MapGrpcService<GrpcSubmitterService>();
-                       });
+        if (app.Environment.IsDevelopment())
+          endpoints.MapGrpcReflectionService();
+      });
       app.Run();
 
       return 0;

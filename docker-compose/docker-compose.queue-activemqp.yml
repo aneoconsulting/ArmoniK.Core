@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:
+  queue:
+    image: symptoma/activemq:5.16.3
+    networks:
+      - armonik-backend
+    ports:
+      - 127.0.0.1:5672:5672
+      - 127.0.0.1:8161:8161
+
+  armonik.control:
+    environment:
+      - Amqp__User=admin
+      - Amqp__Password=admin
+
+  armonik.compute.pollingagent:
+    environment:
+      - Amqp__User=admin
+      - Amqp__Password=admin

@@ -31,6 +31,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
@@ -55,8 +57,8 @@ namespace ArmoniK.Core.Adapters.Redis
     public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<byte[]> valueChunks, CancellationToken cancellationToken = default)
     {
       await Task.WhenAll(await valueChunks.Select((chunk, i) => redis_.ListSetByIndexAsync(key,
-                                                                                     i,
-                                                                                     chunk)).ToListAsync(cancellationToken));
+                                                                                           i,
+                                                                                           chunk)).ToListAsync(cancellationToken));
     }
 
     /// <inheritdoc />
@@ -79,7 +81,7 @@ namespace ArmoniK.Core.Adapters.Redis
     }
 
     /// <inheritdoc />
-    public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default) 
+    public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
       => await redis_.KeyDeleteAsync(key);
 
     /// <inheritdoc />
@@ -92,68 +94,74 @@ namespace ArmoniK.Core.Adapters.Redis
     [PublicAPI]
     public static IServiceCollection AddRedis(
       this IServiceCollection serviceCollection,
-      IConfiguration          configuration,
+      ConfigurationManager    configuration,
       ILogger                 logger)
     {
-
       var components = configuration.GetSection(Components.SettingSection);
 
       if (components["ObjectStorage"] == "ArmoniK.Adapters.Redis.ObjectStorage")
       {
-        
-      var redisOptions = configuration.GetSection(Options.Redis.SettingSection).Get<Options.Redis>();
+        serviceCollection.AddOption<Options.Redis>(configuration,
+                                                   Options.Redis.SettingSection,
+                                                   out var redisOptions);
 
+        using var _ = logger.BeginNamedScope("Redis configuration",
+                                             ("EndpointUrl", redisOptions.EndpointUrl));
+
+        if (!string.IsNullOrEmpty(redisOptions.CredentialsPath))
+        {
+          configuration.AddJsonFile(redisOptions.CredentialsPath);
+
+          serviceCollection.AddOption(configuration,
+                                      Options.Redis.SettingSection,
+                                      out redisOptions);
+
+          logger.LogTrace("Loaded Redis credentials from file {path}",
+                          redisOptions.CredentialsPath);
+        }
+
+        if (!string.IsNullOrEmpty(redisOptions.CaPath))
+        {
+          X509Store                  localTrustStore       = new X509Store(StoreName.Root);
+          X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
+          try
+          {
+            certificateCollection.Import(redisOptions.CaPath);
+            localTrustStore.Open(OpenFlags.ReadWrite);
+            localTrustStore.AddRange(certificateCollection);
+            logger.LogTrace("Imported Redis certificate from file {path}",
+                            redisOptions.CaPath);
+          }
+          catch (Exception ex)
+          {
+            logger.LogError("Root certificate import failed: {error}",
+                            ex.Message);
+            throw;
+          }
+          finally
+          {
+            localTrustStore.Close();
+          }
+        }
 
         var config = new ConfigurationOptions()
-                     {
-                       KeepAlive                  = 300,
-                       AllowAdmin                 = false,
-                       ClientName = redisOptions.ClientName,
-                       ReconnectRetryPolicy = new ExponentialRetry(10),
-                       Ssl = true,
-                       EndPoints =
-                       {
-                         redisOptions.EndpointUrl,
-                       },
-
-                       SslHost            = redisOptions.SslHost,
-                       AbortOnConnectFail = true,
-                       ConnectTimeout     = redisOptions.Timeout,
-                     };
-        logger.LogDebug("setup connection to Redis at {EndpointUrl}", redisOptions.EndpointUrl);
-
-
-        if (!File.Exists(redisOptions.CaCertPath))
         {
-          logger.LogError("{certificate} was not found !",
-                          redisOptions.CaCertPath);
-          throw new FileNotFoundException(redisOptions.CaCertPath + " was not found !");
-        }
+          ClientName           = redisOptions.ClientName,
+          ReconnectRetryPolicy = new ExponentialRetry(10),
+          Ssl                  = redisOptions.Ssl,
+          AbortOnConnectFail   = true,
+          SslHost              = redisOptions.SslHost,
+          Password             = redisOptions.Password,
+          User                 = redisOptions.User,
+        };
+        config.EndPoints.Add(redisOptions.EndpointUrl);
 
-        if (!File.Exists(redisOptions.ClientPfxPath))
-        {
-          logger.LogError("{certificate} was not found !",
-                          redisOptions.ClientPfxPath);
-          throw new FileNotFoundException(redisOptions.ClientPfxPath + " was not found !");
-        }
+        if (redisOptions.Timeout > 0)
+          config.ConnectTimeout = redisOptions.Timeout;
 
-        config.CertificateValidation += (_, _, chain, sslPolicyErrors) =>
-                                                             {
-                                                               X509Certificate2 certificateAuthority = new(redisOptions.CaCertPath);
-                                                               if (sslPolicyErrors == SslPolicyErrors.RemoteCertificateChainErrors)
-                                                               {
-                                                                 var root = chain.ChainElements[^1].Certificate;
-                                                                 return certificateAuthority.Equals(root);
-                                                               }
-
-                                                               return sslPolicyErrors == SslPolicyErrors.None;
-                                                             };
-
-        config.CertificateSelection += (_, _, _, _, _) =>
-                                                            {
-                                                              var cert = new X509Certificate2(redisOptions.ClientPfxPath);
-                                                              return cert;
-                                                            };
+        logger.LogDebug("setup connection to Redis at {EndpointUrl} with user {user}",
+                        redisOptions.EndpointUrl,
+                        redisOptions.User);
 
         serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                                           TextWriter.Null).GetDatabase());

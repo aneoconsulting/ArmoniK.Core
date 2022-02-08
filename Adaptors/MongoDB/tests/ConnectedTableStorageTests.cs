@@ -30,8 +30,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
+
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 

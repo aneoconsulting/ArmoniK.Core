@@ -1,0 +1,84 @@
+version: '3.7'
+
+services:
+
+  database:
+    image: mongo
+    networks:
+      - armonik-backend
+
+  object:
+    image: redis:bullseye
+    command: redis-server
+    networks:
+      - armonik-backend
+    expose:
+      - 6379
+
+  armonik.control:
+    image: ${DOCKER_REGISTRY-}armonikcontrol
+    build:
+      context: ..
+      dockerfile: Control/Submitter/src/Dockerfile
+    depends_on:
+      - database
+      - object
+    networks:
+      - armonik-net
+      - armonik-backend
+    ports:
+      - 5001:80
+    environment:
+      - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
+      - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
+      - Redis__EndpointUrl=object:6379
+      - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Serilog__MinimumLevel=Verbose
+
+  armonik.compute.pollingagent:
+    image: ${DOCKER_REGISTRY-}armonikpollingagent
+    build:
+      context: ..
+      dockerfile: Compute/PollingAgent/src/Dockerfile
+    depends_on:
+      - database
+      - object
+    networks:
+      - armonik-backend
+    volumes:
+      - socket_vol:/cache
+    environment:
+      - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
+      - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
+      - Redis__EndpointUrl=object:6379
+      - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Serilog__MinimumLevel=Verbose
+
+  armonik.compute.worker:
+    image: dockerhubaneo/armonik_worker_htcmock_v3
+    build:
+      context: ../../ArmoniK.Samples/Samples/HtcMockV3
+      dockerfile: GridWorker/src/Dockerfile
+    networks:
+      - armonik-net
+    environment:
+      - Grpc__Endpoint=http://armonik.control:80
+    volumes:
+      - socket_vol:/cache
+
+networks:
+  armonik-net:
+    name: armonik-net
+  armonik-backend:
+    name: armonik-backend
+
+volumes:
+  socket_vol: {}
