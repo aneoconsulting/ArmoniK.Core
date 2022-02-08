@@ -72,37 +72,38 @@ public static class ServiceCollectionExt
         serviceCollection.AddOption(configuration,
                                     Options.Amqp.SettingSection,
                                     out amqpOptions);
-
-        if (!string.IsNullOrEmpty(amqpOptions.CaPath))
-        {
-          X509Store                  localTrustStore       = new X509Store(StoreName.Root);
-          X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
-          try
-          {
-            certificateCollection.Import(amqpOptions.CaPath);
-            localTrustStore.Open(OpenFlags.ReadWrite);
-            localTrustStore.AddRange(certificateCollection);
-            logger.LogTrace("Imported AMQP certificate from file {path}",
-                            amqpOptions.CaPath);
-          }
-          catch (Exception ex)
-          {
-            logger.LogError("Root certificate import failed: {error}",
-                            ex.Message);
-            throw;
-          }
-          finally
-          {
-            localTrustStore.Close();
-          }
-        }
       }
       else
       {
         logger.LogTrace("No credential path provided");
       }
 
-      var sessionProvider = new SessionProvider(amqpOptions, logger);
+      if (!string.IsNullOrEmpty(amqpOptions.CaPath))
+      {
+        X509Store                  localTrustStore       = new X509Store(StoreName.Root);
+        X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
+        try
+        {
+          certificateCollection.Import(amqpOptions.CaPath);
+          localTrustStore.Open(OpenFlags.ReadWrite);
+          localTrustStore.AddRange(certificateCollection);
+          logger.LogTrace("Imported AMQP certificate from file {path}",
+                          amqpOptions.CaPath);
+        }
+        catch (Exception ex)
+        {
+          logger.LogError("Root certificate import failed: {error}",
+                          ex.Message);
+          throw;
+        }
+        finally
+        {
+          localTrustStore.Close();
+        }
+      }
+
+      var sessionProvider = new SessionProvider(amqpOptions,
+                                                logger);
 
       serviceCollection.AddSingleton(sessionProvider);
 

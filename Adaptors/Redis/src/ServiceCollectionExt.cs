@@ -70,29 +70,29 @@ namespace ArmoniK.Core.Adapters.Redis
 
           logger.LogTrace("Loaded Redis credentials from file {path}",
                           redisOptions.CredentialsPath);
+        }
 
-          if (!string.IsNullOrEmpty(redisOptions.CaPath))
+        if (!string.IsNullOrEmpty(redisOptions.CaPath))
+        {
+          X509Store                  localTrustStore       = new X509Store(StoreName.Root);
+          X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
+          try
           {
-            X509Store                  localTrustStore       = new X509Store(StoreName.Root);
-            X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
-            try
-            {
-              certificateCollection.Import(redisOptions.CaPath);
-              localTrustStore.Open(OpenFlags.ReadWrite);
-              localTrustStore.AddRange(certificateCollection);
-              logger.LogTrace("Imported Redis certificate from file {path}",
-                              redisOptions.CaPath);
-            }
-            catch (Exception ex)
-            {
-              logger.LogError("Root certificate import failed: {error}",
-                              ex.Message);
-              throw;
-            }
-            finally
-            {
-              localTrustStore.Close();
-            }
+            certificateCollection.Import(redisOptions.CaPath);
+            localTrustStore.Open(OpenFlags.ReadWrite);
+            localTrustStore.AddRange(certificateCollection);
+            logger.LogTrace("Imported Redis certificate from file {path}",
+                            redisOptions.CaPath);
+          }
+          catch (Exception ex)
+          {
+            logger.LogError("Root certificate import failed: {error}",
+                            ex.Message);
+            throw;
+          }
+          finally
+          {
+            localTrustStore.Close();
           }
         }
 

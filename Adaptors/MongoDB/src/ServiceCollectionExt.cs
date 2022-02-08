@@ -130,34 +130,34 @@ public static class ServiceCollectionExt
 
         logger.LogTrace("Loaded mongodb credentials from file {path}",
                         mongoOptions.CredentialsPath);
-
-        if (!string.IsNullOrEmpty(mongoOptions.CAFile))
-        {
-          X509Store                  localTrustStore       = new X509Store(StoreName.Root);
-          X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
-          try
-          {
-            certificateCollection.Import(mongoOptions.CAFile);
-            localTrustStore.Open(OpenFlags.ReadWrite);
-            localTrustStore.AddRange(certificateCollection);
-            logger.LogTrace("Imported mongodb certificate from file {path}",
-                            mongoOptions.CAFile);
-          }
-          catch (Exception ex)
-          {
-            logger.LogError("Root certificate import failed: {error}",
-                            ex.Message);
-            throw;
-          }
-          finally
-          {
-            localTrustStore.Close();
-          }
-        }
       }
       else
       {
         logger.LogTrace("No credentials provided");
+      }
+
+      if (!string.IsNullOrEmpty(mongoOptions.CAFile))
+      {
+        X509Store                  localTrustStore       = new X509Store(StoreName.Root);
+        X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
+        try
+        {
+          certificateCollection.Import(mongoOptions.CAFile);
+          localTrustStore.Open(OpenFlags.ReadWrite);
+          localTrustStore.AddRange(certificateCollection);
+          logger.LogTrace("Imported mongodb certificate from file {path}",
+                          mongoOptions.CAFile);
+        }
+        catch (Exception ex)
+        {
+          logger.LogError("Root certificate import failed: {error}",
+                          ex.Message);
+          throw;
+        }
+        finally
+        {
+          localTrustStore.Close();
+        }
       }
 
       string connectionString = null;
