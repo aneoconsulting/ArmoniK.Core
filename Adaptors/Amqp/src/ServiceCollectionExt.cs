@@ -84,7 +84,7 @@ public static class ServiceCollectionExt
         X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
         try
         {
-          certificateCollection.Import(amqpOptions.CaPath);
+          certificateCollection.ImportFromPemFile(amqpOptions.CaPath);
           localTrustStore.Open(OpenFlags.ReadWrite);
           localTrustStore.AddRange(certificateCollection);
           logger.LogTrace("Imported AMQP certificate from file {path}",
