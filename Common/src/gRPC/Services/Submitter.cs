@@ -497,9 +497,10 @@ public class Submitter : ISubmitter
                                              cancellationToken);
 
       // to be done after awaiting previous call to ensure proper modification sequencing
-      await resultTable_.ChangeResultDispatch(oldDispatchId,
-                                               targetDispatchId,
-                                               cancellationToken);
+      await resultTable_.ChangeResultDispatch(dispatch.SessionId,
+                                              oldDispatchId,
+                                              targetDispatchId,
+                                              cancellationToken);
 
       oldDispatchId = targetDispatchId;
       targetDispatchId = await taskTable_.GetTaskDispatchId(taskId,

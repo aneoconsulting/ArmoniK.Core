@@ -22,7 +22,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -34,15 +33,12 @@ using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
-using MongoDB.Driver.Core.Events;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -63,8 +59,8 @@ public static class ServiceCollectionExt
 
     if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
     {
-      services.AddOption<Options.TableStorage>(configuration,
-                                               Options.TableStorage.SettingSection)
+      services.AddOption<TableStorage>(configuration,
+                                               TableStorage.SettingSection)
               .AddTransient<ITaskTable, TaskTable>()
               .AddTransient<ISessionTable, SessionTable>()
               .AddTransient<IDispatchTable, DispatchTable>()
@@ -119,8 +115,8 @@ public static class ServiceCollectionExt
 
       if (!string.IsNullOrEmpty(mongoOptions.CAFile))
       {
-        X509Store                  localTrustStore       = new X509Store(StoreName.Root);
-        X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
+        var                  localTrustStore       = new X509Store(StoreName.Root);
+        var certificateCollection = new X509Certificate2Collection();
         try
         {
           certificateCollection.Import(mongoOptions.CAFile);
@@ -144,7 +140,7 @@ public static class ServiceCollectionExt
       string connectionString = null;
       if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
       {
-        string template = "mongodb://{0}:{1}/{2}";
+        var template = "mongodb://{0}:{1}/{2}";
         connectionString = String.Format(template,
                                          mongoOptions.Host,
                                          mongoOptions.Port,
@@ -152,7 +148,7 @@ public static class ServiceCollectionExt
       }
       else
       {
-        string template = "mongodb://{0}:{1}@{2}:{3}/{4}";
+        var template = "mongodb://{0}:{1}@{2}:{3}/{4}";
         connectionString = String.Format(template,
                                          mongoOptions.User,
                                          mongoOptions.Password,

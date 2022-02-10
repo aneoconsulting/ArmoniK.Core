@@ -31,7 +31,9 @@ public interface IResultTable
 {
   Task<bool> AreResultsAvailableAsync(string sessionId, IEnumerable<string> keys, CancellationToken cancellationToken = default);
 
-  Task ChangeResultDispatch(string oldDispatchId, string targetDispatchId, CancellationToken cancellationToken);
+  Task ChangeResultDispatch(string sessionId, string oldDispatchId, string newDispatchId, CancellationToken cancellationToken);
+
+  Task ChangeResultOwnership(string sessionId, IEnumerable<string> keys, string oldTaskId, string newTaskId, CancellationToken cancellationToken);
 
   Task Create(IEnumerable<Result> results, CancellationToken cancellationToken = default);
 
@@ -43,5 +45,7 @@ public interface IResultTable
 
   IAsyncEnumerable<string> ListResultsAsync(string sessionId, CancellationToken cancellationToken = default);
 
-  Task SetResult(string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default);
+  Task SetResult(string sessionId, string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default);
+
+  Task SetResult(string sessionId, string ownerTaskId, string key, CancellationToken cancellationToken = default);
 }

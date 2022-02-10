@@ -39,7 +39,7 @@ public interface ISessionTable : IInitializable
                               TaskOptions       defaultOptions, 
                               CancellationToken cancellationToken = default);
 
-  Task<ISessionData> GetSessionAsync(string dispatchId, CancellationToken cancellationToken = default);
+  Task<SessionData> GetSessionAsync(string dispatchId, CancellationToken cancellationToken = default);
 
   Task<bool> IsSessionCancelledAsync(string sessionId, CancellationToken cancellationToken = default);
 

@@ -72,14 +72,14 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<TaskData> ReadTaskAsync(string id, CancellationToken cancellationToken = default)
+  public async Task<TaskData> ReadTaskAsync(string taskId, CancellationToken cancellationToken = default)
   {
-    using var _              = Logger.LogFunction(id);
+    using var _              = Logger.LogFunction(taskId);
     var       sessionHandle  = await sessionProvider_.GetAsync();
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
     return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(tdm => tdm.TaskId == id)
+                               .Where(tdm => tdm.TaskId == taskId)
                                .FirstAsync(cancellationToken);
   }
 
@@ -110,7 +110,7 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task ChangeTaskDispatch(string oldDispatchId, string targetDispatchId, CancellationToken cancellationToken)
+  public async Task ChangeTaskDispatch(string oldDispatchId, string newDispatchId, CancellationToken cancellationToken)
   {
     using var _ = Logger.LogFunction();
 
@@ -119,7 +119,7 @@ public class TaskTable : ITaskTable
     await taskCollection.UpdateManyAsync(model => model.DispatchId == oldDispatchId,
                                          Builders<TaskDataModel>.Update
                                                                 .Set(model => model.DispatchId,
-                                                                     targetDispatchId),
+                                                                     newDispatchId),
                                          cancellationToken: cancellationToken);
   }
 

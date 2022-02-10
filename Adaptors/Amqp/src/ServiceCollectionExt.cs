@@ -80,8 +80,8 @@ public static class ServiceCollectionExt
 
       if (!string.IsNullOrEmpty(amqpOptions.CaPath))
       {
-        X509Store                  localTrustStore       = new X509Store(StoreName.Root);
-        X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
+        var localTrustStore       = new X509Store(StoreName.Root);
+        var certificateCollection = new X509Certificate2Collection();
         try
         {
           certificateCollection.Import(amqpOptions.CaPath);

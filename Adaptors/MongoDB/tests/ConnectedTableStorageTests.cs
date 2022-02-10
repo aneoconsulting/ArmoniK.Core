@@ -71,5 +71,8 @@ internal class ConnectedTableStorageTests
     configuration_ = builder.Build();
   }
 
+
+  // TODO : remove this comment when some tests using configuration_ are written
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "<Pending>")]
   private IConfiguration configuration_;
 }

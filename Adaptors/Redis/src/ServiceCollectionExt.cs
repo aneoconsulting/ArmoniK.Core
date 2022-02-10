@@ -122,8 +122,8 @@ namespace ArmoniK.Core.Adapters.Redis
 
         if (!string.IsNullOrEmpty(redisOptions.CaPath))
         {
-          X509Store                  localTrustStore       = new X509Store(StoreName.Root);
-          X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
+          var                  localTrustStore       = new X509Store(StoreName.Root);
+          var certificateCollection = new X509Certificate2Collection();
           try
           {
             certificateCollection.Import(redisOptions.CaPath);

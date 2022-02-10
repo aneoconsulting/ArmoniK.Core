@@ -80,7 +80,7 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public async Task<ISessionData> GetSessionAsync(string dispatchId, CancellationToken cancellationToken = default)
+  public async Task<SessionData> GetSessionAsync(string dispatchId, CancellationToken cancellationToken = default)
   {
     using var _                 = Logger.LogFunction(dispatchId);
     var       sessionHandle     = await sessionProvider_.GetAsync();

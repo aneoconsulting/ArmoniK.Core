@@ -40,13 +40,13 @@ public interface ITaskTable
 
   Task CreateTasks(IEnumerable<TaskData> tasks, CancellationToken cancellationToken = default);
 
-  Task<TaskData> ReadTaskAsync(string id, CancellationToken cancellationToken = default);
+  Task<TaskData> ReadTaskAsync(string taskId, CancellationToken cancellationToken = default);
 
   Task<string> GetTaskDispatchId(string taskId, CancellationToken cancellationToken = default);
 
   Task<IList<string>> GetTaskAncestorDispatchIds(string taskId, CancellationToken cancellationToken = default);
 
-  Task ChangeTaskDispatch(string oldDispatchId, string targetDispatchId, CancellationToken cancellationToken);
+  Task ChangeTaskDispatch(string oldDispatchId, string newDispatchId, CancellationToken cancellationToken);
 
   Task UpdateTaskStatusAsync(string id, TaskStatus status, CancellationToken cancellationToken = default);
 

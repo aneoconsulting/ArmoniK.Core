@@ -100,6 +100,6 @@ public record ResultDataModel : Result, IMongoDataModel<ResultDataModel>
   public string CollectionName => nameof(ResultDataModel);
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<ResultDataModel> collection) => throw new NotImplementedException();
-
+  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<ResultDataModel> collection)
+    => Task.CompletedTask;
 }

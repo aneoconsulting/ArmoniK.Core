@@ -59,7 +59,7 @@ public class ResultTable : IResultTable
 
     var resultCollection = await resultCollectionProvider_.GetAsync();
 
-    await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<ResultDataModel>(ResultExtensions.ToResultDataModel(result))),
+    await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<ResultDataModel>(result.ToResultDataModel())),
                                           new()
                                           {
                                             IsOrdered = false,
@@ -92,14 +92,16 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task SetResult(string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default)
+  public async Task SetResult(string sessionId, string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(key);
 
     var resultCollection = await resultCollectionProvider_.GetAsync();
 
     var res = await resultCollection.UpdateOneAsync(Builders<ResultDataModel>.Filter
-                                                                             .Where(model => model.Key == key && model.OwnerTaskId == ownerTaskId),
+                                                                             .Where(model => model.Key == key &&
+                                                                                             model.OwnerTaskId == ownerTaskId &&
+                                                                                             model.SessionId == sessionId),
                                                     Builders<ResultDataModel>.Update
                                                                              .Set(model => model.IsResultAvailable,
                                                                                   true)
@@ -111,9 +113,26 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task ChangeResultDispatch(string oldDispatchId, string targetDispatchId, CancellationToken cancellationToken)
+  public async Task SetResult(string sessionId, string ownerTaskId, string key, CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction();
+    using var _ = logger_.LogFunction(key);
+
+    var resultCollection = await resultCollectionProvider_.GetAsync();
+
+    var res = await resultCollection.UpdateOneAsync(Builders<ResultDataModel>.Filter
+                                                                             .Where(model => model.Key == key && model.OwnerTaskId == ownerTaskId),
+                                                    Builders<ResultDataModel>.Update
+                                                                             .Set(model => model.IsResultAvailable,
+                                                                                  true),
+                                                    cancellationToken: cancellationToken);
+    if (res.ModifiedCount == 0)
+      throw new KeyNotFoundException();
+  }
+
+  /// <inheritdoc />
+  public async Task ChangeResultDispatch(string sessionId, string oldDispatchId, string newDispatchId, CancellationToken cancellationToken)
+  {
+    using var _ = logger_.LogFunction(sessionId);
 
     var resultCollection = await resultCollectionProvider_.GetAsync();
 
@@ -122,11 +141,31 @@ public class ResultTable : IResultTable
     await resultCollection.UpdateManyAsync(model => model.OriginDispatchId == oldDispatchId,
                                            Builders<ResultDataModel>.Update
                                                                     .Set(model => model.OriginDispatchId,
-                                                                         targetDispatchId),
+                                                                         newDispatchId),
                                            cancellationToken: cancellationToken);
 
 
   }
+
+
+  /// <inheritdoc />
+  public async Task ChangeResultOwnership(string sessionId, IEnumerable<string> keys, string oldTaskId, string newTaskId, CancellationToken cancellationToken)
+  {
+    using var _ = logger_.LogFunction(sessionId);
+
+    var resultCollection = await resultCollectionProvider_.GetAsync();
+
+
+
+    await resultCollection.UpdateManyAsync(model => model.OwnerTaskId == oldTaskId,
+                                           Builders<ResultDataModel>.Update
+                                                                    .Set(model => model.OwnerTaskId,
+                                                                         newTaskId),
+                                           cancellationToken: cancellationToken);
+
+
+  }
+
 
   /// <inheritdoc />
   public async Task DeleteResult(string session, string key, CancellationToken cancellationToken = default)

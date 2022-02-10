@@ -31,8 +31,50 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class Dispatch : IDispatch
 {
+  public Dispatch(string sessionId,
+                  string taskId,
+                  string id,
+                  DateTime timeToLive,
+                  int attempt,
+                  ConcurrentBag<StatusTime> statuses,
+                  DateTime creationDate)
+  {
+    Id = id;
+    TaskId = taskId;
+    Attempt = attempt;
+    TimeToLive = timeToLive;
+    Statuses = statuses;
+    CreationDate = creationDate;
+    SessionId = sessionId;
+  }
+  public Dispatch(string sessionId,
+                  string taskId,
+                  string id,
+                  DateTime timeToLive,
+                  int attempt)
+  {
+    Id           = id;
+    TaskId       = taskId;
+    Attempt      = attempt;
+    TimeToLive   = timeToLive;
+    Statuses     = new();
+    CreationDate = DateTime.UtcNow;
+    SessionId    = sessionId;
+  }
+
+  public Dispatch(IDispatch other)
+    : this(other.SessionId,
+           other.TaskId,
+           other.Id,
+           other.TimeToLive,
+           other.Attempt,
+           new(other.Statuses),
+           other.CreationDate)
+  {
+  }
+
   /// <inheritdoc />
-  public string Id { get; init; }
+  public string Id { get; set; }
 
   /// <inheritdoc />
   public string TaskId { get; init; }
@@ -43,13 +85,13 @@ public class Dispatch : IDispatch
   /// <inheritdoc />
   public DateTime TimeToLive { get; set; }
 
-  public ConcurrentBag<StatusTime> Statuses { get; } = new();
+  public ConcurrentBag<StatusTime> Statuses { get; set; }
 
   /// <inheritdoc />
   IEnumerable<StatusTime> IDispatch.Statuses => Statuses;
 
   /// <inheritdoc />
-  public DateTime CreationDate { get; } = DateTime.UtcNow;
+  public DateTime CreationDate { get; set; }
 
   /// <inheritdoc />
   public string SessionId { get; set; }

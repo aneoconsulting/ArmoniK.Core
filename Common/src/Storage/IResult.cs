@@ -35,5 +35,11 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="IsResultAvailable">if <value>true</value>, the result is available</param>
 /// <param name="CreationDate">Date of creation of the current object.</param>
 /// <param name="Data">Data for the current <paramref name="Key"/></param>
-public record Result(string SessionId, string Key, string OwnerTaskId, string OriginDispatchId, bool IsResultAvailable, DateTime CreationDate, byte[] Data);
+public record Result(string   SessionId,
+                     string   Key,
+                     string   OwnerTaskId,
+                     string   OriginDispatchId,
+                     bool     IsResultAvailable,
+                     DateTime CreationDate,
+                     byte[]   Data);
 

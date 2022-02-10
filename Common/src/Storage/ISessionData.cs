@@ -27,15 +27,9 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public interface ISessionData
-{
-  string SessionId { get; }
+public record SessionData(string              SessionId,
+                          string              DispatchId,
+                          IEnumerable<string> AncestorsDispatchId,
+                          bool                IsCancelled,
+                          TaskOptions         Options);
 
-  string DispatchId { get; }
-
-  IEnumerable<string> AncestorsDispatchId { get; }
-
-  bool IsCancelled { get; }
-
-  TaskOptions Options { get; }
-}

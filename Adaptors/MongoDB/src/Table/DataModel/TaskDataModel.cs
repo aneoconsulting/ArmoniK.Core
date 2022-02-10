@@ -38,7 +38,7 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 public record TaskDataModel : TaskData, IMongoDataModel<TaskDataModel>
 {
-  public const string                 Collection = nameof(TaskDataModel);
+  public const string Collection = nameof(TaskDataModel);
 
   static TaskDataModel()
   {
@@ -86,7 +86,27 @@ public record TaskDataModel : TaskData, IMongoDataModel<TaskDataModel>
     }
   }
 
-  public TaskDataModel(string sessionId, string parentTaskId, string dispatchId, string taskId, IList<string> dataDependencies, IList<string> expectedOutput, bool hasPayload, byte[] payload, TaskStatus status, TaskOptions options, IList<string> ancestorDispatchIds) : base(sessionId, parentTaskId, dispatchId, taskId, dataDependencies, expectedOutput, hasPayload, payload, status, options, ancestorDispatchIds)
+  public TaskDataModel(string        sessionId,
+                       string        parentTaskId,
+                       string        dispatchId,
+                       string        taskId,
+                       IList<string> dataDependencies,
+                       IList<string> expectedOutput,
+                       bool          hasPayload,
+                       byte[]        payload,
+                       TaskStatus    status,
+                       TaskOptions   options,
+                       IList<string> ancestorDispatchIds) : base(sessionId,
+                                                                 parentTaskId,
+                                                                 dispatchId,
+                                                                 taskId,
+                                                                 dataDependencies,
+                                                                 expectedOutput,
+                                                                 hasPayload,
+                                                                 payload,
+                                                                 status,
+                                                                 options,
+                                                                 ancestorDispatchIds)
   {
   }
 
@@ -131,7 +151,7 @@ public record TaskDataModel : TaskData, IMongoDataModel<TaskDataModel>
            false,
            Array.Empty<byte>(),
            TaskStatus.Failed,
-           new (),
+           new(),
            Array.Empty<string>(),
            default)
   {
@@ -145,8 +165,8 @@ public record TaskDataModel : TaskData, IMongoDataModel<TaskDataModel>
   public Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,
                                      IMongoCollection<TaskDataModel> collection)
   {
-    var sessionIndex    = Builders<TaskDataModel>.IndexKeys.Text(model => model.SessionId);
-    var statusIndex     = Builders<TaskDataModel>.IndexKeys.Text(model => model.Status);
+    var sessionIndex = Builders<TaskDataModel>.IndexKeys.Text(model => model.SessionId);
+    var statusIndex  = Builders<TaskDataModel>.IndexKeys.Text(model => model.Status);
     var sessionStatusIndex = Builders<TaskDataModel>.IndexKeys.Combine(sessionIndex,
                                                                        statusIndex);
 

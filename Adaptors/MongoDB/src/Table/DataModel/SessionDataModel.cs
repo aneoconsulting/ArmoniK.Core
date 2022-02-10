@@ -21,7 +21,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -33,7 +35,7 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public class SessionDataModel : IMongoDataModel<SessionDataModel>, ISessionData
+public record SessionDataModel : SessionData, IMongoDataModel<SessionDataModel>
 {
   public const string Collection = "SessionData";
 
@@ -48,19 +50,39 @@ public class SessionDataModel : IMongoDataModel<SessionDataModel>, ISessionData
                                                         cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
                                                         cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
                                                         cm.SetIgnoreExtraElements(true);
+                                                        cm.MapCreator(model => new(model.SessionId,
+                                                                                   model.DispatchId,
+                                                                                   model.AncestorsDispatchId,
+                                                                                   model.IsCancelled,
+                                                                                   model.Options));
                                                       });
   }
 
+  public SessionDataModel(string              sessionId, 
+                          string              dispatchId, 
+                          IEnumerable<string> ancestorsDispatchId, 
+                          bool                isCancelled, 
+                          TaskOptions         options)
+    : base(sessionId,
+           dispatchId,
+           ancestorsDispatchId,
+           isCancelled,
+           options)
+  {
+  }
 
-  public string SessionId { get; set; }
+  protected SessionDataModel(SessionData original) : base(original)
+  {
+  }
 
-  public string DispatchId { get; set; }
-
-  public IEnumerable<string> AncestorsDispatchId { get; set; }
-
-  public bool IsCancelled { get; set; }
-
-  public TaskOptions Options { get; set; }
+  public SessionDataModel()
+    : base(string.Empty,
+           string.Empty,
+           Enumerable.Empty<string>(),
+           false,
+           new())
+  {
+  }
 
   /// <inheritdoc />
   public string CollectionName { get; } = Collection;
