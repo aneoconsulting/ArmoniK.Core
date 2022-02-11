@@ -234,6 +234,7 @@ public class RequestProcessor
                                                  dispatch,
                                                  first.Output,
                                                  cancellationToken));
+          await stream.RequestStream.CompleteAsync();
           isComplete = true;
           break;
         case ProcessReply.TypeOneofCase.Result:
