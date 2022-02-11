@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -83,6 +84,10 @@ public class DataPrefetcher
                             {
                               InitRequest = new()
                                             {
+                                              Configuration = new ()
+                                                              {
+                                                                DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
+                                                              },
                                               TaskId    = taskData.TaskId,
                                               SessionId = taskData.SessionId,
                                               TaskOptions =
@@ -168,6 +173,19 @@ public class DataPrefetcher
                                 });
       }
     }
+
+    computeRequests.Enqueue(new()
+                            {
+                              InitData = new()
+                                         {
+                                           Key = string.Empty,
+                                           DataChunk = new()
+                                                       {
+                                                         DataComplete = true,
+                                                         Data = ByteString.Empty,
+                                                       },
+                                         },
+                            });
 
     return computeRequests;
   }
