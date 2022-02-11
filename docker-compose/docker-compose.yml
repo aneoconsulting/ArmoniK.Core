@@ -23,9 +23,11 @@ services:
     depends_on:
       - database
       - object
+      - fluentbit
     networks:
       - armonik-net
       - armonik-backend
+      - armonik-monitoring
     ports:
       - 5001:80
     environment:
@@ -38,6 +40,10 @@ services:
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
       - Serilog__MinimumLevel=Verbose
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
 
   armonik.compute.pollingagent:
     image: ${DOCKER_REGISTRY-}armonikpollingagent
@@ -47,8 +53,10 @@ services:
     depends_on:
       - database
       - object
+      - fluentbit
     networks:
       - armonik-backend
+      - armonik-monitoring
     volumes:
       - socket_vol:/cache
     environment:
@@ -61,24 +69,55 @@ services:
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
       - Serilog__MinimumLevel=Verbose
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
 
   armonik.compute.worker:
-    image: dockerhubaneo/armonik_worker_htcmock_v3
-    build:
-      context: ../../ArmoniK.Samples/Samples/HtcMockV3
-      dockerfile: GridWorker/src/Dockerfile
+    image: dockerhubaneo/armonik_worker_streamworker_test:test
     networks:
       - armonik-net
-    environment:
-      - Grpc__Endpoint=http://armonik.control:80
+      - armonik-monitoring
+    depends_on:
+      - fluentbit
     volumes:
       - socket_vol:/cache
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
+  fluentbit:
+    image: fluent/fluent-bit:latest
+    restart: always
+    networks:
+      - armonik-monitoring
+    volumes:
+      - ./fluent-bit/etc:/fluent-bit/etc
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
+  seq:
+    image: datalust/seq:latest
+    restart: always
+    networks:
+      - armonik-monitoring
+    ports:
+      - "80:80"
+      - "5341:5341"
+    environment:
+      - ACCEPT_EULA=Y
+
 
 networks:
   armonik-net:
     name: armonik-net
   armonik-backend:
     name: armonik-backend
+  armonik-monitoring:
+    name: armonik-monitoring
 
 volumes:
   socket_vol: {}
