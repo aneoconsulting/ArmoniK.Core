@@ -216,9 +216,13 @@ public class RequestProcessor
                  };
 
     var isComplete = false;
+
+
     // process incoming messages
-    await foreach (var (first, singleReplyStream) in stream.ResponseStream.Separate(cancellationToken))
+    // TODO : To reduce memory consumption, do not generate subStream. Implement a state machine instead.
+    await foreach (var singleReplyStream in stream.ResponseStream.Separate(cancellationToken))
     {
+      var first = singleReplyStream.First();
       if (isComplete)
       {
         throw new InvalidOperationException("Unexpected message from the worker after sending the task output");
@@ -344,7 +348,7 @@ public class RequestProcessor
   public Task SubmitLargeTasksAsync(TaskData                      taskData,
                                     string                         dispatchId,
                                     ProcessReply                   first,
-                                    IAsyncEnumerable<ProcessReply> singleReplyStream,
+                                    IList<ProcessReply> singleReplyStream,
                                     CancellationToken              cancellationToken)
   {
     using var activity = ActivitySource.StartActivity($"{nameof(SubmitLargeTasksAsync)}");
@@ -353,7 +357,7 @@ public class RequestProcessor
                                   dispatchId,
                                   first.CreateLargeTask.InitRequest.TaskOptions,
                                   singleReplyStream.Skip(1)
-                                                   .ReconstituteTaskRequest(cancellationToken),
+                                                   .ReconstituteTaskRequest(),
                                   cancellationToken);
   }
 
@@ -378,13 +382,11 @@ public class RequestProcessor
   }
 
   [PublicAPI]
-  public Task StoreResultAsync(IObjectStorage resultStorage, ProcessReply first, IAsyncEnumerable<ProcessReply> singleReplyStream, CancellationToken cancellationToken)
+  public Task StoreResultAsync(IObjectStorage resultStorage, ProcessReply first, IList<ProcessReply> singleReplyStream, CancellationToken cancellationToken)
   {
     using var activity = ActivitySource.StartActivity($"{nameof(StoreResultAsync)}");
     return resultStorage.AddOrUpdateAsync(first.Result.Init.Key,
-                                          singleReplyStream.Select(reply => reply.Result.TypeCase == ProcessReply.Types.Result.TypeOneofCase.Init
-                                                                              ? reply.Result.Init.ResultChunk.Data.Memory
-                                                                              : reply.Result.Data.Data.Memory),
+                                          singleReplyStream.Skip(1).Select(reply => reply.Result.Data.Data.Memory).ToAsyncEnumerable(),
                                           cancellationToken);
   }
 

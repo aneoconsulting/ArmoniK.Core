@@ -32,8 +32,8 @@ namespace ArmoniK.Core.Common.Storage;
 
 public class DispatchHandler : IDispatch, IAsyncDisposable
 {
-  private readonly IDispatch        dispatchImplementation_;
-  private          IAsyncDisposable asyncDisposableImplementation_;
+  private readonly IDispatch         dispatchImplementation_;
+  private          IAsyncDisposable? asyncDisposableImplementation_;
 
   public DispatchHandler(
     IDispatchTable    dispatchTable,

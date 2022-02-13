@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,7 +43,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
 
 
   /// <inheritdoc />
-  public override Task<ConfigurationReply> GetServiceConfiguration(Empty request, ServerCallContext context)
+  public override Task<Configuration> GetServiceConfiguration(Empty request, ServerCallContext context)
     => submitter_.GetServiceConfiguration(request,
                                           context.CancellationToken);
 
@@ -83,13 +84,24 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   /// <inheritdoc />
   public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream, ServerCallContext context)
   {
-    var args = await requestStream.BuildCreateTaskArguments(context.CancellationToken);
+    var enumerator = requestStream.ReadAllAsync(context.CancellationToken).GetAsyncEnumerator(context.CancellationToken);
 
-    return await submitter_.CreateTasks(args.Session,
-                                        args.Parent,
-                                        args.Dispatch,
-                                        args.Options,
-                                        args.Requests,
+    if (!await enumerator.MoveNextAsync(context.CancellationToken))
+      throw new RpcException(new(StatusCode.InvalidArgument,
+                                 "stream contained no message"));
+
+    var first = enumerator.Current;
+
+    if (first.TypeCase != CreateLargeTaskRequest.TypeOneofCase.InitRequest)
+      throw new RpcException(new(StatusCode.InvalidArgument,
+                                 "First message in stream must be of type InitRequest"),
+                             "First message in stream must be of type InitRequest");
+
+    return await submitter_.CreateTasks(first.InitRequest.SessionId,
+                                        first.InitRequest.SessionId,
+                                        first.InitRequest.SessionId,
+                                        first.InitRequest.TaskOptions,
+                                        enumerator.BuildRequests(context.CancellationToken),
                                         context.CancellationToken);
   }
 
@@ -99,7 +111,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                              context.CancellationToken);
 
   /// <inheritdoc />
-  public override Task TryGetResult(ResultRequest request, IServerStreamWriter<ResultReply> responseStream, ServerCallContext context)
+  public override Task TryGetResultStream(ResultRequest request, IServerStreamWriter<ResultReply> responseStream, ServerCallContext context)
     => submitter_.TryGetResult(request,
                                responseStream,
                                context.CancellationToken);

@@ -56,7 +56,7 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
 {
   public CreateLargeTaskRequestValidator()
   {
-    RuleFor(r => r.TypeCase).Must(oneOfCase => oneOfCase != CreateLargeTaskRequest.TypeOneofCase.None);
+    RuleFor(r => r.TypeCase).NotEqual(CreateLargeTaskRequest.TypeOneofCase.None);
     RuleFor(r => r.InitRequest).NotNull()
                                .SetValidator(new CreateLargeTaskInitRequestValidator())
                                .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.InitRequest);
@@ -79,10 +79,22 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
   {
     public CreateLargeTaskInitTaskValidator()
     {
-      RuleFor(r => r.DataDependencies).NotNull();
-      RuleFor(r => r.ExpectedOutputKeys).NotNull();
+      RuleFor(r => r.TypeCase).NotEqual(InitTaskRequest.TypeOneofCase.None);
+      RuleFor(r => r.Header).NotNull().
+                             SetValidator(new CreateLargeTaskInitTaskHeaderValidator())
+                            .When(r => r.TypeCase == InitTaskRequest.TypeOneofCase.Header);
+      RuleFor(r => r.LastTask).Equal(true)
+                              .When(r=>r.TypeCase == InitTaskRequest.TypeOneofCase.LastTask);
+    }
+  }
+
+  private class CreateLargeTaskInitTaskHeaderValidator : AbstractValidator<TaskRequestHeader>
+  {
+    public CreateLargeTaskInitTaskHeaderValidator()
+    {
       RuleFor(r => r.Id).NotNull().NotEmpty();
-      RuleFor(r => r.PayloadChunk).NotNull().SetValidator(new DataChunkValidator());
+      RuleFor(r => r.ExpectedOutputKeys).NotNull().NotEmpty();
+      RuleFor(r => r.DataDependencies).NotNull();
     }
   }
 
@@ -90,8 +102,12 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
   {
     public DataChunkValidator()
     {
+      RuleFor(r => r.TypeCase).NotEqual(DataChunk.TypeOneofCase.None);
       RuleFor(r => r.Data).NotNull()
-                          .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize);
+                          .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize)
+                          .When(r=>r.TypeCase==DataChunk.TypeOneofCase.Data);
+      RuleFor(r => r.DataComplete).Equal(true)
+                              .When(r => r.TypeCase == DataChunk.TypeOneofCase.DataComplete);
     }
   }
 

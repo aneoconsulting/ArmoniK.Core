@@ -60,7 +60,7 @@ public static class LoggerExt
                                         params             ValueTuple<string, object>[] properties)
   {
     var methodInfo = new StackTrace().GetFrame(1)?.GetMethod();
-    var className  = methodInfo?.ReflectedType?.Name;
+    var className  = methodInfo!.ReflectedType!.Name;
 
     var prop = properties.Append((nameof(className), className))
                          .Append((nameof(functionName), functionName));

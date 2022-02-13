@@ -34,9 +34,9 @@ public class Heart
 
   private readonly Func<CancellationToken, Task<bool>> pulse_;
 
-  private CancellationTokenSource combinedSource_;
+  private CancellationTokenSource? combinedSource_;
 
-  private Task runningTask_;
+  private Task? runningTask_;
 
   private CancellationTokenSource stoppedHeartCts_ = new();
 

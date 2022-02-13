@@ -96,37 +96,30 @@ public class DataPrefetcher
                                               },
                                               Payload = new()
                                                         {
-                                                          DataComplete = payloadChunks.Count == 1,
                                                           Data         = payloadChunks[0],
                                                         },
                                             },
                             });
+    
 
-
-    if (payloadChunks.Count > 1)
-    {
-
-      for (var i = 1; i < payloadChunks.Count - 1; i++)
+      for (var i = 1; i < payloadChunks.Count; i++)
       {
         computeRequests.Enqueue(new()
                                 {
                                   Payload = new()
                                             {
-                                              Data         = payloadChunks[i],
-                                              DataComplete = false,
+                                              Data = payloadChunks[i],
                                             },
                                 });
       }
 
-      computeRequests.Enqueue(new()
-                              {
-                                Payload = new()
-                                          {
-                                            Data         = payloadChunks[^1],
-                                            DataComplete = true,
-                                          },
-                              });
-    }
+    computeRequests.Enqueue(new()
+                            {
+                              Payload = new()
+                                        {
+                                          DataComplete = true,
+                                        },
+                            });
 
     foreach (var dataDependency in taskData.DataDependencies)
     {
@@ -141,49 +134,35 @@ public class DataPrefetcher
                                 InitData = new()
                                            {
                                              Key = dataDependency,
-                                             DataChunk = new()
-                                                         {
-                                                           Data         = dependencyChunks[0],
-                                                           DataComplete = dependencyChunks.Count == 1,
-                                                         },
                                            },
                               });
 
-      if (dependencyChunks.Count > 1)
+      foreach (var chunk in dependencyChunks)
       {
-        for (var i = 1; i < dependencyChunks.Count - 1; i++)
-        {
-          computeRequests.Enqueue(new()
-                                  {
-                                    Data = new()
-                                           {
-                                             Data         = dependencyChunks[i],
-                                             DataComplete = false,
-                                           },
-                                  });
-        }
-
         computeRequests.Enqueue(new()
                                 {
                                   Data = new()
                                          {
-                                           Data         = dependencyChunks[^1],
-                                           DataComplete = true,
+                                           Data = chunk,
                                          },
                                 });
       }
+
+      computeRequests.Enqueue(new()
+                              {
+                                Data = new()
+                                       {
+                                         DataComplete = true,
+                                       },
+                              });
+
     }
 
     computeRequests.Enqueue(new()
                             {
                               InitData = new()
                                          {
-                                           Key = string.Empty,
-                                           DataChunk = new()
-                                                       {
-                                                         DataComplete = true,
-                                                         Data = ByteString.Empty,
-                                                       },
+                                           LastData = true,
                                          },
                             });
 

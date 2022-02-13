@@ -29,7 +29,7 @@ namespace ArmoniK.Core.Common.Injection;
 public abstract class ProviderBase<T> : IHealthCheckProvider
 {
   private readonly Func<Task<T>> builder_;
-  private          T             object_;
+  private          T?            object_;
 
   protected ProviderBase(Func<Task<T>> builder) => builder_ = builder;
 

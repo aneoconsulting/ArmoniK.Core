@@ -26,79 +26,75 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 
-using Grpc.Core;
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-public static  class GrpcSubmitterExtensions
+public static class GrpcSubmitterExtensions
 {
-  public static async Task<(string Session, string Parent, string Dispatch, TaskOptions Options, IAsyncEnumerable<TaskRequest> Requests)> BuildCreateTaskArguments(this
-    IAsyncStreamReader<CreateLargeTaskRequest> stream, CancellationToken cancellationToken)
-  {
-    var enumerator = stream.ReadAllAsync(cancellationToken).GetAsyncEnumerator(cancellationToken);
-
-    if (!await enumerator.MoveNextAsync(cancellationToken))
-      throw new RpcException(new(StatusCode.InvalidArgument,
-                                 "stream contained no message"));
-
-    var first = enumerator.Current;
-
-    if (first.TypeCase != CreateLargeTaskRequest.TypeOneofCase.InitRequest)
-      throw new RpcException(new(StatusCode.InvalidArgument,
-                                 "First message in stream must be of type InitRequest"),
-                             "First message in stream must be of type InitRequest");
-
-    return (first.InitRequest.SessionId,
-            first.InitRequest.SessionId,
-            first.InitRequest.SessionId,
-            first.InitRequest.TaskOptions,
-            enumerator.BuildRequests(cancellationToken));
-
-  }
-
   public static async IAsyncEnumerable<TaskRequest> BuildRequests(this
-    IAsyncEnumerator<CreateLargeTaskRequest> enumerator,
-    [EnumeratorCancellation] CancellationToken                       cancellationToken)
+                                                                    IAsyncEnumerator<CreateLargeTaskRequest> enumerator,
+                                                                  [EnumeratorCancellation] CancellationToken cancellationToken)
   {
+    var           id                 = string.Empty;
+    IList<string> expectedOutputKeys = Array.Empty<string>();
+    IList<string> dataDependencies   = Array.Empty<string>();
+    var           chunks             = new Queue<ReadOnlyMemory<byte>>();
+
     while (await enumerator.MoveNextAsync(cancellationToken))
     {
-      if (enumerator.Current.TypeCase != CreateLargeTaskRequest.TypeOneofCase.InitTask)
-        throw new RpcException(new(StatusCode.InvalidArgument,
-                                   "Expected an InitTask"));
-
-      var                         id                         = enumerator.Current.InitTask.Id;
-      IEnumerable<string>         initTaskExpectedOutputKeys = enumerator.Current.InitTask.ExpectedOutputKeys;
-      IEnumerable<string>         initTaskDataDependencies   = enumerator.Current.InitTask.DataDependencies;
-      Queue<ReadOnlyMemory<byte>> chunks                     = new();
-
-      chunks.Enqueue(enumerator.Current.InitTask.PayloadChunk.Data.Memory);
-
-      if (!enumerator.Current.InitTask.PayloadChunk.DataComplete)
+      switch (enumerator.Current.TypeCase)
       {
-        if (!await enumerator.MoveNextAsync(cancellationToken) || enumerator.Current.TypeCase != CreateLargeTaskRequest.TypeOneofCase.TaskPayload)
-          throw new RpcException(new(StatusCode.InvalidArgument,
-                                     "Previous InitTask message had an incomplete PayloadChunk. Expecting a new PayloadChunk."));
+        case CreateLargeTaskRequest.TypeOneofCase.InitTask:
+          if (!string.IsNullOrEmpty(id) || dataDependencies.Any() || expectedOutputKeys.Any() || chunks.Any())
+            throw new InvalidOperationException();
+          switch (enumerator.Current.InitTask.TypeCase)
+          {
+            case InitTaskRequest.TypeOneofCase.Header:
 
-        chunks.Enqueue(enumerator.Current.TaskPayload.Data.Memory);
+              id                 = enumerator.Current.InitTask.Header.Id;
+              expectedOutputKeys = enumerator.Current.InitTask.Header.ExpectedOutputKeys;
+              dataDependencies   = enumerator.Current.InitTask.Header.DataDependencies;
+              break;
+            case InitTaskRequest.TypeOneofCase.LastTask:
+              yield break;
+            case InitTaskRequest.TypeOneofCase.None:
+            default:
+              throw new InvalidOperationException();
+          }
 
-        while (!enumerator.Current.TaskPayload.DataComplete)
-        {
-          if (!await enumerator.MoveNextAsync(cancellationToken) || enumerator.Current.TypeCase != CreateLargeTaskRequest.TypeOneofCase.TaskPayload)
-            throw new RpcException(new(StatusCode.InvalidArgument,
-                                       "Previous message had an incomplete PayloadChunk. Expecting a new PayloadChunk."));
+          break;
+        case CreateLargeTaskRequest.TypeOneofCase.TaskPayload:
+          if (string.IsNullOrEmpty(id) || expectedOutputKeys.Any())
+            throw new InvalidOperationException();
+          switch (enumerator.Current.TaskPayload.TypeCase)
+          {
+            case DataChunk.TypeOneofCase.Data:
+              chunks.Enqueue(enumerator.Current.TaskPayload.Data.Memory);
+              break;
+            case DataChunk.TypeOneofCase.DataComplete:
+              yield return new(id,
+                               expectedOutputKeys,
+                               dataDependencies,
+                               chunks.ToAsyncEnumerable());
 
-          chunks.Enqueue(enumerator.Current.TaskPayload.Data.Memory);
-        } 
+              id                 = string.Empty;
+              expectedOutputKeys = Array.Empty<string>();
+              dataDependencies   = Array.Empty<string>();
+              chunks             = new();
+              break;
+            case DataChunk.TypeOneofCase.None:
+            default:
+              throw new InvalidOperationException();
+          }
+
+          break;
+        case CreateLargeTaskRequest.TypeOneofCase.InitRequest:
+        case CreateLargeTaskRequest.TypeOneofCase.None:
+        default:
+          throw new InvalidOperationException();
       }
-
-      yield return new(id,
-                       initTaskExpectedOutputKeys,
-                       initTaskDataDependencies,
-                       chunks.ToAsyncEnumerable());
     }
   }
 }

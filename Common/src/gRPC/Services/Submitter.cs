@@ -36,6 +36,8 @@ using Google.Protobuf;
 
 using Grpc.Core;
 
+using JetBrains.Annotations;
+
 using Microsoft.Extensions.Logging;
 
 using KeyNotFoundException = ArmoniK.Core.Common.Exceptions.KeyNotFoundException;
@@ -54,6 +56,7 @@ public class Submitter : ISubmitter
   private readonly ITaskTable     taskTable_;
   private readonly IResultTable   resultTable_;
 
+  [UsedImplicitly]
   public Submitter(IQueueStorage         lockedQueueStorage,
                    IObjectStorageFactory objectStorageFactory,
                    ILogger<Submitter>    logger,
@@ -67,15 +70,14 @@ public class Submitter : ISubmitter
     taskTable_            = taskTable;
     resultTable_          = resultTable;
     lockedQueueStorage_   = lockedQueueStorage;
-
   }
 
   private IObjectStorage ResultStorage(string  session) => objectStorageFactory_.CreateResultStorage(session);
   private IObjectStorage PayloadStorage(string session) => objectStorageFactory_.CreateResultStorage(session);
 
   /// <inheritdoc />
-  public  Task<ConfigurationReply> GetServiceConfiguration(Empty request, CancellationToken cancellationToken)
-    => Task.FromResult(new ConfigurationReply()
+  public  Task<Configuration> GetServiceConfiguration(Empty request, CancellationToken cancellationToken)
+    => Task.FromResult(new Configuration()
                        {
                          DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
                        });
@@ -380,9 +382,20 @@ public class Submitter : ISubmitter
     {
       await responseStream.WriteAsync(new()
                                       {
-                                        Result = UnsafeByteOperations.UnsafeWrap(new(chunk)),
+                                        Result = new()
+                                                 {
+                                                   Data = UnsafeByteOperations.UnsafeWrap(new(chunk)),
+                                                 },
                                       });
     }
+
+    await responseStream.WriteAsync(new()
+                                    {
+                                      Result = new()
+                                               {
+                                                 DataComplete = true,
+                                               },
+                                    });
   }
 
   public  async Task<Count> WaitForCompletion(WaitRequest request, CancellationToken cancellationToken)

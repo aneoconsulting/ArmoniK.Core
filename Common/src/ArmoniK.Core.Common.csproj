@@ -9,6 +9,7 @@
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <IsPackable>true</IsPackable>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+    <Nullable>enable</Nullable>
 	</PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

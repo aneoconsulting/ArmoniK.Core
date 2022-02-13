@@ -35,11 +35,11 @@ public class AppSettingsException : ArmoniKException
   {
   }
 
-  public AppSettingsException(string? message) : base(message)
+  public AppSettingsException(string message) : base(message)
   {
   }
 
-  public AppSettingsException(string? message, Exception? innerException) : base(message,
+  public AppSettingsException(string message, Exception innerException) : base(message,
                                                                                  innerException)
   {
   }

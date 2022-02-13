@@ -64,7 +64,7 @@ namespace ArmoniK.Core.Common.gRPC.Services
                                       IAsyncEnumerable<TaskRequest> taskRequests,
                                       CancellationToken             cancellationToken);
 
-    Task<ConfigurationReply> GetServiceConfiguration(Empty request, CancellationToken cancellationToken);
+    Task<Configuration> GetServiceConfiguration(Empty request, CancellationToken cancellationToken);
 
     Task TryGetResult(ResultRequest request, IServerStreamWriter<ResultReply> responseStream, CancellationToken cancellationToken);
 
