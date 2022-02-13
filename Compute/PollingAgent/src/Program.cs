@@ -88,7 +88,9 @@ public static class Program
              .AddRedis(builder.Configuration,
                        logger)
              .AddHostedService<Worker>()
-             .AddSingleton<Pollster>();
+             .AddSingleton<Pollster>()
+             .AddSingleton<PreconditionChecker>()
+             .AddSingleton<DataPrefetcher>();
 
       builder.Services.AddHealthChecks();
 

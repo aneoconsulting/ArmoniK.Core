@@ -24,6 +24,7 @@
 using System;
 
 using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Injection.Options;
 
@@ -81,6 +82,8 @@ public static class ServiceCollectionExt
                 .AddSingletonWithHealthCheck<WorkerClientProvider>(nameof(WorkerClientProvider));
       }
     }
+
+    services.AddSingleton<ISubmitter, Submitter>();
 
 
     return services;
