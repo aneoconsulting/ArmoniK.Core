@@ -22,14 +22,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Security;
-using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
@@ -46,49 +40,6 @@ using StackExchange.Redis;
 
 namespace ArmoniK.Core.Adapters.Redis
 {
-  public class ObjectStorage : IObjectStorage
-  {
-    private readonly IDatabaseAsync redis_;
-
-    public ObjectStorage(IDatabaseAsync redis)
-      => redis_ = redis;
-
-    /// <inheritdoc />
-    public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<byte[]> valueChunks, CancellationToken cancellationToken = default)
-    {
-      await Task.WhenAll(await valueChunks.Select((chunk, i) => redis_.ListSetByIndexAsync(key,
-                                                                                           i,
-                                                                                           chunk)).ToListAsync(cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default)
-    {
-      await Task.WhenAll(await valueChunks.Select((chunk, i) => redis_.ListSetByIndexAsync(key,
-                                                                                           i,
-                                                                                           chunk)).ToListAsync(cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public async IAsyncEnumerable<byte[]> TryGetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-      var res = await redis_.ListRangeAsync(key);
-      foreach (var redisValue in res)
-      {
-        cancellationToken.ThrowIfCancellationRequested();
-        yield return redisValue;
-      }
-    }
-
-    /// <inheritdoc />
-    public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
-      => await redis_.KeyDeleteAsync(key);
-
-    /// <inheritdoc />
-    public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
-  }
-
   public static class ServiceCollectionExt
   {
     [PublicAPI]
@@ -166,6 +117,7 @@ namespace ArmoniK.Core.Adapters.Redis
         serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                                           TextWriter.Null).GetDatabase());
         serviceCollection.AddSingleton<IObjectStorage, ObjectStorage>();
+        serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
       }
 
       return serviceCollection;

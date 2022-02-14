@@ -367,7 +367,7 @@ public class Submitter : ISubmitter
     }
     catch (Exception e)
     {
-      Console.WriteLine(e);
+      logger_.LogError(e, "Error while creating Session");
       return new()
              {
                Error = e.ToString(),

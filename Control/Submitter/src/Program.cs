@@ -46,11 +46,6 @@ public static class Program
 {
   public static int Main(string[] args)
   {
-    Log.Logger = new LoggerConfiguration()
-                 .Enrich.FromLogContext()
-                 .WriteTo.Console()
-                 .CreateBootstrapLogger();
-
     try
     {
       Log.Information("Starting web host");
@@ -66,16 +61,16 @@ public static class Program
              .AddEnvironmentVariables()
              .AddCommandLine(args);
 
-      var serilogLogger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
-                                                   .WriteTo.Console(new CompactJsonFormatter())
-                                                   .Enrich.FromLogContext()
-                                                   .CreateLogger();
+      Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
+                                                .WriteTo.Console(new CompactJsonFormatter())
+                                                .Enrich.FromLogContext()
+                                                .CreateLogger();
 
-      var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(serilogLogger))
+      var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger))
                                 .CreateLogger("root");
 
       builder.Host
-             .UseSerilog(serilogLogger);
+             .UseSerilog(Log.Logger);
 
       builder.Services
              .AddLogging()

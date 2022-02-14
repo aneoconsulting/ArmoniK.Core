@@ -45,7 +45,8 @@ public class ResultTable : IResultTable
   private readonly SessionProvider                                                         sessionProvider_;
   private readonly MongoCollectionProvider<ResultDataModelMapping, ResultDataModelMapping> resultCollectionProvider_;
 
-  public ResultTable(SessionProvider sessionProvider, MongoCollectionProvider<ResultDataModelMapping, ResultDataModelMapping> resultCollectionProvider, ILogger logger)
+  public ResultTable(SessionProvider sessionProvider, MongoCollectionProvider<ResultDataModelMapping, ResultDataModelMapping> resultCollectionProvider, ILogger<
+                       ResultTable> logger)
   {
     sessionProvider_          = sessionProvider;
     resultCollectionProvider_ = resultCollectionProvider;

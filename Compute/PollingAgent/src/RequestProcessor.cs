@@ -84,7 +84,7 @@ public class RequestProcessor
     {
       await submitter_.CancelDispatchSessionAsync(taskData.SessionId,
                                                   dispatch.Id, cancellationToken);
-      Console.WriteLine(e);
+      logger_.LogError(e, "Error while processing request");
 
       if (!await HandleExceptionAsync(e,
                                       taskData,
@@ -171,7 +171,6 @@ public class RequestProcessor
         await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
                                                TaskStatus.Error,
                                                CancellationToken.None);
-        Console.WriteLine(e);
         return false;
       }
     }

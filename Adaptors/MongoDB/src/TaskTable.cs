@@ -50,7 +50,7 @@ public class TaskTable : ITaskTable
   private readonly SessionProvider                        sessionProvider_;
   private readonly MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider_;
 
-  public TaskTable(SessionProvider sessionProvider, MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider, ILogger logger)
+  public TaskTable(SessionProvider sessionProvider, MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider, ILogger<TaskTable> logger)
   {
     sessionProvider_        = sessionProvider;
     taskCollectionProvider_ = taskCollectionProvider;

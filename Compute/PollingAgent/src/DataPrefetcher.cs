@@ -21,7 +21,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf;
@@ -41,12 +41,12 @@ public class DataPrefetcher
 {
   private static readonly ActivitySource ActivitySource = new ($"{typeof(DataPrefetcher).FullName}");
   
-  private readonly IObjectStorageFactory     objectStorageFactory_;
-  private readonly ILogger<RequestProcessor> logger_;
+  private readonly IObjectStorageFactory   objectStorageFactory_;
+  private readonly ILogger<DataPrefetcher> logger_;
 
   public DataPrefetcher(
-    IObjectStorageFactory     objectStorageFactory,
-    ILogger<RequestProcessor> logger)
+    IObjectStorageFactory   objectStorageFactory,
+    ILogger<DataPrefetcher> logger)
   {
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
@@ -54,6 +54,7 @@ public class DataPrefetcher
 
   public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData taskData, CancellationToken cancellationToken)
   {
+    using var _        = logger_.LogFunction();
     using var activity = ActivitySource.StartActivity(nameof(PrefetchDataAsync));
 
     var resultStorage  = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
