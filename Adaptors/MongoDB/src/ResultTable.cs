@@ -41,11 +41,11 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class ResultTable : IResultTable
 {
-  private readonly ILogger                                  logger_;
-  private readonly SessionProvider                          sessionProvider_;
-  private readonly MongoCollectionProvider<ResultDataModel> resultCollectionProvider_;
+  private readonly ILogger                                                                 logger_;
+  private readonly SessionProvider                                                         sessionProvider_;
+  private readonly MongoCollectionProvider<ResultDataModelMapping, ResultDataModelMapping> resultCollectionProvider_;
 
-  public ResultTable(SessionProvider sessionProvider, MongoCollectionProvider<ResultDataModel> resultCollectionProvider, ILogger logger)
+  public ResultTable(SessionProvider sessionProvider, MongoCollectionProvider<ResultDataModelMapping, ResultDataModelMapping> resultCollectionProvider, ILogger logger)
   {
     sessionProvider_          = sessionProvider;
     resultCollectionProvider_ = resultCollectionProvider;
@@ -59,7 +59,7 @@ public class ResultTable : IResultTable
 
     var resultCollection = await resultCollectionProvider_.GetAsync();
 
-    await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<ResultDataModel>(result.ToResultDataModel())),
+    await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<ResultDataModelMapping>(result.ToResultDataModel())),
                                           new()
                                           {
                                             IsOrdered = false,
@@ -98,11 +98,11 @@ public class ResultTable : IResultTable
 
     var resultCollection = await resultCollectionProvider_.GetAsync();
 
-    var res = await resultCollection.UpdateOneAsync(Builders<ResultDataModel>.Filter
+    var res = await resultCollection.UpdateOneAsync(Builders<ResultDataModelMapping>.Filter
                                                                              .Where(model => model.Key == key &&
                                                                                              model.OwnerTaskId == ownerTaskId &&
                                                                                              model.SessionId == sessionId),
-                                                    Builders<ResultDataModel>.Update
+                                                    Builders<ResultDataModelMapping>.Update
                                                                              .Set(model => model.IsResultAvailable,
                                                                                   true)
                                                                              .Set(model => model.Data,
@@ -119,9 +119,9 @@ public class ResultTable : IResultTable
 
     var resultCollection = await resultCollectionProvider_.GetAsync();
 
-    var res = await resultCollection.UpdateOneAsync(Builders<ResultDataModel>.Filter
+    var res = await resultCollection.UpdateOneAsync(Builders<ResultDataModelMapping>.Filter
                                                                              .Where(model => model.Key == key && model.OwnerTaskId == ownerTaskId),
-                                                    Builders<ResultDataModel>.Update
+                                                    Builders<ResultDataModelMapping>.Update
                                                                              .Set(model => model.IsResultAvailable,
                                                                                   true),
                                                     cancellationToken: cancellationToken);
@@ -139,7 +139,7 @@ public class ResultTable : IResultTable
 
 
     await resultCollection.UpdateManyAsync(model => model.OriginDispatchId == oldDispatchId,
-                                           Builders<ResultDataModel>.Update
+                                           Builders<ResultDataModelMapping>.Update
                                                                     .Set(model => model.OriginDispatchId,
                                                                          newDispatchId),
                                            cancellationToken: cancellationToken);
@@ -158,7 +158,7 @@ public class ResultTable : IResultTable
 
 
     await resultCollection.UpdateManyAsync(model => model.OwnerTaskId == oldTaskId,
-                                           Builders<ResultDataModel>.Update
+                                           Builders<ResultDataModelMapping>.Update
                                                                     .Set(model => model.OwnerTaskId,
                                                                          newTaskId),
                                            cancellationToken: cancellationToken);

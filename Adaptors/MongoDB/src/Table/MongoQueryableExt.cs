@@ -22,7 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Driver.Linq;
 
@@ -30,7 +30,7 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table;
 
 public static class MongoQueryableExt
 {
-  public static IMongoQueryable<TaskDataModel> FilterQuery(this IMongoQueryable<TaskDataModel> taskQueryable,
+  public static IMongoQueryable<TaskData> FilterQuery(this IMongoQueryable<TaskData> taskQueryable,
                                                            TaskFilter                          filter)
     => taskQueryable.Where(filter.ToFilterExpression());
 }

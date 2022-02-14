@@ -38,15 +38,15 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 
 
-public class DispatchDataModel : IMongoDataModel<DispatchDataModel>, IDispatch
+public class DispatchDataModelMapping : IMongoDataModelMapping<DispatchDataModelMapping>, IDispatch
 {
 
-  public const string Collection = nameof(DispatchDataModel);
+  public const string Collection = nameof(DispatchDataModelMapping);
 
-  static DispatchDataModel()
+  static DispatchDataModelMapping()
   {
-    if (!BsonClassMap.IsClassMapRegistered(typeof(DispatchDataModel)))
-      BsonClassMap.RegisterClassMap<DispatchDataModel>(cm =>
+    if (!BsonClassMap.IsClassMapRegistered(typeof(DispatchDataModelMapping)))
+      BsonClassMap.RegisterClassMap<DispatchDataModelMapping>(cm =>
                                                        {
                                                          cm.MapIdProperty(nameof(Id)).SetIsRequired(true);
                                                          cm.MapProperty(nameof(TaskId)).SetIsRequired(true);
@@ -94,5 +94,5 @@ public class DispatchDataModel : IMongoDataModel<DispatchDataModel>, IDispatch
 
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<DispatchDataModel> collection) => throw new NotImplementedException();
+  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<DispatchDataModelMapping> collection) => throw new NotImplementedException();
 }

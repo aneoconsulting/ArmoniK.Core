@@ -28,6 +28,7 @@ using System.Linq;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -44,48 +45,45 @@ internal class BsonSerializerTest
   [Test]
   public void SerializeTaskDataModel()
   {
-    var tdm = new TaskDataModel
-              {
-                HasPayload = true,
-                Options = new()
-                          {
-                            Priority = 2,
-                            Options =
-                            {
-                              { "key1", "Value1" },
-                              { "key2", "value2" },
-                            },
-
-                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(42)),
-                            MaxRetries  = 7,
-                          },
-                TaskId       = "tid",
-                Payload      = new[] { (byte)1, (byte)2, (byte)3 },
-                SessionId    = "ses1",
-                Status       = TaskStatus.Creating,
-                ParentTaskId = "par",
-                CreationDate = DateTime.Now,
-                DataDependencies = new List<string>
-                                   {
-                                     "dep1",
-                                     "dep2",
-                                   },
-                AncestorDispatchIds = new List<string>
+    var tdm = new TaskData(HasPayload: true,
+                           Options: new()
+                                    {
+                                      Priority = 2,
+                                      Options =
                                       {
-                                        "ancestor1",
-                                        "ancestor2",
+                                        { "key1", "Value1" },
+                                        { "key2", "value2" },
                                       },
-                DispatchId = "dispatchId1",
-                ExpectedOutput = new List<string>
-                                 {
-                                   "output1",
-                                   "output2",
-                                 },
-              };
+
+                                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(42)),
+                                      MaxRetries  = 7,
+                                    },
+                           TaskId: "tid",
+                           Payload: new[] { (byte)1, (byte)2, (byte)3 },
+                           SessionId: "ses1",
+                           Status: TaskStatus.Creating,
+                           ParentTaskId: "par",
+                           CreationDate: DateTime.Now,
+                           DataDependencies: new List<string>
+                                             {
+                                               "dep1",
+                                               "dep2",
+                                             },
+                           AncestorDispatchIds: new List<string>
+                                                {
+                                                  "ancestor1",
+                                                  "ancestor2",
+                                                },
+                           DispatchId: "dispatchId1",
+                           ExpectedOutput: new List<string>
+                                           {
+                                             "output1",
+                                             "output2",
+                                           });
 
     var serialized = tdm.ToBson();
 
-    var deserialized = BsonSerializer.Deserialize<TaskDataModel>(serialized);
+    var deserialized = BsonSerializer.Deserialize<TaskData>(serialized);
 
     Assert.IsNotNull(deserialized);
     Assert.AreEqual(tdm.HasPayload,

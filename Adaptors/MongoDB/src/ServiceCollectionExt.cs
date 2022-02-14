@@ -185,7 +185,7 @@ public static class ServiceCollectionExt
                 return new MongoClient(settings);
               })
               .AddTransient(provider => provider.GetRequiredService<IMongoClient>().GetDatabase(mongoOptions.DatabaseName))
-              .AddSingleton(typeof(MongoCollectionProvider<>))
+              .AddSingleton(typeof(MongoCollectionProvider<,>))
               .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}")
               .AddHealthChecks()
               .AddMongoDb(settings,

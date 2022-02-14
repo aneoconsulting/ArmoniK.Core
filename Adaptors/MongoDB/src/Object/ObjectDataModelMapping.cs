@@ -30,7 +30,7 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Object;
 
-public class ObjectDataModel : IMongoDataModel<ObjectDataModel>
+public class ObjectDataModelMapping : IMongoDataModelMapping<ObjectDataModelMapping>
 {
   public const string Collection = "Object";
 
@@ -53,16 +53,16 @@ public class ObjectDataModel : IMongoDataModel<ObjectDataModel>
   /// <inheritdoc />
   public Task InitializeIndexesAsync(
     IClientSessionHandle              sessionHandle,
-    IMongoCollection<ObjectDataModel> collection)
+    IMongoCollection<ObjectDataModelMapping> collection)
   {
-    var keyIndex      = Builders<ObjectDataModel>.IndexKeys.Text(model => model.Key);
-    var chunkIdxIndex = Builders<ObjectDataModel>.IndexKeys.Text(model => model.ChunkIdx);
-    var iDIndex       = Builders<ObjectDataModel>.IndexKeys.Text(model => model.Id);
-    var combinedIndex = Builders<ObjectDataModel>.IndexKeys.Combine(keyIndex,
+    var keyIndex      = Builders<ObjectDataModelMapping>.IndexKeys.Text(model => model.Key);
+    var chunkIdxIndex = Builders<ObjectDataModelMapping>.IndexKeys.Text(model => model.ChunkIdx);
+    var iDIndex       = Builders<ObjectDataModelMapping>.IndexKeys.Text(model => model.Id);
+    var combinedIndex = Builders<ObjectDataModelMapping>.IndexKeys.Combine(keyIndex,
                                                                     chunkIdxIndex);
 
 
-    var indexModels = new CreateIndexModel<ObjectDataModel>[]
+    var indexModels = new CreateIndexModel<ObjectDataModelMapping>[]
                       {
                         new(iDIndex,
                             new()

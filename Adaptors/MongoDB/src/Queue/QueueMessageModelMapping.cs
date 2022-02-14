@@ -31,7 +31,7 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Queue;
 
-public class QueueMessageModel : IMongoDataModel<QueueMessageModel>
+public class QueueMessageModelMapping : IMongoDataModelMapping<QueueMessageModelMapping>
 {
   public const string Collection = "Queue";
 
@@ -63,23 +63,23 @@ public class QueueMessageModel : IMongoDataModel<QueueMessageModel>
   /// <inheritdoc />
   public Task InitializeIndexesAsync(
     IClientSessionHandle                sessionHandle,
-    IMongoCollection<QueueMessageModel> collection)
+    IMongoCollection<QueueMessageModelMapping> collection)
   {
-    var messageIdIndex  = Builders<QueueMessageModel>.IndexKeys.Text(model => model.MessageId);
-    var ownerIdIndex    = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnerId);
-    var submissionIndex = Builders<QueueMessageModel>.IndexKeys.Ascending(model => model.SubmissionDate);
-    var priorityIndex   = Builders<QueueMessageModel>.IndexKeys.Descending(model => model.Priority);
-    var ownedUntilIndex = Builders<QueueMessageModel>.IndexKeys.Text(model => model.OwnedUntil);
-    var pullIndex = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
+    var messageIdIndex  = Builders<QueueMessageModelMapping>.IndexKeys.Text(model => model.MessageId);
+    var ownerIdIndex    = Builders<QueueMessageModelMapping>.IndexKeys.Text(model => model.OwnerId);
+    var submissionIndex = Builders<QueueMessageModelMapping>.IndexKeys.Ascending(model => model.SubmissionDate);
+    var priorityIndex   = Builders<QueueMessageModelMapping>.IndexKeys.Descending(model => model.Priority);
+    var ownedUntilIndex = Builders<QueueMessageModelMapping>.IndexKeys.Text(model => model.OwnedUntil);
+    var pullIndex = Builders<QueueMessageModelMapping>.IndexKeys.Combine(priorityIndex,
                                                                   submissionIndex);
-    var pullIndex2 = Builders<QueueMessageModel>.IndexKeys.Combine(priorityIndex,
+    var pullIndex2 = Builders<QueueMessageModelMapping>.IndexKeys.Combine(priorityIndex,
                                                                    submissionIndex,
                                                                    ownedUntilIndex);
-    var lockedIndex = Builders<QueueMessageModel>.IndexKeys.Combine(messageIdIndex,
+    var lockedIndex = Builders<QueueMessageModelMapping>.IndexKeys.Combine(messageIdIndex,
                                                                     ownerIdIndex);
 
 
-    var indexModels = new CreateIndexModel<QueueMessageModel>[]
+    var indexModels = new CreateIndexModel<QueueMessageModelMapping>[]
                       {
                         new(pullIndex,
                             new()

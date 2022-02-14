@@ -27,9 +27,9 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 public static class ResultExtensions
 {
-  public static ResultDataModel ToResultDataModel(this Result result)
+  public static ResultDataModelMapping ToResultDataModel(this Result result)
   {
-    if (result is ResultDataModel resultModel)
+    if (result is ResultDataModelMapping resultModel)
     {
       return resultModel;
     }

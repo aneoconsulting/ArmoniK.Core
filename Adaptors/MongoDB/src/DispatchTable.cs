@@ -51,11 +51,11 @@ public class DispatchTable : IDispatchTable
   /// <inheritdoc />
   public TimeSpan DispatchRefreshPeriod { get; set; }
 
-  private readonly SessionProvider                            sessionProvider_;
-  private readonly MongoCollectionProvider<DispatchDataModel> dispatchCollectionProvider_;
+  private readonly SessionProvider                                                             sessionProvider_;
+  private readonly MongoCollectionProvider<DispatchDataModelMapping, DispatchDataModelMapping> dispatchCollectionProvider_;
 
   [UsedImplicitly]
-  public DispatchTable(SessionProvider        sessionProvider, MongoCollectionProvider<DispatchDataModel> dispatchCollectionProvider,
+  public DispatchTable(SessionProvider        sessionProvider, MongoCollectionProvider<DispatchDataModelMapping, DispatchDataModelMapping> dispatchCollectionProvider,
                        Options.TableStorage   options,
                        ILogger<DispatchTable> logger)
   {
@@ -80,7 +80,7 @@ public class DispatchTable : IDispatchTable
 
     var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
-    var updateDefinition = Builders<DispatchDataModel>.Update
+    var updateDefinition = Builders<DispatchDataModelMapping>.Update
                                                       .SetOnInsert(model => model.TimeToLive,
                                                                    DateTime.UtcNow + DispatchTimeToLiveDuration)
                                                       .SetOnInsert(model => model.Id,
@@ -94,9 +94,9 @@ public class DispatchTable : IDispatchTable
                                                       .SetOnInsert(model => model.SessionId,
                                                                    sessionId);
 
-    var res = await dispatchCollection.FindOneAndUpdateAsync<DispatchDataModel>(model => model.TaskId == taskId && model.TimeToLive > DateTime.UtcNow,
+    var res = await dispatchCollection.FindOneAndUpdateAsync<DispatchDataModelMapping>(model => model.TaskId == taskId && model.TimeToLive > DateTime.UtcNow,
                                                                                 updateDefinition,
-                                                                                new FindOneAndUpdateOptions<DispatchDataModel>
+                                                                                new FindOneAndUpdateOptions<DispatchDataModelMapping>
                                                                                 {
                                                                                   IsUpsert       = true,
                                                                                   ReturnDocument = ReturnDocument.After,
@@ -109,7 +109,7 @@ public class DispatchTable : IDispatchTable
                             dispatchId,
                             taskId);
 
-      var oldDispatchUpdates = Builders<DispatchDataModel>.Update
+      var oldDispatchUpdates = Builders<DispatchDataModelMapping>.Update
                                                           .Set(model => model.TimeToLive,
                                                                DateTime.MinValue)
                                                           .AddToSet(model => model.Statuses,
@@ -123,7 +123,7 @@ public class DispatchTable : IDispatchTable
 
       if (olds.ModifiedCount > 0)
         await dispatchCollection.FindOneAndUpdateAsync(model => model.Id == dispatchId,
-                                                       Builders<DispatchDataModel>.Update
+                                                       Builders<DispatchDataModelMapping>.Update
                                                                                   .Set(m => m.Attempt,
                                                                                        olds.ModifiedCount + 1),
                                                        cancellationToken: cancellationToken);
@@ -155,15 +155,15 @@ public class DispatchTable : IDispatchTable
     using var _                  = Logger.LogFunction(id);
     var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
-    var updateDefinition = Builders<DispatchDataModel>.Update
+    var updateDefinition = Builders<DispatchDataModelMapping>.Update
                                                       .AddToSet(model => model.Statuses,
                                                                 new(status,
                                                                     DateTime.UtcNow,
                                                                     string.Empty));
 
-    var res = await dispatchCollection.FindOneAndUpdateAsync<DispatchDataModel>(model => model.Id == id && model.TimeToLive > DateTime.UtcNow,
+    var res = await dispatchCollection.FindOneAndUpdateAsync<DispatchDataModelMapping>(model => model.Id == id && model.TimeToLive > DateTime.UtcNow,
                                                                                 updateDefinition,
-                                                                                new FindOneAndUpdateOptions<DispatchDataModel>
+                                                                                new FindOneAndUpdateOptions<DispatchDataModelMapping>
                                                                                 {
                                                                                   IsUpsert       = false,
                                                                                   ReturnDocument = ReturnDocument.After,
@@ -183,7 +183,7 @@ public class DispatchTable : IDispatchTable
     var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
     var res = await dispatchCollection.FindOneAndUpdateAsync(model => model.Id == id,
-                                                             Builders<DispatchDataModel>.Update
+                                                             Builders<DispatchDataModelMapping>.Update
                                                                                         .Set(model => model.TimeToLive,
                                                                                              DateTime.UtcNow + DispatchTimeToLiveDuration),
                                                              cancellationToken: cancellationToken);

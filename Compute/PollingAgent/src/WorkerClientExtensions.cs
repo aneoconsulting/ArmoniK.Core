@@ -266,7 +266,7 @@ public static class WorkerClientExtensions
                   break;
                 case DataChunk.TypeOneofCase.None:
                 default:
-                  throw new ArgumentOutOfRangeException();
+                  throw new InvalidOperationException();
               }
 
               break;

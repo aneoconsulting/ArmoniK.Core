@@ -35,14 +35,14 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public record SessionDataModel : SessionData, IMongoDataModel<SessionDataModel>
+public record SessionDataModelMapping : SessionData, IMongoDataModelMapping<SessionDataModelMapping>
 {
   public const string Collection = "SessionData";
 
-  static SessionDataModel()
+  static SessionDataModelMapping()
   {
-    if (!BsonClassMap.IsClassMapRegistered(typeof(SessionDataModel)))
-      BsonClassMap.RegisterClassMap<SessionDataModel>(cm =>
+    if (!BsonClassMap.IsClassMapRegistered(typeof(SessionDataModelMapping)))
+      BsonClassMap.RegisterClassMap<SessionDataModelMapping>(cm =>
                                                       {
                                                         cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
                                                         cm.MapProperty(nameof(DispatchId)).SetIsRequired(true);
@@ -58,7 +58,7 @@ public record SessionDataModel : SessionData, IMongoDataModel<SessionDataModel>
                                                       });
   }
 
-  public SessionDataModel(string              sessionId, 
+  public SessionDataModelMapping(string              sessionId, 
                           string              dispatchId, 
                           IEnumerable<string> ancestorsDispatchId, 
                           bool                isCancelled, 
@@ -71,11 +71,11 @@ public record SessionDataModel : SessionData, IMongoDataModel<SessionDataModel>
   {
   }
 
-  protected SessionDataModel(SessionData original) : base(original)
+  protected SessionDataModelMapping(SessionData original) : base(original)
   {
   }
 
-  public SessionDataModel()
+  public SessionDataModelMapping()
     : base(string.Empty,
            string.Empty,
            Enumerable.Empty<string>(),
@@ -88,12 +88,12 @@ public record SessionDataModel : SessionData, IMongoDataModel<SessionDataModel>
   public string CollectionName { get; } = Collection;
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionDataModel> collection)
+  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionDataModelMapping> collection)
   {
-    var sessionIndex = Builders<SessionDataModel>.IndexKeys.Text(model => model.SessionId);
-    var dispatchIndex = Builders<SessionDataModel>.IndexKeys.Text(model => model.DispatchId);
+    var sessionIndex = Builders<SessionDataModelMapping>.IndexKeys.Text(model => model.SessionId);
+    var dispatchIndex = Builders<SessionDataModelMapping>.IndexKeys.Text(model => model.DispatchId);
 
-    var indexModels = new CreateIndexModel<SessionDataModel>[]
+    var indexModels = new CreateIndexModel<SessionDataModelMapping>[]
                       {
                         new(sessionIndex,
                             new()

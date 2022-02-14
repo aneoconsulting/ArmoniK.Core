@@ -26,19 +26,19 @@ using System.Linq;
 using System.Linq.Expressions;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table;
 
 public static class TaskFilterExt
 {
-  public static IQueryable<TaskDataModel> FilterQuery(this IQueryable<TaskDataModel> taskQueryable,
+  public static IQueryable<TaskData> FilterQuery(this IQueryable<TaskData> taskQueryable,
                                                       TaskFilter                     filter)
     => taskQueryable.Where(filter.ToFilterExpression());
 
-  public static Expression<Func<TaskDataModel, bool>> ToFilterExpression(this TaskFilter filter)
+  public static Expression<Func<TaskData, bool>> ToFilterExpression(this TaskFilter filter)
   {
-    var x = Expression.Parameter(typeof(TaskDataModel),
+    var x = Expression.Parameter(typeof(TaskData),
                                  "model");
 
 
@@ -115,7 +115,7 @@ public static class TaskFilterExt
     }
 
 
-    return (Expression<Func<TaskDataModel, bool>>)Expression.Lambda(output,
+    return (Expression<Func<TaskData, bool>>)Expression.Lambda(output,
                                                                     x);
   }
 }

@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2022. All rights reserved.
+// Copyright (C) ANEO, 2021-2021. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -21,20 +21,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Storage;
+using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using MongoDB.Driver;
 
-public static class TaskDataExtensions
+namespace ArmoniK.Core.Adapters.MongoDB.Common;
+
+public interface IMongoDataModelMapping<T>
 {
-  public static TaskDataModel ToTaskDataModel(this TaskData taskData)
-  {
-    if (taskData is TaskDataModel taskDataModel)
-    {
-      return taskDataModel;
-    }
+  string CollectionName { get; }
 
-    return new(taskData);
-
-  }
+  Task InitializeIndexesAsync(IClientSessionHandle sessionHandle,
+                              IMongoCollection<T>  collection);
 }

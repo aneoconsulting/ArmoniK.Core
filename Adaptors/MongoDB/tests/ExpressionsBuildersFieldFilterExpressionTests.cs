@@ -21,9 +21,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Core.Common.Storage;
+
+using Grpc.Core;
 
 using NUnit.Framework;
 
@@ -38,10 +43,20 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.SessionId,
                                                          new[] { "Session" }).Compile();
 
-    var model = new TaskDataModel
-                {
-                  SessionId = "Session",
-                };
+    var model = new TaskData(
+                                SessionId : "Session",
+                                default,
+                                default,
+                                default,
+                                default,
+                                default,
+                                default,
+                                default,
+                                default,
+                                default,
+                                default,
+                                default
+                              );
 
     Assert.IsTrue(func(model));
   }
@@ -53,10 +68,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          new[] { "Session" })
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  SessionId = "OtherSession",
-                };
+    var model = new TaskData(SessionId: "OtherSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -69,10 +92,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  SessionId = "Session",
-                };
+    var model = new TaskData(SessionId: "Session",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -84,11 +115,19 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          new[] { "Session" },
                                                          false)
                                   .Compile();
-
-    var model = new TaskDataModel
-                {
-                  SessionId = "OtherSession",
-                };
+    
+    var model = new TaskData(SessionId: "OtherSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -100,10 +139,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          new[] { "SubSession" })
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  ParentTaskId = "SubSession",
-                };
+    var model = new TaskData(default,
+                             ParentTaskId: "SubSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -116,10 +163,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  ParentTaskId = "SubSession",
-                };
+    var model = new TaskData(default,
+                             ParentTaskId: "SubSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -131,10 +186,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          new[] { "SubSession", "SubSession2" })
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  ParentTaskId = "SubSession",
-                };
+    var model = new TaskData(default,
+                             ParentTaskId: "SubSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -147,10 +210,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  ParentTaskId = "SubSession",
-                };
+    var model = new TaskData(default,
+                             ParentTaskId: "SubSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -161,11 +232,19 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
                                                          new[] { "SubSession" })
                                   .Compile();
-
-    var model = new TaskDataModel
-                {
-                  ParentTaskId = "OtherSubSession",
-                };
+    
+    var model = new TaskData(default,
+                             ParentTaskId: "OtherSubSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -178,10 +257,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile(true);
 
-    var model = new TaskDataModel
-                {
-                  ParentTaskId = "OtherSubSession",
-                };
+    var model = new TaskData(default,
+                             ParentTaskId: "OtherSubSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -193,10 +280,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          new[] { "SubSession", "SubSession2" })
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  ParentTaskId = "OtherSubSession",
-                };
+    var model = new TaskData(default,
+                             ParentTaskId: "OtherSubSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -209,10 +304,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  ParentTaskId = "OtherSubSession",
-                };
+    var model = new TaskData(default,
+                             ParentTaskId: "OtherSubSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -223,11 +326,20 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
                                                          new[] { TaskStatus.Completed })
                                   .Compile();
+    
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Completed,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status : TaskStatus.Completed,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -240,10 +352,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Completed,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: TaskStatus.Completed,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -255,10 +375,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          new[] { TaskStatus.Completed, TaskStatus.Canceled })
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Completed,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: TaskStatus.Completed,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -271,10 +399,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Completed,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: TaskStatus.Completed,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -286,10 +422,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          new[] { TaskStatus.Completed })
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Canceled,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: TaskStatus.Canceled,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -302,10 +446,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile(true);
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Canceled,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: TaskStatus.Canceled,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -317,10 +469,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          new[] { TaskStatus.Completed, TaskStatus.Canceling })
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Canceled,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: TaskStatus.Canceled,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -333,10 +493,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Canceled,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: TaskStatus.Canceled,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -347,11 +515,19 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
                                                          new[] { "Task" })
                                   .Compile();
-
-    var model = new TaskDataModel
-                {
-                  TaskId = "Task",
-                };
+    
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             TaskId : "Task",
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -364,10 +540,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  TaskId = "Task",
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             TaskId: "Task",
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -379,10 +563,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          new[] { "Task", "Task2" })
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  TaskId = "Task",
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             TaskId: "Task",
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -395,10 +587,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  TaskId = "Task",
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             TaskId: "Task",
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -409,11 +609,19 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
                                                          new[] { "Task" })
                                   .Compile();
-
-    var model = new TaskDataModel
-                {
-                  TaskId = "OtherTask",
-                };
+    
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             TaskId: "OtherTask",
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -426,10 +634,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile(true);
 
-    var model = new TaskDataModel
-                {
-                  TaskId = "OtherTask",
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             TaskId: "OtherTask",
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -441,10 +657,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          new[] { "Task", "Task2" })
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  TaskId = "OtherTask",
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             TaskId: "OtherTask",
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -457,10 +681,18 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskDataModel
-                {
-                  TaskId = "OtherTask",
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             TaskId: "OtherTask",
+                             default,
+                             default,
+                             default,
+                             default,
+                             Status: default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }

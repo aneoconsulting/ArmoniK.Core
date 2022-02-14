@@ -24,6 +24,7 @@
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
@@ -48,10 +49,18 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  SessionId = "Session",
-                };
+    var model = new TaskData("Session",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -72,10 +81,18 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  SessionId = "OtherSession",
-                };
+    var model = new TaskData("OtherSession",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -96,10 +113,19 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile(true);
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Completed,
-                };
+
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             TaskStatus.Completed,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -120,10 +146,18 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Completed,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             TaskStatus.Completed,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -145,10 +179,18 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Completed,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             TaskStatus.Completed,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -170,10 +212,18 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Completed,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             TaskStatus.Completed,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -194,10 +244,18 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Canceled,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             TaskStatus.Canceled,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -218,10 +276,18 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Canceled,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             TaskStatus.Canceled,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -243,10 +309,18 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Canceled,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             TaskStatus.Canceled,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -268,10 +342,18 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  Status = TaskStatus.Canceled,
-                };
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             TaskStatus.Canceled,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -292,10 +374,19 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  TaskId = "Task",
-                };
+
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             "Task",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -317,10 +408,19 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  TaskId = "Task",
-                };
+
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             "Task",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -341,10 +441,19 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  TaskId = "OtherTask",
-                };
+
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             "OtherTask",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -366,10 +475,19 @@ internal class TaskFilterExtTests
               .ToFilterExpression()
               .Compile();
 
-    var model = new TaskDataModel
-                {
-                  TaskId = "OtherTask",
-                };
+
+    var model = new TaskData(default,
+                             default,
+                             default,
+                             "OtherTask",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsFalse(func(model));
   }

@@ -33,9 +33,9 @@ using MongoDB.Driver;
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
 [PublicAPI]
-public class MongoCollectionProvider<TDataModel>
-  : ProviderBase<IMongoCollection<TDataModel>>
-  where TDataModel : IMongoDataModel<TDataModel>, new()
+public class MongoCollectionProvider<TData, TModelMapping>
+  : ProviderBase<IMongoCollection<TData>>
+  where TModelMapping : IMongoDataModelMapping<TData>, new()
 {
   public MongoCollectionProvider(Options.MongoDB   options,
                                  SessionProvider   sessionProvider,
@@ -43,11 +43,11 @@ public class MongoCollectionProvider<TDataModel>
                                  CancellationToken cancellationToken = default) :
     base(async () =>
          {
-           var model = new TDataModel();
+           var model = new TModelMapping();
            try
            {
              await mongoDatabase.CreateCollectionAsync(model.CollectionName,
-                                                       new CreateCollectionOptions<TDataModel>
+                                                       new CreateCollectionOptions<TData>
                                                        {
                                                          ExpireAfter = options.DataRetention,
                                                        },
@@ -57,7 +57,7 @@ public class MongoCollectionProvider<TDataModel>
            {
            }
 
-           var output  = mongoDatabase.GetCollection<TDataModel>(model.CollectionName);
+           var output  = mongoDatabase.GetCollection<TData>(model.CollectionName);
            var session = await sessionProvider.GetAsync();
            try
            {

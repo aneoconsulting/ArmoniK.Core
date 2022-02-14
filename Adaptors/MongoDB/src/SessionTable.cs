@@ -46,10 +46,10 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class SessionTable : ISessionTable
 {
-  private readonly SessionProvider                           sessionProvider_;
-  private readonly MongoCollectionProvider<SessionDataModel> sessionCollectionProvider_;
+  private readonly SessionProvider                                                           sessionProvider_;
+  private readonly MongoCollectionProvider<SessionDataModelMapping, SessionDataModelMapping> sessionCollectionProvider_;
 
-  public SessionTable(SessionProvider sessionProvider, MongoCollectionProvider<SessionDataModel> sessionCollectionProvider, ILogger<SessionTable> logger)
+  public SessionTable(SessionProvider sessionProvider, MongoCollectionProvider<SessionDataModelMapping, SessionDataModelMapping> sessionCollectionProvider, ILogger<SessionTable> logger)
   {
     sessionProvider_           = sessionProvider;
     sessionCollectionProvider_ = sessionCollectionProvider;
@@ -67,7 +67,7 @@ public class SessionTable : ISessionTable
     using var _                 = Logger.LogFunction();
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-    SessionDataModel data = new()
+    SessionDataModelMapping data = new()
                             {
                               IsCancelled = false,
                               Options     = defaultOptions,
@@ -146,7 +146,7 @@ public class SessionTable : ISessionTable
 
 
     var resSession = sessionCollection.UpdateOneAsync(model => model.DispatchId == dispatchId,
-                                                      Builders<SessionDataModel>.Update
+                                                      Builders<SessionDataModelMapping>.Update
                                                                                 .Set(model => model.IsCancelled,
                                                                                      true),
                                                       cancellationToken: cancellationToken);

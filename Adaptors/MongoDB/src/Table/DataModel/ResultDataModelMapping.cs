@@ -33,12 +33,12 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public record ResultDataModel : Result, IMongoDataModel<ResultDataModel>
+public record ResultDataModelMapping : Result, IMongoDataModelMapping<ResultDataModelMapping>
 {
-  static ResultDataModel()
+  static ResultDataModelMapping()
   {
-    if (!BsonClassMap.IsClassMapRegistered(typeof(ResultDataModel)))
-      BsonClassMap.RegisterClassMap<ResultDataModel>(cm =>
+    if (!BsonClassMap.IsClassMapRegistered(typeof(ResultDataModelMapping)))
+      BsonClassMap.RegisterClassMap<ResultDataModelMapping>(cm =>
                                                      {
                                                        cm.MapIdProperty(nameof(Id)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
@@ -59,7 +59,7 @@ public record ResultDataModel : Result, IMongoDataModel<ResultDataModel>
                                                      });
   }
 
-  public ResultDataModel(string   sessionId,
+  public ResultDataModelMapping(string   sessionId,
                          string   key,
                          string   ownerTaskId,
                          string   originDispatchId,
@@ -76,11 +76,11 @@ public record ResultDataModel : Result, IMongoDataModel<ResultDataModel>
   {
   }
 
-  public ResultDataModel(Result original) : base(original)
+  public ResultDataModelMapping(Result original) : base(original)
   {
   }
 
-  public ResultDataModel()
+  public ResultDataModelMapping()
     : base(string.Empty,
            string.Empty,
            string.Empty,
@@ -97,9 +97,9 @@ public record ResultDataModel : Result, IMongoDataModel<ResultDataModel>
   public string Id => $"{SessionId}.{Key}";
 
   /// <inheritdoc />
-  public string CollectionName => nameof(ResultDataModel);
+  public string CollectionName => nameof(ResultDataModelMapping);
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<ResultDataModel> collection)
+  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<ResultDataModelMapping> collection)
     => Task.CompletedTask;
 }

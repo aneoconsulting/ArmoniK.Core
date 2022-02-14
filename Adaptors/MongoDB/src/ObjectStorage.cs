@@ -47,14 +47,14 @@ public class ObjectStorage : IObjectStorage
 {
   public int ChunkSize { get; }
 
-  private readonly ILogger<ObjectStorage>                   logger_;
-  private readonly MongoCollectionProvider<ObjectDataModel> objectCollectionProvider_;
-  private readonly SessionProvider                          sessionProvider_;
+  private readonly ILogger<ObjectStorage>                                                  logger_;
+  private readonly MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider_;
+  private readonly SessionProvider                                                         sessionProvider_;
 
-  public ObjectStorage(SessionProvider                          sessionProvider,
-                       MongoCollectionProvider<ObjectDataModel> objectCollectionProvider,
-                       ILogger<ObjectStorage>                   logger,
-                       Options.ObjectStorage                    options)
+  public ObjectStorage(SessionProvider                                                         sessionProvider,
+                       MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider,
+                       ILogger<ObjectStorage>                                                  logger,
+                       Options.ObjectStorage                                                   options)
   {
     if (options.ChunkSize == 0)
       throw new ArgumentOutOfRangeException(nameof(options),

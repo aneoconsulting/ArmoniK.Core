@@ -48,9 +48,9 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 public class TaskTable : ITaskTable
 {
   private readonly SessionProvider                        sessionProvider_;
-  private readonly MongoCollectionProvider<TaskDataModel> taskCollectionProvider_;
+  private readonly MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider_;
 
-  public TaskTable(SessionProvider sessionProvider, MongoCollectionProvider<TaskDataModel> taskCollectionProvider, ILogger logger)
+  public TaskTable(SessionProvider sessionProvider, MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider, ILogger logger)
   {
     sessionProvider_        = sessionProvider;
     taskCollectionProvider_ = taskCollectionProvider;
@@ -61,18 +61,18 @@ public class TaskTable : ITaskTable
   public TimeSpan PollingDelay { get; set; }
 
   /// <inheritdoc />
-  public async Task CreateTasks(IEnumerable<TaskData> tasks, CancellationToken cancellationToken = default)
+  public async Task CreateTasks(IEnumerable<Core.Common.Storage.TaskData> tasks, CancellationToken cancellationToken = default)
   {
     using var _ = Logger.LogFunction();
 
     var taskCollection = await taskCollectionProvider_.GetAsync();
 
-    await taskCollection.InsertManyAsync(tasks.Select(taskData => taskData.ToTaskDataModel()),
+    await taskCollection.InsertManyAsync(tasks.Select(taskData => taskData),
                                          cancellationToken: cancellationToken);
   }
 
   /// <inheritdoc />
-  public async Task<TaskData> ReadTaskAsync(string taskId, CancellationToken cancellationToken = default)
+  public async Task<Core.Common.Storage.TaskData> ReadTaskAsync(string taskId, CancellationToken cancellationToken = default)
   {
     using var _              = Logger.LogFunction(taskId);
     var       sessionHandle  = await sessionProvider_.GetAsync();
@@ -117,7 +117,7 @@ public class TaskTable : ITaskTable
     var taskCollection = await taskCollectionProvider_.GetAsync();
 
     await taskCollection.UpdateManyAsync(model => model.DispatchId == oldDispatchId,
-                                         Builders<TaskDataModel>.Update
+                                         Builders<TaskData>.Update
                                                                 .Set(model => model.DispatchId,
                                                                      newDispatchId),
                                          cancellationToken: cancellationToken);
@@ -131,7 +131,7 @@ public class TaskTable : ITaskTable
     using var _              = Logger.LogFunction(id);
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-    var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
                                                                             status);
     Logger.LogDebug("update task {task} to status {status}",
                     id,
@@ -161,7 +161,7 @@ public class TaskTable : ITaskTable
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
 
-    var updateDefinition = new UpdateDefinitionBuilder<TaskDataModel>().Set(tdm => tdm.Status,
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
                                                                             status);
 
     var res = await taskCollection.UpdateManyAsync(filter.ToFilterExpression(),
@@ -191,7 +191,7 @@ public class TaskTable : ITaskTable
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
     await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId,
-                                         Builders<TaskDataModel>.Update
+                                         Builders<TaskData>.Update
                                                                 .Set(model => model.Status,
                                                                      TaskStatus.Canceling),
                                          cancellationToken: cancellationToken);
@@ -204,7 +204,7 @@ public class TaskTable : ITaskTable
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
     await taskCollection.UpdateManyAsync(model => model.DispatchId == dispatchId,
-                                         Builders<TaskDataModel>.Update
+                                         Builders<TaskData>.Update
                                                                 .Set(model => model.Status,
                                                                      TaskStatus.Canceling),
                                          cancellationToken: cancellationToken);
