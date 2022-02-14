@@ -21,34 +21,30 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public record SessionDataModelMapping : SessionData, IMongoDataModelMapping<SessionDataModelMapping>
+public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
 {
-  public const string Collection = "SessionData";
-
   static SessionDataModelMapping()
   {
-    if (!BsonClassMap.IsClassMapRegistered(typeof(SessionDataModelMapping)))
-      BsonClassMap.RegisterClassMap<SessionDataModelMapping>(cm =>
+    if (!BsonClassMap.IsClassMapRegistered(typeof(SessionData)))
+      BsonClassMap.RegisterClassMap<SessionData>(cm =>
                                                       {
-                                                        cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(DispatchId)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(AncestorsDispatchId)).SetIgnoreIfDefault(true);
-                                                        cm.MapProperty(nameof(IsCancelled)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                        cm.MapProperty(nameof(SessionData.SessionId)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(SessionData.DispatchId)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(SessionData.AncestorsDispatchId)).SetIgnoreIfDefault(true);
+                                                        cm.MapProperty(nameof(SessionData.IsCancelled)).SetIsRequired(true);
+                                                        cm.MapProperty(nameof(SessionData.Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
                                                         cm.SetIgnoreExtraElements(true);
                                                         cm.MapCreator(model => new(model.SessionId,
                                                                                    model.DispatchId,
@@ -58,42 +54,16 @@ public record SessionDataModelMapping : SessionData, IMongoDataModelMapping<Sess
                                                       });
   }
 
-  public SessionDataModelMapping(string              sessionId, 
-                          string              dispatchId, 
-                          IEnumerable<string> ancestorsDispatchId, 
-                          bool                isCancelled, 
-                          TaskOptions         options)
-    : base(sessionId,
-           dispatchId,
-           ancestorsDispatchId,
-           isCancelled,
-           options)
-  {
-  }
-
-  protected SessionDataModelMapping(SessionData original) : base(original)
-  {
-  }
-
-  public SessionDataModelMapping()
-    : base(string.Empty,
-           string.Empty,
-           Enumerable.Empty<string>(),
-           false,
-           new())
-  {
-  }
+  /// <inheritdoc />
+  public string CollectionName => nameof(SessionData);
 
   /// <inheritdoc />
-  public string CollectionName { get; } = Collection;
-
-  /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionDataModelMapping> collection)
+  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionData> collection)
   {
-    var sessionIndex = Builders<SessionDataModelMapping>.IndexKeys.Text(model => model.SessionId);
-    var dispatchIndex = Builders<SessionDataModelMapping>.IndexKeys.Text(model => model.DispatchId);
+    var sessionIndex = Builders<SessionData>.IndexKeys.Text(model => model.SessionId);
+    var dispatchIndex = Builders<SessionData>.IndexKeys.Text(model => model.DispatchId);
 
-    var indexModels = new CreateIndexModel<SessionDataModelMapping>[]
+    var indexModels = new CreateIndexModel<SessionData>[]
                       {
                         new(sessionIndex,
                             new()

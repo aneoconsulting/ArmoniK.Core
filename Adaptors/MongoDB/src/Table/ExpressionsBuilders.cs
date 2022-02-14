@@ -27,7 +27,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table;

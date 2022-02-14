@@ -34,6 +34,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Storage;
 
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services

@@ -37,6 +37,8 @@ using ArmoniK.Core.Common.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+
 namespace ArmoniK.Core.Adapters.Memory;
 
 public class SessionTable : ISessionTable

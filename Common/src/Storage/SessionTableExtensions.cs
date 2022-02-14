@@ -24,13 +24,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-
 namespace ArmoniK.Core.Common.Storage;
 
 public static class SessionTableExtensions
 {
-  public static async Task CreateSessionAsync(this ISessionTable sessionTable, string id, TaskOptions defaultOptions, CancellationToken cancellationToken = default)
+  public static async Task CreateSessionAsync(this ISessionTable sessionTable, string id, Api.gRPC.V1.TaskOptions defaultOptions, CancellationToken cancellationToken = default)
   {
     using var _ = sessionTable.Logger.LogFunction(id);
 

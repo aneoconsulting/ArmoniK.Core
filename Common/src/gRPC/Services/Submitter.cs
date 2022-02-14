@@ -41,6 +41,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 using KeyNotFoundException = ArmoniK.Core.Common.Exceptions.KeyNotFoundException;
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;

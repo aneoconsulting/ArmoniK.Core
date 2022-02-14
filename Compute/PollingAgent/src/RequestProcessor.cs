@@ -192,7 +192,7 @@ public class RequestProcessor
                                                       TaskStatus.Processing,
                                                       cancellationToken);
 
-    using var stream = workerClient.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration.ToTimeSpan(),
+    using var stream = workerClient.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
                                             cancellationToken: cancellationToken);
 
     var resultStorage = objectStorageFactory_.CreateResultStorage(taskData.SessionId);

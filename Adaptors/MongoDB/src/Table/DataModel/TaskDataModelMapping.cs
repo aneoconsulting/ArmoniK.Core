@@ -24,12 +24,14 @@
 using System;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
@@ -48,7 +50,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                      cm.MapProperty(nameof(TaskData.DispatchId)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(TaskData.DataDependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
                                                      cm.MapProperty(nameof(TaskData.Status)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                     cm.MapProperty(nameof(TaskData.Options)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(TaskData.CreationDate)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(TaskData.HasPayload)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(TaskData.Payload)).SetIgnoreIfDefault(true);
@@ -79,6 +81,21 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                        map.MapCreator(count => new(count.Status,
                                                                                    count.Count));
                                                      });
+    }
+
+    if (!BsonClassMap.IsClassMapRegistered(typeof(TaskOptions)))
+    {
+      BsonClassMap.RegisterClassMap<TaskOptions>(map =>
+                                                 {
+                                                   map.MapProperty(nameof(TaskOptions.MaxDuration)).SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.MaxRetries)).SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.Options)).SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.Priority)).SetIsRequired(true);
+                                                   map.MapCreator(options => new(options.Options,
+                                                                                 options.MaxDuration,
+                                                                                 options.MaxRetries,
+                                                                                 options.Priority));
+                                                 });
     }
   }
 

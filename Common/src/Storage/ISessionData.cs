@@ -31,5 +31,5 @@ public record SessionData(string              SessionId,
                           string              DispatchId,
                           IEnumerable<string> AncestorsDispatchId,
                           bool                IsCancelled,
-                          TaskOptions         Options);
+                          Api.gRPC.V1.TaskOptions         Options);
 

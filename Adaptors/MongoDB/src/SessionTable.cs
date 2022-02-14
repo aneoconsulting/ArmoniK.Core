@@ -28,9 +28,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
@@ -42,14 +40,16 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+
 namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class SessionTable : ISessionTable
 {
-  private readonly SessionProvider                                                           sessionProvider_;
-  private readonly MongoCollectionProvider<SessionDataModelMapping, SessionDataModelMapping> sessionCollectionProvider_;
+  private readonly SessionProvider                                               sessionProvider_;
+  private readonly MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider_;
 
-  public SessionTable(SessionProvider sessionProvider, MongoCollectionProvider<SessionDataModelMapping, SessionDataModelMapping> sessionCollectionProvider, ILogger<SessionTable> logger)
+  public SessionTable(SessionProvider sessionProvider, MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider, ILogger<SessionTable> logger)
   {
     sessionProvider_           = sessionProvider;
     sessionCollectionProvider_ = sessionCollectionProvider;
@@ -65,15 +65,15 @@ public class SessionTable : ISessionTable
                                            CancellationToken cancellationToken = default)
   {
     using var _                 = Logger.LogFunction();
+    var       sessionHandle     = await sessionProvider_.GetAsync();
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-    SessionDataModelMapping data = new()
-                            {
-                              IsCancelled = false,
-                              Options     = defaultOptions,
-                              SessionId   = rootSessionId,
-                              DispatchId  = dispatchId,
-                            };
+    SessionData data = new(IsCancelled: false,
+                           Options: defaultOptions,
+                           SessionId: rootSessionId,
+                           DispatchId: dispatchId,
+                           AncestorsDispatchId: Array.Empty<string>() // TODO : look how to fill this field
+                           );
 
     await sessionCollection.InsertOneAsync(data,
                                            cancellationToken: cancellationToken);
@@ -146,7 +146,7 @@ public class SessionTable : ISessionTable
 
 
     var resSession = sessionCollection.UpdateOneAsync(model => model.DispatchId == dispatchId,
-                                                      Builders<SessionDataModelMapping>.Update
+                                                      Builders<SessionData>.Update
                                                                                 .Set(model => model.IsCancelled,
                                                                                      true),
                                                       cancellationToken: cancellationToken);

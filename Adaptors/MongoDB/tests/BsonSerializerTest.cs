@@ -46,18 +46,14 @@ internal class BsonSerializerTest
   public void SerializeTaskDataModel()
   {
     var tdm = new TaskData(HasPayload: true,
-                           Options: new()
-                                    {
-                                      Priority = 2,
-                                      Options =
-                                      {
-                                        { "key1", "Value1" },
-                                        { "key2", "value2" },
-                                      },
-
-                                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(42)),
-                                      MaxRetries  = 7,
-                                    },
+                           Options: new(Priority: 2,
+                                        Options: new Dictionary<string, string>()
+                                                 {
+                                                   { "key1", "Value1" },
+                                                   { "key2", "value2" },
+                                                 },
+                                        MaxDuration: TimeSpan.FromMinutes(42),
+                                        MaxRetries: 7),
                            TaskId: "tid",
                            Payload: new[] { (byte)1, (byte)2, (byte)3 },
                            SessionId: "ses1",
