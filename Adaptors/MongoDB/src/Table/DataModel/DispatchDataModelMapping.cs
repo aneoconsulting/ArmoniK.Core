@@ -38,21 +38,20 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 
 
-public record DispatchDataModelMapping : IMongoDataModelMapping<DispatchHandler>
+public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
 {
   static DispatchDataModelMapping()
   {
-    if (!BsonClassMap.IsClassMapRegistered(typeof(DispatchHandler)))
-      BsonClassMap.RegisterClassMap<DispatchHandler>(cm =>
+    if (!BsonClassMap.IsClassMapRegistered(typeof(Dispatch)))
+      BsonClassMap.RegisterClassMap<Dispatch>(cm =>
                                                      {
-                                                       cm.MapIdProperty(nameof(DispatchHandler.Id)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(DispatchHandler.TaskId)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(DispatchHandler.Attempt)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(DispatchHandler.TimeToLive)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(DispatchHandler.Statuses)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<KeyValuePair<TaskStatus, DateTime>>());
-                                                       cm.MapProperty(nameof(DispatchHandler.CreationDate)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(DispatchHandler.SessionId)).SetIsRequired(true);
-                                                       cm.SetIgnoreExtraElements(true);
+                                                       cm.MapIdProperty(nameof(Dispatch.Id)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(Dispatch.TaskId)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(Dispatch.Attempt)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(Dispatch.TimeToLive)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(Dispatch.Statuses)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<KeyValuePair<TaskStatus, DateTime>>());
+                                                       cm.MapProperty(nameof(Dispatch.CreationDate)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(Dispatch.SessionId)).SetIsRequired(true);
                                                      });
 
     if(!BsonClassMap.IsClassMapRegistered(typeof(StatusTime)))
@@ -61,7 +60,6 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<DispatchHandler>
                                                             cm.MapProperty(nameof(StatusTime.Date)).SetIsRequired(true);
                                                             cm.MapProperty(nameof(StatusTime.Status)).SetIsRequired(true);
                                                             cm.MapProperty(nameof(StatusTime.Details)).SetIgnoreIfDefault(true);
-                                                            cm.SetIgnoreExtraElements(true);
                                                           });
   }
 
@@ -70,12 +68,12 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<DispatchHandler>
   public string CollectionName => nameof(DispatchHandler);
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<DispatchHandler> collection)
+  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<Dispatch> collection)
   {
-    var sessionIndex = Builders<DispatchHandler>.IndexKeys.Text(model => model.SessionId);
-    var taskIndex    = Builders<DispatchHandler>.IndexKeys.Text(model => model.TaskId);
+    var sessionIndex = Builders<Dispatch>.IndexKeys.Text(model => model.SessionId);
+    var taskIndex    = Builders<Dispatch>.IndexKeys.Text(model => model.TaskId);
 
-    var indexModels = new CreateIndexModel<DispatchHandler>[]
+    var indexModels = new CreateIndexModel<Dispatch>[]
                       {
                         new(sessionIndex,
                             new()
