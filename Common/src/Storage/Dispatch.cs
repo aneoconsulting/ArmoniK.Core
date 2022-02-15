@@ -26,7 +26,7 @@ using System.Collections.Generic;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public abstract record Dispatch(string                  SessionId,
+public record Dispatch(string                  SessionId,
                                 string                  TaskId,
                                 string                  Id,
                                 int                     Attempt,
