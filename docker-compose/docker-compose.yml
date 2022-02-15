@@ -23,6 +23,7 @@ services:
     depends_on:
       - database
       - object
+      - queue
       - fluentbit
     networks:
       - armonik-net
@@ -53,6 +54,7 @@ services:
     depends_on:
       - database
       - object
+      - queue
       - fluentbit
     networks:
       - armonik-backend
@@ -83,6 +85,9 @@ services:
       - fluentbit
     volumes:
       - socket_vol:/cache
+    environment:
+      - Serilog__Properties__Application=Armonik.Compute.Worker
+      - Serilog__MinimumLevel=Verbose
     logging:
       driver: fluentd
       options:
@@ -98,6 +103,8 @@ services:
     ports:
       - "24224:24224"
       - "24224:24224/udp"
+    depends_on:
+      - seq
 
   seq:
     image: datalust/seq:latest
