@@ -72,6 +72,51 @@ internal class BsonSerializerTest
 
   }
 
+  [Test]
+  public void SerializeDispatchDataModel()
+  {
+    var rdm = new Dispatch("sessionId",
+                           "task",
+                           "id",
+                           1,
+                           DateTime.Parse("2022-02-22 22:22:22").ToUniversalTime(),
+                           new[]
+                           {
+                             new StatusTime(TaskStatus.Creating,
+                                            DateTime.Parse("2021-02-21 21:21:21").ToUniversalTime(),
+                                            string.Empty),
+                           },
+                           DateTime.Parse("2020-02-20 20:20:20").ToUniversalTime());
+
+
+
+
+
+    var serialized = rdm.ToBson();
+
+
+
+    var deserialized = BsonSerializer.Deserialize<Dispatch>(serialized);
+
+
+
+    Assert.AreEqual(rdm.Id,
+                    deserialized.Id);
+    Assert.AreEqual(rdm.SessionId,
+                    deserialized.SessionId);
+    Assert.AreEqual(rdm.TaskId,
+                    deserialized.TaskId);
+    Assert.AreEqual(rdm.Id,
+                    deserialized.Id);
+    Assert.AreEqual(rdm.TimeToLive,
+                    deserialized.TimeToLive);
+    Assert.AreEqual(rdm.CreationDate,
+                    deserialized.CreationDate);
+
+
+
+  }
+
 
   [Test]
   public void SerializeTaskDataModel()
