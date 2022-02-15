@@ -21,33 +21,35 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using ArmoniK.Api.gRPC.V1;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
-using ArmoniK.Core.Common.Storage;
+using System;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public record Result : Core.Common.Storage.Result
+public record Result(string   SessionId,
+                     string   Key,
+                     string   OwnerTaskId,
+                     string   OriginDispatchId,
+                     bool     IsResultAvailable,
+                     DateTime CreationDate,
+                     byte[]   Data) : Core.Common.Storage.Result(SessionId,
+                                                                 Key,
+                                                                 OwnerTaskId,
+                                                                 OriginDispatchId,
+                                                                 IsResultAvailable,
+                                                                 CreationDate,
+                                                                 Data)
 {
 
-  public Result(string   sessionId,
-                         string   key,
-                         string   ownerTaskId,
-                         string   originDispatchId,
-                         bool     isResultAvailable,
-                         DateTime creationDate,
-                         byte[]   data)
-    : base(sessionId,
-           key,
-           ownerTaskId,
-           originDispatchId,
-           isResultAvailable,
-           creationDate,
-           data)
-  {
-  }
-
-  public Result(Core.Common.Storage.Result original) : base(original)
+  public Result(Core.Common.Storage.Result original) : this(original.SessionId,
+                                                            original.Key,
+                                                            original.OwnerTaskId,
+                                                            original.OriginDispatchId,
+                                                            original.IsResultAvailable,
+                                                            original.CreationDate,
+                                                            original.Data)
   {
   }
 

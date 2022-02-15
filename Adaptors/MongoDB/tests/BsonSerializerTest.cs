@@ -23,7 +23,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.Intrinsics.Arm;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
@@ -37,11 +39,40 @@ using MongoDB.Bson.Serialization;
 
 using NUnit.Framework;
 
+using Result = ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result;
+
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 [TestFixture]
 internal class BsonSerializerTest
 {
+
+  [Test]
+  public void SerializeResultDataModel()
+  {
+    var rdm = new Result("sessionId",
+                         "Key",
+                         "Owner",
+                         "Origin",
+                         true,
+                         DateTime.Parse("2022-02-15 8:55:05.954").ToUniversalTime(),
+                         new[] { (byte)1, (byte)2, (byte)3 });
+    
+    var serialized = rdm.ToBson();
+
+    var deserialized = BsonSerializer.Deserialize<Result>(serialized);
+
+    Assert.AreEqual(rdm.Id, deserialized.Id);
+    Assert.AreEqual(rdm.Key, deserialized.Key);
+    Assert.AreEqual(rdm.OwnerTaskId, deserialized.OwnerTaskId);
+    Assert.AreEqual(rdm.OriginDispatchId, deserialized.OriginDispatchId);
+    Assert.AreEqual(rdm.IsResultAvailable, deserialized.IsResultAvailable);
+    Assert.AreEqual(rdm.CreationDate, deserialized.CreationDate);
+    Assert.IsTrue(rdm.Data.SequenceEqual(deserialized.Data));
+
+  }
+
+
   [Test]
   public void SerializeTaskDataModel()
   {

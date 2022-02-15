@@ -21,12 +21,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
@@ -39,6 +41,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
     if (!BsonClassMap.IsClassMapRegistered(typeof(Result)))
       BsonClassMap.RegisterClassMap<Result>(cm =>
                                             {
+
                                               cm.MapIdProperty(nameof(Result.Id));
                                               cm.MapProperty(nameof(Result.SessionId)).SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.Key)).SetIsRequired(true);
@@ -55,6 +58,8 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                                          model.CreationDate,
                                                                          model.Data));
                                             });
+
+
   }
 
 
@@ -64,4 +69,5 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
   /// <inheritdoc />
   public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<Result> collection)
     => Task.CompletedTask;
+
 }
