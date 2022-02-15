@@ -22,7 +22,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,18 +29,16 @@ using ArmoniK.Core.Common.Utils;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public class DispatchHandler : IDispatch, IAsyncDisposable
+public record DispatchHandler : Dispatch, IAsyncDisposable
 {
-  private readonly IDispatch         dispatchImplementation_;
   private          IAsyncDisposable? asyncDisposableImplementation_;
 
   public DispatchHandler(
     IDispatchTable    dispatchTable,
     ITaskTable        taskTable,
-    IDispatch         dispatchImplementation,
-    CancellationToken cancellationToken)
+    Dispatch         dispatchImplementation,
+    CancellationToken cancellationToken) : base(dispatchImplementation)
   {
-    dispatchImplementation_ = dispatchImplementation;
     var        dispatchTable1 = dispatchTable;
     Heart dispatchRefresher = new(async token =>
                                   {
@@ -61,27 +58,6 @@ public class DispatchHandler : IDispatch, IAsyncDisposable
 
     asyncDisposableImplementation_ = AsyncDisposable.Create(async () => { await dispatchRefresher.Stop(); });
   }
-
-  /// <inheritdoc />
-  public string Id => dispatchImplementation_.Id;
-
-  /// <inheritdoc />
-  public string TaskId => dispatchImplementation_.TaskId;
-
-  /// <inheritdoc />
-  public int Attempt => dispatchImplementation_.Attempt;
-
-  /// <inheritdoc />
-  public DateTime TimeToLive => dispatchImplementation_.TimeToLive;
-
-  /// <inheritdoc />
-  public IEnumerable<StatusTime> Statuses => dispatchImplementation_.Statuses;
-
-  /// <inheritdoc />
-  public DateTime CreationDate => dispatchImplementation_.CreationDate;
-  
-  /// <inheritdoc />
-  public string SessionId => dispatchImplementation_.SessionId;
 
   /// <inheritdoc />
   public async ValueTask DisposeAsync()

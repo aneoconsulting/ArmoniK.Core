@@ -69,7 +69,7 @@ public class RequestProcessor
 
   public async Task<List<Task>> ProcessAsync(IQueueMessageHandler messageHandler,
                                              TaskData taskData,
-                                             IDispatch dispatch,
+                                             Dispatch dispatch,
                                              Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
                                              CancellationToken cancellationToken)
   {
@@ -178,7 +178,7 @@ public class RequestProcessor
 
 
   public async Task<List<Task>> ProcessInternalsAsync(TaskData                         taskData,
-                                                      IDispatch                         dispatch,
+                                                      Dispatch                         dispatch,
                                              Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
                                              CancellationToken                          cancellationToken)
   {

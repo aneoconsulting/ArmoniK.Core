@@ -80,6 +80,7 @@ public class DispatchTable : IDispatchTable
 
     lock (d)
     {
+      // there was a previous dispatch but it has expired
       if (d.Id != dispatchId && d.TimeToLive < DateTime.UtcNow)
       {
         if (!idIndexedStorage_.TryAdd(dispatchId,
@@ -88,25 +89,25 @@ public class DispatchTable : IDispatchTable
           throw new InvalidOperationException("An expired dispatch with same id exists.");
         }
 
-        var old = new Dispatch(d);
-        old.Statuses.Add(new(TaskStatus.Error,
+        var old = new Dispatch(d.SessionId,
+                               d.TaskId,
+                               d.Id,
+                               DateTime.MinValue,
+                               d.Attempt,
+                               new (d.Statuses),
+                               d.CreationDate);
+        old.StatusesBag.Add(new(TaskStatus.Error,
                              DateTime.UtcNow,
                              "Ttl expired"));
 
-        old.TimeToLive = DateTime.MinValue;
-
         idIndexedStorage_[d.Id] = old;
 
-        d.Id         = dispatchId;
-        d.TimeToLive = DateTime.UtcNow + DispatchTimeToLiveDuration;
-        d.Attempt++;
-        d.CreationDate = DateTime.UtcNow;
-        d.Statuses = new()
-                     {
-                       new(TaskStatus.Dispatched,
-                           DateTime.UtcNow,
-                           string.Empty),
-                     };
+        idIndexedStorage_.AddOrUpdate(dispatchId,
+                                      s => throw new InvalidOperationException("This path should never be executed"),
+                                      (s, dispatch1) => dispatch with
+                                                        {
+                                                          Attempt = dispatch1.Attempt + 1,
+                                                        });
       }
     }
 
@@ -115,14 +116,14 @@ public class DispatchTable : IDispatchTable
   }
 
   /// <inheritdoc />
-  public Task<IDispatch> GetDispatchAsync(string dispatchId, CancellationToken cancellationToken = default)
+  public Task<Common.Storage.Dispatch> GetDispatchAsync(string dispatchId, CancellationToken cancellationToken = default)
   {
     // ReSharper disable once InconsistentlySynchronizedField
     var locker = idIndexedStorage_[dispatchId];
 
     lock (locker)
     {
-      return Task.FromResult(idIndexedStorage_[dispatchId] as IDispatch);
+      return Task.FromResult(idIndexedStorage_[dispatchId] as Common.Storage.Dispatch);
     }
   }
 
@@ -134,7 +135,7 @@ public class DispatchTable : IDispatchTable
 
     lock (locker)
     {
-      idIndexedStorage_[id].Statuses.Add(new(status,
+      idIndexedStorage_[id].StatusesBag.Add(new(status,
                                              DateTime.UtcNow,
                                              string.Empty));
     }
@@ -150,11 +151,14 @@ public class DispatchTable : IDispatchTable
 
     lock (locker)
     {
-      var dispatch = idIndexedStorage_[id];
-      if (dispatch.TimeToLive >= DateTime.UtcNow)
-        dispatch.TimeToLive = DateTime.UtcNow + DispatchTimeToLiveDuration;
-      else
-        throw new InvalidOperationException("Ttl was expired");
+      idIndexedStorage_.AddOrUpdate(id,
+                                    _ => throw new InvalidOperationException("Should never come here."),
+                                    (s, dispatch) => dispatch.TimeToLive >= DateTime.UtcNow
+                                                       ? dispatch with
+                                                         {
+                                                           TimeToLive = DateTime.UtcNow + DispatchTimeToLiveDuration,
+                                                         }
+                                                       : throw new InvalidOperationException("Ttl was expired"));
     }
 
     return Task.CompletedTask;

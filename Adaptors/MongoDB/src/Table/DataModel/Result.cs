@@ -21,19 +21,38 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public static class ResultExtensions
+public record Result : Core.Common.Storage.Result
 {
-  public static Result ToResultDataModel(this Core.Common.Storage.Result result)
-  {
-    if (result is Result resultModel)
-    {
-      return resultModel;
-    }
 
-    return new(result);
+  public Result(string   sessionId,
+                         string   key,
+                         string   ownerTaskId,
+                         string   originDispatchId,
+                         bool     isResultAvailable,
+                         DateTime creationDate,
+                         byte[]   data)
+    : base(sessionId,
+           key,
+           ownerTaskId,
+           originDispatchId,
+           isResultAvailable,
+           creationDate,
+           data)
+  {
   }
+
+  public Result(Core.Common.Storage.Result original) : base(original)
+  {
+  }
+
+  /// <summary>
+  /// Database Id of the object. 
+  /// </summary>
+  public string Id => $"{SessionId}.{Key}";
 }

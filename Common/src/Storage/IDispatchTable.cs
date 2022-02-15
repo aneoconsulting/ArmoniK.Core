@@ -45,7 +45,7 @@ public interface IDispatchTable
                                      IDictionary<string, string> metadata,
                                      CancellationToken           cancellationToken = default);
 
-  Task<IDispatch> GetDispatchAsync(string dispatchId, CancellationToken cancellationToken = default);
+  Task<Dispatch> GetDispatchAsync(string dispatchId, CancellationToken cancellationToken = default);
 
   Task AddStatusToDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default);
 

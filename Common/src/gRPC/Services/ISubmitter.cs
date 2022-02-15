@@ -75,6 +75,6 @@ namespace ArmoniK.Core.Common.gRPC.Services
                                TaskStatus        status,
                                CancellationToken cancellationToken = default);
 
-    Task FinalizeDispatch(string taskId, IDispatch dispatchId, Output output, CancellationToken cancellationToken);
+    Task FinalizeDispatch(string taskId, Dispatch dispatchId, Output output, CancellationToken cancellationToken);
   }
 }

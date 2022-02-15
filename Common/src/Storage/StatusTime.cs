@@ -22,24 +22,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
   public record StatusTime(TaskStatus Status, DateTime Date, string Details);
-
-public interface IDispatch
-{
-  string Id          { get; }
-  string TaskId      { get; }
-  int    Attempt     { get; }
-
-  DateTime TimeToLive { get; }
-
-  IEnumerable<StatusTime> Statuses { get; }
-
-  DateTime CreationDate { get; }
-  string   SessionId    { get; }
-}

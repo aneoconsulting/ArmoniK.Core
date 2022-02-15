@@ -21,85 +21,47 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public record ResultDataModelMapping : Result, IMongoDataModelMapping<ResultDataModelMapping>
+public record ResultDataModelMapping : IMongoDataModelMapping<Result>
 {
+  
   static ResultDataModelMapping()
   {
-    if (!BsonClassMap.IsClassMapRegistered(typeof(ResultDataModelMapping)))
-      BsonClassMap.RegisterClassMap<ResultDataModelMapping>(cm =>
-                                                     {
-                                                       cm.MapIdProperty(nameof(Id)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Key)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(OwnerTaskId)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(OriginDispatchId)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(IsResultAvailable)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Data)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<byte>());
-                                                       cm.SetIgnoreExtraElements(true);
-                                                       cm.MapCreator(model => new(model.SessionId,
-                                                                                  model.Key,
-                                                                                  model.OwnerTaskId,
-                                                                                  model.OriginDispatchId,
-                                                                                  model.IsResultAvailable,
-                                                                                  model.CreationDate,
-                                                                                  model.Data));
-                                                     });
+    if (!BsonClassMap.IsClassMapRegistered(typeof(Result)))
+      BsonClassMap.RegisterClassMap<Result>(cm =>
+                                            {
+                                              cm.MapIdProperty(nameof(Result.Id));
+                                              cm.MapProperty(nameof(Result.SessionId)).SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.Key)).SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.OwnerTaskId)).SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.OriginDispatchId)).SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.IsResultAvailable)).SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.CreationDate)).SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.Data)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<byte>());
+                                              cm.MapCreator(model => new(model.SessionId,
+                                                                         model.Key,
+                                                                         model.OwnerTaskId,
+                                                                         model.OriginDispatchId,
+                                                                         model.IsResultAvailable,
+                                                                         model.CreationDate,
+                                                                         model.Data));
+                                            });
   }
 
-  public ResultDataModelMapping(string   sessionId,
-                         string   key,
-                         string   ownerTaskId,
-                         string   originDispatchId,
-                         bool     isResultAvailable,
-                         DateTime creationDate,
-                         byte[]   data)
-    : base(sessionId,
-           key,
-           ownerTaskId,
-           originDispatchId,
-           isResultAvailable,
-           creationDate,
-           data)
-  {
-  }
-
-  public ResultDataModelMapping(Result original) : base(original)
-  {
-  }
-
-  public ResultDataModelMapping()
-    : base(string.Empty,
-           string.Empty,
-           string.Empty,
-           string.Empty,
-           false,
-           default,
-           Array.Empty<byte>())
-  {
-  }
-
-  /// <summary>
-  /// Database Id of the object. 
-  /// </summary>
-  public string Id => $"{SessionId}.{Key}";
 
   /// <inheritdoc />
-  public string CollectionName => nameof(ResultDataModelMapping);
+  public string CollectionName => nameof(Result);
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<ResultDataModelMapping> collection)
+  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<Result> collection)
     => Task.CompletedTask;
 }

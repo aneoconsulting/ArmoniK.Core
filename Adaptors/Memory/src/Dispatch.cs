@@ -29,7 +29,7 @@ using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
-public class Dispatch : IDispatch
+public record Dispatch : ArmoniK.Core.Common.Storage.Dispatch
 {
   public Dispatch(string sessionId,
                   string taskId,
@@ -37,32 +37,31 @@ public class Dispatch : IDispatch
                   DateTime timeToLive,
                   int attempt,
                   ConcurrentBag<StatusTime> statuses,
-                  DateTime creationDate)
-  {
-    Id = id;
-    TaskId = taskId;
-    Attempt = attempt;
-    TimeToLive = timeToLive;
-    Statuses = statuses;
-    CreationDate = creationDate;
-    SessionId = sessionId;
-  }
-  public Dispatch(string sessionId,
-                  string taskId,
-                  string id,
+                  DateTime creationDate) : base(sessionId,
+                                                taskId,
+                                                id,
+                                                attempt,
+                                                timeToLive,
+                                                statuses,
+                                                creationDate)
+    => StatusesBag = statuses;
+
+  public Dispatch(string   sessionId,
+                  string   taskId,
+                  string   id,
                   DateTime timeToLive,
-                  int attempt)
+                  int      attempt) : this(sessionId,
+                                           taskId,
+                                           id,
+                                           timeToLive,
+                                           attempt,
+                                           new(),
+                                           DateTime.UtcNow)
   {
-    Id           = id;
-    TaskId       = taskId;
-    Attempt      = attempt;
-    TimeToLive   = timeToLive;
-    Statuses     = new();
-    CreationDate = DateTime.UtcNow;
-    SessionId    = sessionId;
+
   }
 
-  public Dispatch(IDispatch other)
+  public Dispatch(Common.Storage.Dispatch other)
     : this(other.SessionId,
            other.TaskId,
            other.Id,
@@ -73,26 +72,5 @@ public class Dispatch : IDispatch
   {
   }
 
-  /// <inheritdoc />
-  public string Id { get; set; }
-
-  /// <inheritdoc />
-  public string TaskId { get; init; }
-
-  /// <inheritdoc />
-  public int Attempt { get; set; }
-
-  /// <inheritdoc />
-  public DateTime TimeToLive { get; set; }
-
-  public ConcurrentBag<StatusTime> Statuses { get; set; }
-
-  /// <inheritdoc />
-  IEnumerable<StatusTime> IDispatch.Statuses => Statuses;
-
-  /// <inheritdoc />
-  public DateTime CreationDate { get; set; }
-
-  /// <inheritdoc />
-  public string SessionId { get; set; }
+  public ConcurrentBag<StatusTime> StatusesBag { get; }
 }

@@ -504,7 +504,7 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task FinalizeDispatch(string taskId, IDispatch dispatch, Output output, CancellationToken cancellationToken)
+  public async Task FinalizeDispatch(string taskId, Dispatch dispatch, Output output, CancellationToken cancellationToken)
   {
     var oldDispatchId = dispatch.Id;
     var targetDispatchId = await taskTable_.GetTaskDispatchId(taskId,

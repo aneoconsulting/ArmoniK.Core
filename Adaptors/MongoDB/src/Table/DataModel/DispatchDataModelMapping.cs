@@ -38,25 +38,22 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 
 
-public class DispatchDataModelMapping : IMongoDataModelMapping<DispatchDataModelMapping>, IDispatch
+public record DispatchDataModelMapping : IMongoDataModelMapping<DispatchHandler>
 {
-
-  public const string Collection = nameof(DispatchDataModelMapping);
-
   static DispatchDataModelMapping()
   {
-    if (!BsonClassMap.IsClassMapRegistered(typeof(DispatchDataModelMapping)))
-      BsonClassMap.RegisterClassMap<DispatchDataModelMapping>(cm =>
-                                                       {
-                                                         cm.MapIdProperty(nameof(Id)).SetIsRequired(true);
-                                                         cm.MapProperty(nameof(TaskId)).SetIsRequired(true);
-                                                         cm.MapProperty(nameof(Attempt)).SetIsRequired(true);
-                                                         cm.MapProperty(nameof(TimeToLive)).SetIsRequired(true);
-                                                         cm.MapProperty(nameof(Statuses)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<KeyValuePair<TaskStatus, DateTime>>());
-                                                         cm.MapProperty(nameof(CreationDate)).SetIsRequired(true);
-                                                         cm.MapProperty(nameof(SessionId)).SetIsRequired(true);
-                                                         cm.SetIgnoreExtraElements(true);
-                                                       });
+    if (!BsonClassMap.IsClassMapRegistered(typeof(DispatchHandler)))
+      BsonClassMap.RegisterClassMap<DispatchHandler>(cm =>
+                                                     {
+                                                       cm.MapIdProperty(nameof(DispatchHandler.Id)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(DispatchHandler.TaskId)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(DispatchHandler.Attempt)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(DispatchHandler.TimeToLive)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(DispatchHandler.Statuses)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<KeyValuePair<TaskStatus, DateTime>>());
+                                                       cm.MapProperty(nameof(DispatchHandler.CreationDate)).SetIsRequired(true);
+                                                       cm.MapProperty(nameof(DispatchHandler.SessionId)).SetIsRequired(true);
+                                                       cm.SetIgnoreExtraElements(true);
+                                                     });
 
     if(!BsonClassMap.IsClassMapRegistered(typeof(StatusTime)))
       BsonClassMap.RegisterClassMap<StatusTime>(cm =>
@@ -68,31 +65,31 @@ public class DispatchDataModelMapping : IMongoDataModelMapping<DispatchDataModel
                                                           });
   }
 
-  /// <inheritdoc />
-  public string CollectionName { get; set; }
 
   /// <inheritdoc />
-  public string Id { get; set; }
+  public string CollectionName => nameof(DispatchHandler);
 
   /// <inheritdoc />
-  public string TaskId { get; set; }
+  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<DispatchHandler> collection)
+  {
+    var sessionIndex = Builders<DispatchHandler>.IndexKeys.Text(model => model.SessionId);
+    var taskIndex    = Builders<DispatchHandler>.IndexKeys.Text(model => model.TaskId);
 
-  /// <inheritdoc />
-  public int Attempt { get; set; }
+    var indexModels = new CreateIndexModel<DispatchHandler>[]
+                      {
+                        new(sessionIndex,
+                            new()
+                            {
+                              Name = nameof(sessionIndex),
+                            }),
+                        new(taskIndex,
+                            new()
+                            {
+                              Name = nameof(taskIndex),
+                            }),
+                      };
 
-  /// <inheritdoc />
-  public DateTime TimeToLive { get; set; }
-
-  /// <inheritdoc />
-  public IEnumerable<StatusTime> Statuses { get; set; }
-
-  /// <inheritdoc />
-  public DateTime CreationDate { get; set; } = DateTime.UtcNow;
-
-  /// <inheritdoc />
-  public string SessionId    { get; set; }
-
-
-  /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<DispatchDataModelMapping> collection) => throw new NotImplementedException();
+    return collection.Indexes.CreateManyAsync(sessionHandle,
+                                              indexModels);
+  }
 }
