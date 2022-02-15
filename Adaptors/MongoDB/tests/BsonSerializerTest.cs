@@ -142,4 +142,28 @@ internal class BsonSerializerTest
     Assert.IsTrue(tdm.AncestorDispatchIds.SequenceEqual(deserialized.AncestorDispatchIds));
     Assert.IsTrue(tdm.ExpectedOutput.SequenceEqual(deserialized.ExpectedOutput));
   }
+
+  [Test]
+  public void InitializeResultDataModelMapping()
+  {
+    _ = new ResultDataModelMapping();
+  }
+
+  [Test]
+  public void InitializeTaskDataModelMapping()
+  {
+    _ = new TaskDataModelMapping();
+  }
+
+  [Test]
+  public void InitializeDispatchDataModelMapping()
+  {
+    _ = new DispatchDataModelMapping();
+  }
+
+  [Test]
+  public void InitializeSessionDataModelMapping()
+  {
+    _ = new SessionDataModelMapping();
+  }
 }
