@@ -106,7 +106,7 @@ public class TaskTable : ITaskTable
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model=>model.AncestorDispatchIds)
-                               .FirstAsync(cancellationToken);
+                               .FirstOrDefaultAsync(cancellationToken);
   }
 
   /// <inheritdoc />

@@ -116,7 +116,6 @@ namespace ArmoniK.Core.Adapters.Redis
 
         serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                                           TextWriter.Null).GetDatabase());
-        serviceCollection.AddSingleton<IObjectStorage, ObjectStorage>();
         serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
       }
 

@@ -269,16 +269,21 @@ public class Submitter : ISubmitter
                                                               cancellationToken);
     }
 
-    IList<string> ancestors = null;
+    var ancestors = new List<string>();
 
     async Task LoadAncestorDispatchIds()
     {
-      ancestors = await taskTable_.GetTaskAncestorDispatchIds(parentTaskId,
-                                                              cancellationToken);
-
+      if (!string.IsNullOrEmpty(parentTaskId))
+      {
+        var res = await taskTable_.GetTaskAncestorDispatchIds(parentTaskId,
+                                                    cancellationToken);
+        if (res is not null)
+        {
+          ancestors.AddRange(res);
+        }
+      }
       ancestors.Add(dispatchId);
     }
-
 
     var preload = new List<Task>();
     if (options is null)

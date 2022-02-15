@@ -66,7 +66,7 @@ public static class GrpcSubmitterExtensions
 
           break;
         case CreateLargeTaskRequest.TypeOneofCase.TaskPayload:
-          if (string.IsNullOrEmpty(id) || expectedOutputKeys.Any())
+          if (string.IsNullOrEmpty(id) || !expectedOutputKeys.Any())
             throw new InvalidOperationException();
           switch (enumerator.Current.TaskPayload.TypeCase)
           {
