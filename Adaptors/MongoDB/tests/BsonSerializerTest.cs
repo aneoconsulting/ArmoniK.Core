@@ -23,12 +23,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Runtime.Intrinsics.Arm;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common.Storage;
 
@@ -40,12 +37,51 @@ using MongoDB.Bson.Serialization;
 using NUnit.Framework;
 
 using Result = ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result;
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 [TestFixture]
 internal class BsonSerializerTest
 {
+
+  [Test]
+  public void SerializeSessionDataModel()
+  {
+    var rdm = new SessionData("SessionId",
+                              "SessionId",
+                              new List<string>
+                              {
+                                "Ancestor1",
+                                "Ancestor2",
+                              },
+                              false,
+                              new TaskOptions
+                              {
+                                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                                MaxRetries = 2,
+                                Priority = 1,
+                              });
+
+    var serialized = rdm.ToBson();
+
+    var deserialized = BsonSerializer.Deserialize<SessionData>(serialized);
+
+    Assert.AreEqual(rdm.SessionId,
+                    deserialized.SessionId);
+    Assert.AreEqual(rdm.DispatchId,
+                    deserialized.DispatchId);
+    Assert.IsNotNull(deserialized.Options);
+    Assert.AreEqual(rdm.Options.MaxDuration,
+                    deserialized.Options.MaxDuration);
+    Assert.AreEqual(rdm.Options.MaxRetries,
+                    deserialized.Options.MaxRetries);
+    Assert.AreEqual(rdm.Options.Priority,
+                    deserialized.Options.Priority);
+    Assert.AreEqual(rdm.IsCancelled,
+                    deserialized.IsCancelled);
+    Assert.IsTrue(rdm.AncestorsDispatchId.SequenceEqual(deserialized.AncestorsDispatchId));
+  }
 
   [Test]
   public void SerializeResultDataModel()

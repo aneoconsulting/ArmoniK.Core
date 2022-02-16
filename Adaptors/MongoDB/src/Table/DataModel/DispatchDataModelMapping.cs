@@ -49,7 +49,7 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
                                                        cm.MapProperty(nameof(Dispatch.TaskId)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(Dispatch.Attempt)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(Dispatch.TimeToLive)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Dispatch.Statuses)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<KeyValuePair<TaskStatus, DateTime>>());
+                                                       cm.MapProperty(nameof(Dispatch.Statuses)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<StatusTime>());
                                                        cm.MapProperty(nameof(Dispatch.CreationDate)).SetIsRequired(true);
                                                        cm.MapProperty(nameof(Dispatch.SessionId)).SetIsRequired(true);
                                                      });
