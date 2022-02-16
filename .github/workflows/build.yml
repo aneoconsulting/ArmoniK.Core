@@ -178,7 +178,6 @@ jobs:
     needs:
       - versionning
       - testInfraWorker
-      - testInfraMock
       - testInfraMockV3
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
