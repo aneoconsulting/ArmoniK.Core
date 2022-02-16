@@ -6,6 +6,8 @@ services:
     image: mongo
     networks:
       - armonik-backend
+    ports:
+      - 27017:27017
 
   object:
     image: redis:bullseye
