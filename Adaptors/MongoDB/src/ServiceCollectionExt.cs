@@ -129,7 +129,7 @@ public static class ServiceCollectionExt
         var certificateCollection = new X509Certificate2Collection();
         try
         {
-          certificateCollection.Import(mongoOptions.CAFile);
+          certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
           localTrustStore.Open(OpenFlags.ReadWrite);
           localTrustStore.AddRange(certificateCollection);
           logger.LogTrace("Imported mongodb certificate from file {path}",

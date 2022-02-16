@@ -77,7 +77,7 @@ namespace ArmoniK.Core.Adapters.Redis
           var certificateCollection = new X509Certificate2Collection();
           try
           {
-            certificateCollection.Import(redisOptions.CaPath);
+            certificateCollection.ImportFromPemFile(redisOptions.CaPath);
             localTrustStore.Open(OpenFlags.ReadWrite);
             localTrustStore.AddRange(certificateCollection);
             logger.LogTrace("Imported Redis certificate from file {path}",
