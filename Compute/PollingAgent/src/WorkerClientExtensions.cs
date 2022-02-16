@@ -35,6 +35,8 @@ using Google.Protobuf;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.Logging;
+
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 
 namespace ArmoniK.Core.Compute.PollingAgent;
@@ -121,6 +123,7 @@ public static class WorkerClientExtensions
 
   public static async IAsyncEnumerable<IList<ProcessReply>> Separate(
     this                     IAsyncStreamReader<ProcessReply> stream,
+    ILogger                                                   logger,
     [EnumeratorCancellation] CancellationToken                cancellationToken)
   {
     List<ProcessReply>? output = null;
@@ -134,6 +137,7 @@ public static class WorkerClientExtensions
     await foreach (var reply in stream.ReadAllAsync(cancellationToken)
                                       .WithCancellation(cancellationToken))
     {
+      logger.LogTrace(reply.ToString());
       void InitNewStream(bool singleStream)
       {
         if (output is not null || replyType is not ProcessReply.TypeOneofCase.None || !string.IsNullOrEmpty(requestId))

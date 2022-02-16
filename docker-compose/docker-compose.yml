@@ -88,7 +88,7 @@ services:
     volumes:
       - socket_vol:/cache
     environment:
-      - Serilog__Properties__Application=Armonik.Compute.Worker
+      - Serilog__Properties__Application=ArmoniK.Compute.Worker
       - Serilog__MinimumLevel=Verbose
     logging:
       driver: fluentd

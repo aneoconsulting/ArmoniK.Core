@@ -93,7 +93,7 @@ public class Pollster
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
       while (!cancellationToken.IsCancellationRequested)
       {
-        logger_.LogInformation("Trying to fetch messages");
+        logger_.LogDebug("Trying to fetch messages");
 
         logger_.LogFunction(functionName:
                             $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
@@ -116,7 +116,7 @@ public class Pollster
             logger_.LogDebug("Loading task data");
 
             var precondition = await preconditionChecker_.CheckPreconditionsAsync(message,
-                                                                             cancellationToken);
+                                                                                  cancellationToken);
 
             if (precondition is not null)
             {
@@ -131,16 +131,15 @@ public class Pollster
 
               logger_.LogDebug("Start a new Task to process the messageHandler");
               var processResult = await requestProcessor_.ProcessAsync(message,
-                                                       taskData,
-                                                       dispatch,
-                                                       computeRequestStream,
+                                                                       taskData,
+                                                                       dispatch,
+                                                                       computeRequestStream,
                                                                        cancellationToken);
 
               logger_.LogDebug("Finish task processing");
 
 
               await Task.WhenAll(processResult);
-              
 
               logger_.LogDebug("Task returned");
             }
@@ -151,6 +150,10 @@ public class Pollster
                                "Error with messageHandler {messageId}",
                                message.MessageId);
             throw;
+          }
+          finally
+          {
+            await msg.DisposeAsync();
           }
         }
       }

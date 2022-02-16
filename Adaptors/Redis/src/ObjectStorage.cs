@@ -28,7 +28,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
+
+using Microsoft.Extensions.Logging;
 
 using StackExchange.Redis;
 
@@ -36,35 +39,49 @@ namespace ArmoniK.Core.Adapters.Redis;
 
 public class ObjectStorage : IObjectStorage
 {
-  private readonly IDatabaseAsync redis_;
-  private readonly string         objectStorageName_;
+  private readonly IDatabaseAsync         redis_;
+  private readonly string                 objectStorageName_;
+  private readonly ILogger<ObjectStorage> logger_;
 
-  public ObjectStorage(IDatabaseAsync redis, string objectStorageName)
+  public ObjectStorage(IDatabaseAsync redis, string objectStorageName, ILogger<ObjectStorage> logger)
   {
     redis_             = redis;
     objectStorageName_ = objectStorageName;
+    logger_            = logger;
   }
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<byte[]> valueChunks, CancellationToken cancellationToken = default)
   {
-    await Task.WhenAll(await valueChunks.Select((chunk, i) => redis_.ListSetByIndexAsync(objectStorageName_ + key,
-                                                                                         i,
-                                                                                         chunk)).ToListAsync(cancellationToken));
+    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    await Task.WhenAll(await valueChunks.Select((chunk, i) =>
+    {
+      logger_.LogTrace("Add {key} {value}",
+                       objectStorageName_ + key + i,
+                       chunk);
+      return redis_.SetAddAsync(objectStorageName_ + key,
+                                chunk);
+    }).ToListAsync(cancellationToken));
   }
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default)
   {
-    await Task.WhenAll(await valueChunks.Select((chunk, i) => redis_.ListSetByIndexAsync(objectStorageName_ + key,
-                                                                                         i,
-                                                                                         chunk)).ToListAsync(cancellationToken));
+    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    await Task.WhenAll(await valueChunks.Select((chunk, i) =>
+    {
+      logger_.LogTrace("Add {key} {value}",
+                       objectStorageName_ + key + i, chunk);
+      return redis_.SetAddAsync(objectStorageName_ + key,
+                                chunk);
+    }).ToListAsync(cancellationToken));
   }
 
   /// <inheritdoc />
   public async IAsyncEnumerable<byte[]> TryGetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var res = await redis_.ListRangeAsync(objectStorageName_ + key);
+    using var _   = logger_.LogFunction(objectStorageName_ + key);
+    var res = await redis_.SetMembersAsync(new RedisKey(objectStorageName_ + key));
     foreach (var redisValue in res)
     {
       cancellationToken.ThrowIfCancellationRequested();
@@ -74,7 +91,10 @@ public class ObjectStorage : IObjectStorage
 
   /// <inheritdoc />
   public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
-    => await redis_.KeyDeleteAsync(objectStorageName_ + key);
+  {
+    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    return await redis_.KeyDeleteAsync(new RedisKey(objectStorageName_ + key));
+  }
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)

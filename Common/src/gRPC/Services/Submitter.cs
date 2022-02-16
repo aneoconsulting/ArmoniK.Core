@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -74,7 +75,7 @@ public class Submitter : ISubmitter
   }
 
   private IObjectStorage ResultStorage(string  session) => objectStorageFactory_.CreateResultStorage(session);
-  private IObjectStorage PayloadStorage(string session) => objectStorageFactory_.CreateResultStorage(session);
+  private IObjectStorage PayloadStorage(string session) => objectStorageFactory_.CreatePayloadStorage(session);
 
   /// <inheritdoc />
   public  Task<Configuration> GetServiceConfiguration(Empty request, CancellationToken cancellationToken)
@@ -506,6 +507,7 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task FinalizeDispatch(string taskId, Dispatch dispatch, Output output, CancellationToken cancellationToken)
   {
+    using var _ = logger_.LogFunction();
     var oldDispatchId = dispatch.Id;
     var targetDispatchId = await taskTable_.GetTaskDispatchId(taskId,
                                                               cancellationToken);

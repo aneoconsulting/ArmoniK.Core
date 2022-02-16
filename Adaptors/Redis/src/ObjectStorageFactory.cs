@@ -38,9 +38,10 @@ public class ObjectStorageFactory : IObjectStorageFactory
 {
   private readonly IDatabaseAsync redis_;
 
-  public ObjectStorageFactory(IDatabaseAsync redis)
+  public ObjectStorageFactory(IDatabaseAsync redis, ILoggerFactory loggerFactory)
   {
     redis_  = redis;
+    loggerFactory_ = loggerFactory;
   }
 
   /// <inheritdoc />
@@ -54,13 +55,14 @@ public class ObjectStorageFactory : IObjectStorageFactory
   }
 
 
-  private bool isInitialized_ = false;
+  private          bool           isInitialized_ = false;
+  private readonly ILoggerFactory loggerFactory_;
 
   /// <inheritdoc />
   public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
 
   public IObjectStorage CreateObjectStorage(string objectStorageName)
   {
-    return new ObjectStorage(redis_, objectStorageName);
+    return new ObjectStorage(redis_, objectStorageName, loggerFactory_.CreateLogger<ObjectStorage>());
   }
 }

@@ -82,9 +82,10 @@ public class RequestProcessor
     }
     catch (Exception e)
     {
+      logger_.LogError(e,
+                       "Error while processing request");
       await submitter_.CancelDispatchSessionAsync(taskData.SessionId,
                                                   dispatch.Id, cancellationToken);
-      logger_.LogError(e, "Error while processing request");
 
       if (!await HandleExceptionAsync(e,
                                       taskData,
@@ -219,7 +220,7 @@ public class RequestProcessor
 
     // process incoming messages
     // TODO : To reduce memory consumption, do not generate subStream. Implement a state machine instead.
-    await foreach (var singleReplyStream in stream.ResponseStream.Separate(cancellationToken))
+    await foreach (var singleReplyStream in stream.ResponseStream.Separate(logger_, cancellationToken))
     {
       var first = singleReplyStream.First();
       if (isComplete)
@@ -278,10 +279,15 @@ public class RequestProcessor
       }
     }
 
-    stream.GetStatus().ThrowIfError();
+    //logger_.LogTrace(stream.GetStatus().ToString());
+    //stream.GetStatus().ThrowIfError();
 
     if(!isComplete)
       throw new InvalidOperationException("Unexpected end of stream from the worker");
+
+    await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
+                                     TaskStatus.Completed,
+                                     cancellationToken);
 
     return output;
 
