@@ -32,7 +32,7 @@ public class CreateSmallTaskRequestValidator : AbstractValidator<CreateSmallTask
   public CreateSmallTaskRequestValidator()
   {
     RuleFor(r => r.SessionId).NotEmpty();
-    RuleFor(r => r.TaskOptions).SetValidator(new TaskOptionsValidator());
+    RuleFor(r => r.TaskOptions).SetValidator(new TaskOptionsValidator()).NotNull();
     RuleFor(request => request.TaskRequests).NotEmpty();
     RuleForEach(request => request.TaskRequests).NotEmpty().SetValidator(new TaskRequestValidator());
   }

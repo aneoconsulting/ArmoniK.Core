@@ -79,6 +79,16 @@ public static class ServiceCollectionExt
       isMongoRequired = true;
     }
 
+    if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
+    {
+      services.AddOption<Options.ObjectStorage>(configuration,
+                                                Options.ObjectStorage.SettingSection)
+              .AddTransient<ObjectStorage>()
+              .AddTransient<IObjectStorage, ObjectStorage>();
+
+      isMongoRequired = true;
+    }
+
     if (isMongoRequired)
     {
       services.AddOption<Options.MongoDB>(configuration,

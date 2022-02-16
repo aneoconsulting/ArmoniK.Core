@@ -89,7 +89,7 @@ public static class TaskFilterExt
       case TaskFilter.StatusesOneofCase.Included:
       {
         if (filter.Included.Statuses is not null)
-          output = Expression.And(output,
+          output = Expression.Or(output,
                                   ExpressionsBuilders.FieldFilterInternal(model => model.Status,
                                                                           filter.Included.Statuses,
                                                                           true,
@@ -99,7 +99,7 @@ public static class TaskFilterExt
       case TaskFilter.StatusesOneofCase.Excluded:
       {
         if (filter.Excluded.Statuses is not null)
-          output = Expression.And(output,
+          output = Expression.Or(output,
                                   ExpressionsBuilders.FieldFilterInternal(model => model.Status,
                                                                           filter.Excluded.Statuses,
                                                                           false,
