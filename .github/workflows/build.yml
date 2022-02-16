@@ -157,21 +157,6 @@ jobs:
           polling-agent-image: dockerhubaneo/armonik_pollingagent
           polling-agent-tag: ${{ needs.versionning.outputs.version }}
 
-  testInfraMock:
-    needs:
-      - versionning
-      - buildAgent
-      - buildControl
-    runs-on: ubuntu-latest
-    steps:
-      - uses: aneoconsulting/ArmoniK/.github/actions/test-mock@main
-        with:
-          version: main
-          control-plane-image: dockerhubaneo/armonik_control
-          control-plane-tag: ${{ needs.versionning.outputs.version }}
-          polling-agent-image: dockerhubaneo/armonik_pollingagent
-          polling-agent-tag: ${{ needs.versionning.outputs.version }}
-
   testInfraMockV3:
     needs:
       - versionning
