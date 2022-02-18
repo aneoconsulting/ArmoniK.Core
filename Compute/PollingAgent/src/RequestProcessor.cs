@@ -281,11 +281,12 @@ public class RequestProcessor
       }
     }
 
-    //logger_.LogTrace(stream.GetStatus().ToString());
-    //stream.GetStatus().ThrowIfError();
+    await stream.RequestStream.CompleteAsync();
+    await stream.ResponseStream.MoveNext();
 
     if(!isComplete)
       throw new InvalidOperationException("Unexpected end of stream from the worker");
+
 
     return output;
   }
