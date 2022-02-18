@@ -41,6 +41,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -253,6 +254,75 @@ public class TaskTable : ITaskTable
                                                .Select(model => model.TaskId)
                                                .AsAsyncEnumerable().WithCancellation(cancellationToken))
       yield return taskId;
+  }
+
+  public async Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken = default)
+  {
+    using var _              = Logger.LogFunction();
+    var       sessionHandle  = await sessionProvider_.GetAsync();
+    var       taskCollection = await taskCollectionProvider_.GetAsync();
+
+    var taskOuput = new Output(Error: "",
+                               Success: true);
+
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
+                                                                       taskOuput).Set(tdm => tdm.Status,
+                                                                                      TaskStatus.Completed);
+    Logger.LogDebug("update task {task} to output {output}",
+                    taskId,
+                    taskOuput);
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
+                                                   updateDefinition,
+                                                   cancellationToken: cancellationToken);
+
+    switch (res.MatchedCount)
+    {
+      case 0:
+        throw new ArmoniKException($"Task not found {taskId}");
+      case > 1:
+        throw new ArmoniKException("Multiple tasks modified");
+    }
+  }
+
+  public async Task SetTaskErrorAsync(string taskId, string errorDetail, CancellationToken cancellationToken = default)
+  {
+    using var _              = Logger.LogFunction();
+    var       sessionHandle  = await sessionProvider_.GetAsync();
+    var       taskCollection = await taskCollectionProvider_.GetAsync();
+
+    var taskOuput = new Output(Error: errorDetail,
+                               Success: false);
+
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
+                                                                       taskOuput).Set(tdm => tdm.Status,
+                                                                                      TaskStatus.Completed);
+    Logger.LogDebug("update task {task} to output {output}",
+                    taskId,
+                    taskOuput);
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
+                                                   updateDefinition,
+                                                   cancellationToken: cancellationToken);
+
+    switch (res.MatchedCount)
+    {
+      case 0:
+        throw new ArmoniKException($"Task not found {taskId}");
+      case > 1:
+        throw new ArmoniKException("Multiple tasks modified");
+    }
+  }
+
+  /// <inheritdoc />
+  public async Task<Output> GetTaskOutput(string taskId, CancellationToken cancellationToken = default)
+  {
+    using var _              = Logger.LogFunction(taskId);
+    var       sessionHandle  = await sessionProvider_.GetAsync();
+    var       taskCollection = await taskCollectionProvider_.GetAsync();
+
+    return await taskCollection.AsQueryable(sessionHandle)
+                               .Where(tdm => tdm.TaskId == taskId)
+                               .Select(model => model.Output)
+                               .FirstOrDefaultAsync(cancellationToken);
   }
 
   /// <inheritdoc />

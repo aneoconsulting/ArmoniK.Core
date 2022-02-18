@@ -55,6 +55,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                 default,
                                 default,
                                 default,
+                                default,
                                 default
                               );
 
@@ -69,6 +70,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                   .Compile();
 
     var model = new TaskData(SessionId: "OtherSession",
+                             default,
                              default,
                              default,
                              default,
@@ -103,6 +105,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsFalse(func(model));
@@ -117,6 +120,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                   .Compile();
     
     var model = new TaskData(SessionId: "OtherSession",
+                             default,
                              default,
                              default,
                              default,
@@ -150,6 +154,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsTrue(func(model));
@@ -174,6 +179,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsFalse(func(model));
@@ -188,6 +194,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
 
     var model = new TaskData(default,
                              ParentTaskId: "SubSession",
+                             default,
                              default,
                              default,
                              default,
@@ -221,6 +228,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsFalse(func(model));
@@ -235,6 +243,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
     
     var model = new TaskData(default,
                              ParentTaskId: "OtherSubSession",
+                             default,
                              default,
                              default,
                              default,
@@ -268,6 +277,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsTrue(func(model));
@@ -282,6 +292,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
 
     var model = new TaskData(default,
                              ParentTaskId: "OtherSubSession",
+                             default,
                              default,
                              default,
                              default,
@@ -315,6 +326,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsTrue(func(model));
@@ -337,6 +349,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              Status : TaskStatus.Completed,
+                             default,
                              default,
                              default,
                              default);
@@ -363,6 +376,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Status: TaskStatus.Completed,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsFalse(func(model));
@@ -384,6 +398,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              Status: TaskStatus.Completed,
+                             default,
                              default,
                              default,
                              default);
@@ -410,6 +425,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Status: TaskStatus.Completed,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsFalse(func(model));
@@ -431,6 +447,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              Status: TaskStatus.Canceled,
+                             default,
                              default,
                              default,
                              default);
@@ -457,6 +474,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Status: TaskStatus.Canceled,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsTrue(func(model));
@@ -478,6 +496,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              Status: TaskStatus.Canceled,
+                             default,
                              default,
                              default,
                              default);
@@ -504,6 +523,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Status: TaskStatus.Canceled,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsTrue(func(model));
@@ -525,6 +545,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              Status: default,
+                             default,
                              default,
                              default,
                              default);
@@ -551,6 +572,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Status: default,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsFalse(func(model));
@@ -572,6 +594,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              Status: default,
+                             default,
                              default,
                              default,
                              default);
@@ -598,6 +621,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Status: default,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsFalse(func(model));
@@ -619,6 +643,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              Status: default,
+                             default,
                              default,
                              default,
                              default);
@@ -645,6 +670,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              Status: default,
                              default,
                              default,
+                             default,
                              default);
 
     Assert.IsTrue(func(model));
@@ -666,6 +692,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              Status: default,
+                             default,
                              default,
                              default,
                              default);
@@ -690,6 +717,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              Status: default,
+                             default,
                              default,
                              default,
                              default);

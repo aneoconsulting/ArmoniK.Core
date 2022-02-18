@@ -34,6 +34,7 @@ using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.Memory;
@@ -209,6 +210,21 @@ public class TaskTable : ITaskTable
                               _                                     => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
                             })
                   .ToAsyncEnumerable();
+  }
+
+  public Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken)
+  {
+    throw new NotImplementedException();
+  }
+
+  public Task SetTaskErrorAsync(string   taskId, string            errorDetail, CancellationToken cancellationToken)
+  {
+    throw new NotImplementedException();
+  }
+
+  public Task<Output> GetTaskOutput(string taskId, CancellationToken cancellationToken = default)
+  {
+    throw new NotImplementedException();
   }
 
   /// <inheritdoc />

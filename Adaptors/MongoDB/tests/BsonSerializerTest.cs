@@ -36,6 +36,7 @@ using MongoDB.Bson.Serialization;
 
 using NUnit.Framework;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
 using Result = ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 
@@ -160,34 +161,36 @@ internal class BsonSerializerTest
     var tdm = new TaskData(HasPayload: true,
                            Options: new(Priority: 2,
                                         Options: new Dictionary<string, string>()
-                                                 {
-                                                   { "key1", "Value1" },
-                                                   { "key2", "value2" },
-                                                 },
+                                        {
+                                          { "key1", "Value1" },
+                                          { "key2", "value2" },
+                                        },
                                         MaxDuration: TimeSpan.FromMinutes(42),
                                         MaxRetries: 7),
                            TaskId: "tid",
-                           Payload: new[] { (byte)1, (byte)2, (byte)3 },
+                           Payload: new[] { (byte) 1, (byte) 2, (byte) 3 },
                            SessionId: "ses1",
                            Status: TaskStatus.Creating,
                            ParentTaskId: "par",
                            CreationDate: DateTime.Now,
                            DataDependencies: new List<string>
-                                             {
-                                               "dep1",
-                                               "dep2",
-                                             },
+                           {
+                             "dep1",
+                             "dep2",
+                           },
                            AncestorDispatchIds: new List<string>
-                                                {
-                                                  "ancestor1",
-                                                  "ancestor2",
-                                                },
+                           {
+                             "ancestor1",
+                             "ancestor2",
+                           },
                            DispatchId: "dispatchId1",
                            ExpectedOutput: new List<string>
-                                           {
-                                             "output1",
-                                             "output2",
-                                           });
+                           {
+                             "output1",
+                             "output2",
+                           },
+                           Output: new Output(false,
+                                              ""));
 
     var serialized = tdm.ToBson();
 

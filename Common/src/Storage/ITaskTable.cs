@@ -64,5 +64,11 @@ public interface ITaskTable
 
   IAsyncEnumerable<string> ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken);
 
+  Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken);
+
+  Task SetTaskErrorAsync(string taskId, string errorDetail, CancellationToken cancellationToken);
+
+  Task<Output> GetTaskOutput(string taskId, CancellationToken cancellationToken = default);
+
   public ILogger Logger { get; }
 }

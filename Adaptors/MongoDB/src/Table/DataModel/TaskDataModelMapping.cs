@@ -56,6 +56,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                      cm.MapProperty(nameof(TaskData.Payload)).SetIgnoreIfDefault(true);
                                                      cm.MapProperty(nameof(TaskData.AncestorDispatchIds)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
                                                      cm.MapProperty(nameof(TaskData.ExpectedOutput)).SetIsRequired(true);
+                                                     cm.MapProperty(nameof(TaskData.Output)).SetIsRequired(true);
                                                      cm.SetIgnoreExtraElements(true);
                                                      cm.MapCreator(model => new(model.SessionId,
                                                                                 model.ParentTaskId,
@@ -68,7 +69,8 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                                                 model.Status,
                                                                                 model.Options,
                                                                                 model.AncestorDispatchIds,
-                                                                                model.CreationDate));
+                                                                                model.CreationDate,
+                                                                     model.Output));
                                                    });
     }
 

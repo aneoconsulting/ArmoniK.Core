@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
@@ -42,6 +43,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 using KeyNotFoundException = ArmoniK.Core.Common.Exceptions.KeyNotFoundException;
+using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -299,18 +301,20 @@ public class Submitter : ISubmitter
 
 
     var taskDataModels = requests.Select(request =>
-                                         {
-                                           var tdm = new TaskData(session,
-                                                                  parentTaskId,
-                                                                  dispatchId,
-                                                                  request.Id,
-                                                                  request.DataDependencies.ToList(),
-                                                                  request.ExpectedOutputKeys.ToList(),
-                                                                  request.PayloadChunk is not null,
-                                                                  request.PayloadChunk?.ToArray(),
-                                                                  TaskStatus.Creating,
-                                                                  options,
-                                                                  ancestors);
+                                 {
+                                   var tdm = new TaskData(session,
+                                                          parentTaskId,
+                                                          dispatchId,
+                                                          request.Id,
+                                                          request.DataDependencies.ToList(),
+                                                          request.ExpectedOutputKeys.ToList(),
+                                                          request.PayloadChunk is not null,
+                                                          request.PayloadChunk?.ToArray(),
+                                                          TaskStatus.Creating,
+                                                          options,
+                                                          ancestors,
+                                                          new Storage.Output(false,
+                                                                             ""));
 
                                            var resultModel = request.ExpectedOutputKeys
                                                                     .Select(key => new Result(session,
@@ -505,7 +509,35 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task FinalizeDispatch(string taskId, Dispatch dispatch, Output output, CancellationToken cancellationToken)
+  public async Task CompleteTaskAsync(string id, Output output, CancellationToken cancellationToken = default)
+  {
+    using var _ = logger_.LogFunction();
+
+    Storage.Output cOutput = output;
+
+    if (cOutput.Success)
+    {
+      await taskTable_.SetTaskSuccessAsync(id,
+                                           cancellationToken);
+    }
+    else
+    {
+      await taskTable_.SetTaskErrorAsync(id,
+                                         cOutput.Error,
+                                         cancellationToken);
+    }
+  }
+
+  /// <inheritdoc />
+  public async Task<Output> TryGetTaskOutputAsync(ResultRequest request, CancellationToken contextCancellationToken)
+  {
+    Storage.Output output = await taskTable_.GetTaskOutput(request.Key,
+                                                         contextCancellationToken);
+    return new Output(output);
+  }
+
+  /// <inheritdoc />
+  public async Task FinalizeDispatch(string taskId, Dispatch dispatch, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction();
     var oldDispatchId = dispatch.Id;
@@ -528,4 +560,5 @@ public class Submitter : ISubmitter
                                                             cancellationToken);
     }
   }
+
 }

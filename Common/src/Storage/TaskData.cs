@@ -60,7 +60,8 @@ public record TaskData(string        SessionId,
                        TaskStatus    Status,
                        TaskOptions   Options,
                        IList<string> AncestorDispatchIds,
-                       DateTime      CreationDate)
+                       DateTime      CreationDate,
+                       Output        Output)
 {
   public TaskData(string        sessionId,
                   string        parentTaskId,
@@ -72,7 +73,8 @@ public record TaskData(string        SessionId,
                   byte[]        payload,
                   TaskStatus    status,
                   TaskOptions   options,
-                  IList<string> ancestorDispatchIds)
+                  IList<string> ancestorDispatchIds,
+                  Output        output)
     : this(sessionId,
            parentTaskId,
            dispatchId,
@@ -84,7 +86,8 @@ public record TaskData(string        SessionId,
            status,
            options,
            ancestorDispatchIds,
-           DateTime.UtcNow)
+           DateTime.UtcNow,
+           output)
   {
   }
 }

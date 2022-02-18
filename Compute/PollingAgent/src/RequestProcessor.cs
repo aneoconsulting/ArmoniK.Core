@@ -236,8 +236,10 @@ public class RequestProcessor
         case ProcessReply.TypeOneofCase.Output:
           output.Add(submitter_.FinalizeDispatch(taskData.TaskId,
                                                  dispatch,
-                                                 first.Output,
                                                  cancellationToken));
+          output.Add(submitter_.CompleteTaskAsync(taskData.TaskId,
+                                                  first.Output,
+                                                  cancellationToken));
           await stream.RequestStream.CompleteAsync();
           isComplete = true;
           break;
@@ -285,12 +287,7 @@ public class RequestProcessor
     if(!isComplete)
       throw new InvalidOperationException("Unexpected end of stream from the worker");
 
-    await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
-                                     TaskStatus.Completed,
-                                     cancellationToken);
-
     return output;
-
   }
 
 

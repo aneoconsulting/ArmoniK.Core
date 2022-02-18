@@ -119,4 +119,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   public override Task<Count> WaitForCompletion(WaitRequest request, ServerCallContext context)
     => submitter_.WaitForCompletion(request,
                                     context.CancellationToken);
+
+  public override Task<Output> TryGetTaskOutput(ResultRequest request, ServerCallContext context)
+    => submitter_.TryGetTaskOutputAsync(request,
+                                        context.CancellationToken);
 }

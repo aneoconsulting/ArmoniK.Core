@@ -34,6 +34,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Storage;
 
+using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -75,6 +76,10 @@ namespace ArmoniK.Core.Common.gRPC.Services
                                TaskStatus        status,
                                CancellationToken cancellationToken = default);
 
-    Task FinalizeDispatch(string taskId, Dispatch dispatchId, Output output, CancellationToken cancellationToken);
+    Task FinalizeDispatch(string taskId, Dispatch dispatchId, CancellationToken cancellationToken);
+
+    Task CompleteTaskAsync(string id, Output output, CancellationToken cancellationToken = default);
+
+    Task<Output> TryGetTaskOutputAsync(ResultRequest request, CancellationToken contextCancellationToken);
   }
 }

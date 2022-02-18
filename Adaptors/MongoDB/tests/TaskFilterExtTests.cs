@@ -256,7 +256,8 @@ internal class TaskFilterExtTests
                              TaskStatus.Canceled,
                              default,
                              new List<string>(),
-                             DateTime.Now);
+                             DateTime.Now,
+                             default);
 
     Assert.IsFalse(func(model));
   }
@@ -298,7 +299,8 @@ internal class TaskFilterExtTests
                              TaskStatus.Canceled,
                              default,
                              new List<string>(),
-                             DateTime.Now);
+                             DateTime.Now,
+                             default);
 
     Assert.IsFalse(func(model));
   }
