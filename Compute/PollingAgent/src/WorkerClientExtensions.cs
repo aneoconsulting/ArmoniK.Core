@@ -44,19 +44,21 @@ namespace ArmoniK.Core.Compute.PollingAgent;
 public static class WorkerClientExtensions
 {
   public static IAsyncEnumerable<TaskRequest> ReconstituteTaskRequest(
-    this IEnumerable<ProcessReply> stream)
-    => stream.ToAsyncEnumerable().ReconstituteTaskRequest(CancellationToken.None);
+    this IEnumerable<ProcessReply> stream,
+    ILogger logger)
+    => stream.ToAsyncEnumerable().ReconstituteTaskRequest(CancellationToken.None, logger);
   
   public static async IAsyncEnumerable<TaskRequest> ReconstituteTaskRequest(
     this                     IAsyncEnumerable<ProcessReply> stream,
-    [EnumeratorCancellation] CancellationToken              cancellationToken)
+    [EnumeratorCancellation] CancellationToken              cancellationToken,
+    ILogger logger)
   {
     var enumerator = stream.GetAsyncEnumerator(cancellationToken);
 
     Channel<ReadOnlyMemory<byte>>? channel = null;
 
     TaskRequest? taskRequest = null;
-    while (!await enumerator.MoveNextAsync(cancellationToken))
+    while (await enumerator.MoveNextAsync(cancellationToken))
     {
       var current = enumerator.Current;
 
@@ -267,6 +269,7 @@ public static class WorkerClientExtensions
                   break;
                 case DataChunk.TypeOneofCase.DataComplete:
                   isLargeTaskPayloadFinished = true;
+                  output!.Add(reply);
                   break;
                 case DataChunk.TypeOneofCase.None:
                 default:

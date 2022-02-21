@@ -240,7 +240,6 @@ public class RequestProcessor
           output.Add(submitter_.CompleteTaskAsync(taskData.TaskId,
                                                   first.Output,
                                                   cancellationToken));
-          await stream.RequestStream.CompleteAsync();
           isComplete = true;
           break;
         case ProcessReply.TypeOneofCase.Result:
@@ -360,7 +359,7 @@ public class RequestProcessor
                                   dispatchId,
                                   first.CreateLargeTask.InitRequest.TaskOptions,
                                   singleReplyStream.Skip(1)
-                                                   .ReconstituteTaskRequest(),
+                                                   .ReconstituteTaskRequest(logger_),
                                   cancellationToken);
   }
 

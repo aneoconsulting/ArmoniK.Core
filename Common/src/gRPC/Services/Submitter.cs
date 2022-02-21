@@ -199,12 +199,14 @@ public class Submitter : ISubmitter
 
     await foreach (var taskRequest in taskRequests.WithCancellation(cancellationToken))
     {
-      if (await taskRequest.PayloadChunks.CountAsync(cancellationToken) == 1)
+      var payloadChunksList = await taskRequest.PayloadChunks.ToListAsync(cancellationToken);
+
+      if (payloadChunksList.Count == 1)
       {
         requests.Add(new(taskRequest.Id,
                          taskRequest.ExpectedOutputKeys,
                          taskRequest.DataDependencies,
-                         await taskRequest.PayloadChunks.SingleAsync(cancellationToken)));
+                         payloadChunksList.Single()));
       }
       else
       {
@@ -213,7 +215,7 @@ public class Submitter : ISubmitter
                          taskRequest.DataDependencies,
                          null));
         payloadUploadTasks.Add(PayloadStorage(sessionId).AddOrUpdateAsync(taskRequest.Id,
-                                                                          taskRequest.PayloadChunks,
+                                                                          payloadChunksList.ToAsyncEnumerable(),
                                                                           cancellationToken));
       }
     }
