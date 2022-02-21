@@ -257,7 +257,18 @@ public class Submitter : ISubmitter
            };
   }
 
-  
+  /*
+   * TODO :
+   * Pour bien faire, il faudrait couper en deux :
+   * Initialisation
+   * Mise en queue + finalisation
+   * Comme ça, depuis le request processor, on peut :
+   * initialiser
+   * attendre la fin de l'exec de la tâche
+   * mettre à jour les ownership
+   * Mise en queue + finalisation
+   */
+
   public async Task InitializeTaskCreationAsync(string                           session,
                                                 string                           parentTaskId,
                                                 string                           dispatchId,
@@ -302,7 +313,7 @@ public class Submitter : ISubmitter
     await Task.WhenAll(preload);
 
 
-    var taskDataModels = requests.Select(request =>
+    var taskDataModels = requests.Select(async request =>
                                  {
                                    var tdm = new TaskData(session,
                                                           parentTaskId,
@@ -318,23 +329,44 @@ public class Submitter : ISubmitter
                                                           new Storage.Output(false,
                                                                              ""));
 
-                                           var resultModel = request.ExpectedOutputKeys
-                                                                    .Select(key => new Result(session,
-                                                                                              key,
-                                                                                              request.Id,
-                                                                                              dispatchId,
-                                                                                              false,
-                                                                                              DateTime.UtcNow,
-                                                                                              Array.Empty<byte>()));
-                                           return (TaskDataModel: tdm, ResultModel: resultModel);
-                                         })
+                                   var parentExpectedOutputKeys = await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
+                                                                                                             cancellationToken);
+
+
+                                   IEnumerable<string> intersect = new List<string>();
+                                   if (parentExpectedOutputKeys is not null)
+                                   {
+                                     intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys);
+
+                                     await resultTable_.ChangeResultOwnership(session,
+                                                                              intersect,
+                                                                              parentTaskId,
+                                                                              request.Id,
+                                                                              cancellationToken);
+                                   }
+                                   
+
+                                   var resultModel = request.ExpectedOutputKeys.Except(intersect)
+                                                            .Select(key => new Result(session,
+                                                                                      key,
+                                                                                      request.Id,
+                                                                                      dispatchId,
+                                                                                      false,
+                                                                                      DateTime.UtcNow,
+                                                                                      Array.Empty<byte>()));
+                                   return (TaskDataModel: tdm, ResultModel: resultModel);
+                                 })
                                  .ToList();
 
-    await taskTable_.CreateTasks(taskDataModels.Select(tuple => tuple.TaskDataModel),
+    await taskTable_.CreateTasks(taskDataModels.Select(tuple => tuple.Result.TaskDataModel),
                                  cancellationToken);
 
-    await resultTable_.Create(taskDataModels.SelectMany(tuple => tuple.ResultModel),
-                              cancellationToken);
+    var resultCreations = taskDataModels.SelectMany(tuple => tuple.Result.ResultModel);
+    if (resultCreations.Any())
+    {
+      await resultTable_.Create(resultCreations,
+                                cancellationToken);
+    }
   }
 
 

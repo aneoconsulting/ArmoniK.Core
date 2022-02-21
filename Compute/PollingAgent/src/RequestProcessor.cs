@@ -249,17 +249,33 @@ public class RequestProcessor
                                       cancellationToken));
           break;
         case ProcessReply.TypeOneofCase.CreateSmallTask:
-          await SubmitSmallTasksAsync(taskData,
-                                      dispatch.Id,
-                                      first,
-                                      cancellationToken);
+          var replySmallTasksAsync = await SubmitSmallTasksAsync(taskData,
+                                                  dispatch.Id,
+                                                  first,
+                                                  cancellationToken);
+          await stream.RequestStream.WriteAsync(new()
+          {
+            CreateTask = new()
+            {
+              Reply   = replySmallTasksAsync,
+              ReplyId = first.RequestId,
+            },
+          });
           break;
         case ProcessReply.TypeOneofCase.CreateLargeTask:
-          await SubmitLargeTasksAsync(taskData,
-                                      dispatch.Id,
-                                      first,
-                                      singleReplyStream,
-                                      cancellationToken);
+          var replyLargeTasksAsync = await SubmitLargeTasksAsync(taskData,
+                                                  dispatch.Id,
+                                                  first,
+                                                  singleReplyStream,
+                                                  cancellationToken);
+          await stream.RequestStream.WriteAsync(new()
+          {
+            CreateTask = new()
+            {
+              Reply   = replyLargeTasksAsync,
+              ReplyId = first.RequestId,
+            },
+          });
           break;
         case ProcessReply.TypeOneofCase.Resource:
           await ProvideResourcesAsync(stream.RequestStream,
@@ -347,11 +363,11 @@ public class RequestProcessor
 
 
   [PublicAPI]
-  public Task SubmitLargeTasksAsync(TaskData                      taskData,
-                                    string                         dispatchId,
-                                    ProcessReply                   first,
-                                    IList<ProcessReply> singleReplyStream,
-                                    CancellationToken              cancellationToken)
+  public Task<CreateTaskReply> SubmitLargeTasksAsync(TaskData                      taskData,
+                                                         string                         dispatchId,
+                                                         ProcessReply                   first,
+                                                         IList<ProcessReply> singleReplyStream,
+                                                         CancellationToken              cancellationToken)
   {
     using var activity = ActivitySource.StartActivity($"{nameof(SubmitLargeTasksAsync)}");
     return submitter_.CreateTasks(taskData.SessionId,
@@ -364,10 +380,10 @@ public class RequestProcessor
   }
 
   [PublicAPI]
-  public Task SubmitSmallTasksAsync(TaskData         taskData,
-                                    string            dispatchId,
-                                    ProcessReply      request,
-                                    CancellationToken cancellationToken)
+  public Task<CreateTaskReply> SubmitSmallTasksAsync(TaskData         taskData,
+                                                     string            dispatchId,
+                                                     ProcessReply      request,
+                                                     CancellationToken cancellationToken)
   {
     using var activity = ActivitySource.StartActivity($"{nameof(SubmitSmallTasksAsync)}");
     return submitter_.CreateTasks(taskData.SessionId,

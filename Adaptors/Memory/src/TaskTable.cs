@@ -227,6 +227,11 @@ public class TaskTable : ITaskTable
     throw new NotImplementedException();
   }
 
+  public Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string taskId, CancellationToken cancellationToken = default)
+  {
+    throw new NotImplementedException();
+  }
+
   /// <inheritdoc />
   public ILogger Logger { get; set; }
 }

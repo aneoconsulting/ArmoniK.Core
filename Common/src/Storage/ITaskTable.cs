@@ -70,5 +70,7 @@ public interface ITaskTable
 
   Task<Output> GetTaskOutput(string taskId, CancellationToken cancellationToken = default);
 
+  Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string taskId, CancellationToken cancellationToken = default);
+
   public ILogger Logger { get; }
 }
