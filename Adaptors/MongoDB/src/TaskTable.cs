@@ -325,6 +325,18 @@ public class TaskTable : ITaskTable
                                .FirstOrDefaultAsync(cancellationToken);
   }
 
+  public async Task<TaskStatus> GetTaskStatus(string taskId, CancellationToken cancellationToken = default)
+  {
+    using var _              = Logger.LogFunction(taskId);
+    var       sessionHandle  = await sessionProvider_.GetAsync();
+    var       taskCollection = await taskCollectionProvider_.GetAsync();
+
+    return await taskCollection.AsQueryable(sessionHandle)
+                               .Where(tdm => tdm.TaskId == taskId)
+                               .Select(model => model.Status)
+                               .FirstOrDefaultAsync(cancellationToken);
+  }
+
   public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string taskId, CancellationToken cancellationToken = default)
   {
     using var _              = Logger.LogFunction(taskId);

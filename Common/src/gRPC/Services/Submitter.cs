@@ -628,6 +628,27 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
+  public async Task<GetStatusReply> GetStatusAsync(GetStatusrequest request, CancellationToken contextCancellationToken)
+  {
+    using var _ = logger_.LogFunction();
+    return new GetStatusReply
+    {
+      Status = await taskTable_.GetTaskStatus(request.TaskId,
+                                              contextCancellationToken),
+    };
+  }
+
+  /// <inheritdoc />
+  public async Task<TaskIdList> ListTasksAsync(TaskFilter request, CancellationToken contextCancellationToken)
+  {
+    using var _      = logger_.LogFunction();
+    var       idList = new TaskIdList();
+    idList.TaskIds.AddRange(await taskTable_.ListTasksAsync(request,
+                                                            contextCancellationToken).ToListAsync(contextCancellationToken));
+    return idList;
+  }
+
+  /// <inheritdoc />
   public async Task FinalizeDispatch(string taskId, Dispatch dispatch, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction();

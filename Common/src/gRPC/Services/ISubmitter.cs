@@ -83,5 +83,9 @@ namespace ArmoniK.Core.Common.gRPC.Services
     Task<Output> TryGetTaskOutputAsync(ResultRequest          request, CancellationToken contextCancellationToken);
 
     Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest request, CancellationToken contextCancellationToken);
+
+    Task<GetStatusReply> GetStatusAsync(GetStatusrequest request, CancellationToken contextCancellationToken);
+
+    Task<TaskIdList> ListTasksAsync(TaskFilter           request, CancellationToken contextCancellationToken);
   }
 }
