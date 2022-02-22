@@ -78,7 +78,7 @@ public class ResultTable : IResultTable
     var       resultCollection = await resultCollectionProvider_.GetAsync();
 
     return await resultCollection.AsQueryable(sessionHandle)
-                                 .Where(model => model.Id == key)
+                                 .Where(model => model.Id == Result.GenerateId(sessionId, key))
                                  .FirstAsync(cancellationToken);
   }
 

@@ -571,6 +571,63 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
+  public async Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest request, CancellationToken contextCancellationToken)
+  {
+    using var _       = logger_.LogFunction();
+
+    var result = await resultTable_.GetResult(request.Session,
+                                        request.Key, contextCancellationToken);
+    
+    string ownerId = "";
+
+    while (ownerId != result.OwnerTaskId)
+    {
+      ownerId = result.OwnerTaskId;
+      var completion = await WaitForCompletion(new WaitRequest
+                              {
+                                Filter = new TaskFilter
+                                {
+                                  Task = new TaskFilter.Types.IdsRequest
+                                  {
+                                    Ids =
+                                    {
+                                      ownerId,
+                                    },
+                                  },
+                                },
+                                StopOnFirstTaskCancellation = true,
+                                StopOnFirstTaskError = true,
+                              },
+                              contextCancellationToken);
+      if (completion.Values.Any(count => count.Status is TaskStatus.Failed or TaskStatus.Error))
+      {
+        return new AvailabilityReply
+        {
+          Error = new TaskError
+          {
+            TaskId = ownerId,
+          }
+        };
+      }
+      if (completion.Values.Any(count => count.Status is TaskStatus.Canceled or TaskStatus.Canceling))
+      {
+        return new AvailabilityReply
+        {
+          NotCompletedTask = ownerId,
+        };
+      }
+      result = await resultTable_.GetResult(request.Session,
+                                            request.Key);
+    }
+
+    var availabilityReply = new AvailabilityReply
+    {
+      Ok = new Empty(),
+    };
+    return availabilityReply;
+  }
+
+  /// <inheritdoc />
   public async Task FinalizeDispatch(string taskId, Dispatch dispatch, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction();

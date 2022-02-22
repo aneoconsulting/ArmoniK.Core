@@ -123,4 +123,10 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   public override Task<Output> TryGetTaskOutput(ResultRequest request, ServerCallContext context)
     => submitter_.TryGetTaskOutputAsync(request,
                                         context.CancellationToken);
+
+  public override Task<AvailabilityReply> WaitForAvailability(ResultRequest request, ServerCallContext context)
+  {
+    return submitter_.WaitForAvailabilityAsync(request,
+                                               context.CancellationToken);
+  }
 }

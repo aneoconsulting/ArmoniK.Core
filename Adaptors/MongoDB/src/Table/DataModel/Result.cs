@@ -56,5 +56,8 @@ public record Result(string   SessionId,
   /// <summary>
   /// Database Id of the object. 
   /// </summary>
-  public string Id => $"{SessionId}.{Key}";
+  public string Id => GenerateId(SessionId, Key);
+
+  public static string GenerateId(string SessionId, string Key) =>
+    $"{SessionId}.{Key}";
 }
