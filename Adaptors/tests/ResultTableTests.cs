@@ -79,4 +79,49 @@ internal class AdapterMemoryResultTableTests
                                                         CancellationToken.None);
     Assert.False(await checkTable);
   }
+
+  [Test]
+  public async Task TestChangeResultDispatch()
+  {
+    var checkTable = resultTable_.ChangeResultDispatch("SessionId",
+                                                    "DispatchId",
+                                                    "NewDispatchId",
+                                                    CancellationToken.None);
+    await checkTable;
+    var result = resultTable_.GetResult("SessionId",
+                           "ResultIsAvailable",CancellationToken.None);
+
+    Assert.True ((await result).OriginDispatchId == "NewDispatchId");
+  }
+
+  [Test]
+  public async Task TestChangeResultOwnership()
+  {
+    var checkTable = resultTable_.ChangeResultOwnership("SessionId",
+                                                        new[] { "ResultIsAvailable" },
+                                                        "OwnerId",
+                                                        "NewOwnerId",
+                                                        CancellationToken.None);
+    await checkTable;
+    var result = resultTable_.GetResult("SessionId",
+                                        "ResultIsAvailable",
+                                        CancellationToken.None);
+
+    Assert.True((await result).OwnerTaskId == "NewOwnerId");
+  }
+
+  [Test]
+  public async Task TestSetResult()
+  {
+    var checkTable = resultTable_.SetResult("SessionId",
+                                            "OwnerId",
+                                            "ResultIsNotAvailable",
+                                            CancellationToken.None);
+    await checkTable;
+    var result = resultTable_.GetResult("SessionId",
+                                        "ResultIsNotAvailable",
+                                        CancellationToken.None);
+
+    Assert.True((await result).IsResultAvailable);
+  }
 }
