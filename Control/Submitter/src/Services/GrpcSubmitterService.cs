@@ -129,4 +129,16 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     return submitter_.WaitForAvailabilityAsync(request,
                                                context.CancellationToken);
   }
+
+  public override Task<GetStatusReply> GetStatus(GetStatusrequest request, ServerCallContext context)
+  {
+    return submitter_.GetStatusAsync(request,
+                                     context.CancellationToken);
+  }
+
+  public override Task<TaskIdList> ListTasks(TaskFilter request, ServerCallContext context)
+  {
+    return submitter_.ListTasksAsync(request,
+                                     context.CancellationToken);
+  }
 }
