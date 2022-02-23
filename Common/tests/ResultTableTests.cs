@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -96,6 +97,18 @@ public class ResultTableTests
   }
 
   [Test]
+  public void TestChangeResultDispatchFails()
+  {
+    Assert.ThrowsAsync<System.Collections.Generic.KeyNotFoundException>(code: async() =>
+    {
+      await resultTable_.ChangeResultDispatch("NonExistingSessionId",
+                                              "",
+                                              "",
+                                              CancellationToken.None);
+    });
+  }
+
+  [Test]
   public async Task TestChangeResultOwnership()
   {
     await resultTable_.ChangeResultOwnership("SessionId",
@@ -111,6 +124,73 @@ public class ResultTableTests
   }
 
   [Test]
+  public void TestCreate()
+  {
+    var success = resultTable_.Create(new[]
+    {
+      new Result("AnotherSessionId",
+                 "ResultIsAvailable",
+                 "OwnerId",
+                 "DispatchId",
+                 true,
+                 DateTime.Today,
+                 new[] { (byte) 1 }),
+    });
+
+    Assert.True(success.IsCompletedSuccessfully);
+  }
+
+  [Test]
+  public void TestCreateFails()
+  {
+    /* Check if an exception is thrown when attempting to
+       create an already existing result entry */
+    Assert.ThrowsAsync<InvalidOperationException>(code: async () =>
+    {
+      await resultTable_.Create(new[]
+      {
+        new Result("SessionId",
+                   "ResultIsAvailable",
+                   "",
+                   "",
+                   true,
+                   DateTime.Today,
+                   new[] { (byte) 1 })
+      });
+    });
+  }
+
+  [Test]
+  public async Task TestDeleteResults()
+  {
+    await resultTable_.DeleteResults("SessionId",
+                                     CancellationToken.None);
+
+    var resList = resultTable_.ListResultsAsync("SessionId",
+                                                CancellationToken.None);
+
+    // Query first element, function returns default if the list is empty
+    var firstElement = await resList.FirstOrDefaultAsync();
+
+    Assert.True(firstElement == default);
+  }
+
+  [Test]
+  public async Task TestDeleteResult()
+  {
+    await resultTable_.DeleteResult("SessionId",
+                                    "ResultIsAvailable",
+                                    CancellationToken.None);
+
+    Assert.ThrowsAsync<System.Collections.Generic.KeyNotFoundException>(async () =>
+    {
+      await resultTable_.GetResult("SessionId",
+                                   "ResultIsAvailable",
+                                   CancellationToken.None);
+    });
+  }
+
+  [Test]
   public async Task TestSetResult()
   {
     await resultTable_.SetResult("SessionId",
@@ -118,10 +198,28 @@ public class ResultTableTests
                                  "ResultIsNotAvailable",
                                  CancellationToken.None);
 
-    var result = resultTable_.GetResult("SessionId",
+    var result = await resultTable_.GetResult("SessionId",
                                         "ResultIsNotAvailable",
                                         CancellationToken.None);
 
-    Assert.True((await result).IsResultAvailable);
+    Assert.True(result.IsResultAvailable);
+  }
+
+  [Test]
+  public async Task TestSetResultSmallPayload()
+  {
+    var smallPayload = new[] { (byte) (1), (byte) (2) };
+
+    await resultTable_.SetResult("SessionId",
+                                 "OwnerId",
+                                 "ResultIsNotAvailable",
+                                 smallPayload,
+                                 CancellationToken.None);
+    var result = await resultTable_.GetResult("SessionId",
+                                              "ResultIsNotAvailable",
+                                              CancellationToken.None);
+
+    Assert.AreEqual(result.Data,
+                    smallPayload);
   }
 }
