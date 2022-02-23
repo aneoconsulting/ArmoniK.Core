@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\ArmoniK.Core.Common.csproj" />
+    <ProjectReference Include="../../Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj" />
   </ItemGroup>
 
 </Project>
