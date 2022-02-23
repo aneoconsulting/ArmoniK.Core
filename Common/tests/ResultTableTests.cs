@@ -31,16 +31,18 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Adapters.Tests.TableStorage;
+namespace ArmoniK.Core.Common.Tests;
 
 [TestFixture(TestOf = typeof(ResultTable))]
 internal class AdapterMemoryResultTableTests
 {
-  private readonly IResultTable resultTable_ = new ResultTable();
+  // ResultTableBaseTests
+  private IResultTable resultTable_;
 
-  [OneTimeSetUp]
+  [SetUp]
   public void SetUp()
   {
+    resultTable_ = new ResultTable();
     // Create a simple ResultTable with only two entries before
     // any test is executed.
     resultTable_.Create(new[]
@@ -65,59 +67,58 @@ internal class AdapterMemoryResultTableTests
   [Test]
   public async Task TestResultsAreAvailableAsync()
   {
-    var checkTable = resultTable_.AreResultsAvailableAsync("SessionId",
-                                                        new []{"ResultIsAvailable"},
-                                                        CancellationToken.None);
-    Assert.True(await checkTable);
+    var checkTable = await resultTable_.AreResultsAvailableAsync("SessionId",
+                                                                 new[] { "ResultIsAvailable" },
+                                                                 CancellationToken.None);
+    Assert.True(checkTable);
   }
 
   [Test]
   public async Task TestResultsAreNotAvailableAsync()
   {
-    var checkTable = resultTable_.AreResultsAvailableAsync("SessionId",
-                                                        new[] { "ResultIsNotAvailable" },
-                                                        CancellationToken.None);
-    Assert.False(await checkTable);
+    var checkTable = await resultTable_.AreResultsAvailableAsync("SessionId",
+                                                                 new[] { "ResultIsNotAvailable" },
+                                                                 CancellationToken.None);
+    Assert.False(checkTable);
   }
 
   [Test]
   public async Task TestChangeResultDispatch()
   {
-    var checkTable = resultTable_.ChangeResultDispatch("SessionId",
-                                                    "DispatchId",
-                                                    "NewDispatchId",
-                                                    CancellationToken.None);
-    await checkTable;
-    var result = resultTable_.GetResult("SessionId",
-                           "ResultIsAvailable",CancellationToken.None);
+    await resultTable_.ChangeResultDispatch("SessionId",
+                                            "DispatchId",
+                                            "NewDispatchId",
+                                            CancellationToken.None);
+    var result = await resultTable_.GetResult("SessionId",
+                                              "ResultIsAvailable",
+                                              CancellationToken.None);
 
-    Assert.True ((await result).OriginDispatchId == "NewDispatchId");
+    Assert.True(result.OriginDispatchId == "NewDispatchId");
   }
 
   [Test]
   public async Task TestChangeResultOwnership()
   {
-    var checkTable = resultTable_.ChangeResultOwnership("SessionId",
-                                                        new[] { "ResultIsAvailable" },
-                                                        "OwnerId",
-                                                        "NewOwnerId",
-                                                        CancellationToken.None);
-    await checkTable;
-    var result = resultTable_.GetResult("SessionId",
-                                        "ResultIsAvailable",
-                                        CancellationToken.None);
+    await resultTable_.ChangeResultOwnership("SessionId",
+                                             new[] { "ResultIsAvailable" },
+                                             "OwnerId",
+                                             "NewOwnerId",
+                                             CancellationToken.None);
+    var result = await resultTable_.GetResult("SessionId",
+                                              "ResultIsAvailable",
+                                              CancellationToken.None);
 
-    Assert.True((await result).OwnerTaskId == "NewOwnerId");
+    Assert.True(result.OwnerTaskId == "NewOwnerId");
   }
 
   [Test]
   public async Task TestSetResult()
   {
-    var checkTable = resultTable_.SetResult("SessionId",
-                                            "OwnerId",
-                                            "ResultIsNotAvailable",
-                                            CancellationToken.None);
-    await checkTable;
+    await resultTable_.SetResult("SessionId",
+                                 "OwnerId",
+                                 "ResultIsNotAvailable",
+                                 CancellationToken.None);
+
     var result = resultTable_.GetResult("SessionId",
                                         "ResultIsNotAvailable",
                                         CancellationToken.None);
