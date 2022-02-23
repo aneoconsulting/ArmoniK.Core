@@ -38,11 +38,11 @@ internal class AdapterMemoryResultTableTests
 {
   private readonly IResultTable resultTable_ = new ResultTable();
 
-  [SetUp]
+  [OneTimeSetUp]
   public void SetUp()
   {
-    // Create simple ResultTable with only two entries before
-    // test execution
+    // Create a simple ResultTable with only two entries before
+    // any test is executed.
     resultTable_.Create(new[]
     {
       new Result("SessionId",
@@ -60,13 +60,6 @@ internal class AdapterMemoryResultTableTests
                  DateTime.Today,
                  new[] { (byte) 1 }),
     });
-  }
-
-  [TearDown]
-  public void CleanUp()
-  {
-    // Clean ResultTable after each test is executed
-    resultTable_.DeleteResults("SessionId");
   }
 
   [Test]
