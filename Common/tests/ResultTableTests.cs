@@ -34,9 +34,8 @@ using NUnit.Framework;
 namespace ArmoniK.Core.Common.Tests;
 
 [TestFixture(TestOf = typeof(ResultTable))]
-internal class AdapterMemoryResultTableTests
+public class ResultTableTests
 {
-  // ResultTableBaseTests
   private IResultTable resultTable_;
 
   [SetUp]
