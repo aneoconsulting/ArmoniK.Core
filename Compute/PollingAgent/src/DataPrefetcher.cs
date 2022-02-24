@@ -99,6 +99,7 @@ public class DataPrefetcher
                                                         {
                                                           Data         = payloadChunks[0],
                                                         },
+                                              ExpectedOutputKeys = { taskData.ExpectedOutput },
                                             },
                             });
     
