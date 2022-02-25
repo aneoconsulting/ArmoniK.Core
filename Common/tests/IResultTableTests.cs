@@ -30,194 +30,222 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Storage;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
+using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests;
 
-[TestClass]
-public abstract class ResultTableTestBase
+[TestFixture]
+public class ResultTableTestBase
 {
-  public abstract IResultTable GetResultTableInstance();
+  protected IResultTable ResultTable;
+  protected bool         RunTests = false;
 
-  [TestMethod]
+  public virtual void GetResultTableInstance()
+  {
+  }
+
+  [SetUp]
+  public void SetUp()
+  {
+    GetResultTableInstance();
+  }
+
+  [TearDown]
+  public void TearDown()
+  {
+    ResultTable = null;
+    RunTests   = false;
+  }
+
+  [Test]
   public async Task ResultsAreAvailableShouldSucceed()
   {
-    var resultTable = GetResultTableInstance();
-
-    var checkTable = await resultTable.AreResultsAvailableAsync("SessionId",
-                                                                new[] { "ResultIsAvailable" },
-                                                                CancellationToken.None);
-    Assert.IsTrue(checkTable);
+    if (RunTests)
+    {
+      var checkTable = await ResultTable.AreResultsAvailableAsync("SessionId",
+                                                                  new[] { "ResultIsAvailable" },
+                                                                  CancellationToken.None);
+      Assert.IsTrue(checkTable);
+    }
   }
 
-  [TestMethod]
+  [Test]
   public async Task ResultsAreAvailableShouldFail()
   {
-    var resultTable = GetResultTableInstance();
-
-    var checkTable = await resultTable.AreResultsAvailableAsync("SessionId",
-                                                                new[] { "ResultIsNotAvailable" },
-                                                                CancellationToken.None);
-    Assert.IsFalse(checkTable);
+    if (RunTests)
+    {
+      var checkTable = await ResultTable.AreResultsAvailableAsync("SessionId",
+                                                                  new[] { "ResultIsNotAvailable" },
+                                                                  CancellationToken.None);
+      Assert.IsFalse(checkTable);
+    }
   }
 
-  [TestMethod]
+  [Test]
   public async Task ChangeResultDispatchShouldSucceed()
   {
-    var resultTable = GetResultTableInstance();
-
-    await resultTable.ChangeResultDispatch("SessionId",
-                                           "DispatchId",
-                                           "NewDispatchId",
-                                           CancellationToken.None);
-    var result = await resultTable.GetResult("SessionId",
-                                             "ResultIsAvailable",
+    if (RunTests)
+    {
+      await ResultTable.ChangeResultDispatch("SessionId",
+                                             "DispatchId",
+                                             "NewDispatchId",
                                              CancellationToken.None);
+      var result = await ResultTable.GetResult("SessionId",
+                                               "ResultIsAvailable",
+                                               CancellationToken.None);
 
-    Assert.IsTrue(result.OriginDispatchId == "NewDispatchId");
+      Assert.IsTrue(result.OriginDispatchId == "NewDispatchId");
+    }
   }
 
-  [TestMethod]
+  [Test]
   public void ChangeResultDispatchShouldFail()
   {
-    var resultTable = GetResultTableInstance();
-
-    Assert.ThrowsExceptionAsync<KeyNotFoundException>(async () =>
+    if (RunTests)
     {
-      await resultTable.ChangeResultDispatch("NonExistingSessionId",
-                                             "",
-                                             "",
-                                             CancellationToken.None);
-    });
+      Assert.ThrowsAsync<KeyNotFoundException>(async () =>
+      {
+        await ResultTable.ChangeResultDispatch("NonExistingSessionId",
+                                               "",
+                                               "",
+                                               CancellationToken.None);
+      });
+    }
   }
 
-  [TestMethod]
+  [Test]
   public async Task ChangeResultOwnershipShouldSucceed()
   {
-    var resultTable = GetResultTableInstance();
+    if (RunTests)
+    {
+      await ResultTable.ChangeResultOwnership("SessionId",
+                                              new[] { "ResultIsAvailable" },
+                                              "OwnerId",
+                                              "NewOwnerId",
+                                              CancellationToken.None);
+      var result = await ResultTable.GetResult("SessionId",
+                                               "ResultIsAvailable",
+                                               CancellationToken.None);
 
-    await resultTable.ChangeResultOwnership("SessionId",
-                                            new[] { "ResultIsAvailable" },
-                                            "OwnerId",
-                                            "NewOwnerId",
-                                            CancellationToken.None);
-    var result = await resultTable.GetResult("SessionId",
-                                             "ResultIsAvailable",
-                                             CancellationToken.None);
-
-    Assert.IsTrue(result.OwnerTaskId == "NewOwnerId");
+      Assert.IsTrue(result.OwnerTaskId == "NewOwnerId");
+    }
   }
 
-  [TestMethod]
+  [Test]
   public void CreateShouldSucceed()
   {
-    var resultTable = GetResultTableInstance();
-
-    var success = resultTable.Create(new[]
+    if (RunTests)
     {
-      new Result("AnotherSessionId",
-                 "ResultIsAvailable",
-                 "OwnerId",
-                 "DispatchId",
-                 true,
-                 DateTime.Today,
-                 new[] { (byte) 1 }),
-    });
-
-    Assert.IsTrue(success.IsCompletedSuccessfully);
-  }
-
-  [TestMethod]
-  public void CreateShouldFail()
-  {
-    var resultTable = GetResultTableInstance();
-
-    /* Check if an exception is thrown when attempting to
-       create an already existing result entry */
-    Assert.ThrowsExceptionAsync<InvalidOperationException>(async () =>
-    {
-      await resultTable.Create(new[]
+      var success = ResultTable.Create(new[]
       {
-        new Result("SessionId",
+        new Result("AnotherSessionId",
                    "ResultIsAvailable",
-                   "",
-                   "",
+                   "OwnerId",
+                   "DispatchId",
                    true,
                    DateTime.Today,
-                   new[] { (byte) 1 })
+                   new[] { (byte) 1 }),
       });
-    });
+
+      Assert.IsTrue(success.IsCompletedSuccessfully);
+    }
   }
 
-  [TestMethod]
+  [Test]
+  public void CreateShouldFail()
+  {
+    if (RunTests)
+    {
+      /* Check if an exception is thrown when attempting to
+         create an already existing result entry */
+      Assert.ThrowsAsync<InvalidOperationException>(async () =>
+      {
+        await ResultTable.Create(new[]
+        {
+          new Result("SessionId",
+                     "ResultIsAvailable",
+                     "",
+                     "",
+                     true,
+                     DateTime.Today,
+                     new[] { (byte) 1 })
+        });
+      });
+    }
+  }
+
+  [Test]
   public async Task DeleteResultsShouldRemoveAll()
   {
-    var resultTable = GetResultTableInstance();
+    if (RunTests)
+    {
+      await ResultTable.DeleteResults("SessionId",
+                                      CancellationToken.None);
 
-    await resultTable.DeleteResults("SessionId",
-                                     CancellationToken.None);
+      var resList = ResultTable.ListResultsAsync("SessionId",
+                                                 CancellationToken.None);
 
-    var resList = resultTable.ListResultsAsync("SessionId",
-                                                CancellationToken.None);
+      // Query first element, function returns default if the list is empty
+      var firstElement = await resList.FirstOrDefaultAsync();
 
-    // Query first element, function returns default if the list is empty
-    var firstElement = await resList.FirstOrDefaultAsync();
-
-    Assert.IsTrue(firstElement == default);
+      Assert.IsTrue(firstElement == default);
+    }
   }
 
-  [TestMethod]
+  [Test]
   public async Task DeleteResultShouldRemove()
   {
-    var resultTable = GetResultTableInstance();
-
-    await resultTable.DeleteResult("SessionId",
-                                   "ResultIsAvailable",
-                                   CancellationToken.None);
-
-    await Assert.ThrowsExceptionAsync<KeyNotFoundException>(async () =>
+    if (RunTests)
     {
-      await resultTable.GetResult("SessionId",
-                                   "ResultIsAvailable",
-                                   CancellationToken.None);
-    });
+      await ResultTable.DeleteResult("SessionId",
+                                     "ResultIsAvailable",
+                                     CancellationToken.None);
+
+      Assert.ThrowsAsync<KeyNotFoundException>(async () =>
+      {
+        await ResultTable.GetResult("SessionId",
+                                    "ResultIsAvailable",
+                                    CancellationToken.None);
+      });
+    }
   }
 
-  [TestMethod]
+  [Test]
   public async Task SetResultShouldSucceed()
   {
-    var resultTable = GetResultTableInstance();
+    if (RunTests)
+    {
+      await ResultTable.SetResult("SessionId",
+                                  "OwnerId",
+                                  "ResultIsNotAvailable",
+                                  CancellationToken.None);
 
-    await resultTable.SetResult("SessionId",
-                                "OwnerId",
-                                "ResultIsNotAvailable",
-                                CancellationToken.None);
+      var result = await ResultTable.GetResult("SessionId",
+                                               "ResultIsNotAvailable",
+                                               CancellationToken.None);
 
-    var result = await resultTable.GetResult("SessionId",
-                                             "ResultIsNotAvailable",
-                                             CancellationToken.None);
-
-    Assert.IsTrue(result.IsResultAvailable);
+      Assert.IsTrue(result.IsResultAvailable);
+    }
   }
 
-  [TestMethod]
+  [Test]
   public async Task SetResultSmallPayloadShouldSucceed()
   {
-    var resultTable  = GetResultTableInstance();
-    var smallPayload = new[] { (byte) (1), (byte) (2) };
+    if (RunTests)
+    {
+      var smallPayload = new[] { (byte) (1), (byte) (2) };
 
-    await resultTable.SetResult("SessionId",
-                                "OwnerId",
-                                "ResultIsNotAvailable",
-                                smallPayload,
-                                CancellationToken.None);
-    var result = await resultTable.GetResult("SessionId",
-                                             "ResultIsNotAvailable",
-                                             CancellationToken.None);
+      await ResultTable.SetResult("SessionId",
+                                  "OwnerId",
+                                  "ResultIsNotAvailable",
+                                  smallPayload,
+                                  CancellationToken.None);
+      var result = await ResultTable.GetResult("SessionId",
+                                               "ResultIsNotAvailable",
+                                               CancellationToken.None);
 
-    Assert.AreEqual(result.Data,
-                    smallPayload);
+      Assert.AreEqual(result.Data,
+                      smallPayload);
+    }
   }
 }

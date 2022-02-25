@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -33,8 +32,11 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestClass]
 public class ResultTableTests : ResultTableTestBase
 {
-  public override IResultTable GetResultTableInstance()
+  public override void GetResultTableInstance()
   {
-    return new ResultTable(null,null,null);
+    ResultTable = new ResultTable(null,
+                                  null,
+                                  null);
+    RunTests    = true;
   }
 }

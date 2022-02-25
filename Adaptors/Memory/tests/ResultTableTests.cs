@@ -27,19 +27,18 @@ using System;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace ArmoniK.Core.Adapters.Memory.Tests;
 
-[TestClass]
+[TestFixture]
 public class ResultTableTests : ResultTableTestBase
-{
-  private IResultTable resultTable_;
-  public override IResultTable GetResultTableInstance()
+{ 
+  public override void GetResultTableInstance()
   {
-    resultTable_ = new ResultTable();
+    ResultTable = new ResultTable();
 
-    resultTable_.Create(new[]
+    ResultTable.Create(new[]
     {
       new Result("SessionId",
                  "ResultIsAvailable",
@@ -57,6 +56,6 @@ public class ResultTableTests : ResultTableTestBase
                  new[] { (byte) 1 }),
     });
 
-    return resultTable_;
+    RunTests = true;
   }
 }
