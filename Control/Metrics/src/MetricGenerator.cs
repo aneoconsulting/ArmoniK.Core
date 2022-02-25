@@ -50,8 +50,6 @@ public static partial class Program
 
     public async Task<string> GetMetrics()
     {
-      var tasks = await taskTable_.CountAllTasksAsync().ToListAsync();
-
       var metricList = new MetricList
       {
         ApiVersion = options_.ApiVersion,
@@ -77,8 +75,6 @@ public static partial class Program
         Value      = 0,
       };
 
-      var dicMetric = new Dictionary<TaskStatus, Metric>();
-
       foreach (var status in (TaskStatus[]) Enum.GetValues(typeof(TaskStatus)))
       {
         var metric = new Metric
@@ -92,28 +88,15 @@ public static partial class Program
           },
           Timestamp = DateTime.Now.ToString("s") + "Z",
           MetricName = "armonik_tasks_" + status.ToString().ToLower(),
-          Value = 0,
+          Value = await taskTable_.CountAllTasksAsync(status),
         };
-        dicMetric.Add(status, metric);
-      }
 
-      foreach (var taskStatusCount in tasks)
-      {
-        if (taskStatusCount.Status is TaskStatus.Creating or TaskStatus.Dispatched or TaskStatus.Processing or TaskStatus.Submitted)
+        if (status is TaskStatus.Creating or TaskStatus.Dispatched or TaskStatus.Processing or TaskStatus.Submitted)
         {
-          metricQueued.Value += taskStatusCount.Count;
+          metricQueued.Value += metric.Value;
         }
 
-        dicMetric.TryGetValue(taskStatusCount.Status, out var metric);
-        metric.Value += taskStatusCount.Count;
-
-        dicMetric.Remove(taskStatusCount.Status);
-        dicMetric.Add(taskStatusCount.Status, metric);
-      }
-
-      foreach (var value in dicMetric.Values)
-      {
-        metricList.Items.Add(value);
+        metricList.Items.Add(metric);
       }
 
       metricList.Items.Add(metricQueued);

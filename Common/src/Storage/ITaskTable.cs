@@ -60,7 +60,7 @@ public interface ITaskTable
 
   Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default);
 
-  Task<IEnumerable<TaskStatusCount>> CountAllTasksAsync(CancellationToken cancellationToken = default);
+  Task<int> CountAllTasksAsync(TaskStatus status, CancellationToken cancellationToken = default);
 
   Task DeleteTaskAsync(string id, CancellationToken cancellationToken = default);
 
