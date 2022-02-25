@@ -15,7 +15,12 @@ services:
       - 5672:5672
       - 8161:8161
 
-  armonik.control:
+  armonik.control.submitter:
+    environment:
+      - Amqp__User=guest
+      - Amqp__Password=guest
+
+  armonik.control.metrics:
     environment:
       - Amqp__User=guest
       - Amqp__Password=guest

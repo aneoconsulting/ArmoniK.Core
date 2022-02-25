@@ -76,15 +76,21 @@ jobs:
       with:
         dotnet-version: 6.x
 
-    - name: Build the package
+    # find . -name "*.csproj" | xargs -I % echo dotnet build % -c Release
+    - name: Build the projects
       run: |
-        dotnet build Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj -c Release
-        dotnet build Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj -c Release
-        dotnet build Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj -c Release
-        dotnet build Common/src/ArmoniK.Core.Common.csproj -c Release
-        dotnet build Common/tests/ArmoniK.Core.Common.Tests.csproj -c Release
-        dotnet build Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj -c Release
-        dotnet build Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj -c Release
+        dotnet build ./Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj -c Release
+        dotnet build ./Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj -c Release
+        dotnet build ./Adaptors/Memory/tests/ArmoniK.Core.Adapters.Memory.Tests.csproj -c Release
+        dotnet build ./Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj -c Release
+        dotnet build ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj -c Release
+        dotnet build ./Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj -c Release
+        dotnet build ./Common/src/ArmoniK.Core.Common.csproj -c Release
+        dotnet build ./Common/tests/ArmoniK.Core.Common.Tests.csproj -c Release
+        dotnet build ./Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj -c Release
+        dotnet build ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj -c Release
+        dotnet build ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj -c Release
+        dotnet build ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj -c Release
 
   buildControl:
     runs-on: ubuntu-latest
@@ -113,6 +119,34 @@ jobs:
     - name: push
       run: |
         docker push dockerhubaneo/armonik_control:$VERSION
+
+  buildMetrics:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - buildProjects
+      - tests
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: login
+      run: |
+        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
+
+    - name: build
+      run: |
+        echo $VERSION
+        docker build -t dockerhubaneo/armonik_control_metrics:$VERSION -f Control/Metrics/src/Dockerfile .
+
+    - name: push
+      run: |
+        docker push dockerhubaneo/armonik_control_metrics:$VERSION
 
   buildAgent:
     runs-on: ubuntu-latest
@@ -147,6 +181,7 @@ jobs:
       - versionning
       - buildAgent
       - buildControl
+      - buildMetrics
     runs-on: ubuntu-latest
     steps:
       - uses: aneoconsulting/ArmoniK/.github/actions/test-worker@main
