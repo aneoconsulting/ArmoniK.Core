@@ -185,6 +185,12 @@ public class TaskTable : ITaskTable
                                               .ToListAsync(cancellationToken);
 
   /// <inheritdoc />
+  public Task<IEnumerable<TaskStatusCount>> CountAllTasksAsync(CancellationToken cancellationToken = default)
+  {
+    throw new NotImplementedException();
+  }
+
+  /// <inheritdoc />
   public Task DeleteTaskAsync(string id, CancellationToken cancellationToken = default)
     => throw new NotImplementedException();
 
@@ -212,26 +218,31 @@ public class TaskTable : ITaskTable
                   .ToAsyncEnumerable();
   }
 
+  /// <inheritdoc />
   public Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken)
   {
     throw new NotImplementedException();
   }
 
+  /// <inheritdoc />
   public Task SetTaskErrorAsync(string   taskId, string            errorDetail, CancellationToken cancellationToken)
   {
     throw new NotImplementedException();
   }
 
+  /// <inheritdoc />
   public Task<Output> GetTaskOutput(string taskId, CancellationToken cancellationToken = default)
   {
     throw new NotImplementedException();
   }
 
+  /// <inheritdoc />
   public Task<TaskStatus> GetTaskStatus(string taskId, CancellationToken cancellationToken = default)
   {
     throw new NotImplementedException();
   }
 
+  /// <inheritdoc />
   public Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string taskId, CancellationToken cancellationToken = default)
   {
     throw new NotImplementedException();

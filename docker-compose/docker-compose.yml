@@ -17,8 +17,8 @@ services:
     expose:
       - 6379
 
-  armonik.control:
-    image: ${DOCKER_REGISTRY-}armonikcontrol
+  armonik.control.submitter:
+    image: ${DOCKER_REGISTRY-}armonikcontrolsubmitter
     build:
       context: ..
       dockerfile: Control/Submitter/src/Dockerfile
@@ -35,6 +35,47 @@ services:
       - 5001:80
     environment:
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
+      - MongoDB__Host=database
+      - MongoDB__Port=27017
+      - MongoDB__DatabaseName=database
+      - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
+      - Redis__EndpointUrl=object:6379
+      - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Serilog__MinimumLevel=Verbose
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
+  armonik.control.metrics:
+    image: ${DOCKER_REGISTRY-}armonikcontrolmetrics
+    build:
+      context: ..
+      dockerfile: Control/Metrics/src/Dockerfile
+    depends_on:
+      - database
+      - object
+      - queue
+      - fluentbit
+    networks:
+      - armonik-net
+      - armonik-backend
+      - armonik-monitoring
+    ports:
+      - 5002:80
+    environment:
+      - Metrics__ApiVersion=TestApiVersion
+      - Metrics__DescribedObject__ApiVersion=TestApiVersion
+      - Metrics__DescribedObject__Name=metrics-exporter
+      - Metrics__DescribedObject__Namespace=armonik
+      - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
+      - MongoDB__Host=database
+      - MongoDB__Port=27017
+      - MongoDB__DatabaseName=database
       - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
       - Redis__EndpointUrl=object:6379
       - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
@@ -65,6 +106,9 @@ services:
       - socket_vol:/cache
     environment:
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
+      - MongoDB__Host=database
+      - MongoDB__Port=27017
+      - MongoDB__DatabaseName=database
       - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
       - Redis__EndpointUrl=object:6379
       - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage

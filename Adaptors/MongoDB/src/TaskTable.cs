@@ -232,6 +232,26 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public async Task<IEnumerable<TaskStatusCount>> CountAllTasksAsync(CancellationToken cancellationToken = default)
+  {
+    using var _ = Logger.LogFunction();
+
+    var sessionHandle  = await sessionProvider_.GetAsync();
+    var taskCollection = await taskCollectionProvider_.GetAsync();
+
+
+
+    var res = await taskCollection.AsQueryable(sessionHandle)
+                                  .GroupBy(model => model.Status)
+                                  .Select(models => new TaskStatusCount(models.Key,
+                                                                        models.Count()))
+                                  .ToListAsync(cancellationToken);
+
+    return res.Select(tuple => new TaskStatusCount(tuple.Status,
+                                                   tuple.Count));
+  }
+
+  /// <inheritdoc />
   public async Task DeleteTaskAsync(string id, CancellationToken cancellationToken = default)
   {
     using var _              = Logger.LogFunction(id);

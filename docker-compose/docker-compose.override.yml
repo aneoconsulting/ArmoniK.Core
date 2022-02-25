@@ -1,7 +1,11 @@
 version: '3.7'
 
 services:
-  armonik.control:
+  armonik.control.submitter:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  armonik.control.metrics:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 
