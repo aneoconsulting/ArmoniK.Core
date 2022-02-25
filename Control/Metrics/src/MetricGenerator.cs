@@ -77,7 +77,9 @@ public static partial class Program
         Value      = 0,
       };
 
-      foreach (var status in Enum.GetNames(typeof(TaskStatus)))
+      var dicMetric = new Dictionary<TaskStatus, Metric>();
+
+      foreach (var status in (TaskStatus[]) Enum.GetValues(typeof(TaskStatus)))
       {
         var metric = new Metric
         {
@@ -89,25 +91,31 @@ public static partial class Program
             KubernetesNamespace = options_.DescribedObject.Namespace,
           },
           Timestamp = DateTime.Now.ToString("s") + "Z",
-          MetricName = "armonik_tasks_" + status.ToLower(),
+          MetricName = "armonik_tasks_" + status.ToString().ToLower(),
           Value = 0,
         };
-        if (tasks.Any())
+        dicMetric.Add(status, metric);
+      }
+
+      foreach (var taskStatusCount in tasks)
+      {
+        if (taskStatusCount.Status is TaskStatus.Creating or TaskStatus.Dispatched or TaskStatus.Processing or TaskStatus.Submitted)
         {
-          var statusCount = tasks.DistinctBy(c => c.Status.ToString() == status).FirstOrDefault(defaultValue: new TaskStatusCount
-                                                                                                 (TaskStatus.Canceled, 0));
-          if(statusCount.Count > 0)
-          {
-            metric.Value = statusCount.Count;
-            if (statusCount.Status is TaskStatus.Creating or TaskStatus.Dispatched or TaskStatus.Processing or TaskStatus.Submitted)
-            {
-              metricQueued.Value += statusCount.Count;
-            }
-          }
+          metricQueued.Value += taskStatusCount.Count;
         }
 
-        metricList.Items.Add(metric);
+        dicMetric.TryGetValue(taskStatusCount.Status, out var metric);
+        metric.Value += taskStatusCount.Count;
+
+        dicMetric.Remove(taskStatusCount.Status);
+        dicMetric.Add(taskStatusCount.Status, metric);
       }
+
+      foreach (var value in dicMetric.Values)
+      {
+        metricList.Items.Add(value);
+      }
+
       metricList.Items.Add(metricQueued);
       return JsonSerializer.Serialize(metricList);
     }
