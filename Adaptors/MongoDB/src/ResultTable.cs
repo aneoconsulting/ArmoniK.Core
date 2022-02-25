@@ -90,7 +90,7 @@ public class ResultTable : IResultTable
     var       resultCollection = await resultCollectionProvider_.GetAsync();
 
     return !await resultCollection.AsQueryable(sessionHandle)
-                                  .AnyAsync(model => !model.IsResultAvailable,
+                                  .AnyAsync(model => !model.IsResultAvailable && model.SessionId == sessionId && keys.Contains(model.Key),
                                             cancellationToken);
   }
 

@@ -53,17 +53,20 @@ public class RequestProcessor
   private readonly ILogger<RequestProcessor> logger_;
   private readonly IObjectStorage            resourcesStorage_;
   private readonly Submitter                 submitter_;
+  private readonly IResultTable              resultTable_;
 
   public RequestProcessor(
     WorkerClientProvider      workerClientProvider,
     IObjectStorageFactory     objectStorageFactory,
     ILogger<RequestProcessor> logger,
-    Submitter                 submitter)
+    Submitter                 submitter,
+    IResultTable              resultTable)
   {
     workerClientProvider_ = workerClientProvider;
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
     submitter_            = submitter;
+    resultTable_          = resultTable;
     resourcesStorage_     = objectStorageFactory.CreateResourcesStorage();
   }
 
@@ -246,6 +249,8 @@ public class RequestProcessor
           output.Add(StoreResultAsync(resultStorage,
                                       first,
                                       singleReplyStream,
+                                      taskData.SessionId,
+                                      taskData.TaskId,
                                       cancellationToken));
           break;
         case ProcessReply.TypeOneofCase.CreateSmallTask:
@@ -400,12 +405,21 @@ public class RequestProcessor
   }
 
   [PublicAPI]
-  public Task StoreResultAsync(IObjectStorage resultStorage, ProcessReply first, IList<ProcessReply> singleReplyStream, CancellationToken cancellationToken)
+  public async Task StoreResultAsync(IObjectStorage resultStorage,
+                                     ProcessReply first,
+                                     IList<ProcessReply> singleReplyStream,
+                                     string sessionId,
+                                     string ownerTaskId,
+                                     CancellationToken cancellationToken)
   {
     using var activity = ActivitySource.StartActivity($"{nameof(StoreResultAsync)}");
-    return resultStorage.AddOrUpdateAsync(first.Result.Init.Key,
+    await resultStorage.AddOrUpdateAsync(first.Result.Init.Key,
                                           singleReplyStream.Skip(1).Select(reply => reply.Result.Data.Data.Memory).ToAsyncEnumerable(),
                                           cancellationToken);
+    await resultTable_.SetResult(sessionId,
+                                 ownerTaskId,
+                                 first.Result.Init.Key,
+                                 cancellationToken);
   }
 
 }
