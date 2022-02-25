@@ -63,6 +63,20 @@ public static partial class Program
         Items = new List<Metric>(),
       };
 
+      var metricQueued = new Metric
+      {
+        DescribedObject = new ObjectDescription
+        {
+          ApiVersion          = options_.DescribedObject.ApiVersion,
+          Kind                = "Service",
+          Name                = options_.DescribedObject.Name,
+          KubernetesNamespace = options_.DescribedObject.Namespace,
+        },
+        Timestamp  = DateTime.Now.ToString("s") + "Z",
+        MetricName = "armonik_tasks_queued",
+        Value      = 0,
+      };
+
       foreach (var status in Enum.GetNames(typeof(TaskStatus)))
       {
         var metric = new Metric
@@ -80,14 +94,21 @@ public static partial class Program
         };
         if (tasks.Any())
         {
-          var (_, count) = tasks.DistinctBy(c => c.Status.ToString() == status).FirstOrDefault(defaultValue: new TaskStatusCount
-                                                                                                                   (TaskStatus.Canceled, 0));
-          if(count > 0)
-            metric.Value = count;
+          var statusCount = tasks.DistinctBy(c => c.Status.ToString() == status).FirstOrDefault(defaultValue: new TaskStatusCount
+                                                                                                 (TaskStatus.Canceled, 0));
+          if(statusCount.Count > 0)
+          {
+            metric.Value = statusCount.Count;
+            if (statusCount.Status is TaskStatus.Creating or TaskStatus.Dispatched or TaskStatus.Processing or TaskStatus.Submitted)
+            {
+              metricQueued.Value += statusCount.Count;
+            }
+          }
         }
 
         metricList.Items.Add(metric);
       }
+      metricList.Items.Add(metricQueued);
       return JsonSerializer.Serialize(metricList);
     }
   }
