@@ -21,9 +21,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -118,7 +120,18 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task SetResult(string sessionId, string ownerTaskId, string key, CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(key);
+    var id= key;
+    if (logger_.IsEnabled(LogLevel.Trace))
+    {
+      id = JsonSerializer.Serialize(new Dictionary<string, string>
+      {
+        { "sessionId", sessionId },
+        { "ownerTaskId", ownerTaskId },
+        { "key", key },
+      });
+    }
+
+    using var _ = logger_.LogFunction(id);
 
     var resultCollection = await resultCollectionProvider_.GetAsync();
 
@@ -129,7 +142,7 @@ public class ResultTable : IResultTable
                                                                                   true),
                                                     cancellationToken: cancellationToken);
     if (res.ModifiedCount == 0)
-      throw new KeyNotFoundException();
+      throw new KeyNotFoundException(id);
   }
 
   /// <inheritdoc />
@@ -154,19 +167,31 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task ChangeResultOwnership(string sessionId, IEnumerable<string> keys, string oldTaskId, string newTaskId, CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction(sessionId);
+    var id = oldTaskId;
+    if (logger_.IsEnabled(LogLevel.Trace))
+    {
+      id = JsonSerializer.Serialize(new Dictionary<string, string>
+      {
+        { "sessionId", sessionId },
+        { "oldTaskId", oldTaskId },
+        { "newTaskId", newTaskId },
+        { "keys", JsonSerializer.Serialize(keys) },
+      });
+    }
 
-    var resultCollection = await resultCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(id);
+    if (keys.Any())
+    {
+      var resultCollection = await resultCollectionProvider_.GetAsync();
 
-
-
-    await resultCollection.UpdateManyAsync(model => model.OwnerTaskId == oldTaskId,
-                                           Builders<Result>.Update
-                                                                    .Set(model => model.OwnerTaskId,
-                                                                         newTaskId),
-                                           cancellationToken: cancellationToken);
-
-
+      var result = await resultCollection.UpdateManyAsync(model => model.OwnerTaskId == oldTaskId && keys.Contains(model.Key) && model.SessionId == sessionId,
+                                             Builders<Result>.Update
+                                                             .Set(model => model.OwnerTaskId,
+                                                                  newTaskId),
+                                             cancellationToken: cancellationToken);
+      if (result.ModifiedCount != keys.Count())
+        throw new Exception("The number of modified values should correspond to the number of keys provided");
+    }
   }
 
 
