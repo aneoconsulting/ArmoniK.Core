@@ -185,7 +185,7 @@ public class TaskTable : ITaskTable
                                               .ToListAsync(cancellationToken);
 
   /// <inheritdoc />
-  public Task<IEnumerable<TaskStatusCount>> CountAllTasksAsync(CancellationToken cancellationToken = default)
+  public Task<int> CountAllTasksAsync(TaskStatus status, CancellationToken cancellationToken = default)
   {
     throw new NotImplementedException();
   }

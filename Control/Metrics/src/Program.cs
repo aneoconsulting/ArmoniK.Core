@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
@@ -34,6 +35,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -75,8 +79,14 @@ public static partial class Program
                       logger)
              .AddRedis(builder.Configuration,
                        logger)
-             .AddOption<Options.Metrics>(builder.Configuration, Options.Metrics.SettingSection)
-             .AddSingleton<MetricGenerator>();
+             .AddOpenTelemetryMetrics(b =>
+             {
+               b.AddPrometheusExporter();
+               b.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("armonik-service"));
+               b.AddMeter(nameof(ArmoniKMeter));
+             })
+             .AddHostedService<ArmoniKMeter>()
+             .AddControllers();
 
       var app = builder.Build();
 
@@ -85,7 +95,10 @@ public static partial class Program
 
       app.UseSerilogRequestLogging();
 
+      app.UseOpenTelemetryPrometheusScrapingEndpoint();
       app.UseRouting();
+      app.UseHttpsRedirection();
+      app.UseAuthorization();
 
 
       app.UseEndpoints(endpoints =>
@@ -101,10 +114,11 @@ public static partial class Program
                                   {
                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
                                   });
+        endpoints.MapControllers();
       });
 
-      app.MapGet("/metrics",
-                 (MetricGenerator generator) => generator.GetMetrics());
+      //app.MapGet("/metrics",
+      //           (MetricGenerator generator) => generator.GetMetrics());
 
       app.Run();
 
