@@ -1,6 +1,7 @@
 name: DeployTest
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'Adaptors/**'
