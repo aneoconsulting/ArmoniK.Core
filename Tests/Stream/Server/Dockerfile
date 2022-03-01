@@ -9,7 +9,7 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Tests/Stream/Server/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj", "Tests/Stream/Server/"]
 COPY ["Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj", "Tests/Stream/Common/"]
-COPY ["Common/Stream/src/ArmoniK.Core.Common.Stream.csproj", "Common/Stream/src/"]
+COPY ["Stream/src/ArmoniK.Core.Stream.csproj", "Stream/src/"]
 RUN dotnet restore "Tests/Stream/Server/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj"
 COPY . .
 WORKDIR "/src/Tests/Stream/Server"

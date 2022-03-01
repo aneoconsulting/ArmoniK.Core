@@ -5,12 +5,12 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Common/StreamWrapper/tests/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj", "Common/StreamWrapper/tests/Client/"]
-COPY ["Common/StreamWrapper/tests/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj", "Common/StreamWrapper/tests/Common/"]
-COPY ["Common/StreamWrapper/src/ArmoniK.Extensions.Common.StreamWrapper.csproj", "Common/StreamWrapper/src/"]
-RUN dotnet restore "Common/StreamWrapper/tests/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj"
+COPY ["Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj", "Tests/Stream/Client/"]
+COPY ["Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj", "Tests/Stream/Common/"]
+COPY ["Stream/src/ArmoniK.Core.Stream.csproj", "Stream/src/"]
+RUN dotnet restore "Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj"
 COPY . .
-WORKDIR "/src/Common/StreamWrapper/tests/Client"
+WORKDIR "/src/Tests/Stream/Client"
 RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -c Release -o /app/build
 
 FROM build AS publish
