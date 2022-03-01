@@ -81,7 +81,7 @@ public static partial class Program
                        logger)
              .AddOpenTelemetryMetrics(b =>
              {
-               b.AddPrometheusExporter();
+               b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);
                b.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("armonik-service"));
                b.AddMeter(nameof(ArmoniKMeter));
              })
