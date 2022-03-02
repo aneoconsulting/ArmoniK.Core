@@ -43,9 +43,15 @@ public class ArmoniKMeter : Meter, IHostedService
     using var _ = logger.LogFunction();
     foreach (var status in (TaskStatus[]) Enum.GetValues(typeof(TaskStatus)))
     {
-      CreateObservableGauge(status.ToString(),
+      CreateObservableGauge("armonik_tasks_" + status.ToString().ToLower(),
                             () => new Measurement<int>(taskTable.CountAllTasksAsync(status).Result));
     }
+
+    CreateObservableGauge("armonik_tasks_queued",
+                          () => new Measurement<int>(taskTable.CountAllTasksAsync(TaskStatus.Dispatched).Result +
+                                                     taskTable.CountAllTasksAsync(TaskStatus.Creating).Result +
+                                                     taskTable.CountAllTasksAsync(TaskStatus.Submitted).Result +
+                                                     taskTable.CountAllTasksAsync(TaskStatus.Processing).Result));
 
     CreateObservableCounter("test", () => i++);
     logger.LogDebug("Meter added");

@@ -578,6 +578,7 @@ public class Submitter : ISubmitter
     var result = await resultTable_.GetResult(request.Session,
                                         request.Key, contextCancellationToken);
     
+    logger_.LogDebug("OwnerTaskId {OwnerTaskId}", result.OwnerTaskId);
     string ownerId = "";
 
     while (ownerId != result.OwnerTaskId)
@@ -617,7 +618,10 @@ public class Submitter : ISubmitter
         };
       }
       result = await resultTable_.GetResult(request.Session,
-                                            request.Key);
+                                            request.Key,
+                                            contextCancellationToken);
+      logger_.LogDebug("OwnerTaskId {OwnerTaskId}",
+                       result.OwnerTaskId);
     }
 
     var availabilityReply = new AvailabilityReply

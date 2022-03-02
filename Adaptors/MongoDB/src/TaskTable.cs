@@ -59,7 +59,7 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public TimeSpan PollingDelay { get; set; }
+  public TimeSpan PollingDelay { get; set; } = TimeSpan.FromMilliseconds(150);
 
   /// <inheritdoc />
   public async Task CreateTasks(IEnumerable<Core.Common.Storage.TaskData> tasks, CancellationToken cancellationToken = default)
