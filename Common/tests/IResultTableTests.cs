@@ -38,7 +38,7 @@ namespace ArmoniK.Core.Common.Tests;
 public class ResultTableTestBase
 {
   protected IResultTable ResultTable;
-  protected bool         RunTests = false;
+  protected bool         RunTests;
 
   public virtual void GetResultTableInstance()
   {
@@ -48,6 +48,27 @@ public class ResultTableTestBase
   public void SetUp()
   {
     GetResultTableInstance();
+
+    if (RunTests)
+    {
+      ResultTable.Create(new[]
+      {
+        new Result("SessionId",
+                   "ResultIsAvailable",
+                   "OwnerId",
+                   "DispatchId",
+                   true,
+                   DateTime.Today,
+                   new[] { (byte) 1 }),
+        new Result("SessionId",
+                   "ResultIsNotAvailable",
+                   "OwnerId",
+                   "DispatchId",
+                   false,
+                   DateTime.Today,
+                   new[] { (byte) 1 }),
+      });
+    }
   }
 
   [TearDown]
@@ -134,21 +155,20 @@ public class ResultTableTestBase
   [Test]
   public void CreateShouldSucceed()
   {
-    if (RunTests)
+    if (!RunTests)
+      return;
+    var success = ResultTable.Create(new[]
     {
-      var success = ResultTable.Create(new[]
-      {
-        new Result("AnotherSessionId",
-                   "ResultIsAvailable",
-                   "OwnerId",
-                   "DispatchId",
-                   true,
-                   DateTime.Today,
-                   new[] { (byte) 1 }),
-      });
+      new Result("AnotherSessionId",
+                 "ResultIsAvailable",
+                 "OwnerId",
+                 "DispatchId",
+                 true,
+                 DateTime.Today,
+                 new[] { (byte) 1 }),
+    });
 
-      Assert.IsTrue(success.IsCompletedSuccessfully);
-    }
+    Assert.IsTrue(success.IsCompletedSuccessfully);
   }
 
   [Test]

@@ -37,25 +37,6 @@ public class ResultTableTests : ResultTableTestBase
   public override void GetResultTableInstance()
   {
     ResultTable = new ResultTable();
-
-    ResultTable.Create(new[]
-    {
-      new Result("SessionId",
-                 "ResultIsAvailable",
-                 "OwnerId",
-                 "DispatchId",
-                 true,
-                 DateTime.Today,
-                 new[] { (byte) 1 }),
-      new Result("SessionId",
-                 "ResultIsNotAvailable",
-                 "OwnerId",
-                 "DispatchId",
-                 false,
-                 DateTime.Today,
-                 new[] { (byte) 1 }),
-    });
-
-    RunTests = true;
+    RunTests    = true;
   }
 }
