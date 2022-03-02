@@ -110,6 +110,10 @@ jobs:
            path: ./Control/Metrics/src/Dockerfile
         -  img : dockerhubaneo/armonik_control
            path: ./Control/Submitter/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_worker
+           path: ./Tests/Stream/Server/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_client
+           path: ./Tests/Stream/Client/Dockerfile
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -130,41 +134,52 @@ jobs:
       run: |
         docker push ${{ matrix.img }}:$VERSION
 
-  testInfraWorker:
+  testStream:
     needs:
       - versionning
+      - buildProjects
       - buildImages
     runs-on: ubuntu-latest
     steps:
-      - uses: aneoconsulting/ArmoniK/.github/actions/test-worker@main
+      - name: Checkout
+        uses: actions/checkout@v2
         with:
-          version: main
-          control-plane-image: dockerhubaneo/armonik_control
-          control-plane-tag: ${{ needs.versionning.outputs.version }}
-          polling-agent-image: dockerhubaneo/armonik_pollingagent
-          polling-agent-tag: ${{ needs.versionning.outputs.version }}
+          ref: ${{ github.ref }}
 
-  testInfraMockV3:
-    needs:
-      - versionning
-      - buildImages
-    runs-on: ubuntu-latest
-    steps:
-      - uses: aneoconsulting/ArmoniK/.github/actions/test-mock-v3@main
+      - uses: aneoconsulting/ArmoniK@main
+        id: deploy-infra
         with:
           version: main
           control-plane-image: dockerhubaneo/armonik_control
           control-plane-tag: ${{ needs.versionning.outputs.version }}
           polling-agent-image: dockerhubaneo/armonik_pollingagent
           polling-agent-tag: ${{ needs.versionning.outputs.version }}
+          worker-image: dockerhubaneo/armonik_core_stream_test_worker
+          worker-tag: ${{ needs.versionning.outputs.version }}
+
+      - name: Run Stream Tests
+        run: |
+         export CPIP=$(kubectl get svc control-plane -n armonik -o custom-columns="IP:.spec.clusterIP" --no-headers=true)
+         export CPPort=$(kubectl get svc control-plane -n armonik -o custom-columns="PORT:.spec.ports[*].port" --no-headers=true)
+         export Grpc__Endpoint=http://$CPIP:$CPPort
+
+         cd ./Tests/Stream/Client/
+         dotnet test --logger "trx;LogFileName=test-results.trx"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test - Stream
+          path: ./Tests/Stream/Client/TestResults/test-results.trx
+          reporter: dotnet-trx
 
   tag:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/release' }}
     needs:
       - versionning
-      - testInfraWorker
-      - testInfraMockV3
+      - testStream
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
