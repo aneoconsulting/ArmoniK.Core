@@ -23,20 +23,44 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using MongoDB.Driver;
+
+using NUnit.Framework;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
-[TestClass]
+[TestFixture]
 public class ResultTableTests : ResultTableTestBase
 {
   public override void GetResultTableInstance()
   {
-    ResultTable = new ResultTable(null,
-                                  null,
-                                  null);
-    RunTests    = true;
+    //ResultTable = new Memory.ResultTable();
+
+    var configuration = new ConfigurationManager();
+
+    var logger = NullLogger.Instance;
+
+    var services = new ServiceCollection();
+    services.AddMongoStorages(configuration, logger);
+
+    services.AddTransient<IMongoClient>(serviceProvider =>
+    {
+      return new MongoClient();
+    });
+
+    services.AddLogging();
+    var provider = services.BuildServiceProvider(new ServiceProviderOptions
+    {
+      ValidateOnBuild = true,
+    });
+
+    ResultTable = provider.GetRequiredService<IResultTable>();
+    RunTests    = false;
   }
 }
