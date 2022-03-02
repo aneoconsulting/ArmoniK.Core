@@ -161,6 +161,7 @@ jobs:
           worker-tag: ${{ needs.versionning.outputs.version }}
 
       - name: Run Stream Tests
+        timeout-minutes: 15
         run: |
          export CPIP=$(kubectl get svc control-plane -n armonik -o custom-columns="IP:.spec.clusterIP" --no-headers=true)
          export CPPort=$(kubectl get svc control-plane -n armonik -o custom-columns="PORT:.spec.ports[*].port" --no-headers=true)
