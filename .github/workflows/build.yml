@@ -133,9 +133,7 @@ jobs:
   testInfraWorker:
     needs:
       - versionning
-      - buildAgent
-      - buildControl
-      - buildMetrics
+      - buildImages
     runs-on: ubuntu-latest
     steps:
       - uses: aneoconsulting/ArmoniK/.github/actions/test-worker@main
@@ -149,8 +147,7 @@ jobs:
   testInfraMockV3:
     needs:
       - versionning
-      - buildAgent
-      - buildControl
+      - buildImages
     runs-on: ubuntu-latest
     steps:
       - uses: aneoconsulting/ArmoniK/.github/actions/test-mock-v3@main
