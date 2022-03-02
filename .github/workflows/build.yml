@@ -92,7 +92,7 @@ jobs:
         dotnet build ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj -c Release
         dotnet build ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj -c Release
 
-  buildControl:
+  buildImages:
     runs-on: ubuntu-latest
     needs:
       - versionning
@@ -100,62 +100,16 @@ jobs:
       - tests
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
-
-    - name: login
-      run: |
-        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
-
-    - name: build
-      run: |
-        echo $VERSION
-        docker build -t dockerhubaneo/armonik_control:$VERSION -f Control/Submitter/src/Dockerfile .
-
-    - name: push
-      run: |
-        docker push dockerhubaneo/armonik_control:$VERSION
-
-  buildMetrics:
-    runs-on: ubuntu-latest
-    needs:
-      - versionning
-      - buildProjects
-      - tests
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
-
-    - name: login
-      run: |
-        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
-
-    - name: build
-      run: |
-        echo $VERSION
-        docker build -t dockerhubaneo/armonik_control_metrics:$VERSION -f Control/Metrics/src/Dockerfile .
-
-    - name: push
-      run: |
-        docker push dockerhubaneo/armonik_control_metrics:$VERSION
-
-  buildAgent:
-    runs-on: ubuntu-latest
-    needs:
-      - versionning
-      - buildProjects
-      - tests
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+        -  img : dockerhubaneo/armonik_pollingagent
+           path: ./Compute/PollingAgent/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_metrics
+           path: ./Control/Metrics/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control
+           path: ./Control/Submitter/src/Dockerfile
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -170,11 +124,11 @@ jobs:
     - name: Build
       run: |
         echo $VERSION
-        docker build -t dockerhubaneo/armonik_pollingagent:$VERSION -f ./Compute/PollingAgent/src/Dockerfile .
+        docker build -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
 
     - name: push
       run: |
-        docker push dockerhubaneo/armonik_pollingagent:$VERSION
+        docker push ${{ matrix.img }}:$VERSION
 
   testInfraWorker:
     needs:
