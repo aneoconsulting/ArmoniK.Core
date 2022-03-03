@@ -61,6 +61,7 @@ internal class StreamWrapperTests
     Console.WriteLine($"endpoint : {endpoint}");
     var channel = GrpcChannel.ForAddress(endpoint);
     client_ = new Submitter.SubmitterClient(channel);
+    Console.WriteLine("Client created");
   }
 
   private Submitter.SubmitterClient client_;

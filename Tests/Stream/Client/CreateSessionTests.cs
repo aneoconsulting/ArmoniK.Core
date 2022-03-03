@@ -57,6 +57,7 @@ internal class CreateSessionTests
     Console.WriteLine($"endpoint : {endpoint}");
     var channel = GrpcChannel.ForAddress(endpoint);
     client_ = new Submitter.SubmitterClient(channel);
+    Console.WriteLine("Client created");
   }
 
   [Test]
