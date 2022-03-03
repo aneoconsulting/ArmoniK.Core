@@ -196,17 +196,17 @@ public static class ServiceCollectionExt
               var logger = provider.GetRequiredService<ILogger<IMongoClient>>();
 
 
-              if (logger.IsEnabled(LogLevel.Trace))
-                settings.ClusterConfigurator = cb =>
-                {
-                  cb.Subscribe<CommandStartedEvent>(e =>
-                  {
-                    logger
-                      .LogTrace("{CommandName} - {Command}",
-                                e.CommandName,
-                                e.Command.ToJson());
-                  });
-                };
+              //if (logger.IsEnabled(LogLevel.Trace))
+              //  settings.ClusterConfigurator = cb =>
+              //  {
+              //    cb.Subscribe<CommandStartedEvent>(e =>
+              //    {
+              //      logger
+              //        .LogTrace("{CommandName} - {Command}",
+              //                  e.CommandName,
+              //                  e.Command.ToJson());
+              //    });
+              //  };
 
               return new MongoClient(settings);
             })

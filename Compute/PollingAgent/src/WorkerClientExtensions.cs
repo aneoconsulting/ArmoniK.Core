@@ -139,7 +139,6 @@ public static class WorkerClientExtensions
     await foreach (var reply in stream.ReadAllAsync(cancellationToken)
                                       .WithCancellation(cancellationToken))
     {
-      logger.LogTrace("Worker reply : {reply}", reply);
       void InitNewStream(bool singleStream)
       {
         if (output is not null || replyType is not ProcessReply.TypeOneofCase.None || !string.IsNullOrEmpty(requestId))

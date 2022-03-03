@@ -440,7 +440,7 @@ internal class StreamWrapperTests
 
   [Test]
   public async Task MultipleDataDependencies([Values(1,
-                                                     5, 100)]
+                                                     5, 20)]
                                              int n)
   {
     var sessionId = Guid.NewGuid() + "-MultipleDatadependencies";
