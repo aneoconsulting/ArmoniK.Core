@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Core.Adapters.MongoDB.Options;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Configuration;
@@ -66,7 +67,7 @@ internal class InjectionTests
 
     var logger_ = NullLogger.Instance;
 
-    var configuration_ = new ConfigurationManager();
+    configuration_ = new ConfigurationManager();
     configuration_.AddInMemoryCollection(baseConfig);
 
     var services = new ServiceCollection();
@@ -79,12 +80,20 @@ internal class InjectionTests
     });
   }
 
-  private ServiceProvider provider_;
+  private ServiceProvider      provider_;
+  private ConfigurationManager configuration_;
 
   [Test]
   public void MongoDbOptionsNotNull()
   {
     var options = provider_.GetRequiredService<Options.MongoDB>();
+    Assert.NotNull(options);
+  }
+
+  [Test]
+  public void MongoDbOptionsValueNotNull()
+  {
+    var options = configuration_.GetRequiredValue<Options.MongoDB>(Options.MongoDB.SettingSection);
     Assert.NotNull(options);
   }
 
