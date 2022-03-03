@@ -201,9 +201,9 @@ jobs:
     strategy:
       matrix:
         queue:
-          - docker-compose/docker-compose.queue-activemqp.yml
-          - docker-compose/docker-compose.queue-artemis.yml
-          - docker-compose/docker-compose.queue-rabbitmq.yml
+          - activemqp
+          - artemis
+          - rabbitmq
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -212,7 +212,7 @@ jobs:
           submodules: true
       - name: Docker compose up
         run: |
-          docker-compose -f docker-compose/docker-compose.yml -f ${{ matrix.queue }} up -d --build --force-recreate --remove-orphans
+          docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
 
       - name: Run Stream Test
         run: |
@@ -223,7 +223,7 @@ jobs:
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: Test - ${{ matrix }}
+          name: Test - ${{ matrix.queue }}
           path: ./Tests/Stream/Client/TestResults/test-results.trx
           reporter: dotnet-trx
 
