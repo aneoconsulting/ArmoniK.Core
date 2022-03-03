@@ -159,6 +159,7 @@ jobs:
           polling-agent-tag: ${{ needs.versionning.outputs.version }}
           worker-image: dockerhubaneo/armonik_core_stream_test_worker
           worker-tag: ${{ needs.versionning.outputs.version }}
+          log-level: Verbose
 
       - name: Run Stream Tests
         timeout-minutes: 15
