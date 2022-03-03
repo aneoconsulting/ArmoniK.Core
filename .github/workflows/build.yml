@@ -196,6 +196,20 @@ jobs:
           path: /tmp/armoniklogs/**/*.log
           retention-days: 5
 
+  testStreamDockerCompose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+      - name: Docker compose up
+        run: |
+          docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-activemqp.yml up -d --build --force-recreate --remove-orphans
+          cd ./Tests/Stream/Client/
+          dotnet test
+
   tag:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/release' }}
