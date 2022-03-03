@@ -223,7 +223,7 @@ jobs:
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: Test - ${{ jobs.testStreamDockerCompose.name }}
+          name: Test - ${{ matrix }}
           path: ./Tests/Stream/Client/TestResults/test-results.trx
           reporter: dotnet-trx
 
