@@ -68,6 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     # find . -name "*.csproj" | xargs -I % echo - %
     strategy:
+      fail-fast: false
       matrix:
         project:
           - ./Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj
@@ -82,7 +83,6 @@ jobs:
           - ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj
           - ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj
           - ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj
-          - ./Stream/src/ArmoniK.Core.Stream.csproj
           - ./Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj
           - ./Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj
           - ./Tests/Stream/Server/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj
