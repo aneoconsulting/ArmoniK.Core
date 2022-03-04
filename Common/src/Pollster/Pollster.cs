@@ -42,12 +42,12 @@ public class Pollster
   private readonly int                                 messageBatchSize_;
   private readonly IQueueStorage                       queueStorage_;
   private readonly PreconditionChecker                 preconditionChecker_;
-  private readonly Compute.PollingAgent.DataPrefetcher dataPrefetcher_;
+  private readonly DataPrefetcher dataPrefetcher_;
   private readonly RequestProcessor                    requestProcessor_;
 
   public Pollster(IQueueStorage                       queueStorage,
                   PreconditionChecker                 preconditionChecker,
-                  Compute.PollingAgent.DataPrefetcher dataPrefetcher,
+                  DataPrefetcher dataPrefetcher,
                   RequestProcessor                    requestProcessor,
                   ComputePlan                         options,
                   IHostApplicationLifetime            lifeTime,
