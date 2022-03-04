@@ -139,7 +139,6 @@ jobs:
   testStream:
     needs:
       - versionning
-      - buildProjects
       - buildImages
     runs-on: ubuntu-latest
     steps:
@@ -197,6 +196,11 @@ jobs:
           retention-days: 5
 
   testStreamDockerCompose:
+    needs:
+      - versionning
+      - buildImages
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -212,6 +216,10 @@ jobs:
           submodules: true
       - name: Docker compose up
         run: |
+          export ARMONIK_WORKER=dockerhubaneo/armonik_core_stream_test_worker:$VERSION
+          export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
+          export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
+          export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
 
       - name: Run Stream Test
