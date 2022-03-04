@@ -45,21 +45,31 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture]
 public class ResultTableTests : ResultTableTestBase
 {
+  private MongoClient   client_;
+  //private MongoDbRunner runner_;
+
   public override void GetResultTableInstance()
   {
-    //ResultTable = new Memory.ResultTable();
+
+    // Minimal set of configurations to operate on a toy DB
+    Dictionary<string, string> minimalConfig = new()
+    {
+      { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", "ArmoniK_TestDB" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10" },
+    };
 
     var configuration = new ConfigurationManager();
-
-    var logger = NullLogger.Instance;
+    configuration.AddInMemoryCollection(minimalConfig);
 
     var services = new ServiceCollection();
+    var logger   = NullLogger.Instance;
     services.AddMongoStorages(configuration, logger);
 
-    services.AddTransient<IMongoClient>(serviceProvider =>
-    {
-      return new MongoClient();
-    });
+    //runner_ = MongoDbRunner.Start();
+    //client_ = new MongoClient(runner_.ConnectionString);
+    client_ = new MongoClient("mongodb://127.0.0.1:27017");
+    services.AddTransient<IMongoClient>(serviceProvider => client_);
 
     services.AddLogging();
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
@@ -68,6 +78,14 @@ public class ResultTableTests : ResultTableTestBase
     });
 
     ResultTable = provider.GetRequiredService<IResultTable>();
+    RunTests    = true;
+  }
+
+  public override void TearDown()
+  {
+    var db = client_.GetDatabase("ArmoniK_TestDB")
+                    .GetCollection<BsonDocument>("Result");
+    db.DeleteManyAsync(Builders<BsonDocument>.Filter.Empty);
     RunTests    = false;
   }
 }
