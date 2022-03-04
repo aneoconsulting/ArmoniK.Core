@@ -34,7 +34,7 @@ using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Core.Compute.PollingAgent;
+namespace ArmoniK.Core.Common.Pollster;
 
 public class PreconditionChecker
 {

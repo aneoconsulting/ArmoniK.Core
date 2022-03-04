@@ -22,50 +22,36 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
-
-using JetBrains.Annotations;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using ResultReply = ArmoniK.Api.gRPC.V1.ResultReply;
-using TaskCanceledException = ArmoniK.Core.Common.Exceptions.TaskCanceledException;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
-
-namespace ArmoniK.Core.Compute.PollingAgent;
+namespace ArmoniK.Core.Common.Pollster;
 
 
 
 public class Pollster
 {
-  private readonly IHostApplicationLifetime lifeTime_;
-  private readonly ILogger<Pollster>        logger_;
-  private readonly int                      messageBatchSize_;
-  private readonly IQueueStorage            queueStorage_;
-  private readonly PreconditionChecker      preconditionChecker_;
-  private readonly DataPrefetcher           dataPrefetcher_;
-  private readonly RequestProcessor         requestProcessor_;
+  private readonly IHostApplicationLifetime            lifeTime_;
+  private readonly ILogger<Pollster>                   logger_;
+  private readonly int                                 messageBatchSize_;
+  private readonly IQueueStorage                       queueStorage_;
+  private readonly PreconditionChecker                 preconditionChecker_;
+  private readonly Compute.PollingAgent.DataPrefetcher dataPrefetcher_;
+  private readonly RequestProcessor                    requestProcessor_;
 
-  public Pollster(IQueueStorage            queueStorage,
-                  PreconditionChecker      preconditionChecker,
-                  DataPrefetcher           dataPrefetcher,
-                  RequestProcessor         requestProcessor,
-                  ComputePlan              options,
-                  IHostApplicationLifetime lifeTime,
-                  ILogger<Pollster>        logger)
+  public Pollster(IQueueStorage                       queueStorage,
+                  PreconditionChecker                 preconditionChecker,
+                  Compute.PollingAgent.DataPrefetcher dataPrefetcher,
+                  RequestProcessor                    requestProcessor,
+                  ComputePlan                         options,
+                  IHostApplicationLifetime            lifeTime,
+                  ILogger<Pollster>                   logger)
   {
     if (options.MessageBatchSize < 1)
       throw new ArgumentOutOfRangeException(nameof(options),

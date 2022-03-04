@@ -39,7 +39,7 @@ using Microsoft.Extensions.Logging;
 
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 
-namespace ArmoniK.Core.Compute.PollingAgent;
+namespace ArmoniK.Core.Common.Pollster;
 
 public static class WorkerClientExtensions
 {
