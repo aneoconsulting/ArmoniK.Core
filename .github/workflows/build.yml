@@ -66,6 +66,26 @@ jobs:
 
   buildProjects:
     runs-on: ubuntu-latest
+    # find . -name "*.csproj" | xargs -I % echo - %
+    strategy:
+      matrix:
+        project:
+          - ./Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj
+          - ./Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj
+          - ./Adaptors/Memory/tests/ArmoniK.Core.Adapters.Memory.Tests.csproj
+          - ./Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj
+          - ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj
+          - ./Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj
+          - ./Common/src/ArmoniK.Core.Common.csproj
+          - ./Common/tests/ArmoniK.Core.Common.Tests.csproj
+          - ./Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj
+          - ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj
+          - ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj
+          - ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj
+          - ./Stream/src/ArmoniK.Core.Stream.csproj
+          - ./Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj
+          - ./Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj
+          - ./Tests/Stream/Server/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -78,21 +98,10 @@ jobs:
       with:
         dotnet-version: 6.x
 
-    # find . -name "*.csproj" | xargs -I % echo dotnet build % -c Release
     - name: Build the projects
       run: |
-        dotnet build ./Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj -c Release
-        dotnet build ./Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj -c Release
-        dotnet build ./Adaptors/Memory/tests/ArmoniK.Core.Adapters.Memory.Tests.csproj -c Release
-        dotnet build ./Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj -c Release
-        dotnet build ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj -c Release
-        dotnet build ./Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj -c Release
-        dotnet build ./Common/src/ArmoniK.Core.Common.csproj -c Release
-        dotnet build ./Common/tests/ArmoniK.Core.Common.Tests.csproj -c Release
-        dotnet build ./Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj -c Release
-        dotnet build ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj -c Release
-        dotnet build ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj -c Release
-        dotnet build ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj -c Release
+        dotnet build ${{ matrix.project }} -c Release
+
 
   buildImages:
     runs-on: ubuntu-latest
