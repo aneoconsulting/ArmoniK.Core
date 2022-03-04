@@ -23,23 +23,31 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
+
+using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 
 namespace ArmoniK.Core.Common.Tests;
 
 [TestFixture]
 public class ResultTableTestBase
 {
+  /* Interface to test */
   protected IResultTable ResultTable;
+
+  /* Boolean to control that tests are executed in
+   * an instance of this class */
   protected bool         RunTests;
 
+  /* Function be override so it returns the suitable instance
+   * of ResultTable to the corresponding interface implementation */
   public virtual void GetResultTableInstance()
   {
   }
@@ -72,10 +80,10 @@ public class ResultTableTestBase
   }
 
   [TearDown]
-  public void TearDown()
+  public virtual void TearDown()
   {
     ResultTable = null;
-    RunTests   = false;
+    RunTests    = false;
   }
 
   [Test]
@@ -120,18 +128,21 @@ public class ResultTableTestBase
   }
 
   [Test]
-  public void ChangeResultDispatchShouldFail()
+  public async Task ChangeResultDispatchShouldFail()
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<KeyNotFoundException>(async () =>
-      {
-        await ResultTable.ChangeResultDispatch("NonExistingSessionId",
-                                               "",
-                                               "",
+      await ResultTable.ChangeResultDispatch("SessionId",
+                                                    "NonExistingDispatchId",
+                                                    "NewDispatchId",
+                                                    CancellationToken.None);
+      var result = await ResultTable.GetResult("SessionId",
+                                               "ResultIsAvailable",
                                                CancellationToken.None);
-      });
+
+      Assert.IsFalse(result.OriginDispatchId == "NewDispatchId");
     }
+    //TODO: Write a test for the case in which a non existing Id is given.
   }
 
   [Test]
@@ -147,20 +158,19 @@ public class ResultTableTestBase
       var result = await ResultTable.GetResult("SessionId",
                                                "ResultIsAvailable",
                                                CancellationToken.None);
-
       Assert.IsTrue(result.OwnerTaskId == "NewOwnerId");
     }
   }
 
   [Test]
-  public void CreateShouldSucceed()
+  public async Task CreateShouldSucceed()
   {
     if (!RunTests)
       return;
-    var success = ResultTable.Create(new[]
+    await ResultTable.Create(new[]
     {
       new Result("AnotherSessionId",
-                 "ResultIsAvailable",
+                 "Key",
                  "OwnerId",
                  "DispatchId",
                  true,
@@ -168,7 +178,11 @@ public class ResultTableTestBase
                  new[] { (byte) 1 }),
     });
 
-    Assert.IsTrue(success.IsCompletedSuccessfully);
+    var success = await ResultTable.GetResult("AnotherSessionId",
+                                             "Key",
+                                             CancellationToken.None);
+
+    Assert.IsTrue(success.IsResultAvailable);
   }
 
   [Test]
@@ -178,7 +192,7 @@ public class ResultTableTestBase
     {
       /* Check if an exception is thrown when attempting to
          create an already existing result entry */
-      Assert.ThrowsAsync<InvalidOperationException>(async () =>
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
       {
         await ResultTable.Create(new[]
         {
@@ -213,7 +227,7 @@ public class ResultTableTestBase
   }
 
   [Test]
-  public async Task DeleteResultShouldRemove()
+  public async Task DeleteResultShouldRemoveOne()
   {
     if (RunTests)
     {
@@ -221,7 +235,7 @@ public class ResultTableTestBase
                                      "ResultIsAvailable",
                                      CancellationToken.None);
 
-      Assert.ThrowsAsync<KeyNotFoundException>(async () =>
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
       {
         await ResultTable.GetResult("SessionId",
                                     "ResultIsAvailable",
