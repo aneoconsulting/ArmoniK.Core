@@ -40,10 +40,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\..\Protos\V1\worker_service.proto" GrpcServices="Client">
+    <Protobuf Include="..\..\Protos\V1\worker_service.proto" GrpcServices="Both">
       <Link>gRPC\Protos\V1\worker_service.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\Protos\V1\submitter_service.proto" GrpcServices="Server">
+    <Protobuf Include="..\..\Protos\V1\submitter_service.proto" GrpcServices="Both">
       <Link>gRPC\Protos\V1\submitter_service.proto</Link>
     </Protobuf>
     <Protobuf Include="..\..\Protos\V1\objects.proto" GrpcServices="Message">

@@ -26,8 +26,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
-using ArmoniK.Extensions.Common.StreamWrapper.Worker;
 
 using Google.Protobuf;
 

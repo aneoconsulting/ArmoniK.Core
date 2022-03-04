@@ -32,7 +32,7 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Worker
+namespace ArmoniK.Core.Common.Stream.Worker
 {
   [PublicAPI]
   public class WorkerStreamWrapper : Api.gRPC.V1.Worker.WorkerBase

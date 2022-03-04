@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Stream\src\ArmoniK.Core.Stream.csproj" />
+    <ProjectReference Include="..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
   </ItemGroup>
 
 </Project>

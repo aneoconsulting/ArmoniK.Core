@@ -34,7 +34,7 @@ using Grpc.Core;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Client
+namespace ArmoniK.Core.Common.Stream.Client
 {
   [PublicAPI]
   public static class SubmitterClientExt
