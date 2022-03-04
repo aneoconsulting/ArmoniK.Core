@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -39,6 +40,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 using Result = ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -64,12 +66,19 @@ public class ResultTable : IResultTable
 
     var resultCollection = await resultCollectionProvider_.GetAsync();
 
-    await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<Result>(result.ToResultDataModel())),
-                                          new()
-                                          {
-                                            IsOrdered = false,
-                                          },
-                                          cancellationToken);
+    try
+    {
+      var writeResult = await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<Result>(result.ToResultDataModel())),
+                                                          new()
+                                                          {
+                                                            IsOrdered = false,
+                                                          },
+                                                          cancellationToken);
+    }
+    catch
+    {
+      throw new ArmoniKException("Key already exists");
+    }
   }
 
   /// <inheritdoc />
@@ -79,9 +88,18 @@ public class ResultTable : IResultTable
     var       sessionHandle    = await sessionProvider_.GetAsync();
     var       resultCollection = await resultCollectionProvider_.GetAsync();
 
-    return await resultCollection.AsQueryable(sessionHandle)
-                                 .Where(model => model.Id == Result.GenerateId(sessionId, key))
-                                 .FirstAsync(cancellationToken);
+    try
+    {
+      return await resultCollection.AsQueryable(sessionHandle)
+                                   .Where(model => model.Id ==
+                                                   Result.GenerateId(sessionId,
+                                                                     key))
+                                   .FirstAsync(cancellationToken);
+    }
+    catch // If the key does not exists an InvalidOperationException is thrown, should I explicitly catch it?
+    {
+      throw new ArmoniKException("Key not found");
+    }
   }
 
   /// <inheritdoc />

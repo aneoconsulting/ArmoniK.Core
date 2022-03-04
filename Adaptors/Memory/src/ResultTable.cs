@@ -29,7 +29,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+
+using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
@@ -88,7 +91,7 @@ public class ResultTable : IResultTable
                                              new ConcurrentDictionary<string, Result>());
       if (!sessionResults.TryAdd(result.Key,
                                  result))
-        throw new InvalidOperationException("Key already exists");
+        throw new ArmoniKException("Key already exists");
     }
 
     return Task.CompletedTask;
@@ -107,8 +110,17 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task<Result> GetResult(string sessionId, string key, CancellationToken cancellationToken = default) 
-    => Task.FromResult(results_[sessionId][key]);
+  public Task<Result> GetResult(string sessionId, string key, CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      return Task.FromResult(results_[sessionId][key]);
+    }
+    catch(KeyNotFoundException)
+    {
+      throw new ArmoniKException("Key not found");
+    }
+  }
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListResultsAsync(string sessionId, CancellationToken cancellationToken = default)
