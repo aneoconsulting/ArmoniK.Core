@@ -22,14 +22,21 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Adapters.MongoDB;
+using System.Collections.Generic;
+
+
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+
+using Mongo2Go;
+
+using MongoDB.Bson;
 using MongoDB.Driver;
+
 
 using NUnit.Framework;
 

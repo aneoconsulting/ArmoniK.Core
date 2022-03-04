@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Adaptors\MongoDB\src\ArmoniK.Core.Adapters.MongoDB.csproj" />
     <ProjectReference Include="..\src\ArmoniK.Core.Common.csproj" />
     <ProjectReference Include="../../Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj" />
   </ItemGroup>
