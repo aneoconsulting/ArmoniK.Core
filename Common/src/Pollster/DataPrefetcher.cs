@@ -28,14 +28,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Compute.PollingAgent;
+namespace ArmoniK.Core.Common.Pollster;
 
 public class DataPrefetcher
 {

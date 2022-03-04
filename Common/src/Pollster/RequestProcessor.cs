@@ -42,7 +42,7 @@ using Microsoft.Extensions.Logging;
 using Submitter = ArmoniK.Core.Common.gRPC.Services.Submitter;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Core.Compute.PollingAgent;
+namespace ArmoniK.Core.Common.Pollster;
 
 public class RequestProcessor
 {
@@ -225,7 +225,7 @@ public class RequestProcessor
     // TODO : To reduce memory consumption, do not generate subStream. Implement a state machine instead.
     await foreach (var singleReplyStream in stream.ResponseStream.Separate(logger_, cancellationToken))
     {
-      var first = singleReplyStream.First();
+      var first = Enumerable.First<ProcessReply>(singleReplyStream);
       if (isComplete)
       {
         throw new InvalidOperationException("Unexpected message from the worker after sending the task output");
@@ -318,10 +318,10 @@ public class RequestProcessor
     var bytes = resourcesStorage_.TryGetValuesAsync(processReply.Resource.Key,
                                                     cancellationToken);
 
-    await foreach (var dataReply in bytes.ToDataReply(processReply.RequestId,
-                                                      processReply.Resource.Key,
-                                                      cancellationToken)
-                                         .WithCancellation(cancellationToken))
+    await foreach (var dataReply in TaskAsyncEnumerableExtensions.WithCancellation<ProcessRequest.Types.DataReply>(bytes.ToDataReply(processReply.RequestId,
+                                                                                                        processReply.Resource.Key,
+                                                                                                        cancellationToken),
+                                                                                      cancellationToken))
     {
       await requestStream.WriteAsync(new()
                                      {

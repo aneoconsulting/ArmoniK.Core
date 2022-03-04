@@ -24,6 +24,8 @@
 using System;
 using System.IO;
 
+using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;

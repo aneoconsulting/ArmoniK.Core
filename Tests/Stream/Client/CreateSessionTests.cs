@@ -57,12 +57,14 @@ internal class CreateSessionTests
     Console.WriteLine($"endpoint : {endpoint}");
     var channel = GrpcChannel.ForAddress(endpoint);
     client_ = new Submitter.SubmitterClient(channel);
+    Console.WriteLine("Client created");
   }
 
   [Test]
   public void NullDefaultTaskOptionShouldThrowException()
   {
     var sessionId = Guid.NewGuid() + "mytestsession";
+    Console.WriteLine("NullDefaultTaskOptionShouldThrowException");
 
     Assert.Throws(typeof(RpcException),
                   () => client_.CreateSession(new CreateSessionRequest
@@ -75,6 +77,7 @@ internal class CreateSessionTests
   [Test]
   public void EmptyIdTaskOptionShouldThrowException()
   {
+    Console.WriteLine("EmptyIdTaskOptionShouldThrowException");
     Assert.Throws(typeof(RpcException),
                   () => client_.CreateSession(new CreateSessionRequest
                   {
@@ -92,6 +95,7 @@ internal class CreateSessionTests
   public void SessionShouldBeCreated()
   {
     var sessionId = Guid.NewGuid() + "mytestsession";
+    Console.WriteLine("SessionShouldBeCreated");
 
     var createSessionReply = client_.CreateSession(new CreateSessionRequest
     {

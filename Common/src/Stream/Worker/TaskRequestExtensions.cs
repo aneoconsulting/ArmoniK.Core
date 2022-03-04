@@ -30,7 +30,7 @@ using Google.Protobuf;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Worker
+namespace ArmoniK.Core.Common.Stream.Worker
 {
   [PublicAPI]
   public static class TaskRequestExtensions

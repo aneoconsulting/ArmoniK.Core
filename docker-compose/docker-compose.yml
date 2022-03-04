@@ -18,10 +18,7 @@ services:
       - 6379
 
   armonik.control.submitter:
-    image: ${DOCKER_REGISTRY-}armonikcontrolsubmitter
-    build:
-      context: ..
-      dockerfile: Control/Submitter/src/Dockerfile
+    image: ${ARMONIK_SUBMITTER}
     depends_on:
       - database
       - object
@@ -52,10 +49,7 @@ services:
         fluentd-address: 127.0.0.1:24224
 
   armonik.control.metrics:
-    image: ${DOCKER_REGISTRY-}armonikcontrolmetrics
-    build:
-      context: ..
-      dockerfile: Control/Metrics/src/Dockerfile
+    image: ${ARMONIK_METRICS}
     depends_on:
       - database
       - object
@@ -90,10 +84,7 @@ services:
         fluentd-address: 127.0.0.1:24224
 
   armonik.compute.pollingagent:
-    image: ${DOCKER_REGISTRY-}armonikpollingagent
-    build:
-      context: ..
-      dockerfile: Compute/PollingAgent/src/Dockerfile
+    image: ${ARMONIK_POLLINGAGENT}
     depends_on:
       - database
       - object
@@ -123,11 +114,10 @@ services:
         fluentd-address: 127.0.0.1:24224
 
   armonik.compute.worker:
-    #image: dockerhubaneo/armonik_worker_streamworker_test:test
-    #image: ${ARMONIK_IMAGE_WORKER}
-    build:
-      context: ..
-      dockerfile: Tests/Stream/Server/Dockerfile
+    image: ${ARMONIK_WORKER}
+    # build:
+    #   context: ..
+    #   dockerfile: Tests/Stream/Server/Dockerfile
     networks:
       - armonik-net
       - armonik-monitoring

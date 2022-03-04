@@ -66,6 +66,26 @@ jobs:
 
   buildProjects:
     runs-on: ubuntu-latest
+    # find . -name "*.csproj" | xargs -I % echo - %
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - ./Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj
+          - ./Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj
+          - ./Adaptors/Memory/tests/ArmoniK.Core.Adapters.Memory.Tests.csproj
+          - ./Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj
+          - ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj
+          - ./Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj
+          - ./Common/src/ArmoniK.Core.Common.csproj
+          - ./Common/tests/ArmoniK.Core.Common.Tests.csproj
+          - ./Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj
+          - ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj
+          - ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj
+          - ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj
+          - ./Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj
+          - ./Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj
+          - ./Tests/Stream/Server/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -78,21 +98,10 @@ jobs:
       with:
         dotnet-version: 6.x
 
-    # find . -name "*.csproj" | xargs -I % echo dotnet build % -c Release
     - name: Build the projects
       run: |
-        dotnet build ./Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj -c Release
-        dotnet build ./Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj -c Release
-        dotnet build ./Adaptors/Memory/tests/ArmoniK.Core.Adapters.Memory.Tests.csproj -c Release
-        dotnet build ./Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj -c Release
-        dotnet build ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj -c Release
-        dotnet build ./Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj -c Release
-        dotnet build ./Common/src/ArmoniK.Core.Common.csproj -c Release
-        dotnet build ./Common/tests/ArmoniK.Core.Common.Tests.csproj -c Release
-        dotnet build ./Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj -c Release
-        dotnet build ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj -c Release
-        dotnet build ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj -c Release
-        dotnet build ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj -c Release
+        dotnet build ${{ matrix.project }} -c Release
+
 
   buildImages:
     runs-on: ubuntu-latest
@@ -139,7 +148,6 @@ jobs:
   testStream:
     needs:
       - versionning
-      - buildProjects
       - buildImages
     runs-on: ubuntu-latest
     steps:
@@ -152,13 +160,13 @@ jobs:
       - uses: aneoconsulting/ArmoniK@main
         id: deploy-infra
         with:
-          version: main
           control-plane-image: dockerhubaneo/armonik_control
           control-plane-tag: ${{ needs.versionning.outputs.version }}
           polling-agent-image: dockerhubaneo/armonik_pollingagent
           polling-agent-tag: ${{ needs.versionning.outputs.version }}
           worker-image: dockerhubaneo/armonik_core_stream_test_worker
           worker-tag: ${{ needs.versionning.outputs.version }}
+          log-level: Information
 
       - name: Run Stream Tests
         timeout-minutes: 15
@@ -175,6 +183,64 @@ jobs:
         if: success() || failure()
         with:
           name: Test - Stream
+          path: ./Tests/Stream/Client/TestResults/test-results.trx
+          reporter: dotnet-trx
+
+      - name: Copy logs
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          mkdir -p /tmp/armoniklogs
+          sudo cp -rL /var/log/pods/armonik_* /tmp/armoniklogs
+          sudo chown $USER -R /tmp/armoniklogs
+          find /tmp/armoniklogs -name "*.log"
+
+      - name: Store logs
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: Logs Stream
+          path: /tmp/armoniklogs/**/*.log
+          retention-days: 5
+
+  testStreamDockerCompose:
+    needs:
+      - versionning
+      - buildImages
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        queue:
+          - activemqp
+          - artemis
+          - rabbitmq
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+      - name: Docker compose up
+        run: |
+          export ARMONIK_WORKER=dockerhubaneo/armonik_core_stream_test_worker:$VERSION
+          export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
+          export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
+          export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
+          docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
+
+      - name: Run Stream Test
+        run: |
+          cd ./Tests/Stream/Client/
+          dotnet test --logger "trx;LogFileName=test-results.trx"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test - ${{ matrix.queue }}
           path: ./Tests/Stream/Client/TestResults/test-results.trx
           reporter: dotnet-trx
 

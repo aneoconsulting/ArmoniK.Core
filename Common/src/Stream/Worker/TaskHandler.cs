@@ -35,7 +35,7 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Worker
+namespace ArmoniK.Core.Common.Stream.Worker
 {
   public class TaskHandler : ITaskHandler
   {

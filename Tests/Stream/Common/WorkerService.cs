@@ -21,13 +21,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
-using ArmoniK.Extensions.Common.StreamWrapper.Worker;
+using ArmoniK.Core.Common.Stream.Worker;
 
 using Google.Protobuf;
 
@@ -35,7 +30,7 @@ using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Server
+namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
 {
   public class WorkerService : WorkerStreamWrapper
   {
