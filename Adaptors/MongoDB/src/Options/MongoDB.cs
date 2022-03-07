@@ -23,8 +23,6 @@
 
 using System;
 
-using ArmoniK.Core.Adapters.MongoDB;
-
 using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Options;
@@ -59,8 +57,6 @@ public class MongoDB
   public TimeSpan DataRetention { get; set; } = TimeSpan.FromDays(15);
 
   public TableStorage TableStorage { get; set; }
-
-  public LeaseProvider LeaseProvider { get; set; }
 
   public ObjectStorage ObjectStorage { get; set; }
 

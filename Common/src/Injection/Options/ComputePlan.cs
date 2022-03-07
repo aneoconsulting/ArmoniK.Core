@@ -30,7 +30,7 @@ public class ComputePlan
 {
   public const string SettingSection = nameof(ComputePlan);
 
-  public GrpcChannel GrpcChannel { get; set; }
+  public GrpcChannel? GrpcChannel { get; set; }
 
   public int MessageBatchSize { get; set; }
 }

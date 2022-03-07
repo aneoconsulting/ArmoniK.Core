@@ -23,12 +23,15 @@
 
 using ArmoniK.Core.Common.Injection;
 
+using JetBrains.Annotations;
+
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
 public class SessionProvider : ProviderBase<IClientSessionHandle>
 {
+  [UsedImplicitly]
   public SessionProvider(IMongoClient client) :
     base(() => client.StartSessionAsync())
   {

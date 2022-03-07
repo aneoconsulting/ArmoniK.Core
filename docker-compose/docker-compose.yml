@@ -6,6 +6,8 @@ services:
     image: mongo
     networks:
       - armonik-backend
+    ports:
+      - 27017:27017
 
   object:
     image: redis:bullseye
@@ -15,21 +17,24 @@ services:
     expose:
       - 6379
 
-  armonik.control:
-    image: ${DOCKER_REGISTRY-}armonikcontrol
-    build:
-      context: ..
-      dockerfile: Control/Submitter/src/Dockerfile
+  armonik.control.submitter:
+    image: ${ARMONIK_SUBMITTER}
     depends_on:
       - database
       - object
+      - queue
+      - fluentbit
     networks:
       - armonik-net
       - armonik-backend
+      - armonik-monitoring
     ports:
       - 5001:80
     environment:
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
+      - MongoDB__Host=database
+      - MongoDB__Port=27017
+      - MongoDB__DatabaseName=database
       - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
       - Redis__EndpointUrl=object:6379
       - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
@@ -38,21 +43,63 @@ services:
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
       - Serilog__MinimumLevel=Verbose
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
 
-  armonik.compute.pollingagent:
-    image: ${DOCKER_REGISTRY-}armonikpollingagent
-    build:
-      context: ..
-      dockerfile: Compute/PollingAgent/src/Dockerfile
+  armonik.control.metrics:
+    image: ${ARMONIK_METRICS}
     depends_on:
       - database
       - object
+      - queue
+      - fluentbit
+    networks:
+      - armonik-net
+      - armonik-backend
+      - armonik-monitoring
+    ports:
+      - 5002:80
+    environment:
+      - Metrics__ApiVersion=TestApiVersion
+      - Metrics__DescribedObject__ApiVersion=TestApiVersion
+      - Metrics__DescribedObject__Name=metrics-exporter
+      - Metrics__DescribedObject__Namespace=armonik
+      - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
+      - MongoDB__Host=database
+      - MongoDB__Port=27017
+      - MongoDB__DatabaseName=database
+      - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
+      - Redis__EndpointUrl=object:6379
+      - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Serilog__MinimumLevel=Verbose
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
+  armonik.compute.pollingagent:
+    image: ${ARMONIK_POLLINGAGENT}
+    depends_on:
+      - database
+      - object
+      - queue
+      - fluentbit
     networks:
       - armonik-backend
+      - armonik-monitoring
     volumes:
       - socket_vol:/cache
     environment:
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
+      - MongoDB__Host=database
+      - MongoDB__Port=27017
+      - MongoDB__DatabaseName=database
       - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
       - Redis__EndpointUrl=object:6379
       - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
@@ -61,24 +108,63 @@ services:
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
       - Serilog__MinimumLevel=Verbose
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
 
   armonik.compute.worker:
-    image: dockerhubaneo/armonik_worker_htcmock_v3
-    build:
-      context: ../../ArmoniK.Samples/Samples/HtcMockV3
-      dockerfile: GridWorker/src/Dockerfile
+    image: ${ARMONIK_WORKER}
+    # build:
+    #   context: ..
+    #   dockerfile: Tests/Stream/Server/Dockerfile
     networks:
       - armonik-net
-    environment:
-      - Grpc__Endpoint=http://armonik.control:80
+      - armonik-monitoring
+    depends_on:
+      - fluentbit
     volumes:
       - socket_vol:/cache
+    environment:
+      - Serilog__Properties__Application=ArmoniK.Compute.Worker
+      - Serilog__MinimumLevel=Verbose
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
+  fluentbit:
+    image: fluent/fluent-bit:latest
+    restart: always
+    networks:
+      - armonik-monitoring
+    volumes:
+      - ./fluent-bit/etc:/fluent-bit/etc
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    depends_on:
+      - seq
+
+  seq:
+    image: datalust/seq:latest
+    restart: always
+    networks:
+      - armonik-monitoring
+    ports:
+      - "80:80"
+      - "5341:5341"
+    environment:
+      - ACCEPT_EULA=Y
+
 
 networks:
   armonik-net:
     name: armonik-net
   armonik-backend:
     name: armonik-backend
+  armonik-monitoring:
+    name: armonik-monitoring
 
 volumes:
   socket_vol: {}

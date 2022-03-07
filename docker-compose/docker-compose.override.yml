@@ -1,14 +1,18 @@
 version: '3.7'
 
 services:
-  armonik.control:
+  armonik.control.submitter:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-    ports:
-      - "80"
-      - "443"
+
+  armonik.control.metrics:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
 
   armonik.compute.pollingagent:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  armonik.compute.worker:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development

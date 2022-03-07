@@ -1,17 +1,17 @@
 name: DeployTest
 
 on:
-  workflow_dispatch:
   push:
     paths:
       - 'Adaptors/**'
       - 'Common/**'
       - 'Compute/**'
       - 'Control/**'
+      - 'Stream/**'
+      - 'Tests/**'
       - '.github/workflows/**'
     branches:
       - '**'
-  
 
 jobs:
   sonarCloud:
@@ -63,7 +63,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
         fetch-depth: 0
 
     - name: Generate Version
@@ -84,7 +84,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
         submodules: true
 
     - name: Install .NET Core
@@ -107,11 +107,31 @@ jobs:
 
   buildProjects:
     runs-on: ubuntu-latest
+    # find . -name "*.csproj" | xargs -I % echo - %
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - ./Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj
+          - ./Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj
+          - ./Adaptors/Memory/tests/ArmoniK.Core.Adapters.Memory.Tests.csproj
+          - ./Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj
+          - ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj
+          - ./Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj
+          - ./Common/src/ArmoniK.Core.Common.csproj
+          - ./Common/tests/ArmoniK.Core.Common.Tests.csproj
+          - ./Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj
+          - ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj
+          - ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj
+          - ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj
+          - ./Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj
+          - ./Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj
+          - ./Tests/Stream/Server/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
         submodules: true
 
     - name: Install .NET Core
@@ -119,17 +139,12 @@ jobs:
       with:
         dotnet-version: 6.x
 
-    - name: Build the package
+    - name: Build the projects
       run: |
-        dotnet build Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj -c Release
-        dotnet build Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj -c Release
-        dotnet build Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj -c Release
-        dotnet build Common/src/ArmoniK.Core.Common.csproj -c Release
-        dotnet build Common/tests/ArmoniK.Core.Common.Tests.csproj -c Release
-        dotnet build Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj -c Release
-        dotnet build Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj -c Release
+        dotnet build ${{ matrix.project }} -c Release
 
-  buildControl:
+
+  buildImages:
     runs-on: ubuntu-latest
     needs:
       - versionning
@@ -137,39 +152,25 @@ jobs:
       - tests
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+        -  img : dockerhubaneo/armonik_pollingagent
+           path: ./Compute/PollingAgent/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_metrics
+           path: ./Control/Metrics/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control
+           path: ./Control/Submitter/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_worker
+           path: ./Tests/Stream/Server/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_client
+           path: ./Tests/Stream/Client/Dockerfile
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
-        submodules: true
-
-    - name: login
-      run: |
-        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
-
-    - name: build
-      run: |
-        echo $VERSION
-        docker build -t dockerhubaneo/armonik_control:$VERSION -f Control/Submitter/src/Dockerfile .
-
-    - name: push
-      run: |
-        docker push dockerhubaneo/armonik_control:$VERSION
-
-  buildAgent:
-    runs-on: ubuntu-latest
-    needs:
-      - versionning
-      - buildProjects
-      - tests
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
         submodules: true
 
     - name: login
@@ -179,56 +180,124 @@ jobs:
     - name: Build
       run: |
         echo $VERSION
-        docker build -t dockerhubaneo/armonik_pollingagent:$VERSION -f ./Compute/PollingAgent/src/Dockerfile .
+        docker build -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
 
     - name: push
       run: |
-        docker push dockerhubaneo/armonik_pollingagent:$VERSION
+        docker push ${{ matrix.img }}:$VERSION
 
-  testInfraWorker:
+  testStream:
     needs:
       - versionning
-      - buildAgent
-      - buildControl
+      - buildImages
     runs-on: ubuntu-latest
     steps:
-      - uses: aneoconsulting/ArmoniK/.github/actions/test-worker@main
+      - name: Checkout
+        uses: actions/checkout@v2
         with:
-          version: main
+          ref: ${{ github.ref }}
+          submodules: true
+
+      - uses: aneoconsulting/ArmoniK@main
+        id: deploy-infra
+        with:
           control-plane-image: dockerhubaneo/armonik_control
           control-plane-tag: ${{ needs.versionning.outputs.version }}
           polling-agent-image: dockerhubaneo/armonik_pollingagent
           polling-agent-tag: ${{ needs.versionning.outputs.version }}
+          worker-image: dockerhubaneo/armonik_core_stream_test_worker
+          worker-tag: ${{ needs.versionning.outputs.version }}
+          log-level: Information
 
-  testInfraMockV3:
+      - name: Run Stream Tests
+        timeout-minutes: 15
+        run: |
+         export CPIP=$(kubectl get svc control-plane -n armonik -o custom-columns="IP:.spec.clusterIP" --no-headers=true)
+         export CPPort=$(kubectl get svc control-plane -n armonik -o custom-columns="PORT:.spec.ports[*].port" --no-headers=true)
+         export Grpc__Endpoint=http://$CPIP:$CPPort
+
+         cd ./Tests/Stream/Client/
+         dotnet test --logger "trx;LogFileName=test-results.trx"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test - Stream
+          path: ./Tests/Stream/Client/TestResults/test-results.trx
+          reporter: dotnet-trx
+
+      - name: Copy logs
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          mkdir -p /tmp/armoniklogs
+          sudo cp -rL /var/log/pods/armonik_* /tmp/armoniklogs
+          sudo chown $USER -R /tmp/armoniklogs
+          find /tmp/armoniklogs -name "*.log"
+
+      - name: Store logs
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: Logs Stream
+          path: /tmp/armoniklogs/**/*.log
+          retention-days: 5
+
+  testStreamDockerCompose:
     needs:
       - versionning
-      - buildAgent
-      - buildControl
+      - buildImages
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        queue:
+          - activemqp
+          - artemis
+          - rabbitmq
     steps:
-      - uses: aneoconsulting/ArmoniK/.github/actions/test-mock-v3@main
+      - name: Checkout
+        uses: actions/checkout@v2
         with:
-          version: main
-          control-plane-image: dockerhubaneo/armonik_control
-          control-plane-tag: ${{ needs.versionning.outputs.version }}
-          polling-agent-image: dockerhubaneo/armonik_pollingagent
-          polling-agent-tag: ${{ needs.versionning.outputs.version }}
+          ref: ${{ github.ref }}
+          submodules: true
+      - name: Docker compose up
+        run: |
+          export ARMONIK_WORKER=dockerhubaneo/armonik_core_stream_test_worker:$VERSION
+          export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
+          export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
+          export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
+          docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
+
+      - name: Run Stream Test
+        run: |
+          cd ./Tests/Stream/Client/
+          dotnet test --logger "trx;LogFileName=test-results.trx"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test - ${{ matrix.queue }}
+          path: ./Tests/Stream/Client/TestResults/test-results.trx
+          reporter: dotnet-trx
 
   tag:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/release' }}
     needs:
       - versionning
-      - testInfraWorker
-      - testInfraMockV3
+      - testStream
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.head_ref }}
+        ref: ${{ github.ref }}
 
     - name: tag
       run: |

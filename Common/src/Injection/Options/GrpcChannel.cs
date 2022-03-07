@@ -30,7 +30,7 @@ public class GrpcChannel
 {
   public const string SettingSection = ComputePlan.SettingSection + ":" + nameof(GrpcChannel);
 
-  public string Address { get; set; }
+  public string? Address { get; set; }
 
   public GrpcSocketType SocketType { get; set; } = GrpcSocketType.Web;
 }

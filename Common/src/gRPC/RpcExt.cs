@@ -22,17 +22,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.gRPC.V1;
-
-using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
 using JetBrains.Annotations;
+
+using Microsoft.Extensions.Logging;
 
 using TaskCanceledException = ArmoniK.Core.Common.Exceptions.TaskCanceledException;
 using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
@@ -41,6 +43,40 @@ namespace ArmoniK.Core.Common.gRPC;
 
 public static class RpcExt
 {
+  public static void ThrowIfError(this Status status)
+  {
+    switch (status.StatusCode)
+    {
+      case StatusCode.OK:
+        return;
+      case StatusCode.DeadlineExceeded:
+        throw new TimeoutException("Deadline Exceeded. " + status.Detail);
+      case StatusCode.Cancelled:
+        throw new TaskCanceledException("Operation Cancelled. " + status.Detail);
+      case StatusCode.InvalidArgument:
+        throw new ArmoniKException("Invalid argument in gRPC call. " + status.Detail);
+      case StatusCode.NotFound:
+        throw new ArmoniKException("Could not find gRPC method. " + status.Detail);
+      case StatusCode.PermissionDenied:
+        throw new ArmoniKException("Permission denied in gRPC method. " + status.Detail);
+      case StatusCode.Unauthenticated:
+        throw new ArmoniKException("Could not authenticate in gRPC method. " + status.Detail);
+      case StatusCode.Unimplemented:
+        throw new ArmoniKException("Method called was not implemented." + status.Detail);
+      case StatusCode.Internal:
+      case StatusCode.Unavailable:
+      case StatusCode.DataLoss:
+      case StatusCode.Unknown:
+      case StatusCode.AlreadyExists:
+      case StatusCode.ResourceExhausted:
+      case StatusCode.FailedPrecondition:
+      case StatusCode.Aborted:
+      case StatusCode.OutOfRange:
+      default:
+        throw new ArmoniKException("An error occurred while computing the request. " + status.Detail);
+    }
+  }
+
   public static bool HandleExceptions(Exception e, StatusCode status)
   {
     switch (e)
@@ -122,9 +158,18 @@ public static class RpcExt
     }
   }
 
-  public static bool IsValid(this Lease lease)
-    => !string.IsNullOrEmpty(lease.LeaseId) && lease.ExpirationDate.CompareTo(Timestamp.FromDateTime(DateTime.UtcNow)) > 0;
+  public static async Task ForceMoveNext<T>(this IAsyncEnumerator<T> stream, string error, ILogger logger, CancellationToken cancellationToken) where T : class
+  {
+    if (!await stream.MoveNextAsync(cancellationToken))
+    {
+      var exception = new RpcException(new(StatusCode.InvalidArgument,
+                                           error));
+      logger.LogError(exception,
+                       "Invalid stream");
+      throw exception;
+    }
+  }
 
   public static string ToPrintableId(this TaskId taskId)
-    => $"{taskId.Session}|{taskId.SubSession}|{taskId.Task}";
+    => $"{taskId.Session}|{taskId.Task}";
 }

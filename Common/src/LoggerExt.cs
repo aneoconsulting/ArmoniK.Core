@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -52,13 +53,23 @@ public static class LoggerExt
     return logger.BeginScope(dictionary);
   }
 
-  public static IDisposable LogFunction(this ILogger              logger,
-                                        string                    id           = "",
-                                        LogLevel                  level        = LogLevel.Trace,
-                                        [CallerMemberName] string functionName = "")
+  public static IDisposable LogFunction(this ILogger                                    logger,
+                                        string                                          id           = "",
+                                        LogLevel                                        level        = LogLevel.Trace,
+                                        [CallerMemberName] string                       functionName = "",
+                                        params             ValueTuple<string, object>[] properties)
   {
     var methodInfo = new StackTrace().GetFrame(1)?.GetMethod();
-    var className  = methodInfo?.ReflectedType?.Name;
+    var className  = methodInfo!.ReflectedType!.Name;
+
+    var prop = properties.Append((nameof(className), className))
+                         .Append((nameof(functionName), functionName));
+    if(!string.IsNullOrEmpty(id))
+      prop = prop.Append(("Id", id));
+
+
+    var scope = logger.BeginNamedScope($"{className}.{functionName}",
+                                       prop.ToArray());
 
     logger.Log(level,
                "Entering {className}.{functionName} - {id}",
@@ -66,10 +77,14 @@ public static class LoggerExt
                functionName,
                id);
 
-    return Disposable.Create(() => logger.Log(level,
-                                              "Leaving {className}.{functionName} - {id}",
-                                              className,
-                                              functionName,
-                                              id));
+    return Disposable.Create(() =>
+                             {
+                               logger.Log(level,
+                                          "Leaving {className}.{functionName} - {id}",
+                                          className,
+                                          functionName,
+                                          id);
+                               scope.Dispose();
+                             });
   }
 }

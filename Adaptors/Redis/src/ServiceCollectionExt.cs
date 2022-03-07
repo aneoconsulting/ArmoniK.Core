@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Core.Common;
@@ -31,8 +32,6 @@ using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -74,8 +73,8 @@ namespace ArmoniK.Core.Adapters.Redis
 
         if (!string.IsNullOrEmpty(redisOptions.CaPath))
         {
-          X509Store                  localTrustStore       = new X509Store(StoreName.Root);
-          X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
+          var                  localTrustStore       = new X509Store(StoreName.Root);
+          var certificateCollection = new X509Certificate2Collection();
           try
           {
             certificateCollection.ImportFromPemFile(redisOptions.CaPath);
@@ -96,32 +95,28 @@ namespace ArmoniK.Core.Adapters.Redis
           }
         }
 
-        serviceCollection.AddStackExchangeRedisCache(options =>
+        var config = new ConfigurationOptions()
         {
-          options.ConfigurationOptions = new()
-          {
-            ClientName           = redisOptions.ClientName,
-            ReconnectRetryPolicy = new ExponentialRetry(10),
-            Ssl                  = redisOptions.Ssl,
-            AbortOnConnectFail   = true,
-            SslHost              = redisOptions.SslHost,
-            Password             = redisOptions.Password,
-            User                 = redisOptions.User,
-          };
-          options.ConfigurationOptions.EndPoints.Add(redisOptions.EndpointUrl);
+          ClientName           = redisOptions.ClientName,
+          ReconnectRetryPolicy = new ExponentialRetry(10),
+          Ssl                  = redisOptions.Ssl,
+          AbortOnConnectFail   = true,
+          SslHost              = redisOptions.SslHost,
+          Password             = redisOptions.Password,
+          User                 = redisOptions.User,
+        };
+        config.EndPoints.Add(redisOptions.EndpointUrl);
 
-          if (redisOptions.Timeout > 0)
-            options.ConfigurationOptions.ConnectTimeout = redisOptions.Timeout;
+        if (redisOptions.Timeout > 0)
+          config.ConnectTimeout = redisOptions.Timeout;
 
-          logger.LogDebug("setup connection to Redis at {EndpointUrl} with user {user}",
-                          redisOptions.EndpointUrl,
-                          redisOptions.User);
+        logger.LogDebug("setup connection to Redis at {EndpointUrl} with user {user}",
+                        redisOptions.EndpointUrl,
+                        redisOptions.User);
 
-          options.InstanceName = redisOptions.InstanceName;
-        });
-
-        serviceCollection.AddSingleton<IDistributedCache, RedisCache>();
-        serviceCollection.AddSingleton<IObjectStorage, DistributedCacheObjectStorage>();
+        serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
+                                                                                          TextWriter.Null).GetDatabase());
+        serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
       }
 
       return serviceCollection;

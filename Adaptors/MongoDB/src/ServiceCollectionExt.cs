@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -22,7 +22,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -34,7 +33,6 @@ using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -55,169 +53,170 @@ public static class ServiceCollectionExt
     ILogger                 logger
   )
   {
-    logger.LogInformation("Configure MongoDB client");
+    services.AddMongoClient(configuration,
+                            logger);
+    services.AddMongoStorages(configuration,
+                              logger);
+    return services;
+  }
+
+  [PublicAPI]
+  public static IServiceCollection AddMongoStorages(
+    this IServiceCollection services,
+    ConfigurationManager    configuration,
+    ILogger                 logger
+  )
+  {
+    logger.LogInformation("Configure MongoDB Components");
 
     var components = configuration.GetSection(Components.SettingSection);
 
-    var isMongoRequired = false;
-
     if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
-    {
-      services.AddOption<Options.TableStorage>(configuration,
-                                               Options.TableStorage.SettingSection)
-              .AddTransient<TableStorage>()
-              .AddTransientWithHealthCheck<ITableStorage, TableStorage>($"MongoDB.{nameof(TableStorage)}");
-
-      isMongoRequired = true;
-    }
+      services.AddOption<TableStorage>(configuration,
+                                       TableStorage.SettingSection)
+              .AddTransient<ITaskTable, TaskTable>()
+              .AddTransient<ISessionTable, SessionTable>()
+              .AddTransient<IDispatchTable, DispatchTable>()
+              .AddTransient<IResultTable, ResultTable>();
 
     if (components["QueueStorage"] == "ArmoniK.Adapters.MongoDB.LockedQueueStorage")
-    {
       services.AddOption<QueueStorage>(configuration,
                                        QueueStorage.SettingSection)
               .AddTransientWithHealthCheck<LockedQueueStorage>($"MongoDB.{nameof(LockedQueueStorage)}")
               .AddTransientWithHealthCheck<IQueueStorage, LockedWrapperQueueStorage>($"MongoDB.{nameof(LockedWrapperQueueStorage)}")
               .AddTransient<ILockedQueueStorage, LockedQueueStorage>();
 
-      isMongoRequired = true;
-    }
-
     if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
-    {
       services.AddOption<Options.ObjectStorage>(configuration,
                                                 Options.ObjectStorage.SettingSection)
               .AddTransient<ObjectStorage>()
-              .AddTransientWithHealthCheck<IObjectStorage, ObjectStorage>($"MongoDB.{nameof(ObjectStorage)}");
+              .AddTransient<IObjectStorage, ObjectStorage>();
 
-      isMongoRequired = true;
-    }
+    services.AddOption<Options.MongoDB>(configuration,
+                                        Options.MongoDB.SettingSection,
+                                        out var mongoOptions);
 
-    if (components["LeaseProvider"] == "ArmoniK.Adapters.MongoDB.LeaseProvider")
+    services.AddTransient(provider => provider.GetRequiredService<IMongoClient>().GetDatabase(mongoOptions.DatabaseName))
+            .AddSingleton(typeof(MongoCollectionProvider<,>))
+            .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}");
+
+    return services;
+  }
+
+  public static IServiceCollection AddMongoClient(
+    this IServiceCollection services,
+    ConfigurationManager    configuration,
+    ILogger                 logger
+  )
+  {
+    services.AddOption<Options.MongoDB>(configuration,
+                                        Options.MongoDB.SettingSection,
+                                        out var mongoOptions);
+
+    using var _ = logger.BeginNamedScope("MongoDB configuration",
+                                         ("host", mongoOptions.Host),
+                                         ("port", mongoOptions.Port));
+
+    if (string.IsNullOrEmpty(mongoOptions.Host))
+      throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
+                                            $"{nameof(Options.MongoDB.Host)} is not defined.");
+
+    if (string.IsNullOrEmpty(mongoOptions.DatabaseName))
+      throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
+                                            $"{nameof(Options.MongoDB.DatabaseName)} is not defined.");
+
+    if (!string.IsNullOrEmpty(mongoOptions.CredentialsPath))
     {
-      services.AddOption<Options.LeaseProvider>(configuration,
-                                                Options.LeaseProvider.SettingSection)
-              .AddTransient<LeaseProvider>()
-              .AddTransientWithHealthCheck<ILeaseProvider, LeaseProvider>($"MongoDB.{nameof(LeaseProvider)}");
+      configuration.AddJsonFile(mongoOptions.CredentialsPath);
 
-      isMongoRequired = true;
+      services.AddOption(configuration,
+                         Options.MongoDB.SettingSection,
+                         out mongoOptions);
+
+      logger.LogTrace("Loaded mongodb credentials from file {path}",
+                      mongoOptions.CredentialsPath);
     }
-
-    if (isMongoRequired)
+    else
     {
-      services.AddOption<Options.MongoDB>(configuration,
-                                          Options.MongoDB.SettingSection,
-                                          out var mongoOptions);
-
-      using var _ = logger.BeginNamedScope("MongoDB configuration",
-                                           ("host", mongoOptions.Host),
-                                           ("port", mongoOptions.Port));
-
-      if (string.IsNullOrEmpty(mongoOptions.Host))
-        throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
-                                              $"{nameof(Options.MongoDB.Host)} is not defined.");
-
-      if (string.IsNullOrEmpty(mongoOptions.DatabaseName))
-        throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
-                                              $"{nameof(Options.MongoDB.DatabaseName)} is not defined.");
-
-      if (!string.IsNullOrEmpty(mongoOptions.CredentialsPath))
-      {
-        configuration.AddJsonFile(mongoOptions.CredentialsPath);
-
-        services.AddOption(configuration,
-                           Options.MongoDB.SettingSection,
-                           out mongoOptions);
-
-        logger.LogTrace("Loaded mongodb credentials from file {path}",
-                        mongoOptions.CredentialsPath);
-      }
-      else
-      {
-        logger.LogTrace("No credentials provided");
-      }
-
-      if (!string.IsNullOrEmpty(mongoOptions.CAFile))
-      {
-        X509Store                  localTrustStore       = new X509Store(StoreName.Root);
-        X509Certificate2Collection certificateCollection = new X509Certificate2Collection();
-        try
-        {
-          certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
-          localTrustStore.Open(OpenFlags.ReadWrite);
-          localTrustStore.AddRange(certificateCollection);
-          logger.LogTrace("Imported mongodb certificate from file {path}",
-                          mongoOptions.CAFile);
-        }
-        catch (Exception ex)
-        {
-          logger.LogError("Root certificate import failed: {error}",
-                          ex.Message);
-          throw;
-        }
-        finally
-        {
-          localTrustStore.Close();
-        }
-      }
-
-      string connectionString = null;
-      if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
-      {
-        string template = "mongodb://{0}:{1}/{2}";
-        connectionString = String.Format(template,
-                                         mongoOptions.Host,
-                                         mongoOptions.Port,
-                                         mongoOptions.DatabaseName);
-      }
-      else
-      {
-        string template = "mongodb://{0}:{1}@{2}:{3}/{4}";
-        connectionString = String.Format(template,
-                                         mongoOptions.User,
-                                         mongoOptions.Password,
-                                         mongoOptions.Host,
-                                         mongoOptions.Port,
-                                         mongoOptions.DatabaseName);
-      }
-
-      var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
-      settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
-      settings.UseTls           = mongoOptions.Tls;
-      settings.DirectConnection = mongoOptions.DirectConnection;
-      settings.Scheme           = ConnectionStringScheme.MongoDB;
-
-      services.AddTransient<IMongoClient>(provider =>
-              {
-                var logger = provider.GetRequiredService<ILogger<IMongoClient>>();
-
-
-                //if (logger.IsEnabled(LogLevel.Trace))
-                //{
-                //  settings.ClusterConfigurator = cb =>
-                //  {
-                //    cb.Subscribe<CommandStartedEvent>(e =>
-                //    {
-                //      logger
-                //        .LogTrace("{CommandName} - {Command}",
-                //                  e.CommandName,
-                //                  e.Command.ToJson());
-                //    });
-                //  };
-                //}
-
-                return new MongoClient(settings);
-              })
-              .AddTransient(provider => provider.GetRequiredService<IMongoClient>().GetDatabase(mongoOptions.DatabaseName))
-              .AddSingleton(typeof(MongoCollectionProvider<>))
-              .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}")
-              .AddHealthChecks()
-              .AddMongoDb(settings,
-                          mongoOptions.DatabaseName,
-                          "MongoDb Connection",
-                          tags: new[] { nameof(HealthCheckTag.Startup), nameof(HealthCheckTag.Liveness), nameof(HealthCheckTag.Readiness) });
-
-      logger.LogInformation("MongoDB configuration complete");
+      logger.LogTrace("No credentials provided");
     }
+
+    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
+    {
+      var localTrustStore       = new X509Store(StoreName.Root);
+      var certificateCollection = new X509Certificate2Collection();
+      try
+      {
+        certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
+        localTrustStore.Open(OpenFlags.ReadWrite);
+        localTrustStore.AddRange(certificateCollection);
+        logger.LogTrace("Imported mongodb certificate from file {path}",
+                        mongoOptions.CAFile);
+      }
+      catch (Exception ex)
+      {
+        logger.LogError("Root certificate import failed: {error}",
+                        ex.Message);
+        throw;
+      }
+      finally
+      {
+        localTrustStore.Close();
+      }
+    }
+
+    string connectionString = null;
+    if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
+    {
+      var template = "mongodb://{0}:{1}/{2}";
+      connectionString = string.Format(template,
+                                       mongoOptions.Host,
+                                       mongoOptions.Port,
+                                       mongoOptions.DatabaseName);
+    }
+    else
+    {
+      var template = "mongodb://{0}:{1}@{2}:{3}/{4}";
+      connectionString = string.Format(template,
+                                       mongoOptions.User,
+                                       mongoOptions.Password,
+                                       mongoOptions.Host,
+                                       mongoOptions.Port,
+                                       mongoOptions.DatabaseName);
+    }
+
+    var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
+    settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
+    settings.UseTls           = mongoOptions.Tls;
+    settings.DirectConnection = mongoOptions.DirectConnection;
+    settings.Scheme           = ConnectionStringScheme.MongoDB;
+
+    services.AddTransient<IMongoClient>(provider =>
+            {
+              var logger = provider.GetRequiredService<ILogger<IMongoClient>>();
+
+
+              //if (logger.IsEnabled(LogLevel.Trace))
+              //  settings.ClusterConfigurator = cb =>
+              //  {
+              //    cb.Subscribe<CommandStartedEvent>(e =>
+              //    {
+              //      logger
+              //        .LogTrace("{CommandName} - {Command}",
+              //                  e.CommandName,
+              //                  e.Command.ToJson());
+              //    });
+              //  };
+
+              return new MongoClient(settings);
+            })
+            .AddHealthChecks()
+            .AddMongoDb(settings,
+                        mongoOptions.DatabaseName,
+                        "MongoDb Connection",
+                        tags: new[] { nameof(HealthCheckTag.Startup), nameof(HealthCheckTag.Liveness), nameof(HealthCheckTag.Readiness) });
+
+    logger.LogInformation("MongoDB configuration complete");
 
     return services;
   }

@@ -29,7 +29,9 @@ using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Pollster;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -48,11 +50,6 @@ public static class Program
 {
   public static int Main(string[] args)
   {
-    Log.Logger = new LoggerConfiguration()
-                 .Enrich.FromLogContext()
-                 .WriteTo.Console()
-                 .CreateBootstrapLogger();
-
     try
     {
       Log.Information("Starting host");
@@ -67,16 +64,16 @@ public static class Program
              .AddEnvironmentVariables()
              .AddCommandLine(args);
 
-      var serilogLogger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
-                                                   .WriteTo.Console(new CompactJsonFormatter())
-                                                   .Enrich.FromLogContext()
-                                                   .CreateLogger();
+      Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
+                                            .WriteTo.Console(new CompactJsonFormatter())
+                                            .Enrich.FromLogContext()
+                                            .CreateLogger();
 
-      var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(serilogLogger))
+      var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger))
                                 .CreateLogger("root");
 
       builder.Host
-             .UseSerilog(serilogLogger);
+             .UseSerilog(Log.Logger);
 
       builder.Services
              .AddLogging()
@@ -88,7 +85,11 @@ public static class Program
              .AddRedis(builder.Configuration,
                        logger)
              .AddHostedService<Worker>()
-             .AddSingleton<Pollster>();
+             .AddSingleton<Pollster>()
+             .AddSingleton<PreconditionChecker>()
+             .AddSingleton<RequestProcessor>()
+             .AddSingleton<Submitter>()
+             .AddSingleton<DataPrefetcher>();
 
       builder.Services.AddHealthChecks();
 

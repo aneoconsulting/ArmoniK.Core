@@ -24,11 +24,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using ArmoniK.Core.gRPC.V1;
+using ArmoniK.Api.gRPC.V1;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
@@ -38,6 +39,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 [TestFixture]
+[Category("Integration")]
 [Ignore("Require a deployed database")]
 internal class ConnectedTableStorageTests
 {
@@ -45,67 +47,32 @@ internal class ConnectedTableStorageTests
   public void SetUp()
   {
     Dictionary<string, string> baseConfig = new()
-    {
-      { "MongoDB:ConnectionString", "mongodb://localhost" },
-      { "MongoDB:DatabaseName", "database" },
-      { "MongoDB:DataRetention", "10.00:00:00" },
-      { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
-      { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
-      { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
-      { "MongoDB:ObjectStorage:ChunkSize", "100000" },
-      { "MongoDB:LockedQueueStorage:LockRefreshPeriodicity", "00:20:00" },
-      { "MongoDB:LockedQueueStorage:PollPeriodicity", "00:00:50" },
-      { "MongoDB:LockedQueueStorage:LockRefreshExtension", "00:50:00" },
-    };
+                                            {
+                                              { "MongoDB:ConnectionString", "mongodb://localhost" },
+                                              { "MongoDB:DatabaseName", "ConnectedTableStorageTests" },
+                                              { "MongoDB:DataRetention", "10.00:00:00" },
+                                              { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
+                                              { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
+                                              { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
+                                              { "MongoDB:ObjectStorage:ChunkSize", "100000" },
+                                              { "MongoDB:LockedQueueStorage:LockRefreshPeriodicity", "00:20:00" },
+                                              { "MongoDB:LockedQueueStorage:PollPeriodicity", "00:00:50" },
+                                              { "MongoDB:LockedQueueStorage:LockRefreshExtension", "00:50:00" },
+                                            };
 
-    configuration_ = new ConfigurationManager();
-    configuration_.AddInMemoryCollection(baseConfig);
-    logger_ = NullLogger.Instance;
+    var configSource = new MemoryConfigurationSource
+                       {
+                         InitialData = baseConfig,
+                       };
+
+    var builder = new ConfigurationBuilder()
+     .Add(configSource);
+
+    configuration_ = builder.Build();
   }
 
-  private ConfigurationManager configuration_;
-  private ILogger              logger_;
 
-  [Test]
-  public void AddOneTaskAndCount()
-  {
-    var services = new ServiceCollection();
-    services.AddMongoComponents(configuration_,
-                                logger_);
-    services.AddLogging();
-
-    var provider = services.BuildServiceProvider(new ServiceProviderOptions
-    {
-      ValidateOnBuild = true,
-    });
-
-    var table = provider.GetRequiredService<TableStorage>();
-
-    Assert.AreEqual(0,
-                    table.CountTasksAsync(new()).Result);
-
-    var session = table.CreateSessionAsync(new()
-    {
-      DefaultTaskOption = new(),
-      IdTag             = "tag",
-    }).Result;
-
-    var (_, _, _) = table.InitializeTaskCreation(session,
-                                                 new(),
-                                                 new[]
-                                                 {
-                                                   new TaskRequest
-                                                   {
-                                                     Payload = new(),
-                                                   },
-                                                 }).Result.Single();
-
-
-    Assert.AreEqual(1,
-                    table.CountTasksAsync(new()
-                    {
-                      SessionId    = session.Session,
-                      SubSessionId = session.SubSession,
-                    }).Result);
-  }
+  // TODO : remove this comment when some tests using configuration_ are written
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "<Pending>")]
+  private IConfiguration configuration_;
 }

@@ -24,6 +24,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Pollster;
+
 using Microsoft.Extensions.Hosting;
 
 namespace ArmoniK.Core.Compute.PollingAgent;
@@ -34,5 +36,5 @@ public class Worker : BackgroundService
 
   public Worker(Pollster pollster) => pollster_ = pollster;
 
-  protected override Task ExecuteAsync(CancellationToken stoppingToken) => pollster_.MainLoopPrefetch(stoppingToken);
+  protected override Task ExecuteAsync(CancellationToken stoppingToken) => pollster_.MainLoop(stoppingToken);
 }

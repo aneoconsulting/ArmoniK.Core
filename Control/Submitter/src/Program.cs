@@ -29,7 +29,6 @@ using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
-using ArmoniK.Core.Control.Submitter.Services;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -38,6 +37,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
+using ArmoniK.Core.Control.Submitter.Services;
 using Serilog.Formatting.Compact;
 
 namespace ArmoniK.Core.Control.Submitter;
@@ -46,11 +46,6 @@ public static class Program
 {
   public static int Main(string[] args)
   {
-    Log.Logger = new LoggerConfiguration()
-                 .Enrich.FromLogContext()
-                 .WriteTo.Console()
-                 .CreateBootstrapLogger();
-
     try
     {
       Log.Information("Starting web host");
@@ -66,16 +61,16 @@ public static class Program
              .AddEnvironmentVariables()
              .AddCommandLine(args);
 
-      var serilogLogger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
-                                                   .WriteTo.Console(new CompactJsonFormatter())
-                                                   .Enrich.FromLogContext()
-                                                   .CreateLogger();
+      Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
+                                                .WriteTo.Console(new CompactJsonFormatter())
+                                                .Enrich.FromLogContext()
+                                                .CreateLogger();
 
-      var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(serilogLogger))
+      var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger))
                                 .CreateLogger("root");
 
       builder.Host
-             .UseSerilog(serilogLogger);
+             .UseSerilog(Log.Logger);
 
       builder.Services
              .AddLogging()
@@ -116,7 +111,7 @@ public static class Program
         //readiness uses grpc to ensure corresponding features are ok.
         endpoints.MapGrpcService<GrpcHealthCheckService>();
 
-        endpoints.MapGrpcService<ClientService>();
+        endpoints.MapGrpcService<GrpcSubmitterService>();
 
         if (app.Environment.IsDevelopment())
           endpoints.MapGrpcReflectionService();

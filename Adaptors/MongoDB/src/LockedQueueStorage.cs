@@ -33,7 +33,6 @@ using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Adapters.MongoDB.Queue;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.gRPC.V1;
 
 using Microsoft.Extensions.Logging;
 
@@ -43,11 +42,11 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class LockedQueueStorage : ILockedQueueStorage
 {
-  private readonly ILogger<LockedQueueStorage>                logger_;
-  private readonly string                                     ownerId_ = Guid.NewGuid().ToString();
-  private readonly MongoCollectionProvider<QueueMessageModel> queueCollectionProvider_;
+  private readonly ILogger<LockedQueueStorage>                                                 logger_;
+  private readonly string                                                                      ownerId_ = Guid.NewGuid().ToString();
+  private readonly MongoCollectionProvider<QueueMessageModelMapping, QueueMessageModelMapping> queueCollectionProvider_;
 
-  public LockedQueueStorage(MongoCollectionProvider<QueueMessageModel> queueCollectionProvider,
+  public LockedQueueStorage(MongoCollectionProvider<QueueMessageModelMapping, QueueMessageModelMapping> queueCollectionProvider,
                             QueueStorage                               options,
                             ILogger<LockedQueueStorage>                logger)
   {
@@ -101,7 +100,7 @@ public class LockedQueueStorage : ILockedQueueStorage
   public int MaxPriority => int.MaxValue;
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessage> PullAsync(
+  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(
     int                                        nbMessages,
     [EnumeratorCancellation] CancellationToken cancellationToken = default
   )
@@ -113,26 +112,26 @@ public class LockedQueueStorage : ILockedQueueStorage
 
     while (nbPulledMessage < nbMessages && !cancellationToken.IsCancellationRequested)
     {
-      var updateDefinition = Builders<QueueMessageModel>.Update
+      var updateDefinition = Builders<QueueMessageModelMapping>.Update
                                                         .Set(qmdm => qmdm.OwnedUntil,
                                                              DateTime.UtcNow + LockRefreshExtension)
                                                         .Set(qmm => qmm.OwnerId,
                                                              ownerId_);
 
-      var sort = Builders<QueueMessageModel>.Sort
+      var sort = Builders<QueueMessageModelMapping>.Sort
                                             .Descending(qmm => qmm.Priority)
                                             .Ascending(qmm => qmm.SubmissionDate);
 
-      var filter = Builders<QueueMessageModel>.Filter
-                                              .Or(Builders<QueueMessageModel>.Filter.Exists(model => model.OwnedUntil,
+      var filter = Builders<QueueMessageModelMapping>.Filter
+                                              .Or(Builders<QueueMessageModelMapping>.Filter.Exists(model => model.OwnedUntil,
                                                                                             false),
-                                                  Builders<QueueMessageModel>.Filter.Where(model => model.OwnedUntil < DateTime.UtcNow));
+                                                  Builders<QueueMessageModelMapping>.Filter.Where(model => model.OwnedUntil < DateTime.UtcNow));
 
-      logger_.LogDebug("Trying to get a new message from Mongo queue");
+      logger_.LogDebug("Trying to get a new messageHandler from Mongo queue");
       var message = await queueCollection.FindOneAndUpdateAsync(filter,
                                                                 updateDefinition,
                                                                 new FindOneAndUpdateOptions<
-                                                                  QueueMessageModel>
+                                                                  QueueMessageModelMapping>
                                                                 {
                                                                   ReturnDocument = ReturnDocument.After,
                                                                   IsUpsert       = false,
@@ -143,7 +142,7 @@ public class LockedQueueStorage : ILockedQueueStorage
       if (message is not null)
       {
         nbPulledMessage++;
-        yield return new LockedQueueMessage(this,
+        yield return new LockedQueueMessageHandler(this,
                                             message.MessageId,
                                             message.TaskId,
                                             logger_,
@@ -173,14 +172,14 @@ public class LockedQueueStorage : ILockedQueueStorage
     using var _               = logger_.LogFunction(id);
     var       queueCollection = await queueCollectionProvider_.GetAsync();
 
-    var updateDefinition = Builders<QueueMessageModel>.Update
+    var updateDefinition = Builders<QueueMessageModelMapping>.Update
                                                       .Set(qmdm => qmdm.OwnedUntil,
                                                            DateTime.UtcNow + LockRefreshExtension);
 
-    var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(qmdm => qmdm.MessageId == id &&
+    var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModelMapping>(qmdm => qmdm.MessageId == id &&
                                                                                          qmdm.OwnerId == ownerId_,
                                                                                  updateDefinition,
-                                                                                 new FindOneAndUpdateOptions<QueueMessageModel>
+                                                                                 new FindOneAndUpdateOptions<QueueMessageModelMapping>
                                                                                  {
                                                                                    ReturnDocument =
                                                                                      ReturnDocument.After,
@@ -191,14 +190,14 @@ public class LockedQueueStorage : ILockedQueueStorage
   }
 
   /// <inheritdoc />
-  public async Task EnqueueMessagesAsync(IEnumerable<TaskId> messages,
+  public async Task EnqueueMessagesAsync(IEnumerable<string> messages,
                                          int                 priority          = 1,
                                          CancellationToken   cancellationToken = default)
   {
     using var _               = logger_.LogFunction();
     var       queueCollection = await queueCollectionProvider_.GetAsync();
 
-    var qmms = messages.Select(message => new QueueMessageModel
+    var qmms = messages.Select(message => new QueueMessageModelMapping
                                           {
                                             TaskId         = message,
                                             Priority       = priority,
@@ -215,7 +214,7 @@ public class LockedQueueStorage : ILockedQueueStorage
     using var _               = logger_.LogFunction(id);
     var       queueCollection = await queueCollectionProvider_.GetAsync();
 
-    var updateDefinition = Builders<QueueMessageModel>.Update
+    var updateDefinition = Builders<QueueMessageModelMapping>.Update
                                                       .Unset(qmm => qmm.OwnerId)
                                                       .Unset(qmdm => qmdm.OwnedUntil)
                                                       .Set(qmm => qmm.SubmissionDate,
@@ -242,13 +241,13 @@ public class LockedQueueStorage : ILockedQueueStorage
     using var _               = logger_.LogFunction(id);
     var       queueCollection = await queueCollectionProvider_.GetAsync();
 
-    var updateDefinition = Builders<QueueMessageModel>.Update
+    var updateDefinition = Builders<QueueMessageModelMapping>.Update
                                                       .Unset(qmdm => qmdm.OwnedUntil);
 
-    await queueCollection.FindOneAndUpdateAsync<QueueMessageModel>(qmdm => qmdm.MessageId == id &&
+    await queueCollection.FindOneAndUpdateAsync<QueueMessageModelMapping>(qmdm => qmdm.MessageId == id &&
                                                                            qmdm.OwnerId == ownerId_,
                                                                    updateDefinition,
-                                                                   new FindOneAndUpdateOptions<QueueMessageModel>
+                                                                   new FindOneAndUpdateOptions<QueueMessageModelMapping>
                                                                    {
                                                                      IsUpsert = false,
                                                                    },

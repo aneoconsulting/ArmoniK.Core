@@ -9,7 +9,12 @@ services:
       - 127.0.0.1:5672:5672
       - 127.0.0.1:8161:8161
 
-  armonik.control:
+  armonik.control.submitter:
+    environment:
+      - Amqp__User=admin
+      - Amqp__Password=admin
+
+  armonik.control.metrics:
     environment:
       - Amqp__User=admin
       - Amqp__Password=admin

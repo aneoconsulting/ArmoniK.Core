@@ -27,18 +27,20 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+using ArmoniK.Core.Common.Storage;
+
 namespace ArmoniK.Core.Adapters.MongoDB.Table;
 
 public static class ExpressionsBuilders
 {
-  public static Expression<Func<TaskDataModel, bool>> FieldFilterExpression<TField>(Expression<Func<TaskDataModel, TField>> expression,
+  public static Expression<Func<TaskData, bool>> FieldFilterExpression<TField>(Expression<Func<TaskData, TField>> expression,
                                                                                     IList<TField>                           values,
                                                                                     bool                                    include = true)
   {
-    var x = Expression.Parameter(typeof(TaskDataModel),
+    var x = Expression.Parameter(typeof(TaskData),
                                  "model");
 
-    return (Expression<Func<TaskDataModel, bool>>)Expression.Lambda(FieldFilterInternal(expression,
+    return (Expression<Func<TaskData, bool>>)Expression.Lambda(FieldFilterInternal(expression,
                                                                                         values,
                                                                                         include,
                                                                                         x),
@@ -46,7 +48,7 @@ public static class ExpressionsBuilders
   }
 
 
-  public static Expression FieldFilterInternal<TField>(Expression<Func<TaskDataModel, TField>> expression,
+  public static Expression FieldFilterInternal<TField>(Expression<Func<TaskData, TField>> expression,
                                                        IList<TField>                           values,
                                                        bool                                    include,
                                                        Expression                              x)
@@ -57,7 +59,7 @@ public static class ExpressionsBuilders
     var fieldName = ((MemberExpression)expression.Body).Member.Name;
 
     var property = Expression.Property(x,
-                                       typeof(TaskDataModel),
+                                       typeof(TaskData),
                                        fieldName);
 
     if (values.Count == 1)
@@ -81,6 +83,43 @@ public static class ExpressionsBuilders
                                containsMethodInfo,
                                valueExpr,
                                property);
+
+    return include ? body : Expression.Not(body);
+  }
+
+  public static Expression FieldFilterInternal<TField>(Expression<Func<TaskData, IEnumerable<TField>>> expression,
+                                                       IList<TField>                                        values,
+                                                       bool                                                 include,
+                                                       Expression                                           x)
+  {
+    if (!values.Any())
+      return Expression.Constant(true);
+
+    var fieldName = ((MemberExpression)expression.Body).Member.Name;
+
+    var property = Expression.Property(x,
+                                       typeof(TaskData),
+                                       fieldName);
+
+    var containsMethodInfo = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)
+                                               .Single(m => m.Name == nameof(Enumerable.Contains) &&
+                                                            m.GetParameters().Length == 2)
+                                               .GetGenericMethodDefinition()
+                                               .MakeGenericMethod(typeof(TField));
+
+
+    Expression body = Expression.Call(null,
+                                      containsMethodInfo,
+                                      property,
+                                      Expression.Constant(values[0]));
+
+    body = values.Skip(1)
+                 .Aggregate(body,
+                            (accumulator, value) => Expression.AndAlso(accumulator,
+                                                                       Expression.Call(null,
+                                                                                       containsMethodInfo,
+                                                                                       property,
+                                                                                       Expression.Constant(value))));
 
     return include ? body : Expression.Not(body);
   }
