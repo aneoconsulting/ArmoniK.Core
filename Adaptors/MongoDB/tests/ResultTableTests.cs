@@ -22,8 +22,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
-
+using System.Linq;
 
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
@@ -45,17 +46,26 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture]
 public class ResultTableTests : ResultTableTestBase
 {
-  private MongoClient   client_;
-  //private MongoDbRunner runner_;
+  private       MongoClient   client_;
+  private       MongoDbRunner runner_;
+  private const string        DatabaseName = "ArmoniK_TestDB";
 
   public override void GetResultTableInstance()
   {
+    var logger = NullLogger.Instance;
+
+    //runner_ = MongoDbRunner.Start(singleNodeReplSet:false);
+    runner_ = MongoDbRunner.StartForDebugging();
+    client_ = new MongoClient(runner_.ConnectionString);
+    var uri = new Uri(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string> minimalConfig = new()
     {
       { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", "ArmoniK_TestDB" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName},
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Host)}", uri.Host},
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Port)}", uri.Port.ToString()},
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10" },
     };
 
@@ -63,15 +73,10 @@ public class ResultTableTests : ResultTableTestBase
     configuration.AddInMemoryCollection(minimalConfig);
 
     var services = new ServiceCollection();
-    var logger   = NullLogger.Instance;
     services.AddMongoStorages(configuration, logger);
-
-    //runner_ = MongoDbRunner.Start();
-    //client_ = new MongoClient(runner_.ConnectionString);
-    client_ = new MongoClient("mongodb://127.0.0.1:27017");
     services.AddTransient<IMongoClient>(serviceProvider => client_);
-
     services.AddLogging();
+
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
     {
       ValidateOnBuild = true,
@@ -83,9 +88,12 @@ public class ResultTableTests : ResultTableTestBase
 
   public override void TearDown()
   {
-    var db = client_.GetDatabase("ArmoniK_TestDB")
-                    .GetCollection<BsonDocument>("Result");
+    var db = client_.GetDatabase("ArmoniK_TestDB").
+                     GetCollection<BsonDocument>("Result");
     db.DeleteManyAsync(Builders<BsonDocument>.Filter.Empty);
+
+    client_ = null;
+    runner_.Dispose();
     RunTests    = false;
   }
 }
