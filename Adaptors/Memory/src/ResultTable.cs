@@ -118,7 +118,7 @@ public class ResultTable : IResultTable
     }
     catch(KeyNotFoundException)
     {
-      throw new ArmoniKException("Key not found");
+      throw new ArmoniKException($"Key '{key}' not found");
     }
   }
 

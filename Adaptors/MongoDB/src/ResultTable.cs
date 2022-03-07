@@ -98,7 +98,7 @@ public class ResultTable : IResultTable
     }
     catch // If the key does not exists an InvalidOperationException is thrown, should I explicitly catch it?
     {
-      throw new ArmoniKException("Key not found");
+      throw new ArmoniKException($"Key '{key}' not found");
     }
   }
 
@@ -132,7 +132,7 @@ public class ResultTable : IResultTable
                                                                                   smallPayload),
                                                     cancellationToken: cancellationToken);
     if (res.ModifiedCount == 0)
-      throw new KeyNotFoundException();
+      throw new ArmoniKException($"Key '{key}' not found");
   }
 
   /// <inheritdoc />
@@ -160,7 +160,7 @@ public class ResultTable : IResultTable
                                                                                   true),
                                                     cancellationToken: cancellationToken);
     if (res.ModifiedCount == 0)
-      throw new KeyNotFoundException(id);
+      throw new ArmoniKException($"Key '{key}' not found");
   }
 
   /// <inheritdoc />
