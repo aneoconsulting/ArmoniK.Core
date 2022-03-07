@@ -32,8 +32,6 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
-using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
-
 namespace ArmoniK.Core.Common.Tests;
 
 [TestFixture]
@@ -44,7 +42,7 @@ public class ResultTableTestBase
 
   /* Boolean to control that tests are executed in
    * an instance of this class */
-  protected bool         RunTests;
+  protected bool RunTests;
 
   /* Function be override so it returns the suitable instance
    * of ResultTable to the corresponding interface implementation */
@@ -133,9 +131,9 @@ public class ResultTableTestBase
     if (RunTests)
     {
       await ResultTable.ChangeResultDispatch("SessionId",
-                                                    "NonExistingDispatchId",
-                                                    "NewDispatchId",
-                                                    CancellationToken.None);
+                                             "NonExistingDispatchId",
+                                             "NewDispatchId",
+                                             CancellationToken.None);
       var result = await ResultTable.GetResult("SessionId",
                                                "ResultIsAvailable",
                                                CancellationToken.None);
@@ -179,8 +177,8 @@ public class ResultTableTestBase
     });
 
     var success = await ResultTable.GetResult("AnotherSessionId",
-                                             "Key",
-                                             CancellationToken.None);
+                                              "Key",
+                                              CancellationToken.None);
 
     Assert.IsTrue(success.IsResultAvailable);
   }
