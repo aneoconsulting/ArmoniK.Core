@@ -289,7 +289,7 @@ internal class StreamWrapperTests
   }
 
   // TODO: should it be TaskStatus.Failed ?
-  [Test(ExpectedResult = TaskStatus.Completed)]
+  [Test(ExpectedResult = TaskStatus.Error)]
   [Repeat(2)]
   public async Task<TaskStatus> TaskFailed()
   {
