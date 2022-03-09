@@ -53,9 +53,8 @@ public class ResultTableTests : ResultTableTestBase
   public override void GetResultTableInstance()
   {
     var logger = NullLogger.Instance;
-
-    //runner_ = MongoDbRunner.Start(singleNodeReplSet:false);
-    runner_ = MongoDbRunner.StartForDebugging();
+    runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
+                                  logger: logger);
     client_ = new MongoClient(runner_.ConnectionString);
     var uri = new Uri(runner_.ConnectionString);
 
@@ -63,9 +62,9 @@ public class ResultTableTests : ResultTableTestBase
     Dictionary<string, string> minimalConfig = new()
     {
       { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName},
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Host)}", uri.Host},
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Port)}", uri.Port.ToString()},
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Host)}", uri.Host },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Port)}", uri.Port.ToString() },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10" },
     };
 
@@ -73,7 +72,8 @@ public class ResultTableTests : ResultTableTestBase
     configuration.AddInMemoryCollection(minimalConfig);
 
     var services = new ServiceCollection();
-    services.AddMongoStorages(configuration, logger);
+    services.AddMongoStorages(configuration,
+                              logger);
     services.AddTransient<IMongoClient>(serviceProvider => client_);
     services.AddLogging();
 
@@ -88,12 +88,8 @@ public class ResultTableTests : ResultTableTestBase
 
   public override void TearDown()
   {
-    var db = client_.GetDatabase("ArmoniK_TestDB").
-                     GetCollection<BsonDocument>("Result");
-    db.DeleteManyAsync(Builders<BsonDocument>.Filter.Empty);
-
     client_ = null;
     runner_.Dispose();
-    RunTests    = false;
+    RunTests = false;
   }
 }

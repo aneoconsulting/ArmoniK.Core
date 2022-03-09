@@ -73,7 +73,7 @@ public class ResultTableTestBase
                    false,
                    DateTime.Today,
                    new[] { (byte) 1 }),
-      });
+      }).Wait();
     }
   }
 
