@@ -24,7 +24,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
@@ -35,9 +34,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using Mongo2Go;
 
-using MongoDB.Bson;
 using MongoDB.Driver;
-
 
 using NUnit.Framework;
 

@@ -22,9 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
 
 using NUnit.Framework;
