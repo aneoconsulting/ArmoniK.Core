@@ -96,7 +96,7 @@ public class ResultTable : IResultTable
                                                                      key))
                                    .FirstAsync(cancellationToken);
     }
-    catch // If the key does not exists an InvalidOperationException is thrown, should I explicitly catch it?
+    catch(InvalidOperationException)
     {
       throw new ArmoniKException($"Key '{key}' not found");
     }
