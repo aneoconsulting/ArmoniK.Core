@@ -579,11 +579,12 @@ public class Submitter : ISubmitter
                                         request.Key, contextCancellationToken);
     
     logger_.LogDebug("OwnerTaskId {OwnerTaskId}", result.OwnerTaskId);
-    string ownerId = "";
 
-    while (ownerId != result.OwnerTaskId)
+    var continueWaiting = true;
+
+    while (continueWaiting)
     {
-      ownerId = result.OwnerTaskId;
+      var ownerId = result.OwnerTaskId;
       var completion = await WaitForCompletion(new WaitRequest
                               {
                                 Filter = new TaskFilter
@@ -622,6 +623,17 @@ public class Submitter : ISubmitter
                                             contextCancellationToken);
       logger_.LogDebug("OwnerTaskId {OwnerTaskId}",
                        result.OwnerTaskId);
+      if (ownerId != result.OwnerTaskId)
+      {
+        continueWaiting = !result.IsResultAvailable;
+        if (continueWaiting)
+          await Task.Delay(150, contextCancellationToken);
+      }
+      else
+      {
+        continueWaiting = false;
+      }
+
     }
 
     var availabilityReply = new AvailabilityReply
