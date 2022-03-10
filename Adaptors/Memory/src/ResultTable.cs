@@ -21,7 +21,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -29,8 +28,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Exceptions;
 
 using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 
@@ -49,6 +48,11 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public Task ChangeResultDispatch(string sessionId, string oldDispatchId, string newDispatchId, CancellationToken cancellationToken)
   {
+    if (!results_.ContainsKey(sessionId))
+    {
+      return Task.FromException<ArmoniKException>(new ArmoniKException($"Key '{sessionId}' not found"));
+    }
+
     foreach (var result in results_[sessionId].Values
                                               .ToImmutableList()
                                               .Where(result => result.OriginDispatchId == oldDispatchId))

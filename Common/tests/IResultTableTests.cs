@@ -144,6 +144,21 @@ public class ResultTableTestBase
   }
 
   [Test]
+  public void ChangeResultDispatchShouldFailOnBadId()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+      {
+        await ResultTable.ChangeResultDispatch("NonExistingSessionId",
+                                               "DispatchId",
+                                               "NewDispatchId",
+                                               CancellationToken.None);
+      });
+    }
+  }
+
+  [Test]
   public async Task ChangeResultOwnershipShouldSucceed()
   {
     if (RunTests)

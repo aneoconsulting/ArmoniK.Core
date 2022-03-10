@@ -40,7 +40,6 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 using Result = ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -168,15 +167,22 @@ public class ResultTable : IResultTable
   {
     using var _ = logger_.LogFunction(sessionId);
 
-    var resultCollection = await resultCollectionProvider_.GetAsync();
+    var resultCollection = await resultCollectionProvider_.GetAsync().ConfigureAwait(false);
 
-
+    var sessionIsValid = await resultCollection.FindAsync(model => model.SessionId == sessionId,
+                                                          null,
+                                                          cancellationToken);
+    if (await sessionIsValid.FirstOrDefaultAsync(cancellationToken) == default)
+    {
+      await Task.FromException<ArmoniKException>(new ArmoniKException($"Key '{sessionId}' not found"));
+      return;
+    }
 
     await resultCollection.UpdateManyAsync(model => model.OriginDispatchId == oldDispatchId,
-                                           Builders<Result>.Update
-                                                                    .Set(model => model.OriginDispatchId,
-                                                                         newDispatchId),
-                                           cancellationToken: cancellationToken);
+                                           Builders<Result>.Update.Set(model => model.OriginDispatchId,
+                                                                       newDispatchId),
+                                           cancellationToken: cancellationToken)
+                          .ConfigureAwait(false);
 
 
   }
