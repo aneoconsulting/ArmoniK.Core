@@ -90,6 +90,7 @@ services:
       - object
       - queue
       - fluentbit
+      - zipkin
     networks:
       - armonik-backend
       - armonik-monitoring
@@ -108,6 +109,7 @@ services:
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
       - Serilog__MinimumLevel=Verbose
+      - Zipkin__Uri=http://zipkin:9411/api/v2/spans
     logging:
       driver: fluentd
       options:
@@ -157,6 +159,12 @@ services:
     environment:
       - ACCEPT_EULA=Y
 
+  zipkin:
+    image: openzipkin/zipkin:latest
+    ports:
+      - "9411:9411"
+    networks:
+      - armonik-monitoring
 
 networks:
   armonik-net:

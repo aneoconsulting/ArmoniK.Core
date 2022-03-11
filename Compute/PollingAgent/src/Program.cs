@@ -1,6 +1,6 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 
@@ -34,12 +35,15 @@ using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Pollster;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using OpenTelemetry.Trace;
 
 using Serilog;
 using Serilog.Formatting.Compact;
@@ -48,12 +52,12 @@ namespace ArmoniK.Core.Compute.PollingAgent;
 
 public static class Program
 {
+  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Compute.PollingAgent");
+
   public static int Main(string[] args)
   {
     try
     {
-      Log.Information("Starting host");
-
       var builder = WebApplication.CreateBuilder(args);
 
       builder.Configuration
@@ -75,6 +79,7 @@ public static class Program
       builder.Host
              .UseSerilog(Log.Logger);
 
+
       builder.Services
              .AddLogging()
              .AddArmoniKCore(builder.Configuration)
@@ -90,6 +95,30 @@ public static class Program
              .AddSingleton<RequestProcessor>()
              .AddSingleton<Submitter>()
              .AddSingleton<DataPrefetcher>();
+
+      if (logger.IsEnabled(LogLevel.Trace) && !string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
+      {
+        ActivitySource.AddActivityListener(new ActivityListener
+        {
+          ShouldListenTo = _ => true,
+          //Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+          ActivityStopped = activity =>
+          {
+            foreach (var (key, value) in activity.Baggage)
+              activity.AddTag(key,
+                              value);
+          },
+        });
+
+        builder.Services
+               .AddSingleton(ActivitySource)
+               .AddOpenTelemetryTracing(b =>
+               {
+                 b.AddSource(ActivitySource.Name);
+                 b.AddAspNetCoreInstrumentation();
+                 b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
+               });
+      }
 
       builder.Services.AddHealthChecks();
 
@@ -112,19 +141,19 @@ public static class Program
       app.UseEndpoints(endpoints =>
       {
         endpoints.MapHealthChecks("/startup",
-                                  new()
+                                  new HealthCheckOptions
                                   {
                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
                                   });
 
         endpoints.MapHealthChecks("/liveness",
-                                  new()
+                                  new HealthCheckOptions
                                   {
                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
                                   });
 
         endpoints.MapHealthChecks("/readiness",
-                                  new()
+                                  new HealthCheckOptions
                                   {
                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
                                   });

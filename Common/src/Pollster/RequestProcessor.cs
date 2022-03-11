@@ -46,8 +46,7 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class RequestProcessor
 {
-  private static readonly ActivitySource ActivitySource = new($"{typeof(RequestProcessor).FullName}");
-
+  private readonly ActivitySource            activitySource_;
   private readonly WorkerClientProvider      workerClientProvider_;
   private readonly IObjectStorageFactory     objectStorageFactory_;
   private readonly ILogger<RequestProcessor> logger_;
@@ -60,13 +59,15 @@ public class RequestProcessor
     IObjectStorageFactory     objectStorageFactory,
     ILogger<RequestProcessor> logger,
     Submitter                 submitter,
-    IResultTable              resultTable)
+    IResultTable              resultTable,
+    ActivitySource            activitySource)
   {
     workerClientProvider_ = workerClientProvider;
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
     submitter_            = submitter;
     resultTable_          = resultTable;
+    activitySource_       = activitySource;
     resourcesStorage_     = objectStorageFactory.CreateResourcesStorage();
   }
 
@@ -186,7 +187,13 @@ public class RequestProcessor
                                              Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
                                              CancellationToken                          cancellationToken)
   {
-    using var activity = ActivitySource.StartActivity($"{nameof(ProcessAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}");
+    activity?.SetBaggage("SessionId",
+                         taskData.SessionId);
+    activity?.SetBaggage("TaskId",
+                         taskData.TaskId);
+    activity?.SetBaggage("DispatchId",
+                         taskData.DispatchId);
 
     var workerClient = await workerClientProvider_.GetAsync();
 
@@ -202,11 +209,11 @@ public class RequestProcessor
 
     stream.RequestStream.WriteOptions = new(WriteFlags.NoCompress);
     {
-      using var activity2 = ActivitySource.StartActivity($"{nameof(ProcessAsync)}.SendComputeRequests");
+      using var activity2 = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.SendComputeRequests");
       // send the compute requests
       while (computeRequests.TryDequeue(out var computeRequest))
       {
-        //activity2!.AddEvent(new ActivityEvent("writecomputerequest"));
+        activity?.AddEvent(new ActivityEvent(computeRequest.TypeCase.ToString()));
         await stream.RequestStream.WriteAsync(new()
                                               {
                                                 Compute = computeRequest,
@@ -222,16 +229,19 @@ public class RequestProcessor
     var isComplete = false;
 
 
+    activity?.AddEvent(new ActivityEvent("Processing ResponseStream"));
     // process incoming messages
     // TODO : To reduce memory consumption, do not generate subStream. Implement a state machine instead.
     await foreach (var singleReplyStream in stream.ResponseStream.Separate(logger_, cancellationToken))
     {
-      var first = Enumerable.First<ProcessReply>(singleReplyStream);
+      var       first     = Enumerable.First<ProcessReply>(singleReplyStream);
+      using var activity2 = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.ProcessReply");
       if (isComplete)
       {
         throw new InvalidOperationException("Unexpected message from the worker after sending the task output");
       }
 
+      activity?.AddEvent(new ActivityEvent(first.TypeCase.ToString()));
       switch (first.TypeCase)
       {
         case ProcessReply.TypeOneofCase.None:
@@ -302,10 +312,14 @@ public class RequestProcessor
       }
     }
 
-    await stream.RequestStream.CompleteAsync();
-    await stream.ResponseStream.MoveNext();
 
-    if(!isComplete)
+    using (var _ = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.CloseStreams"))
+    {
+      await stream.RequestStream.CompleteAsync();
+      await stream.ResponseStream.MoveNext();
+    }
+
+    if (!isComplete)
       throw new InvalidOperationException("Unexpected end of stream from the worker");
 
 
@@ -315,7 +329,7 @@ public class RequestProcessor
 
   private async Task ProvideResourcesAsync(IAsyncStreamWriter<ProcessRequest> requestStream, ProcessReply processReply, CancellationToken cancellationToken)
   {
-    using var activity = ActivitySource.StartActivity($"{nameof(ProvideResourcesAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(ProvideResourcesAsync)}");
     var bytes = resourcesStorage_.TryGetValuesAsync(processReply.Resource.Key,
                                                     cancellationToken);
 
@@ -334,7 +348,7 @@ public class RequestProcessor
   [PublicAPI]
   public Task ProvideDirectDataAsync(IAsyncStreamWriter<ProcessRequest> streamRequestStream, ProcessReply reply)
   {
-    using var activity = ActivitySource.StartActivity($"{nameof(ProvideDirectDataAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(ProvideDirectDataAsync)}");
     return streamRequestStream.WriteAsync(new()
                                           {
                                             DirectData = new()
@@ -352,7 +366,7 @@ public class RequestProcessor
   [PublicAPI]
   public Task ProvideCommonDataAsync(IAsyncStreamWriter<ProcessRequest> streamRequestStream, ProcessReply reply)
   {
-    using var activity = ActivitySource.StartActivity($"{nameof(ProvideCommonDataAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(ProvideCommonDataAsync)}");
     return streamRequestStream.WriteAsync(new()
                                           {
                                             CommonData = new()
@@ -375,7 +389,7 @@ public class RequestProcessor
                                                          IList<ProcessReply> singleReplyStream,
                                                          CancellationToken              cancellationToken)
   {
-    using var activity = ActivitySource.StartActivity($"{nameof(SubmitLargeTasksAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(SubmitLargeTasksAsync)}");
     return submitter_.CreateTasks(taskData.SessionId,
                                   taskData.TaskId,
                                   dispatchId,
@@ -391,7 +405,7 @@ public class RequestProcessor
                                                      ProcessReply      request,
                                                      CancellationToken cancellationToken)
   {
-    using var activity = ActivitySource.StartActivity($"{nameof(SubmitSmallTasksAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(SubmitSmallTasksAsync)}");
     return submitter_.CreateTasks(taskData.SessionId,
                                   taskData.ParentTaskId,
                                   dispatchId,
@@ -413,7 +427,7 @@ public class RequestProcessor
                                      string ownerTaskId,
                                      CancellationToken cancellationToken)
   {
-    using var activity = ActivitySource.StartActivity($"{nameof(StoreResultAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(StoreResultAsync)}");
     await resultStorage.AddOrUpdateAsync(first.Result.Init.Key,
                                           singleReplyStream.Skip(1).Select(reply => reply.Result.Data.Data.Memory).ToAsyncEnumerable(),
                                           cancellationToken);
