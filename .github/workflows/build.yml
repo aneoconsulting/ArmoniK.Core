@@ -273,6 +273,7 @@ jobs:
           docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
 
       - name: Run Stream Test
+        timeout-minutes: 10
         run: |
           cd ./Tests/Stream/Client/
           dotnet test --logger "trx;LogFileName=test-results.trx"
