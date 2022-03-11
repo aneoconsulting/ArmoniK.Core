@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 
 using ArmoniK.Core.Adapters.MongoDB;
@@ -38,12 +39,16 @@ using Microsoft.Extensions.Logging;
 
 using Serilog;
 using ArmoniK.Core.Control.Submitter.Services;
+
+using OpenTelemetry.Trace;
+
 using Serilog.Formatting.Compact;
 
 namespace ArmoniK.Core.Control.Submitter;
 
 public static class Program
 {
+  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Control.Submitter");
   public static int Main(string[] args)
   {
     try
@@ -82,6 +87,30 @@ public static class Program
              .AddRedis(builder.Configuration,
                        logger)
              .ValidateGrpcRequests();
+
+      if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
+      {
+        ActivitySource.AddActivityListener(new ActivityListener
+        {
+          ShouldListenTo = _ => true,
+          //Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+          ActivityStopped = activity =>
+          {
+            foreach (var (key, value) in activity.Baggage)
+              activity.AddTag(key,
+                              value);
+          },
+        });
+
+        builder.Services
+               .AddSingleton(ActivitySource)
+               .AddOpenTelemetryTracing(b =>
+               {
+                 b.AddSource(ActivitySource.Name);
+                 b.AddAspNetCoreInstrumentation();
+                 b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
+               });
+      }
 
 
       var app = builder.Build();
