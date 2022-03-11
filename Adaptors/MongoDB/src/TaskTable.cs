@@ -130,12 +130,12 @@ public class TaskTable : ITaskTable
                                           TaskStatus        status,
                                           CancellationToken cancellationToken = default)
   {
-    using var _              = Logger.LogFunction(id);
+    using var _ = Logger.LogFunction(id);
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
                                                                             status);
-    Logger.LogDebug("update task {task} to status {status}",
+    Logger.LogInformation("update task {task} to status {status}",
                     id,
                     status);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id &&
@@ -148,7 +148,9 @@ public class TaskTable : ITaskTable
     switch (res.MatchedCount)
     {
       case 0:
-        throw new ArmoniKException($"Task not found or task already in a terminal state - {id}");
+        var taskStatus = await GetTaskStatus(id,
+                            cancellationToken);
+        throw new ArmoniKException($"Task not found or task already in a terminal state - {id} from {taskStatus} to {status}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }
