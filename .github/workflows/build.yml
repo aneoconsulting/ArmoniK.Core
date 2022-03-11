@@ -253,10 +253,11 @@ jobs:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         queue:
           - activemqp
-          # - artemis
+          - artemis
           - rabbitmq
         log-level:
           - Information
