@@ -198,9 +198,9 @@ public class RequestProcessor
     var workerClient = await workerClientProvider_.GetAsync();
 
     logger_.LogDebug("Set task status to Processing");
-    var updateTask = submitter_.UpdateTaskStatusAsync(taskData.TaskId,
-                                                      TaskStatus.Processing,
-                                                      cancellationToken);
+    await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
+                                           TaskStatus.Processing,
+                                           cancellationToken);
 
     using var stream = workerClient.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
                                             cancellationToken: cancellationToken);
@@ -221,10 +221,7 @@ public class RequestProcessor
       }
     }
 
-    var output = new List<Task>()
-                 {
-                   updateTask,
-                 };
+    var output = new List<Task>();
 
     var isComplete = false;
 
