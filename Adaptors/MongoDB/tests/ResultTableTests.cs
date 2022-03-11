@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
@@ -43,9 +44,10 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture]
 public class ResultTableTests : ResultTableTestBase
 {
-  private       MongoClient   client_;
-  private       MongoDbRunner runner_;
-  private const string        DatabaseName = "ArmoniK_TestDB";
+  private                 MongoClient    client_;
+  private                 MongoDbRunner  runner_;
+  private const           string         DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
 
   public override void GetResultTableInstance()
   {
@@ -71,6 +73,7 @@ public class ResultTableTests : ResultTableTestBase
     var services = new ServiceCollection();
     services.AddMongoStorages(configuration,
                               logger);
+    services.AddSingleton(ActivitySource);
     services.AddTransient<IMongoClient>(serviceProvider => client_);
     services.AddLogging();
 
