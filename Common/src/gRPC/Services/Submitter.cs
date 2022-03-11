@@ -305,7 +305,7 @@ public class Submitter : ISubmitter
 
     async Task LoadAncestorDispatchIds()
     {
-      if (!string.IsNullOrEmpty(parentTaskId))
+      if (!parentTaskId.Equals(session))
       {
         var res = await taskTable_.GetTaskAncestorDispatchIds(parentTaskId,
                                                     cancellationToken);
@@ -345,21 +345,22 @@ public class Submitter : ISubmitter
                                                           new Storage.Output(false,
                                                                              ""));
 
-                                   var parentExpectedOutputKeys = await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
-                                                                                                             cancellationToken);
+                                   var parentExpectedOutputKeys = new List<string>();
+                                   if (!parentTaskId.Equals(session))
+                                   {
+                                     parentExpectedOutputKeys.AddRange(await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
+                                                                                                                  cancellationToken));
+                                   }
 
 
                                    IEnumerable<string> intersect = new List<string>();
-                                   if (parentExpectedOutputKeys is not null)
-                                   {
-                                     intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys);
+                                   intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys);
 
-                                     await resultTable_.ChangeResultOwnership(session,
-                                                                              intersect,
-                                                                              parentTaskId,
-                                                                              request.Id,
-                                                                              cancellationToken);
-                                   }
+                                   await resultTable_.ChangeResultOwnership(session,
+                                                                            intersect,
+                                                                            parentTaskId,
+                                                                            request.Id,
+                                                                            cancellationToken);
                                    
 
                                    var resultModel = request.ExpectedOutputKeys.Except(intersect)

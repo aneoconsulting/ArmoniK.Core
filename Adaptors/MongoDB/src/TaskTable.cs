@@ -104,10 +104,11 @@ public class TaskTable : ITaskTable
     var       sessionHandle  = await sessionProvider_.GetAsync();
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
+
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model=>model.AncestorDispatchIds)
-                               .FirstOrDefaultAsync(cancellationToken);
+                               .FirstAsync(cancellationToken);
   }
 
   /// <inheritdoc />
@@ -337,7 +338,7 @@ public class TaskTable : ITaskTable
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.Output)
-                               .FirstOrDefaultAsync(cancellationToken);
+                               .FirstAsync(cancellationToken);
   }
 
   public async Task<TaskStatus> GetTaskStatus(string taskId, CancellationToken cancellationToken = default)
@@ -349,7 +350,7 @@ public class TaskTable : ITaskTable
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.Status)
-                               .FirstOrDefaultAsync(cancellationToken);
+                               .FirstAsync(cancellationToken);
   }
 
   public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string taskId, CancellationToken cancellationToken = default)
@@ -361,7 +362,7 @@ public class TaskTable : ITaskTable
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.ExpectedOutput)
-                               .FirstOrDefaultAsync(cancellationToken);
+                               .FirstAsync(cancellationToken);
   }
 
   /// <inheritdoc />
