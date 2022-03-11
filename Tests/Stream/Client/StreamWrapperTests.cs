@@ -289,17 +289,16 @@ internal class StreamWrapperTests
   }
 
   // TODO: should it be TaskStatus.Failed ?
-  [Test(ExpectedResult = TaskStatus.Error)]
+  [Test]
   [Repeat(2)]
-  public async Task<TaskStatus> TaskFailed()
+  public async Task TaskFailed()
   {
     var sessionId = Guid.NewGuid() + nameof(TaskFailed);
-    var taskId = Guid.NewGuid() + "mytask";
-
+    
     var taskOptions = new TaskOptions
     {
       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries = 2,
+      MaxRetries = 5,
       Priority = 1,
     };
 
@@ -328,21 +327,28 @@ internal class StreamWrapperTests
       Type = TestPayload.TaskType.ReturnFailed,
     };
 
-    var req = new TaskRequest
+    var taskRequests = new List<TaskRequest>();
+
+    for (int i = 0; i < 10; i++)
     {
-      Id = taskId,
-      Payload = ByteString.CopyFrom(payload.Serialize()),
-      ExpectedOutputKeys =
+      var taskId = Guid.NewGuid() + "mytask";
+      var req = new TaskRequest
       {
-        taskId,
-      },
-    };
+        Id = taskId,
+        Payload = ByteString.CopyFrom(payload.Serialize()),
+        ExpectedOutputKeys =
+        {
+          taskId,
+        },
+      };
+      taskRequests.Add(req);
+    }
 
     Console.WriteLine("TaskRequest Created");
 
     var createTaskReply = await client_.CreateTasksAsync(sessionId,
                                                          taskOptions,
-                                                         new[] { req });
+                                                         taskRequests);
 
     switch (createTaskReply.DataCase)
     {
@@ -361,12 +367,9 @@ internal class StreamWrapperTests
     {
       Filter = new TaskFilter
       {
-        Session = new TaskFilter.Types.IdsRequest
+        Task = new TaskFilter.Types.IdsRequest
         {
-          Ids =
-          {
-            sessionId,
-          },
+          Ids = { taskRequests.Select(request => request.Id) },
         },
       },
       StopOnFirstTaskCancellation = true,
@@ -375,22 +378,27 @@ internal class StreamWrapperTests
 
     Console.WriteLine(waitForCompletion.ToString());
 
-    var resultRequest = new ResultRequest
+    var taskOutput = taskRequests.Select(request =>
     {
-      Key = taskId,
-      Session = sessionId,
-    };
+      var resultRequest = new ResultRequest
+      {
+        Key     = request.Id,
+        Session = sessionId,
+      };
 
-    var taskOutput = client_.TryGetTaskOutput(resultRequest);
-    Console.WriteLine(taskOutput.ToString());
-    return taskOutput.Status;
+      var taskOutput = client_.TryGetTaskOutput(resultRequest);
+      Console.WriteLine(request.Id + " - " + taskOutput.ToString());
+      return taskOutput.Status;
+    });
+
+    Assert.IsTrue(taskOutput.All(status => status == TaskStatus.Error));
   }
 
 
 
   [Test]
   public async Task MultipleTasks([Values(4,
-                                          5)]
+                                          5, 100)]
                                   int n,
                                   [Values(TestPayload.TaskType.Compute, TestPayload.TaskType.Transfer)]
                                   TestPayload.TaskType taskType)

@@ -258,6 +258,9 @@ jobs:
           - activemqp
           - artemis
           - rabbitmq
+        log-level:
+          - Information
+          - Verbose
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -270,9 +273,11 @@ jobs:
           export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
           export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
+          export LOGGING_LEVEL=${{ matrix.log-level }}
           docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
 
       - name: Run Stream Test
+        timeout-minutes: 10
         run: |
           cd ./Tests/Stream/Client/
           dotnet test --logger "trx;LogFileName=test-results.trx"
@@ -281,7 +286,7 @@ jobs:
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: Test - ${{ matrix.queue }}
+          name: Test - ${{ matrix.queue }} x ${{ matrix.log-level }}
           path: ./Tests/Stream/Client/TestResults/test-results.trx
           reporter: dotnet-trx
 
