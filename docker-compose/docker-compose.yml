@@ -42,7 +42,7 @@ services:
       - Amqp__Port=5672
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
-      - Serilog__MinimumLevel=Verbose
+      - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
     logging:
       driver: fluentd
       options:
@@ -77,7 +77,7 @@ services:
       - Amqp__Port=5672
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
-      - Serilog__MinimumLevel=Verbose
+      - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
     logging:
       driver: fluentd
       options:
@@ -108,7 +108,7 @@ services:
       - Amqp__Port=5672
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
-      - Serilog__MinimumLevel=Verbose
+      - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
     logging:
       driver: fluentd
@@ -129,7 +129,7 @@ services:
       - socket_vol:/cache
     environment:
       - Serilog__Properties__Application=ArmoniK.Compute.Worker
-      - Serilog__MinimumLevel=Verbose
+      - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
     logging:
       driver: fluentd
       options:
