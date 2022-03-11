@@ -398,7 +398,7 @@ internal class StreamWrapperTests
 
   [Test]
   public async Task MultipleTasks([Values(4,
-                                          5)]
+                                          5, 100)]
                                   int n,
                                   [Values(TestPayload.TaskType.Compute, TestPayload.TaskType.Transfer)]
                                   TestPayload.TaskType taskType)
