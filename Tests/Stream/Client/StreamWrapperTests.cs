@@ -503,7 +503,6 @@ internal class StreamWrapperTests
         Session = sessionId,
       };
       var availabilityReply = client_.WaitForAvailability(resultRequest);
-      Console.WriteLine(availabilityReply.ToString());
       return availabilityReply.TypeCase;
     });
 
@@ -654,7 +653,6 @@ internal class StreamWrapperTests
         Session = sessionId,
       };
       var availabilityReply = client_.WaitForAvailability(resultRequest);
-      Console.WriteLine(availabilityReply.ToString());
       return availabilityReply.TypeCase;
     });
 
@@ -668,7 +666,6 @@ internal class StreamWrapperTests
         Session = sessionId,
       };
       var availabilityReply = client_.WaitForAvailability(resultRequest);
-      Console.WriteLine(availabilityReply.ToString());
       return availabilityReply.TypeCase;
     });
 
