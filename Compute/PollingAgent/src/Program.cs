@@ -96,7 +96,7 @@ public static class Program
              .AddSingleton<Submitter>()
              .AddSingleton<DataPrefetcher>();
 
-      if (logger.IsEnabled(LogLevel.Trace) && !string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
+      if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
       {
         ActivitySource.AddActivityListener(new ActivityListener
         {
