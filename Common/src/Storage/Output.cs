@@ -33,6 +33,7 @@ public record Output(bool Success, string Error)
       return new Api.gRPC.V1.Output
       {
         Ok = new Empty(),
+        Status = TaskStatus.Completed,
       };
     return new Api.gRPC.V1.Output
     {
@@ -40,6 +41,7 @@ public record Output(bool Success, string Error)
       {
         Details = output.Error,
       },
+      Status = TaskStatus.Error,
     };
   }
 

@@ -206,6 +206,7 @@ public class RequestProcessor
       // send the compute requests
       while (computeRequests.TryDequeue(out var computeRequest))
       {
+        //activity2!.AddEvent(new ActivityEvent("writecomputerequest"));
         await stream.RequestStream.WriteAsync(new()
                                               {
                                                 Compute = computeRequest,

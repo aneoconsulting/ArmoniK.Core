@@ -182,6 +182,17 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
               };
             }
               break;
+            case TestPayload.TaskType.ReturnFailed:
+              output = new Output
+              {
+                Error = new Output.Types.Error
+                {
+                  Details = "Failed task",
+                  KillSubTasks = true,
+                },
+                Status = TaskStatus.Failed,
+              };
+              break;
             default:
               throw new ArgumentOutOfRangeException();
           }
@@ -196,6 +207,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
           Error = new Output.Types.Error
           {
             Details = ex.Message + ex.StackTrace,
+            KillSubTasks = true,
           },
           Status = TaskStatus.Error,
         };

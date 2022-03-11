@@ -40,6 +40,8 @@ using Microsoft.Extensions.Configuration;
 
 using NUnit.Framework;
 
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+
 namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
 [TestFixture]
@@ -285,6 +287,105 @@ internal class StreamWrapperTests
     Console.WriteLine(taskOutput.ToString());
     return taskOutput.TypeCase;
   }
+
+  // TODO: should it be TaskStatus.Failed ?
+  [Test(ExpectedResult = TaskStatus.Error)]
+  [Repeat(2)]
+  public async Task<TaskStatus> TaskFailed()
+  {
+    var sessionId = Guid.NewGuid() + nameof(TaskFailed);
+    var taskId = Guid.NewGuid() + "mytask";
+
+    var taskOptions = new TaskOptions
+    {
+      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+      MaxRetries = 2,
+      Priority = 1,
+    };
+
+    Console.WriteLine("Creating Session");
+    var session = client_.CreateSession(new CreateSessionRequest
+    {
+      DefaultTaskOption = taskOptions,
+      Id = sessionId,
+    });
+    switch (session.ResultCase)
+    {
+      case CreateSessionReply.ResultOneofCase.Error:
+        throw new Exception("Error while creating session : " + session.Error);
+      case CreateSessionReply.ResultOneofCase.None:
+        throw new Exception("Issue with Server !");
+      case CreateSessionReply.ResultOneofCase.Ok:
+        break;
+      default:
+        throw new ArgumentOutOfRangeException();
+    }
+
+    Console.WriteLine("Session Created");
+
+    var payload = new TestPayload
+    {
+      Type = TestPayload.TaskType.ReturnFailed,
+    };
+
+    var req = new TaskRequest
+    {
+      Id = taskId,
+      Payload = ByteString.CopyFrom(payload.Serialize()),
+      ExpectedOutputKeys =
+      {
+        taskId,
+      },
+    };
+
+    Console.WriteLine("TaskRequest Created");
+
+    var createTaskReply = await client_.CreateTasksAsync(sessionId,
+                                                         taskOptions,
+                                                         new[] { req });
+
+    switch (createTaskReply.DataCase)
+    {
+      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
+        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
+      case CreateTaskReply.DataOneofCase.None:
+        throw new Exception("Issue with Server !");
+      case CreateTaskReply.DataOneofCase.Successfull:
+        Console.WriteLine("Task Created");
+        break;
+      default:
+        throw new ArgumentOutOfRangeException();
+    }
+
+    var waitForCompletion = client_.WaitForCompletion(new WaitRequest
+    {
+      Filter = new TaskFilter
+      {
+        Session = new TaskFilter.Types.IdsRequest
+        {
+          Ids =
+          {
+            sessionId,
+          },
+        },
+      },
+      StopOnFirstTaskCancellation = true,
+      StopOnFirstTaskError = true,
+    });
+
+    Console.WriteLine(waitForCompletion.ToString());
+
+    var resultRequest = new ResultRequest
+    {
+      Key = taskId,
+      Session = sessionId,
+    };
+
+    var taskOutput = client_.TryGetTaskOutput(resultRequest);
+    Console.WriteLine(taskOutput.ToString());
+    return taskOutput.Status;
+  }
+
 
 
   [Test]
