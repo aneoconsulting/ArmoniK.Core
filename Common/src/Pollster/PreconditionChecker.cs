@@ -216,15 +216,16 @@ public class PreconditionChecker
                                                                  metadata,
                                                                  cancellationToken);
 
-    var dispatch = await dispatchTable_.GetDispatchAsync(dispatchId,
-                                                        cancellationToken);
-    if (isAcquired)
-      return new(dispatchTable_,
-                 taskTable_,
-                 dispatch,
-                 cancellationToken);
 
-    return null;
+    if (!isAcquired)
+      return null;
+    var dispatch = await dispatchTable_.GetDispatchAsync(dispatchId,
+                                                         cancellationToken);
+    return new(dispatchTable_,
+               taskTable_,
+               dispatch,
+               cancellationToken);
+
   }
 
 }
