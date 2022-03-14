@@ -255,6 +255,8 @@ jobs:
     needs:
       - versionning
       - buildImages
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -274,7 +276,7 @@ jobs:
           worker-tag: ${{ needs.versionning.outputs.version }}
           log-level: Information
 
-      - name: Run Stream Tests
+      - name: Run HtcMock Tests
         timeout-minutes: 20
         run: |
           export CPIP=$(kubectl get svc control-plane -n armonik -o custom-columns="IP:.spec.clusterIP" --no-headers=true)
