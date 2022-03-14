@@ -377,7 +377,6 @@ jobs:
           - Information
           - Verbose
         ntasks:
-          - 10
           - 100
           - 1000
     steps:
