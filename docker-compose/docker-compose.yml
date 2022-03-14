@@ -143,6 +143,7 @@ services:
       - armonik-monitoring
     volumes:
       - ./fluent-bit/etc:/fluent-bit/etc
+      - ./logs:/logs
     ports:
       - "24224:24224"
       - "24224:24224/udp"
