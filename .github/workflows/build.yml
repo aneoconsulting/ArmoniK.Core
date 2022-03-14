@@ -277,7 +277,7 @@ jobs:
           log-level: Information
 
       - name: Run HtcMock Tests
-        timeout-minutes: 20
+        timeout-minutes: 40
         run: |
           export CPIP=$(kubectl get svc control-plane -n armonik -o custom-columns="IP:.spec.clusterIP" --no-headers=true)
           export CPPort=$(kubectl get svc control-plane -n armonik -o custom-columns="PORT:.spec.ports[*].port" --no-headers=true)
@@ -334,6 +334,7 @@ jobs:
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
           docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
+          sleep 10
 
       - name: Run Stream Test
         timeout-minutes: 10
@@ -392,6 +393,7 @@ jobs:
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
           docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
+          sleep 10
 
       - name: Run HtcMock test
         timeout-minutes: 10
