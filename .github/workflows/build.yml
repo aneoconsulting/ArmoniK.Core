@@ -342,7 +342,6 @@ jobs:
         run: |
           cd ./Tests/Stream/Client/
           dotnet test --logger "trx;LogFileName=test-results.trx"
-          ls -la docker-compose/logs/*.json
 
       - name: Test Report
         uses: dorny/test-reporter@v1
