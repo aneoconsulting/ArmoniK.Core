@@ -124,6 +124,8 @@ jobs:
           - ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj
           - ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj
           - ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj
+          - ./Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj
+          - ./Tests/HtcMock/Server/src/ArmoniK.Samples.HtcMock.Server.csproj
           - ./Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj
           - ./Tests/Stream/Common/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.csproj
           - ./Tests/Stream/Server/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.csproj
@@ -167,9 +169,9 @@ jobs:
         -  img : dockerhubaneo/armonik_core_stream_test_client
            path: ./Tests/Stream/Client/Dockerfile
         -  img : dockerhubaneo/armonik_core_htcmock_test_worker
-           path: ./Tests/HtcMock/Server/Dockerfile
+           path: ./Tests/HtcMock/Server/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_htcmock_test_client
-           path: ./Tests/HtcMock/Client/Dockerfile
+           path: ./Tests/HtcMock/Client/src/Dockerfile
     steps:
     - name: Checkout
       uses: actions/checkout@v2
