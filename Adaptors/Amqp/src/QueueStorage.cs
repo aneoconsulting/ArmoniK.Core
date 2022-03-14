@@ -136,6 +136,7 @@ public class QueueStorage : IQueueStorage
         cancellationToken.ThrowIfCancellationRequested();
         var receiver = await receivers_[i];
         var message  = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100));
+        receiver.SetCredit(100, CreditMode.Auto);
         if (message is null)
         {
           logger_.LogDebug("Message is null receiver {i}",
