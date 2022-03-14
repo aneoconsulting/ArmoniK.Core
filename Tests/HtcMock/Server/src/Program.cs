@@ -24,6 +24,8 @@
 using System;
 using System.IO;
 
+using ArmoniK.Samples.HtcMock.GridWorker;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -33,8 +35,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Serilog;
+using Serilog.Formatting.Compact;
 
-namespace ArmoniK.Samples.HtcMock.GridWorker
+namespace ArmoniK.Samples.HtcMock.Server
 {
   public static class Program
   {
@@ -42,15 +45,9 @@ namespace ArmoniK.Samples.HtcMock.GridWorker
 
     public static int Main(string[] args)
     {
-      Log.Logger = new LoggerConfiguration()
-                   .Enrich.FromLogContext()
-                   .WriteTo.Console()
-                   .CreateBootstrapLogger();
-
       try
       {
         Log.Information("Starting web host");
-
 
         var builder = WebApplication.CreateBuilder(args);
 
@@ -62,20 +59,16 @@ namespace ArmoniK.Samples.HtcMock.GridWorker
                .AddEnvironmentVariables()
                .AddCommandLine(args);
 
-        builder.Logging.AddSerilog();
+        Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
+                                              .WriteTo.Console(new CompactJsonFormatter())
+                                              .Enrich.FromLogContext()
+                                              .CreateLogger();
 
-        var serilogLogger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
-                                                     .Enrich.FromLogContext()
-                                                     .CreateLogger();
-
-        var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(serilogLogger));
-        var logger        = loggerFactory.CreateLogger("root");
+        var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger));
+        var logger = loggerFactory.CreateLogger("root");
 
         builder.Host
-               .UseSerilog((context, services, config)
-                             => config.ReadFrom.Configuration(context.Configuration)
-                                      .ReadFrom.Services(services)
-                                      .Enrich.FromLogContext());
+               .UseSerilog(Log.Logger);
 
         builder.WebHost.ConfigureKestrel(options =>
         {
