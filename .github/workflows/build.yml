@@ -281,7 +281,7 @@ jobs:
          export CPPort=$(kubectl get svc control-plane -n armonik -o custom-columns="PORT:.spec.ports[*].port" --no-headers=true)
          export Grpc__Endpoint=http://$CPIP:$CPPort
 
-         docker run --net armonik-net --rm -e HtcMock__NTasks=${{ matrix.ntasks }} -e Grpc__Endpoint=$Grpc__Endpoint dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+         docker run --net armonik-net --rm -e HtcMock__NTasks=1000 -e Grpc__Endpoint=$Grpc__Endpoint dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Copy logs
         if: always()
