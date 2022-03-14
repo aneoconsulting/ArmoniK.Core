@@ -251,7 +251,7 @@ jobs:
           path: /tmp/armoniklogs/**/*.log
           retention-days: 5
 
-  testStreamDockerCompose:
+  testStreamDC:
     needs:
       - versionning
       - buildImages
@@ -297,7 +297,7 @@ jobs:
           path: ./Tests/Stream/Client/TestResults/test-results.trx
           reporter: dotnet-trx
 
-  testHtcMockDockerCompose:
+  testHtcMockDC:
     needs:
       - versionning
       - buildImages
@@ -332,7 +332,7 @@ jobs:
       - name: Run HtcMock test
         timeout-minutes: 10
         run: |
-          docker run --net armonik-net --rm -e Grpc__Endpoint=http://armonik.control:80 dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+          docker run --net armonik-net --rm -e Grpc__Endpoint=http://armonik.control.submitter:80 dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
   tag:
     runs-on: ubuntu-latest
@@ -340,8 +340,8 @@ jobs:
     needs:
       - versionning
       - testStream
-      - testStreamDockerCompose
-      - testHtcMockDockerCompose
+      - testStreamDC
+      - testHtcMockDC
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
