@@ -166,6 +166,10 @@ jobs:
            path: ./Tests/Stream/Server/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_client
            path: ./Tests/Stream/Client/Dockerfile
+        -  img : dockerhubaneo/armonik_core_htcmock_test_worker
+           path: ./Tests/HtcMock/Server/Dockerfile
+        -  img : dockerhubaneo/armonik_core_htcmock_test_client
+           path: ./Tests/HtcMock/Client/Dockerfile
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -291,12 +295,51 @@ jobs:
           path: ./Tests/Stream/Client/TestResults/test-results.trx
           reporter: dotnet-trx
 
+  testHtcMockDockerCompose:
+    needs:
+      - versionning
+      - buildImages
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        queue:
+          - activemqp
+          - artemis
+          - rabbitmq
+        log-level:
+          - Information
+          - Verbose
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+      - name: Docker compose up
+        run: |
+          export ARMONIK_WORKER=dockerhubaneo/armonik_core_htcmock_test_worker:$VERSION
+          export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
+          export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
+          export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
+          export LOGGING_LEVEL=${{ matrix.log-level }}
+          docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
+
+      - name: Run HtcMock test
+        timeout-minutes: 10
+        run: |
+          docker run --net armonik-net --rm -e Grpc__Endpoint=http://armonik.control:80 dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
   tag:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/release' }}
     needs:
       - versionning
       - testStream
+      - testStreamDockerCompose
+      - testHtcMockDockerCompose
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
