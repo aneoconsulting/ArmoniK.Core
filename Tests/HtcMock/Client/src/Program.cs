@@ -57,6 +57,7 @@ internal class Program
     var factory = new LoggerFactory().AddSerilog();
 
     var options = configuration.GetRequiredValue<Options.Grpc>(Options.Grpc.SettingSection);
+    var optionsHtcMock = configuration.GetRequiredValue<Options.HtcMock>(Options.HtcMock.SettingSection);
     var channel = GrpcChannel.ForAddress(options.Endpoint);
 
     var submitterClient = new Submitter.SubmitterClient(channel);
@@ -72,7 +73,7 @@ internal class Program
                                                              0,
                                                              0,
                                                              100),
-                                                100,
+                                                optionsHtcMock.NTasks,
                                                 1,
                                                 1,
                                                 4);
