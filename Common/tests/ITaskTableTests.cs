@@ -22,10 +22,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -71,6 +74,20 @@ public class TaskTableTestBase
                               TaskStatus.Completed,
                               default,
                               new[] { "Ancestor1DispatchId", "Ancestor2DispatchId" },
+                              DateTime.Now,
+                              default),
+                 new TaskData("SessionId",
+                              "PTaskId",
+                              "DispatchId",
+                              "TaskCreatingId",
+                              default,
+                              default,
+                              false,
+                              new List<byte>().ToArray(),
+                              TaskStatus.Creating,
+                              default,
+                              new[] { "Ancestor3DispatchId" },
+                              DateTime.Now,
                               default),
                  new TaskData("SessionId",
                               "PTaskId",
@@ -82,7 +99,8 @@ public class TaskTableTestBase
                               new List<byte>().ToArray(),
                               TaskStatus.Processing,
                               default,
-                              new[] { "Ancestor3DispatchId" },
+                              new[] { "Ancestor4DispatchId" },
+                              DateTime.Now,
                               default),
                  new TaskData("SessionId",
                               "PTaskId",
@@ -95,6 +113,7 @@ public class TaskTableTestBase
                               TaskStatus.Failed,
                               default,
                               new List<string>(),
+                              DateTime.Now,
                               default),
                })
                .Wait();
@@ -231,7 +250,7 @@ public class TaskTableTestBase
     }
   }
 
-  [Test(Description = "Forbidden update: Task is on its final status")]
+  [Test(Description = "Forbidden update: Task on final status")]
   public void UpdateTaskStatusAsyncShouldFail()
   {
     if (RunTests)
@@ -241,6 +260,74 @@ public class TaskTableTestBase
         await TaskTable.UpdateTaskStatusAsync("TaskFailedId",
                                               TaskStatus.Unspecified,
                                               CancellationToken.None);
+      });
+    }
+  }
+
+  [Test]
+  public async Task UpdateAllTaskStatusAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var testFilter = new TaskFilter
+      {
+        Included = new TaskFilter.Types.StatusesRequest
+        {
+          Statuses =
+          {
+            TaskStatus.Creating,
+            TaskStatus.Processing,
+          },
+        },
+        Dispatch = new TaskFilter.Types.IdsRequest
+        {
+          Ids =
+          {
+            "DispatchId",
+          },
+        },
+      };
+      await TaskTable.UpdateAllTaskStatusAsync(testFilter,
+                                               TaskStatus.Timeout,
+                                               CancellationToken.None);
+      var resCreating = await TaskTable.GetTaskStatus("TaskCreatingId",
+                                                 CancellationToken.None);
+      var resProcessing = await TaskTable.GetTaskStatus("TaskProcessingId",
+                                                 CancellationToken.None);
+
+      Assert.IsTrue(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout);
+    }
+  }
+
+  [Test(Description = "Forbidden update: A given Task its on a final status")]
+  public void UpdateAllTaskStatusAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      var testFilter = new TaskFilter
+      {
+        Included = new TaskFilter.Types.StatusesRequest
+        {
+          Statuses =
+          {
+            TaskStatus.Failed, // Presence of this status should generate an exception
+            TaskStatus.Creating,
+            TaskStatus.Processing,
+          },
+        },
+        Dispatch = new TaskFilter.Types.IdsRequest
+        {
+          Ids =
+          {
+            "DispatchId",
+          },
+        },
+      };
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+      {
+        await TaskTable.UpdateAllTaskStatusAsync(testFilter,
+                                                 TaskStatus.Timeout,
+                                                 CancellationToken.None);
       });
     }
   }
