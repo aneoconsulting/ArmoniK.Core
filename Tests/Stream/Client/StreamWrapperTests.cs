@@ -409,7 +409,7 @@ internal class StreamWrapperTests
     var taskOptions = new TaskOptions
     {
       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries  = 2,
+      MaxRetries  = 3,
       Priority    = 1,
     };
 
