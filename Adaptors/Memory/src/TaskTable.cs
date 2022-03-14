@@ -192,7 +192,7 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public Task DeleteTaskAsync(string id, CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(taskId2TaskData_.Remove(id,out _));
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken)
@@ -232,21 +232,15 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public Task<Output> GetTaskOutput(string taskId, CancellationToken cancellationToken = default)
-  {
-    throw new NotImplementedException();
-  }
+    => Task.FromResult(taskId2TaskData_[taskId].Output);
 
   /// <inheritdoc />
   public Task<TaskStatus> GetTaskStatus(string taskId, CancellationToken cancellationToken = default)
-  {
-    throw new NotImplementedException();
-  }
+    => Task.FromResult(taskId2TaskData_[taskId].Status);
 
   /// <inheritdoc />
   public Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string taskId, CancellationToken cancellationToken = default)
-  {
-    throw new NotImplementedException();
-  }
+    => Task.FromResult(taskId2TaskData_[taskId].ExpectedOutput as IEnumerable<string>);
 
   /// <inheritdoc />
   public ILogger Logger { get; set; }
