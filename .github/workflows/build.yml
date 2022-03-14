@@ -351,8 +351,8 @@ jobs:
         uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: Logs -- ${{ github.job }}
-          path: /logs/*.json
+          name: Logs -- ${{ github.job }} ${{ matrix.queue }} ${{ matrix.log-level }}
+          path: docker-compose/logs/*.json
           retention-days: 5
 
   testHtcMockDC:
@@ -400,8 +400,8 @@ jobs:
         uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: Logs -- ${{ github.job }}
-          path: /logs/*.json
+          name: Logs -- ${{ github.job }} ${{ matrix.queue }} ${{ matrix.log-level }} ${{ matrix.ntasks }}
+          path: docker-compose/logs/*.json
           retention-days: 5
 
   tag:
