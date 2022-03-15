@@ -344,6 +344,8 @@ public class Submitter : ISubmitter
                                                                              ""));
 
                                    var parentExpectedOutputKeys = new List<string>();
+
+                                   // if there is no parent task, we do not need to get parent task expected output keys
                                    if (!parentTaskId.Equals(session))
                                    {
                                      parentExpectedOutputKeys.AddRange(await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
@@ -352,14 +354,23 @@ public class Submitter : ISubmitter
 
 
                                    IEnumerable<string> intersect = new List<string>();
-                                   intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys);
+                                   intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
+                                                                       .ToList();
 
-                                   await resultTable_.ChangeResultOwnership(session,
-                                                                            intersect,
-                                                                            parentTaskId,
-                                                                            request.Id,
-                                                                            cancellationToken);
-                                   
+                                   if (intersect.Any())
+                                   {
+                                     await resultTable_.ChangeResultOwnership(session,
+                                                                              intersect,
+                                                                              parentTaskId,
+                                                                              request.Id,
+                                                                              cancellationToken);
+                                   }
+                                   else
+                                   {
+                                     logger_.LogTrace("intersect empty, no " + nameof(resultTable_.ChangeResultOwnership));
+                                   }
+
+
 
                                    var resultModel = request.ExpectedOutputKeys.Except(intersect)
                                                             .Select(key => new Result(session,

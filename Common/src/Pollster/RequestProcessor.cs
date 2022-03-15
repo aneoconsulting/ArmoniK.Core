@@ -32,6 +32,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
@@ -245,6 +246,8 @@ public class RequestProcessor
           throw new ArgumentOutOfRangeException(nameof(ProcessReply),
                                                 $"received a {nameof(ProcessReply.TypeOneofCase.None)} reply type.");
         case ProcessReply.TypeOneofCase.Output:
+          await output.WhenAll();
+          output.Clear();
           output.Add(submitter_.FinalizeDispatch(taskData.TaskId,
                                                  dispatch,
                                                  cancellationToken));
