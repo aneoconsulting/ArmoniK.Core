@@ -80,10 +80,13 @@ public class RequestProcessor
   {
     try
     {
-      return await ProcessInternalsAsync(taskData,
+      var result =  await ProcessInternalsAsync(taskData,
                                          dispatch,
                                          computeRequests,
                                          cancellationToken);
+
+      messageHandler.Status = QueueMessageStatus.Processed;
+      return result;
     }
     catch (Exception e)
     {
