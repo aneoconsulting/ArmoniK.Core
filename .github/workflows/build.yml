@@ -351,13 +351,9 @@ jobs:
           path: ./Tests/Stream/Client/TestResults/test-results.trx
           reporter: dotnet-trx
 
-      - name: Store logs
-        uses: actions/upload-artifact@v2.3.1
-        if: always()
-        with:
-          name: Logs -- ${{ github.job }} ${{ matrix.queue }} ${{ matrix.log-level }}
-          path: docker-compose/logs/*.json
-          retention-days: 5
+      - name: Show logs
+        run: |
+          cat docker-compose/logs/*.json
 
   testHtcMockDC:
     needs:
@@ -402,13 +398,9 @@ jobs:
           docker run --net armonik-net --rm -e HtcMock__NTasks=${{ matrix.ntasks }} -e Grpc__Endpoint=http://armonik.control.submitter:80 dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
           ls -la docker-compose/logs/*.json
 
-      - name: Store logs
-        uses: actions/upload-artifact@v2.3.1
-        if: always()
-        with:
-          name: Logs -- ${{ github.job }} ${{ matrix.queue }} ${{ matrix.log-level }} ${{ matrix.ntasks }}
-          path: docker-compose/logs/*.json
-          retention-days: 5
+      - name: Show logs
+        run: |
+          cat docker-compose/logs/*.json
 
   tag:
     runs-on: ubuntu-latest
