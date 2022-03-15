@@ -246,18 +246,15 @@ public class Submitter : ISubmitter
                                         },
                                       },
                              };
-    await using var finalizer = AsyncDisposable.Create(async () => await taskTable_.FinalizeTaskCreation(finalizationFilter,
-                                                                                                            cancellationToken));
 
+    await Task.WhenAll(payloadUploadTasks);
 
-    var enqueueTask = lockedQueueStorage_.EnqueueMessagesAsync(requests.Select(taskRequest => taskRequest.Id),
+    await lockedQueueStorage_.EnqueueMessagesAsync(requests.Select(taskRequest => taskRequest.Id),
                                                                options.Priority,
                                                                cancellationToken);
 
-    await Task.WhenAll(enqueueTask,
-                       Task.WhenAll(payloadUploadTasks));
-
-
+    await using var finalizer = AsyncDisposable.Create(async () => await taskTable_.FinalizeTaskCreation(finalizationFilter,
+                                                                                                            cancellationToken));
 
     return new()
            {
@@ -295,6 +292,7 @@ public class Submitter : ISubmitter
     activity?.AddTag("taskIds",
       string.Join(",", requests.Select(request => request.Id)));
 
+    // todo: clean
     async Task LoadOptions()
     {
       options = await sessionTable_.GetDefaultTaskOptionAsync(session,
