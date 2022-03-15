@@ -403,8 +403,8 @@ internal class StreamWrapperTests
                                   [Values(TestPayload.TaskType.Compute, TestPayload.TaskType.Transfer)]
                                   TestPayload.TaskType taskType)
   {
-    var sessionId = Guid.NewGuid() + "-" + nameof(MultipleTasks);
-
+    var sessionId = Guid.NewGuid() + "-" + nameof(MultipleTasks) + " - " + taskType;
+    Console.WriteLine($"Type of task {taskType}");
 
     var taskOptions = new TaskOptions
     {
@@ -413,7 +413,7 @@ internal class StreamWrapperTests
       Priority    = 1,
     };
 
-    Console.WriteLine("Creating Session");
+    Console.WriteLine($"Creating Session {sessionId}");
     var session = client_.CreateSession(new CreateSessionRequest
     {
       DefaultTaskOption = taskOptions,
