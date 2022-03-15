@@ -353,9 +353,8 @@ public class Submitter : ISubmitter
                                    }
 
 
-                                   IEnumerable<string> intersect = new List<string>();
-                                   intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
-                                                                       .ToList();
+                                   var intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
+                                                                           .ToList();
 
                                    if (intersect.Any())
                                    {
