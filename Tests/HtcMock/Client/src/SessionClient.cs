@@ -78,7 +78,7 @@ namespace ArmoniK.Samples.HtcMock.Client
         case AvailabilityReply.TypeOneofCase.NotCompletedTask:
           throw new Exception($"Task not completed - {id}");
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
       }
 
       var taskOutput = client_.TryGetTaskOutput(resultRequest);
@@ -92,17 +92,17 @@ namespace ArmoniK.Samples.HtcMock.Client
         case Output.TypeOneofCase.Error:
           throw new Exception($"Task in Error - {id}");
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(taskOutput.TypeCase));
       }
 
       var response = client_.GetResultAsync(resultRequest);
       return response.Result;
     }
 
-    public async Task WaitSubtasksCompletion(string id)
+    public Task WaitSubtasksCompletion(string id)
     {
       using var _      = logger_.LogFunction(id);
-      var waitForCompletion = client_.WaitForCompletion(new WaitRequest
+      client_.WaitForCompletion(new WaitRequest
       {
         Filter = new TaskFilter
         {
@@ -117,6 +117,7 @@ namespace ArmoniK.Samples.HtcMock.Client
         StopOnFirstTaskCancellation = true,
         StopOnFirstTaskError        = true,
       });
+      return Task.CompletedTask;
     }
 
     public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
@@ -162,7 +163,7 @@ namespace ArmoniK.Samples.HtcMock.Client
           Console.WriteLine("Task Created");
           break;
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(createTaskReply.DataCase));
       }
 
       var taskCreated = taskRequests.Select(t => t.Id);
