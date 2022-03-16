@@ -21,7 +21,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -30,6 +29,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Exceptions;
+
+using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
@@ -46,6 +48,11 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public Task ChangeResultDispatch(string sessionId, string oldDispatchId, string newDispatchId, CancellationToken cancellationToken)
   {
+    if (!results_.ContainsKey(sessionId))
+    {
+      return Task.FromException<ArmoniKException>(new ArmoniKException($"Key '{sessionId}' not found"));
+    }
+
     foreach (var result in results_[sessionId].Values
                                               .ToImmutableList()
                                               .Where(result => result.OriginDispatchId == oldDispatchId))
@@ -88,7 +95,7 @@ public class ResultTable : IResultTable
                                              new ConcurrentDictionary<string, Result>());
       if (!sessionResults.TryAdd(result.Key,
                                  result))
-        throw new InvalidOperationException("Key already exists");
+        throw new ArmoniKException($"Key {result.Key} already exists");
     }
 
     return Task.CompletedTask;
@@ -107,8 +114,17 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task<Result> GetResult(string sessionId, string key, CancellationToken cancellationToken = default) 
-    => Task.FromResult(results_[sessionId][key]);
+  public Task<Result> GetResult(string sessionId, string key, CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      return Task.FromResult(results_[sessionId][key]);
+    }
+    catch(KeyNotFoundException)
+    {
+      throw new ArmoniKException($"Key '{key}' not found");
+    }
+  }
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListResultsAsync(string sessionId, CancellationToken cancellationToken = default)
