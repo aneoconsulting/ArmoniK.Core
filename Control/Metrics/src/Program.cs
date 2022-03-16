@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
@@ -46,6 +47,7 @@ namespace ArmoniK.Core.Control.Metrics;
 
 public static partial class Program
 {
+  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Control.Metrics");
   public static int Main(string[] args)
   {
     try

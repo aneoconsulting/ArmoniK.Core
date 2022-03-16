@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Common.Injection;
@@ -39,6 +40,8 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture]
 internal class InjectionTests
 {
+  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
+
   [SetUp]
   public void SetUp()
   {
@@ -73,6 +76,7 @@ internal class InjectionTests
     var services = new ServiceCollection();
     services.AddMongoComponents(configuration_,
                                 logger_);
+    services.AddSingleton(ActivitySource);
     services.AddLogging();
     provider_ = services.BuildServiceProvider(new ServiceProviderOptions
     {

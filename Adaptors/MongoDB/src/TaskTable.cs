@@ -104,10 +104,11 @@ public class TaskTable : ITaskTable
     var       sessionHandle  = await sessionProvider_.GetAsync();
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
+
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model=>model.AncestorDispatchIds)
-                               .FirstOrDefaultAsync(cancellationToken);
+                               .FirstAsync(cancellationToken);
   }
 
   /// <inheritdoc />
@@ -129,12 +130,12 @@ public class TaskTable : ITaskTable
                                           TaskStatus        status,
                                           CancellationToken cancellationToken = default)
   {
-    using var _              = Logger.LogFunction(id);
+    using var _ = Logger.LogFunction(id);
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
                                                                             status);
-    Logger.LogDebug("update task {task} to status {status}",
+    Logger.LogInformation("update task {task} to status {status}",
                     id,
                     status);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id &&
@@ -147,7 +148,9 @@ public class TaskTable : ITaskTable
     switch (res.MatchedCount)
     {
       case 0:
-        throw new ArmoniKException($"Task not found or task already in a terminal state - {id}");
+        var taskStatus = await GetTaskStatus(id,
+                            cancellationToken);
+        throw new ArmoniKException($"Task not found or task already in a terminal state - {id} from {taskStatus} to {status}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }
@@ -337,7 +340,7 @@ public class TaskTable : ITaskTable
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.Output)
-                               .FirstOrDefaultAsync(cancellationToken);
+                               .FirstAsync(cancellationToken);
   }
 
   public async Task<TaskStatus> GetTaskStatus(string taskId, CancellationToken cancellationToken = default)
@@ -349,7 +352,7 @@ public class TaskTable : ITaskTable
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.Status)
-                               .FirstOrDefaultAsync(cancellationToken);
+                               .FirstAsync(cancellationToken);
   }
 
   public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string taskId, CancellationToken cancellationToken = default)
@@ -361,7 +364,7 @@ public class TaskTable : ITaskTable
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.ExpectedOutput)
-                               .FirstOrDefaultAsync(cancellationToken);
+                               .FirstAsync(cancellationToken);
   }
 
   /// <inheritdoc />

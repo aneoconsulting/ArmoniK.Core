@@ -95,7 +95,6 @@ public class QueueStorage : IQueueStorage
                                                                          ReceiverLink(await sessionProvider.GetAsync(),
                                                                                       $"ReceiverLink{i}",
                                                                                       $"q{i}");
-                                                                       receiver.SetCredit(10);
                                                                        return receiver;
                                                                      }))
                            .ToArray();

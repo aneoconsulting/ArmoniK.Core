@@ -41,6 +41,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
     public override async Task<Output> Process(ITaskHandler taskHandler)
     {
       var output = new Output();
+      logger_.LogInformation("Execute task {sessionId} {taskId}", taskHandler.SessionId, taskHandler.TaskId);
       logger_.LogDebug("ExpectedResults {expectedResults}",
                        taskHandler.ExpectedResults);
       logger_.LogDebug("Execute Task {task}", taskHandler.TaskId);

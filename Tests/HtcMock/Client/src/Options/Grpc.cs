@@ -21,36 +21,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
+using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Common.Storage;
-
-public record Output(bool Success, string Error)
+namespace ArmoniK.Samples.HtcMock.Client.Options
 {
-  public static implicit operator Api.gRPC.V1.Output(Output output)
+  [PublicAPI]
+  public class Grpc
   {
-    if (output.Success)
-      return new Api.gRPC.V1.Output
-      {
-        Ok = new Empty(),
-        Status = TaskStatus.Completed,
-      };
-    return new Api.gRPC.V1.Output
-    {
-      Error = new Api.gRPC.V1.Output.Types.Error
-      {
-        Details = output.Error,
-      },
-      Status = TaskStatus.Error,
-    };
+    public const string SettingSection = nameof(Grpc);
+    public string Endpoint { get; set; }
   }
-
-  public static implicit operator Output(Api.gRPC.V1.Output output) =>
-    output.Status switch
-    {
-      TaskStatus.Completed => new Output(true,
-                                         ""),
-      _                    => new Output(false,
-                                         output.Error.Details),
-    };
 }

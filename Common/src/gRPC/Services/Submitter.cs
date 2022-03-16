@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
@@ -59,6 +60,7 @@ public class Submitter : ISubmitter
   private readonly ISessionTable  sessionTable_;
   private readonly ITaskTable     taskTable_;
   private readonly IResultTable   resultTable_;
+  private readonly ActivitySource activitySource_;
 
   [UsedImplicitly]
   public Submitter(IQueueStorage         lockedQueueStorage,
@@ -66,13 +68,15 @@ public class Submitter : ISubmitter
                    ILogger<Submitter>    logger,
                    ISessionTable         sessionTable,
                    ITaskTable            taskTable,
-                   IResultTable          resultTable)
+                   IResultTable          resultTable,
+                   ActivitySource        activitySource)
   {
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
     sessionTable_         = sessionTable;
     taskTable_            = taskTable;
     resultTable_          = resultTable;
+    activitySource_       = activitySource;
     lockedQueueStorage_   = lockedQueueStorage;
   }
 
@@ -89,7 +93,8 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public  async Task CancelSession(string sessionId, CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction();
+    using var _        = logger_.LogFunction();
+    using var activity = activitySource_.StartActivity($"{nameof(CancelSession)}");
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
@@ -122,6 +127,7 @@ public class Submitter : ISubmitter
   public async Task CancelDispatchSessionAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction(dispatchId);
+    using var activity = activitySource_.StartActivity($"{nameof(CancelDispatchSessionAsync)}");
     var sessionCancelTask = sessionTable_.CancelDispatchAsync(rootSessionId,
                                                               dispatchId,
                                                               cancellationToken);
@@ -136,7 +142,8 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task CancelTasks(TaskFilter request, CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction();
+    using var _        = logger_.LogFunction();
+    using var activity = activitySource_.StartActivity($"{nameof(CancelTasks)}");
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
@@ -170,6 +177,7 @@ public class Submitter : ISubmitter
   {
 
     using var logFunction = logger_.LogFunction(dispatchId);
+    using var activity = activitySource_.StartActivity($"{nameof(CreateTasks)}");
     using var sessionScope = logger_.BeginPropertyScope(("Session", sessionId),
                                                         ("TaskId", parentId),
                                                         ("Dispatch", dispatchId));
@@ -238,18 +246,15 @@ public class Submitter : ISubmitter
                                         },
                                       },
                              };
-    await using var finalizer = AsyncDisposable.Create(async () => await taskTable_.FinalizeTaskCreation(finalizationFilter,
-                                                                                                            cancellationToken));
 
+    await Task.WhenAll(payloadUploadTasks);
 
-    var enqueueTask = lockedQueueStorage_.EnqueueMessagesAsync(requests.Select(taskRequest => taskRequest.Id),
+    await lockedQueueStorage_.EnqueueMessagesAsync(requests.Select(taskRequest => taskRequest.Id),
                                                                options.Priority,
                                                                cancellationToken);
 
-    await Task.WhenAll(enqueueTask,
-                       Task.WhenAll(payloadUploadTasks));
-
-
+    await using var finalizer = AsyncDisposable.Create(async () => await taskTable_.FinalizeTaskCreation(finalizationFilter,
+                                                                                                            cancellationToken));
 
     return new()
            {
@@ -276,9 +281,19 @@ public class Submitter : ISubmitter
                                                 IEnumerable<Storage.TaskRequest> requests,
                                                 CancellationToken                cancellationToken = default)
   {
-    using var _                = logger_.LogFunction($"{session}.{parentTaskId}.{dispatchId}");
+    using var _        = logger_.LogFunction($"{session}.{parentTaskId}.{dispatchId}");
+    using var activity = activitySource_.StartActivity($"{nameof(InitializeTaskCreationAsync)}");
+    activity?.AddTag("sessionId",
+                     session);
+    activity?.AddTag("parentTaskId",
+                     parentTaskId);
+    activity?.AddTag("dispatchId",
+                     dispatchId);
+    activity?.AddTag("taskIds",
+      string.Join(",", requests.Select(request => request.Id)));
 
-
+    // todo: clean
+    // this function is not necessary since the default task options are retrieved at the start of the function
     async Task LoadOptions()
     {
       options = await sessionTable_.GetDefaultTaskOptionAsync(session,
@@ -289,7 +304,7 @@ public class Submitter : ISubmitter
 
     async Task LoadAncestorDispatchIds()
     {
-      if (!string.IsNullOrEmpty(parentTaskId))
+      if (!parentTaskId.Equals(session))
       {
         var res = await taskTable_.GetTaskAncestorDispatchIds(parentTaskId,
                                                     cancellationToken);
@@ -329,22 +344,33 @@ public class Submitter : ISubmitter
                                                           new Storage.Output(false,
                                                                              ""));
 
-                                   var parentExpectedOutputKeys = await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
-                                                                                                             cancellationToken);
+                                   var parentExpectedOutputKeys = new List<string>();
 
-
-                                   IEnumerable<string> intersect = new List<string>();
-                                   if (parentExpectedOutputKeys is not null)
+                                   // if there is no parent task, we do not need to get parent task expected output keys
+                                   if (!parentTaskId.Equals(session))
                                    {
-                                     intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys);
+                                     parentExpectedOutputKeys.AddRange(await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
+                                                                                                                  cancellationToken));
+                                   }
 
+
+                                   var intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
+                                                                           .ToList();
+
+                                   if (intersect.Any())
+                                   {
                                      await resultTable_.ChangeResultOwnership(session,
                                                                               intersect,
                                                                               parentTaskId,
                                                                               request.Id,
                                                                               cancellationToken);
                                    }
-                                   
+                                   else
+                                   {
+                                     logger_.LogTrace("intersect empty, no " + nameof(resultTable_.ChangeResultOwnership));
+                                   }
+
+
 
                                    var resultModel = request.ExpectedOutputKeys.Except(intersect)
                                                             .Select(key => new Result(session,
@@ -374,7 +400,7 @@ public class Submitter : ISubmitter
   public  async Task<Count> CountTasks(TaskFilter request, CancellationToken cancellationToken)
 
   {
-    using var _ = logger_.LogFunction();
+    using var activity = activitySource_.StartActivity($"{nameof(CountTasks)}");
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
@@ -399,6 +425,7 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task<CreateSessionReply> CreateSession(string sessionId, TaskOptions defaultTaskOptions, CancellationToken cancellationToken)
   {
+    using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
       await sessionTable_.CreateSessionAsync(sessionId,
@@ -422,7 +449,8 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public  async Task TryGetResult(ResultRequest request, IServerStreamWriter<ResultReply> responseStream, CancellationToken cancellationToken)
   {
-    var storage = ResultStorage(request.Session);
+    using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
+    var       storage  = ResultStorage(request.Session);
     await foreach (var chunk in storage.TryGetValuesAsync(request.Key, cancellationToken))
     {
       await responseStream.WriteAsync(new()
@@ -445,7 +473,7 @@ public class Submitter : ISubmitter
 
   public  async Task<Count> WaitForCompletion(WaitRequest request, CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction();
+    using var activity = activitySource_.StartActivity($"{nameof(WaitForCompletion)}");
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
@@ -538,14 +566,14 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task UpdateTaskStatusAsync(string id, TaskStatus status, CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction();
+    using var activity = activitySource_.StartActivity($"{nameof(UpdateTaskStatusAsync)}");
     await taskTable_.UpdateTaskStatusAsync(id,status, cancellationToken);
   }
 
   /// <inheritdoc />
   public async Task CompleteTaskAsync(string id, Output output, CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction();
+    using var activity = activitySource_.StartActivity($"{nameof(CompleteTaskAsync)}");
 
     Storage.Output cOutput = output;
 
@@ -565,6 +593,7 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task<Output> TryGetTaskOutputAsync(ResultRequest request, CancellationToken contextCancellationToken)
   {
+    using var activity = activitySource_.StartActivity($"{nameof(TryGetTaskOutputAsync)}");
     Storage.Output output = await taskTable_.GetTaskOutput(request.Key,
                                                          contextCancellationToken);
     return new Output(output);
@@ -573,17 +602,18 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest request, CancellationToken contextCancellationToken)
   {
-    using var _       = logger_.LogFunction();
+    using var activity = activitySource_.StartActivity($"{nameof(WaitForAvailabilityAsync)}");
 
     var result = await resultTable_.GetResult(request.Session,
                                         request.Key, contextCancellationToken);
     
     logger_.LogDebug("OwnerTaskId {OwnerTaskId}", result.OwnerTaskId);
-    string ownerId = "";
 
-    while (ownerId != result.OwnerTaskId)
+    var continueWaiting = true;
+
+    while (continueWaiting)
     {
-      ownerId = result.OwnerTaskId;
+      var ownerId = result.OwnerTaskId;
       var completion = await WaitForCompletion(new WaitRequest
                               {
                                 Filter = new TaskFilter
@@ -622,6 +652,17 @@ public class Submitter : ISubmitter
                                             contextCancellationToken);
       logger_.LogDebug("OwnerTaskId {OwnerTaskId}",
                        result.OwnerTaskId);
+      if (ownerId != result.OwnerTaskId)
+      {
+        continueWaiting = !result.IsResultAvailable;
+        if (continueWaiting)
+          await Task.Delay(150, contextCancellationToken);
+      }
+      else
+      {
+        continueWaiting = false;
+      }
+
     }
 
     var availabilityReply = new AvailabilityReply
@@ -634,7 +675,7 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task<GetStatusReply> GetStatusAsync(GetStatusrequest request, CancellationToken contextCancellationToken)
   {
-    using var _ = logger_.LogFunction();
+    using var activity = activitySource_.StartActivity($"{nameof(GetStatusAsync)}");
     return new GetStatusReply
     {
       Status = await taskTable_.GetTaskStatus(request.TaskId,
@@ -645,8 +686,8 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task<TaskIdList> ListTasksAsync(TaskFilter request, CancellationToken contextCancellationToken)
   {
-    using var _      = logger_.LogFunction();
-    var       idList = new TaskIdList();
+    using var activity = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
+    var       idList   = new TaskIdList();
     idList.TaskIds.AddRange(await taskTable_.ListTasksAsync(request,
                                                             contextCancellationToken).ToListAsync(contextCancellationToken));
     return idList;
@@ -655,8 +696,8 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task FinalizeDispatch(string taskId, Dispatch dispatch, CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction();
-    var oldDispatchId = dispatch.Id;
+    using var activity      = activitySource_.StartActivity($"{nameof(FinalizeDispatch)}");
+    var       oldDispatchId = dispatch.Id;
     var targetDispatchId = await taskTable_.GetTaskDispatchId(taskId,
                                                               cancellationToken);
     while (oldDispatchId != targetDispatchId)

@@ -21,36 +21,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
+using System.Text.Json;
 
-namespace ArmoniK.Core.Common.Storage;
-
-public record Output(bool Success, string Error)
+namespace ArmoniK.Samples.HtcMock.Client
 {
-  public static implicit operator Api.gRPC.V1.Output(Output output)
+  internal class SimpleStats
   {
-    if (output.Success)
-      return new Api.gRPC.V1.Output
-      {
-        Ok = new Empty(),
-        Status = TaskStatus.Completed,
-      };
-    return new Api.gRPC.V1.Output
-    {
-      Error = new Api.gRPC.V1.Output.Types.Error
-      {
-        Details = output.Error,
-      },
-      Status = TaskStatus.Error,
-    };
-  }
+    public long EllapsedTime { get; set; }
+    public string Test { get; set; }
+    public int NRun { get; set; }
 
-  public static implicit operator Output(Api.gRPC.V1.Output output) =>
-    output.Status switch
+    public string ToJson()
     {
-      TaskStatus.Completed => new Output(true,
-                                         ""),
-      _                    => new Output(false,
-                                         output.Error.Details),
-    };
+      return JsonSerializer.Serialize(this);
+    }
+  }
 }
