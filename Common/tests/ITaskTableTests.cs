@@ -91,7 +91,7 @@ public class TaskTableTestBase
                               default),
                  new TaskData("SessionId",
                               "PTaskId",
-                              "DispatchId",
+                              "Dispatch2Id",
                               "TaskProcessingId",
                               default,
                               default,
