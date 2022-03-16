@@ -53,15 +53,12 @@ public class ResultTableTests : ResultTableTestBase
     runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
                                   logger: logger);
     client_ = new MongoClient(runner_.ConnectionString);
-    var uri = new Uri(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string> minimalConfig = new()
     {
       { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Host)}", uri.Host },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Port)}", uri.Port.ToString() },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10" },
     };
 

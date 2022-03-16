@@ -140,7 +140,6 @@ public class ResultTableTestBase
 
       Assert.IsFalse(result.OriginDispatchId == "NewDispatchId");
     }
-    //TODO: Write a test for the case in which a non existing Id is given.
   }
 
   [Test]
