@@ -120,6 +120,7 @@ public class TaskTableTestBase
     }
   }
 
+  [TearDown]
   public virtual void TearDown()
   {
     TaskTable = null;
