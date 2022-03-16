@@ -95,7 +95,7 @@ public class ResultTable : IResultTable
                                              new ConcurrentDictionary<string, Result>());
       if (!sessionResults.TryAdd(result.Key,
                                  result))
-        throw new ArmoniKException("Key already exists");
+        throw new ArmoniKException($"Key {result.Key} already exists");
     }
 
     return Task.CompletedTask;

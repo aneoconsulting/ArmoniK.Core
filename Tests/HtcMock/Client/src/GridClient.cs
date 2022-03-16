@@ -68,9 +68,9 @@ namespace ArmoniK.Samples.HtcMock.Client
       switch (session.ResultCase)
       {
         case CreateSessionReply.ResultOneofCase.Error:
-          throw new Exception("Error while creating session : " + session.Error);
+          throw new Exception($"Error while creating session {sessionId}: " + session.Error);
         case CreateSessionReply.ResultOneofCase.None:
-          throw new Exception("Issue with Server !");
+          throw new Exception($"Issue with Server for session {sessionId}!");
         case CreateSessionReply.ResultOneofCase.Ok:
           break;
         default:

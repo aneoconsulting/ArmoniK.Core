@@ -293,6 +293,7 @@ public class Submitter : ISubmitter
       string.Join(",", requests.Select(request => request.Id)));
 
     // todo: clean
+    // this function is not necessary since the default task options are retrieved at the start of the function
     async Task LoadOptions()
     {
       options = await sessionTable_.GetDefaultTaskOptionAsync(session,
