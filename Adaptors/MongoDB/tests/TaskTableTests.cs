@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -55,15 +54,12 @@ public class TaskTableTests : TaskTableTestBase
     runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
                                   logger: logger);
     client_ = new MongoClient(runner_.ConnectionString);
-    var uri = new Uri(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string> minimalConfig = new()
     {
       { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Host)}", uri.Host },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Port)}", uri.Port.ToString() },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10" },
     };
 
