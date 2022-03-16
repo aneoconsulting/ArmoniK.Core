@@ -91,10 +91,14 @@ public class TaskTable : ITaskTable
     var       sessionHandle  = await sessionProvider_.GetAsync();
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-    return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(model => model.TaskId == taskId)
-                               .Select(model => model.DispatchId)
-                               .FirstAsync(cancellationToken);
+    var queryableTaskCollection = taskCollection.AsQueryable(sessionHandle).Where(tdm => tdm.TaskId == taskId);
+
+    if (!queryableTaskCollection.Any())
+    {
+      throw new ArmoniKException($"Key '{taskId}' not found");
+    }
+
+    return await queryableTaskCollection.Select(model => model.DispatchId).FirstAsync(cancellationToken);
   }
 
   /// <inheritdoc />
@@ -104,11 +108,14 @@ public class TaskTable : ITaskTable
     var       sessionHandle  = await sessionProvider_.GetAsync();
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
+    var queryableTaskCollection = taskCollection.AsQueryable(sessionHandle).Where(tdm => tdm.TaskId == taskId);
 
-    return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(tdm => tdm.TaskId == taskId)
-                               .Select(model=>model.AncestorDispatchIds)
-                               .FirstAsync(cancellationToken);
+    if (!queryableTaskCollection.Any())
+    {
+      throw new ArmoniKException($"Key '{taskId}' not found");
+    }
+
+    return await queryableTaskCollection.Select(model => model.AncestorDispatchIds).FirstAsync(cancellationToken);
   }
 
   /// <inheritdoc />
@@ -118,11 +125,15 @@ public class TaskTable : ITaskTable
 
     var taskCollection = await taskCollectionProvider_.GetAsync();
 
-    await taskCollection.UpdateManyAsync(model => model.DispatchId == oldDispatchId,
+    var result = await taskCollection.UpdateManyAsync(model => model.DispatchId == oldDispatchId,
                                          Builders<TaskData>.Update
                                                                 .Set(model => model.DispatchId,
                                                                      newDispatchId),
                                          cancellationToken: cancellationToken);
+    if (result.ModifiedCount == 0)
+    {
+      throw new ArmoniKException($"Key ' {oldDispatchId}' not found");
+    }
   }
 
   /// <inheritdoc />
@@ -164,10 +175,18 @@ public class TaskTable : ITaskTable
     using var _              = Logger.LogFunction();
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
+    var statuses = filter.Included.Statuses;
+    if (statuses.Contains(TaskStatus.Completed) |
+        statuses.Contains(TaskStatus.Failed) |
+        statuses.Contains(TaskStatus.Canceled))
+    {
+      throw new ArmoniKException($"The given TaskFilter contains a terminal state, update forbidden");
+    }
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
                                                                             status);
-
+    Logger.LogInformation("update all tasks to statuses to status {status}",
+                          status);
     var res = await taskCollection.UpdateManyAsync(filter.ToFilterExpression(),
                                                    updateDefinition,
                                                    cancellationToken: cancellationToken);
