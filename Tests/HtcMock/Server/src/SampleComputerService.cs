@@ -133,8 +133,6 @@ namespace ArmoniK.Samples.HtcMock.GridWorker
               },
             };
           }));
-          // code à adapter pour créer le bon type de request
-          //sessionClient.SubmitTasks(readyRequests.Select(r => DataAdapter.BuildPayload(runConfiguration, r)));
           var req    = requests[false].Single();
           await taskHandler.CreateTasksAsync(new[]
           {
@@ -153,9 +151,6 @@ namespace ArmoniK.Samples.HtcMock.GridWorker
               },
             },
           });
-          // code à adapter pour créer le bon type de request
-          // ici, le ExpectedDependency doit être celui de la tâche en cours
-          //sessionClient.SubmitTaskWithDependencies(readyRequests.Select(r => DataAdapter.BuildPayload(runConfiguration, req), req.Dependencies));
         }
 
         output = new Output

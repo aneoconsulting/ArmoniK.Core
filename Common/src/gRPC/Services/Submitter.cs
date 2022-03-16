@@ -246,18 +246,15 @@ public class Submitter : ISubmitter
                                         },
                                       },
                              };
-    await using var finalizer = AsyncDisposable.Create(async () => await taskTable_.FinalizeTaskCreation(finalizationFilter,
-                                                                                                            cancellationToken));
 
+    await Task.WhenAll(payloadUploadTasks);
 
-    var enqueueTask = lockedQueueStorage_.EnqueueMessagesAsync(requests.Select(taskRequest => taskRequest.Id),
+    await lockedQueueStorage_.EnqueueMessagesAsync(requests.Select(taskRequest => taskRequest.Id),
                                                                options.Priority,
                                                                cancellationToken);
 
-    await Task.WhenAll(enqueueTask,
-                       Task.WhenAll(payloadUploadTasks));
-
-
+    await using var finalizer = AsyncDisposable.Create(async () => await taskTable_.FinalizeTaskCreation(finalizationFilter,
+                                                                                                            cancellationToken));
 
     return new()
            {
@@ -295,6 +292,7 @@ public class Submitter : ISubmitter
     activity?.AddTag("taskIds",
       string.Join(",", requests.Select(request => request.Id)));
 
+    // todo: clean
     async Task LoadOptions()
     {
       options = await sessionTable_.GetDefaultTaskOptionAsync(session,
@@ -346,6 +344,8 @@ public class Submitter : ISubmitter
                                                                              ""));
 
                                    var parentExpectedOutputKeys = new List<string>();
+
+                                   // if there is no parent task, we do not need to get parent task expected output keys
                                    if (!parentTaskId.Equals(session))
                                    {
                                      parentExpectedOutputKeys.AddRange(await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
@@ -353,15 +353,23 @@ public class Submitter : ISubmitter
                                    }
 
 
-                                   IEnumerable<string> intersect = new List<string>();
-                                   intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys);
+                                   var intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
+                                                                           .ToList();
 
-                                   await resultTable_.ChangeResultOwnership(session,
-                                                                            intersect,
-                                                                            parentTaskId,
-                                                                            request.Id,
-                                                                            cancellationToken);
-                                   
+                                   if (intersect.Any())
+                                   {
+                                     await resultTable_.ChangeResultOwnership(session,
+                                                                              intersect,
+                                                                              parentTaskId,
+                                                                              request.Id,
+                                                                              cancellationToken);
+                                   }
+                                   else
+                                   {
+                                     logger_.LogTrace("intersect empty, no " + nameof(resultTable_.ChangeResultOwnership));
+                                   }
+
+
 
                                    var resultModel = request.ExpectedOutputKeys.Except(intersect)
                                                             .Select(key => new Result(session,

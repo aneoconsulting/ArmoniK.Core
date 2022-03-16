@@ -67,7 +67,7 @@ public class SessionProvider : ProviderBase<Session>
 
       Session session;
 
-      var retries = 10;
+      var retries = 1;
       while (true)
       {
         try
@@ -75,14 +75,13 @@ public class SessionProvider : ProviderBase<Session>
           session = new Session(await connectionFactory.CreateAsync(address));
           break;
         }
-        catch (Exception)
+        catch
         {
-          if (--retries == 0)
+          if (++retries == 6)
             throw;
-          Thread.Sleep(1000);
+          Thread.Sleep(1000 * retries);
         }
       }
-
 
       return session;
     })

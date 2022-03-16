@@ -137,10 +137,6 @@ public class Pollster
                                message.MessageId);
             throw;
           }
-          finally
-          {
-            await msg.DisposeAsync();
-          }
         }
       }
 

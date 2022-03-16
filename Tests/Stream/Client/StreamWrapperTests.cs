@@ -180,7 +180,7 @@ internal class StreamWrapperTests
     var result = new List<byte>();
 
     var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest));
-    Console.WriteLine($"Payload Type : {resultPayload.Type}");
+    Console.WriteLine($"Payload Type : {resultPayload.Type} - {taskId}");
     if (resultPayload.Type == TestPayload.TaskType.Result)
     {
       var output = BitConverter.ToInt32(resultPayload.DataBytes);
@@ -403,17 +403,17 @@ internal class StreamWrapperTests
                                   [Values(TestPayload.TaskType.Compute, TestPayload.TaskType.Transfer)]
                                   TestPayload.TaskType taskType)
   {
-    var sessionId = Guid.NewGuid() + "mytestsession";
-
+    var sessionId = Guid.NewGuid() + "-" + nameof(MultipleTasks) + " - " + taskType;
+    Console.WriteLine($"Type of task {taskType}");
 
     var taskOptions = new TaskOptions
     {
       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries  = 2,
+      MaxRetries  = 3,
       Priority    = 1,
     };
 
-    Console.WriteLine("Creating Session");
+    Console.WriteLine($"Creating Session {sessionId}");
     var session = client_.CreateSession(new CreateSessionRequest
     {
       DefaultTaskOption = taskOptions,
@@ -437,7 +437,7 @@ internal class StreamWrapperTests
 
     for (var i = 0; i < n; i++)
     {
-      var taskId = "multi" + i + "-" + Guid.NewGuid();
+      var taskId = nameof(MultipleTasks) + "-" + i + "-" + Guid.NewGuid();
 
       var payload = new TestPayload
       {
@@ -516,7 +516,7 @@ internal class StreamWrapperTests
         Session = sessionId,
       };
       var taskOutput = client_.TryGetTaskOutput(resultRequest);
-      Console.WriteLine(taskOutput.ToString());
+      Console.WriteLine(request.Id + " - " + taskOutput);
       return taskOutput.TypeCase;
     });
 
@@ -531,7 +531,7 @@ internal class StreamWrapperTests
       };
 
       var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest));
-      Console.WriteLine($"Payload Type : {resultPayload.Type}");
+      Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.Id}");
       if (resultPayload.Type == TestPayload.TaskType.Result)
       {
         var output = BitConverter.ToInt32(resultPayload.DataBytes);
@@ -679,7 +679,7 @@ internal class StreamWrapperTests
         Session = sessionId,
       };
       var taskOutput = client_.TryGetTaskOutput(resultRequest);
-      Console.WriteLine(taskOutput.ToString());
+      Console.WriteLine(request.Id + " - " + taskOutput);
       return taskOutput.TypeCase;
     });
 

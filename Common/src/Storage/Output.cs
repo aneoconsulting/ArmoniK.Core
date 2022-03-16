@@ -45,13 +45,12 @@ public record Output(bool Success, string Error)
     };
   }
 
-  public static implicit operator Output(Api.gRPC.V1.Output output)
-  {
-    if (output.Status == TaskStatus.Completed)
-      return new Output(true,
-                        "");
-
-    return new Output(false,
-                      output.Error.Details);
-  }
+  public static implicit operator Output(Api.gRPC.V1.Output output) =>
+    output.Status switch
+    {
+      TaskStatus.Completed => new Output(true,
+                                         ""),
+      _                    => new Output(false,
+                                         output.Error.Details),
+    };
 }

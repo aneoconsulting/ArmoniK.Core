@@ -97,7 +97,9 @@ public class PreconditionChecker
         messageHandler.Status = QueueMessageStatus.Processed;
         return null;
       case TaskStatus.Creating:
-        break;
+        logger_.LogInformation("Task is still creating");
+        messageHandler.Status = QueueMessageStatus.Postponed;
+        return null;
       case TaskStatus.Submitted:
         break;
       case TaskStatus.Dispatched:
