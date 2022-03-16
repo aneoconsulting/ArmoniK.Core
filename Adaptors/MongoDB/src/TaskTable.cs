@@ -62,7 +62,7 @@ public class TaskTable : ITaskTable
   public TimeSpan PollingDelay { get; set; } = TimeSpan.FromMilliseconds(150);
 
   /// <inheritdoc />
-  public async Task CreateTasks(IEnumerable<Core.Common.Storage.TaskData> tasks, CancellationToken cancellationToken = default)
+  public async Task CreateTasks(IEnumerable<TaskData> tasks, CancellationToken cancellationToken = default)
   {
     using var _ = Logger.LogFunction();
 
@@ -73,7 +73,7 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<Core.Common.Storage.TaskData> ReadTaskAsync(string taskId, CancellationToken cancellationToken = default)
+  public async Task<TaskData> ReadTaskAsync(string taskId, CancellationToken cancellationToken = default)
   {
     using var _              = Logger.LogFunction(taskId);
     var       sessionHandle  = await sessionProvider_.GetAsync();
