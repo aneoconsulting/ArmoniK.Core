@@ -30,10 +30,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
 
+using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -55,7 +57,7 @@ public class TaskTable : ITaskTable
     {
       if (!taskId2TaskData_.TryAdd(taskData.TaskId,
                                    taskData))
-        throw new InvalidOperationException("Tasks already exists");
+        throw new ArmoniKException($"Tasks '{taskData.TaskId}' already exists");
 
       foreach (var dispatchId in taskData.AncestorDispatchIds)
       {
@@ -77,32 +79,62 @@ public class TaskTable : ITaskTable
     => Task.FromResult(taskId2TaskData_[taskId]);
 
   /// <inheritdoc />
-  public Task<string> GetTaskDispatchId(string taskId, CancellationToken cancellationToken = default) 
-    => Task.FromResult(taskId2TaskData_[taskId].DispatchId);
+  public Task<string> GetTaskDispatchId(string taskId, CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      return Task.FromResult(taskId2TaskData_[taskId].DispatchId);
+    }
+    catch (KeyNotFoundException)
+    {
+      throw new ArmoniKException($"key {taskId} not found");
+    }
+  }
 
   /// <inheritdoc />
-  public Task<IList<string>> GetTaskAncestorDispatchIds(string taskId, CancellationToken cancellationToken = default) 
-    => Task.FromResult(taskId2TaskData_[taskId].AncestorDispatchIds);
+  public Task<IList<string>> GetTaskAncestorDispatchIds(string taskId, CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      return Task.FromResult(taskId2TaskData_[taskId].AncestorDispatchIds);
+    }
+    catch (KeyNotFoundException)
+    {
+      throw new ArmoniKException($"key {taskId} not found");
+    }
+  }
 
   /// <inheritdoc />
   public Task ChangeTaskDispatch(string oldDispatchId, string newDispatchId, CancellationToken cancellationToken)
   {
-    while (dispatch2TaskIds_[oldDispatchId].TryDequeue(out var taskId))
+    var    iterate = false;
+
+    do
     {
+      string taskId;
+      try
+      {
+        iterate = dispatch2TaskIds_[oldDispatchId].TryDequeue(out taskId);
+      }
+      catch (KeyNotFoundException)
+      {
+        throw new ArmoniKException($"Key '{oldDispatchId}' not found");
+      }
+
       taskId2TaskData_.AddOrUpdate(taskId,
-                                   _ => throw new InvalidOperationException("The task does not exist."),
+                                   _ => throw new ArmoniKException($"The task '{taskId}' does not exist."),
                                    (_, data) => data.DispatchId == oldDispatchId
-                                                  ? data with
-                                                    {
-                                                      DispatchId = newDispatchId,
-                                                      AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId).ToList(),
-                                                    }
-                                                  : data with
-                                                    {
-                                                      AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId).ToList(),
-                                                    });
+                                     ? data with
+                                     {
+                                       DispatchId = newDispatchId,
+                                       AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId).ToList(),
+                                     }
+                                     : data with
+                                     {
+                                       AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId).ToList(),
+                                     });
       dispatch2TaskIds_[newDispatchId].Enqueue(taskId);
-    }
+    } while (iterate);
 
     return Task.CompletedTask;
   }
@@ -123,7 +155,7 @@ public class TaskTable : ITaskTable
                                      return data;
 
                                    if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
-                                     throw new InvalidOperationException("the task is in a final state ant its status cannot change anymore");
+                                     throw new ArmoniKException("the task is in a final state ant its status cannot change anymore");
 
                                    updated = true;
                                    return data with
@@ -136,11 +168,23 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public async Task<int> UpdateAllTaskStatusAsync(TaskFilter filter, TaskStatus status, CancellationToken cancellationToken = default)
-    => await ListTasksAsync(filter,
-                            cancellationToken).Select(taskId => UpdateAndCheckTaskStatus(taskId,
-                                                                                         status))
-                                              .CountAsync(checkTask => checkTask,
-                                                               cancellationToken);
+  {
+    var statuses = filter.Included.Statuses;
+
+    if (statuses.Contains(TaskStatus.Completed) |
+        statuses.Contains(TaskStatus.Failed) |
+        statuses.Contains(TaskStatus.Canceled))
+    {
+      throw new ArmoniKException($"The given TaskFilter contains a terminal state, update forbidden");
+    }
+
+    var result = await ListTasksAsync(filter,
+                         cancellationToken).Select(taskId => UpdateAndCheckTaskStatus(taskId,
+                                                                                      status))
+                                           .CountAsync(checkTask => checkTask, cancellationToken);
+
+    return result;
+  }
 
   /// <inheritdoc />
   public Task<bool> IsTaskCancelledAsync(string taskId, CancellationToken cancellationToken = default)
