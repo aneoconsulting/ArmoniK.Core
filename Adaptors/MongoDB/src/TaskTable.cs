@@ -213,11 +213,13 @@ public class TaskTable : ITaskTable
     using var _              = Logger.LogFunction(sessionId);
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-    await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId,
+    var result = await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId,
                                          Builders<TaskData>.Update
                                                                 .Set(model => model.Status,
                                                                      TaskStatus.Canceling),
                                          cancellationToken: cancellationToken);
+    if (result.MatchedCount == 0)
+      throw new ArmoniKException($"Key '{sessionId}' not found");
   }
 
   /// <inheritdoc />
@@ -226,11 +228,14 @@ public class TaskTable : ITaskTable
     using var _              = Logger.LogFunction(dispatchId);
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-    await taskCollection.UpdateManyAsync(model => model.DispatchId == dispatchId,
+    var result = await taskCollection.UpdateManyAsync(model => model.DispatchId == dispatchId,
                                          Builders<TaskData>.Update
                                                                 .Set(model => model.Status,
                                                                      TaskStatus.Canceling),
                                          cancellationToken: cancellationToken);
+
+    if (result.MatchedCount == 0)
+      throw new ArmoniKException($"Key '{dispatchId}' not found");
   }
 
   /// <inheritdoc />
