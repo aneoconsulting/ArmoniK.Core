@@ -160,8 +160,6 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public async Task<int> UpdateAllTaskStatusAsync(TaskFilter filter, TaskStatus status, CancellationToken cancellationToken = default)
   {
-    Console.WriteLine(filter.ToString());
-
     if (!filter.Included.IsInitialized() |
         filter.Included.Statuses.Contains(TaskStatus.Completed) |
         filter.Included.Statuses.Contains(TaskStatus.Failed) |
