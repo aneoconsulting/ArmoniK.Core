@@ -30,6 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -288,15 +289,21 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken)
-  {
-    throw new NotImplementedException();
-  }
+  public async Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken)
+    => await UpdateTaskStatusAsync(taskId,  TaskStatus.Completed, cancellationToken);
 
   /// <inheritdoc />
-  public Task SetTaskErrorAsync(string   taskId, string            errorDetail, CancellationToken cancellationToken)
+  public async Task SetTaskErrorAsync(string   taskId, string            errorDetail, CancellationToken cancellationToken)
   {
-    throw new NotImplementedException();
+    using var _ = Logger.LogFunction();
+
+    var taskOutput = new Output(Error: errorDetail,
+                               Success: false);
+
+    Logger.LogDebug("update task {taskId} to output {output}",
+                    taskId,
+                    taskOutput);
+    await UpdateTaskStatusAsync(taskId, TaskStatus.Error, cancellationToken);
   }
 
   /// <inheritdoc />
