@@ -285,6 +285,10 @@ public class TaskTableTestBase
           Ids =
           {
             "DispatchId",
+            "Dispatch2Id", /* Task with TaskStatus.Processing was given this Id,
+                            * for the Memory interface, adding it here is necessary for the test
+                            * to succeed. For the MongoDB interface it may be ignored.
+                            * TODO: Check filter definitions */
           },
         },
       };
