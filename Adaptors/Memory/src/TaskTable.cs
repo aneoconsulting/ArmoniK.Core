@@ -184,33 +184,57 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public async Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default)
-    => await UpdateAllTaskStatusAsync(new ()
-                                {
-                                  Session = new()
-                                            {
-                                              Ids =
-                                              {
-                                                sessionId,
-                                              },
-                                            },
-                                },
-                                TaskStatus.Canceling,
-                                cancellationToken);
+  {
+    if (!session2TaskIds_.ContainsKey(sessionId))
+      throw new ArmoniKException($"Key '{sessionId}' not found");
+
+    var sessionFilter = new TaskFilter
+    {
+      Session = new TaskFilter.Types.IdsRequest
+      {
+        Ids =
+        {
+          sessionId,
+        },
+      },
+      Included = new TaskFilter.Types.StatusesRequest(),
+    };
+
+    await UpdateAllTaskStatusAsync(sessionFilter,
+                                   TaskStatus.Canceling,
+                                   cancellationToken);
+  }
 
   /// <inheritdoc />
   public async Task CancelDispatchAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
-    => await UpdateAllTaskStatusAsync(new()
-                                      {
-                                        Dispatch = new()
-                                                  {
-                                                    Ids =
-                                                    {
-                                                      dispatchId,
-                                                    },
-                                                  },
-                                      },
-                                      TaskStatus.Canceling,
-                                      cancellationToken);
+  {
+    if (!dispatch2TaskIds_.ContainsKey(dispatchId))
+      throw new ArmoniKException($"Key '{dispatchId}' not found");
+
+    var dispatchFilter = new TaskFilter
+    {
+      Session = new TaskFilter.Types.IdsRequest
+      {
+        Ids =
+        {
+          rootSessionId,
+        },
+      },
+      Dispatch = new TaskFilter.Types.IdsRequest
+      {
+        Ids =
+        {
+          dispatchId,
+        },
+      },
+      Included = new TaskFilter.Types.StatusesRequest(),
+    };
+
+    await UpdateAllTaskStatusAsync(dispatchFilter,
+                                   TaskStatus.Canceling,
+                                   cancellationToken);
+  }
+
   /// <inheritdoc />
   public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default)
     => await ListTasksAsync(filter,
