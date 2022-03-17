@@ -104,22 +104,13 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public Task ChangeTaskDispatch(string oldDispatchId, string newDispatchId, CancellationToken cancellationToken)
   {
-    var    iterate = false;
+    if (!dispatch2TaskIds_.ContainsKey(oldDispatchId))
+      throw new ArmoniKException($"Key '{oldDispatchId}' not found");
 
-    do
+    while ( dispatch2TaskIds_[oldDispatchId].TryDequeue(out var taskId) )
     {
-      string taskId;
-      try
-      {
-        iterate = dispatch2TaskIds_[oldDispatchId].TryDequeue(out taskId);
-      }
-      catch (KeyNotFoundException)
-      {
-        throw new ArmoniKException($"Key '{oldDispatchId}' not found");
-      }
-
       taskId2TaskData_.AddOrUpdate(taskId,
-                                   _ => throw new ArmoniKException($"The task '{taskId}' does not exist."),
+                                   _ => throw new InvalidOperationException("The task does not exist."),
                                    (_, data) => data.DispatchId == oldDispatchId
                                      ? data with
                                      {
@@ -130,9 +121,10 @@ public class TaskTable : ITaskTable
                                      {
                                        AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId).ToList(),
                                      });
-      dispatch2TaskIds_[newDispatchId].Enqueue(taskId);
-    } while (iterate);
-
+      var dispatch = dispatch2TaskIds_.GetOrAdd(newDispatchId,
+                                                new ConcurrentQueue<string>());
+      dispatch.Enqueue(taskId);
+    }
     return Task.CompletedTask;
   }
 
