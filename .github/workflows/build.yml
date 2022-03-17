@@ -397,7 +397,7 @@ jobs:
         run: |
           docker run --net armonik-net --rm \
             -e HtcMock__NTasks=${{ matrix.ntasks }} \
-            -e HtcMock__TotalCalculationTime=00.00.00.100 \
+            -e HtcMock__TotalCalculationTime=00:00:00.100 \
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
             -e HtcMock__SubTasksLevels=4 \
