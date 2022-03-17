@@ -336,4 +336,58 @@ public class TaskTableTestBase
       });
     }
   }
+
+  [Test]
+  public async Task CancelSessionAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var result = TaskTable.CancelSessionAsync("SessionId",
+                                                CancellationToken.None);
+      await result;
+
+      Assert.IsTrue(result.IsCompletedSuccessfully);
+    }
+  }
+
+  [Test]
+  public void CancelSessionAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+      {
+        await TaskTable.CancelSessionAsync("NonExistingSessionId",
+                                           CancellationToken.None);
+      });
+    }
+  }
+
+  [Test]
+  public async Task CancelDispatchAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var result = TaskTable.CancelDispatchAsync("SessionId",
+                                                 "Dispatch2Id",
+                                                 CancellationToken.None);
+      await result;
+
+      Assert.IsTrue(result.IsCompletedSuccessfully);
+    }
+  }
+
+  [Test]
+  public void CancelDispatchAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+      {
+        await TaskTable.CancelDispatchAsync("SessionId",
+                                            "NonExistingDispatchId",
+                                            CancellationToken.None);
+      });
+    }
+  }
 }
