@@ -33,6 +33,8 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
+using Google.Protobuf;
+
 using Microsoft.Extensions.Logging;
 
 using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
@@ -158,13 +160,14 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public async Task<int> UpdateAllTaskStatusAsync(TaskFilter filter, TaskStatus status, CancellationToken cancellationToken = default)
   {
-    var statuses = filter.Included.Statuses;
+    Console.WriteLine(filter.ToString());
 
-    if (statuses.Contains(TaskStatus.Completed) |
-        statuses.Contains(TaskStatus.Failed) |
-        statuses.Contains(TaskStatus.Canceled))
+    if (!filter.Included.IsInitialized() |
+        filter.Included.Statuses.Contains(TaskStatus.Completed) |
+        filter.Included.Statuses.Contains(TaskStatus.Failed) |
+        filter.Included.Statuses.Contains(TaskStatus.Canceled))
     {
-      throw new ArmoniKException($"The given TaskFilter contains a terminal state, update forbidden");
+      throw new ArmoniKException($"The given TaskFilter contains a terminal state or isn't initialized properly");
     }
 
     var result = await ListTasksAsync(filter,
