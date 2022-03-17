@@ -117,7 +117,7 @@ namespace ArmoniK.Samples.HtcMock.GridWorker
           await taskHandler.CreateTasksAsync(readyRequests.Select(r =>
           {
             var taskId = taskHandler.SessionId + "%" + r.Id;
-            logger_.LogDebug("Create task {task}",
+            logger_.LogDebug("Create task {taskId}",
                              taskId);
             return new TaskRequest
             {

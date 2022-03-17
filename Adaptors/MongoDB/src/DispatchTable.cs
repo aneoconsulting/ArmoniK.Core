@@ -105,7 +105,7 @@ public class DispatchTable : IDispatchTable
 
     if (dispatchId == res.Id)
     {
-      Logger.LogInformation("Dispatch {dispatchId} acquired for task {id}",
+      Logger.LogInformation("Dispatch {dispatchId} acquired for task {taskId}",
                             dispatchId,
                             taskId);
 
@@ -130,7 +130,7 @@ public class DispatchTable : IDispatchTable
       return true;
     }
 
-    Logger.LogInformation("Could not acquire lease for task {id}",
+    Logger.LogInformation("Could not acquire lease for task {taskId}",
                           taskId);
     return false;
   }

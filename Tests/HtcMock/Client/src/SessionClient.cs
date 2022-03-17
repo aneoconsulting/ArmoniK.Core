@@ -129,7 +129,7 @@ namespace ArmoniK.Samples.HtcMock.Client
       foreach (var (payload, dependencies) in payloadsWithDependencies)
       {
         var taskId = Guid.NewGuid().ToString();
-        logger_.LogDebug("Create task {task}", taskId);
+        logger_.LogDebug("Create task {taskId}", taskId);
         var taskRequest = new TaskRequest
         {
           Id      = sessionId_ + "%" + taskId,
