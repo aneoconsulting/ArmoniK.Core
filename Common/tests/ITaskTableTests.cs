@@ -28,12 +28,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests;
@@ -68,20 +68,20 @@ public class TaskTableTestBase
                               "DispatchId",
                               "TaskCompletedId",
                               default,
-                              default,
+                              new [] {"happy output"},
                               true,
                               new[] { (byte) (1), (byte) (2) },
                               TaskStatus.Completed,
                               default,
                               new[] { "Ancestor1DispatchId", "Ancestor2DispatchId" },
                               DateTime.Now,
-                              default),
+                              new Output(true,"")),
                  new TaskData("SessionId",
                               "PTaskId",
                               "DispatchId",
                               "TaskCreatingId",
                               default,
-                              default,
+                              new[] { "happy output" },
                               false,
                               new List<byte>().ToArray(),
                               TaskStatus.Creating,
@@ -94,7 +94,7 @@ public class TaskTableTestBase
                               "Dispatch2Id",
                               "TaskProcessingId",
                               default,
-                              default,
+                              new[] { "happy output" },
                               false,
                               new List<byte>().ToArray(),
                               TaskStatus.Processing,
@@ -107,14 +107,14 @@ public class TaskTableTestBase
                               "DispatchId",
                               "TaskFailedId",
                               default,
-                              default,
+                              new[] { "happy output" },
                               false,
                               new List<byte>().ToArray(),
                               TaskStatus.Failed,
                               default,
                               new List<string>(),
                               DateTime.Now,
-                              default),
+                              new Output(false,"sad output")),
                })
                .Wait();
     }
@@ -338,6 +338,18 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public async Task IsTaskCanceledShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var result = await TaskTable.IsTaskCancelledAsync("TaskCreatingId",
+                                                        CancellationToken.None);
+
+      Assert.IsFalse(result);
+    }
+  }
+
+  [Test]
   public async Task CancelSessionAsyncShouldSucceed()
   {
     if (RunTests)
@@ -388,6 +400,66 @@ public class TaskTableTestBase
                                             "NonExistingDispatchId",
                                             CancellationToken.None);
       });
+    }
+  }
+
+  [Test]
+  public async Task SetTaskSuccessAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var result = TaskTable.SetTaskSuccessAsync("TaskProcessingId",
+                                                 CancellationToken.None);
+      await result;
+
+      var resStatus = await TaskTable.GetTaskStatus("TaskProcessingId",
+                                                      CancellationToken.None);
+
+      Assert.IsTrue(result.IsCompletedSuccessfully && resStatus == TaskStatus.Completed);
+    }
+  }
+
+  [Test]
+  public async Task SetTaskErrorAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var result = TaskTable.SetTaskErrorAsync("TaskProcessingId",
+                                               "Testing SetTaskError",
+                                                 CancellationToken.None);
+      await result;
+
+      var resStatus = await TaskTable.GetTaskStatus("TaskProcessingId",
+                                                    CancellationToken.None);
+
+      Assert.IsTrue(result.IsCompletedSuccessfully && resStatus == TaskStatus.Error);
+    }
+  }
+
+  [Test]
+  public async Task GetTaskOutputShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var expectedOutput = new Output(true,"");
+      var result = await TaskTable.GetTaskOutput("TaskCompletedId",
+                                           CancellationToken.None);
+
+      Assert.AreEqual(expectedOutput,result);
+    }
+  }
+
+  [Test]
+  public async Task GetTaskExpectedOutputKeysShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var expectedOutput = new [] {"happy output"};
+      var result = await TaskTable.GetTaskExpectedOutputKeys("TaskCompletedId",
+                                                             CancellationToken.None);
+
+      Assert.AreEqual(expectedOutput,
+                      result);
     }
   }
 }
