@@ -56,9 +56,10 @@ internal class Program
 
     var factory = new LoggerFactory().AddSerilog();
 
-    var options = configuration.GetRequiredValue<Options.Grpc>(Options.Grpc.SettingSection);
-    var optionsHtcMock = configuration.GetRequiredValue<Options.HtcMock>(Options.HtcMock.SettingSection);
-    var channel = GrpcChannel.ForAddress(options.Endpoint);
+    var options        = configuration.GetRequiredValue<Options.Grpc>(Options.Grpc.SettingSection);
+    var optionsHtcMock = new Options.HtcMock();
+    configuration.GetSection(Options.HtcMock.SettingSection).Bind(optionsHtcMock);
+    var channel        = GrpcChannel.ForAddress(options.Endpoint);
 
     var submitterClient = new Submitter.SubmitterClient(channel);
 
@@ -68,15 +69,11 @@ internal class Program
     var client = new HtcMockClient(gridClient,
                                    factory.CreateLogger<Htc.Mock.Client>());
 
-    var runConfiguration = new RunConfiguration(new TimeSpan(0,
-                                                             0,
-                                                             0,
-                                                             0,
-                                                             100),
+    var runConfiguration = new RunConfiguration(optionsHtcMock.TotalCalculationTime,
                                                 optionsHtcMock.NTasks,
-                                                1,
-                                                1,
-                                                4);
+                                                optionsHtcMock.DataSize,
+                                                optionsHtcMock.MemorySize,
+                                                optionsHtcMock.SubTasksLevels);
     return client.Start(runConfiguration) ? 0 : 1;
   }
 }
