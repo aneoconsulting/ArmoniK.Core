@@ -45,9 +45,20 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class TaskTable : ITaskTable
 {
-  private readonly ConcurrentDictionary<string, TaskData>                taskId2TaskData_  = new();
-  private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> dispatch2TaskIds_ = new();
-  private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskIds_ = new();
+  private readonly ConcurrentDictionary<string, TaskData>                taskId2TaskData_;
+  private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> dispatch2TaskIds_;
+  private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskIds_;
+
+  public TaskTable(ConcurrentDictionary<string, TaskData> task2TaskData,
+                   ConcurrentDictionary<string, ConcurrentQueue<string>> dispatch2TaskIds,
+                   ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskId,
+                   ILogger<TaskTable> logger)
+  {
+    taskId2TaskData_ = task2TaskData;
+    dispatch2TaskIds_ = dispatch2TaskIds;
+    session2TaskIds_ = session2TaskId;
+    Logger = logger;
+  }
 
   /// <inheritdoc />
   public TimeSpan PollingDelay { get; set; }
