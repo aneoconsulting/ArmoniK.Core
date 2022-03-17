@@ -92,7 +92,7 @@ public class Pollster
 
           using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
                                                            ("messageHandler", message.MessageId),
-                                                           ("task", message.TaskId));
+                                                           ("taskId", message.TaskId));
           logger_.LogDebug("Start a new Task to process the messageHandler");
 
           var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
