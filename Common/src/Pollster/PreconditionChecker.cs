@@ -38,8 +38,7 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class PreconditionChecker
 {
-  private static readonly ActivitySource ActivitySource = new($"{typeof(PreconditionChecker).Namespace}.{nameof(PreconditionChecker)}");
-
+  private readonly ActivitySource            activitySource_;
   private readonly ILogger<PreconditionChecker> logger_;
 
   private readonly ISessionTable  sessionTable_;
@@ -51,19 +50,21 @@ public class PreconditionChecker
                              ITaskTable                   taskTable,
                              IResultTable                 resultTable,
                              IDispatchTable               dispatchTable,
+                             ActivitySource               activitySource,
                              ILogger<PreconditionChecker> logger)
   {
-    logger_        = logger;
-    sessionTable_  = sessionTable;
-    taskTable_     = taskTable;
-    resultTable_   = resultTable;
-    dispatchTable_ = dispatchTable;
+    logger_              = logger;
+    activitySource_      = activitySource;
+    sessionTable_        = sessionTable;
+    taskTable_           = taskTable;
+    resultTable_         = resultTable;
+    dispatchTable_       = dispatchTable;
   }
 
   public async Task<(TaskData TaskData, DispatchHandler Dispatch)?> CheckPreconditionsAsync(IQueueMessageHandler messageHandler,
                                                                                             CancellationToken    cancellationToken)
   {
-    using var activity = ActivitySource.StartActivity($"{typeof(PreconditionChecker).FullName}");
+    using var activity = activitySource_.StartActivity($"{nameof(CheckPreconditionsAsync)}");
 
     var taskData = await taskTable_.ReadTaskAsync(messageHandler.TaskId,
                                                   cancellationToken);
@@ -212,6 +213,7 @@ public class PreconditionChecker
                                                              IDictionary<string, string> metadata,
                                                              CancellationToken           cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity($"{nameof(AcquireDispatchHandler)}");
     var isAcquired = await dispatchTable_.TryAcquireDispatchAsync(sessionId,
                                                                  taskId,
                                                                  dispatchId,

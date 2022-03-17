@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,33 +38,36 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class Pollster
 {
-  private readonly IHostApplicationLifetime            lifeTime_;
-  private readonly ILogger<Pollster>                   logger_;
-  private readonly int                                 messageBatchSize_;
-  private readonly IQueueStorage                       queueStorage_;
-  private readonly PreconditionChecker                 preconditionChecker_;
-  private readonly DataPrefetcher dataPrefetcher_;
-  private readonly RequestProcessor                    requestProcessor_;
+  private readonly ActivitySource           activitySource_;
+  private readonly IHostApplicationLifetime lifeTime_;
+  private readonly ILogger<Pollster>        logger_;
+  private readonly int                      messageBatchSize_;
+  private readonly IQueueStorage            queueStorage_;
+  private readonly PreconditionChecker      preconditionChecker_;
+  private readonly DataPrefetcher           dataPrefetcher_;
+  private readonly RequestProcessor         requestProcessor_;
 
-  public Pollster(IQueueStorage                       queueStorage,
-                  PreconditionChecker                 preconditionChecker,
-                  DataPrefetcher dataPrefetcher,
-                  RequestProcessor                    requestProcessor,
-                  ComputePlan                         options,
-                  IHostApplicationLifetime            lifeTime,
-                  ILogger<Pollster>                   logger)
+  public Pollster(IQueueStorage            queueStorage,
+                  PreconditionChecker      preconditionChecker,
+                  DataPrefetcher           dataPrefetcher,
+                  RequestProcessor         requestProcessor,
+                  ComputePlan              options,
+                  IHostApplicationLifetime lifeTime,
+                  ActivitySource           activitySource,
+                  ILogger<Pollster>        logger)
   {
     if (options.MessageBatchSize < 1)
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
 
-    logger_                = logger;
-    queueStorage_          = queueStorage;
-    lifeTime_              = lifeTime;
-    preconditionChecker_   = preconditionChecker;
-    dataPrefetcher_        = dataPrefetcher;
-    requestProcessor_ = requestProcessor;
-    messageBatchSize_      = options.MessageBatchSize;
+    logger_              = logger;
+    activitySource_      = activitySource;
+    queueStorage_        = queueStorage;
+    lifeTime_            = lifeTime;
+    preconditionChecker_ = preconditionChecker;
+    dataPrefetcher_      = dataPrefetcher;
+    requestProcessor_    = requestProcessor;
+    messageBatchSize_    = options.MessageBatchSize;
   }
 
   public Task Init(CancellationToken cancellationToken)
@@ -93,6 +97,13 @@ public class Pollster
           using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
                                                            ("messageHandler", message.MessageId),
                                                            ("taskId", message.TaskId));
+
+          using var activity = activitySource_.StartActivity("ProcessQueueMessage");
+          activity?.SetBaggage("TaskId",
+                               message.TaskId);
+          activity?.SetBaggage("messageId",
+                               message.MessageId);
+
           logger_.LogDebug("Start a new Task to process the messageHandler");
 
           var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
