@@ -59,12 +59,9 @@ public class TaskTable : ITaskTable
                                    taskData))
         throw new ArmoniKException($"Tasks '{taskData.TaskId}' already exists");
 
-      foreach (var dispatchId in taskData.AncestorDispatchIds)
-      {
-        var dispatches = dispatch2TaskIds_.GetOrAdd(dispatchId,
-                                                    new ConcurrentQueue<string>());
-        dispatches.Enqueue(taskData.TaskId);
-      }
+      var dispatch = dispatch2TaskIds_.GetOrAdd(taskData.DispatchId,
+                                                new ConcurrentQueue<string>());
+      dispatch.Enqueue(taskData.TaskId);
 
       var session = session2TaskIds_.GetOrAdd(taskData.SessionId,
                                               new ConcurrentQueue<string>());
