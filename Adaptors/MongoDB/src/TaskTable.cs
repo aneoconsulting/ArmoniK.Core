@@ -146,7 +146,7 @@ public class TaskTable : ITaskTable
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
                                                                             status);
-    Logger.LogInformation("update task {task} to status {status}",
+    Logger.LogInformation("update task {taskId} to status {status}",
                     id,
                     status);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id &&
@@ -310,7 +310,7 @@ public class TaskTable : ITaskTable
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
                                                                        taskOuput).Set(tdm => tdm.Status,
                                                                                       TaskStatus.Completed);
-    Logger.LogDebug("update task {task} to output {output}",
+    Logger.LogDebug("update task {taskId} to output {output}",
                     taskId,
                     taskOuput);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
@@ -338,7 +338,7 @@ public class TaskTable : ITaskTable
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
                                                                        taskOuput).Set(tdm => tdm.Status,
                                                                                       TaskStatus.Completed);
-    Logger.LogDebug("update task {task} to output {output}",
+    Logger.LogDebug("update task {taskId} to output {output}",
                     taskId,
                     taskOuput);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,

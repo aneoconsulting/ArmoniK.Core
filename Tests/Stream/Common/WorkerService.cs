@@ -44,7 +44,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
       logger_.LogInformation("Execute task {sessionId} {taskId}", taskHandler.SessionId, taskHandler.TaskId);
       logger_.LogDebug("ExpectedResults {expectedResults}",
                        taskHandler.ExpectedResults);
-      logger_.LogDebug("Execute Task {task}", taskHandler.TaskId);
+      logger_.LogDebug("Execute Task {taskId}", taskHandler.TaskId);
       try
       {
         var payload = TestPayload.Deserialize(taskHandler.Payload);
