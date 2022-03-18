@@ -38,23 +38,23 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class DataPrefetcher
 {
-  private static readonly ActivitySource ActivitySource = new ($"{typeof(DataPrefetcher).FullName}");
-  
+  private readonly ActivitySource          activitySource_;
   private readonly IObjectStorageFactory   objectStorageFactory_;
   private readonly ILogger<DataPrefetcher> logger_;
 
   public DataPrefetcher(
     IObjectStorageFactory   objectStorageFactory,
+    ActivitySource          activitySource,
     ILogger<DataPrefetcher> logger)
   {
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
+    activitySource_       = activitySource;
   }
 
   public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData taskData, CancellationToken cancellationToken)
   {
-    using var _        = logger_.LogFunction();
-    using var activity = ActivitySource.StartActivity(nameof(PrefetchDataAsync));
+    using var activity = activitySource_.StartActivity(nameof(PrefetchDataAsync));
 
     var resultStorage  = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
     var payloadStorage = objectStorageFactory_.CreatePayloadStorage(taskData.SessionId);
