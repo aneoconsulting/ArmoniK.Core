@@ -255,9 +255,35 @@ public class TaskTable : ITaskTable
                                               .ToListAsync(cancellationToken);
 
   /// <inheritdoc />
-  public Task<int> CountAllTasksAsync(TaskStatus status, CancellationToken cancellationToken = default)
+  public async Task<int> CountAllTasksAsync(TaskStatus status, CancellationToken cancellationToken = default)
   {
-    throw new NotImplementedException();
+    var count       = 0;
+
+    foreach (var session in session2TaskIds_.Keys)
+    {
+      var statusFilter = new TaskFilter
+      {
+        Included = new TaskFilter.Types.StatusesRequest
+        {
+          Statuses =
+          {
+            status,
+          },
+        },
+        Session = new TaskFilter.Types.IdsRequest
+        {
+          Ids =
+          {
+            session,
+          },
+        },
+      };
+
+      count += await ListTasksAsync(statusFilter,
+                                  cancellationToken).CountAsync(cancellationToken);
+    }
+
+    return count;
   }
 
   /// <inheritdoc />
