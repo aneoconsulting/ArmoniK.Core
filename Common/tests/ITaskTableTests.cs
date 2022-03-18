@@ -453,9 +453,12 @@ public class TaskTableTestBase
   [Test]
   public async Task CountAllTasksAsyncShouldSucceed()
   {
-    var result = await TaskTable.CountAllTasksAsync(TaskStatus.Processing,
-                                                    CancellationToken.None);
-    Assert.IsTrue(result == 2);
+    if (RunTests)
+    {
+      var result = await TaskTable.CountAllTasksAsync(TaskStatus.Processing,
+                                                      CancellationToken.None);
+      Assert.IsTrue(result == 2);
+    }
   }
 
   [Test]
