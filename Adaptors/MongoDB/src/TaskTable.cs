@@ -304,15 +304,15 @@ public class TaskTable : ITaskTable
     var       sessionHandle  = await sessionProvider_.GetAsync();
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-    var taskOuput = new Output(Error: "",
+    var taskOutput = new Output(Error: "",
                                Success: true);
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
-                                                                       taskOuput).Set(tdm => tdm.Status,
+                                                                       taskOutput).Set(tdm => tdm.Status,
                                                                                       TaskStatus.Completed);
     Logger.LogDebug("update task {taskId} to output {output}",
                     taskId,
-                    taskOuput);
+                    taskOutput);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
                                                    updateDefinition,
                                                    cancellationToken: cancellationToken);
@@ -332,15 +332,17 @@ public class TaskTable : ITaskTable
     var       sessionHandle  = await sessionProvider_.GetAsync();
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-    var taskOuput = new Output(Error: errorDetail,
+    var taskOutput = new Output(Error: errorDetail,
                                Success: false);
 
+    /* A Task that errors is conceptually a  completed task,
+     * the error is reported and detailed in its Output*/
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
-                                                                       taskOuput).Set(tdm => tdm.Status,
+                                                                       taskOutput).Set(tdm => tdm.Status,
                                                                                       TaskStatus.Completed);
     Logger.LogDebug("update task {taskId} to output {output}",
                     taskId,
-                    taskOuput);
+                    taskOutput);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
                                                    updateDefinition,
                                                    cancellationToken: cancellationToken);

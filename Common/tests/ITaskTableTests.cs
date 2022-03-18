@@ -432,7 +432,7 @@ public class TaskTableTestBase
       var resStatus = await TaskTable.GetTaskStatus("TaskProcessingId",
                                                     CancellationToken.None);
 
-      Assert.IsTrue(result.IsCompletedSuccessfully && resStatus == TaskStatus.Error);
+      Assert.IsTrue(result.IsCompletedSuccessfully && resStatus == TaskStatus.Completed);
     }
   }
 

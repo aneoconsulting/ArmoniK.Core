@@ -303,7 +303,9 @@ public class TaskTable : ITaskTable
     Logger.LogDebug("update task {taskId} to output {output}",
                     taskId,
                     taskOutput);
-    await UpdateTaskStatusAsync(taskId, TaskStatus.Error, cancellationToken);
+    /* A Task that errors is conceptually a  completed task,
+     * the error is reported and detailed in its Output*/
+    await UpdateTaskStatusAsync(taskId, TaskStatus.Completed, cancellationToken);
   }
 
   /// <inheritdoc />
