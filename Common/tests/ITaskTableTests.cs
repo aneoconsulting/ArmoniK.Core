@@ -104,6 +104,19 @@ public class TaskTableTestBase
                               default),
                  new TaskData("SessionId",
                               "PTaskId",
+                              "Dispatch2Id",
+                              "AnotherTaskProcessingId",
+                              default,
+                              new[] { "happy output" },
+                              false,
+                              new List<byte>().ToArray(),
+                              TaskStatus.Processing,
+                              default,
+                              new[] { "Ancestor4DispatchId" },
+                              DateTime.Now,
+                              default),
+                 new TaskData("SessionId",
+                              "PTaskId",
                               "DispatchId",
                               "TaskFailedId",
                               default,
@@ -401,6 +414,48 @@ public class TaskTableTestBase
                                             CancellationToken.None);
       });
     }
+  }
+
+  [Test]
+  public async Task CountTasksAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var testFilter = new TaskFilter
+      {
+        Included = new TaskFilter.Types.StatusesRequest
+        {
+          Statuses =
+          {
+            TaskStatus.Completed,
+            TaskStatus.Creating,
+          },
+        },
+        Dispatch = new TaskFilter.Types.IdsRequest
+        {
+          Ids =
+          {
+            "DispatchId",
+          },
+        },
+      };
+
+      var result = await TaskTable.CountTasksAsync(testFilter,
+                                      CancellationToken.None);
+
+      foreach (var taskStatusCount in result)
+      {
+        Assert.IsTrue(taskStatusCount.Count == 1);
+      }
+    }
+  }
+
+  [Test]
+  public async Task CountAllTasksAsyncShouldSucceed()
+  {
+    var result = await TaskTable.CountAllTasksAsync(TaskStatus.Processing,
+                                                    CancellationToken.None);
+    Assert.IsTrue(result == 2);
   }
 
   [Test]
