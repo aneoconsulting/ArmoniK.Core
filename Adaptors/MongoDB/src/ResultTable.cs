@@ -64,7 +64,6 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task Create(IEnumerable<Core.Common.Storage.Result> results, CancellationToken cancellationToken = default)
   {
-    using var _        = logger_.LogFunction();
     using var activity = activitySource_.StartActivity($"{nameof(Create)}");
 
     var resultCollection = await resultCollectionProvider_.GetAsync();
@@ -87,8 +86,11 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task<Core.Common.Storage.Result> GetResult(string sessionId, string key, CancellationToken cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(key);
     using var activity         = activitySource_.StartActivity($"{nameof(GetResult)}");
+    activity?.SetTag($"{nameof(GetResult)}_sessionId",
+                     sessionId);
+    activity?.SetTag($"{nameof(GetResult)}_key",
+                     key);
     var       sessionHandle    = await sessionProvider_.GetAsync();
     var       resultCollection = await resultCollectionProvider_.GetAsync();
 
@@ -109,8 +111,9 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task<bool> AreResultsAvailableAsync(string sessionId, IEnumerable<string> keys, CancellationToken cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(sessionId);
     using var activity         = activitySource_.StartActivity($"{nameof(AreResultsAvailableAsync)}");
+    activity?.SetTag($"{nameof(AreResultsAvailableAsync)}_sessionId",
+                     sessionId);
     var       sessionHandle    = await sessionProvider_.GetAsync();
     var       resultCollection = await resultCollectionProvider_.GetAsync();
 
@@ -122,9 +125,13 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task SetResult(string sessionId, string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default)
   {
-    using var _        = logger_.LogFunction(key);
     using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
-
+    activity?.SetTag($"{nameof(SetResult)}_sessionId",
+                     sessionId);
+    activity?.SetTag($"{nameof(SetResult)}_ownerTaskId",
+                     ownerTaskId);
+    activity?.SetTag($"{nameof(SetResult)}_key",
+                     key);
     var resultCollection = await resultCollectionProvider_.GetAsync();
 
     var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter
@@ -144,19 +151,13 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task SetResult(string sessionId, string ownerTaskId, string key, CancellationToken cancellationToken = default)
   {
-    var id= key;
-    if (logger_.IsEnabled(LogLevel.Trace))
-    {
-      id = JsonSerializer.Serialize(new Dictionary<string, string>
-      {
-        { "sessionId", sessionId },
-        { "ownerTaskId", ownerTaskId },
-        { "key", key },
-      });
-    }
-
-    using var _        = logger_.LogFunction(id);
     using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
+    activity?.SetTag($"{nameof(SetResult)}_sessionId",
+                     sessionId);
+    activity?.SetTag($"{nameof(SetResult)}_ownerTaskId",
+                     ownerTaskId);
+    activity?.SetTag($"{nameof(SetResult)}_key",
+                     key);
 
     var resultCollection = await resultCollectionProvider_.GetAsync();
 
@@ -173,8 +174,13 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task ChangeResultDispatch(string sessionId, string oldDispatchId, string newDispatchId, CancellationToken cancellationToken)
   {
-    using var _        = logger_.LogFunction(sessionId);
     using var activity = activitySource_.StartActivity($"{nameof(ChangeResultDispatch)}");
+    activity?.SetTag($"{nameof(SetResult)}_sessionId",
+                     sessionId);
+    activity?.SetTag($"{nameof(SetResult)}_oldDispatchId",
+                     oldDispatchId);
+    activity?.SetTag($"{nameof(SetResult)}_newDispatchId",
+                     newDispatchId);
 
     var resultCollection = await resultCollectionProvider_.GetAsync().ConfigureAwait(false);
 
@@ -200,20 +206,15 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task ChangeResultOwnership(string sessionId, IEnumerable<string> keys, string oldTaskId, string newTaskId, CancellationToken cancellationToken)
   {
-    var id = oldTaskId;
-    if (logger_.IsEnabled(LogLevel.Trace))
-    {
-      id = JsonSerializer.Serialize(new Dictionary<string, string>
-      {
-        { "sessionId", sessionId },
-        { "oldTaskId", oldTaskId },
-        { "newTaskId", newTaskId },
-        { "keys", JsonSerializer.Serialize(keys) },
-      });
-    }
-
-    using var _ = logger_.LogFunction(id);
     using var activity = activitySource_.StartActivity($"{nameof(ChangeResultOwnership)}");
+    activity?.SetTag($"{nameof(ChangeResultOwnership)}_sessionId",
+                     sessionId);
+    activity?.SetTag($"{nameof(ChangeResultOwnership)}_oldTaskId",
+                     oldTaskId);
+    activity?.SetTag($"{nameof(ChangeResultOwnership)}_newTaskId",
+                     newTaskId);
+    activity?.SetTag($"{nameof(ChangeResultOwnership)}_keys",
+                     keys);
     if (keys.Any())
     {
       var resultCollection = await resultCollectionProvider_.GetAsync();
@@ -232,8 +233,11 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task DeleteResult(string session, string key, CancellationToken cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(key);
     using var activity         = activitySource_.StartActivity($"{nameof(DeleteResult)}");
+    activity?.SetTag($"{nameof(DeleteResult)}_sessionId",
+                     session);
+    activity?.SetTag($"{nameof(DeleteResult)}_key",
+                     key);
     var       resultCollection = await resultCollectionProvider_.GetAsync();
 
     await resultCollection.DeleteOneAsync(model => model.Key == key && model.SessionId == session,
@@ -243,8 +247,9 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async IAsyncEnumerable<string> ListResultsAsync(string sessionId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(sessionId);
     using var activity         = activitySource_.StartActivity($"{nameof(ListResultsAsync)}");
+    activity?.SetTag($"{nameof(ListResultsAsync)}_sessionId",
+                     sessionId);
     var       sessionHandle    = await sessionProvider_.GetAsync();
     var       resultCollection = await resultCollectionProvider_.GetAsync();
 
@@ -259,8 +264,9 @@ public class ResultTable : IResultTable
   /// <inheritdoc />
   public async Task DeleteResults(string sessionId, CancellationToken cancellationToken = default)
   {
-    using var _                = logger_.LogFunction();
     using var activity         = activitySource_.StartActivity($"{nameof(DeleteResults)}");
+    activity?.SetTag($"{nameof(DeleteResults)}_sessionId",
+                     sessionId);
     var       resultCollection = await resultCollectionProvider_.GetAsync();
 
     await resultCollection.DeleteManyAsync(model => model.SessionId == sessionId,

@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -48,12 +49,14 @@ public class SessionTable : ISessionTable
 {
   private readonly SessionProvider                                               sessionProvider_;
   private readonly MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider_;
+  private readonly ActivitySource                                                activitySource_;
 
-  public SessionTable(SessionProvider sessionProvider, MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider, ILogger<SessionTable> logger)
+  public SessionTable(SessionProvider sessionProvider, MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider, ILogger<SessionTable> logger, ActivitySource activitySource)
   {
     sessionProvider_           = sessionProvider;
     sessionCollectionProvider_ = sessionCollectionProvider;
     Logger                     = logger;
+    activitySource_            = activitySource;
   }
 
 
@@ -64,8 +67,13 @@ public class SessionTable : ISessionTable
                                            TaskOptions       defaultOptions,
                                            CancellationToken cancellationToken = default)
   {
-    using var _                 = Logger.LogFunction();
-    var       sessionHandle     = await sessionProvider_.GetAsync();
+    using var activity          = activitySource_.StartActivity($"{nameof(CreateSessionDataAsync)}");
+    activity?.SetTag($"{nameof(CreateSessionDataAsync)}_sessionId",
+                     rootSessionId);
+    activity?.SetTag($"{nameof(CreateSessionDataAsync)}_parentTaskId",
+                     parentTaskId);
+    activity?.SetTag($"{nameof(CreateSessionDataAsync)}_dispatchId",
+                     dispatchId);
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
     SessionData data = new(IsCancelled: false,
@@ -82,7 +90,9 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async Task<SessionData> GetSessionAsync(string dispatchId, CancellationToken cancellationToken = default)
   {
-    using var _                 = Logger.LogFunction(dispatchId);
+    using var activity          = activitySource_.StartActivity($"{nameof(GetSessionAsync)}");
+    activity?.SetTag($"{nameof(GetSessionAsync)}_dispatchId",
+                     dispatchId);
     var       sessionHandle     = await sessionProvider_.GetAsync();
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
@@ -94,7 +104,7 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async Task<bool> IsSessionCancelledAsync(string sessionId, CancellationToken cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(sessionId);
+    using var activity          = activitySource_.StartActivity($"{nameof(IsSessionCancelledAsync)}");
     return await IsDispatchCancelledAsync(sessionId,
                                           sessionId,
                                           cancellationToken);
@@ -103,7 +113,11 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async Task<bool> IsDispatchCancelledAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
   {
-    using var _                 = Logger.LogFunction(dispatchId);
+    using var activity          = activitySource_.StartActivity($"{nameof(IsDispatchCancelledAsync)}");
+    activity?.SetTag($"{nameof(IsDispatchCancelledAsync)}_sessionId",
+                     rootSessionId);
+    activity?.SetTag($"{nameof(IsDispatchCancelledAsync)}_dispatchId",
+                     dispatchId);
     var       sessionHandle     = await sessionProvider_.GetAsync();
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
@@ -118,7 +132,9 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async Task<TaskOptions> GetDefaultTaskOptionAsync(string sessionId, CancellationToken cancellationToken = default)
   {
-    using var _                 = Logger.LogFunction(sessionId);
+    using var activity          = activitySource_.StartActivity($"{nameof(GetDefaultTaskOptionAsync)}");
+    activity?.SetTag($"{nameof(GetDefaultTaskOptionAsync)}_sessionId",
+                     sessionId);
     var       sessionHandle     = await sessionProvider_.GetAsync();
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
@@ -131,7 +147,7 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(sessionId);
+    using var activity = activitySource_.StartActivity($"{nameof(CancelSessionAsync)}");
     await CancelDispatchAsync(sessionId,
                               sessionId,
                               cancellationToken);
@@ -140,7 +156,12 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async Task CancelDispatchAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(dispatchId);
+    using var _        = Logger.LogFunction(dispatchId);
+    using var activity = activitySource_.StartActivity($"{nameof(CancelDispatchAsync)}");
+    activity?.SetTag($"{nameof(CancelDispatchAsync)}_sessionId",
+                     rootSessionId);
+    activity?.SetTag($"{nameof(CancelDispatchAsync)}_dispatchId",
+                     dispatchId);
 
     var sessionCollection = await sessionCollectionProvider_.GetAsync();
 
@@ -158,7 +179,9 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(sessionId);
+    using var activity = activitySource_.StartActivity($"{nameof(DeleteSessionAsync)}");
+    activity?.SetTag($"{nameof(DeleteSessionAsync)}_sessionId",
+                     sessionId);
 
     var sessionCollection = await sessionCollectionProvider_.GetAsync();
 
@@ -169,7 +192,11 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async Task DeleteDispatchAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(dispatchId);
+    using var activity = activitySource_.StartActivity($"{nameof(DeleteDispatchAsync)}");
+    activity?.SetTag($"{nameof(DeleteDispatchAsync)}_sessionId",
+                     rootSessionId);
+    activity?.SetTag($"{nameof(DeleteDispatchAsync)}_dispatchId",
+                     dispatchId);
 
     var sessionCollection = await sessionCollectionProvider_.GetAsync();
 
@@ -182,6 +209,7 @@ public class SessionTable : ISessionTable
   public async IAsyncEnumerable<string> ListSessionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _                 = Logger.LogFunction();
+    using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
     var       sessionHandle     = await sessionProvider_.GetAsync();
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
@@ -196,7 +224,9 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async IAsyncEnumerable<string> ListDispatchesAsync(string rootSessionId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _                 = Logger.LogFunction();
+    using var activity          = activitySource_.StartActivity($"{nameof(ListDispatchesAsync)}");
+    activity?.SetTag($"{nameof(ListDispatchesAsync)}_sessionId",
+                     rootSessionId);
     var       sessionHandle     = await sessionProvider_.GetAsync();
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 

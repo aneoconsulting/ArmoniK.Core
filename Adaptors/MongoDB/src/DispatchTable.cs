@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -51,18 +52,21 @@ public class DispatchTable : IDispatchTable
   /// <inheritdoc />
   public TimeSpan DispatchRefreshPeriod { get; set; }
 
-  private readonly SessionProvider                                                             sessionProvider_;
+  private readonly SessionProvider                                             sessionProvider_;
   private readonly MongoCollectionProvider<Dispatch, DispatchDataModelMapping> dispatchCollectionProvider_;
+  private readonly ActivitySource                                              activitySource_;
 
   [UsedImplicitly]
   public DispatchTable(SessionProvider        sessionProvider, MongoCollectionProvider<Dispatch, DispatchDataModelMapping> dispatchCollectionProvider,
                        Options.TableStorage   options,
+                       ActivitySource         activitySource,
                        ILogger<DispatchTable> logger)
   {
     sessionProvider_            = sessionProvider;
     dispatchCollectionProvider_ = dispatchCollectionProvider;
     DispatchTimeToLiveDuration  = options.DispatchTimeToLive;
     Logger                      = logger;
+    activitySource_             = activitySource;
   }
 
   /// <inheritdoc />
@@ -75,10 +79,15 @@ public class DispatchTable : IDispatchTable
                                                   IDictionary<string, string> metadata,
                                                   CancellationToken           cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(taskId,
-                                     properties: (nameof(dispatchId), dispatchId));
+    using var activity           = activitySource_.StartActivity($"{nameof(TryAcquireDispatchAsync)}");
+    activity?.SetTag($"{nameof(TryAcquireDispatchAsync)}_sessionId",
+                     sessionId);
+    activity?.SetTag($"{nameof(TryAcquireDispatchAsync)}_TaskId",
+                     taskId);
+    activity?.SetTag($"{nameof(TryAcquireDispatchAsync)}_dispatchId",
+                     dispatchId);
 
-    var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+    var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
     var updateDefinition = Builders<Dispatch>.Update
                                                     .SetOnInsert(model => model.TimeToLive,
@@ -139,7 +148,9 @@ public class DispatchTable : IDispatchTable
   /// <inheritdoc />
   public async Task<Dispatch> GetDispatchAsync(string dispatchId, CancellationToken cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(dispatchId);
+    using var activity = activitySource_.StartActivity($"{nameof(GetDispatchAsync)}");
+    activity?.SetTag($"{nameof(GetDispatchAsync)}_dispatchId",
+                     dispatchId);
 
     var sessionHandle      = await sessionProvider_.GetAsync();
     var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
@@ -152,7 +163,9 @@ public class DispatchTable : IDispatchTable
   /// <inheritdoc />
   public async Task AddStatusToDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default)
   {
-    using var _                  = Logger.LogFunction(id);
+    using var activity           = activitySource_.StartActivity($"{nameof(AddStatusToDispatch)}");
+    activity?.SetTag($"{nameof(AddStatusToDispatch)}_dispatchId",
+                     id);
     var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
     var updateDefinition = Builders<Dispatch>.Update
@@ -178,7 +191,9 @@ public class DispatchTable : IDispatchTable
   /// <inheritdoc />
   public async Task ExtendDispatchTtl(string id, CancellationToken cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(id);
+    using var activity = activitySource_.StartActivity($"{nameof(ExtendDispatchTtl)}");
+    activity?.SetTag($"{nameof(ExtendDispatchTtl)}_dispatchId",
+                     id);
 
     var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
@@ -194,7 +209,9 @@ public class DispatchTable : IDispatchTable
   /// <inheritdoc />
   public async Task DeleteDispatchFromTaskIdAsync(string id, CancellationToken cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(id);
+    using var activity = activitySource_.StartActivity($"{nameof(DeleteDispatchFromTaskIdAsync)}");
+    activity?.SetTag($"{nameof(DeleteDispatchFromTaskIdAsync)}_dispatchId",
+                     id);
 
     var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
@@ -205,7 +222,9 @@ public class DispatchTable : IDispatchTable
   /// <inheritdoc />
   public async Task DeleteDispatch(string id, CancellationToken cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(id);
+    using var activity = activitySource_.StartActivity($"{nameof(DeleteDispatch)}");
+    activity?.SetTag($"{nameof(DeleteDispatch)}_dispatchId",
+                     id);
 
     var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
@@ -217,7 +236,9 @@ public class DispatchTable : IDispatchTable
   /// <inheritdoc />
   public async IAsyncEnumerable<string> ListDispatchAsync(string taskId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _                  = Logger.LogFunction(taskId);
+    using var activity           = activitySource_.StartActivity($"{nameof(ListDispatchAsync)}");
+    activity?.SetTag($"{nameof(ListDispatchAsync)}_TaskId",
+                     taskId);
     var       sessionHandle      = await sessionProvider_.GetAsync();
     var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
