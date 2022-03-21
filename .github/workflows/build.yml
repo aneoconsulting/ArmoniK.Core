@@ -352,6 +352,7 @@ jobs:
           reporter: dotnet-trx
 
       - name: Show logs
+        if: always()
         run: |
           cat docker-compose/logs/*.json
 
@@ -406,6 +407,7 @@ jobs:
           ls -la docker-compose/logs/*.json
 
       - name: Show logs
+        if: always()
         run: |
           cat docker-compose/logs/*.json
 
