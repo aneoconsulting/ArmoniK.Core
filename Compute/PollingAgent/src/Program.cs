@@ -24,7 +24,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
@@ -36,8 +35,6 @@ using ArmoniK.Core.Common.Pollster;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -121,15 +118,6 @@ public static class Program
       }
 
       builder.Services.AddHealthChecks();
-
-      builder.WebHost
-             .UseConfiguration(builder.Configuration)
-             .UseKestrel(options =>
-             {
-               options.Listen(IPAddress.Loopback,
-                              8989,
-                              listenOptions => listenOptions.Protocols = HttpProtocols.Http1);
-             });
 
       var app = builder.Build();
 

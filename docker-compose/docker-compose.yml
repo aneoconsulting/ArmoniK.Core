@@ -95,6 +95,8 @@ services:
     networks:
       - armonik-backend
       - armonik-monitoring
+    ports:
+      - 9980:80
     volumes:
       - socket_vol:/cache
     environment:
