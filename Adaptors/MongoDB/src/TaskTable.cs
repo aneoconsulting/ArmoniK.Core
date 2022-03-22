@@ -144,7 +144,7 @@ public class TaskTable : ITaskTable
                                          cancellationToken: cancellationToken);
     if (result.ModifiedCount == 0)
     {
-      throw new ArmoniKException($"Key ' {oldDispatchId}' not found");
+      Logger.LogWarning($"Key '{oldDispatchId}' not found");
     }
   }
 
