@@ -192,29 +192,24 @@ public static class ServiceCollectionExt
     settings.Scheme           = ConnectionStringScheme.MongoDB;
 
     services.AddTransient<IMongoClient>(provider =>
-            {
-              var logger = provider.GetRequiredService<ILogger<IMongoClient>>();
+    {
+      var logger = provider.GetRequiredService<ILogger<IMongoClient>>();
 
 
-              //if (logger.IsEnabled(LogLevel.Trace))
-              //  settings.ClusterConfigurator = cb =>
-              //  {
-              //    cb.Subscribe<CommandStartedEvent>(e =>
-              //    {
-              //      logger
-              //        .LogTrace("{CommandName} - {Command}",
-              //                  e.CommandName,
-              //                  e.Command.ToJson());
-              //    });
-              //  };
+      //if (logger.IsEnabled(LogLevel.Trace))
+      //  settings.ClusterConfigurator = cb =>
+      //  {
+      //    cb.Subscribe<CommandStartedEvent>(e =>
+      //    {
+      //      logger
+      //        .LogTrace("{CommandName} - {Command}",
+      //                  e.CommandName,
+      //                  e.Command.ToJson());
+      //    });
+      //  };
 
-              return new MongoClient(settings);
-            })
-            .AddHealthChecks()
-            .AddMongoDb(settings,
-                        mongoOptions.DatabaseName,
-                        "MongoDb Connection",
-                        tags: new[] { nameof(HealthCheckTag.Startup), nameof(HealthCheckTag.Liveness), nameof(HealthCheckTag.Readiness) });
+      return new MongoClient(settings);
+    });
 
     logger.LogInformation("MongoDB configuration complete");
 

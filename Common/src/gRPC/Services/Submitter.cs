@@ -272,6 +272,7 @@ public class Submitter : ISubmitter
    * attendre la fin de l'exec de la tâche
    * mettre à jour les ownership
    * Mise en queue + finalisation
+   * + chuncking
    */
 
   public async Task InitializeTaskCreationAsync(string                           session,

@@ -35,6 +35,7 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
 
   public async ValueTask<T> GetAsync()
   {
+    // TODO : mettre des traces
     if (object_ is null)
     {
       Task<T> task;
@@ -50,5 +51,5 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
   }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(object_ is not null);
+  public virtual ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(object_ is not null);
 }

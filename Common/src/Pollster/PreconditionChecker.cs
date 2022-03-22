@@ -36,7 +36,7 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-public class PreconditionChecker
+public class PreconditionChecker : IInitializable
 {
   private readonly ActivitySource            activitySource_;
   private readonly ILogger<PreconditionChecker> logger_;
@@ -232,4 +232,24 @@ public class PreconditionChecker
 
   }
 
+  private bool isInitialized_ = false;
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      var resultTable   = resultTable_.Init(cancellationToken);
+      var sessionTable = sessionTable_.Init(cancellationToken);
+      var taskTable    = taskTable_.Init(cancellationToken);
+      await dispatchTable_.Init(cancellationToken);
+      await resultTable;
+      await sessionTable;
+      await taskTable;
+      isInitialized_ = true;
+    }
+  }
 }

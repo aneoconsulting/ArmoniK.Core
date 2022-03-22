@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public interface IResultTable
+public interface IResultTable : IInitializable
 {
   Task<bool> AreResultsAvailableAsync(string sessionId, IEnumerable<string> keys, CancellationToken cancellationToken = default);
 

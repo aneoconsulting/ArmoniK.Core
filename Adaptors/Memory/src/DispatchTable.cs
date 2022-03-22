@@ -29,6 +29,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -196,4 +197,13 @@ public class DispatchTable : IDispatchTable
                         .Where(dispatch => dispatch.TaskId == taskId)
                         .Select(dispatch => dispatch.Id)
                         .ToAsyncEnumerable();
+
+  /// <inheritdoc />
+  public Task Init(CancellationToken cancellationToken)
+  {
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(true);
 }

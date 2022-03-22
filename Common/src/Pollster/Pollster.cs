@@ -70,8 +70,13 @@ public class Pollster
     messageBatchSize_    = options.MessageBatchSize;
   }
 
-  public Task Init(CancellationToken cancellationToken)
-    => queueStorage_.Init(cancellationToken);
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    await queueStorage_.Init(cancellationToken);
+    await dataPrefetcher_.Init(cancellationToken);
+    await preconditionChecker_.Init(cancellationToken);
+    await requestProcessor_.Init(cancellationToken);
+  }
 
   public async Task MainLoop(CancellationToken cancellationToken)
   {

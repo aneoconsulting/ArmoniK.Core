@@ -401,4 +401,21 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public ILogger Logger { get; }
+
+  private bool isInitialized_ = false;
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      var session        = sessionProvider_.GetAsync();
+      var taskCollection = taskCollectionProvider_.GetAsync();
+      await session;
+      await taskCollection;
+      isInitialized_ = true;
+    }
+  }
 }

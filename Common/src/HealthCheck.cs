@@ -46,7 +46,7 @@ public class HealthCheck : IHealthCheck
 
   /// <exception cref="ArgumentOutOfRangeException"></exception>
   /// <inheritdoc />
-  public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = new CancellationToken())
+  public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
   {
     if(await healthCheckProvider_.Check(tag_))
       return HealthCheckResult.Healthy();

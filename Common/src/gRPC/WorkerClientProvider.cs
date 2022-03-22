@@ -22,6 +22,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -63,5 +64,21 @@ public class WorkerClientProvider : ProviderBase<Worker.WorkerClient>
     }
 
     return new(channel);
+  }
+
+  private bool isInitialized_ = false;
+
+  /// <inheritdoc />
+  public override ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+
+  /// <inheritdoc />
+  public Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      isInitialized_ = true;
+    }
+
+    return Task.CompletedTask;
   }
 }
