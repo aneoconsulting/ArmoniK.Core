@@ -317,6 +317,35 @@ public class TaskTableTestBase
     }
   }
 
+  [Test]
+  public async Task UpdateAllTaskStatusAsyncShouldSucceedIfNoStatusGiven()
+  {
+    if (RunTests)
+    {
+      var testFilter = new TaskFilter
+      {
+
+        Task = new TaskFilter.Types.IdsRequest
+        {
+          Ids =
+          {
+            "TaskProcessingId",
+            "TaskCreatingId",
+          },
+        },
+      };
+      await TaskTable.UpdateAllTaskStatusAsync(testFilter,
+                                               TaskStatus.Timeout,
+                                               CancellationToken.None);
+      var resCreating = await TaskTable.GetTaskStatus("TaskCreatingId",
+                                                      CancellationToken.None);
+      var resProcessing = await TaskTable.GetTaskStatus("TaskProcessingId",
+                                                        CancellationToken.None);
+
+      Assert.IsTrue(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout);
+    }
+  }
+
   [Test(Description = "Forbidden update: A given Task its on a final status")]
   public void UpdateAllTaskStatusAsyncShouldFail()
   {
