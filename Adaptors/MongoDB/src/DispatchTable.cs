@@ -64,13 +64,14 @@ public class DispatchTable : IDispatchTable
   {
     sessionProvider_            = sessionProvider;
     dispatchCollectionProvider_ = dispatchCollectionProvider;
+    DispatchRefreshPeriod       = options.DispatchRefreshPeriod;
     DispatchTimeToLiveDuration  = options.DispatchTimeToLive;
     Logger                      = logger;
     activitySource_             = activitySource;
   }
 
   /// <inheritdoc />
-  public TimeSpan DispatchTimeToLiveDuration { get; }
+  public TimeSpan DispatchTimeToLiveDuration { get; set; }
 
   /// <inheritdoc />
   public async Task<bool> TryAcquireDispatchAsync(string                      sessionId,

@@ -37,7 +37,7 @@ public interface IDispatchTable
 {
   TimeSpan DispatchTimeToLiveDuration { get; }
   ILogger  Logger                     { get; }
-  TimeSpan DispatchRefreshPeriod      { get; }
+  TimeSpan DispatchRefreshPeriod { get; }
 
   Task<bool> TryAcquireDispatchAsync(string                      sessionId,
                                      string                      taskId,
