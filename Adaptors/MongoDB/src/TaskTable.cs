@@ -191,10 +191,10 @@ public class TaskTable : ITaskTable
     using var activity       = activitySource_.StartActivity($"{nameof(UpdateAllTaskStatusAsync)}");
     var       taskCollection = await taskCollectionProvider_.GetAsync();
 
-    var statuses = filter.Included.Statuses;
-    if (statuses.Contains(TaskStatus.Completed) |
-        statuses.Contains(TaskStatus.Failed) |
-        statuses.Contains(TaskStatus.Canceled))
+    if (filter.Included != null &&
+        filter.Included.Statuses.Contains(TaskStatus.Completed) |
+        filter.Included.Statuses.Contains(TaskStatus.Failed) |
+        filter.Included.Statuses.Contains(TaskStatus.Canceled))
     {
       throw new ArmoniKException($"The given TaskFilter contains a terminal state, update forbidden");
     }
