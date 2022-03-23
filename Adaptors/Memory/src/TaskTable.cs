@@ -33,8 +33,11 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
+using Google.Protobuf;
+
 using Microsoft.Extensions.Logging;
 
+using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -42,9 +45,20 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class TaskTable : ITaskTable
 {
-  private readonly ConcurrentDictionary<string, TaskData>                taskId2TaskData_  = new();
-  private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> dispatch2TaskIds_ = new();
-  private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskIds_ = new();
+  private readonly ConcurrentDictionary<string, TaskData>                taskId2TaskData_;
+  private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> dispatch2TaskIds_;
+  private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskIds_;
+
+  public TaskTable(ConcurrentDictionary<string, TaskData> task2TaskData,
+                   ConcurrentDictionary<string, ConcurrentQueue<string>> dispatch2TaskIds,
+                   ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskId,
+                   ILogger<TaskTable> logger)
+  {
+    taskId2TaskData_ = task2TaskData;
+    dispatch2TaskIds_ = dispatch2TaskIds;
+    session2TaskIds_ = session2TaskId;
+    Logger = logger;
+  }
 
   /// <inheritdoc />
   public TimeSpan PollingDelay { get; set; }
@@ -56,14 +70,11 @@ public class TaskTable : ITaskTable
     {
       if (!taskId2TaskData_.TryAdd(taskData.TaskId,
                                    taskData))
-        throw new InvalidOperationException("Tasks already exists");
+        throw new ArmoniKException($"Tasks '{taskData.TaskId}' already exists");
 
-      foreach (var dispatchId in taskData.AncestorDispatchIds)
-      {
-        var dispatches = dispatch2TaskIds_.GetOrAdd(dispatchId,
-                                                    new ConcurrentQueue<string>());
-        dispatches.Enqueue(taskData.TaskId);
-      }
+      var dispatch = dispatch2TaskIds_.GetOrAdd(taskData.DispatchId,
+                                                new ConcurrentQueue<string>());
+      dispatch.Enqueue(taskData.TaskId);
 
       var session = session2TaskIds_.GetOrAdd(taskData.SessionId,
                                               new ConcurrentQueue<string>());
@@ -78,33 +89,55 @@ public class TaskTable : ITaskTable
     => Task.FromResult(taskId2TaskData_[taskId]);
 
   /// <inheritdoc />
-  public Task<string> GetTaskDispatchId(string taskId, CancellationToken cancellationToken = default) 
-    => Task.FromResult(taskId2TaskData_[taskId].DispatchId);
+  public Task<string> GetTaskDispatchId(string taskId, CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      return Task.FromResult(taskId2TaskData_[taskId].DispatchId);
+    }
+    catch (KeyNotFoundException)
+    {
+      throw new ArmoniKException($"key {taskId} not found");
+    }
+  }
 
   /// <inheritdoc />
-  public Task<IList<string>> GetTaskAncestorDispatchIds(string taskId, CancellationToken cancellationToken = default) 
-    => Task.FromResult(taskId2TaskData_[taskId].AncestorDispatchIds);
+  public Task<IList<string>> GetTaskAncestorDispatchIds(string taskId, CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      return Task.FromResult(taskId2TaskData_[taskId].AncestorDispatchIds);
+    }
+    catch (KeyNotFoundException)
+    {
+      throw new ArmoniKException($"key {taskId} not found");
+    }
+  }
 
   /// <inheritdoc />
   public Task ChangeTaskDispatch(string oldDispatchId, string newDispatchId, CancellationToken cancellationToken)
   {
-    while (dispatch2TaskIds_[oldDispatchId].TryDequeue(out var taskId))
+    if (!dispatch2TaskIds_.ContainsKey(oldDispatchId))
+      throw new ArmoniKException($"Key '{oldDispatchId}' not found");
+
+    while ( dispatch2TaskIds_[oldDispatchId].TryDequeue(out var taskId) )
     {
       taskId2TaskData_.AddOrUpdate(taskId,
                                    _ => throw new InvalidOperationException("The task does not exist."),
                                    (_, data) => data.DispatchId == oldDispatchId
-                                                  ? data with
-                                                    {
-                                                      DispatchId = newDispatchId,
-                                                      AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId).ToList(),
-                                                    }
-                                                  : data with
-                                                    {
-                                                      AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId).ToList(),
-                                                    });
-      dispatch2TaskIds_[newDispatchId].Enqueue(taskId);
+                                     ? data with
+                                     {
+                                       DispatchId = newDispatchId,
+                                       AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId).ToList(),
+                                     }
+                                     : data with
+                                     {
+                                       AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId).ToList(),
+                                     });
+      var dispatch = dispatch2TaskIds_.GetOrAdd(newDispatchId,
+                                                new ConcurrentQueue<string>());
+      dispatch.Enqueue(taskId);
     }
-
     return Task.CompletedTask;
   }
 
@@ -124,7 +157,7 @@ public class TaskTable : ITaskTable
                                      return data;
 
                                    if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
-                                     throw new InvalidOperationException("the task is in a final state ant its status cannot change anymore");
+                                     throw new ArmoniKException("the task is in a final state ant its status cannot change anymore");
 
                                    updated = true;
                                    return data with
@@ -137,11 +170,22 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public async Task<int> UpdateAllTaskStatusAsync(TaskFilter filter, TaskStatus status, CancellationToken cancellationToken = default)
-    => await ListTasksAsync(filter,
-                            cancellationToken).Select(taskId => UpdateAndCheckTaskStatus(taskId,
-                                                                                         status))
-                                              .CountAsync(checkTask => checkTask,
-                                                               cancellationToken);
+  {
+    if (!filter.Included.IsInitialized() |
+        filter.Included.Statuses.Contains(TaskStatus.Completed) |
+        filter.Included.Statuses.Contains(TaskStatus.Failed) |
+        filter.Included.Statuses.Contains(TaskStatus.Canceled))
+    {
+      throw new ArmoniKException($"The given TaskFilter contains a terminal state or isn't initialized properly");
+    }
+
+    var result = await ListTasksAsync(filter,
+                         cancellationToken).Select(taskId => UpdateAndCheckTaskStatus(taskId,
+                                                                                      status))
+                                           .CountAsync(checkTask => checkTask, cancellationToken);
+
+    return result;
+  }
 
   /// <inheritdoc />
   public Task<bool> IsTaskCancelledAsync(string taskId, CancellationToken cancellationToken = default)
@@ -149,33 +193,57 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public async Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default)
-    => await UpdateAllTaskStatusAsync(new ()
-                                {
-                                  Session = new()
-                                            {
-                                              Ids =
-                                              {
-                                                sessionId,
-                                              },
-                                            },
-                                },
-                                TaskStatus.Canceling,
-                                cancellationToken);
+  {
+    if (!session2TaskIds_.ContainsKey(sessionId))
+      throw new ArmoniKException($"Key '{sessionId}' not found");
+
+    var sessionFilter = new TaskFilter
+    {
+      Session = new TaskFilter.Types.IdsRequest
+      {
+        Ids =
+        {
+          sessionId,
+        },
+      },
+      Included = new TaskFilter.Types.StatusesRequest(),
+    };
+
+    await UpdateAllTaskStatusAsync(sessionFilter,
+                                   TaskStatus.Canceling,
+                                   cancellationToken);
+  }
 
   /// <inheritdoc />
   public async Task CancelDispatchAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
-    => await UpdateAllTaskStatusAsync(new()
-                                      {
-                                        Dispatch = new()
-                                                  {
-                                                    Ids =
-                                                    {
-                                                      dispatchId,
-                                                    },
-                                                  },
-                                      },
-                                      TaskStatus.Canceling,
-                                      cancellationToken);
+  {
+    if (!dispatch2TaskIds_.ContainsKey(dispatchId))
+      throw new ArmoniKException($"Key '{dispatchId}' not found");
+
+    var dispatchFilter = new TaskFilter
+    {
+      Session = new TaskFilter.Types.IdsRequest
+      {
+        Ids =
+        {
+          rootSessionId,
+        },
+      },
+      Dispatch = new TaskFilter.Types.IdsRequest
+      {
+        Ids =
+        {
+          dispatchId,
+        },
+      },
+      Included = new TaskFilter.Types.StatusesRequest(),
+    };
+
+    await UpdateAllTaskStatusAsync(dispatchFilter,
+                                   TaskStatus.Canceling,
+                                   cancellationToken);
+  }
+
   /// <inheritdoc />
   public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default)
     => await ListTasksAsync(filter,
@@ -186,14 +254,40 @@ public class TaskTable : ITaskTable
                                               .ToListAsync(cancellationToken);
 
   /// <inheritdoc />
-  public Task<int> CountAllTasksAsync(TaskStatus status, CancellationToken cancellationToken = default)
+  public async Task<int> CountAllTasksAsync(TaskStatus status, CancellationToken cancellationToken = default)
   {
-    throw new NotImplementedException();
+    var count       = 0;
+
+    foreach (var session in session2TaskIds_.Keys)
+    {
+      var statusFilter = new TaskFilter
+      {
+        Included = new TaskFilter.Types.StatusesRequest
+        {
+          Statuses =
+          {
+            status,
+          },
+        },
+        Session = new TaskFilter.Types.IdsRequest
+        {
+          Ids =
+          {
+            session,
+          },
+        },
+      };
+
+      count += await ListTasksAsync(statusFilter,
+                                  cancellationToken).CountAsync(cancellationToken);
+    }
+
+    return count;
   }
 
   /// <inheritdoc />
   public Task DeleteTaskAsync(string id, CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+    => Task.FromResult(taskId2TaskData_.Remove(id,out _));
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken)
@@ -220,34 +314,36 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken)
-  {
-    throw new NotImplementedException();
-  }
+  public async Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken)
+    => await UpdateTaskStatusAsync(taskId,  TaskStatus.Completed, cancellationToken);
 
   /// <inheritdoc />
-  public Task SetTaskErrorAsync(string   taskId, string            errorDetail, CancellationToken cancellationToken)
+  public async Task SetTaskErrorAsync(string   taskId, string            errorDetail, CancellationToken cancellationToken)
   {
-    throw new NotImplementedException();
+    using var _ = Logger.LogFunction();
+
+    var taskOutput = new Output(Error: errorDetail,
+                               Success: false);
+
+    Logger.LogDebug("update task {taskId} to output {output}",
+                    taskId,
+                    taskOutput);
+    /* A Task that errors is conceptually a  completed task,
+     * the error is reported and detailed in its Output*/
+    await UpdateTaskStatusAsync(taskId, TaskStatus.Completed, cancellationToken);
   }
 
   /// <inheritdoc />
   public Task<Output> GetTaskOutput(string taskId, CancellationToken cancellationToken = default)
-  {
-    throw new NotImplementedException();
-  }
+    => Task.FromResult(taskId2TaskData_[taskId].Output);
 
   /// <inheritdoc />
   public Task<TaskStatus> GetTaskStatus(string taskId, CancellationToken cancellationToken = default)
-  {
-    throw new NotImplementedException();
-  }
+    => Task.FromResult(taskId2TaskData_[taskId].Status);
 
   /// <inheritdoc />
   public Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string taskId, CancellationToken cancellationToken = default)
-  {
-    throw new NotImplementedException();
-  }
+    => Task.FromResult(taskId2TaskData_[taskId].ExpectedOutput as IEnumerable<string>);
 
   /// <inheritdoc />
   public ILogger Logger { get; set; }
