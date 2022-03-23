@@ -172,7 +172,7 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public async Task<int> UpdateAllTaskStatusAsync(TaskFilter filter, TaskStatus status, CancellationToken cancellationToken = default)
   {
-    if (!filter.Included.IsInitialized() |
+    if (filter.Included != null &&
         filter.Included.Statuses.Contains(TaskStatus.Completed) |
         filter.Included.Statuses.Contains(TaskStatus.Failed) |
         filter.Included.Statuses.Contains(TaskStatus.Canceled))
@@ -207,7 +207,6 @@ public class TaskTable : ITaskTable
           sessionId,
         },
       },
-      Included = new TaskFilter.Types.StatusesRequest(),
     };
 
     await UpdateAllTaskStatusAsync(sessionFilter,
@@ -237,7 +236,6 @@ public class TaskTable : ITaskTable
           dispatchId,
         },
       },
-      Included = new TaskFilter.Types.StatusesRequest(),
     };
 
     await UpdateAllTaskStatusAsync(dispatchFilter,
