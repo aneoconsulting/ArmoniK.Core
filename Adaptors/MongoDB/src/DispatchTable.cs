@@ -64,13 +64,14 @@ public class DispatchTable : IDispatchTable
   {
     sessionProvider_            = sessionProvider;
     dispatchCollectionProvider_ = dispatchCollectionProvider;
+    DispatchRefreshPeriod       = options.DispatchRefreshPeriod;
     DispatchTimeToLiveDuration  = options.DispatchTimeToLive;
     Logger                      = logger;
     activitySource_             = activitySource;
   }
 
   /// <inheritdoc />
-  public TimeSpan DispatchTimeToLiveDuration { get; }
+  public TimeSpan DispatchTimeToLiveDuration { get; set; }
 
   /// <inheritdoc />
   public async Task<bool> TryAcquireDispatchAsync(string                      sessionId,
@@ -249,4 +250,23 @@ public class DispatchTable : IDispatchTable
                                                      .WithCancellation(cancellationToken))
       yield return dispatch;
   }
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      var session        = sessionProvider_.GetAsync();
+      var dispatch = dispatchCollectionProvider_.GetAsync();
+      await session;
+      await dispatch;
+      isInitialized_ = true;
+    }
+  }
+
+
+  private bool isInitialized_ = false;
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
 }

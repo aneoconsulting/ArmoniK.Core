@@ -48,6 +48,7 @@ public class GrpcChannelProvider : ProviderBase<ChannelBase>
              : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Address,
                                                                 logger)))
   {
+    isInitialized_ = true;
   }
 
   private static ChannelBase BuildWebGrpcChannel(string address, ILogger logger)
@@ -91,4 +92,8 @@ public class GrpcChannelProvider : ProviderBase<ChannelBase>
                                                     HttpHandler = socketsHttpHandler,
                                                   });
   }
+
+  private readonly bool isInitialized_ = false;
+
+  public override ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
 }

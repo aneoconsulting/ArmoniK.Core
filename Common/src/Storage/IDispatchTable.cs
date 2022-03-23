@@ -33,11 +33,11 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public interface IDispatchTable
+public interface IDispatchTable : IInitializable
 {
   TimeSpan DispatchTimeToLiveDuration { get; }
   ILogger  Logger                     { get; }
-  TimeSpan DispatchRefreshPeriod      { get; }
+  TimeSpan DispatchRefreshPeriod { get; }
 
   Task<bool> TryAcquireDispatchAsync(string                      sessionId,
                                      string                      taskId,

@@ -34,7 +34,7 @@ public class TableStorage
 
   public TimeSpan PollingDelay { get; set; } = TimeSpan.FromSeconds(5);
 
-  public TimeSpan DispatchAcquisitionPeriod   { get; set; } = TimeSpan.FromSeconds(15);
-  
-  public TimeSpan DispatchTimeToLive { get; set; } = TimeSpan.FromSeconds(30);
+  public TimeSpan DispatchTimeToLive { get; set; } = TimeSpan.FromMinutes(2);
+
+  public TimeSpan DispatchRefreshPeriod { get; set; } = TimeSpan.FromMinutes(1);
 }

@@ -274,5 +274,22 @@ public class ResultTable : IResultTable
                                            cancellationToken);
   }
 
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      var session          = sessionProvider_.GetAsync();
+      var resultCollection = resultCollectionProvider_.GetAsync();
+      await session;
+      await resultCollection;
+      isInitialized_ = true;
+    }
+  }
 
+
+  private bool isInitialized_ = false;
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
 }
