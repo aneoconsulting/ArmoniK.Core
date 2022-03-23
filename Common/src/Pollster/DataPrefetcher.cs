@@ -36,7 +36,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-public class DataPrefetcher
+public class DataPrefetcher : IInitializable
 {
   private readonly ActivitySource          activitySource_;
   private readonly IObjectStorageFactory   objectStorageFactory_;
@@ -168,5 +168,20 @@ public class DataPrefetcher
                             });
 
     return computeRequests;
+  }
+
+  private bool isInitialized_ = false;
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      await objectStorageFactory_.Init(cancellationToken);
+      isInitialized_ = true;
+    }
   }
 }

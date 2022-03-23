@@ -34,7 +34,7 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public interface ITaskTable
+public interface ITaskTable : IInitializable
 {
   TimeSpan PollingDelay { get; }
 

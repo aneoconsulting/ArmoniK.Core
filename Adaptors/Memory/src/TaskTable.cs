@@ -346,4 +346,13 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public ILogger Logger { get; set; }
+
+  /// <inheritdoc />
+  public Task Init(CancellationToken cancellationToken)
+  {
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(true);
 }

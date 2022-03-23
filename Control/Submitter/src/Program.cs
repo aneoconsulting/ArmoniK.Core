@@ -24,6 +24,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Amqp;
@@ -39,6 +40,9 @@ using Microsoft.Extensions.Logging;
 
 using Serilog;
 using ArmoniK.Core.Control.Submitter.Services;
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 using OpenTelemetry.Trace;
 
@@ -88,6 +92,8 @@ public static class Program
                        logger)
              .ValidateGrpcRequests();
 
+      builder.Services.AddHealthChecks();
+
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
       {
         ActivitySource.AddActivityListener(new ActivityListener
@@ -112,6 +118,9 @@ public static class Program
                });
       }
 
+      builder.WebHost
+             .UseKestrel(options => options.ListenAnyIP(80,
+                                                        listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
 
       var app = builder.Build();
 
@@ -122,29 +131,24 @@ public static class Program
 
       app.UseRouting();
 
+      app.MapGrpcService<GrpcSubmitterService>();
 
-      app.UseEndpoints(endpoints =>
-      {
-        endpoints.MapHealthChecks("/startup",
-                                  new()
-                                  {
-                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
-                                  });
+      app.MapHealthChecks("/startup",
+                          new()
+                          {
+                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                          });
 
-        endpoints.MapHealthChecks("/liveness",
-                                  new()
-                                  {
-                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
-                                  });
+      app.MapHealthChecks("/liveness",
+                          new()
+                          {
+                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                          });
 
-        //readiness uses grpc to ensure corresponding features are ok.
-        endpoints.MapGrpcService<GrpcHealthCheckService>();
 
-        endpoints.MapGrpcService<GrpcSubmitterService>();
+      if (app.Environment.IsDevelopment())
+        app.MapGrpcReflectionService();
 
-        if (app.Environment.IsDevelopment())
-          endpoints.MapGrpcReflectionService();
-      });
       app.Run();
 
       return 0;

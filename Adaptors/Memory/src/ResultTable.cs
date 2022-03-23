@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Exceptions;
 
@@ -161,4 +162,13 @@ public class ResultTable : IResultTable
                                          result);
     return Task.CompletedTask;
   }
+
+  /// <inheritdoc />
+  public Task Init(CancellationToken cancellationToken)
+  {
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(true);
 }
