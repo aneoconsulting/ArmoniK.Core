@@ -3,8 +3,7 @@ name: Release
 on:
   push:
     branches:
-      # - release
-      - '**'
+      - release
     tags-ignore: [ '**' ]
 
 jobs:
@@ -42,12 +41,12 @@ jobs:
       matrix:
         image:
         - dockerhubaneo/armonik_pollingagent
-        # - dockerhubaneo/armonik_control_metrics
-        # - dockerhubaneo/armonik_control
-        # - dockerhubaneo/armonik_core_stream_test_worker
-        # - dockerhubaneo/armonik_core_stream_test_client
-        # - dockerhubaneo/armonik_core_htcmock_test_worker
-        # - dockerhubaneo/armonik_core_htcmock_test_client
+        - dockerhubaneo/armonik_control_metrics
+        - dockerhubaneo/armonik_control
+        - dockerhubaneo/armonik_core_stream_test_worker
+        - dockerhubaneo/armonik_core_stream_test_client
+        - dockerhubaneo/armonik_core_htcmock_test_worker
+        - dockerhubaneo/armonik_core_htcmock_test_client
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -61,11 +60,11 @@ jobs:
 
     - name: tag
       run: |
-        echo $VERSION $RELEASE
+        docker tag ${{ matrix.image }}:$VERSION ${{ matrix.image }}:$RELEASE
 
-    # - name: push
-    #   run: |
-    #     docker push ${{ matrix.img }}:$VERSION
+    - name: push
+      run: |
+        docker push ${{ matrix.image }}:$RELEASE
 
   tag:
     runs-on: ubuntu-latest
