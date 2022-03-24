@@ -179,11 +179,11 @@ jobs:
     - name: Build
       run: |
         echo $VERSION
-        docker build -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
-
-    - name: push
-      run: |
-        docker push ${{ matrix.img }}:$VERSION
+        docker buildx build \
+          --platform linux/amd64,linux/arm64,linux/arm/v7 \
+          -t ${{ matrix.img }}:$VERSION \
+          -f ${{ matrix.path }} . \
+          --push
 
   testStreamDC:
     needs:
