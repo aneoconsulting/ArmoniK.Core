@@ -36,6 +36,7 @@ Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.&#xD;
   L. Ziane Khodja   &lt;lzianekhodja@aneo.fr&gt;&#xD;
   F. Lemaitre       &lt;flemaitre@aneo.fr&gt;&#xD;
   S. Djebbar        &lt;sdjebbar@aneo.fr&gt;&#xD;
+  J. Fonseca        &lt;jfonseca@aneo.fr&gt;&#xD;
 &#xD;
 This program is free software: you can redistribute it and/or modify&#xD;
 it under the terms of the GNU Affero General Public License as published&#xD;
@@ -63,6 +64,7 @@ along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</s:S
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Armonik/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Djebbar/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Dubuc/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Fonseca/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=gridlib/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Grpc/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Gurhem/@EntryIndexedValue">True</s:Boolean>
