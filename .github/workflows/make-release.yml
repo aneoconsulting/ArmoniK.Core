@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    # branches:
+    #   - release
+    tags-ignore: [ '**' ]
+
+jobs:
+  versionning:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.genver.outputs.version }}
+      release: ${{ steps.genver.outputs.release }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+        fetch-depth: 0
+
+    - name: Generate Version
+      id: genver
+      run: |
+        VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=${{ github.ref_name }}-pre --dev-branch=${{ github.ref_name }})
+        echo "::set-output name=version::$VERSION"
+        echo "VERSION : $VERSION"
+        RELEASE=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=${{ github.ref_name }} --dev-branch=master)
+        echo "::set-output name=release::$RELEASE"
+        echo "RELEASE : $RELEASE"
+
+  tagImagesRelease:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+      RELEASE: ${{ needs.versionning.outputs.release }}
+    strategy:
+      fail-fast: true
+      matrix:
+        image:
+        - dockerhubaneo/armonik_pollingagent
+        # - dockerhubaneo/armonik_control_metrics
+        # - dockerhubaneo/armonik_control
+        # - dockerhubaneo/armonik_core_stream_test_worker
+        # - dockerhubaneo/armonik_core_stream_test_client
+        # - dockerhubaneo/armonik_core_htcmock_test_worker
+        # - dockerhubaneo/armonik_core_htcmock_test_client
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: login
+      run: |
+        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
+
+    - name: tag
+      run: |
+        echo $VERSION $RELEASE
+
+    # - name: push
+    #   run: |
+    #     docker push ${{ matrix.img }}:$VERSION
+
+  tag:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/release' }}
+    needs:
+      - versionning
+      - tagImagesRelease
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+
+    - name: tag
+      run: |
+        git tag $VERSION
+        git push origin $VERSION

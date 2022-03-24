@@ -1,0 +1,132 @@
+name: Manual Integration Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  versionning:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.genver.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+        fetch-depth: 0
+
+    - name: Generate Version
+      id: genver
+      run: |
+        VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=master) 
+        echo "::set-output name=version::$VERSION"
+        echo $VERSION
+
+  testStream:
+    needs:
+      - versionning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+
+      - uses: aneoconsulting/ArmoniK@main
+        id: deploy-infra
+        with:
+          control-plane-image: dockerhubaneo/armonik_control
+          control-plane-tag: ${{ needs.versionning.outputs.version }}
+          polling-agent-image: dockerhubaneo/armonik_pollingagent
+          polling-agent-tag: ${{ needs.versionning.outputs.version }}
+          worker-image: dockerhubaneo/armonik_core_stream_test_worker
+          worker-tag: ${{ needs.versionning.outputs.version }}
+          log-level: Information
+
+      - name: Run Stream Tests
+        timeout-minutes: 20
+        run: |
+         export CPIP=$(kubectl get svc control-plane -n armonik -o custom-columns="IP:.spec.clusterIP" --no-headers=true)
+         export CPPort=$(kubectl get svc control-plane -n armonik -o custom-columns="PORT:.spec.ports[*].port" --no-headers=true)
+         export Grpc__Endpoint=http://$CPIP:$CPPort
+
+         cd ./Tests/Stream/Client/
+         dotnet test --logger "trx;LogFileName=test-results.trx"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test - Stream
+          path: ./Tests/Stream/Client/TestResults/test-results.trx
+          reporter: dotnet-trx
+
+      - name: Copy logs
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          mkdir -p /tmp/armoniklogs
+          sudo cp -rL /var/log/pods/armonik_* /tmp/armoniklogs
+          sudo chown $USER -R /tmp/armoniklogs
+          find /tmp/armoniklogs -name "*.log"
+
+      - name: Store logs
+        uses: actions/upload-artifact@v2.3.1
+        if: always()
+        with:
+          name: Logs Stream
+          path: /tmp/armoniklogs/**/*.log
+          retention-days: 5
+
+  testHtcMock:
+    needs:
+      - versionning
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+
+      - uses: aneoconsulting/ArmoniK@main
+        id: deploy-infra
+        with:
+          control-plane-image: dockerhubaneo/armonik_control
+          control-plane-tag: ${{ needs.versionning.outputs.version }}
+          polling-agent-image: dockerhubaneo/armonik_pollingagent
+          polling-agent-tag: ${{ needs.versionning.outputs.version }}
+          worker-image: dockerhubaneo/armonik_core_htcmock_test_worker
+          worker-tag: ${{ needs.versionning.outputs.version }}
+          log-level: Information
+
+      - name: Run HtcMock Tests
+        timeout-minutes: 40
+        run: |
+          export CPIP=$(kubectl get svc control-plane -n armonik -o custom-columns="IP:.spec.clusterIP" --no-headers=true)
+          export CPPort=$(kubectl get svc control-plane -n armonik -o custom-columns="PORT:.spec.ports[*].port" --no-headers=true)
+          export Grpc__Endpoint=http://$CPIP:$CPPort
+
+          docker run --rm -e HtcMock__NTasks=1000 -e Grpc__Endpoint=$Grpc__Endpoint dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+      - name: Copy logs
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          mkdir -p /tmp/armoniklogs
+          sudo cp -rL /var/log/pods/armonik_* /tmp/armoniklogs
+          sudo chown $USER -R /tmp/armoniklogs
+          find /tmp/armoniklogs -name "*.log"
+
+      - name: Store logs
+        uses: actions/upload-artifact@v2.3.1
+        if: always()
+        with:
+          name: Logs HtcMock
+          path: /tmp/armoniklogs/**/*.log
+          retention-days: 5
