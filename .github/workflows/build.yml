@@ -298,9 +298,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/release' }}
     needs:
       - versionning
-      - testStream
       - testStreamDC
-      - testHtcMock
       - testHtcMockDC
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
