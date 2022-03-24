@@ -292,23 +292,3 @@ jobs:
         if: always()
         run: |
           cat docker-compose/logs/*.json
-
-  tag:
-    runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/release' }}
-    needs:
-      - versionning
-      - testStreamDC
-      - testHtcMockDC
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.ref }}
-
-    - name: tag
-      run: |
-        git tag $VERSION
-        git push origin $VERSION
