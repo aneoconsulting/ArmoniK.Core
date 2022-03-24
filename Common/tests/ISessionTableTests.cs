@@ -25,6 +25,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
@@ -38,6 +39,8 @@ public class SessionTableTestBase
 
   protected bool RunTests;
 
+  private const string RootSessionId = "DispatchId";
+
   public virtual void GetSessionTableInstance()
   {
   }
@@ -49,7 +52,7 @@ public class SessionTableTestBase
 
     if (RunTests)
     {
-      SessionTable.CreateSessionDataAsync("rootSessionId",
+      SessionTable.CreateSessionDataAsync(RootSessionId,
                                           "TaskId",
                                           "DispatchId",
                                           new Api.gRPC.V1.TaskOptions(),
@@ -77,6 +80,19 @@ public class SessionTableTestBase
   }
 
   [Test]
+  public void GetSessionAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+        {
+          await SessionTable.GetSessionAsync("BadDispatchId",
+                                             CancellationToken.None);
+        });
+    }
+  }
+
+  [Test]
   public async Task IsSessionCancelledAsyncShouldSucceed()
   {
     if (RunTests)
@@ -89,13 +105,40 @@ public class SessionTableTestBase
   }
 
   [Test]
+  public void IsSessionCancelledAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+      {
+        await SessionTable.IsSessionCancelledAsync("BadDispatchId",
+                                                   CancellationToken.None);
+      });
+    }
+  }
+
+  [Test]
   public async Task IsDispatchCancelledAsyncShouldSucceed()
   {
     if (RunTests)
     {
-      var res = await SessionTable.IsDispatchCancelledAsync("rootSessionId","DispatchId",
+      var res = await SessionTable.IsDispatchCancelledAsync(RootSessionId,"DispatchId",
                                                             CancellationToken.None);
       Assert.IsFalse(res);
+    }
+  }
+
+  [Test]
+  public void IsDispatchCancelledAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+      {
+        await SessionTable.IsDispatchCancelledAsync(RootSessionId,
+                                                    "BadDispatchId",
+                                                    CancellationToken.None);
+      });
     }
   }
 
@@ -126,16 +169,42 @@ public class SessionTableTestBase
   }
 
   [Test]
+  public void CancelSessionAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+      {
+        await SessionTable.CancelSessionAsync("BadDispatchId",
+                                              CancellationToken.None);
+      });
+    }
+  }
+
+  [Test]
   public async Task CancelDispatchAsyncShouldSucceed()
   {
     if (RunTests)
     {
-      var res = SessionTable.CancelDispatchAsync("rootSessionId",
+      var res = SessionTable.CancelDispatchAsync(RootSessionId,
                                                  "DispatchId",
-                                                CancellationToken.None);
+                                                 CancellationToken.None);
       await res;
 
       Assert.IsTrue(res.IsCompletedSuccessfully);
+    }
+  }
+
+  [Test]
+  public void CancelDispatchAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+      {
+        await SessionTable.CancelDispatchAsync(RootSessionId,"BadDispatchId",
+                                               CancellationToken.None);
+      });
     }
   }
 
@@ -144,11 +213,24 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = SessionTable.DeleteSessionAsync("rootSessionId",
+      var res = SessionTable.DeleteSessionAsync(RootSessionId,
                                                 CancellationToken.None);
       await res;
 
       Assert.IsTrue(res.IsCompletedSuccessfully);
+    }
+  }
+
+  [Test]
+  public void DeleteSessionAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+      {
+        await SessionTable.DeleteSessionAsync("BadSessionId",
+                                              CancellationToken.None);
+      });
     }
   }
 
@@ -158,7 +240,7 @@ public class SessionTableTestBase
     if (RunTests)
     {
       // This deletes the ancestor dispatches, renaming necessary?
-      var res = SessionTable.DeleteDispatchAsync("rootSessionId",
+      var res = SessionTable.DeleteDispatchAsync(RootSessionId,
                                                 "DispatchId",CancellationToken.None);
       await res;
 
@@ -166,4 +248,18 @@ public class SessionTableTestBase
     }
   }
 
+  //  Test to reenable after naming convention is clarified 
+  //[Test]
+  //public void DeleteDispatchAsyncShouldFail()
+  //{
+  //  if (RunTests)
+  //  {
+  //    Assert.ThrowsAsync<ArmoniKException>(async () =>
+  //    {
+  //      await SessionTable.DeleteDispatchAsync(RootSessionId,
+  //                                             "BadDispatchId",
+  //                                             CancellationToken.None);
+  //    });
+  //  }
+  //}
 }

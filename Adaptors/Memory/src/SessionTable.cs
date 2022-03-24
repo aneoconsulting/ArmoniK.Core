@@ -7,6 +7,7 @@
 //   L. Ziane Khodja   <lzianekhodja@aneo.fr>
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
+//   J. Fonseca        <jfonseca@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -43,9 +44,17 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class SessionTable : ISessionTable
 {
-  private readonly ConcurrentDictionary<string, SessionData> storage_ = new();
+  private readonly ConcurrentDictionary<string, SessionData>                          storage_;
+  private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> session2Dispatches_;
 
-  private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> session2Dispatches_ = new();
+  public SessionTable(ConcurrentDictionary<string, SessionData>                          storage,
+                      ConcurrentDictionary<string, ConcurrentDictionary<string, string>> session2Dispatches,
+                      ILogger<SessionTable>                                             logger)
+  {
+    storage_            = storage;
+    session2Dispatches_ = session2Dispatches;
+    Logger              = logger;
+  }
 
   /// <inheritdoc />
   public ValueTask<bool> Check(HealthCheckTag tag)
@@ -162,5 +171,5 @@ public class SessionTable : ISessionTable
     => session2Dispatches_[rootSessionId].Keys.ToAsyncEnumerable();
 
   /// <inheritdoc />
-  public ILogger Logger => NullLogger.Instance;
+  public ILogger Logger { get; }
 }
