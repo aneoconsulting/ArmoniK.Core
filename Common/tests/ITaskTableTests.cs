@@ -91,6 +91,19 @@ public class TaskTableTestBase
                               default),
                  new TaskData("SessionId",
                               "PTaskId",
+                              "DispatchId",
+                              "TaskNoPayloadId",
+                              default,
+                              new[] { "happy output" },
+                              false,
+                              null,
+                              TaskStatus.Submitted,
+                              default,
+                              new[] { "Ancestor3DispatchId" },
+                              DateTime.Now,
+                              default),
+                 new TaskData("SessionId",
+                              "PTaskId",
                               "Dispatch2Id",
                               "TaskProcessingId",
                               default,
@@ -151,6 +164,19 @@ public class TaskTableTestBase
 
       Assert.AreEqual(payload,
                       result.Payload);
+    }
+  }
+
+  [Test]
+  public async Task ReadTaskWithoutPayloadAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var result = await TaskTable.ReadTaskAsync("TaskNoPayloadId",
+                                                 CancellationToken.None);
+
+      Assert.AreEqual("TaskNoPayloadId",
+                      result.TaskId);
     }
   }
 
