@@ -7,6 +7,7 @@
 //   L. Ziane Khodja   <lzianekhodja@aneo.fr>
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
+//   J. Fonseca        <jfonseca@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -41,11 +42,17 @@ namespace ArmoniK.Core.Adapters.Memory;
 public class DispatchTable : IDispatchTable
 {
 
-  private readonly ConcurrentDictionary<string, Dispatch> taskIndexedStorage_ = new();
-  private readonly ConcurrentDictionary<string, Dispatch> idIndexedStorage_   = new();
+  private readonly ConcurrentDictionary<string, Dispatch> taskIndexedStorage_;
+  private readonly ConcurrentDictionary<string, Dispatch> idIndexedStorage_;
 
-  public DispatchTable(ILogger logger)
-    => Logger = logger;
+  public DispatchTable(ConcurrentDictionary<string, Dispatch> taskIndexedStorage, 
+                       ConcurrentDictionary<string, Dispatch> idIndexedStorage, 
+                       ILogger<DispatchTable> logger)
+  {
+    taskIndexedStorage_ = taskIndexedStorage;
+    idIndexedStorage_ = idIndexedStorage;
+    Logger              = logger;
+  }
 
   /// <inheritdoc />
   public TimeSpan DispatchTimeToLiveDuration => TimeSpan.FromHours(1);

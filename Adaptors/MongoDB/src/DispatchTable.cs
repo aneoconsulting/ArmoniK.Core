@@ -7,6 +7,7 @@
 //   L. Ziane Khodja   <lzianekhodja@aneo.fr>
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
+//   J. Fonseca        <jfonseca@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -32,6 +33,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
@@ -41,6 +43,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -156,9 +159,16 @@ public class DispatchTable : IDispatchTable
     var sessionHandle      = await sessionProvider_.GetAsync();
     var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
-    return await dispatchCollection.AsQueryable(sessionHandle)
-                                   .Where(model => model.Id == dispatchId)
-                                   .FirstAsync(cancellationToken);
+    var result  = dispatchCollection.AsQueryable(sessionHandle).Where(model => model.Id == dispatchId);
+
+    try
+    {
+      return await result.FirstAsync(cancellationToken);
+    }
+    catch (InvalidOperationException)
+    {
+      throw new ArmoniKException($"Could not find a Dispatch for the id: '{dispatchId}'");
+    }
   }
 
   /// <inheritdoc />
@@ -185,7 +195,7 @@ public class DispatchTable : IDispatchTable
                                                                        cancellationToken);
 
     if (res == null)
-      throw new KeyNotFoundException();
+      throw new ArmoniKException($"Key '{id}' not found");
   }
 
 
@@ -204,7 +214,7 @@ public class DispatchTable : IDispatchTable
                                                                                     DateTime.UtcNow + DispatchTimeToLiveDuration),
                                                              cancellationToken: cancellationToken);
     if (res == null)
-      throw new KeyNotFoundException();
+      throw new ArmoniKException($"Key '{id}' not found");
   }
 
   /// <inheritdoc />
@@ -216,8 +226,11 @@ public class DispatchTable : IDispatchTable
 
     var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
-    await dispatchCollection.DeleteManyAsync(model => model.TaskId == id,
-                                             cancellationToken);
+    var res = await dispatchCollection.DeleteManyAsync(model => model.TaskId == id,
+                                                     cancellationToken);
+
+    if (res.DeletedCount == 0)
+      throw new ArmoniKException($"No dispatch was deleted; TaskId: '{id}' not found");
   }
 
   /// <inheritdoc />
@@ -229,8 +242,10 @@ public class DispatchTable : IDispatchTable
 
     var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
 
-    await dispatchCollection.DeleteManyAsync(model => model.Id == id,
+    var res = await dispatchCollection.DeleteManyAsync(model => model.Id == id,
                                              cancellationToken);
+    if (res.DeletedCount == 0)
+      throw new ArmoniKException($"No dispatch was deleted; DispatchId: '{id}' not found");
   }
 
 

@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -37,19 +36,16 @@ using Mongo2Go;
 
 using MongoDB.Driver;
 
-using NUnit.Framework;
-
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
-[TestFixture]
-public class ResultTableTests : ResultTableTestBase
+public class DispatchTableTests : DispatchTableTestBase
 {
   private                 MongoClient    client_;
   private                 MongoDbRunner  runner_;
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
 
-  public override void GetResultTableInstance()
+  public override void GetDispatchTableInstance()
   {
     var logger = NullLogger.Instance;
     runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
@@ -77,10 +73,13 @@ public class ResultTableTests : ResultTableTestBase
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
     {
       ValidateOnBuild = true,
+      ValidateScopes  = true,
     });
 
-    ResultTable = provider.GetRequiredService<IResultTable>();
-    RunTests    = true;
+    var scope = provider.CreateScope();
+
+    DispatchTable = scope.ServiceProvider.GetRequiredService<IDispatchTable>();
+    RunTests      = true;
   }
 
   public override void TearDown()
