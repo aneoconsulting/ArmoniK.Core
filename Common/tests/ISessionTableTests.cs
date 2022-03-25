@@ -160,11 +160,11 @@ public class SessionTableTestBase
     if (RunTests)
     {
       // Inconsistent signature: the contract asks for sessionId
-      var res = SessionTable.CancelSessionAsync("DispatchId",
+      await SessionTable.CancelSessionAsync("DispatchId",
                                                        CancellationToken.None);
-      await res;
-
-      Assert.IsTrue(res.IsCompletedSuccessfully);
+      var wasSessionCanceled = await SessionTable.IsSessionCancelledAsync(RootSessionId,
+                                                                          CancellationToken.None);
+      Assert.IsTrue(wasSessionCanceled);
     }
   }
 
@@ -186,12 +186,14 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = SessionTable.CancelDispatchAsync(RootSessionId,
+      await SessionTable.CancelDispatchAsync(RootSessionId,
                                                  "DispatchId",
                                                  CancellationToken.None);
-      await res;
 
-      Assert.IsTrue(res.IsCompletedSuccessfully);
+      var wasDispatchCanceled = await SessionTable.IsDispatchCancelledAsync(RootSessionId, "DispatchId",
+                                                                   CancellationToken.None);
+
+      Assert.IsTrue(wasDispatchCanceled);
     }
   }
 
