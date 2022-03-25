@@ -54,38 +54,39 @@ public class ObjectStorage : IObjectStorage
   public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<byte[]> valueChunks, CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    await Task.WhenAll(await valueChunks.Select((chunk, i) =>
-    {
-      logger_.LogTrace("Add {key} {value}",
-                       objectStorageName_ + key + i,
-                       chunk);
-      return redis_.SetAddAsync(objectStorageName_ + key,
-                                chunk);
-    }).ToListAsync(cancellationToken));
+
+    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
+                          await valueChunks.CountAsync(cancellationToken));
+
+    await Task.WhenAll(await valueChunks.Select((chunk, i) => redis_.StringSetAsync(objectStorageName_ + key + "_" + i,
+                                                                                    chunk)).ToListAsync(cancellationToken));
   }
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    await Task.WhenAll(await valueChunks.Select((chunk, i) =>
-    {
-      logger_.LogTrace("Add {key} {value}",
-                       objectStorageName_ + key + i, chunk);
-      return redis_.SetAddAsync(objectStorageName_ + key,
-                                chunk);
-    }).ToListAsync(cancellationToken));
+
+    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
+                                await valueChunks.CountAsync(cancellationToken));
+
+    await Task.WhenAll(await valueChunks.Select((chunk, i) => redis_.StringSetAsync(objectStorageName_ + key + "_" + i,
+                                                                                    chunk)).ToListAsync(cancellationToken));
   }
 
   /// <inheritdoc />
   public async IAsyncEnumerable<byte[]> TryGetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _   = logger_.LogFunction(objectStorageName_ + key);
-    var res = await redis_.SetMembersAsync(new RedisKey(objectStorageName_ + key));
-    foreach (var redisValue in res)
+    var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count");
+
+    if (!value.HasValue)
+      yield break;
+    var valuesCount = int.Parse(value);
+
+    for (int index = 0; index < valuesCount; index++)
     {
-      cancellationToken.ThrowIfCancellationRequested();
-      yield return redisValue;
+      yield return await redis_.StringGetAsync(objectStorageName_ + key + "_" + index);
     }
   }
 
