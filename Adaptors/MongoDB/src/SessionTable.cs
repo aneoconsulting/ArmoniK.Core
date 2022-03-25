@@ -7,6 +7,7 @@
 //   L. Ziane Khodja   <lzianekhodja@aneo.fr>
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
+//   J. Fonseca        <jfonseca@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -32,6 +33,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
@@ -96,9 +98,15 @@ public class SessionTable : ISessionTable
     var       sessionHandle     = await sessionProvider_.GetAsync();
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-    return await sessionCollection.AsQueryable(sessionHandle)
-                                  .Where(model => model.DispatchId == dispatchId)
-                                  .FirstAsync(cancellationToken);
+    var queryableSessionCollection = sessionCollection.AsQueryable(sessionHandle)
+                                                   .Where(model => model.DispatchId == dispatchId);
+
+    if (!queryableSessionCollection.Any())
+    {
+      throw new ArmoniKException($"Key '{dispatchId}' not found");
+    }
+
+    return await queryableSessionCollection.FirstAsync(cancellationToken);
   }
 
   /// <inheritdoc />
@@ -121,11 +129,16 @@ public class SessionTable : ISessionTable
     var       sessionHandle     = await sessionProvider_.GetAsync();
     var       sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-    return await sessionCollection.AsQueryable(sessionHandle)
-                                  .Where(model => model.DispatchId == dispatchId)
-                                  .Select(model => model.IsCancelled)
-                                  .FirstAsync(cancellationToken);
 
+    var queryableSessionCollection = sessionCollection.AsQueryable(sessionHandle)
+                                                      .Where(model => model.DispatchId == dispatchId);
+
+    if (!queryableSessionCollection.Any())
+    {
+      throw new ArmoniKException($"Key '{dispatchId}' not found");
+    }
+
+    return await queryableSessionCollection.Select(model => model.IsCancelled).FirstAsync(cancellationToken);
   }
 
 
@@ -173,7 +186,7 @@ public class SessionTable : ISessionTable
                                                       cancellationToken: cancellationToken);
 
     if ((await resSession).MatchedCount < 1)
-      throw new InvalidOperationException("No open session found. Was the session closed?");
+      throw new ArmoniKException("No open session found. Was the session closed?");
   }
 
   /// <inheritdoc />
@@ -185,8 +198,11 @@ public class SessionTable : ISessionTable
 
     var sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-    await sessionCollection.DeleteManyAsync(model => model.SessionId == sessionId,
+    var res = await sessionCollection.DeleteManyAsync(model => model.SessionId == sessionId,
                                             cancellationToken);
+
+    if (res.DeletedCount == 0)
+      throw new ArmoniKException($"Key '{sessionId}' not found");
   }
 
   /// <inheritdoc />
@@ -200,8 +216,11 @@ public class SessionTable : ISessionTable
 
     var sessionCollection = await sessionCollectionProvider_.GetAsync();
 
-    await sessionCollection.DeleteManyAsync(model => model.AncestorsDispatchId.Contains(dispatchId),
-                                            cancellationToken);
+    var res = await sessionCollection.DeleteManyAsync(model => model.AncestorsDispatchId.Contains(dispatchId),
+                                                     cancellationToken);
+    // TODO: Enable pertinent check depending if what has to be erased are the ancestors or the dispatch itself
+    //if (res.DeletedCount == 0)
+    //  throw new ArmoniKException($"Key '{dispatchId}' not found");
   }
 
 
