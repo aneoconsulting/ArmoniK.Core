@@ -21,6 +21,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Security.Cryptography;
+
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Stream.Worker;
 
@@ -45,6 +47,8 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
       logger_.LogDebug("ExpectedResults {expectedResults}",
                        taskHandler.ExpectedResults);
       logger_.LogDebug("Execute Task {taskId}", taskHandler.TaskId);
+      logger_.LogDebug("Payload size {payloadSize}", taskHandler.Payload.Length);
+
       try
       {
         var payload = TestPayload.Deserialize(taskHandler.Payload);
@@ -192,6 +196,20 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
                   KillSubTasks = true,
                 },
                 Status = TaskStatus.Failed,
+              };
+              break;
+            case TestPayload.TaskType.PayloadCheckSum:
+              var resultPayloadCheckSum = new TestPayload
+              {
+                Type      = TestPayload.TaskType.Result,
+                DataBytes = SHA256.HashData(payload.DataBytes),
+              };
+              await taskHandler.SendResult(taskHandler.ExpectedResults.Single(),
+                                           resultPayloadCheckSum.Serialize());
+              output = new Output
+              {
+                Ok     = new Empty(),
+                Status = TaskStatus.Completed,
               };
               break;
             default:

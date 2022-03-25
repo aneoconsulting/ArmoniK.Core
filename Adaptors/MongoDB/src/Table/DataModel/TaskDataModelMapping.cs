@@ -53,7 +53,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                      cm.MapProperty(nameof(TaskData.Options)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(TaskData.CreationDate)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(TaskData.HasPayload)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.Payload)).SetIgnoreIfDefault(true);
+                                                     cm.MapProperty(nameof(TaskData.Payload)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<byte>());
                                                      cm.MapProperty(nameof(TaskData.AncestorDispatchIds)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
                                                      cm.MapProperty(nameof(TaskData.ExpectedOutput)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(TaskData.Output)).SetIsRequired(true);
