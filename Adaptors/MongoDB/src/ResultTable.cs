@@ -48,7 +48,6 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class ResultTable : IResultTable
 {
-  private readonly ILogger                                                 logger_;
   private readonly SessionProvider                                         sessionProvider_;
   private readonly MongoCollectionProvider<Result, ResultDataModelMapping> resultCollectionProvider_;
   private readonly ActivitySource                                          activitySource_;
@@ -59,7 +58,7 @@ public class ResultTable : IResultTable
     sessionProvider_          = sessionProvider;
     resultCollectionProvider_ = resultCollectionProvider;
     activitySource_           = activitySource;
-    logger_                   = logger;
+    Logger                    = logger;
   }
 
   /// <inheritdoc />
@@ -287,6 +286,8 @@ public class ResultTable : IResultTable
     }
   }
 
+  /// <inheritdoc />
+  public ILogger Logger { get; }
 
   private bool isInitialized_ = false;
 

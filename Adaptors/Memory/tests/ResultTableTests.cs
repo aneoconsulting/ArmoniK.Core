@@ -22,7 +22,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Concurrent;
+
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
@@ -33,7 +38,17 @@ public class ResultTableTests : ResultTableTestBase
 { 
   public override void GetResultTableInstance()
   {
-    ResultTable = new ResultTable();
+    var services = new ServiceCollection();
+
+    services.AddTransient<IResultTable, ResultTable>();
+    services.AddTransient<ConcurrentDictionary<string, ConcurrentDictionary<string, Result>>>();
+    services.AddLogging();
+
+    var provider = services.BuildServiceProvider(true);
+    var scope    = provider.CreateScope();
+
+    ResultTable = scope.ServiceProvider.GetRequiredService<IResultTable>();
+
     RunTests    = true;
   }
 }
