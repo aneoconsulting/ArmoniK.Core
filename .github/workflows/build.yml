@@ -73,6 +73,7 @@ jobs:
         projects:
           - Common/tests
           - Adaptors/MongoDB/tests
+          - Adaptors/Memory/tests
     steps:
     - name: Checkout
       uses: actions/checkout@v2
