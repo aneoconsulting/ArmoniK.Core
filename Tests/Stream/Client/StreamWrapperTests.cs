@@ -761,7 +761,7 @@ internal class StreamWrapperTests
     var taskRequestList = new List<TaskRequest>();
 
     Random rnd       = new Random();
-    byte[] dataBytes = new byte[size * 24];
+    byte[] dataBytes = new byte[size * 1024 * 128];
     rnd.NextBytes(dataBytes);
     var hash = SHA256.HashData(dataBytes);
 
