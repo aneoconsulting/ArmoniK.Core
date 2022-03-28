@@ -58,6 +58,10 @@ jobs:
       run: |
         echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
 
+    - name: pull
+      run: |
+        docker pull ${{ matrix.image }}:$VERSION
+
     - name: tag
       run: |
         docker tag ${{ matrix.image }}:$VERSION ${{ matrix.image }}:$RELEASE
