@@ -16,6 +16,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
       DatadepTransfer,
       DatadepCompute,
       ReturnFailed,
+      PayloadCheckSum,
     }
 
     public byte [] DataBytes { get; set; }

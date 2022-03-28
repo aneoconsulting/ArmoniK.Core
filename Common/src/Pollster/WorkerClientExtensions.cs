@@ -183,7 +183,7 @@ public static class WorkerClientExtensions
               yield break;
             case Output.TypeOneofCase.None:
             default:
-              throw new InvalidOperationException();
+              throw new InvalidOperationException("Incorrect type for " + nameof(reply.Output));
           }
         case ProcessReply.TypeOneofCase.Result:
           switch (reply.Result.TypeCase)

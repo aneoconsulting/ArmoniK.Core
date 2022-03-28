@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -33,7 +34,6 @@ using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
-using Grpc.Core;
 using Grpc.Net.Client;
 
 using Microsoft.Extensions.Configuration;
@@ -720,5 +720,158 @@ internal class StreamWrapperTests
       return 2 * resultInt2 == resultInt1;
     });
     Assert.IsTrue(results.All(task => task.Result));
+  }
+
+
+  [Test]
+  public async Task LargePayloads([Values(2,
+                                          10)]
+                                  int n, [Values(1,
+                                               2, 5, 10)]
+                                  int size)
+  {
+    var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
+    var taskOptions = new TaskOptions
+    {
+      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+      MaxRetries = 3,
+      Priority = 1,
+    };
+
+    Console.WriteLine($"Creating Session {sessionId}");
+    var session = client_.CreateSession(new CreateSessionRequest
+    {
+      DefaultTaskOption = taskOptions,
+      Id = sessionId,
+    });
+    switch (session.ResultCase)
+    {
+      case CreateSessionReply.ResultOneofCase.Error:
+        throw new Exception("Error while creating session : " + session.Error);
+      case CreateSessionReply.ResultOneofCase.None:
+        throw new Exception("Issue with Server !");
+      case CreateSessionReply.ResultOneofCase.Ok:
+        break;
+      default:
+        throw new ArgumentOutOfRangeException();
+    }
+
+    Console.WriteLine("Session Created");
+
+    var taskRequestList = new List<TaskRequest>();
+
+    Random rnd       = new Random();
+    byte[] dataBytes = new byte[size * 1024 * 128];
+    rnd.NextBytes(dataBytes);
+    var hash = SHA256.HashData(dataBytes);
+
+    var payload = new TestPayload
+    {
+      Type      = TestPayload.TaskType.PayloadCheckSum,
+      DataBytes = dataBytes,
+    };
+    var serializedPayload = payload.Serialize();
+    var byteString        = ByteString.CopyFrom(serializedPayload);
+    Console.WriteLine("Payload Hash " + Convert.ToBase64String(SHA256.HashData(serializedPayload)));
+    Console.WriteLine($"Payload size {serializedPayload.Length}");
+
+    for (var i = 0; i < n; i++)
+    {
+      var taskId = nameof(LargePayloads) + "-" + i + "-" + Guid.NewGuid();
+      var req = new TaskRequest
+      {
+        Id      = taskId,
+        Payload = byteString,
+        ExpectedOutputKeys =
+        {
+          taskId,
+        },
+      };
+
+      taskRequestList.Add(req);
+    }
+
+    Console.WriteLine("TaskRequest Created");
+
+    var createTaskReply = await client_.CreateTasksAsync(sessionId,
+                                                         taskOptions,
+                                                         taskRequestList);
+
+    switch (createTaskReply.DataCase)
+    {
+      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
+        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
+      case CreateTaskReply.DataOneofCase.None:
+        throw new Exception("Issue with Server !");
+      case CreateTaskReply.DataOneofCase.Successfull:
+        Console.WriteLine("Task Created");
+        break;
+      default:
+        throw new ArgumentOutOfRangeException();
+    }
+
+    var waitForCompletion = client_.WaitForCompletion(new WaitRequest
+    {
+      Filter = new TaskFilter
+      {
+        Task = new TaskFilter.Types.IdsRequest
+        {
+          Ids =
+          {
+            taskRequestList.Select(request => request.Id),
+          },
+        },
+      },
+      StopOnFirstTaskCancellation = true,
+      StopOnFirstTaskError = true,
+    });
+
+    Console.WriteLine(waitForCompletion.ToString());
+
+    var resultAvailability = taskRequestList.Select(request =>
+    {
+      var resultRequest = new ResultRequest
+      {
+        Key = request.Id,
+        Session = sessionId,
+      };
+      var availabilityReply = client_.WaitForAvailability(resultRequest);
+      return availabilityReply.TypeCase;
+    });
+
+    Assert.IsTrue(resultAvailability.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
+
+    var resultTypeOneofCases = taskRequestList.Select(request =>
+    {
+      var resultRequest = new ResultRequest
+      {
+        Key = request.Id,
+        Session = sessionId,
+      };
+      var taskOutput = client_.TryGetTaskOutput(resultRequest);
+      Console.WriteLine(request.Id + " - " + taskOutput);
+      return taskOutput.TypeCase;
+    });
+
+    Assert.IsTrue(resultTypeOneofCases.All(t => t == Output.TypeOneofCase.Ok));
+
+    var resultList = taskRequestList.Select(async request =>
+    {
+      var resultRequest = new ResultRequest
+      {
+        Key = request.Id,
+        Session = sessionId,
+      };
+
+      var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest));
+      Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.Id}");
+      if (resultPayload.Type == TestPayload.TaskType.Result)
+      {
+        return hash.SequenceEqual(resultPayload.DataBytes);
+      }
+      return false;
+    });
+
+    Assert.IsTrue(resultList.All(_ => true));
   }
 }
