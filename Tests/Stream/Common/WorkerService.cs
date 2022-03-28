@@ -162,7 +162,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
               var input    = BitConverter.ToInt32(payload.DataBytes);
               var payload2 = TestPayload.Deserialize(taskHandler.DataDependencies.Values.First());
 
-              if (payload2.Type != TestPayload.TaskType.Result)
+              if (payload2 is not { Type: TestPayload.TaskType.Result })
                 throw new Exception();
 
               var input2 = BitConverter.ToInt32(payload2.DataBytes);

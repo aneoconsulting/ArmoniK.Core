@@ -19,11 +19,11 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
       PayloadCheckSum,
     }
 
-    public byte [] DataBytes { get; set; }
+    public byte []? DataBytes { get; set; }
 
     public TaskType Type { get; set; }
 
-    public string ResultKey { get; set; }
+    public string? ResultKey { get; set; }
 
     public byte[] Serialize()
     {
@@ -31,7 +31,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
       return Encoding.ASCII.GetBytes(StringToBase64(jsonString));
     }
 
-    public static TestPayload? Deserialize(byte[] payload)
+    public static TestPayload? Deserialize(byte[]? payload)
     {
       if (payload == null || payload.Length == 0)
         return new TestPayload
