@@ -253,7 +253,7 @@ jobs:
         with:
           name: ${{ github.run_number }} ${{ github.run_attempt }} -- Logs -- ${{ github.job }} ${{ matrix.queue }} ${{ matrix.log-level }}
           path: docker-compose/logs/*.json
-          retention-days: 5
+          retention-days: 2
 
   testHtcMockDC:
     needs:
@@ -311,4 +311,4 @@ jobs:
         with:
           name: ${{ github.run_number }} ${{ github.run_attempt }} -- Logs -- ${{ github.job }} ${{ matrix.queue }} ${{ matrix.log-level }} ${{ matrix.ntasks }}
           path: docker-compose/logs/*.json
-          retention-days: 5
+          retention-days: 2
