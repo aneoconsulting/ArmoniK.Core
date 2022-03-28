@@ -54,21 +54,13 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
-    - name: login
+    - name: ReTag
       run: |
-        echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
-
-    - name: pull
-      run: |
-        docker pull ${{ matrix.image }}:$VERSION
-
-    - name: tag
-      run: |
-        docker tag ${{ matrix.image }}:$VERSION ${{ matrix.image }}:$RELEASE
-
-    - name: push
-      run: |
-        docker push ${{ matrix.image }}:$RELEASE
+        set -e
+        CONTENT_TYPE="application/vnd.docker.distribution.manifest.list.v2+json"
+        TOKEN="$(curl -s -u dhaneo1:${{ secrets.DOCKER_HUB_TOKEN }} "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${{ matrix.image }}:pull,push" | jq --raw-output .token)"
+        curl -s -H "Accept: ${CONTENT_TYPE}" -H "Authorization: Bearer ${TOKEN}" "https://index.docker.io/v2/${{ matrix.image }}/manifests/${VERSION}" > manifest.json
+        curl -X PUT -H "Content-Type: ${CONTENT_TYPE}" -H "Authorization: Bearer ${TOKEN}" -d @manifest.json "https://index.docker.io/v2/${{ matrix.image }}/manifests/${RELEASE}"
 
   tag:
     runs-on: ubuntu-latest
