@@ -61,6 +61,7 @@ jobs:
         TOKEN="$(curl -s -u dhaneo1:${{ secrets.DOCKER_HUB_TOKEN }} "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${{ matrix.image }}:pull,push" | jq --raw-output .token)"
         curl -s -H "Accept: ${CONTENT_TYPE}" -H "Authorization: Bearer ${TOKEN}" "https://index.docker.io/v2/${{ matrix.image }}/manifests/${VERSION}" > manifest.json
         curl -X PUT -H "Content-Type: ${CONTENT_TYPE}" -H "Authorization: Bearer ${TOKEN}" -d @manifest.json "https://index.docker.io/v2/${{ matrix.image }}/manifests/${RELEASE}"
+        curl -X PUT -H "Content-Type: ${CONTENT_TYPE}" -H "Authorization: Bearer ${TOKEN}" -d @manifest.json "https://index.docker.io/v2/${{ matrix.image }}/manifests/latest"
 
   tag:
     runs-on: ubuntu-latest
