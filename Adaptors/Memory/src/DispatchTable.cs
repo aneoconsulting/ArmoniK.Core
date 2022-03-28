@@ -31,6 +31,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -50,7 +51,7 @@ public class DispatchTable : IDispatchTable
                        ILogger<DispatchTable> logger)
   {
     taskIndexedStorage_ = taskIndexedStorage;
-    idIndexedStorage_ = idIndexedStorage;
+    idIndexedStorage_   = idIndexedStorage;
     Logger              = logger;
   }
 
@@ -85,7 +86,6 @@ public class DispatchTable : IDispatchTable
 
     var d = taskIndexedStorage_.GetOrAdd(taskId,
                                          dispatch);
-
     lock (d)
     {
       // there was a previous dispatch but it has expired
@@ -116,6 +116,7 @@ public class DispatchTable : IDispatchTable
                                                         {
                                                           Attempt = dispatch1.Attempt + 1,
                                                         });
+
       }
     }
 
@@ -127,8 +128,8 @@ public class DispatchTable : IDispatchTable
   public Task<Common.Storage.Dispatch> GetDispatchAsync(string dispatchId, CancellationToken cancellationToken = default)
   {
     // ReSharper disable once InconsistentlySynchronizedField
-    var locker = idIndexedStorage_[dispatchId];
-
+    var locker = idIndexedStorage_.GetOrAdd(dispatchId, s =>
+                                              throw new ArmoniKException($"Key '{dispatchId}' not found"));
     lock (locker)
     {
       return Task.FromResult(idIndexedStorage_[dispatchId] as Common.Storage.Dispatch);
@@ -139,8 +140,9 @@ public class DispatchTable : IDispatchTable
   public Task AddStatusToDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default)
   {
     // ReSharper disable once InconsistentlySynchronizedField
-    var locker = idIndexedStorage_[id];
-
+    var locker = idIndexedStorage_.GetOrAdd(id,
+                                            s =>
+                                              throw new ArmoniKException($"Key '{id}' not found"));
     lock (locker)
     {
       idIndexedStorage_[id].StatusesBag.Add(new(status,
@@ -155,7 +157,9 @@ public class DispatchTable : IDispatchTable
   public Task ExtendDispatchTtl(string id, CancellationToken cancellationToken = default)
   {
     // ReSharper disable once InconsistentlySynchronizedField
-    var locker = idIndexedStorage_[id];
+    var locker = idIndexedStorage_.GetOrAdd(id,
+                                            s =>
+                                              throw new ArmoniKException($"Key '{id}' not found"));
 
     lock (locker)
     {
@@ -174,21 +178,40 @@ public class DispatchTable : IDispatchTable
 
   /// <inheritdoc />
   public Task DeleteDispatchFromTaskIdAsync(string id, CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
+  {
+    // ReSharper disable once InconsistentlySynchronizedField
+    var locker = taskIndexedStorage_.GetOrAdd(id,
+                                            s =>
+                                              throw new ArmoniKException($"Key '{id}' not found"));
+    lock (locker)
+    {
+      taskIndexedStorage_.Remove(id,
+                               out var dispatch);
+      if (dispatch != null && dispatch.TaskId == id)
+      {
+        idIndexedStorage_.Remove(dispatch.Id,
+                                   out _);
+
+      }
+    }
+
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
   public Task DeleteDispatch(string id, CancellationToken cancellationToken = default)
   {
     // ReSharper disable once InconsistentlySynchronizedField
-    var locker = idIndexedStorage_[id];
-
+    var locker = idIndexedStorage_.GetOrAdd(id,
+                                            s =>
+                                              throw new ArmoniKException($"Key '{id}' not found"));
     lock (locker)
     {
       idIndexedStorage_.Remove(id,
                                out var dispatch);
-      if (taskIndexedStorage_[dispatch.TaskId].Id == id)
+      if (dispatch != null && taskIndexedStorage_[dispatch.TaskId].Id == id)
       {
-        taskIndexedStorage_.Remove(id,
+        taskIndexedStorage_.Remove(dispatch.TaskId,
                                    out _);
       }
     }
@@ -213,4 +236,22 @@ public class DispatchTable : IDispatchTable
 
   /// <inheritdoc />
   public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(true);
+
+  /* This functions is only for testing purposes */
+  public void InitDispatchForTesting(string sessionId, string taskId, string dispatchId, int delaySpanInSeconds)
+  {
+    var dispatch = new Dispatch(sessionId,
+                                taskId,
+                                dispatchId,
+                                DateTime.UtcNow - TimeSpan.FromSeconds(delaySpanInSeconds),
+                                1,
+                                new()
+                                {
+                                  new(TaskStatus.Dispatched,
+                                      DateTime.UtcNow - TimeSpan.FromSeconds(delaySpanInSeconds),
+                                      string.Empty),
+                                },
+                                DateTime.UtcNow);
+    taskIndexedStorage_.TryAdd(taskId, dispatch);
+  }
 }

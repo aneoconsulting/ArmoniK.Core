@@ -163,6 +163,8 @@ public class SessionTable : ISessionTable
                                                                          s,
                                                                          cancellationToken))
                                         .WhenAll();
+
+    await CancelDispatchAsync(sessionId,sessionId,cancellationToken);
   }
 
   /// <inheritdoc />

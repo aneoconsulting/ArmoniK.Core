@@ -155,11 +155,11 @@ public class TaskTable : ITaskTable
                                  _ => throw new InvalidOperationException("The task does not exist."),
                                  (_, data) =>
                                  {
-                                   if (data.Status == status)
-                                     return data;
-
-                                   if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   if ((status is not TaskStatus.Canceling) && (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed))
                                      throw new ArmoniKException("the task is in a final state ant its status cannot change anymore");
+
+                                   if ((data.Status == status) || (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed))
+                                     return data;
 
                                    updated = true;
                                    return data with

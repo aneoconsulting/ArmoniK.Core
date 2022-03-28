@@ -124,7 +124,7 @@ public class DispatchTableTestBase
     if (RunTests)
     {
       var dispatch = await DispatchTable.GetDispatchAsync("DispatchId",
-                                                        CancellationToken.None);
+                                                          CancellationToken.None);
       Assert.IsTrue(dispatch.Id == "DispatchId");
     }
   }

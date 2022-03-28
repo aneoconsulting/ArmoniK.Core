@@ -33,6 +33,8 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Exceptions;
 
+using Microsoft.Extensions.Logging;
+
 using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 
 namespace ArmoniK.Core.Adapters.Memory;
@@ -41,7 +43,14 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class ResultTable : IResultTable
 {
-  private readonly ConcurrentDictionary<string,ConcurrentDictionary<string, Result>> results_ = new();
+  private readonly ConcurrentDictionary<string,ConcurrentDictionary<string, Result>> results_;
+
+  public ResultTable(ConcurrentDictionary<string, ConcurrentDictionary<string, Result>> results,
+                       ILogger<ResultTable>  logger)
+  {
+    results_ = results;
+    Logger  = logger;
+  }
 
   /// <inheritdoc />
   public Task<bool> AreResultsAvailableAsync(string sessionId, IEnumerable<string> keys, CancellationToken cancellationToken = default)
@@ -169,6 +178,9 @@ public class ResultTable : IResultTable
   {
     return Task.CompletedTask;
   }
+
+  /// <inheritdoc />
+  public ILogger Logger { get; }
 
   /// <inheritdoc />
   public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(true);
