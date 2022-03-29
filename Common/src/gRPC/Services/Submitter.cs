@@ -7,6 +7,7 @@
 //   L. Ziane Khodja   <lzianekhodja@aneo.fr>
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
+//   J. Fonseca        <jfonseca@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -214,14 +215,16 @@ public class Submitter : ISubmitter
         requests.Add(new(taskRequest.Id,
                          taskRequest.ExpectedOutputKeys,
                          taskRequest.DataDependencies,
-                         payloadChunksList.Single()));
+                         payloadChunksList.Single(),
+                         true));
       }
       else
       {
         requests.Add(new(taskRequest.Id,
                          taskRequest.ExpectedOutputKeys,
                          taskRequest.DataDependencies,
-                         null));
+                         Array.Empty<byte>(),
+                       false));
         payloadUploadTasks.Add(PayloadStorage(sessionId).AddOrUpdateAsync(taskRequest.Id,
                                                                           payloadChunksList.ToAsyncEnumerable(),
                                                                           cancellationToken));
@@ -311,8 +314,8 @@ public class Submitter : ISubmitter
                                                           request.Id,
                                                           request.DataDependencies.ToList(),
                                                           request.ExpectedOutputKeys.ToList(),
-                                                          request.PayloadChunk is not null,
-                                                          request.PayloadChunk?.ToArray(),
+                                                          request.HasPayload,
+                                                          request.PayloadChunk.ToArray(),
                                                           TaskStatus.Creating,
                                                           options,
                                                           ancestors,
@@ -434,7 +437,8 @@ public class Submitter : ISubmitter
                                                  {
                                                    Data = UnsafeByteOperations.UnsafeWrap(new(chunk)),
                                                  },
-                                      });
+                                      },
+                                      CancellationToken.None);
     }
 
     await responseStream.WriteAsync(new()
@@ -443,7 +447,8 @@ public class Submitter : ISubmitter
                                                {
                                                  DataComplete = true,
                                                },
-                                    });
+                                    },
+                                    CancellationToken.None);
   }
 
   public  async Task<Count> WaitForCompletion(WaitRequest request, CancellationToken cancellationToken)
