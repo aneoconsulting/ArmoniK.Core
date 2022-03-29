@@ -285,7 +285,7 @@ jobs:
 
     - name: Tag
       run: |
-        docker buildx imagetools create ${{ matrix.img }}:$VERSION --append -f descr.json
+        docker buildx imagetools create ${{ matrix.img }}:$VERSION -t ${{ matrix.img }}:$VERSION --append -f descr.json
 
   testStreamDC:
     needs:
