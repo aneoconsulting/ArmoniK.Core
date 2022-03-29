@@ -63,7 +63,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
                 Type      = TestPayload.TaskType.Result,
                 DataBytes = BitConverter.GetBytes(input * input),
               };
-              await taskHandler.SendResult(payload.ResultKey,
+              await taskHandler.SendResult(payload.ResultKey ?? throw new NullReferenceException(),
                                            result.Serialize());
               output = new Output
               {
@@ -162,7 +162,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
               var input    = BitConverter.ToInt32(payload.DataBytes);
               var payload2 = TestPayload.Deserialize(taskHandler.DataDependencies.Values.First());
 
-              if (payload2.Type != TestPayload.TaskType.Result)
+              if (payload2 is not { Type: TestPayload.TaskType.Result })
                 throw new Exception();
 
               var input2 = BitConverter.ToInt32(payload2.DataBytes);
@@ -202,7 +202,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
               var resultPayloadCheckSum = new TestPayload
               {
                 Type      = TestPayload.TaskType.Result,
-                DataBytes = SHA256.HashData(payload.DataBytes),
+                DataBytes = SHA256.HashData(payload.DataBytes ?? throw new NullReferenceException()),
               };
               await taskHandler.SendResult(taskHandler.ExpectedResults.Single(),
                                            resultPayloadCheckSum.Serialize());

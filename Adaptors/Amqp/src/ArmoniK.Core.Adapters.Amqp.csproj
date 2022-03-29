@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AMQPNetLite.Core" Version="2.4.3" />
+    <PackageReference Include="AMQPNetLite.Core" Version="2.4.4" />
   </ItemGroup>
 
   <ItemGroup>

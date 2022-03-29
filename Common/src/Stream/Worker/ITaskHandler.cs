@@ -75,7 +75,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
     /// <param name="tasks">Lists the tasks to submit</param>
     /// <param name="taskOptions">The task options. If no value is provided, will use the default session options</param>
     /// <returns></returns>
-    Task CreateTasksAsync(IEnumerable<TaskRequest> tasks, TaskOptions taskOptions = null);
+    Task CreateTasksAsync(IEnumerable<TaskRequest> tasks, TaskOptions? taskOptions = null);
 
     /// <summary>
     /// NOT IMPLEMENTED

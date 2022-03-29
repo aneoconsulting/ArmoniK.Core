@@ -21,6 +21,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -43,9 +44,9 @@ public class GrpcChannelProvider : ProviderBase<ChannelBase>
   // ReSharper disable once SuggestBaseTypeForParameterInConstructor
   public GrpcChannelProvider(GrpcChannel options, ILogger<GrpcChannelProvider> logger)
     : base(options.SocketType == GrpcSocketType.Web
-             ? () => Task.FromResult(BuildWebGrpcChannel(options.Address,
+             ? () => Task.FromResult(BuildWebGrpcChannel(options.Address ?? throw new InvalidOperationException(),
                                                          logger))
-             : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Address,
+             : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Address ?? throw new InvalidOperationException(),
                                                                 logger)))
   {
     isInitialized_ = true;

@@ -93,7 +93,8 @@ public class Heart
     stoppedHeartCts_.Cancel();
     try
     {
-      await runningTask_;
+      if (runningTask_ != null)
+        await runningTask_;
     }
     catch (TaskCanceledException)
     {
@@ -133,7 +134,7 @@ public class Heart
   private async Task FullCycle()
   {
     var delayTask = Task.Delay(beatPeriod_,
-                               combinedSource_.Token);
+                               combinedSource_?.Token ?? cancellationToken_);
     if (!await pulse_(cancellationToken_))
     {
       stoppedHeartCts_.Cancel();
