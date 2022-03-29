@@ -437,7 +437,8 @@ public class Submitter : ISubmitter
                                                  {
                                                    Data = UnsafeByteOperations.UnsafeWrap(new(chunk)),
                                                  },
-                                      });
+                                      },
+                                      CancellationToken.None);
     }
 
     await responseStream.WriteAsync(new()
@@ -446,7 +447,8 @@ public class Submitter : ISubmitter
                                                {
                                                  DataComplete = true,
                                                },
-                                    });
+                                    },
+                                    CancellationToken.None);
   }
 
   public  async Task<Count> WaitForCompletion(WaitRequest request, CancellationToken cancellationToken)
