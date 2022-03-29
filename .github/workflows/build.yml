@@ -353,3 +353,6 @@ jobs:
       - testStreamDC
       - buildImages
     runs-on: ubuntu-latest
+    steps:
+      - name: Echo OK
+        run: Echo OK
