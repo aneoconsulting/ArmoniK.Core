@@ -7,6 +7,7 @@
 //   L. Ziane Khodja   <lzianekhodja@aneo.fr>
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
+//   J. Fonseca        <jfonseca@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -305,14 +306,16 @@ public class Submitter : ISubmitter
 
     var taskDataModels = requests.Select(async request =>
                                  {
+                                   var payload    = request.PayloadChunk?.ToArray();
+                                   var hasPayload = payload is not null;
                                    var tdm = new TaskData(session,
                                                           parentTaskId,
                                                           dispatchId,
                                                           request.Id,
                                                           request.DataDependencies.ToList(),
                                                           request.ExpectedOutputKeys.ToList(),
-                                                          request.PayloadChunk is not null,
-                                                          request.PayloadChunk?.ToArray(),
+                                                          hasPayload,
+                                                          hasPayload ? payload! : Array.Empty<byte>(),
                                                           TaskStatus.Creating,
                                                           options,
                                                           ancestors,
