@@ -226,6 +226,7 @@ jobs:
     needs:
       - versionning
       - buildProjects
+      - buildImages
       - tests
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
