@@ -1,12 +1,13 @@
 ﻿// This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2021. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
 //   L. Ziane Khodja   <lzianekhodja@aneo.fr>
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
+//   J. Fonseca        <jfonseca@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -53,7 +54,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                      cm.MapProperty(nameof(TaskData.Options)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(TaskData.CreationDate)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(TaskData.HasPayload)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.Payload)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<byte>());
+                                                     cm.MapProperty(nameof(TaskData.Payload)).SetIgnoreIfDefault(true);
                                                      cm.MapProperty(nameof(TaskData.AncestorDispatchIds)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
                                                      cm.MapProperty(nameof(TaskData.ExpectedOutput)).SetIsRequired(true);
                                                      cm.MapProperty(nameof(TaskData.Output)).SetIsRequired(true);

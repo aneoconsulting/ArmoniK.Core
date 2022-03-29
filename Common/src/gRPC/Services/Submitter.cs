@@ -215,14 +215,16 @@ public class Submitter : ISubmitter
         requests.Add(new(taskRequest.Id,
                          taskRequest.ExpectedOutputKeys,
                          taskRequest.DataDependencies,
-                         payloadChunksList.Single()));
+                         payloadChunksList.Single(),
+                         true));
       }
       else
       {
         requests.Add(new(taskRequest.Id,
                          taskRequest.ExpectedOutputKeys,
                          taskRequest.DataDependencies,
-                         null));
+                         Array.Empty<byte>(),
+                       false));
         payloadUploadTasks.Add(PayloadStorage(sessionId).AddOrUpdateAsync(taskRequest.Id,
                                                                           payloadChunksList.ToAsyncEnumerable(),
                                                                           cancellationToken));
@@ -306,16 +308,14 @@ public class Submitter : ISubmitter
 
     var taskDataModels = requests.Select(async request =>
                                  {
-                                   var payload    = request.PayloadChunk?.ToArray();
-                                   var hasPayload = payload is not null;
                                    var tdm = new TaskData(session,
                                                           parentTaskId,
                                                           dispatchId,
                                                           request.Id,
                                                           request.DataDependencies.ToList(),
                                                           request.ExpectedOutputKeys.ToList(),
-                                                          hasPayload,
-                                                          hasPayload ? payload! : Array.Empty<byte>(),
+                                                          request.HasPayload,
+                                                          request.PayloadChunk.ToArray(),
                                                           TaskStatus.Creating,
                                                           options,
                                                           ancestors,
