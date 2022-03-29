@@ -268,17 +268,22 @@ jobs:
     - name: platforms
       run: echo ${{ steps.buildx.outputs.platforms }}
 
+    - name: Get manifest
+      run: |
+        docker buildx imagetools inspect --raw ${{ matrix.img }}:$VERSION | jq '.manifests[]' > manifest.json
+
     - name: Build
       run: |
-        echo $VERSION
         docker buildx create --use
-        docker buildx imagetools inspect --raw ${{ matrix.img }}:$VERSION | jq '.manifests[]' > manifest.json
         cat manifest.json
         docker buildx build \
           --platform linux/arm64 \
           -t ${{ matrix.img }}:$VERSION \
           -f ${{ matrix.path }} .
-        docker buildx imagetools create ${{ matrix.img }}:$VERSION --append -f manifest.json
+
+    - name: Tag
+      run: |
+        docker buildx imagetools create ${{ matrix.img }}:$VERSION -t ${{ matrix.img }}:$VERSION --append -f manifest.json
         cat manifest.json
 
   testStreamDC:
