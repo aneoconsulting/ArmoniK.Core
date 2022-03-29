@@ -271,7 +271,7 @@ jobs:
 
     - name: Get manifest
       run: |
-        docker buildx imagetools inspect --raw ${{ matrix.img }}:$VERSION | jq '.manifests[]' > manifest.json
+        docker buildx imagetools inspect --raw ${{ matrix.img }}:$VERSION > manifest.json
 
     - name: Build
       run: |
