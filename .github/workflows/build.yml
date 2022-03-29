@@ -280,12 +280,12 @@ jobs:
 
     - name: Get manifest
       run: |
-        docker buildx imagetools inspect --raw ${{ matrix.img }}:${VERSION}-arm | jq '.manifests[]' > manifest.json
-        cat manifest.json
+        docker manifest inspect --verbose ${{ matrix.img }}:${VERSION}-arm | jq '.Descriptor' > descr.json
+        cat descr.json
 
     - name: Tag
       run: |
-        docker buildx imagetools create ${{ matrix.img }}:$VERSION --append -f manifest.json
+        docker buildx imagetools create ${{ matrix.img }}:$VERSION --append -f descr.json
 
   testStreamDC:
     needs:
