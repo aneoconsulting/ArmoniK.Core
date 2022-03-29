@@ -293,42 +293,15 @@ public class Submitter : ISubmitter
     activity?.AddTag("taskIds",
       string.Join(",", requests.Select(request => request.Id)));
 
-    // todo: clean
-    // this function is not necessary since the default task options are retrieved at the start of the function
-    async Task LoadOptions()
-    {
-      options = await sessionTable_.GetDefaultTaskOptionAsync(session,
-                                                              cancellationToken);
-    }
-
-
     var ancestors = new List<string>();
 
-    async Task LoadAncestorDispatchIds()
+    if (!parentTaskId.Equals(session))
     {
-      if (!parentTaskId.Equals(session))
-      {
-        var res = await taskTable_.GetTaskAncestorDispatchIds(parentTaskId,
-                                                    cancellationToken);
-        if (res is not null)
-        {
-          ancestors.AddRange(res);
-        }
-      }
-      ancestors.Add(dispatchId);
+      var res = await taskTable_.GetTaskAncestorDispatchIds(parentTaskId,
+                                                  cancellationToken);
+      ancestors.AddRange(res);
     }
-
-    var preload = new List<Task>();
-    if (options is null)
-    {
-
-      preload.Add(LoadOptions());
-    }
-
-    preload.Add(LoadAncestorDispatchIds());
-
-    await Task.WhenAll(preload);
-
+    ancestors.Add(dispatchId);
 
     var taskDataModels = requests.Select(async request =>
                                  {

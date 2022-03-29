@@ -57,8 +57,8 @@ namespace ArmoniK.Core.Common.Stream.Worker
                                                  {
                                                    DataChunkMaxSize = 50 * 1024,
                                                  },
-                                                 context.CancellationToken,
-                                                 loggerFactory_.CreateLogger<TaskHandler>());
+                                                 loggerFactory_.CreateLogger<TaskHandler>(),
+                                                 context.CancellationToken);
 
       logger_.LogDebug("Execute Process");
       var output = await Process(taskHandler);
