@@ -205,7 +205,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
     public Configuration Configuration { get; init; }
 
     /// <inheritdoc />
-    public async Task CreateTasksAsync(IEnumerable<TaskRequest> tasks, TaskOptions taskOptions)
+    public async Task CreateTasksAsync(IEnumerable<TaskRequest> tasks, TaskOptions? taskOptions)
     {
       try
       {

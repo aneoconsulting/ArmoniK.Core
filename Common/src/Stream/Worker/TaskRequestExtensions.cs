@@ -36,16 +36,26 @@ namespace ArmoniK.Core.Common.Stream.Worker
   public static class TaskRequestExtensions
   {
     public static IEnumerable<ProcessReply.Types.CreateLargeTaskRequest> ToRequestStream(this IEnumerable<TaskRequest> taskRequests,
-                                                                                         TaskOptions                   taskOptions,
+                                                                                         TaskOptions?                  taskOptions,
                                                                                          int                           chunkMaxSize)
     {
-      yield return new()
+      if(taskOptions is not null)
       {
-        InitRequest = new()
+        yield return new()
         {
-          TaskOptions = taskOptions,
-        },
-      };
+          InitRequest = new()
+          {
+            TaskOptions = taskOptions,
+          },
+        };
+      }
+      else
+      {
+        yield return new()
+        {
+          InitRequest = new(),
+        };
+      }
 
       using var taskRequestEnumerator = taskRequests.GetEnumerator();
 
