@@ -406,4 +406,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Echo OK
-        run: Echo OK
+        run: echo OK
