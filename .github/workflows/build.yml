@@ -78,7 +78,6 @@ jobs:
           - Adaptors/Memory/tests
         os:
           - ubuntu-latest
-          - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
@@ -110,9 +109,10 @@ jobs:
       matrix:
         projects:
           - Adaptors/Redis/tests
-        os:
-          - windows-latest
-    runs-on: ${{ matrix.os }}
+          - Common/tests
+          - Adaptors/MongoDB/tests
+          - Adaptors/Memory/tests
+    runs-on: windows-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -134,7 +134,7 @@ jobs:
       uses: dorny/test-reporter@v1
       if: success() || failure()
       with:
-        name: Test - ${{ matrix.os }} ${{ matrix.projects }}
+        name: Test - windows ${{ matrix.projects }}
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
@@ -344,3 +344,12 @@ jobs:
         if: always()
         run: |
           cat docker-compose/logs/*.json
+
+  canMerge:
+    needs:
+      - tests
+      - testsWinOnly
+      - testHtcMockDC
+      - testStreamDC
+      - buildImages
+    runs-on: ubuntu-latest
