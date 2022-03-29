@@ -272,11 +272,14 @@ jobs:
       run: |
         echo $VERSION
         docker buildx create --use
+        docker buildx imagetools inspect --raw ${{ matrix.img }}:$VERSION | jq '.manifests[]' > manifest.json
+        cat manifest.json
         docker buildx build \
           --platform linux/arm64 \
           -t ${{ matrix.img }}:$VERSION \
-          -f ${{ matrix.path }} . \
-          --push
+          -f ${{ matrix.path }} .
+        docker buildx imagetools create ${{ matrix.img }}:$VERSION --append -f manifest.json
+        cat manifest.json
 
   testStreamDC:
     needs:
