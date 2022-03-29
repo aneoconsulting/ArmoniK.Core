@@ -40,10 +40,10 @@ namespace ArmoniK.Core.Common.Stream.Worker
   public class TaskHandler : ITaskHandler
   {
     public static async Task<TaskHandler> Create(IAsyncStreamReader<ProcessRequest> requestStream,
-                                                 IServerStreamWriter<ProcessReply>  responseStream,
-                                                 Configuration                      configuration,
-                                                 CancellationToken                  cancellationToken,
-                                                 ILogger<TaskHandler>               logger)
+                                                 IServerStreamWriter<ProcessReply> responseStream,
+                                                 Configuration configuration,
+                                                 ILogger<TaskHandler> logger,
+                                                 CancellationToken cancellationToken)
     {
       var output = new TaskHandler(requestStream,
                                    responseStream,
