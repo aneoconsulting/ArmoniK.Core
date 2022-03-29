@@ -272,7 +272,6 @@ jobs:
     - name: Build
       run: |
         docker buildx create --use
-        cat manifest.json
         docker buildx build \
           --platform linux/arm64 \
           -t ${{ matrix.img }}:$VERSION \
