@@ -96,7 +96,7 @@ public class TaskTableTestBase
                               default,
                               new[] { "happy output" },
                               false,
-                              null,
+                              Array.Empty<byte>(),
                               TaskStatus.Submitted,
                               default,
                               new[] { "Ancestor3DispatchId" },
