@@ -269,10 +269,6 @@ jobs:
     - name: platforms
       run: echo ${{ steps.buildx.outputs.platforms }}
 
-    - name: Get manifest
-      run: |
-        docker buildx imagetools inspect --raw ${{ matrix.img }}:$VERSION > manifest.json
-
     - name: Build
       run: |
         docker buildx create --use
@@ -281,6 +277,10 @@ jobs:
           --platform linux/arm64 \
           -t ${{ matrix.img }}:$VERSION \
           -f ${{ matrix.path }} .
+
+    - name: Get manifest
+      run: |
+        docker buildx imagetools inspect --raw ${{ matrix.img }}:$VERSION > manifest.json
 
     - name: Tag
       run: |
