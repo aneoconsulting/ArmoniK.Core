@@ -49,7 +49,6 @@ namespace ArmoniK.Samples.HtcMock.GridWorker
                      Justification = "Used for side effects")]
     private readonly ApplicationLifeTimeManager applicationLifeTime_;
 
-    private readonly ILogger<SampleComputerService> logger_;
     private readonly ILoggerFactory loggerFactory_;
 
     public SampleComputerService(ILoggerFactory             loggerFactory,
@@ -68,7 +67,7 @@ namespace ArmoniK.Samples.HtcMock.GridWorker
       logger_.LogTrace("DataDependencies {DataDependencies}", taskHandler.DataDependencies.Keys);
       logger_.LogTrace("ExpectedResults {ExpectedResults}", taskHandler.ExpectedResults);
 
-      var output = new Output();
+      Output output;
       try
       {
         var (runConfiguration, request) = DataAdapter.ReadPayload(taskHandler.Payload);
@@ -79,12 +78,12 @@ namespace ArmoniK.Samples.HtcMock.GridWorker
                                           {
                                             logger_.LogInformation("Looking for result for Id {id}",
                                                                    id);
-                                            var armonik_id = taskHandler.SessionId + "%" + id;
-                                            var isOkay = taskHandler.DataDependencies.TryGetValue(armonik_id,
+                                            var armonikId = taskHandler.SessionId + "%" + id;
+                                            var isOkay = taskHandler.DataDependencies.TryGetValue(armonikId,
                                                                                      out var data);
                                             if (!isOkay)
                                             {
-                                              throw new KeyNotFoundException(armonik_id);
+                                              throw new KeyNotFoundException(armonikId);
                                             }
                                             return Encoding.Default.GetString(data);
                                           });
