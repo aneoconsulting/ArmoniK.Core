@@ -81,13 +81,13 @@ namespace ArmoniK.Core.Common.Stream.Worker
         throw new InvalidOperationException("Expected a Compute request type with InitRequest to start the stream.");
 
       var initRequest = requestStream_.Current.Compute.InitRequest;
-      SessionId       = initRequest.SessionId;
-      TaskId          = initRequest.TaskId;
-      TaskOptions     = initRequest.TaskOptions;
-      ExpectedResults = initRequest.ExpectedOutputKeys;
+      sessionId_       = initRequest.SessionId;
+      taskId_          = initRequest.TaskId;
+      taskOptions_     = initRequest.TaskOptions;
+      expectedResults_ = initRequest.ExpectedOutputKeys;
 
       if (initRequest.Payload.DataComplete)
-        Payload = initRequest.Payload.Data.ToByteArray();
+        payload_ = initRequest.Payload.Data.ToByteArray();
       else
       {
         var chunks    = new List<ByteString>();
@@ -122,7 +122,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
           start += chunk.Length;
         }
 
-        Payload = payload;
+        payload_ = payload;
       }
 
       var dataDependencies = new Dictionary<string, byte[]>();
@@ -179,27 +179,31 @@ namespace ArmoniK.Core.Common.Stream.Worker
         }
       } while (!string.IsNullOrEmpty(initData.Key));
 
-      DataDependencies = dataDependencies;
+      dataDependencies_ = dataDependencies;
+      isInitialized_   = true;
     }
 
+    private bool                   isInitialized_;
+    private Exception TaskHandlerException(string argumentName)
+      => isInitialized_? new ($"Error in initalization: {argumentName} is null") : new InvalidOperationException("");
 
     /// <inheritdoc />
-    public string SessionId { get; private set; }
+    public string SessionId => sessionId_ ?? throw TaskHandlerException(nameof(SessionId));
 
     /// <inheritdoc />
-    public string TaskId { get; private set; }
+    public string TaskId => taskId_ ?? throw TaskHandlerException(nameof(TaskId));
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<string, string> TaskOptions { get; private set; }
+    public IReadOnlyDictionary<string, string> TaskOptions => taskOptions_ ?? throw TaskHandlerException(nameof(TaskOptions));
 
     /// <inheritdoc />
-    public byte[] Payload { get; private set; }
+    public byte[] Payload => payload_ ?? throw TaskHandlerException(nameof(Payload));
 
     /// <inheritdoc />
-    public IReadOnlyDictionary<string, byte[]> DataDependencies { get; private set; }
+    public IReadOnlyDictionary<string, byte[]> DataDependencies => dataDependencies_ ?? throw TaskHandlerException(nameof(DataDependencies));
 
     /// <inheritdoc />
-    public IList<string> ExpectedResults { get; set; }
+    public IList<string> ExpectedResults => expectedResults_ ?? throw TaskHandlerException(nameof(ExpectedResults));
 
     /// <inheritdoc />
     public Configuration Configuration { get; init; }
@@ -346,7 +350,13 @@ namespace ArmoniK.Core.Common.Stream.Worker
 
     private int messageCounter_;
 
-    private readonly SemaphoreSlim        semaphore_ = new(1);
-    private readonly ILogger<TaskHandler> logger_;
+    private readonly SemaphoreSlim                        semaphore_ = new(1);
+    private readonly ILogger<TaskHandler>                 logger_;
+    private          string?                              sessionId_;
+    private          string?                              taskId_;
+    private          IReadOnlyDictionary<string, string>? taskOptions_;
+    private          byte[]?                              payload_;
+    private          IReadOnlyDictionary<string, byte[]>? dataDependencies_;
+    private          IList<string>?                       expectedResults_;
   }
 }
