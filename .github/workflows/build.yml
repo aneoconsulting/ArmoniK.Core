@@ -70,13 +70,15 @@ jobs:
         echo $VERSION
 
   tests:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         projects:
           - Common/tests
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
+        os:
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -98,7 +100,41 @@ jobs:
       uses: dorny/test-reporter@v1
       if: success() || failure()
       with:
-        name: Test - ${{ matrix.projects }}
+        name: Test - ${{ matrix.os }} ${{ matrix.projects }}
+        path: ${{ matrix.projects }}/TestResults/test-results.trx
+        reporter: dotnet-trx
+
+  testsWinOnly:
+    strategy:
+      matrix:
+        projects:
+          - Adaptors/Redis/tests
+          - Common/tests
+          - Adaptors/MongoDB/tests
+          - Adaptors/Memory/tests
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.x
+
+    - name: Run tests
+      run: |
+        cd ${{ matrix.projects }}
+        dotnet test --logger "trx;LogFileName=test-results.trx"
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Test - windows ${{ matrix.projects }}
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
@@ -177,6 +213,49 @@ jobs:
         submodules: true
 
     - name: login
+      run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
+
+    - name: Build
+      run: docker build -t ${{ matrix.img }}:$VERSION -f ${{ matrix.path }} .
+
+    - name: push
+      run: docker push ${{ matrix.img }}:$VERSION
+
+  buildImagesCross:
+    runs-on: ubuntu-latest
+    needs:
+      - versionning
+      - buildProjects
+      - buildImages
+      - tests
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+        -  img : dockerhubaneo/armonik_pollingagent
+           path: ./Compute/PollingAgent/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_metrics
+           path: ./Control/Metrics/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control
+           path: ./Control/Submitter/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_worker
+           path: ./Tests/Stream/Server/Dockerfile
+        -  img : dockerhubaneo/armonik_core_stream_test_client
+           path: ./Tests/Stream/Client/Dockerfile
+        -  img : dockerhubaneo/armonik_core_htcmock_test_worker
+           path: ./Tests/HtcMock/Server/src/Dockerfile
+        -  img : dockerhubaneo/armonik_core_htcmock_test_client
+           path: ./Tests/HtcMock/Client/src/Dockerfile
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: login
       run: |
         echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u dhaneo1 --password-stdin
 
@@ -192,13 +271,21 @@ jobs:
 
     - name: Build
       run: |
-        echo $VERSION
         docker buildx create --use
         docker buildx build \
-          --platform linux/amd64,linux/arm64 \
-          -t ${{ matrix.img }}:$VERSION \
+          --platform linux/arm64 \
+          -t ${{ matrix.img }}:${VERSION}-arm \
           -f ${{ matrix.path }} . \
           --push
+
+    - name: Get manifest
+      run: |
+        docker manifest inspect --verbose ${{ matrix.img }}:${VERSION}-arm | jq '.Descriptor' > descr.json
+        cat descr.json
+
+    - name: Tag
+      run: |
+        docker buildx imagetools create ${{ matrix.img }}:$VERSION -t ${{ matrix.img }}:$VERSION --append -f descr.json
 
   testStreamDC:
     needs:
@@ -307,3 +394,16 @@ jobs:
         if: always()
         run: |
           cat docker-compose/logs/*.json
+
+  canMerge:
+    needs:
+      - tests
+      - testsWinOnly
+      - testHtcMockDC
+      - testStreamDC
+      - buildImages
+      - buildImagesCross
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo OK
+        run: echo OK
