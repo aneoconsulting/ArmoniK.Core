@@ -1,0 +1,272 @@
+{
+  "homepages": [],
+  "source_base_path": "C:/Users/ngruel/Projets/ArmoniK/ArmoniK.Core/Documentation",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Metrics.ArmoniKMeter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Metrics.ArmoniKMeter.html",
+          "hash": "SpqB0GYiGDfDn1eTRyWRK9VUQ/uByG3lLNr5xwAhO3Y="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Metrics.Options.DescribedObject.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Metrics.Options.DescribedObject.html",
+          "hash": "hq3yKpF9WYSjf1aAtmD3/GVMrMEGcWYKJal4LBkIj/A="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Metrics.Options.Metrics.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Metrics.Options.Metrics.html",
+          "hash": "qaR7kv2m3Egl8+OXsuD6tx0iNi+1VWvopZidwQQxPrk="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Metrics.Options.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Metrics.Options.html",
+          "hash": "N5AQc9Lz4Xql+40N3VmdObaXm/9zjyhUHbBZdJXITBk="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Metrics.Program.Metric.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Metrics.Program.Metric.html",
+          "hash": "qRHmktzUZUVBurGuAzDTUyuOX0m+FT9VZEKMPBF6NG8="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Metrics.Program.MetricGenerator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Metrics.Program.MetricGenerator.html",
+          "hash": "EXet69Kr8MbekeEEJqv69+fa+twnyds37Sn+N2hxpYE="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Metrics.Program.MetricList.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Metrics.Program.MetricList.html",
+          "hash": "Iam3V9gIBVHZ8LmXnkSjm/nRuarUjpeM2g8Ry6bIyQs="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.html",
+          "hash": "hsyE5OOOohU2LU9w3zfwMcuFdB8c+jSi28bRKf5mEns="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Metrics.Program.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Metrics.Program.html",
+          "hash": "71cpQE0hHB425a60enhOjcMYkX7dOqiAshTGSHQXQk8="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Metrics.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Metrics.html",
+          "hash": "LE8GvmVdr3hXlP4J/Cb7tkGiTet5KcRyT6+7NiwuaXY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Submitter.Program.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Submitter.Program.html",
+          "hash": "UK/YZJtMS4OgXJnbpPadWHB14BgBi2s7ZsT1JAWzIeQ="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.Submitter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.Submitter.html",
+          "hash": "ZSE9G7BPHntBAecYWDLNss0k4h8KT3kb7DRYy9hOkzU="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "api/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "api/index.html",
+          "hash": "C4+Tfi5fHPNnYvac/8mzl2CMWBtLPAYr61pLu4qjA4U="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html",
+          "hash": "tkakmuTsW/xxl9mDljp9KL1N/9czHTJ5yx0zuaM8ZOI="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/intro.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/intro.html",
+          "hash": "MyIiZZqt8+kJw5DdLVo9txyrQXNAikteVUPRuqutNT0="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "articles/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "articles/toc.html",
+          "hash": "BlPxk5mtl2kgfcZUgkEguqiSAR/EUyUTT4EdebwkQvs="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html",
+          "hash": "5WQ8E/SMqT4zFjdG5R3yO588hkO1WAAFjMKbyqVbQmY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html",
+          "hash": "WSuRrYiGwKKMbtdG9z8W9fXmLoCyTnGg9AxbPKLXm2Y="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    }
+  ],
+  "incremental_info": [
+    {
+      "status": {
+        "can_incremental": false,
+        "details": "Cannot build incrementally because config changed.",
+        "incrementalPhase": "build",
+        "total_file_count": 0,
+        "skipped_file_count": 0,
+        "full_build_reason_code": "ConfigChanged"
+      },
+      "processors": {
+        "ConceptualDocumentProcessor": {
+          "can_incremental": false,
+          "incrementalPhase": "build",
+          "total_file_count": 3,
+          "skipped_file_count": 0
+        },
+        "ManagedReferenceDocumentProcessor": {
+          "can_incremental": false,
+          "incrementalPhase": "build",
+          "total_file_count": 12,
+          "skipped_file_count": 0
+        },
+        "TocDocumentProcessor": {
+          "can_incremental": false,
+          "details": "Processor TocDocumentProcessor cannot support incremental build because the processor doesn't implement ISupportIncrementalDocumentProcessor interface.",
+          "incrementalPhase": "build",
+          "total_file_count": 0,
+          "skipped_file_count": 0
+        }
+      }
+    },
+    {
+      "status": {
+        "can_incremental": true,
+        "details": "Can support incremental post processing.",
+        "incrementalPhase": "postProcessing",
+        "total_file_count": 0,
+        "skipped_file_count": 0
+      },
+      "processors": {}
+    }
+  ],
+  "version_info": {},
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}
