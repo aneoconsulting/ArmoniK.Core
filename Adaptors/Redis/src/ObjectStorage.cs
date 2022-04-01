@@ -84,6 +84,9 @@ public class ObjectStorage : IObjectStorage
       yield break;
     var valuesCount = int.Parse(value);
 
+    if(valuesCount == 0)
+      yield break;
+
     foreach (var chunckTask in Enumerable.Range(0,
                                                 valuesCount)
                                          .Select(index => redis_.StringGetAsync(objectStorageName_ + key + "_" + index))

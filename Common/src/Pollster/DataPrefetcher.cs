@@ -94,10 +94,10 @@ public class DataPrefetcher : IInitializable
                                               {
                                                 taskData.Options.Options,
                                               },
-                                              Payload = new()
+                                              Payload = payloadChunks.Count > 0 ? new DataChunk
                                                         {
                                                           Data         = payloadChunks[0],
-                                                        },
+                                                        } : new DataChunk(),
                                               ExpectedOutputKeys = { taskData.ExpectedOutput },
                                             },
                             });

@@ -68,6 +68,10 @@ public class ObjectStorageTestBase
     dataBytesList.Add(Encoding.ASCII.GetBytes("AAAABBBB"));
     ObjectStorage.AddOrUpdateAsync("dataKey2",
                                    dataBytesList.ToAsyncEnumerable()).Wait();
+
+    dataBytesList = new List<byte[]>();
+    ObjectStorage.AddOrUpdateAsync("dataKeyEmpty",
+                                   dataBytesList.ToAsyncEnumerable()).Wait();
   }
 
   [TearDown]
@@ -127,6 +131,25 @@ public class ObjectStorageTestBase
       var str  = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
       Assert.IsTrue(str.SequenceEqual("AAAABBBBCCCCDDDD"));
+    }
+  }
+
+  [Test]
+  public async Task EmptyPayload()
+  {
+    if (RunTests)
+    {
+      var res = ObjectStorage.TryGetValuesAsync("dataKeyEmpty");
+      Console.WriteLine(await res.CountAsync());
+      var data = new List<byte>();
+      foreach (var item in await res.ToListAsync())
+      {
+        data.AddRange(item);
+      }
+
+      var str = Encoding.ASCII.GetString(data.ToArray());
+      Console.WriteLine(str);
+      Assert.IsTrue(str.SequenceEqual(""));
     }
   }
 }
