@@ -115,6 +115,8 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
     var statusIndex  = Builders<TaskData>.IndexKeys.Text(model => model.Status);
     var sessionStatusIndex = Builders<TaskData>.IndexKeys.Combine(sessionIndex,
                                                                   statusIndex);
+    var dispatchIndex = Builders<TaskData>.IndexKeys.Text(model => model.DispatchId);
+    var taskIndex = Builders<TaskData>.IndexKeys.Text(model => model.TaskId);
 
     var indexModels = new CreateIndexModel<TaskData>[]
                       {
@@ -127,6 +129,16 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                             new()
                             {
                               Name = nameof(sessionStatusIndex),
+                            }),
+                        new(dispatchIndex,
+                            new()
+                            {
+                              Name = nameof(dispatchIndex),
+                            }),
+                        new(taskIndex,
+                            new()
+                            {
+                              Name = nameof(taskIndex),
                             }),
                       };
 
