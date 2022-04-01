@@ -63,7 +63,7 @@ public class DataPrefetcherTest
   }
 
   [Test]
-  public async Task Test1()
+  public async Task EmptyPayloadAndOneDependency()
   {
     var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
     var mockObjectStorage        = new Mock<IObjectStorage>();
@@ -89,17 +89,23 @@ public class DataPrefetcherTest
                                          activitySource_,
                                          loggerFactory.CreateLogger<DataPrefetcher>());
 
-    var res = await dataPrefetcher.PrefetchDataAsync(new TaskData("SessionId",
-                                                                   "ParentTaskId",
-                                                                   "DispatchId",
-                                                                   "TaskId",
+    const string sessionId = "SessionId";
+    const string parentTaskId = "ParentTaskId";
+    const string dispatchId = "DispatchId";
+    const string taskId = "TaskId";
+    const string output1 = "Output1";
+    const string dependency1 = "Dependency1";
+    var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
+                                                                   parentTaskId,
+                                                                   dispatchId,
+                                                                   taskId,
                                                                    new List<string>
                                                                    {
-                                                                     "dep1"
+                                                                     dependency1,
                                                                    },
                                                                    new List<string>
                                                                    {
-                                                                     "output1"
+                                                                     output1,
                                                                    },
                                                                    false,
                                                                    Array.Empty<byte>(),
@@ -116,10 +122,27 @@ public class DataPrefetcherTest
                                                                               "")),
                                                       CancellationToken.None);
     var computeRequests = res.ToArray();
+    Assert.AreEqual(computeRequests.Length, 5);
     foreach (var request in computeRequests)
     {
       Console.WriteLine(request);
     }
 
+    Assert.AreEqual(computeRequests[0].TypeCase, ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitRequest);
+    Assert.AreEqual(computeRequests[0].InitRequest.SessionId, sessionId);
+    Assert.AreEqual(computeRequests[0].InitRequest.TaskId, taskId);
+    Assert.AreEqual(computeRequests[0].InitRequest.ExpectedOutputKeys.First(), output1);
+    Assert.AreEqual(computeRequests[0].InitRequest.Payload.Data, Array.Empty<byte>());
+    Assert.AreEqual(computeRequests[1].TypeCase, ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload);
+    Assert.AreEqual(computeRequests[1].Payload.TypeCase, DataChunk.TypeOneofCase.DataComplete);
+    Assert.IsTrue(computeRequests[1].Payload.DataComplete);
+    Assert.AreEqual(computeRequests[2].TypeCase, ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
+    Assert.AreEqual(computeRequests[2].InitData.Key,
+                    dependency1);
+    Assert.AreEqual(computeRequests[3].TypeCase, ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[3].Data.TypeCase, DataChunk.TypeOneofCase.DataComplete);
+    Assert.IsTrue(computeRequests[3].Data.DataComplete);
+    Assert.AreEqual(computeRequests[4].TypeCase, ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
+    Assert.IsTrue(computeRequests[4].InitData.LastData);
   }
 }
