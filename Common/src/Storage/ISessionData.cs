@@ -23,8 +23,6 @@
 
 using System.Collections.Generic;
 
-using ArmoniK.Api.gRPC.V1;
-
 namespace ArmoniK.Core.Common.Storage;
 
 public record SessionData(string              SessionId,

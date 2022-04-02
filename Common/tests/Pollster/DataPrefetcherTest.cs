@@ -147,9 +147,32 @@ public class DataPrefetcherTest
     Assert.AreEqual(computeRequests[2].TypeCase, ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
     Assert.AreEqual(computeRequests[2].InitData.Key,
                     dependency1);
-    Assert.AreEqual(computeRequests[3].TypeCase, ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[3].Data.TypeCase, DataChunk.TypeOneofCase.Data);
-
+    Assert.AreEqual(computeRequests[3].TypeCase,
+                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[3].Data.TypeCase,
+                    DataChunk.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[4].TypeCase,
+                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[4].Data.TypeCase,
+                    DataChunk.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[5].TypeCase,
+                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[5].Data.TypeCase,
+                    DataChunk.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[6].TypeCase,
+                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[6].Data.TypeCase,
+                    DataChunk.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[7].TypeCase,
+                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
+    Assert.AreEqual(computeRequests[7].Data.TypeCase,
+                    DataChunk.TypeOneofCase.DataComplete);
+    Assert.IsTrue(computeRequests[7].Data.DataComplete);
+    Assert.AreEqual(computeRequests[8].TypeCase,
+                    ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
+    Assert.AreEqual(computeRequests[8].InitData.TypeCase,
+                    ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.LastData);
+    Assert.IsTrue(computeRequests[8].InitData.LastData);
   }
 
   [Test]
@@ -217,6 +240,7 @@ public class DataPrefetcherTest
                                                                    new Output(false,
                                                                               "")),
                                                       CancellationToken.None);
+    Assert.AreNotEqual(0, res.Count);
   }
 
   [Test]
@@ -290,6 +314,7 @@ public class DataPrefetcherTest
                                                                    new Output(false,
                                                                               "")),
                                                       CancellationToken.None);
+    Assert.AreNotEqual(0, res.Count);
   }
 
   [Test]
@@ -363,6 +388,7 @@ public class DataPrefetcherTest
                                                                    new Output(false,
                                                                               "")),
                                                       CancellationToken.None);
+    Assert.AreNotEqual(0, res.Count);
   }
 
   [Test]
@@ -432,6 +458,7 @@ public class DataPrefetcherTest
                                                                   new Output(false,
                                                                              "")),
                                                      CancellationToken.None);
+    Assert.AreNotEqual(0, res.Count);
   }
 
   [Test]
@@ -495,6 +522,7 @@ public class DataPrefetcherTest
                                                                   new Output(false,
                                                                              "")),
                                                      CancellationToken.None);
+    Assert.AreNotEqual(0, res.Count);
   }
 
 }

@@ -110,15 +110,17 @@ public class ComputeRequestStateMachine
                       State.DataInit);
 
     if (logger_.IsEnabled(LogLevel.Debug))
-      machine_.OnTransitioned(t => logger_.LogDebug("OnTransitioned: {Source} -> {Destination}", t.Source, t.Destination));
+      machine_.OnTransitioned(t => logger_.LogDebug("OnTransitioned: {Source} -> {Destination}",
+                                                    t.Source,
+                                                    t.Destination));
   }
 
   public void Register(State state, Func<ProcessRequest.Types.ComputeRequest, Task> func) => machine_.Configure(state)
-                                                                                                     .OnEntryAsync(
-                                                                                                       transition => func(
-                                                                                                         transition.Parameters.Single() as
-                                                                                                           ProcessRequest.Types.ComputeRequest ??
-                                                                                                         throw new InvalidOperationException()));
+                                                                                                     .OnEntryAsync(transition => func(transition.Parameters.Single() as
+                                                                                                                                        ProcessRequest.Types.
+                                                                                                                                        ComputeRequest ??
+                                                                                                                                      throw new
+                                                                                                                                        InvalidOperationException()));
 
   public void Init(int dataChunkMaxSize, string sessionId, string taskId, IDictionary<string, string> taskOptions, ByteString? payload, IList<string> expectedOutputKeys)
   {

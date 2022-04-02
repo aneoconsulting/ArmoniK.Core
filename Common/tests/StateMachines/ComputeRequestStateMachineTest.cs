@@ -24,9 +24,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.StateMachines;
 
 using Google.Protobuf;
@@ -84,12 +82,6 @@ public class ComputeRequestStateMachineTest
   }
 
   [Test]
-  public void InitRequestFirstShouldSucceed()
-  {
-    sm_.InitRequest();
-  }
-
-  [Test]
   public void TwoInitRequestsShouldFail()
   {
     sm_.InitRequest();
@@ -116,7 +108,9 @@ public class ComputeRequestStateMachineTest
     sm_.AddEmptyPayloadChunk();
     sm_.CompletePayload();
 
-    sm_.GetQueue();
+    var res = sm_.GetQueue();
+    Assert.AreEqual(6,
+                    res.Count);
   }
 
   [Test]
@@ -149,7 +143,9 @@ public class ComputeRequestStateMachineTest
     sm_.AddEmptyDataChunk();
     sm_.CompleteDataDependency();
 
-    sm_.GetQueue();
+    var res = sm_.GetQueue();
+    Assert.AreEqual(12,
+                    res.Count);
   }
 
   [Test]
@@ -162,7 +158,9 @@ public class ComputeRequestStateMachineTest
     sm_.AddEmptyDataChunk();
     sm_.CompleteDataDependency();
 
-    sm_.GetQueue();
+    var res = sm_.GetQueue();
+    Assert.AreEqual(6,
+                    res.Count);
   }
 
   [Test]
@@ -170,7 +168,9 @@ public class ComputeRequestStateMachineTest
   {
     sm_.InitRequest();
     sm_.CompletePayload();
-    sm_.GetQueue();
+    var res = sm_.GetQueue();
+    Assert.AreEqual(3,
+                    res.Count);
   }
 
   [Test]
@@ -201,12 +201,16 @@ public class ComputeRequestStateMachineTest
     sm_.AddEmptyDataChunk();
     sm_.CompleteDataDependency();
 
-    sm_.GetQueue();
+    var res = sm_.GetQueue();
+    Assert.AreEqual(23,
+                    res.Count);
   }
 
   [Test]
   public void GenerateGraphShouldSucceed()
   {
-    Console.WriteLine(sm_.GenerateGraph());
+    var str = sm_.GenerateGraph();
+    Console.WriteLine(str);
+    Assert.IsFalse(string.IsNullOrEmpty(str));
   }
 }
