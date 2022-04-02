@@ -23,11 +23,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.Exceptions;
+
+using Google.Protobuf;
 
 using Microsoft.Extensions.Logging;
 
@@ -52,91 +54,64 @@ public class ComputeRequestStateMachine
 
   public enum Triggers
   {
-    ReceiveRequest,
+    CompleteRequest,
+    CompleteDataDependency,
+    AddDataDependencyChunk,
+    InitDataDependency,
+    CompletePayload,
+    AddPayloadChunk,
+    InitRequest,
   }
 
-  private readonly StateMachine<State, Triggers>                                                            machine_;
-  private readonly StateMachine<State, Triggers>.TriggerWithParameters<ProcessRequest.Types.ComputeRequest> changedNeededParameters_;
-  private readonly ILogger<ComputeRequestStateMachine>                                                      logger_;
+  private readonly StateMachine<State, Triggers>              machine_;
+  private readonly ILogger                                    logger_;
+  private readonly Queue<ProcessRequest.Types.ComputeRequest> computeRequests_;
 
-  public ComputeRequestStateMachine(ILogger<ComputeRequestStateMachine> logger)
+  public ComputeRequestStateMachine(ILogger logger)
   {
     logger_  = logger;
+    computeRequests_ = new Queue<ProcessRequest.Types.ComputeRequest>();
     machine_ = new StateMachine<State, Triggers>(State.Init);
 
-    changedNeededParameters_ = machine_.SetTriggerParameters<ProcessRequest.Types.ComputeRequest>(Triggers.ReceiveRequest);
-
     machine_.Configure(State.Init)
-            .PermitIf(changedNeededParameters_,
-                      State.InitRequest,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitRequest,
-                      "Transition from Init to InitRequest");
+            .Permit(Triggers.InitRequest,
+                      State.InitRequest);
 
     machine_.Configure(State.InitRequest)
-            .PermitIf(changedNeededParameters_,
-                      State.PayloadData,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload &&
-                                 request.Payload.TypeCase == DataChunk.TypeOneofCase.Data)
-            .PermitIf(changedNeededParameters_,
-                      State.PayloadComplete,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload &&
-                                 request.Payload.TypeCase == DataChunk.TypeOneofCase.DataComplete &&
-                                 request.Payload.DataComplete);
+            .Permit(Triggers.AddPayloadChunk,
+                      State.PayloadData)
+            .Permit(Triggers.CompletePayload,
+                      State.PayloadComplete);
 
     machine_.Configure(State.PayloadData)
-            .PermitReentryIf(changedNeededParameters_,
-                             request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload &&
-                                        request.Payload.TypeCase == DataChunk.TypeOneofCase.Data)
-            .PermitIf(changedNeededParameters_,
-                      State.PayloadComplete,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload &&
-                                 request.Payload.TypeCase == DataChunk.TypeOneofCase.DataComplete &&
-                                 request.Payload.DataComplete);
+            .PermitReentry(Triggers.AddPayloadChunk)
+            .Permit(Triggers.CompletePayload,
+                      State.PayloadComplete);
 
     machine_.Configure(State.PayloadComplete)
-            .PermitIf(changedNeededParameters_,
-                      State.DataInit,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData &&
-                                 request.InitData.TypeCase == ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.Key)
-            .PermitIf(changedNeededParameters_,
-                      State.DataLast,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData &&
-                                 request.InitData.TypeCase == ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.LastData &&
-                                 request.InitData.LastData);
+            .Permit(Triggers.InitDataDependency,
+                      State.DataInit)
+            .Permit(Triggers.CompleteRequest,
+                    State.DataLast);
 
     machine_.Configure(State.DataInit)
-            .PermitIf(changedNeededParameters_,
-                      State.Data,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data &&
-                                 request.Data.TypeCase == DataChunk.TypeOneofCase.Data);
+            .Permit(Triggers.AddDataDependencyChunk,
+                      State.Data);
 
     machine_.Configure(State.Data)
-            .PermitReentryIf(changedNeededParameters_,
-                             request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data &&
-                                        request.Data.TypeCase == DataChunk.TypeOneofCase.Data)
-            .PermitIf(changedNeededParameters_,
-                      State.DataComplete,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data &&
-                                 request.Data.TypeCase == DataChunk.TypeOneofCase.DataComplete &&
-                                 request.Data.DataComplete);
+            .PermitReentry(Triggers.AddDataDependencyChunk)
+            .Permit(Triggers.CompleteDataDependency,
+                      State.DataComplete);
 
     machine_.Configure(State.DataComplete)
-            .PermitIf(changedNeededParameters_,
-                      State.DataLast,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData &&
-                                 request.InitData.TypeCase == ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.LastData &&
-                                 request.InitData.LastData)
-            .PermitIf(changedNeededParameters_,
-                      State.DataInit,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData &&
-                                 request.InitData.TypeCase == ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.Key);
+            .Permit(Triggers.CompleteRequest,
+                      State.DataLast)
+            .Permit(Triggers.InitDataDependency,
+                      State.DataInit);
 
     if (logger_.IsEnabled(LogLevel.Debug))
       machine_.OnTransitioned(t => logger_.LogDebug("OnTransitioned: {Source} -> {Destination}", t.Source, t.Destination));
   }
-
-  public async Task ReceiveRequest(ProcessRequest.Types.ComputeRequest request) => await machine_.FireAsync(changedNeededParameters_,
-                                                                                                             request);
 
   public void Register(State state, Func<ProcessRequest.Types.ComputeRequest, Task> func) => machine_.Configure(state)
                                                                                                      .OnEntryAsync(
@@ -144,6 +119,112 @@ public class ComputeRequestStateMachine
                                                                                                          transition.Parameters.Single() as
                                                                                                            ProcessRequest.Types.ComputeRequest ??
                                                                                                          throw new InvalidOperationException()));
+
+  public void Init(int dataChunkMaxSize, string sessionId, string taskId, IDictionary<string, string> taskOptions, ByteString? payload, IList<string> expectedOutputKeys)
+  {
+    machine_.Fire(Triggers.InitRequest);
+    computeRequests_.Enqueue(new()
+    {
+      InitRequest = new()
+      {
+        Configuration = new()
+        {
+          DataChunkMaxSize = dataChunkMaxSize,
+        },
+        TaskId    = taskId,
+        SessionId = sessionId,
+        TaskOptions =
+        {
+          taskOptions,
+        },
+        Payload = payload is not null
+          ? new DataChunk
+          {
+            Data = payload,
+          }
+          : new DataChunk(),
+        ExpectedOutputKeys =
+        {
+          expectedOutputKeys,
+        },
+      },
+    });
+  }
+
+  public void AddPayloadChunk(ByteString chunk)
+  {
+    machine_.Fire(Triggers.AddPayloadChunk);
+    computeRequests_.Enqueue(new()
+    {
+      Payload = new()
+      {
+        Data = chunk,
+      },
+    });
+  }
+
+  public void CompletePayload()
+  {
+    machine_.Fire(Triggers.CompletePayload);
+    computeRequests_.Enqueue(new()
+    {
+      Payload = new()
+      {
+        DataComplete = true,
+      },
+    });
+  }
+
+  public void InitDataDependency(string key)
+  {
+    machine_.Fire(Triggers.InitDataDependency);
+    computeRequests_.Enqueue(new()
+    {
+      InitData = new()
+      {
+        Key = key,
+      },
+    });
+  }
+
+
+  public void AddDataDependencyChunk(ByteString chunk)
+  {
+    machine_.Fire(Triggers.AddDataDependencyChunk);
+    computeRequests_.Enqueue(new()
+    {
+      Data = new()
+      {
+        Data = chunk,
+      },
+    });
+  }
+
+  public void CompleteDataDependency()
+  {
+    machine_.Fire(Triggers.CompleteDataDependency);
+    computeRequests_.Enqueue(new()
+    {
+      Data = new()
+      {
+        DataComplete = true,
+      },
+    });
+  }
+
+  public Queue<ProcessRequest.Types.ComputeRequest> GetQueue()
+  {
+    machine_.Fire(Triggers.CompleteRequest);
+    computeRequests_.Enqueue(new()
+    {
+      InitData = new()
+      {
+        LastData = true,
+      },
+    });
+    return computeRequests_;
+  }
+
   public string GenerateGraph() =>
     UmlDotGraph.Format(machine_.GetInfo());
 

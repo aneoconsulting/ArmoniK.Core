@@ -75,7 +75,13 @@ public class DataPrefetcherTest
 
     var mockResultStorage = new Mock<IObjectStorage>();
     mockResultStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
-                                                     CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
+                                                     CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>
+    {
+      Convert.FromBase64String("1111"),
+      Convert.FromBase64String("2222"),
+      Convert.FromBase64String("3333"),
+      Convert.FromBase64String("4444"),
+    }.ToAsyncEnumerable());
 
     mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>())).Returns((string objname) =>
     {
@@ -125,7 +131,6 @@ public class DataPrefetcherTest
                                                                               "")),
                                                       CancellationToken.None);
     var computeRequests = res.ToArray();
-    Assert.AreEqual(computeRequests.Length, 5);
     foreach (var request in computeRequests)
     {
       Console.WriteLine(request);
@@ -143,10 +148,8 @@ public class DataPrefetcherTest
     Assert.AreEqual(computeRequests[2].InitData.Key,
                     dependency1);
     Assert.AreEqual(computeRequests[3].TypeCase, ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data);
-    Assert.AreEqual(computeRequests[3].Data.TypeCase, DataChunk.TypeOneofCase.DataComplete);
-    Assert.IsTrue(computeRequests[3].Data.DataComplete);
-    Assert.AreEqual(computeRequests[4].TypeCase, ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData);
-    Assert.IsTrue(computeRequests[4].InitData.LastData);
+    Assert.AreEqual(computeRequests[3].Data.TypeCase, DataChunk.TypeOneofCase.Data);
+
   }
 
   [Test]
@@ -214,13 +217,6 @@ public class DataPrefetcherTest
                                                                    new Output(false,
                                                                               "")),
                                                       CancellationToken.None);
-    var computeRequests = res.ToArray();
-
-    foreach (var request in computeRequests)
-    {
-      Console.WriteLine(request);
-      await sm_.ReceiveRequest(request);
-    }
   }
 
   [Test]
@@ -294,13 +290,6 @@ public class DataPrefetcherTest
                                                                    new Output(false,
                                                                               "")),
                                                       CancellationToken.None);
-    var computeRequests = res.ToArray();
-
-    foreach (var request in computeRequests)
-    {
-      Console.WriteLine(request);
-      await sm_.ReceiveRequest(request);
-    }
   }
 
   [Test]
@@ -374,13 +363,6 @@ public class DataPrefetcherTest
                                                                    new Output(false,
                                                                               "")),
                                                       CancellationToken.None);
-    var computeRequests = res.ToArray();
-
-    foreach (var request in computeRequests)
-    {
-      Console.WriteLine(request);
-      await sm_.ReceiveRequest(request);
-    }
   }
 
   [Test]
@@ -450,13 +432,6 @@ public class DataPrefetcherTest
                                                                   new Output(false,
                                                                              "")),
                                                      CancellationToken.None);
-    var computeRequests = res.ToArray();
-
-    foreach (var request in computeRequests)
-    {
-      Console.WriteLine(request);
-      await sm_.ReceiveRequest(request);
-    }
   }
 
   [Test]
@@ -469,7 +444,13 @@ public class DataPrefetcherTest
 
     var mockResultStorage = new Mock<IObjectStorage>();
     mockResultStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
-                                                     CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
+                                                     CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>
+    {
+      Convert.FromBase64String("1111"),
+      Convert.FromBase64String("2222"),
+      Convert.FromBase64String("3333"),
+      Convert.FromBase64String("4444"),
+    }.ToAsyncEnumerable());
 
     mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>())).Returns((string objname) =>
     {
@@ -514,13 +495,6 @@ public class DataPrefetcherTest
                                                                   new Output(false,
                                                                              "")),
                                                      CancellationToken.None);
-    var computeRequests = res.ToArray();
-
-    foreach (var request in computeRequests)
-    {
-      Console.WriteLine(request);
-      await sm_.ReceiveRequest(request);
-    }
   }
 
 }

@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -36,6 +37,23 @@ using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests.StateMachines;
 
+public static class ComputeRequestStateMachineExt
+{
+  public static void InitRequest(this ComputeRequestStateMachine sm) => sm.Init(10,
+             "sessionId",
+             "taskId",
+             new Dictionary<string, string>(),
+             ByteString.Empty,
+             new List<string>());
+
+  public static void AddEmptyPayloadChunk(this ComputeRequestStateMachine sm) => sm.AddPayloadChunk(ByteString.Empty);
+
+  public static void AddEmptyDataChunk(this ComputeRequestStateMachine sm) => sm.AddDataDependencyChunk(ByteString.Empty);
+
+  public static void InitEmptyDataDepKey(this ComputeRequestStateMachine sm) => sm.InitDataDependency(string.Empty);
+
+}
+
 [TestFixture]
 public class ComputeRequestStateMachineTest
 {
@@ -45,219 +63,150 @@ public class ComputeRequestStateMachineTest
     sm_ = new ComputeRequestStateMachine(NullLogger<ComputeRequestStateMachine>.Instance);
   }
 
-  private readonly ProcessRequest.Types.ComputeRequest initRequest_ = new()
-  {
-    InitRequest = new ProcessRequest.Types.ComputeRequest.Types.InitRequest(),
-  };
-
-  private readonly ProcessRequest.Types.ComputeRequest payloadDataRequest_ = new()
-  {
-    Payload = new DataChunk
-    {
-      Data = ByteString.Empty,
-    },
-  };
-
-  private readonly ProcessRequest.Types.ComputeRequest payloadDataCompleteRequest_ = new()
-  {
-    Payload = new DataChunk
-    {
-      DataComplete = true,
-    },
-  };
-
-  private readonly ProcessRequest.Types.ComputeRequest payloadDataNotCompleteRequest_ = new()
-  {
-    Payload = new DataChunk
-    {
-      DataComplete = false,
-    },
-  };
-
-  private readonly ProcessRequest.Types.ComputeRequest initDataKeyRequest_ = new()
-  {
-    InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
-    {
-      Key = string.Empty,
-    },
-  };
-
-  private readonly ProcessRequest.Types.ComputeRequest initDataLastTrueRequest_ = new()
-  {
-    InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
-    {
-      LastData = true,
-    },
-  };
-
-  private readonly ProcessRequest.Types.ComputeRequest initDataLastFalseRequest_ = new()
-  {
-    InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
-    {
-      LastData = false,
-    },
-  };
-
-  private readonly ProcessRequest.Types.ComputeRequest dataRequest_ = new()
-  {
-    Data = new DataChunk
-    {
-      Data = ByteString.Empty,
-    },
-  };
-
-  private readonly ProcessRequest.Types.ComputeRequest dataCompleteRequest_ = new()
-  {
-    Data = new DataChunk
-    {
-      DataComplete = true,
-    },
-  };
-
-  private readonly ProcessRequest.Types.ComputeRequest dataNotCompleteRequest_ = new()
-  {
-    Data = new DataChunk
-    {
-      DataComplete = false,
-    },
-  };
-
   private ComputeRequestStateMachine sm_;
 
   [Test]
   public void PayloadFirstShouldFail()
   {
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.ReceiveRequest(new ProcessRequest.Types.ComputeRequest
-    {
-      Payload = null,
-    }));
+    Assert.Throws<InvalidOperationException>(() => sm_.AddEmptyPayloadChunk());
   }
 
   [Test]
-  public async Task InitRequestFirstShouldSucceed()
+  public void DataChunkFirstShouldFail()
   {
-    await sm_.ReceiveRequest(initRequest_);
+    Assert.Throws<InvalidOperationException>(() => sm_.AddEmptyDataChunk());
   }
 
   [Test]
-  public async Task TwoInitRequestsShouldFail()
+  public void InitDataFirstShouldFail()
   {
-    await sm_.ReceiveRequest(initRequest_);
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.ReceiveRequest(initRequest_));
+    Assert.Throws<InvalidOperationException>(() => sm_.InitEmptyDataDepKey());
   }
 
   [Test]
-  public async Task HappyPathShouldSucceed()
+  public void InitRequestFirstShouldSucceed()
   {
-    await sm_.ReceiveRequest(initRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataCompleteRequest_);
-
-    await sm_.ReceiveRequest(initDataKeyRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataCompleteRequest_);
-
-    await sm_.ReceiveRequest(initDataKeyRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataCompleteRequest_);
-    await sm_.ReceiveRequest(initDataLastTrueRequest_);
+    sm_.InitRequest();
   }
 
   [Test]
-  public async Task HappyPathSmallShouldSucceed()
+  public void TwoInitRequestsShouldFail()
   {
-    await sm_.ReceiveRequest(initRequest_);
-    await sm_.ReceiveRequest(payloadDataCompleteRequest_);
-
-    await sm_.ReceiveRequest(initDataKeyRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataCompleteRequest_);
-
-    await sm_.ReceiveRequest(initDataLastTrueRequest_);
+    sm_.InitRequest();
+    Assert.Throws<InvalidOperationException>( () => sm_.InitRequest());
   }
 
   [Test]
-  public async Task HappyPathNoDataDepShouldSucceed()
+  public void GetQueueWithoutPayloadCompleteShouldFail()
   {
-    await sm_.ReceiveRequest(initRequest_);
-    await sm_.ReceiveRequest(payloadDataCompleteRequest_);
-    await sm_.ReceiveRequest(initDataLastTrueRequest_);
-  }
+    sm_.InitRequest();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
 
-
-  [Test]
-  public async Task InitDataLastFalseRequestShouldFail()
-  {
-    await sm_.ReceiveRequest(initRequest_);
-    await sm_.ReceiveRequest(payloadDataCompleteRequest_);
-
-    await sm_.ReceiveRequest(initDataKeyRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataCompleteRequest_);
-
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.ReceiveRequest(initDataLastFalseRequest_));
+    Assert.Throws<InvalidOperationException>(() => sm_.GetQueue());
   }
 
   [Test]
-  public async Task DataNotCompleteRequestShouldFail()
+  public void GetQueueWithPayloadCompleteShouldSucceed()
   {
-    await sm_.ReceiveRequest(initRequest_);
-    await sm_.ReceiveRequest(payloadDataCompleteRequest_);
+    sm_.InitRequest();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.CompletePayload();
 
-    await sm_.ReceiveRequest(initDataKeyRequest_);
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.ReceiveRequest(dataNotCompleteRequest_));
+    sm_.GetQueue();
   }
 
   [Test]
-  public async Task PayloadDataNotCompleteRequestShouldFail()
+  public void DataDepWithoutChunkShouldFail()
   {
-    await sm_.ReceiveRequest(initRequest_);
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.ReceiveRequest(payloadDataNotCompleteRequest_));
+    sm_.InitRequest();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.CompletePayload();
+
+    sm_.InitEmptyDataDepKey();
+    Assert.Throws<InvalidOperationException>(() => sm_.CompleteDataDependency());
   }
 
   [Test]
-  public async Task PayloadDataNotCompleteRequestShouldFail2()
+  public void HappyPathShouldSucceed()
   {
-    await sm_.ReceiveRequest(initRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.ReceiveRequest(payloadDataNotCompleteRequest_));
+    sm_.InitRequest();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.CompletePayload();
+
+    sm_.InitEmptyDataDepKey();
+    sm_.AddEmptyDataChunk();
+    sm_.CompleteDataDependency();
+
+    sm_.InitEmptyDataDepKey();
+    sm_.AddEmptyDataChunk();
+    sm_.CompleteDataDependency();
+
+    sm_.GetQueue();
   }
 
   [Test]
-  public async Task HappyPathMultipleLargeDataShouldSucceed()
+  public void HappyPathSmallShouldSucceed()
   {
-    await sm_.ReceiveRequest(initRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataRequest_);
-    await sm_.ReceiveRequest(payloadDataCompleteRequest_);
+    sm_.InitRequest();
+    sm_.CompletePayload();
 
-    await sm_.ReceiveRequest(initDataKeyRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataCompleteRequest_);
+    sm_.InitEmptyDataDepKey();
+    sm_.AddEmptyDataChunk();
+    sm_.CompleteDataDependency();
 
-    await sm_.ReceiveRequest(initDataKeyRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataRequest_);
-    await sm_.ReceiveRequest(dataCompleteRequest_);
-    await sm_.ReceiveRequest(initDataLastTrueRequest_);
+    sm_.GetQueue();
+  }
+
+  [Test]
+  public void HappyPathNoDataDepShouldSucceed()
+  {
+    sm_.InitRequest();
+    sm_.CompletePayload();
+    sm_.GetQueue();
+  }
+
+  [Test]
+  public void HappyPathMultipleLargeDataShouldSucceed()
+  {
+    sm_.InitRequest();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.AddEmptyPayloadChunk();
+    sm_.CompletePayload();
+
+    sm_.InitEmptyDataDepKey();
+    sm_.AddEmptyDataChunk();
+    sm_.AddEmptyDataChunk();
+    sm_.AddEmptyDataChunk();
+    sm_.AddEmptyDataChunk();
+    sm_.AddEmptyDataChunk();
+    sm_.CompleteDataDependency();
+
+    sm_.InitEmptyDataDepKey();
+    sm_.AddEmptyDataChunk();
+    sm_.AddEmptyDataChunk();
+    sm_.AddEmptyDataChunk();
+    sm_.AddEmptyDataChunk();
+    sm_.AddEmptyDataChunk();
+    sm_.CompleteDataDependency();
+
+    sm_.GetQueue();
+  }
+
+  [Test]
+  public void GenerateGraphShouldSucceed()
+  {
+    Console.WriteLine(sm_.GenerateGraph());
   }
 }

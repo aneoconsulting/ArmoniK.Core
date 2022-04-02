@@ -28,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf;
@@ -78,49 +79,14 @@ public class DataPrefetcher : IInitializable
                                           .ToListAsync(cancellationToken);
     }
 
-    var computeRequests = new Queue<ProcessRequest.Types.ComputeRequest>();
+    var computeRequests = new ComputeRequestStateMachine(logger_);
+    computeRequests.Init(PayloadConfiguration.MaxChunkSize, taskData.SessionId, taskData.TaskId, taskData.Options.Options, payloadChunks.FirstOrDefault(), taskData.ExpectedOutput);
 
-    computeRequests.Enqueue(new()
-                            {
-                              InitRequest = new()
-                                            {
-                                              Configuration = new ()
-                                                              {
-                                                                DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
-                                                              },
-                                              TaskId    = taskData.TaskId,
-                                              SessionId = taskData.SessionId,
-                                              TaskOptions =
-                                              {
-                                                taskData.Options.Options,
-                                              },
-                                              Payload = payloadChunks.Count > 0 ? new DataChunk
-                                                        {
-                                                          Data         = payloadChunks[0],
-                                                        } : new DataChunk(),
-                                              ExpectedOutputKeys = { taskData.ExpectedOutput },
-                                            },
-                            });
-    
-
-      for (var i = 1; i < payloadChunks.Count; i++)
-      {
-        computeRequests.Enqueue(new()
-                                {
-                                  Payload = new()
-                                            {
-                                              Data = payloadChunks[i],
-                                            },
-                                });
-      }
-
-    computeRequests.Enqueue(new()
-                            {
-                              Payload = new()
-                                        {
-                                          DataComplete = true,
-                                        },
-                            });
+    for (var i = 1; i < payloadChunks.Count; i++)
+    {
+      computeRequests.AddPayloadChunk(payloadChunks[i]);
+    }
+    computeRequests.CompletePayload();
 
     foreach (var dataDependency in taskData.DataDependencies)
     {
@@ -129,45 +95,15 @@ public class DataPrefetcher : IInitializable
                                                 .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
                                                 .ToListAsync(cancellationToken);
 
-
-      computeRequests.Enqueue(new()
-                              {
-                                InitData = new()
-                                           {
-                                             Key = dataDependency,
-                                           },
-                              });
-
+      computeRequests.InitDataDependency(dataDependency);
       foreach (var chunk in dependencyChunks)
       {
-        computeRequests.Enqueue(new()
-                                {
-                                  Data = new()
-                                         {
-                                           Data = chunk,
-                                         },
-                                });
+        computeRequests.AddDataDependencyChunk(chunk);
       }
-
-      computeRequests.Enqueue(new()
-                              {
-                                Data = new()
-                                       {
-                                         DataComplete = true,
-                                       },
-                              });
-
+      computeRequests.CompleteDataDependency();
     }
 
-    computeRequests.Enqueue(new()
-                            {
-                              InitData = new()
-                                         {
-                                           LastData = true,
-                                         },
-                            });
-
-    return computeRequests;
+    return computeRequests.GetQueue();
   }
 
   private bool isInitialized_ = false;
