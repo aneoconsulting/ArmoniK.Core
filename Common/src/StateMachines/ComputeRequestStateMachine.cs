@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -31,6 +32,7 @@ using ArmoniK.Core.Common.Exceptions;
 using Microsoft.Extensions.Logging;
 
 using Stateless;
+using Stateless.Graph;
 
 namespace ArmoniK.Core.Common.StateMachines;
 
@@ -95,18 +97,18 @@ public class ComputeRequestStateMachine
             .PermitIf(changedNeededParameters_,
                       State.DataInit,
                       request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData &&
-                                 request.InitData.TypeCase == ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.Key);
+                                 request.InitData.TypeCase == ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.Key)
+            .PermitIf(changedNeededParameters_,
+                      State.DataLast,
+                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData &&
+                                 request.InitData.TypeCase == ProcessRequest.Types.ComputeRequest.Types.InitData.TypeOneofCase.LastData &&
+                                 request.InitData.LastData);
 
     machine_.Configure(State.DataInit)
             .PermitIf(changedNeededParameters_,
                       State.Data,
                       request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data &&
-                                 request.Data.TypeCase == DataChunk.TypeOneofCase.Data)
-            .PermitIf(changedNeededParameters_,
-                      State.DataComplete,
-                      request => request.TypeCase == ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data &&
-                                 request.Data.TypeCase == DataChunk.TypeOneofCase.DataComplete &&
-                                 request.Data.DataComplete);
+                                 request.Data.TypeCase == DataChunk.TypeOneofCase.Data);
 
     machine_.Configure(State.Data)
             .PermitReentryIf(changedNeededParameters_,
@@ -136,6 +138,14 @@ public class ComputeRequestStateMachine
   public async Task ReceiveRequest(ProcessRequest.Types.ComputeRequest request) => await machine_.FireAsync(changedNeededParameters_,
                                                                                                              request);
 
-  public void Register(State state, Func<StateMachine<State, Triggers>.Transition, Task> func) => machine_.Configure(state).OnEntryAsync(func);
+  public void Register(State state, Func<ProcessRequest.Types.ComputeRequest, Task> func) => machine_.Configure(state)
+                                                                                                     .OnEntryAsync(
+                                                                                                       transition => func(
+                                                                                                         transition.Parameters.Single() as
+                                                                                                           ProcessRequest.Types.ComputeRequest ??
+                                                                                                         throw new InvalidOperationException()));
+  public string GenerateGraph() =>
+    UmlDotGraph.Format(machine_.GetInfo());
 
+  public State GetState() => machine_.State;
 }
