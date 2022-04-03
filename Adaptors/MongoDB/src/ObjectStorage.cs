@@ -31,7 +31,9 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Object;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using JetBrains.Annotations;
 
@@ -49,10 +51,12 @@ public class ObjectStorage : IObjectStorage
 
   private readonly ILogger<ObjectStorage>                                                  logger_;
   private readonly MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider_;
+  private readonly string                                                                  objectStorageName_;
   private readonly SessionProvider                                                         sessionProvider_;
 
   public ObjectStorage(SessionProvider                                                         sessionProvider,
                        MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider,
+                       string                                                                  objectStorageName,
                        ILogger<ObjectStorage>                                                  logger,
                        Options.ObjectStorage                                                   options)
   {
@@ -62,6 +66,7 @@ public class ObjectStorage : IObjectStorage
 
     sessionProvider_          = sessionProvider;
     objectCollectionProvider_ = objectCollectionProvider;
+    objectStorageName_        = objectStorageName;
     ChunkSize                 = options.ChunkSize;
     logger_                   = logger;
   }
@@ -70,7 +75,7 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<byte[]> valueChunks, CancellationToken cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(key);
+    using var _                = logger_.LogFunction(objectStorageName_ + key);
     var       objectCollection = await objectCollectionProvider_.GetAsync();
 
     var taskList = new List<Task>();
@@ -82,19 +87,21 @@ public class ObjectStorage : IObjectStorage
                                                    {
                                                      Chunk    = chunk,
                                                      ChunkIdx = idx,
-                                                     Key      = key,
+                                                     Key      = objectStorageName_ + key,
                                                    },
                                                    cancellationToken: cancellationToken));
       ++idx;
     }
 
-    await Task.WhenAll(taskList);
+    if (idx == 0) throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+
+    await taskList.WhenAll();
   }
 
   /// <inheritdoc />
   public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(key);
+    using var _                = logger_.LogFunction(objectStorageName_ + key);
     var       objectCollection = await objectCollectionProvider_.GetAsync();
 
     var taskList = new List<Task>();
@@ -106,40 +113,46 @@ public class ObjectStorage : IObjectStorage
                                                    {
                                                      Chunk    = chunk.ToArray(),
                                                      ChunkIdx = idx,
-                                                     Key      = key,
+                                                     Key      = objectStorageName_ + key,
                                                    },
                                                    cancellationToken: cancellationToken));
       ++idx;
     }
 
-    await Task.WhenAll(taskList);
+    if (idx == 0) throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+
+    await taskList.WhenAll();
   }
 
   /// <inheritdoc />
   async IAsyncEnumerable<byte[]> IObjectStorage.GetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    using var _                = logger_.LogFunction(key);
+    using var _                = logger_.LogFunction(objectStorageName_ + key);
     var       sessionHandle    = await sessionProvider_.GetAsync();
     var       objectCollection = await objectCollectionProvider_.GetAsync();
 
-
-
+    bool throwException = true;
     await foreach (var chunk in objectCollection.AsQueryable(sessionHandle)
-                                                .Where(odm => odm.Key == key)
+                                                .Where(odm => odm.Key == objectStorageName_ + key)
                                                 .OrderBy(odm => odm.ChunkIdx)
                                                 .Select(odm => odm.Chunk)
                                                 .ToAsyncEnumerable()
                                                 .WithCancellation(cancellationToken))
+    {
+      throwException = false;
       yield return chunk;
+    }
+
+    if (throwException) throw new ArmoniKException($"Key {key} not found");
   }
 
   /// <inheritdoc />
   public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(key);
+    using var _                = logger_.LogFunction(objectStorageName_ + key);
     var       objectCollection = await objectCollectionProvider_.GetAsync();
 
-    var res = await objectCollection.DeleteManyAsync(odm => odm.Key == key,
+    var res = await objectCollection.DeleteManyAsync(odm => odm.Key == objectStorageName_ + key,
                                                      cancellationToken);
     return res.DeletedCount > 0;
   }

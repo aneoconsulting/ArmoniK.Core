@@ -71,8 +71,11 @@ public class ObjectStorageTestBase
                                    dataBytesList.ToAsyncEnumerable()).Wait();
 
     dataBytesList = new List<byte[]>();
+    dataBytesList.Add(Array.Empty<byte>());
     ObjectStorage.AddOrUpdateAsync("dataKeyEmpty",
                                    dataBytesList.ToAsyncEnumerable()).Wait();
+
+
   }
 
   [TearDown]
@@ -80,6 +83,16 @@ public class ObjectStorageTestBase
   {
     ObjectStorage = null;
     RunTests      = false;
+  }
+
+  [Test]
+  public void AddValuesAsyncWithoutChunkShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () => await ObjectStorage.AddOrUpdateAsync("dataKeyNoChunk",
+                                                                                new List<byte[]>().ToAsyncEnumerable()));
+    }
   }
 
   [Test]
