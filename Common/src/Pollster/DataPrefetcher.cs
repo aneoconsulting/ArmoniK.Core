@@ -28,7 +28,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf;
@@ -79,14 +78,14 @@ public class DataPrefetcher : IInitializable
                                           .ToListAsync(cancellationToken);
     }
 
-    var computeRequests = new ComputeRequestStateMachine(logger_);
-    computeRequests.Init(PayloadConfiguration.MaxChunkSize, taskData.SessionId, taskData.TaskId, taskData.Options.Options, payloadChunks.FirstOrDefault(), taskData.ExpectedOutput);
+    var computeRequests = new ComputeRequestQueue(logger_);
+    await computeRequests.Init(PayloadConfiguration.MaxChunkSize, taskData.SessionId, taskData.TaskId, taskData.Options.Options, payloadChunks.FirstOrDefault(), taskData.ExpectedOutput);
 
     for (var i = 1; i < payloadChunks.Count; i++)
     {
-      computeRequests.AddPayloadChunk(payloadChunks[i]);
+      await computeRequests.AddPayloadChunk(payloadChunks[i]);
     }
-    computeRequests.CompletePayload();
+    await computeRequests.CompletePayload();
 
     foreach (var dataDependency in taskData.DataDependencies)
     {
@@ -95,15 +94,15 @@ public class DataPrefetcher : IInitializable
                                                 .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
                                                 .ToListAsync(cancellationToken);
 
-      computeRequests.InitDataDependency(dataDependency);
+      await computeRequests.InitDataDependency(dataDependency);
       foreach (var chunk in dependencyChunks)
       {
-        computeRequests.AddDataDependencyChunk(chunk);
+        await computeRequests.AddDataDependencyChunk(chunk);
       }
-      computeRequests.CompleteDataDependency();
+      await computeRequests.CompleteDataDependency();
     }
 
-    return computeRequests.GetQueue();
+    return await computeRequests.GetQueue();
   }
 
   private bool isInitialized_ = false;
