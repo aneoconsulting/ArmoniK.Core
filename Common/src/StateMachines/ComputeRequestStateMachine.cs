@@ -23,13 +23,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-
-using Google.Protobuf;
 
 using Microsoft.Extensions.Logging;
 
@@ -65,12 +62,10 @@ public class ComputeRequestStateMachine
 
   private readonly StateMachine<State, Triggers>              machine_;
   private readonly ILogger                                    logger_;
-  private readonly Queue<ProcessRequest.Types.ComputeRequest> computeRequests_;
 
   public ComputeRequestStateMachine(ILogger logger)
   {
     logger_  = logger;
-    computeRequests_ = new Queue<ProcessRequest.Types.ComputeRequest>();
     machine_ = new StateMachine<State, Triggers>(State.Init);
 
     machine_.Configure(State.Init)
@@ -122,110 +117,24 @@ public class ComputeRequestStateMachine
                                                                                                                                       throw new
                                                                                                                                         InvalidOperationException()));
 
-  public void Init(int dataChunkMaxSize, string sessionId, string taskId, IDictionary<string, string> taskOptions, ByteString? payload, IList<string> expectedOutputKeys)
-  {
-    machine_.Fire(Triggers.InitRequest);
-    computeRequests_.Enqueue(new()
-    {
-      InitRequest = new()
-      {
-        Configuration = new()
-        {
-          DataChunkMaxSize = dataChunkMaxSize,
-        },
-        TaskId    = taskId,
-        SessionId = sessionId,
-        TaskOptions =
-        {
-          taskOptions,
-        },
-        Payload = payload is not null
-          ? new DataChunk
-          {
-            Data = payload,
-          }
-          : new DataChunk(),
-        ExpectedOutputKeys =
-        {
-          expectedOutputKeys,
-        },
-      },
-    });
-  }
+  public async Task InitRequestAsync() =>
+    await machine_.FireAsync(Triggers.InitRequest);
 
-  public void AddPayloadChunk(ByteString chunk)
-  {
-    machine_.Fire(Triggers.AddPayloadChunk);
-    computeRequests_.Enqueue(new()
-    {
-      Payload = new()
-      {
-        Data = chunk,
-      },
-    });
-  }
+  public async Task AddPayloadChunkAsync() =>
+    await machine_.FireAsync(Triggers.AddPayloadChunk);
 
-  public void CompletePayload()
-  {
-    machine_.Fire(Triggers.CompletePayload);
-    computeRequests_.Enqueue(new()
-    {
-      Payload = new()
-      {
-        DataComplete = true,
-      },
-    });
-  }
+  public async Task CompletePayloadAsync() =>
+    await machine_.FireAsync(Triggers.CompletePayload);
 
-  public void InitDataDependency(string key)
-  {
-    machine_.Fire(Triggers.InitDataDependency);
-    computeRequests_.Enqueue(new()
-    {
-      InitData = new()
-      {
-        Key = key,
-      },
-    });
-  }
+  public async Task InitDataDependencyAsync() =>
+    await machine_.FireAsync(Triggers.InitDataDependency);
 
+  public async Task AddDataDependencyChunkAsync() =>
+    await machine_.FireAsync(Triggers.AddDataDependencyChunk);
 
-  public void AddDataDependencyChunk(ByteString chunk)
-  {
-    machine_.Fire(Triggers.AddDataDependencyChunk);
-    computeRequests_.Enqueue(new()
-    {
-      Data = new()
-      {
-        Data = chunk,
-      },
-    });
-  }
+  public async Task CompleteDataDependencyAsync() => await machine_.FireAsync(Triggers.CompleteDataDependency);
 
-  public void CompleteDataDependency()
-  {
-    machine_.Fire(Triggers.CompleteDataDependency);
-    computeRequests_.Enqueue(new()
-    {
-      Data = new()
-      {
-        DataComplete = true,
-      },
-    });
-  }
-
-  public Queue<ProcessRequest.Types.ComputeRequest> GetQueue()
-  {
-    machine_.Fire(Triggers.CompleteRequest);
-    computeRequests_.Enqueue(new()
-    {
-      InitData = new()
-      {
-        LastData = true,
-      },
-    });
-    return computeRequests_;
-  }
+  public async Task GetQueueAsync() => await machine_.FireAsync(Triggers.CompleteRequest);
 
   public string GenerateGraph() =>
     UmlDotGraph.Format(machine_.GetInfo());
