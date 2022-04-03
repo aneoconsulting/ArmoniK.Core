@@ -333,7 +333,7 @@ public class RequestProcessor : IInitializable
   private async Task ProvideResourcesAsync(IAsyncStreamWriter<ProcessRequest> requestStream, ProcessReply processReply, CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ProvideResourcesAsync)}");
-    var bytes = resourcesStorage_.TryGetValuesAsync(processReply.Resource.Key,
+    var bytes = resourcesStorage_.GetValuesAsync(processReply.Resource.Key,
                                                     cancellationToken);
 
     await foreach (var dataReply in TaskAsyncEnumerableExtensions.WithCancellation<ProcessRequest.Types.DataReply>(bytes.ToDataReply(processReply.RequestId,

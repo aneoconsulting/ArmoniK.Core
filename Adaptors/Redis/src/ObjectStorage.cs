@@ -29,6 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -75,13 +76,14 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<byte[]> TryGetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<byte[]> GetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _   = logger_.LogFunction(objectStorageName_ + key);
     var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count");
 
     if (!value.HasValue)
-      yield break;
+      throw new ArmoniKException($"Key {key} not found");
+
     var valuesCount = int.Parse(value);
 
     if(valuesCount == 0)
