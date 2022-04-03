@@ -190,8 +190,8 @@ public class TaskHandlerTest
                     ProcessReply.Types.Result.TypeOneofCase.Init);
     Assert.AreEqual(responseStream.Messages[0].Result.Init.TypeCase,
                     InitKeyedDataStream.TypeOneofCase.Key);
-    Assert.AreEqual(responseStream.Messages[0].Result.Init.Key,
-                    "MyOutput");
+    Assert.AreEqual("MyOutput",
+                    responseStream.Messages[0].Result.Init.Key);
     Assert.AreEqual(responseStream.Messages[1].TypeCase,
                     ProcessReply.TypeOneofCase.Result);
     Assert.AreEqual(responseStream.Messages[1].Result.TypeCase,
@@ -202,13 +202,11 @@ public class TaskHandlerTest
                     ProcessReply.TypeOneofCase.Result);
     Assert.AreEqual(responseStream.Messages[2].Result.TypeCase,
                     ProcessReply.Types.Result.TypeOneofCase.Data);
-    Assert.AreEqual(responseStream.Messages[2].Result.Data.DataComplete,
-                    true);
+    Assert.IsTrue(responseStream.Messages[2].Result.Data.DataComplete);
     Assert.AreEqual(responseStream.Messages[3].TypeCase,
                     ProcessReply.TypeOneofCase.Result);
     Assert.AreEqual(responseStream.Messages[3].Result.TypeCase,
                     ProcessReply.Types.Result.TypeOneofCase.Init);
-    Assert.AreEqual(responseStream.Messages[3].Result.Init.LastResult,
-                    true);
+    Assert.IsTrue(responseStream.Messages[3].Result.Init.LastResult);
   }
 }
