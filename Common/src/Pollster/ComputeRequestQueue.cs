@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.StateMachines;
@@ -48,9 +47,9 @@ public class ComputeRequestQueue
     machine_         = new ComputeRequestStateMachine(logger_);
   }
 
-  public async Task Init(int dataChunkMaxSize, string sessionId, string taskId, IDictionary<string, string> taskOptions, ByteString? payload, IList<string> expectedOutputKeys)
+  public void Init(int dataChunkMaxSize, string sessionId, string taskId, IDictionary<string, string> taskOptions, ByteString? payload, IList<string> expectedOutputKeys)
   {
-    await machine_.InitRequestAsync();
+    machine_.InitRequest();
     computeRequests_.Enqueue(new()
     {
       InitRequest = new()
@@ -79,9 +78,9 @@ public class ComputeRequestQueue
     });
   }
 
-  public async Task AddPayloadChunk(ByteString chunk)
+  public void AddPayloadChunk(ByteString chunk)
   {
-    await machine_.AddPayloadChunkAsync();
+    machine_.AddPayloadChunk();
     computeRequests_.Enqueue(new()
     {
       Payload = new()
@@ -91,9 +90,9 @@ public class ComputeRequestQueue
     });
   }
 
-  public async Task CompletePayload()
+  public void CompletePayload()
   {
-    await machine_.CompletePayloadAsync();
+    machine_.CompletePayload();
     computeRequests_.Enqueue(new()
     {
       Payload = new()
@@ -103,9 +102,9 @@ public class ComputeRequestQueue
     });
   }
 
-  public async Task InitDataDependency(string key)
+  public void InitDataDependency(string key)
   {
-    await machine_.InitDataDependencyAsync();
+    machine_.InitDataDependency();
     computeRequests_.Enqueue(new()
     {
       InitData = new()
@@ -116,9 +115,9 @@ public class ComputeRequestQueue
   }
 
 
-  public async Task AddDataDependencyChunk(ByteString chunk)
+  public void AddDataDependencyChunk(ByteString chunk)
   {
-    await machine_.AddDataDependencyChunkAsync();
+    machine_.AddDataDependencyChunk();
     computeRequests_.Enqueue(new()
     {
       Data = new()
@@ -128,9 +127,9 @@ public class ComputeRequestQueue
     });
   }
 
-  public async Task CompleteDataDependency()
+  public void CompleteDataDependency()
   {
-    await machine_.CompleteDataDependencyAsync();
+    machine_.CompleteDataDependency();
     computeRequests_.Enqueue(new()
     {
       Data = new()
@@ -140,9 +139,9 @@ public class ComputeRequestQueue
     });
   }
 
-  public async Task<Queue<ProcessRequest.Types.ComputeRequest>> GetQueue()
+  public Queue<ProcessRequest.Types.ComputeRequest> GetQueue()
   {
-    await machine_.CompleteRequestAsync();
+    machine_.CompleteRequest();
     computeRequests_.Enqueue(new()
     {
       InitData = new()
