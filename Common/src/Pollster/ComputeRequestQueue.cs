@@ -142,7 +142,7 @@ public class ComputeRequestQueue
 
   public async Task<Queue<ProcessRequest.Types.ComputeRequest>> GetQueue()
   {
-    await machine_.GetQueueAsync();
+    await machine_.CompleteRequestAsync();
     computeRequests_.Enqueue(new()
     {
       InitData = new()

@@ -76,7 +76,7 @@ public class ComputeRequestStateMachineTest
     await sm_.AddPayloadChunkAsync();
     await sm_.AddPayloadChunkAsync();
 
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.GetQueueAsync());
+    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.CompleteRequestAsync());
   }
 
   [Test]
@@ -88,7 +88,7 @@ public class ComputeRequestStateMachineTest
     await sm_.AddPayloadChunkAsync();
     await sm_.CompletePayloadAsync();
 
-    await sm_.GetQueueAsync();
+    await sm_.CompleteRequestAsync();
 
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
@@ -124,7 +124,7 @@ public class ComputeRequestStateMachineTest
     await sm_.AddDataDependencyChunkAsync();
     await sm_.CompleteDataDependencyAsync();
 
-    await sm_.GetQueueAsync();
+    await sm_.CompleteRequestAsync();
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
   }
@@ -139,7 +139,7 @@ public class ComputeRequestStateMachineTest
     await sm_.AddDataDependencyChunkAsync();
     await sm_.CompleteDataDependencyAsync();
 
-    await sm_.GetQueueAsync();
+    await sm_.CompleteRequestAsync();
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
   }
@@ -149,7 +149,7 @@ public class ComputeRequestStateMachineTest
   {
     await sm_.InitRequestAsync();
     await sm_.CompletePayloadAsync();
-    await sm_.GetQueueAsync();
+    await sm_.CompleteRequestAsync();
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
   }
@@ -194,7 +194,7 @@ public class ComputeRequestStateMachineTest
     await sm_.AddDataDependencyChunkAsync();
     await sm_.CompleteDataDependencyAsync();
 
-    await sm_.GetQueueAsync();
+    await sm_.CompleteRequestAsync();
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
   }

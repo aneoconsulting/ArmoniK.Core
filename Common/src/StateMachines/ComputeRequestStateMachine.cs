@@ -134,7 +134,7 @@ public class ComputeRequestStateMachine
 
   public async Task CompleteDataDependencyAsync() => await machine_.FireAsync(Triggers.CompleteDataDependency);
 
-  public async Task GetQueueAsync() => await machine_.FireAsync(Triggers.CompleteRequest);
+  public async Task CompleteRequestAsync() => await machine_.FireAsync(Triggers.CompleteRequest);
 
   public string GenerateGraph() =>
     UmlDotGraph.Format(machine_.GetInfo());
