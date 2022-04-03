@@ -157,7 +157,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
 
             if (requestStream_.Current.TypeCase != ProcessRequest.TypeOneofCase.Compute ||
                 requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data)
-              throw new InvalidOperationException("Expected a Compute request type with Payload to continue the stream.");
+              throw new InvalidOperationException("Expected a Compute request type with Data to continue the stream.");
 
             var dataChunk = requestStream_.Current.Compute.Data;
 
@@ -371,6 +371,6 @@ namespace ArmoniK.Core.Common.Stream.Worker
     private          byte[]?                              payload_;
     private          IReadOnlyDictionary<string, byte[]>? dataDependencies_;
     private          IList<string>?                       expectedResults_;
-    private          ComputeRequestStateMachine           crsm_;
+    private          ComputeRequestStateMachine?          crsm_;
   }
 }
