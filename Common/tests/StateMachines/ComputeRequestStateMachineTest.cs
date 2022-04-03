@@ -46,155 +46,155 @@ public class ComputeRequestStateMachineTest
   [Test]
   public void PayloadFirstShouldFail()
   {
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.AddPayloadChunkAsync());
+    Assert.Throws<InvalidOperationException>( () => sm_.AddPayloadChunk());
   }
 
   [Test]
   public void DataChunkFirstShouldFail()
   {
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.AddDataDependencyChunkAsync());
+    Assert.Throws<InvalidOperationException>( () => sm_.AddDataDependencyChunk());
   }
 
   [Test]
   public void InitDataFirstShouldFail()
   {
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.InitDataDependencyAsync());
+    Assert.Throws<InvalidOperationException>( () => sm_.InitDataDependency());
   }
 
   [Test]
-  public async Task TwoInitRequestsShouldFail()
+  public void TwoInitRequestsShouldFail()
   {
-    await sm_.InitRequestAsync();
-    Assert.ThrowsAsync<InvalidOperationException>(async() => await sm_.InitRequestAsync());
+    sm_.InitRequest();
+    Assert.Throws<InvalidOperationException>(() => sm_.InitRequest());
   }
 
   [Test]
-  public async Task GetQueueWithoutPayloadCompleteShouldFail()
+  public void GetQueueWithoutPayloadCompleteShouldFail()
   {
-    await sm_.InitRequestAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
+    sm_.InitRequest();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
 
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.CompleteRequestAsync());
+    Assert.Throws<InvalidOperationException>( () => sm_.CompleteRequest());
   }
 
   [Test]
-  public async Task GetQueueWithPayloadCompleteShouldSucceed()
+  public void GetQueueWithPayloadCompleteShouldSucceed()
   {
-    await sm_.InitRequestAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.CompletePayloadAsync();
+    sm_.InitRequest();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.CompletePayload();
 
-    await sm_.CompleteRequestAsync();
+    sm_.CompleteRequest();
 
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
   }
 
   [Test]
-  public async Task DataDepWithoutChunkShouldFail()
+  public void DataDepWithoutChunkShouldFail()
   {
-    await sm_.InitRequestAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.CompletePayloadAsync();
+    sm_.InitRequest();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.CompletePayload();
 
-    await sm_.InitDataDependencyAsync();
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await sm_.CompleteDataDependencyAsync());
+    sm_.InitDataDependency();
+    Assert.Throws<InvalidOperationException>( () => sm_.CompleteDataDependency());
   }
 
   [Test]
-  public async Task HappyPathShouldSucceed()
+  public void HappyPathShouldSucceed()
   {
-    await sm_.InitRequestAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.CompletePayloadAsync();
+    sm_.InitRequest();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.CompletePayload();
 
-    await sm_.InitDataDependencyAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.CompleteDataDependencyAsync();
+    sm_.InitDataDependency();
+    sm_.AddDataDependencyChunk();
+    sm_.CompleteDataDependency();
 
-    await sm_.InitDataDependencyAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.CompleteDataDependencyAsync();
+    sm_.InitDataDependency();
+    sm_.AddDataDependencyChunk();
+    sm_.CompleteDataDependency();
 
-    await sm_.CompleteRequestAsync();
+    sm_.CompleteRequest();
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
   }
 
   [Test]
-  public async Task HappyPathSmallShouldSucceed()
+  public  void HappyPathSmallShouldSucceed()
   {
-    await sm_.InitRequestAsync();
-    await sm_.CompletePayloadAsync();
+    sm_.InitRequest();
+    sm_.CompletePayload();
 
-    await sm_.InitDataDependencyAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.CompleteDataDependencyAsync();
+    sm_.InitDataDependency();
+    sm_.AddDataDependencyChunk();
+    sm_.CompleteDataDependency();
 
-    await sm_.CompleteRequestAsync();
+    sm_.CompleteRequest();
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
   }
 
   [Test]
-  public async Task HappyPathNoDataDepShouldSucceed()
+  public  void HappyPathNoDataDepShouldSucceed()
   {
-    await sm_.InitRequestAsync();
-    await sm_.CompletePayloadAsync();
-    await sm_.CompleteRequestAsync();
+    sm_.InitRequest();
+    sm_.CompletePayload();
+    sm_.CompleteRequest();
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
   }
 
   [Test]
-  public async Task HappyPathNoDataDepNoGetQueueShouldFail()
+  public  void HappyPathNoDataDepNoGetQueueShouldFail()
   {
-    await sm_.InitRequestAsync();
-    await sm_.CompletePayloadAsync();
+    sm_.InitRequest();
+    sm_.CompletePayload();
     Assert.AreNotEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
   }
 
   [Test]
-  public async Task HappyPathMultipleLargeDataShouldSucceed()
+  public void HappyPathMultipleLargeDataShouldSucceed()
   {
-    await sm_.InitRequestAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.AddPayloadChunkAsync();
-    await sm_.CompletePayloadAsync();
+    sm_.InitRequest();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.AddPayloadChunk();
+    sm_.CompletePayload();
 
-    await sm_.InitDataDependencyAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.CompleteDataDependencyAsync();
+    sm_.InitDataDependency();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.CompleteDataDependency();
 
-    await sm_.InitDataDependencyAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.AddDataDependencyChunkAsync();
-    await sm_.CompleteDataDependencyAsync();
+    sm_.InitDataDependency();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.AddDataDependencyChunk();
+    sm_.CompleteDataDependency();
 
-    await sm_.CompleteRequestAsync();
+    sm_.CompleteRequest();
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
                     sm_.GetState());
   }

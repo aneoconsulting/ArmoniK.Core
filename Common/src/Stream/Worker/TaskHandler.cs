@@ -82,7 +82,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
           requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitRequest)
         throw new InvalidOperationException("Expected a Compute request type with InitRequest to start the stream.");
 
-      await crsm_.InitRequestAsync();
+      crsm_.InitRequest();
       var initRequest = requestStream_.Current.Compute.InitRequest;
       sessionId_       = initRequest.SessionId;
       taskId_          = initRequest.TaskId;
@@ -110,7 +110,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
           dataChunk = requestStream_.Current.Compute.Payload;
 
           chunks.Add(dataChunk.Data);
-          await crsm_.AddPayloadChunkAsync();
+          crsm_.AddPayloadChunk();
         }
 
 
@@ -129,7 +129,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
 
         payload_ = payload;
       }
-      await crsm_.CompletePayloadAsync();
+      crsm_.CompletePayload();
 
       var dataDependencies = new Dictionary<string, byte[]>();
 
@@ -147,7 +147,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
         initData = requestStream_.Current.Compute.InitData;
         if (!string.IsNullOrEmpty(initData.Key))
         {
-          await crsm_.InitDataDependencyAsync();
+          crsm_.InitDataDependency();
           var chunks    = new List<ByteString>();
 
           while(true)
@@ -164,7 +164,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
             if(dataChunk.TypeCase == DataChunk.TypeOneofCase.Data)
             {
               chunks.Add(dataChunk.Data);
-              await crsm_.AddDataDependencyChunkAsync();
+              crsm_.AddDataDependencyChunk();
             }
 
             if(dataChunk.TypeCase == DataChunk.TypeOneofCase.None)
@@ -187,11 +187,11 @@ namespace ArmoniK.Core.Common.Stream.Worker
           }
 
           dataDependencies[initData.Key] = data;
-          await crsm_.CompleteDataDependencyAsync();
+          crsm_.CompleteDataDependency();
         }
       } while (!string.IsNullOrEmpty(initData.Key));
 
-      await crsm_.CompleteRequestAsync();
+      crsm_.CompleteRequest();
       dataDependencies_ = dataDependencies;
       isInitialized_   = true;
     }

@@ -22,11 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Linq;
 using System.Threading.Tasks;
-
-using ArmoniK.Api.gRPC.V1;
 
 using Microsoft.Extensions.Logging;
 
@@ -110,31 +106,24 @@ public class ComputeRequestStateMachine
                                                     t.Destination));
   }
 
-  public void Register(State state, Func<ProcessRequest.Types.ComputeRequest, Task> func) => machine_.Configure(state)
-                                                                                                     .OnEntryAsync(transition => func(transition.Parameters.Single() as
-                                                                                                                                        ProcessRequest.Types.
-                                                                                                                                        ComputeRequest ??
-                                                                                                                                      throw new
-                                                                                                                                        InvalidOperationException()));
+  public void InitRequest() =>
+    machine_.Fire(Triggers.InitRequest);
 
-  public async Task InitRequestAsync() =>
-    await machine_.FireAsync(Triggers.InitRequest);
+  public void AddPayloadChunk() =>
+    machine_.Fire(Triggers.AddPayloadChunk);
 
-  public async Task AddPayloadChunkAsync() =>
-    await machine_.FireAsync(Triggers.AddPayloadChunk);
+  public void CompletePayload() =>
+    machine_.Fire(Triggers.CompletePayload);
 
-  public async Task CompletePayloadAsync() =>
-    await machine_.FireAsync(Triggers.CompletePayload);
+  public void InitDataDependency() =>
+    machine_.Fire(Triggers.InitDataDependency);
 
-  public async Task InitDataDependencyAsync() =>
-    await machine_.FireAsync(Triggers.InitDataDependency);
+  public void AddDataDependencyChunk() =>
+    machine_.Fire(Triggers.AddDataDependencyChunk);
 
-  public async Task AddDataDependencyChunkAsync() =>
-    await machine_.FireAsync(Triggers.AddDataDependencyChunk);
+  public void CompleteDataDependency() => machine_.Fire(Triggers.CompleteDataDependency);
 
-  public async Task CompleteDataDependencyAsync() => await machine_.FireAsync(Triggers.CompleteDataDependency);
-
-  public async Task CompleteRequestAsync() => await machine_.FireAsync(Triggers.CompleteRequest);
+  public void CompleteRequest() => machine_.Fire(Triggers.CompleteRequest);
 
   public string GenerateGraph() =>
     UmlDotGraph.Format(machine_.GetInfo());

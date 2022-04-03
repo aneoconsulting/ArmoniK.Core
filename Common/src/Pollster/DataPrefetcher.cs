@@ -79,13 +79,13 @@ public class DataPrefetcher : IInitializable
     }
 
     var computeRequests = new ComputeRequestQueue(logger_);
-    await computeRequests.Init(PayloadConfiguration.MaxChunkSize, taskData.SessionId, taskData.TaskId, taskData.Options.Options, payloadChunks.FirstOrDefault(), taskData.ExpectedOutput);
+    computeRequests.Init(PayloadConfiguration.MaxChunkSize, taskData.SessionId, taskData.TaskId, taskData.Options.Options, payloadChunks.FirstOrDefault(), taskData.ExpectedOutput);
 
     for (var i = 1; i < payloadChunks.Count; i++)
     {
-      await computeRequests.AddPayloadChunk(payloadChunks[i]);
+      computeRequests.AddPayloadChunk(payloadChunks[i]);
     }
-    await computeRequests.CompletePayload();
+    computeRequests.CompletePayload();
 
     foreach (var dataDependency in taskData.DataDependencies)
     {
@@ -94,15 +94,15 @@ public class DataPrefetcher : IInitializable
                                                 .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
                                                 .ToListAsync(cancellationToken);
 
-      await computeRequests.InitDataDependency(dataDependency);
+      computeRequests.InitDataDependency(dataDependency);
       foreach (var chunk in dependencyChunks)
       {
-        await computeRequests.AddDataDependencyChunk(chunk);
+        computeRequests.AddDataDependencyChunk(chunk);
       }
-      await computeRequests.CompleteDataDependency();
+      computeRequests.CompleteDataDependency();
     }
 
-    return await computeRequests.GetQueue();
+    return computeRequests.GetQueue();
   }
 
   private bool isInitialized_ = false;
