@@ -116,7 +116,7 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  async IAsyncEnumerable<byte[]> IObjectStorage.TryGetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
+  async IAsyncEnumerable<byte[]> IObjectStorage.GetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     using var _                = logger_.LogFunction(key);
     var       sessionHandle    = await sessionProvider_.GetAsync();

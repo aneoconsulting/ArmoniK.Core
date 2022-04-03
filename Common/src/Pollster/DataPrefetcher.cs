@@ -72,7 +72,7 @@ public class DataPrefetcher : IInitializable
     }
     else
     {
-      payloadChunks = await payloadStorage.TryGetValuesAsync(taskData.TaskId,
+      payloadChunks = await payloadStorage.GetValuesAsync(taskData.TaskId,
                                                              cancellationToken)
                                           .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
                                           .ToListAsync(cancellationToken);
@@ -89,7 +89,7 @@ public class DataPrefetcher : IInitializable
 
     foreach (var dataDependency in taskData.DataDependencies)
     {
-      var dependencyChunks = await resultStorage.TryGetValuesAsync(dataDependency,
+      var dependencyChunks = await resultStorage.GetValuesAsync(dataDependency,
                                                                    cancellationToken)
                                                 .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
                                                 .ToListAsync(cancellationToken);

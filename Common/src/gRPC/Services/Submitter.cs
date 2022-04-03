@@ -427,7 +427,7 @@ public class Submitter : ISubmitter
   {
     using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
     var       storage  = ResultStorage(request.Session);
-    await foreach (var chunk in storage.TryGetValuesAsync(request.Key, cancellationToken))
+    await foreach (var chunk in storage.GetValuesAsync(request.Key, cancellationToken))
     {
       await responseStream.WriteAsync(new()
                                       {

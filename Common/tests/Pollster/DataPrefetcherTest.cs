@@ -70,11 +70,11 @@ public class DataPrefetcherTest
   {
     var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
     var mockObjectStorage        = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
-    mockResultStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>
     {
       Convert.FromBase64String("1111"),
@@ -180,11 +180,11 @@ public class DataPrefetcherTest
   {
     var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
     var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
-    mockResultStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>
     {
       Convert.FromBase64String("1111"),
@@ -248,7 +248,7 @@ public class DataPrefetcherTest
   {
     var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
     var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>
     {
       Convert.FromBase64String("AAAA"),
@@ -258,7 +258,7 @@ public class DataPrefetcherTest
     }.ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
-    mockResultStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>
     {
       Convert.FromBase64String("1111"),
@@ -322,7 +322,7 @@ public class DataPrefetcherTest
   {
     var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
     var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>
     {
       Convert.FromBase64String("AAAA"),
@@ -332,7 +332,7 @@ public class DataPrefetcherTest
     }.ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
-    mockResultStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>
     {
       Convert.FromBase64String("1111"),
@@ -396,11 +396,11 @@ public class DataPrefetcherTest
   {
     var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
     var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
-    mockResultStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>
     {
       Convert.FromBase64String("1111"),
@@ -466,11 +466,11 @@ public class DataPrefetcherTest
   {
     var mockObjectStorageFactory = new Mock<IObjectStorageFactory>();
     var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
-    mockResultStorage.Setup(x => x.TryGetValuesAsync(It.IsAny<string>(),
+    mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                      CancellationToken.None)).Returns((string key, CancellationToken token) => new List<byte[]>
     {
       Convert.FromBase64String("1111"),

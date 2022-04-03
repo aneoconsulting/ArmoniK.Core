@@ -50,7 +50,7 @@ public interface IObjectStorage
 
   Task AddOrUpdateAsync(string key, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default);
 
-  IAsyncEnumerable<byte[]> TryGetValuesAsync(string key, CancellationToken cancellationToken = default);
+  IAsyncEnumerable<byte[]> GetValuesAsync(string key, CancellationToken cancellationToken = default);
 
   Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default);
 

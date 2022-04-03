@@ -28,6 +28,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
@@ -82,23 +83,22 @@ public class ObjectStorageTestBase
   }
 
   [Test]
-  public async Task TryGetValuesAsyncShouldSucceed()
+  public async Task GetValuesAsyncShouldSucceed()
   {
     if (RunTests)
     {
-      var res = ObjectStorage.TryGetValuesAsync("dataKey1");
+      var res = ObjectStorage.GetValuesAsync("dataKey1");
       Assert.AreEqual(4, await res.CountAsync());
     }
   }
 
   [Test]
-  public async Task TryGetValuesAsyncShouldFail()
+  public void GetValuesAsyncShouldFail()
   {
     if (RunTests)
     {
-      var res = ObjectStorage.TryGetValuesAsync("dataKeyNotExist");
-      Assert.AreEqual(0,
-                      await res.CountAsync());
+      var res = ObjectStorage.GetValuesAsync("dataKeyNotExist");
+      Assert.ThrowsAsync<ArmoniKException>(async () => await res.FirstAsync());
     }
   }
 
@@ -107,7 +107,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage.TryGetValuesAsync("dataKey2");
+      var res = ObjectStorage.GetValuesAsync("dataKey2");
       var data = await res.SingleAsync();
       var str = Encoding.ASCII.GetString(data);
       Console.WriteLine(str);
@@ -120,7 +120,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res  = ObjectStorage.TryGetValuesAsync("dataKey1");
+      var res  = ObjectStorage.GetValuesAsync("dataKey1");
       // var data = await res.AggregateAsync((bytes1, bytes2) => bytes1.Concat(bytes2).ToArray());
       var data     = new List<byte>();
       foreach (var item in await res.ToListAsync())
@@ -139,7 +139,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage.TryGetValuesAsync("dataKeyEmpty");
+      var res = ObjectStorage.GetValuesAsync("dataKeyEmpty");
       Console.WriteLine(await res.CountAsync());
       var data = new List<byte>();
       foreach (var item in await res.ToListAsync())
