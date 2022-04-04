@@ -91,6 +91,7 @@ public class CreateLargeTaskRequestValidatorTest
           MaxRetries  = 3,
           Priority    = 1,
         },
+        SessionId = "    ",
       },
     };
 
