@@ -914,6 +914,7 @@ internal class StreamWrapperTests
                                                          {
                                                            Id = taskId,
                                                            ExpectedOutputKeys = { taskId },
+                                                           Payload = ByteString.Empty,
                                                          }});
 
     switch (createTaskReply.DataCase)

@@ -132,6 +132,17 @@ namespace ArmoniK.Core.Common.Stream.Client
 
       var start = 0;
 
+      if (taskRequest.Payload.Length == 0)
+      {
+        yield return new()
+        {
+          TaskPayload = new()
+          {
+            Data = ByteString.Empty,
+          },
+        };
+      }
+
       while (start < taskRequest.Payload.Length)
       {
         var chunkSize = Math.Min(chunkMaxSize,
