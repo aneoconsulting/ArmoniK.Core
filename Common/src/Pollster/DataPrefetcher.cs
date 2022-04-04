@@ -72,102 +72,37 @@ public class DataPrefetcher : IInitializable
     }
     else
     {
-      payloadChunks = await payloadStorage.TryGetValuesAsync(taskData.TaskId,
+      payloadChunks = await payloadStorage.GetValuesAsync(taskData.TaskId,
                                                              cancellationToken)
                                           .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
                                           .ToListAsync(cancellationToken);
     }
 
-    var computeRequests = new Queue<ProcessRequest.Types.ComputeRequest>();
+    var computeRequests = new ComputeRequestQueue(logger_);
+    computeRequests.Init(PayloadConfiguration.MaxChunkSize, taskData.SessionId, taskData.TaskId, taskData.Options.Options, payloadChunks.FirstOrDefault(), taskData.ExpectedOutput);
 
-    computeRequests.Enqueue(new()
-                            {
-                              InitRequest = new()
-                                            {
-                                              Configuration = new ()
-                                                              {
-                                                                DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
-                                                              },
-                                              TaskId    = taskData.TaskId,
-                                              SessionId = taskData.SessionId,
-                                              TaskOptions =
-                                              {
-                                                taskData.Options.Options,
-                                              },
-                                              Payload = new()
-                                                        {
-                                                          Data         = payloadChunks[0],
-                                                        },
-                                              ExpectedOutputKeys = { taskData.ExpectedOutput },
-                                            },
-                            });
-    
-
-      for (var i = 1; i < payloadChunks.Count; i++)
-      {
-        computeRequests.Enqueue(new()
-                                {
-                                  Payload = new()
-                                            {
-                                              Data = payloadChunks[i],
-                                            },
-                                });
-      }
-
-    computeRequests.Enqueue(new()
-                            {
-                              Payload = new()
-                                        {
-                                          DataComplete = true,
-                                        },
-                            });
+    for (var i = 1; i < payloadChunks.Count; i++)
+    {
+      computeRequests.AddPayloadChunk(payloadChunks[i]);
+    }
+    computeRequests.CompletePayload();
 
     foreach (var dataDependency in taskData.DataDependencies)
     {
-      var dependencyChunks = await resultStorage.TryGetValuesAsync(dataDependency,
+      var dependencyChunks = await resultStorage.GetValuesAsync(dataDependency,
                                                                    cancellationToken)
                                                 .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
                                                 .ToListAsync(cancellationToken);
 
-
-      computeRequests.Enqueue(new()
-                              {
-                                InitData = new()
-                                           {
-                                             Key = dataDependency,
-                                           },
-                              });
-
+      computeRequests.InitDataDependency(dataDependency);
       foreach (var chunk in dependencyChunks)
       {
-        computeRequests.Enqueue(new()
-                                {
-                                  Data = new()
-                                         {
-                                           Data = chunk,
-                                         },
-                                });
+        computeRequests.AddDataDependencyChunk(chunk);
       }
-
-      computeRequests.Enqueue(new()
-                              {
-                                Data = new()
-                                       {
-                                         DataComplete = true,
-                                       },
-                              });
-
+      computeRequests.CompleteDataDependency();
     }
 
-    computeRequests.Enqueue(new()
-                            {
-                              InitData = new()
-                                         {
-                                           LastData = true,
-                                         },
-                            });
-
-    return computeRequests;
+    return computeRequests.GetQueue();
   }
 
   private bool isInitialized_ = false;

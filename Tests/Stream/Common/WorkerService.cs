@@ -49,6 +49,17 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
       logger_.LogDebug("Execute Task {taskId}", taskHandler.TaskId);
       logger_.LogDebug("Payload size {payloadSize}", taskHandler.Payload.Length);
 
+      if (taskHandler.Payload.Length == 0)
+      {
+        output.Error = new Output.Types.Error
+        {
+          Details      = "No payload",
+          KillSubTasks = true,
+        };
+        output.Status = TaskStatus.Failed;
+        return output;
+      }
+
       try
       {
         var payload = TestPayload.Deserialize(taskHandler.Payload);

@@ -28,6 +28,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
@@ -68,6 +69,13 @@ public class ObjectStorageTestBase
     dataBytesList.Add(Encoding.ASCII.GetBytes("AAAABBBB"));
     ObjectStorage.AddOrUpdateAsync("dataKey2",
                                    dataBytesList.ToAsyncEnumerable()).Wait();
+
+    dataBytesList = new List<byte[]>();
+    dataBytesList.Add(Array.Empty<byte>());
+    ObjectStorage.AddOrUpdateAsync("dataKeyEmpty",
+                                   dataBytesList.ToAsyncEnumerable()).Wait();
+
+
   }
 
   [TearDown]
@@ -78,23 +86,32 @@ public class ObjectStorageTestBase
   }
 
   [Test]
-  public async Task TryGetValuesAsyncShouldSucceed()
+  public void AddValuesAsyncWithoutChunkShouldFail()
   {
     if (RunTests)
     {
-      var res = ObjectStorage.TryGetValuesAsync("dataKey1");
+      Assert.ThrowsAsync<ArmoniKException>(async () => await ObjectStorage.AddOrUpdateAsync("dataKeyNoChunk",
+                                                                                new List<byte[]>().ToAsyncEnumerable()));
+    }
+  }
+
+  [Test]
+  public async Task GetValuesAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var res = ObjectStorage.GetValuesAsync("dataKey1");
       Assert.AreEqual(4, await res.CountAsync());
     }
   }
 
   [Test]
-  public async Task TryGetValuesAsyncShouldFail()
+  public void GetValuesAsyncShouldFail()
   {
     if (RunTests)
     {
-      var res = ObjectStorage.TryGetValuesAsync("dataKeyNotExist");
-      Assert.AreEqual(0,
-                      await res.CountAsync());
+      var res = ObjectStorage.GetValuesAsync("dataKeyNotExist");
+      Assert.ThrowsAsync<ArmoniKException>(async () => await res.FirstAsync());
     }
   }
 
@@ -103,7 +120,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage.TryGetValuesAsync("dataKey2");
+      var res = ObjectStorage.GetValuesAsync("dataKey2");
       var data = await res.SingleAsync();
       var str = Encoding.ASCII.GetString(data);
       Console.WriteLine(str);
@@ -116,7 +133,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res  = ObjectStorage.TryGetValuesAsync("dataKey1");
+      var res  = ObjectStorage.GetValuesAsync("dataKey1");
       // var data = await res.AggregateAsync((bytes1, bytes2) => bytes1.Concat(bytes2).ToArray());
       var data     = new List<byte>();
       foreach (var item in await res.ToListAsync())
@@ -127,6 +144,25 @@ public class ObjectStorageTestBase
       var str  = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
       Assert.IsTrue(str.SequenceEqual("AAAABBBBCCCCDDDD"));
+    }
+  }
+
+  [Test]
+  public async Task EmptyPayload()
+  {
+    if (RunTests)
+    {
+      var res = ObjectStorage.GetValuesAsync("dataKeyEmpty");
+      Console.WriteLine(await res.CountAsync());
+      var data = new List<byte>();
+      foreach (var item in await res.ToListAsync())
+      {
+        data.AddRange(item);
+      }
+
+      var str = Encoding.ASCII.GetString(data.ToArray());
+      Console.WriteLine(str);
+      Assert.IsTrue(str.SequenceEqual(""));
     }
   }
 }

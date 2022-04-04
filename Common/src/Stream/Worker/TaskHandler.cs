@@ -28,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.StateMachines;
 
 using Google.Protobuf;
 
@@ -73,6 +74,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
 
     protected async Task Init()
     {
+      crsm_ = new ComputeRequestStateMachine(logger_);
       if (!await requestStream_.MoveNext())
         throw new InvalidOperationException("Request stream ended unexpectedly.");
 
@@ -80,6 +82,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
           requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitRequest)
         throw new InvalidOperationException("Expected a Compute request type with InitRequest to start the stream.");
 
+      crsm_.InitRequest();
       var initRequest = requestStream_.Current.Compute.InitRequest;
       sessionId_       = initRequest.SessionId;
       taskId_          = initRequest.TaskId;
@@ -107,7 +110,9 @@ namespace ArmoniK.Core.Common.Stream.Worker
           dataChunk = requestStream_.Current.Compute.Payload;
 
           chunks.Add(dataChunk.Data);
+          crsm_.AddPayloadChunk();
         }
+
 
         var size = chunks.Sum(s => s.Length);
 
@@ -124,6 +129,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
 
         payload_ = payload;
       }
+      crsm_.CompletePayload();
 
       var dataDependencies = new Dictionary<string, byte[]>();
 
@@ -141,6 +147,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
         initData = requestStream_.Current.Compute.InitData;
         if (!string.IsNullOrEmpty(initData.Key))
         {
+          crsm_.InitDataDependency();
           var chunks    = new List<ByteString>();
 
           while(true)
@@ -150,12 +157,16 @@ namespace ArmoniK.Core.Common.Stream.Worker
 
             if (requestStream_.Current.TypeCase != ProcessRequest.TypeOneofCase.Compute ||
                 requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data)
-              throw new InvalidOperationException("Expected a Compute request type with Payload to continue the stream.");
+              throw new InvalidOperationException("Expected a Compute request type with Data to continue the stream.");
 
             var dataChunk = requestStream_.Current.Compute.Data;
 
             if(dataChunk.TypeCase == DataChunk.TypeOneofCase.Data)
+            {
               chunks.Add(dataChunk.Data);
+              crsm_.AddDataDependencyChunk();
+            }
+
             if(dataChunk.TypeCase == DataChunk.TypeOneofCase.None)
               throw new InvalidOperationException("Expected a Compute request type with a DataChunk Payload to continue the stream.");
             if (dataChunk.TypeCase == DataChunk.TypeOneofCase.DataComplete)
@@ -176,9 +187,11 @@ namespace ArmoniK.Core.Common.Stream.Worker
           }
 
           dataDependencies[initData.Key] = data;
+          crsm_.CompleteDataDependency();
         }
       } while (!string.IsNullOrEmpty(initData.Key));
 
+      crsm_.CompleteRequest();
       dataDependencies_ = dataDependencies;
       isInitialized_   = true;
     }
@@ -358,5 +371,6 @@ namespace ArmoniK.Core.Common.Stream.Worker
     private          byte[]?                              payload_;
     private          IReadOnlyDictionary<string, byte[]>? dataDependencies_;
     private          IList<string>?                       expectedResults_;
+    private          ComputeRequestStateMachine?          crsm_;
   }
 }

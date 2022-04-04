@@ -29,7 +29,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -55,11 +57,19 @@ public class ObjectStorage : IObjectStorage
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
 
-    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                          await valueChunks.CountAsync(cancellationToken));
+    var idx = 0;
+    var taskList = new List<Task>();
+    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken))
+    {
+      taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
+                                         chunk));
+      ++idx;
+    }
 
-    await Task.WhenAll(await valueChunks.Select((chunk, i) => redis_.StringSetAsync(objectStorageName_ + key + "_" + i,
-                                                                                    chunk)).ToListAsync(cancellationToken));
+    if (idx == 0) throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
+                                idx);
+    await taskList.WhenAll();
   }
 
   /// <inheritdoc />
@@ -67,22 +77,34 @@ public class ObjectStorage : IObjectStorage
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
 
-    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                                await valueChunks.CountAsync(cancellationToken));
+    var idx      = 0;
+    var taskList = new List<Task>();
+    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken))
+    {
+      taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
+                                         chunk));
+      ++idx;
+    }
 
-    await Task.WhenAll(await valueChunks.Select((chunk, i) => redis_.StringSetAsync(objectStorageName_ + key + "_" + i,
-                                                                                    chunk)).ToListAsync(cancellationToken));
+    if (idx == 0) throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
+                                idx);
+    await taskList.WhenAll();
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<byte[]> TryGetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<byte[]> GetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _   = logger_.LogFunction(objectStorageName_ + key);
     var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count");
 
     if (!value.HasValue)
-      yield break;
+      throw new ArmoniKException($"Key {key} not found");
+
     var valuesCount = int.Parse(value);
+
+    if(valuesCount == 0)
+      yield break;
 
     foreach (var chunckTask in Enumerable.Range(0,
                                                 valuesCount)
