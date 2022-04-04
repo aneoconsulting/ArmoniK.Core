@@ -7,6 +7,7 @@
 //   L. Ziane Khodja   <lzianekhodja@aneo.fr>
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
+//   J. Fonseca        <jfonseca@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -20,7 +21,6 @@
 // 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 
 using Grpc.Core;
 
