@@ -71,11 +71,17 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
   /// <inheritdoc />
   public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<Dispatch> collection)
   {
-    var sessionIndex = Builders<Dispatch>.IndexKeys.Text(model => model.SessionId);
-    var taskIndex    = Builders<Dispatch>.IndexKeys.Text(model => model.TaskId);
+    var dispatchIndex = Builders<Dispatch>.IndexKeys.Text(model => model.Id);
+    var sessionIndex  = Builders<Dispatch>.IndexKeys.Text(model => model.SessionId);
+    var taskIndex     = Builders<Dispatch>.IndexKeys.Text(model => model.TaskId);
 
     var indexModels = new CreateIndexModel<Dispatch>[]
                       {
+                        new(dispatchIndex,
+                            new()
+                            {
+                              Name = nameof(dispatchIndex),
+                            }),
                         new(sessionIndex,
                             new()
                             {
