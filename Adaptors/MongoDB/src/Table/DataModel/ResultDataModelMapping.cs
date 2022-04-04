@@ -7,6 +7,7 @@
 //   L. Ziane Khodja   <lzianekhodja@aneo.fr>
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
+//   J. Fonseca        <jfonseca@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -74,7 +75,34 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
   public string CollectionName => nameof(Result);
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<Result> collection)
-    => Task.CompletedTask;
+  public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
+                                           IMongoCollection<Result> collection)
+  {
+    var sessionIndex        = Builders<Result>.IndexKeys.Text(model => model.SessionId);
+    var ownerTaskIndex      = Builders<Result>.IndexKeys.Text(model => model.OwnerTaskId);
+    var originDispatchIndex = Builders<Result>.IndexKeys.Text(model => model.OriginDispatchId);
+
+    var indexModels = new CreateIndexModel<Result>[]
+    {
+      new(sessionIndex,
+          new()
+          {
+            Name = nameof(sessionIndex),
+          }),
+      new(ownerTaskIndex,
+          new()
+          {
+            Name = nameof(ownerTaskIndex),
+          }),
+      new(originDispatchIndex,
+          new()
+          {
+            Name = nameof(originDispatchIndex),
+          }),
+    };
+
+    await collection.Indexes.CreateManyAsync(sessionHandle,
+                                             indexModels);
+  }
 
 }
