@@ -63,6 +63,9 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
     RuleFor(r => r.InitTask).NotNull()
                             .SetValidator(new CreateLargeTaskInitTaskValidator())
                             .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.InitTask);
+    RuleFor(r => r.TaskPayload).NotNull()
+                            .SetValidator(new DataChunkValidator())
+                            .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.TaskPayload);
   }
 
 
@@ -104,10 +107,10 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
     {
       RuleFor(r => r.TypeCase).NotEqual(DataChunk.TypeOneofCase.None);
       RuleFor(r => r.Data).NotNull()
-                          .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize)
-                          .When(r=>r.TypeCase==DataChunk.TypeOneofCase.Data);
+                          .Must(s => s.Length < PayloadConfiguration.MaxChunkSize)
+                          .When(r => r.TypeCase == DataChunk.TypeOneofCase.Data);
       RuleFor(r => r.DataComplete).Equal(true)
-                              .When(r => r.TypeCase == DataChunk.TypeOneofCase.DataComplete);
+                                  .When(r => r.TypeCase == DataChunk.TypeOneofCase.DataComplete);
     }
   }
 

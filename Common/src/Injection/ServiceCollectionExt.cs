@@ -226,6 +226,7 @@ public static class ServiceCollectionExt
                             })
                    .Services
                    .AddValidator<CreateLargeTaskRequestValidator>()
+                   .AddValidator<CreateSmallTaskRequestValidator>()
                    .AddValidator<CreateSessionRequestValidator>()
                    .AddValidator<TaskOptionsValidator>()
                    .AddValidator<TaskFilterValidator>()
