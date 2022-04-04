@@ -107,7 +107,7 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
     {
       RuleFor(r => r.TypeCase).NotEqual(DataChunk.TypeOneofCase.None);
       RuleFor(r => r.Data).NotNull()
-                          .Must(s => s.Length < PayloadConfiguration.MaxChunkSize)
+                          .Must(s => s.Length <= PayloadConfiguration.MaxChunkSize)
                           .When(r => r.TypeCase == DataChunk.TypeOneofCase.Data);
       RuleFor(r => r.DataComplete).Equal(true)
                                   .When(r => r.TypeCase == DataChunk.TypeOneofCase.DataComplete);
