@@ -62,7 +62,8 @@ internal class InjectionTests
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ReplicaSet)}", "rs0" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", "database" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DataRetention)}", "10.00:00:00" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelayMin", "00:00:10" },
+      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelayMax", "00:00:20" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:ChunkSize", "100000" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshPeriodicity", "00:20:00" },
       { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:PollPeriodicity", "00:00:50" },
@@ -191,12 +192,21 @@ internal class InjectionTests
   }
 
   [Test]
-  public void ReadTablePollingDelay()
+  public void ReadTablePollingMinDelay()
   {
     var options = provider_.GetRequiredService<TableStorage>();
 
     Assert.AreEqual(TimeSpan.FromSeconds(10),
-                    options.PollingDelay);
+                    options.PollingDelayMin);
+  }
+
+  [Test]
+  public void ReadTablePollingMaxDelay()
+  {
+    var options = provider_.GetRequiredService<TableStorage>();
+
+    Assert.AreEqual(TimeSpan.FromSeconds(20),
+                    options.PollingDelayMax);
   }
 
   [Test]
@@ -260,12 +270,21 @@ internal class InjectionTests
   }
 
   [Test]
-  public void TableStorageHasPollingDelay()
+  public void TableStorageHasPollingDelayMin()
   {
     var table = provider_.GetRequiredService<TableStorage>();
 
     Assert.AreEqual(TimeSpan.FromSeconds(10),
-                    table.PollingDelay);
+                    table.PollingDelayMin);
+  }
+
+  [Test]
+  public void TableStorageHasPollingDelayMax()
+  {
+    var table = provider_.GetRequiredService<TableStorage>();
+
+    Assert.AreEqual(TimeSpan.FromSeconds(20),
+                    table.PollingDelayMax);
   }
 
   [Test]

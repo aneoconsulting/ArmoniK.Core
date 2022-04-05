@@ -35,8 +35,6 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
-using Google.Protobuf;
-
 using Microsoft.Extensions.Logging;
 
 using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
@@ -62,8 +60,8 @@ public class TaskTable : ITaskTable
     Logger = logger;
   }
 
-  /// <inheritdoc />
-  public TimeSpan PollingDelay { get; set; }
+  public TimeSpan PollingDelayMax { get; set; }
+  public TimeSpan PollingDelayMin { get; set; }
 
   /// <inheritdoc />
   public Task CreateTasks(IEnumerable<TaskData> tasks, CancellationToken cancellationToken = default)

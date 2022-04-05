@@ -463,8 +463,9 @@ public class Submitter : ISubmitter
       => taskTable_.CountTasksAsync(request.Filter,
                                        cancellationToken);
 
-    var output          = new Count();
-    var countUpdateFunc = CountUpdateFunc;
+    var output              = new Count();
+    var countUpdateFunc     = CountUpdateFunc;
+    var currentPollingDelay = taskTable_.PollingDelayMin;
     while (true)
     {
       var counts       = await countUpdateFunc();
@@ -534,8 +535,10 @@ public class Submitter : ISubmitter
       }
 
 
-      await Task.Delay(taskTable_.PollingDelay,
+      await Task.Delay(currentPollingDelay,
                        cancellationToken);
+      if (2 * currentPollingDelay < taskTable_.PollingDelayMax)
+        currentPollingDelay = 2 * currentPollingDelay;
     }
 
     return output;

@@ -33,7 +33,9 @@ public class TableStorage
 {
   public const string SettingSection = nameof(MongoDB) + ":" + nameof(TableStorage);
 
-  public TimeSpan PollingDelay { get; set; } = TimeSpan.FromSeconds(5);
+  public TimeSpan PollingDelayMin { get; set; } = TimeSpan.FromSeconds(1);
+
+  public TimeSpan PollingDelayMax { get; set; } = TimeSpan.FromMinutes(5);
 
   public TimeSpan DispatchTimeToLive { get; set; } = TimeSpan.FromMinutes(2);
 

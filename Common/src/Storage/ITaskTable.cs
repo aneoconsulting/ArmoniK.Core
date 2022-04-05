@@ -37,7 +37,8 @@ namespace ArmoniK.Core.Common.Storage;
 
 public interface ITaskTable : IInitializable
 {
-  TimeSpan PollingDelay { get; }
+  TimeSpan PollingDelayMin { get; }
+  TimeSpan PollingDelayMax { get; }
 
   Task CreateTasks(IEnumerable<TaskData> tasks, CancellationToken cancellationToken = default);
 

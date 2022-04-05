@@ -80,7 +80,7 @@ public static class Program
 
       builder.Services
              .AddLogging()
-             .AddArmoniKCore(builder.Configuration)
+             .AddArmoniKWorkerConnection(builder.Configuration)
              .AddMongoComponents(builder.Configuration,
                                  logger)
              .AddAmqp(builder.Configuration,
@@ -89,6 +89,7 @@ public static class Program
                        logger)
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>()
+             .AddSingleton<ISubmitter, Submitter>()
              .AddSingleton<PreconditionChecker>()
              .AddSingleton<RequestProcessor>()
              .AddSingleton<Submitter>()

@@ -26,11 +26,13 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 
 using Microsoft.AspNetCore.Builder;
@@ -49,12 +51,14 @@ using OpenTelemetry.Trace;
 
 using Serilog.Formatting.Compact;
 
+using SessionProvider = ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider;
+
 namespace ArmoniK.Core.Control.Submitter;
 
 public static class Program
 {
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Control.Submitter");
-  public static int Main(string[] args)
+  public static async Task<int> Main(string[] args)
   {
     try
     {
@@ -84,13 +88,13 @@ public static class Program
 
       builder.Services
              .AddLogging()
-             .AddArmoniKCore(builder.Configuration)
              .AddMongoComponents(builder.Configuration,
                                  logger)
              .AddAmqp(builder.Configuration,
                       logger)
              .AddRedis(builder.Configuration,
                        logger)
+             .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .ValidateGrpcRequests();
 
       builder.Services.AddHealthChecks();
@@ -150,7 +154,10 @@ public static class Program
       if (app.Environment.IsDevelopment())
         app.MapGrpcReflectionService();
 
-      app.Run();
+      var   sessionProvider = app.Services.GetRequiredService<SessionProvider>();
+      await sessionProvider.GetAsync();
+
+      await app.RunAsync();
 
       return 0;
     }

@@ -54,16 +54,18 @@ public class TaskTable : ITaskTable
   private readonly MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider_;
   private readonly ActivitySource                                          activitySource_;
 
-  public TaskTable(SessionProvider sessionProvider, MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider, ILogger<TaskTable> logger, ActivitySource activitySource)
+  public TaskTable(SessionProvider sessionProvider, MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider, ILogger<TaskTable> logger, ActivitySource activitySource, Options.TableStorage option)
   {
     sessionProvider_        = sessionProvider;
     taskCollectionProvider_ = taskCollectionProvider;
     Logger                  = logger;
     activitySource_         = activitySource;
+    PollingDelayMin = option.PollingDelayMin;
+    PollingDelayMax = option.PollingDelayMax;
   }
 
-  /// <inheritdoc />
-  public TimeSpan PollingDelay { get; set; } = TimeSpan.FromMilliseconds(150);
+  public TimeSpan PollingDelayMin { get; set; }
+  public TimeSpan PollingDelayMax { get; set; }
 
   /// <inheritdoc />
   public async Task CreateTasks(IEnumerable<TaskData> tasks, CancellationToken cancellationToken = default)
