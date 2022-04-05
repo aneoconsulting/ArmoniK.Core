@@ -65,28 +65,23 @@ public static class ServiceCollectionExt
   }
 
   [PublicAPI]
-  public static IServiceCollection AddArmoniKCore(this IServiceCollection services,
+  public static IServiceCollection AddArmoniKWorkerConnection(this IServiceCollection services,
                                                   IConfiguration          configuration)
   {
     var computePlanComponent = configuration.GetSection(ComputePlan.SettingSection);
-    if (computePlanComponent.Exists())
+    if (!computePlanComponent.Exists())
+      return services;
+    var computePlanOptions = computePlanComponent.Get<ComputePlan>();
+
+    if (computePlanOptions.GrpcChannel is not null)
     {
-      var computePlanOptions = computePlanComponent.Get<ComputePlan>();
-
-      if (computePlanOptions.GrpcChannel is not null)
-      {
-        services.AddSingleton(computePlanOptions)
-                .AddSingleton(computePlanOptions.GrpcChannel)
-                .AddOption<Components>(configuration,
-                                       Components.SettingSection)
-                .AddSingletonWithHealthCheck<GrpcChannelProvider>(nameof(GrpcChannelProvider))
-                .AddSingletonWithHealthCheck<WorkerClientProvider>(nameof(WorkerClientProvider));
-      }
+      services.AddSingleton(computePlanOptions)
+              .AddSingleton(computePlanOptions.GrpcChannel)
+              .AddOption<Components>(configuration,
+                                     Components.SettingSection)
+              .AddSingletonWithHealthCheck<GrpcChannelProvider>(nameof(GrpcChannelProvider))
+              .AddSingletonWithHealthCheck<WorkerClientProvider>(nameof(WorkerClientProvider));
     }
-
-    services.AddSingleton<ISubmitter, Submitter>();
-
-
     return services;
   }
 

@@ -32,6 +32,7 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 
 using Microsoft.AspNetCore.Builder;
@@ -87,13 +88,13 @@ public static class Program
 
       builder.Services
              .AddLogging()
-             .AddArmoniKCore(builder.Configuration)
              .AddMongoComponents(builder.Configuration,
                                  logger)
              .AddAmqp(builder.Configuration,
                       logger)
              .AddRedis(builder.Configuration,
                        logger)
+             .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .ValidateGrpcRequests();
 
       builder.Services.AddHealthChecks();
