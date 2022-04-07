@@ -42,6 +42,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
 using MongoDB.Driver.Core.Events;
+using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -208,6 +209,8 @@ public static class ServiceCollectionExt
       //                  e.Command.ToJson());
       //    });
       //  };
+
+      settings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
 
       return new MongoClient(settings);
     });

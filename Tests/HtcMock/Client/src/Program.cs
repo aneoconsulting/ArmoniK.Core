@@ -24,6 +24,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Injection;
@@ -44,6 +45,9 @@ internal class Program
 {
   private static int Main()
   {
+    var sleepStr = Environment.GetEnvironmentVariable("SLEEP_BEFORE_LAUNCH");
+    if (!string.IsNullOrEmpty(sleepStr))
+      Thread.Sleep(int.Parse(sleepStr));
     Console.WriteLine("Hello Mock V3!");
 
     var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())

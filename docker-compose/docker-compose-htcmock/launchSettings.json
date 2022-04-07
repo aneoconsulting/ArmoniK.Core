@@ -1,0 +1,19 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "armonik.core.compute.pollingagent": "StartDebugging",
+        "armonik.core.control.metrics": "StartDebugging",
+        "armonik.core.control.submitter": "StartDebugging",
+        "database": "StartWithoutDebugging",
+        "fluentbit": "StartWithoutDebugging",
+        "object": "StartWithoutDebugging",
+        "queue": "StartWithoutDebugging",
+        "seq": "StartWithoutDebugging",
+        "zipkin": "StartWithoutDebugging"
+      }
+    }
+  }
+}
