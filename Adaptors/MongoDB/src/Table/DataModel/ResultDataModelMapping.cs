@@ -78,9 +78,9 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                            IMongoCollection<Result> collection)
   {
-    var sessionIndex        = Builders<Result>.IndexKeys.Text(model => model.SessionId);
-    var ownerTaskIndex      = Builders<Result>.IndexKeys.Text(model => model.OwnerTaskId);
-    var originDispatchIndex = Builders<Result>.IndexKeys.Text(model => model.OriginDispatchId);
+    var sessionIndex        = Builders<Result>.IndexKeys.Hashed(model => model.SessionId);
+    var ownerTaskIndex      = Builders<Result>.IndexKeys.Hashed(model => model.OwnerTaskId);
+    var originDispatchIndex = Builders<Result>.IndexKeys.Hashed(model => model.OriginDispatchId);
 
     var indexModels = new CreateIndexModel<Result>[]
     {

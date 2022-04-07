@@ -61,8 +61,8 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
   /// <inheritdoc />
   public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionData> collection)
   {
-    var sessionIndex = Builders<SessionData>.IndexKeys.Text(model => model.SessionId);
-    var dispatchIndex = Builders<SessionData>.IndexKeys.Text(model => model.DispatchId);
+    var sessionIndex  = Builders<SessionData>.IndexKeys.Hashed(model => model.SessionId);
+    var dispatchIndex = Builders<SessionData>.IndexKeys.Hashed(model => model.DispatchId);
 
     var indexModels = new CreateIndexModel<SessionData>[]
                       {
