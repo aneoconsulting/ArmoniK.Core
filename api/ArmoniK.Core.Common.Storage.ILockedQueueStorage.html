@@ -1,0 +1,509 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Interface ILockedQueueStorage
+   </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Interface ILockedQueueStorage
+   ">
+    <meta name="generator" content="docfx 2.59.1.0">
+    
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles/docfx.vendor.css">
+    <link rel="stylesheet" href="../styles/docfx.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <meta property="docfx:navrel" content="../toc.html">
+    <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+              <a class="navbar-brand" href="../index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage">
+  
+  
+  <h1 id="ArmoniK_Core_Common_Storage_ILockedQueueStorage" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage" class="text-break">Interface ILockedQueueStorage
+  </h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Common.Storage.IQueueStorageBase.html#ArmoniK_Core_Common_Storage_IQueueStorageBase_MaxPriority">IQueueStorageBase.MaxPriority</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Common.Storage.IQueueStorageBase.html#ArmoniK_Core_Common_Storage_IQueueStorageBase_PullAsync_System_Int32_CancellationToken_">IQueueStorageBase.PullAsync(Int32, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Common.Storage.IQueueStorageBase.html#ArmoniK_Core_Common_Storage_IQueueStorageBase_EnqueueMessagesAsync_IEnumerable_System_String__System_Int32_CancellationToken_">IQueueStorageBase.EnqueueMessagesAsync(IEnumerable&lt;String&gt;, Int32, CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Common.IInitializable.html#ArmoniK_Core_Common_IInitializable_Init_CancellationToken_">IInitializable.Init(CancellationToken)</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html#ArmoniK_Core_Common_IHealthCheckProvider_Check_ArmoniK_Core_Common_HealthCheckTag_">IHealthCheckProvider.Check(HealthCheckTag)</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Storage.html">ArmoniK.Core.Common.Storage</a></h6>
+  <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
+  <h5 id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface ILockedQueueStorage : IQueueStorageBase, IInitializable, IHealthCheckProvider</code></pre>
+  </div>
+  <h3 id="properties">Properties
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ILockedQueueStorage_AreMessagesUnique.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ILockedQueueStorage.AreMessagesUnique%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Storage/ILockedQueueStorage.cs/#L40">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_AreMessagesUnique_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.AreMessagesUnique*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_AreMessagesUnique" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.AreMessagesUnique">AreMessagesUnique</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">bool AreMessagesUnique { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ILockedQueueStorage_LockRefreshExtension.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshExtension%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Storage/ILockedQueueStorage.cs/#L38">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_LockRefreshExtension_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshExtension*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_LockRefreshExtension" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshExtension">LockRefreshExtension</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">TimeSpan LockRefreshExtension { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">TimeSpan</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ILockedQueueStorage_LockRefreshPeriodicity.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshPeriodicity%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Storage/ILockedQueueStorage.cs/#L36">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_LockRefreshPeriodicity_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshPeriodicity*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_LockRefreshPeriodicity" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshPeriodicity">LockRefreshPeriodicity</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">TimeSpan LockRefreshPeriodicity { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">TimeSpan</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ILockedQueueStorage_MessageProcessedAsync_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageProcessedAsync(System.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Storage/ILockedQueueStorage.cs/#L51">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_MessageProcessedAsync_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageProcessedAsync*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_MessageProcessedAsync_System_String_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageProcessedAsync(System.String,CancellationToken)">MessageProcessedAsync(String, CancellationToken)</h4>
+  <div class="markdown level1 summary"><p>Indicates that the message was successfully processed</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task MessageProcessedAsync(string id, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">id</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ILockedQueueStorage_MessageRejectedAsync_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageRejectedAsync(System.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Storage/ILockedQueueStorage.cs/#L59">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_MessageRejectedAsync_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageRejectedAsync*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_MessageRejectedAsync_System_String_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageRejectedAsync(System.String,CancellationToken)">MessageRejectedAsync(String, CancellationToken)</h4>
+  <div class="markdown level1 summary"><p>Indicates that the message is poisonous</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task MessageRejectedAsync(string id, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">id</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ILockedQueueStorage_ReleaseMessageAsync_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ILockedQueueStorage.ReleaseMessageAsync(System.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Storage/ILockedQueueStorage.cs/#L75">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_ReleaseMessageAsync_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.ReleaseMessageAsync*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_ReleaseMessageAsync_System_String_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.ReleaseMessageAsync(System.String,CancellationToken)">ReleaseMessageAsync(String, CancellationToken)</h4>
+  <div class="markdown level1 summary"><p>Places the message in the front of the queue</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task ReleaseMessageAsync(string id, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">id</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ILockedQueueStorage_RenewDeadlineAsync_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ILockedQueueStorage.RenewDeadlineAsync(System.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Storage/ILockedQueueStorage.cs/#L42">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_RenewDeadlineAsync_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.RenewDeadlineAsync*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_RenewDeadlineAsync_System_String_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.RenewDeadlineAsync(System.String,CancellationToken)">RenewDeadlineAsync(String, CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task&lt;bool&gt; RenewDeadlineAsync(string id, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">id</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span>&lt;<span class="xref">System.Boolean</span>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ILockedQueueStorage_RequeueMessageAsync_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ILockedQueueStorage.RequeueMessageAsync(System.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Storage/ILockedQueueStorage.cs/#L67">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_RequeueMessageAsync_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.RequeueMessageAsync*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_ILockedQueueStorage_RequeueMessageAsync_System_String_CancellationToken_" data-uid="ArmoniK.Core.Common.Storage.ILockedQueueStorage.RequeueMessageAsync(System.String,CancellationToken)">RequeueMessageAsync(String, CancellationToken)</h4>
+  <div class="markdown level1 summary"><p>Places the message in the back of the queue</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task RequeueMessageAsync(string id, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">id</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="extensionmethods">Extension Methods</h3>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.Storage.LockedQueueStorageExt.html#ArmoniK_Core_Common_Storage_LockedQueueStorageExt_EnqueueAsync_ArmoniK_Core_Common_Storage_ILockedQueueStorage_System_String_System_Int32_CancellationToken_">LockedQueueStorageExt.EnqueueAsync(ILockedQueueStorage, String, Int32, CancellationToken)</a>
+  </div>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.Storage.LockedQueueStorageExt.html#ArmoniK_Core_Common_Storage_LockedQueueStorageExt_GetDeadlineHandler_ArmoniK_Core_Common_Storage_ILockedQueueStorage_System_String_ILogger_CancellationToken_">LockedQueueStorageExt.GetDeadlineHandler(ILockedQueueStorage, String, ILogger, CancellationToken)</a>
+  </div>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_ILockedQueueStorage.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.ILockedQueueStorage%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                  </li>
+                  <li>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Storage/ILockedQueueStorage.cs/#L33" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In This Article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    <script type="text/javascript" src="../styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>
