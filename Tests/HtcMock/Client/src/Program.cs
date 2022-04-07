@@ -45,7 +45,9 @@ internal class Program
 {
   private static int Main()
   {
-    Thread.Sleep(10000);
+    var sleepStr = Environment.GetEnvironmentVariable("SLEEP_BEFORE_LAUNCH");
+    if (!string.IsNullOrEmpty(sleepStr))
+      Thread.Sleep(int.Parse(sleepStr));
     Console.WriteLine("Hello Mock V3!");
 
     var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())

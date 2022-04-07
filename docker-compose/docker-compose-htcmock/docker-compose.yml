@@ -194,6 +194,7 @@ services:
       dockerfile: Tests/HtcMock/Client/src/Dockerfile
     environment:
       - Grpc__Endpoint=http://armonik.core.control.submitter:80
+      - SLEEP_BEFORE_LAUNCH=10000
     depends_on:
       - database
       - object
