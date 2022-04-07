@@ -111,12 +111,12 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                      IMongoCollection<TaskData> collection)
   {
-    var sessionIndex = Builders<TaskData>.IndexKeys.Text(model => model.SessionId);
-    var statusIndex  = Builders<TaskData>.IndexKeys.Text(model => model.Status);
+    var sessionIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
+    var statusIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
     var sessionStatusIndex = Builders<TaskData>.IndexKeys.Combine(sessionIndex,
                                                                   statusIndex);
-    var dispatchIndex = Builders<TaskData>.IndexKeys.Text(model => model.DispatchId);
-    var taskIndex = Builders<TaskData>.IndexKeys.Text(model => model.TaskId);
+    var dispatchIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.DispatchId);
+    var taskIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
 
     var indexModels = new CreateIndexModel<TaskData>[]
                       {
