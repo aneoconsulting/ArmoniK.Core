@@ -69,16 +69,10 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
   public string CollectionName => nameof(DispatchHandler);
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<Dispatch> collection)
+  public async Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<Dispatch> collection)
   {
     var dispatchIndex = Builders<Dispatch>.IndexKeys.Hashed(model => model.Id);
-    var ttlIndex      = Builders<Dispatch>.IndexKeys.Hashed(model => model.TimeToLive);
     var taskIndex     = Builders<Dispatch>.IndexKeys.Hashed(model => model.TaskId);
-
-    var taskTtlCombine = Builders<Dispatch>.IndexKeys.Combine(taskIndex,
-                                                              ttlIndex);
-    var idTaskCombine = Builders<Dispatch>.IndexKeys.Combine(taskIndex,
-                                                             dispatchIndex);
 
     var indexModels = new CreateIndexModel<Dispatch>[]
                       {
@@ -87,16 +81,6 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
                             {
                               Name = nameof(dispatchIndex),
                             }),
-                        new(taskTtlCombine,
-                            new()
-                            {
-                              Name = nameof(taskTtlCombine),
-                            }),
-                        new(idTaskCombine,
-                            new()
-                            {
-                              Name = nameof(idTaskCombine),
-                            }),
                         new(taskIndex,
                             new()
                             {
@@ -104,7 +88,7 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
                             }),
                       };
 
-    return collection.Indexes.CreateManyAsync(sessionHandle,
+    await collection.Indexes.CreateManyAsync(sessionHandle,
                                               indexModels);
   }
 }
