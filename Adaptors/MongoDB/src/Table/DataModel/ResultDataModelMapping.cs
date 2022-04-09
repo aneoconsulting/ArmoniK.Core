@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -37,24 +36,6 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
   
   public ResultDataModelMapping()
   {
-    if (!BsonClassMap.IsClassMapRegistered(typeof(Core.Common.Storage.Result)))
-      BsonClassMap.RegisterClassMap<Core.Common.Storage.Result>(cm =>
-                                                                {
-                                                                  cm.MapProperty(nameof(Core.Common.Storage.Result.SessionId)).SetIsRequired(true);
-                                                                  cm.MapProperty(nameof(Core.Common.Storage.Result.Key)).SetIsRequired(true);
-                                                                  cm.MapProperty(nameof(Core.Common.Storage.Result.OwnerTaskId)).SetIsRequired(true);
-                                                                  cm.MapProperty(nameof(Core.Common.Storage.Result.OriginDispatchId)).SetIsRequired(true);
-                                                                  cm.MapProperty(nameof(Core.Common.Storage.Result.IsResultAvailable)).SetIsRequired(true);
-                                                                  cm.MapProperty(nameof(Core.Common.Storage.Result.CreationDate)).SetIsRequired(true);
-                                                                  cm.MapProperty(nameof(Core.Common.Storage.Result.Data)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<byte>());
-                                                                  cm.MapCreator(model => new(model.SessionId,
-                                                                                             model.Key,
-                                                                                             model.OwnerTaskId,
-                                                                                             model.OriginDispatchId,
-                                                                                             model.IsResultAvailable,
-                                                                                             model.CreationDate,
-                                                                                             model.Data));
-                                                                });
     if (!BsonClassMap.IsClassMapRegistered(typeof(Result)))
       BsonClassMap.RegisterClassMap<Result>(cm =>
                                             {
