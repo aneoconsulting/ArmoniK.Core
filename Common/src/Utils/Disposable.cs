@@ -34,15 +34,15 @@ public static class TaskExt
   public static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> enumerable) => Task.WhenAll(enumerable);
   public static Task      WhenAll(this    IEnumerable<Task>    enumerable) => Task.WhenAll(enumerable);
 
-  public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> enumerableTask) => (await enumerableTask).ToList();
+  public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> enumerableTask) => (await enumerableTask.ConfigureAwait(false)).ToList();
 }
 
 public static class DisposableExt
 {
   public static IAsyncDisposable Merge(this IEnumerable<IAsyncDisposable> disposables)
   {
-    return AsyncDisposable.Create(async () => await disposables.Select(async disposable => await disposable.DisposeAsync())
-                                                               .WhenAll());
+    return AsyncDisposable.Create(async () => await disposables.Select(async disposable => await disposable.DisposeAsync().ConfigureAwait(false))
+                                                               .WhenAll().ConfigureAwait(false));
   }
 }
 

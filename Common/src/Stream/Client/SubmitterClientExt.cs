@@ -55,10 +55,10 @@ namespace ArmoniK.Core.Common.Stream.Client
                                                                           taskOptions,
                                                                           serviceConfiguration.DataChunkMaxSize))
       {
-        await stream.RequestStream.WriteAsync(createLargeTaskRequest);
+        await stream.RequestStream.WriteAsync(createLargeTaskRequest).ConfigureAwait(false);
       }
 
-      return await stream.ResponseAsync;
+      return await stream.ResponseAsync.ConfigureAwait(false);
     }
 
 
@@ -191,7 +191,7 @@ namespace ArmoniK.Core.Common.Stream.Client
 
       var result = new List<byte>();
 
-      await foreach (var reply in streamingCall.ResponseStream.ReadAllAsync(cancellationToken))
+      await foreach (var reply in streamingCall.ResponseStream.ReadAllAsync(cancellationToken).ConfigureAwait(false))
         switch (reply.TypeCase)
         {
           case ResultReply.TypeOneofCase.Result:

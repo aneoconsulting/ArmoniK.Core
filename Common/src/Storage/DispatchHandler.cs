@@ -47,8 +47,8 @@ public record DispatchHandler : Dispatch, IAsyncDisposable
                                                                                    token);
 
                                     var status = await taskTable.IsTaskCancelledAsync(TaskId,
-                                                                                      token);
-                                    await ttlTask;
+                                                                                      token).ConfigureAwait(false);
+                                    await ttlTask.ConfigureAwait(false);
 
                                     return !status && !token.IsCancellationRequested;
                                   },
@@ -57,7 +57,7 @@ public record DispatchHandler : Dispatch, IAsyncDisposable
     dispatchRefresher.Start();
     DispatchCancelled = dispatchRefresher.HeartStopped;
 
-    asyncDisposableImplementation_ = AsyncDisposable.Create(async () => { await dispatchRefresher.Stop(); });
+    asyncDisposableImplementation_ = AsyncDisposable.Create(async () => { await dispatchRefresher.Stop().ConfigureAwait(false); });
   }
 
   /// <inheritdoc />
@@ -65,7 +65,7 @@ public record DispatchHandler : Dispatch, IAsyncDisposable
   {
     if (asyncDisposableImplementation_ is not null)
     {
-      await asyncDisposableImplementation_.DisposeAsync();
+      await asyncDisposableImplementation_.DisposeAsync().ConfigureAwait(false);
       asyncDisposableImplementation_ = null;
     }
 

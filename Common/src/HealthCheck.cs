@@ -49,7 +49,7 @@ public class HealthCheck : IHealthCheck
   /// <inheritdoc />
   public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
   {
-    if(await healthCheckProvider_.Check(tag_))
+    if(await healthCheckProvider_.Check(tag_).ConfigureAwait(false))
       return HealthCheckResult.Healthy();
 
     return context.Registration.FailureStatus switch

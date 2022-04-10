@@ -55,7 +55,7 @@ public class WorkerClientProvider : ProviderBase<Worker.WorkerClient>
     ChannelBase channel;
     try
     {
-      channel = await channelProvider.GetAsync();
+      channel = await channelProvider.GetAsync().ConfigureAwait(false);
     }
     catch (Exception e)
     {

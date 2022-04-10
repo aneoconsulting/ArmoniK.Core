@@ -45,7 +45,7 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
         task = object_ is null ? builder_() : Task.FromResult(object_);
       }
 
-      object_ = await task;
+      object_ = await task.ConfigureAwait(false);
     }
 
     return object_;

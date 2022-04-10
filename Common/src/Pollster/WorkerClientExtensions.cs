@@ -59,7 +59,7 @@ public static class WorkerClientExtensions
     Channel<ReadOnlyMemory<byte>>? channel = null;
 
     TaskRequest? taskRequest = null;
-    while (await enumerator.MoveNextAsync(cancellationToken))
+    while (await enumerator.MoveNextAsync(cancellationToken).ConfigureAwait(false))
     {
       var current = enumerator.Current;
 
@@ -92,7 +92,7 @@ public static class WorkerClientExtensions
           {
             case DataChunk.TypeOneofCase.Data:
               await channel!.Writer.WriteAsync(current.CreateLargeTask.TaskPayload.Data.Memory,
-                                               cancellationToken);
+                                               cancellationToken).ConfigureAwait(false);
               break;
             case DataChunk.TypeOneofCase.DataComplete:
               channel!.Writer.Complete();
@@ -138,7 +138,7 @@ public static class WorkerClientExtensions
 
 
     await foreach (var reply in stream.ReadAllAsync(cancellationToken)
-                                      .WithCancellation(cancellationToken))
+                                      .WithCancellation(cancellationToken).ConfigureAwait(false))
     {
       void InitNewStream(bool singleStream)
       {
@@ -300,7 +300,7 @@ public static class WorkerClientExtensions
                                                                                    [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var enumerator = bytes.GetAsyncEnumerator(cancellationToken);
-    if (!await enumerator.MoveNextAsync(cancellationToken))
+    if (!await enumerator.MoveNextAsync(cancellationToken).ConfigureAwait(false))
     {
       throw new InvalidOperationException("No data were retrieved.");
     }
@@ -318,7 +318,7 @@ public static class WorkerClientExtensions
                           },
                  };
 
-    while (await enumerator.MoveNextAsync())
+    while (await enumerator.MoveNextAsync().ConfigureAwait(false))
     {
       yield return new()
                    {

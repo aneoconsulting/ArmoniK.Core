@@ -74,9 +74,9 @@ public class DataPrefetcher : IInitializable
     else
     {
       payloadChunks = await payloadStorage.GetValuesAsync(taskData.TaskId,
-                                                             cancellationToken)
+                                                          cancellationToken)
                                           .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                          .ToListAsync(cancellationToken);
+                                          .ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
     var computeRequests = new ComputeRequestQueue(logger_);
@@ -91,9 +91,9 @@ public class DataPrefetcher : IInitializable
     foreach (var dataDependency in taskData.DataDependencies)
     {
       var dependencyChunks = await resultStorage.GetValuesAsync(dataDependency,
-                                                                   cancellationToken)
+                                                                cancellationToken)
                                                 .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                                .ToListAsync(cancellationToken);
+                                                .ToListAsync(cancellationToken).ConfigureAwait(false);
 
       computeRequests.InitDataDependency(dataDependency);
       foreach (var chunk in dependencyChunks)
@@ -116,7 +116,7 @@ public class DataPrefetcher : IInitializable
   {
     if (!isInitialized_)
     {
-      await objectStorageFactory_.Init(cancellationToken);
+      await objectStorageFactory_.Init(cancellationToken).ConfigureAwait(false);
       isInitialized_ = true;
     }
   }

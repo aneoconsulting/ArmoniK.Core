@@ -52,7 +52,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
                                    configuration,
                                    cancellationToken,
                                    logger);
-      await output.Init();
+      await output.Init().ConfigureAwait(false);
       return output;
     }
 
@@ -76,7 +76,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
     protected async Task Init()
     {
       crsm_ = new ComputeRequestStateMachine(logger_);
-      if (!await requestStream_.MoveNext())
+      if (!await requestStream_.MoveNext().ConfigureAwait(false))
         throw new InvalidOperationException("Request stream ended unexpectedly.");
 
       if (requestStream_.Current.TypeCase != ProcessRequest.TypeOneofCase.Compute ||
@@ -101,7 +101,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
 
         while (!dataChunk.DataComplete)
         {
-          if (!await requestStream_.MoveNext())
+          if (!await requestStream_.MoveNext().ConfigureAwait(false))
             throw new InvalidOperationException("Request stream ended unexpectedly.");
 
           if (requestStream_.Current.TypeCase != ProcessRequest.TypeOneofCase.Compute ||
@@ -137,7 +137,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
       ProcessRequest.Types.ComputeRequest.Types.InitData initData;
       do
       {
-        if (!await requestStream_.MoveNext())
+        if (!await requestStream_.MoveNext().ConfigureAwait(false))
           throw new InvalidOperationException("Request stream ended unexpectedly.");
 
 
@@ -153,7 +153,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
 
           while(true)
           {
-            if (!await requestStream_.MoveNext())
+            if (!await requestStream_.MoveNext().ConfigureAwait(false))
               throw new InvalidOperationException("Request stream ended unexpectedly.");
 
             if (requestStream_.Current.TypeCase != ProcessRequest.TypeOneofCase.Compute ||
@@ -227,7 +227,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
     {
       try
       {
-        await semaphore_.WaitAsync(cancellationToken_);
+        await semaphore_.WaitAsync(cancellationToken_).ConfigureAwait(false);
 
         var requestId = $"R#{messageCounter_++}";
 
@@ -238,10 +238,10 @@ namespace ArmoniK.Core.Common.Stream.Worker
                                            {
                                              RequestId       = requestId,
                                              CreateLargeTask = createLargeTaskRequest,
-                                           });
+                                           }).ConfigureAwait(false);
         }
 
-        if (!await requestStream_.MoveNext(cancellationToken_))
+        if (!await requestStream_.MoveNext(cancellationToken_).ConfigureAwait(false))
           throw new InvalidOperationException("Request stream ended unexpectedly.");
 
 
@@ -283,7 +283,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
     {
       try
       {
-        await semaphore_.WaitAsync(cancellationToken_);
+        await semaphore_.WaitAsync(cancellationToken_).ConfigureAwait(false);
         var requestId = $"R#{messageCounter_++}";
 
         var reply = new ProcessReply()
@@ -298,7 +298,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
                       RequestId = requestId,
                     };
 
-        await responseStream_.WriteAsync(reply);
+        await responseStream_.WriteAsync(reply).ConfigureAwait(false);
         var start = 0;
 
         while (start < data.Length)
@@ -320,7 +320,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
                     RequestId = requestId,
                   };
 
-          await responseStream_.WriteAsync(reply);
+          await responseStream_.WriteAsync(reply).ConfigureAwait(false);
 
           start += chunkSize;
         }
@@ -338,7 +338,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
           RequestId = requestId,
         };
 
-        await responseStream_.WriteAsync(reply);
+        await responseStream_.WriteAsync(reply).ConfigureAwait(false);
 
         reply = new()
                 {
@@ -352,7 +352,7 @@ namespace ArmoniK.Core.Common.Stream.Worker
                     RequestId = requestId,
                 };
 
-        await responseStream_.WriteAsync(reply);
+        await responseStream_.WriteAsync(reply).ConfigureAwait(false);
 
 
       }

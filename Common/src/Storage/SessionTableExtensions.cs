@@ -37,7 +37,7 @@ public static class SessionTableExtensions
                                               id,
                                               id,
                                               defaultOptions,
-                                              cancellationToken);
+                                              cancellationToken).ConfigureAwait(false);
   }
 
 
@@ -46,12 +46,12 @@ public static class SessionTableExtensions
     using var _ = sessionTable.Logger.LogFunction(dispatchId);
 
     var taskOptions = await sessionTable.GetDefaultTaskOptionAsync(rootSessionId,
-                                                                   cancellationToken);
+                                                                   cancellationToken).ConfigureAwait(false);
 
     await sessionTable.CreateSessionDataAsync(rootSessionId,
                                               parentTaskId,
                                               dispatchId,
                                               taskOptions,
-                                              cancellationToken);
+                                              cancellationToken).ConfigureAwait(false);
   }
 }

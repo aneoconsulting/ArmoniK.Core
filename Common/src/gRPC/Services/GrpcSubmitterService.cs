@@ -51,14 +51,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   public override async Task<Empty> CancelSession(Session request, ServerCallContext context)
   {
     await submitter_.CancelSession(request.Id,
-                                    context.CancellationToken);
+                                   context.CancellationToken).ConfigureAwait(false);
     return new();
   }
 
   public override async Task<Empty> CancelTasks(TaskFilter request, ServerCallContext context)
   {
     await submitter_.CancelTasks(request,
-                                  context.CancellationToken);
+                                 context.CancellationToken).ConfigureAwait(false);
     return new();
   }
 
@@ -87,7 +87,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   {
     var enumerator = requestStream.ReadAllAsync(context.CancellationToken).GetAsyncEnumerator(context.CancellationToken);
 
-    if (!await enumerator.MoveNextAsync(context.CancellationToken))
+    if (!await enumerator.MoveNextAsync(context.CancellationToken).ConfigureAwait(false))
       throw new RpcException(new(StatusCode.InvalidArgument,
                                  "stream contained no message"));
 
@@ -103,7 +103,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                                         first.InitRequest.SessionId,
                                         first.InitRequest.TaskOptions,
                                         enumerator.BuildRequests(context.CancellationToken),
-                                        context.CancellationToken);
+                                        context.CancellationToken).ConfigureAwait(false);
   }
 
   /// <inheritdoc />

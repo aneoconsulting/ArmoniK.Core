@@ -51,7 +51,7 @@ public abstract class GrpcHealthCheckServiceBase : Health.HealthBase
     if (string.IsNullOrEmpty(request.Service) || grpcServices_.Contains(request.Service))
     {
       var healthReport = await healthCheckService_.CheckHealthAsync(registration => registration.Tags.Contains(nameof(HealthCheckTag.Readiness)),
-                                                                    context.CancellationToken);
+                                                                    context.CancellationToken).ConfigureAwait(false);
 
       if (healthReport.Status == HealthStatus.Healthy)
       {

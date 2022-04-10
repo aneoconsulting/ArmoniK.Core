@@ -61,7 +61,7 @@ public class QueueMessageHandler : IQueueMessageHandler
   {
     using var _ = logger_.LogFunction(MessageId,
                                       functionName: $"{nameof(QueueMessageHandler)}.{nameof(DisposeAsync)}");
-    await disposeFunc_(Status);
+    await disposeFunc_(Status).ConfigureAwait(false);
     GC.SuppressFinalize(this);
   }
 }

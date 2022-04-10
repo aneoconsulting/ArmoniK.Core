@@ -66,19 +66,19 @@ public class LockedQueueMessageHandler : IQueueMessageHandler
     {
       case QueueMessageStatus.Postponed:
         await lockedQueueStorage_.RequeueMessageAsync(MessageId,
-                                                      cancellationToken_);
+                                                      cancellationToken_).ConfigureAwait(false);
         break;
       case QueueMessageStatus.Failed:
         await lockedQueueStorage_.ReleaseMessageAsync(MessageId,
-                                                      cancellationToken_);
+                                                      cancellationToken_).ConfigureAwait(false);
         break;
       case QueueMessageStatus.Processed:
         await lockedQueueStorage_.MessageProcessedAsync(MessageId,
-                                                        cancellationToken_);
+                                                        cancellationToken_).ConfigureAwait(false);
         break;
       case QueueMessageStatus.Poisonous:
         await lockedQueueStorage_.MessageRejectedAsync(MessageId,
-                                                       cancellationToken_);
+                                                       cancellationToken_).ConfigureAwait(false);
         break;
       default:
         throw new ArgumentOutOfRangeException();

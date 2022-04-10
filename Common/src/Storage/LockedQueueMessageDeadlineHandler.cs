@@ -52,7 +52,7 @@ public class LockedQueueMessageDeadlineHandler : IAsyncDisposable
     id_                 = id;
     cancellationToken_  = cancellationToken;
     heart_ = new(async ct => await lockedQueueStorage_.RenewDeadlineAsync(id_,
-                                                                          ct),
+                                                                          ct).ConfigureAwait(false),
                  lockedQueueStorage_.LockRefreshPeriodicity,
                  cancellationToken_);
     heart_.Start();
@@ -67,7 +67,7 @@ public class LockedQueueMessageDeadlineHandler : IAsyncDisposable
     using var _ = logger_.LogFunction(id_,
                                       functionName: $"{nameof(LockedQueueMessageDeadlineHandler)}.{nameof(DisposeAsync)}");
     if (!heart_.HeartStopped.IsCancellationRequested)
-      await heart_.Stop();
+      await heart_.Stop().ConfigureAwait(false);
     GC.SuppressFinalize(this);
   }
 }

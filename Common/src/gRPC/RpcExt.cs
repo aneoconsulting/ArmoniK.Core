@@ -161,7 +161,7 @@ public static class RpcExt
 
   public static async Task ForceMoveNext<T>(this IAsyncEnumerator<T> stream, string error, ILogger logger, CancellationToken cancellationToken) where T : class
   {
-    if (!await stream.MoveNextAsync(cancellationToken))
+    if (!await stream.MoveNextAsync(cancellationToken).ConfigureAwait(false))
     {
       var exception = new RpcException(new(StatusCode.InvalidArgument,
                                            error));

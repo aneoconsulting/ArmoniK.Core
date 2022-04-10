@@ -49,7 +49,7 @@ public class LockedWrapperQueueStorage : IQueueStorage
   public async Task Init(CancellationToken cancellationToken)
   {
     if(!isInitialized_)
-      await lockedQueueStorage_.Init(cancellationToken);
+      await lockedQueueStorage_.Init(cancellationToken).ConfigureAwait(false);
 
     isInitialized_ = true;
   }
@@ -71,7 +71,7 @@ public class LockedWrapperQueueStorage : IQueueStorage
 
     await foreach (var qm in lockedQueueStorage_.PullAsync(nbMessages,
                                                            cancellationToken)
-                                                .WithCancellation(cancellationToken))
+                                                .WithCancellation(cancellationToken).ConfigureAwait(false))
     {
       using var logScope = logger_.BeginPropertyScope(("messageId", qm.MessageId),
                                                       ("taskId", qm.TaskId));

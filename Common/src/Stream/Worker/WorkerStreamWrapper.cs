@@ -59,16 +59,16 @@ namespace ArmoniK.Core.Common.Stream.Worker
                                                    DataChunkMaxSize = 50 * 1024,
                                                  },
                                                  loggerFactory_.CreateLogger<TaskHandler>(),
-                                                 context.CancellationToken);
+                                                 context.CancellationToken).ConfigureAwait(false);
 
       logger_.LogDebug("Execute Process");
-      var output = await Process(taskHandler);
+      var output = await Process(taskHandler).ConfigureAwait(false);
 
       await responseStream.WriteAsync(new ()
                                       {
                                         Output = output,
-                                      });
-      if (await requestStream.MoveNext(context.CancellationToken))
+                                      }).ConfigureAwait(false);
+      if (await requestStream.MoveNext(context.CancellationToken).ConfigureAwait(false))
         throw new InvalidOperationException("The request stream is expected to be finished.");
     }
 

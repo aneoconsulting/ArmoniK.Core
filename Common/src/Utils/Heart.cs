@@ -122,9 +122,9 @@ public class Heart
                              .StartNew(async () =>
                                        {
                                          await Task.Delay(beatPeriod_,
-                                                          combinedSource_.Token);
+                                                          combinedSource_.Token).ConfigureAwait(false);
                                          while (!stoppedHeartCts_.IsCancellationRequested)
-                                           await FullCycle();
+                                           await FullCycle().ConfigureAwait(false);
                                        },
                                        cancellationToken_,
                                        TaskCreationOptions.LongRunning,
@@ -136,12 +136,12 @@ public class Heart
   {
     var delayTask = Task.Delay(beatPeriod_,
                                combinedSource_?.Token ?? cancellationToken_);
-    if (!await pulse_(cancellationToken_))
+    if (!await pulse_(cancellationToken_).ConfigureAwait(false))
     {
       stoppedHeartCts_.Cancel();
       return;
     }
 
-    await delayTask;
+    await delayTask.ConfigureAwait(false);
   }
 }
