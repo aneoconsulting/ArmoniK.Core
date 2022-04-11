@@ -46,24 +46,22 @@ internal class MyAsyncStreamReader<T> : IAsyncStreamReader<T>
   private readonly IEnumerator<T> enumerator_;
 
   public MyAsyncStreamReader(IEnumerable<T> results)
-  {
-    enumerator_ = results.GetEnumerator();
-  }
+    => enumerator_ = results.GetEnumerator();
 
-  public T Current => enumerator_.Current;
+  public T Current
+    => enumerator_.Current;
 
   public Task<bool> MoveNext(CancellationToken cancellationToken)
-  {
-    return Task.Run(() => enumerator_.MoveNext(),
-                    cancellationToken);
-  }
+    => Task.Run(() => enumerator_.MoveNext(),
+                cancellationToken);
 }
 
 internal class MyServerStreamWriter<T> : IServerStreamWriter<T>
 {
   private readonly List<T> messages_ = new();
 
-  public IList<T> Messages => messages_;
+  public IList<T> Messages
+    => messages_;
 
   public Task WriteAsync(T message)
   {
@@ -96,77 +94,77 @@ public class TaskHandlerTest
     var computeRequests = new List<ProcessRequest>();
 
     computeRequests.Add(new ProcessRequest
-    {
-      Compute = new ProcessRequest.Types.ComputeRequest
-      {
-        InitRequest = new ProcessRequest.Types.ComputeRequest.Types.InitRequest
-        {
-          Configuration = new Configuration(),
-          Payload       = new DataChunk(),
-          TaskId        = "MyTaskId",
-          SessionId     = "MySessionId",
-          ExpectedOutputKeys =
-          {
-            "MyOutput",
-          },
-        },
-      },
-    });
+                        {
+                          Compute = new ProcessRequest.Types.ComputeRequest
+                                    {
+                                      InitRequest = new ProcessRequest.Types.ComputeRequest.Types.InitRequest
+                                                    {
+                                                      Configuration = new Configuration(),
+                                                      Payload       = new DataChunk(),
+                                                      TaskId        = "MyTaskId",
+                                                      SessionId     = "MySessionId",
+                                                      ExpectedOutputKeys =
+                                                      {
+                                                        "MyOutput",
+                                                      },
+                                                    },
+                                    },
+                        });
 
     computeRequests.Add(new ProcessRequest
-    {
-      Compute = new ProcessRequest.Types.ComputeRequest
-      {
-        Payload = new DataChunk
-        {
-          DataComplete = true,
-        },
-      },
-    });
+                        {
+                          Compute = new ProcessRequest.Types.ComputeRequest
+                                    {
+                                      Payload = new DataChunk
+                                                {
+                                                  DataComplete = true,
+                                                },
+                                    },
+                        });
 
     computeRequests.Add(new ProcessRequest
-    {
-      Compute = new ProcessRequest.Types.ComputeRequest
-      {
-        InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
-        {
-          Key = "KeyData",
-        },
-      },
-    });
+                        {
+                          Compute = new ProcessRequest.Types.ComputeRequest
+                                    {
+                                      InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
+                                                 {
+                                                   Key = "KeyData",
+                                                 },
+                                    },
+                        });
 
     computeRequests.Add(new ProcessRequest
-    {
-      Compute = new ProcessRequest.Types.ComputeRequest
-      {
-        Data = new DataChunk
-        {
-          Data = ByteString.Empty,
-        },
-      },
-    });
+                        {
+                          Compute = new ProcessRequest.Types.ComputeRequest
+                                    {
+                                      Data = new DataChunk
+                                             {
+                                               Data = ByteString.Empty,
+                                             },
+                                    },
+                        });
 
     computeRequests.Add(new ProcessRequest
-    {
-      Compute = new ProcessRequest.Types.ComputeRequest
-      {
-        Data = new DataChunk
-        {
-          DataComplete = true,
-        },
-      },
-    });
+                        {
+                          Compute = new ProcessRequest.Types.ComputeRequest
+                                    {
+                                      Data = new DataChunk
+                                             {
+                                               DataComplete = true,
+                                             },
+                                    },
+                        });
 
     computeRequests.Add(new ProcessRequest
-    {
-      Compute = new ProcessRequest.Types.ComputeRequest
-      {
-        InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
-        {
-          LastData = true,
-        },
-      },
-    });
+                        {
+                          Compute = new ProcessRequest.Types.ComputeRequest
+                                    {
+                                      InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
+                                                 {
+                                                   LastData = true,
+                                                 },
+                                    },
+                        });
 
     IAsyncStreamReader<ProcessRequest> requestStream  = new MyAsyncStreamReader<ProcessRequest>(computeRequests);
     var                                responseStream = new MyServerStreamWriter<ProcessReply>();
@@ -177,36 +175,54 @@ public class TaskHandlerTest
                                                  DataChunkMaxSize = 50 * 1024,
                                                },
                                                loggerFactory.CreateLogger<TaskHandler>(),
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                                       .ConfigureAwait(false);
 
     await taskHandler.SendResult(taskHandler.ExpectedResults.Single(),
-                                 Convert.FromBase64String("AAAA1111"));
+                                 Convert.FromBase64String("AAAA1111"))
+                     .ConfigureAwait(false);
 
     foreach (var response in responseStream.Messages)
+    {
       Console.WriteLine(response);
-    Assert.AreEqual(responseStream.Messages[0].TypeCase,
+    }
+
+    Assert.AreEqual(responseStream.Messages[0]
+                                  .TypeCase,
                     ProcessReply.TypeOneofCase.Result);
-    Assert.AreEqual(responseStream.Messages[0].Result.TypeCase,
+    Assert.AreEqual(responseStream.Messages[0]
+                                  .Result.TypeCase,
                     ProcessReply.Types.Result.TypeOneofCase.Init);
-    Assert.AreEqual(responseStream.Messages[0].Result.Init.TypeCase,
+    Assert.AreEqual(responseStream.Messages[0]
+                                  .Result.Init.TypeCase,
                     InitKeyedDataStream.TypeOneofCase.Key);
     Assert.AreEqual("MyOutput",
-                    responseStream.Messages[0].Result.Init.Key);
-    Assert.AreEqual(responseStream.Messages[1].TypeCase,
+                    responseStream.Messages[0]
+                                  .Result.Init.Key);
+    Assert.AreEqual(responseStream.Messages[1]
+                                  .TypeCase,
                     ProcessReply.TypeOneofCase.Result);
-    Assert.AreEqual(responseStream.Messages[1].Result.TypeCase,
+    Assert.AreEqual(responseStream.Messages[1]
+                                  .Result.TypeCase,
                     ProcessReply.Types.Result.TypeOneofCase.Data);
-    Assert.AreEqual(responseStream.Messages[1].Result.Data.Data,
+    Assert.AreEqual(responseStream.Messages[1]
+                                  .Result.Data.Data,
                     ByteString.CopyFrom(Convert.FromBase64String("AAAA1111")));
-    Assert.AreEqual(responseStream.Messages[2].TypeCase,
+    Assert.AreEqual(responseStream.Messages[2]
+                                  .TypeCase,
                     ProcessReply.TypeOneofCase.Result);
-    Assert.AreEqual(responseStream.Messages[2].Result.TypeCase,
+    Assert.AreEqual(responseStream.Messages[2]
+                                  .Result.TypeCase,
                     ProcessReply.Types.Result.TypeOneofCase.Data);
-    Assert.IsTrue(responseStream.Messages[2].Result.Data.DataComplete);
-    Assert.AreEqual(responseStream.Messages[3].TypeCase,
+    Assert.IsTrue(responseStream.Messages[2]
+                                .Result.Data.DataComplete);
+    Assert.AreEqual(responseStream.Messages[3]
+                                  .TypeCase,
                     ProcessReply.TypeOneofCase.Result);
-    Assert.AreEqual(responseStream.Messages[3].Result.TypeCase,
+    Assert.AreEqual(responseStream.Messages[3]
+                                  .Result.TypeCase,
                     ProcessReply.Types.Result.TypeOneofCase.Init);
-    Assert.IsTrue(responseStream.Messages[3].Result.Init.LastResult);
+    Assert.IsTrue(responseStream.Messages[3]
+                                .Result.Init.LastResult);
   }
 }

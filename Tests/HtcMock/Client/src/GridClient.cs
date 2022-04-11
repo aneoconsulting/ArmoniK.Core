@@ -33,53 +33,53 @@ using Htc.Mock;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Samples.HtcMock.Client
+namespace ArmoniK.Samples.HtcMock.Client;
+
+public class GridClient : IGridClient
 {
-  public class GridClient : IGridClient
+  private readonly Submitter.SubmitterClient client_;
+  private readonly ILogger<GridClient>       logger_;
+
+  public GridClient(Submitter.SubmitterClient client,
+                    ILoggerFactory            loggerFactory)
   {
-    private readonly Submitter.SubmitterClient client_;
-    private readonly ILogger<GridClient>       logger_;
+    client_ = client;
+    logger_ = loggerFactory.CreateLogger<GridClient>();
+  }
 
-    public GridClient(Submitter.SubmitterClient client, ILoggerFactory loggerFactory)
+  public ISessionClient CreateSubSession(string taskId)
+    => CreateSession();
+
+  public ISessionClient CreateSession()
+  {
+    using var _ = logger_.LogFunction();
+    var sessionId = Guid.NewGuid()
+                        .ToString();
+    var createSessionRequest = new CreateSessionRequest
+                               {
+                                 DefaultTaskOption = new TaskOptions
+                                                     {
+                                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                                                       MaxRetries  = 2,
+                                                       Priority    = 1,
+                                                     },
+                                 Id = sessionId,
+                               };
+    var session = client_.CreateSession(createSessionRequest);
+    switch (session.ResultCase)
     {
-      client_ = client;
-      logger_ = loggerFactory.CreateLogger<GridClient>();
+      case CreateSessionReply.ResultOneofCase.Error:
+        throw new Exception($"Error while creating session {sessionId}: " + session.Error);
+      case CreateSessionReply.ResultOneofCase.None:
+        throw new Exception($"Issue with Server for session {sessionId}!");
+      case CreateSessionReply.ResultOneofCase.Ok:
+        break;
+      default:
+        throw new ArgumentOutOfRangeException();
     }
 
-    public ISessionClient CreateSubSession(string taskId)
-    {
-      return CreateSession();
-    }
-
-    public ISessionClient CreateSession()
-    {
-      using var _         = logger_.LogFunction();
-      var       sessionId = Guid.NewGuid().ToString();
-      var createSessionRequest = new CreateSessionRequest
-      {
-        DefaultTaskOption = new TaskOptions
-        {
-          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-          MaxRetries  = 2,
-          Priority    = 1,
-        },
-        Id = sessionId,
-      };
-      var session = client_.CreateSession(createSessionRequest);
-      switch (session.ResultCase)
-      {
-        case CreateSessionReply.ResultOneofCase.Error:
-          throw new Exception($"Error while creating session {sessionId}: " + session.Error);
-        case CreateSessionReply.ResultOneofCase.None:
-          throw new Exception($"Issue with Server for session {sessionId}!");
-        case CreateSessionReply.ResultOneofCase.Ok:
-          break;
-        default:
-          throw new ArgumentOutOfRangeException();
-      }
-      return new SessionClient(client_,
-                               sessionId,
-                               logger_);
-    }
+    return new SessionClient(client_,
+                             sessionId,
+                             logger_);
   }
 }

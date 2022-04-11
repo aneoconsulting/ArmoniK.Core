@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,11 +36,16 @@ namespace ArmoniK.Core.Adapters.Redis;
 
 public class ObjectStorageFactory : IObjectStorageFactory
 {
+  private readonly ILoggerFactory loggerFactory_;
   private readonly IDatabaseAsync redis_;
 
-  public ObjectStorageFactory(IDatabaseAsync redis, ILoggerFactory loggerFactory)
+
+  private bool isInitialized_;
+
+  public ObjectStorageFactory(IDatabaseAsync redis,
+                              ILoggerFactory loggerFactory)
   {
-    redis_  = redis;
+    redis_         = redis;
     loggerFactory_ = loggerFactory;
   }
 
@@ -50,20 +54,19 @@ public class ObjectStorageFactory : IObjectStorageFactory
   {
     if (!isInitialized_)
     {
-      await redis_.PingAsync();
+      await redis_.PingAsync()
+                  .ConfigureAwait(false);
     }
+
     isInitialized_ = true;
   }
 
-
-  private          bool           isInitialized_ = false;
-  private readonly ILoggerFactory loggerFactory_;
-
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
 
   public IObjectStorage CreateObjectStorage(string objectStorageName)
-  {
-    return new ObjectStorage(redis_, objectStorageName, loggerFactory_.CreateLogger<ObjectStorage>());
-  }
+    => new ObjectStorage(redis_,
+                         objectStorageName,
+                         loggerFactory_.CreateLogger<ObjectStorage>());
 }

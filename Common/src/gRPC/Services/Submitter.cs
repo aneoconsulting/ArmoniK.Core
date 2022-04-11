@@ -51,15 +51,15 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class Submitter : ISubmitter
 {
-  private readonly IQueueStorage                    lockedQueueStorage_;
-  private readonly ILogger<Submitter> logger_;
-  private readonly IObjectStorageFactory            objectStorageFactory_;
+  private readonly ActivitySource        activitySource_;
+  private readonly IQueueStorage         lockedQueueStorage_;
+  private readonly ILogger<Submitter>    logger_;
+  private readonly IObjectStorageFactory objectStorageFactory_;
+  private readonly IResultTable          resultTable_;
 
 
-  private readonly ISessionTable  sessionTable_;
-  private readonly ITaskTable     taskTable_;
-  private readonly IResultTable   resultTable_;
-  private readonly ActivitySource activitySource_;
+  private readonly ISessionTable sessionTable_;
+  private readonly ITaskTable    taskTable_;
 
   [UsedImplicitly]
   public Submitter(IQueueStorage         lockedQueueStorage,
@@ -79,18 +79,17 @@ public class Submitter : ISubmitter
     lockedQueueStorage_   = lockedQueueStorage;
   }
 
-  private IObjectStorage ResultStorage(string  session) => objectStorageFactory_.CreateResultStorage(session);
-  private IObjectStorage PayloadStorage(string session) => objectStorageFactory_.CreatePayloadStorage(session);
-
   /// <inheritdoc />
-  public  Task<Configuration> GetServiceConfiguration(Empty request, CancellationToken cancellationToken)
-    => Task.FromResult(new Configuration()
+  public Task<Configuration> GetServiceConfiguration(Empty             request,
+                                                     CancellationToken cancellationToken)
+    => Task.FromResult(new Configuration
                        {
                          DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
                        });
 
   /// <inheritdoc />
-  public  async Task CancelSession(string sessionId, CancellationToken cancellationToken)
+  public async Task CancelSession(string            sessionId,
+                                  CancellationToken cancellationToken)
   {
     using var _        = logger_.LogFunction();
     using var activity = activitySource_.StartActivity($"{nameof(CancelSession)}");
@@ -106,26 +105,29 @@ public class Submitter : ISubmitter
                                                                cancellationToken);
 
       await taskTable_.CancelSessionAsync(sessionId,
-                                          cancellationToken);
+                                          cancellationToken)
+                      .ConfigureAwait(false);
 
-      await sessionCancelTask;
+      await sessionCancelTask.ConfigureAwait(false);
     }
     catch (KeyNotFoundException e)
     {
-      throw new RpcException(new(StatusCode.FailedPrecondition,
-                                 e.Message));
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        e.Message));
     }
     catch (Exception e)
     {
-      throw new RpcException(new(StatusCode.Unknown,
-                                 e.Message));
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        e.Message));
     }
   }
 
   /// <inheritdoc />
-  public async Task CancelDispatchSessionAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken)
+  public async Task CancelDispatchSessionAsync(string            rootSessionId,
+                                               string            dispatchId,
+                                               CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction(dispatchId);
+    using var _        = logger_.LogFunction(dispatchId);
     using var activity = activitySource_.StartActivity($"{nameof(CancelDispatchSessionAsync)}");
     var sessionCancelTask = sessionTable_.CancelDispatchAsync(rootSessionId,
                                                               dispatchId,
@@ -133,13 +135,15 @@ public class Submitter : ISubmitter
 
     await taskTable_.CancelDispatchAsync(rootSessionId,
                                          dispatchId,
-                                         cancellationToken);
+                                         cancellationToken)
+                    .ConfigureAwait(false);
 
-    await sessionCancelTask;
+    await sessionCancelTask.ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task CancelTasks(TaskFilter request, CancellationToken cancellationToken)
+  public async Task CancelTasks(TaskFilter        request,
+                                CancellationToken cancellationToken)
   {
     using var _        = logger_.LogFunction();
     using var activity = activitySource_.StartActivity($"{nameof(CancelTasks)}");
@@ -152,17 +156,18 @@ public class Submitter : ISubmitter
     try
     {
       await taskTable_.CancelTasks(request,
-                                   cancellationToken);
+                                   cancellationToken)
+                      .ConfigureAwait(false);
     }
     catch (KeyNotFoundException e)
     {
-      throw new RpcException(new(StatusCode.FailedPrecondition,
-                                 e.Message));
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        e.Message));
     }
     catch (Exception e)
     {
-      throw new RpcException(new(StatusCode.Unknown,
-                                 e.Message));
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        e.Message));
     }
   }
 
@@ -174,9 +179,8 @@ public class Submitter : ISubmitter
                                                  IAsyncEnumerable<TaskRequest> taskRequests,
                                                  CancellationToken             cancellationToken)
   {
-
     using var logFunction = logger_.LogFunction(dispatchId);
-    using var activity = activitySource_.StartActivity($"{nameof(CreateTasks)}");
+    using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
     using var sessionScope = logger_.BeginPropertyScope(("Session", sessionId),
                                                         ("TaskId", parentId),
                                                         ("Dispatch", dispatchId));
@@ -187,59 +191,62 @@ public class Submitter : ISubmitter
     }
 
     options ??= await sessionTable_.GetDefaultTaskOptionAsync(sessionId,
-                                                              cancellationToken);
+                                                              cancellationToken)
+                                   .ConfigureAwait(false);
 
     if (options.Priority >= lockedQueueStorage_.MaxPriority)
     {
-      var exception = new RpcException(new(StatusCode.InvalidArgument,
-                                           $"Max priority is {lockedQueueStorage_.MaxPriority}"));
+      var exception = new RpcException(new Status(StatusCode.InvalidArgument,
+                                                  $"Max priority is {lockedQueueStorage_.MaxPriority}"));
       logger_.LogError(exception,
                        "Invalid Argument");
       throw exception;
     }
 
 
-
-
     var requests           = new List<Storage.TaskRequest>();
     var payloadUploadTasks = new List<Task>();
 
-    await foreach (var taskRequest in taskRequests.WithCancellation(cancellationToken))
+    await foreach (var taskRequest in taskRequests.WithCancellation(cancellationToken)
+                                                  .ConfigureAwait(false))
     {
-      var payloadChunksList = await taskRequest.PayloadChunks.ToListAsync(cancellationToken);
+      var payloadChunksList = await taskRequest.PayloadChunks.ToListAsync(cancellationToken)
+                                               .ConfigureAwait(false);
 
       if (payloadChunksList.Count == 1)
       {
-        requests.Add(new(taskRequest.Id,
-                         taskRequest.ExpectedOutputKeys,
-                         taskRequest.DataDependencies,
-                         payloadChunksList.Single(),
-                         true));
+        requests.Add(new Storage.TaskRequest(taskRequest.Id,
+                                             taskRequest.ExpectedOutputKeys,
+                                             taskRequest.DataDependencies,
+                                             payloadChunksList.Single(),
+                                             true));
       }
       else
       {
-        requests.Add(new(taskRequest.Id,
-                         taskRequest.ExpectedOutputKeys,
-                         taskRequest.DataDependencies,
-                         Array.Empty<byte>(),
-                       false));
-        payloadUploadTasks.Add(PayloadStorage(sessionId).AddOrUpdateAsync(taskRequest.Id,
-                                                                          payloadChunksList.ToAsyncEnumerable(),
-                                                                          cancellationToken));
+        requests.Add(new Storage.TaskRequest(taskRequest.Id,
+                                             taskRequest.ExpectedOutputKeys,
+                                             taskRequest.DataDependencies,
+                                             Array.Empty<byte>(),
+                                             false));
+        payloadUploadTasks.Add(PayloadStorage(sessionId)
+                                 .AddOrUpdateAsync(taskRequest.Id,
+                                                   payloadChunksList.ToAsyncEnumerable(),
+                                                   cancellationToken));
       }
     }
 
     await InitializeTaskCreationAsync(sessionId,
-                                                    parentId,
-                                                    dispatchId,
-                                                    options,
-                                                    requests,
-                                                    cancellationToken);
+                                      parentId,
+                                      dispatchId,
+                                      options,
+                                      requests,
+                                      cancellationToken)
+      .ConfigureAwait(false);
 
 
     var finalizationFilter = new TaskFilter
                              {
-                               Task = new()
+                               Task = new TaskFilter.Types.IdsRequest
                                       {
                                         Ids =
                                         {
@@ -248,132 +255,28 @@ public class Submitter : ISubmitter
                                       },
                              };
 
-    await Task.WhenAll(payloadUploadTasks);
+    await Task.WhenAll(payloadUploadTasks)
+              .ConfigureAwait(false);
 
     await lockedQueueStorage_.EnqueueMessagesAsync(requests.Select(taskRequest => taskRequest.Id),
-                                                               options.Priority,
-                                                               cancellationToken);
+                                                   options.Priority,
+                                                   cancellationToken)
+                             .ConfigureAwait(false);
 
     await using var finalizer = AsyncDisposable.Create(async () => await taskTable_.FinalizeTaskCreation(finalizationFilter,
-                                                                                                            cancellationToken));
+                                                                                                         cancellationToken)
+                                                                                   .ConfigureAwait(false));
 
-    return new()
+    return new CreateTaskReply
            {
-             Successfull = new(),
+             Successfull = new Empty(),
            };
-  }
-
-  /*
-   * TODO :
-   * Pour bien faire, il faudrait couper en deux :
-   * Initialisation
-   * Mise en queue + finalisation
-   * Comme ça, depuis le request processor, on peut :
-   * initialiser
-   * attendre la fin de l'exec de la tâche
-   * mettre à jour les ownership
-   * Mise en queue + finalisation
-   * + chuncking
-   */
-
-  public async Task InitializeTaskCreationAsync(string                           session,
-                                                string                           parentTaskId,
-                                                string                           dispatchId,
-                                                TaskOptions                      options,
-                                                IEnumerable<Storage.TaskRequest> requests,
-                                                CancellationToken                cancellationToken = default)
-  {
-    using var _        = logger_.LogFunction($"{session}.{parentTaskId}.{dispatchId}");
-    using var activity = activitySource_.StartActivity($"{nameof(InitializeTaskCreationAsync)}");
-    activity?.AddTag("sessionId",
-                     session);
-    activity?.AddTag("parentTaskId",
-                     parentTaskId);
-    activity?.AddTag("dispatchId",
-                     dispatchId);
-    activity?.AddTag("taskIds",
-      string.Join(",", requests.Select(request => request.Id)));
-
-    var ancestors = new List<string>();
-
-    if (!parentTaskId.Equals(session))
-    {
-      var res = await taskTable_.GetTaskAncestorDispatchIds(parentTaskId,
-                                                  cancellationToken);
-      ancestors.AddRange(res);
-    }
-    ancestors.Add(dispatchId);
-
-    var taskDataModels = requests.Select(async request =>
-                                 {
-                                   var tdm = new TaskData(session,
-                                                          parentTaskId,
-                                                          dispatchId,
-                                                          request.Id,
-                                                          request.DataDependencies.ToList(),
-                                                          request.ExpectedOutputKeys.ToList(),
-                                                          request.HasPayload,
-                                                          request.PayloadChunk.ToArray(),
-                                                          TaskStatus.Creating,
-                                                          options,
-                                                          ancestors,
-                                                          new Storage.Output(false,
-                                                                             ""));
-
-                                   var parentExpectedOutputKeys = new List<string>();
-
-                                   // if there is no parent task, we do not need to get parent task expected output keys
-                                   if (!parentTaskId.Equals(session))
-                                   {
-                                     parentExpectedOutputKeys.AddRange(await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
-                                                                                                                  cancellationToken));
-                                   }
-
-
-                                   var intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
-                                                                           .ToList();
-
-                                   if (intersect.Any())
-                                   {
-                                     await resultTable_.ChangeResultOwnership(session,
-                                                                              intersect,
-                                                                              parentTaskId,
-                                                                              request.Id,
-                                                                              cancellationToken);
-                                   }
-                                   else
-                                   {
-                                     logger_.LogTrace("intersect empty, no " + nameof(resultTable_.ChangeResultOwnership));
-                                   }
-
-
-
-                                   var resultModel = request.ExpectedOutputKeys.Except(intersect)
-                                                            .Select(key => new Result(session,
-                                                                                      key,
-                                                                                      request.Id,
-                                                                                      dispatchId,
-                                                                                      false,
-                                                                                      DateTime.UtcNow,
-                                                                                      Array.Empty<byte>()));
-                                   return (TaskDataModel: tdm, ResultModel: resultModel);
-                                 })
-                                 .ToList();
-
-    await taskTable_.CreateTasks(taskDataModels.Select(tuple => tuple.Result.TaskDataModel),
-                                 cancellationToken);
-
-    var resultCreations = taskDataModels.SelectMany(tuple => tuple.Result.ResultModel);
-    if (resultCreations.Any())
-    {
-      await resultTable_.Create(resultCreations,
-                                cancellationToken);
-    }
   }
 
 
   /// <inheritdoc />
-  public  async Task<Count> CountTasks(TaskFilter request, CancellationToken cancellationToken)
+  public async Task<Count> CountTasks(TaskFilter        request,
+                                      CancellationToken cancellationToken)
 
   {
     using var activity = activitySource_.StartActivity($"{nameof(CountTasks)}");
@@ -384,8 +287,9 @@ public class Submitter : ISubmitter
     }
 
     var count = await taskTable_.CountTasksAsync(request,
-                                                    cancellationToken);
-    return new()
+                                                 cancellationToken)
+                                .ConfigureAwait(false);
+    return new Count
            {
              Values =
              {
@@ -399,23 +303,27 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateSessionReply> CreateSession(string sessionId, TaskOptions defaultTaskOptions, CancellationToken cancellationToken)
+  public async Task<CreateSessionReply> CreateSession(string            sessionId,
+                                                      TaskOptions       defaultTaskOptions,
+                                                      CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
       await sessionTable_.CreateSessionAsync(sessionId,
                                              defaultTaskOptions,
-                                             cancellationToken);
-      return new()
+                                             cancellationToken)
+                         .ConfigureAwait(false);
+      return new CreateSessionReply
              {
-               Ok = new(),
+               Ok = new Empty(),
              };
     }
     catch (Exception e)
     {
-      logger_.LogError(e, "Error while creating Session");
-      return new()
+      logger_.LogError(e,
+                       "Error while creating Session");
+      return new CreateSessionReply
              {
                Error = e.ToString(),
              };
@@ -423,33 +331,40 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public  async Task TryGetResult(ResultRequest request, IServerStreamWriter<ResultReply> responseStream, CancellationToken cancellationToken)
+  public async Task TryGetResult(ResultRequest                    request,
+                                 IServerStreamWriter<ResultReply> responseStream,
+                                 CancellationToken                cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
     var       storage  = ResultStorage(request.Session);
-    await foreach (var chunk in storage.GetValuesAsync(request.Key, cancellationToken))
+    await foreach (var chunk in storage.GetValuesAsync(request.Key,
+                                                       cancellationToken)
+                                       .ConfigureAwait(false))
     {
-      await responseStream.WriteAsync(new()
+      await responseStream.WriteAsync(new ResultReply
                                       {
-                                        Result = new()
+                                        Result = new DataChunk
                                                  {
-                                                   Data = UnsafeByteOperations.UnsafeWrap(new(chunk)),
+                                                   Data = UnsafeByteOperations.UnsafeWrap(new ReadOnlyMemory<byte>(chunk)),
                                                  },
                                       },
-                                      CancellationToken.None);
+                                      CancellationToken.None)
+                          .ConfigureAwait(false);
     }
 
-    await responseStream.WriteAsync(new()
+    await responseStream.WriteAsync(new ResultReply
                                     {
-                                      Result = new()
+                                      Result = new DataChunk
                                                {
                                                  DataComplete = true,
                                                },
                                     },
-                                    CancellationToken.None);
+                                    CancellationToken.None)
+                        .ConfigureAwait(false);
   }
 
-  public  async Task<Count> WaitForCompletion(WaitRequest request, CancellationToken cancellationToken)
+  public async Task<Count> WaitForCompletion(WaitRequest       request,
+                                             CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(WaitForCompletion)}");
 
@@ -461,14 +376,15 @@ public class Submitter : ISubmitter
 
     Task<IEnumerable<TaskStatusCount>> CountUpdateFunc()
       => taskTable_.CountTasksAsync(request.Filter,
-                                       cancellationToken);
+                                    cancellationToken);
 
     var output              = new Count();
     var countUpdateFunc     = CountUpdateFunc;
     var currentPollingDelay = taskTable_.PollingDelayMin;
     while (true)
     {
-      var counts       = await countUpdateFunc();
+      var counts = await countUpdateFunc()
+                     .ConfigureAwait(false);
       var notCompleted = 0;
       var error        = false;
       var cancelled    = false;
@@ -521,7 +437,7 @@ public class Submitter : ISubmitter
         }
       }
 
-      if (notCompleted == 0 || (request.StopOnFirstTaskError && error) || (request.StopOnFirstTaskCancellation && cancelled))
+      if (notCompleted == 0 || request.StopOnFirstTaskError && error || request.StopOnFirstTaskCancellation && cancelled)
       {
         // ReSharper disable once PossibleMultipleEnumeration
         output.Values.AddRange(counts.Select(tuple => new StatusCount
@@ -536,23 +452,33 @@ public class Submitter : ISubmitter
 
 
       await Task.Delay(currentPollingDelay,
-                       cancellationToken);
+                       cancellationToken)
+                .ConfigureAwait(false);
       if (2 * currentPollingDelay < taskTable_.PollingDelayMax)
+      {
         currentPollingDelay = 2 * currentPollingDelay;
+      }
     }
 
     return output;
   }
 
   /// <inheritdoc />
-  public async Task UpdateTaskStatusAsync(string id, TaskStatus status, CancellationToken cancellationToken = default)
+  public async Task UpdateTaskStatusAsync(string            id,
+                                          TaskStatus        status,
+                                          CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(UpdateTaskStatusAsync)}");
-    await taskTable_.UpdateTaskStatusAsync(id,status, cancellationToken);
+    await taskTable_.UpdateTaskStatusAsync(id,
+                                           status,
+                                           cancellationToken)
+                    .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task CompleteTaskAsync(string id, Output output, CancellationToken cancellationToken = default)
+  public async Task CompleteTaskAsync(string            id,
+                                      Output            output,
+                                      CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CompleteTaskAsync)}");
 
@@ -561,34 +487,42 @@ public class Submitter : ISubmitter
     if (cOutput.Success)
     {
       await taskTable_.SetTaskSuccessAsync(id,
-                                           cancellationToken);
+                                           cancellationToken)
+                      .ConfigureAwait(false);
     }
     else
     {
       await taskTable_.SetTaskErrorAsync(id,
                                          cOutput.Error,
-                                         cancellationToken);
+                                         cancellationToken)
+                      .ConfigureAwait(false);
     }
   }
 
   /// <inheritdoc />
-  public async Task<Output> TryGetTaskOutputAsync(ResultRequest request, CancellationToken contextCancellationToken)
+  public async Task<Output> TryGetTaskOutputAsync(ResultRequest     request,
+                                                  CancellationToken contextCancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(TryGetTaskOutputAsync)}");
-    Storage.Output output = await taskTable_.GetTaskOutput(request.Key,
-                                                         contextCancellationToken);
+    var output = await taskTable_.GetTaskOutput(request.Key,
+                                                contextCancellationToken)
+                                 .ConfigureAwait(false);
     return new Output(output);
   }
 
   /// <inheritdoc />
-  public async Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest request, CancellationToken contextCancellationToken)
+  public async Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
+                                                                CancellationToken contextCancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(WaitForAvailabilityAsync)}");
 
     var result = await resultTable_.GetResult(request.Session,
-                                        request.Key, contextCancellationToken);
-    
-    logger_.LogDebug("OwnerTaskId {OwnerTaskId}", result.OwnerTaskId);
+                                              request.Key,
+                                              contextCancellationToken)
+                                   .ConfigureAwait(false);
+
+    logger_.LogDebug("OwnerTaskId {OwnerTaskId}",
+                     result.OwnerTaskId);
 
     var continueWaiting = true;
 
@@ -596,107 +530,244 @@ public class Submitter : ISubmitter
     {
       var ownerId = result.OwnerTaskId;
       var completion = await WaitForCompletion(new WaitRequest
-                              {
-                                Filter = new TaskFilter
-                                {
-                                  Task = new TaskFilter.Types.IdsRequest
-                                  {
-                                    Ids =
-                                    {
-                                      ownerId,
-                                    },
-                                  },
-                                },
-                                StopOnFirstTaskCancellation = true,
-                                StopOnFirstTaskError = true,
-                              },
-                              contextCancellationToken);
+                                               {
+                                                 Filter = new TaskFilter
+                                                          {
+                                                            Task = new TaskFilter.Types.IdsRequest
+                                                                   {
+                                                                     Ids =
+                                                                     {
+                                                                       ownerId,
+                                                                     },
+                                                                   },
+                                                          },
+                                                 StopOnFirstTaskCancellation = true,
+                                                 StopOnFirstTaskError        = true,
+                                               },
+                                               contextCancellationToken)
+                         .ConfigureAwait(false);
       if (completion.Values.Any(count => count.Status is TaskStatus.Failed or TaskStatus.Error))
       {
         return new AvailabilityReply
-        {
-          Error = new TaskError
-          {
-            TaskId = ownerId,
-          }
-        };
+               {
+                 Error = new TaskError
+                         {
+                           TaskId = ownerId,
+                         },
+               };
       }
+
       if (completion.Values.Any(count => count.Status is TaskStatus.Canceled or TaskStatus.Canceling))
       {
         return new AvailabilityReply
-        {
-          NotCompletedTask = ownerId,
-        };
+               {
+                 NotCompletedTask = ownerId,
+               };
       }
+
       result = await resultTable_.GetResult(request.Session,
                                             request.Key,
-                                            contextCancellationToken);
+                                            contextCancellationToken)
+                                 .ConfigureAwait(false);
       logger_.LogDebug("OwnerTaskId {OwnerTaskId}",
                        result.OwnerTaskId);
       if (ownerId != result.OwnerTaskId)
       {
         continueWaiting = !result.IsResultAvailable;
         if (continueWaiting)
-          await Task.Delay(150, contextCancellationToken);
+        {
+          await Task.Delay(150,
+                           contextCancellationToken)
+                    .ConfigureAwait(false);
+        }
       }
       else
       {
         continueWaiting = false;
       }
-
     }
 
     var availabilityReply = new AvailabilityReply
-    {
-      Ok = new Empty(),
-    };
+                            {
+                              Ok = new Empty(),
+                            };
     return availabilityReply;
   }
 
   /// <inheritdoc />
-  public async Task<GetStatusReply> GetStatusAsync(GetStatusrequest request, CancellationToken contextCancellationToken)
+  public async Task<GetStatusReply> GetStatusAsync(GetStatusrequest  request,
+                                                   CancellationToken contextCancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetStatusAsync)}");
     return new GetStatusReply
-    {
-      Status = await taskTable_.GetTaskStatus(request.TaskId,
-                                              contextCancellationToken),
-    };
+           {
+             Status = await taskTable_.GetTaskStatus(request.TaskId,
+                                                     contextCancellationToken)
+                                      .ConfigureAwait(false),
+           };
   }
 
   /// <inheritdoc />
-  public async Task<TaskIdList> ListTasksAsync(TaskFilter request, CancellationToken contextCancellationToken)
+  public async Task<TaskIdList> ListTasksAsync(TaskFilter        request,
+                                               CancellationToken contextCancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       idList   = new TaskIdList();
     idList.TaskIds.AddRange(await taskTable_.ListTasksAsync(request,
-                                                            contextCancellationToken).ToListAsync(contextCancellationToken));
+                                                            contextCancellationToken)
+                                            .ToListAsync(contextCancellationToken)
+                                            .ConfigureAwait(false));
     return idList;
   }
 
   /// <inheritdoc />
-  public async Task FinalizeDispatch(string taskId, Dispatch dispatch, CancellationToken cancellationToken)
+  public async Task FinalizeDispatch(string            taskId,
+                                     Dispatch          dispatch,
+                                     CancellationToken cancellationToken)
   {
     using var activity      = activitySource_.StartActivity($"{nameof(FinalizeDispatch)}");
     var       oldDispatchId = dispatch.Id;
     var targetDispatchId = await taskTable_.GetTaskDispatchId(taskId,
-                                                              cancellationToken);
+                                                              cancellationToken)
+                                           .ConfigureAwait(false);
     while (oldDispatchId != targetDispatchId)
     {
       await taskTable_.ChangeTaskDispatch(oldDispatchId,
-                                             targetDispatchId,
-                                             cancellationToken);
+                                          targetDispatchId,
+                                          cancellationToken)
+                      .ConfigureAwait(false);
 
       // to be done after awaiting previous call to ensure proper modification sequencing
       await resultTable_.ChangeResultDispatch(dispatch.SessionId,
                                               oldDispatchId,
                                               targetDispatchId,
-                                              cancellationToken);
+                                              cancellationToken)
+                        .ConfigureAwait(false);
 
       oldDispatchId = targetDispatchId;
       targetDispatchId = await taskTable_.GetTaskDispatchId(taskId,
-                                                            cancellationToken);
+                                                            cancellationToken)
+                                         .ConfigureAwait(false);
     }
   }
 
+  private IObjectStorage ResultStorage(string session)
+    => objectStorageFactory_.CreateResultStorage(session);
+
+  private IObjectStorage PayloadStorage(string session)
+    => objectStorageFactory_.CreatePayloadStorage(session);
+
+  /*
+   * TODO :
+   * Pour bien faire, il faudrait couper en deux :
+   * Initialisation
+   * Mise en queue + finalisation
+   * Comme ça, depuis le request processor, on peut :
+   * initialiser
+   * attendre la fin de l'exec de la tâche
+   * mettre à jour les ownership
+   * Mise en queue + finalisation
+   * + chuncking
+   */
+
+  public async Task InitializeTaskCreationAsync(string                           session,
+                                                string                           parentTaskId,
+                                                string                           dispatchId,
+                                                TaskOptions                      options,
+                                                IEnumerable<Storage.TaskRequest> requests,
+                                                CancellationToken                cancellationToken = default)
+  {
+    using var _        = logger_.LogFunction($"{session}.{parentTaskId}.{dispatchId}");
+    using var activity = activitySource_.StartActivity($"{nameof(InitializeTaskCreationAsync)}");
+    activity?.AddTag("sessionId",
+                     session);
+    activity?.AddTag("parentTaskId",
+                     parentTaskId);
+    activity?.AddTag("dispatchId",
+                     dispatchId);
+    activity?.AddTag("taskIds",
+                     string.Join(",",
+                                 requests.Select(request => request.Id)));
+
+    var ancestors = new List<string>();
+
+    if (!parentTaskId.Equals(session))
+    {
+      var res = await taskTable_.GetTaskAncestorDispatchIds(parentTaskId,
+                                                            cancellationToken)
+                                .ConfigureAwait(false);
+      ancestors.AddRange(res);
+    }
+
+    ancestors.Add(dispatchId);
+
+    var taskDataModels = requests.Select(async request =>
+                                         {
+                                           var tdm = new TaskData(session,
+                                                                  parentTaskId,
+                                                                  dispatchId,
+                                                                  request.Id,
+                                                                  request.DataDependencies.ToList(),
+                                                                  request.ExpectedOutputKeys.ToList(),
+                                                                  request.HasPayload,
+                                                                  request.PayloadChunk.ToArray(),
+                                                                  TaskStatus.Creating,
+                                                                  options,
+                                                                  ancestors,
+                                                                  new Storage.Output(false,
+                                                                                     ""));
+
+                                           var parentExpectedOutputKeys = new List<string>();
+
+                                           // if there is no parent task, we do not need to get parent task expected output keys
+                                           if (!parentTaskId.Equals(session))
+                                           {
+                                             parentExpectedOutputKeys.AddRange(await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
+                                                                                                                          cancellationToken)
+                                                                                               .ConfigureAwait(false));
+                                           }
+
+
+                                           var intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
+                                                                                   .ToList();
+
+                                           if (intersect.Any())
+                                           {
+                                             await resultTable_.ChangeResultOwnership(session,
+                                                                                      intersect,
+                                                                                      parentTaskId,
+                                                                                      request.Id,
+                                                                                      cancellationToken)
+                                                               .ConfigureAwait(false);
+                                           }
+                                           else
+                                           {
+                                             logger_.LogTrace("intersect empty, no " + nameof(resultTable_.ChangeResultOwnership));
+                                           }
+
+
+                                           var resultModel = request.ExpectedOutputKeys.Except(intersect)
+                                                                    .Select(key => new Result(session,
+                                                                                              key,
+                                                                                              request.Id,
+                                                                                              dispatchId,
+                                                                                              false,
+                                                                                              DateTime.UtcNow,
+                                                                                              Array.Empty<byte>()));
+                                           return (TaskDataModel: tdm, ResultModel: resultModel);
+                                         })
+                                 .ToList();
+
+    await taskTable_.CreateTasks(taskDataModels.Select(tuple => tuple.Result.TaskDataModel),
+                                 cancellationToken)
+                    .ConfigureAwait(false);
+
+    var resultCreations = taskDataModels.SelectMany(tuple => tuple.Result.ResultModel);
+    if (resultCreations.Any())
+    {
+      await resultTable_.Create(resultCreations,
+                                cancellationToken)
+                        .ConfigureAwait(false);
+    }
+  }
 }

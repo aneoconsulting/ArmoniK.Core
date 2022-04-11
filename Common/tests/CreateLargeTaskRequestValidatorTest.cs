@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Text;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.gRPC.Validators;
@@ -43,149 +42,155 @@ public class CreateLargeTaskRequestValidatorTest
   [Test]
   public void CompleteInitRequestShouldBeValid()
   {
-    var ctr = new CreateLargeTaskRequest()
-    {
-      InitRequest = new CreateLargeTaskRequest.Types.InitRequest
-      {
-        TaskOptions = new TaskOptions
-        {
-          MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
-          MaxRetries  = 3,
-          Priority    = 1,
-        },
-        SessionId = "SessionId",
-      },
-    };
+    var ctr = new CreateLargeTaskRequest
+              {
+                InitRequest = new CreateLargeTaskRequest.Types.InitRequest
+                              {
+                                TaskOptions = new TaskOptions
+                                              {
+                                                MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
+                                                MaxRetries  = 3,
+                                                Priority    = 1,
+                                              },
+                                SessionId = "SessionId",
+                              },
+              };
 
-    Assert.IsTrue(validator_.Validate(ctr).IsValid);
+    Assert.IsTrue(validator_.Validate(ctr)
+                            .IsValid);
   }
 
   [Test]
   public void MissingSessionIdShouldFail()
   {
-    var ctr = new CreateLargeTaskRequest()
-    {
-      InitRequest = new CreateLargeTaskRequest.Types.InitRequest
-      {
-        TaskOptions = new TaskOptions
-        {
-          MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
-          MaxRetries  = 3,
-          Priority    = 1,
-        },
-      },
-    };
+    var ctr = new CreateLargeTaskRequest
+              {
+                InitRequest = new CreateLargeTaskRequest.Types.InitRequest
+                              {
+                                TaskOptions = new TaskOptions
+                                              {
+                                                MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
+                                                MaxRetries  = 3,
+                                                Priority    = 1,
+                                              },
+                              },
+              };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
   public void BlankSessionShouldFail()
   {
-    var ctr = new CreateLargeTaskRequest()
-    {
-      InitRequest = new CreateLargeTaskRequest.Types.InitRequest
-      {
-        TaskOptions = new TaskOptions
-        {
-          MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
-          MaxRetries  = 3,
-          Priority    = 1,
-        },
-        SessionId = "    ",
-      },
-    };
+    var ctr = new CreateLargeTaskRequest
+              {
+                InitRequest = new CreateLargeTaskRequest.Types.InitRequest
+                              {
+                                TaskOptions = new TaskOptions
+                                              {
+                                                MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
+                                                MaxRetries  = 3,
+                                                Priority    = 1,
+                                              },
+                                SessionId = "    ",
+                              },
+              };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
   public void NullPayloadShouldFail()
   {
-    var ctr = new CreateLargeTaskRequest()
-    {
-      TaskPayload = null,
-    };
+    var ctr = new CreateLargeTaskRequest
+              {
+                TaskPayload = null,
+              };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
   public void EmptyDataChunkShouldFail()
   {
-    var ctr = new CreateLargeTaskRequest()
-    {
-      TaskPayload = new DataChunk(),
-    };
+    var ctr = new CreateLargeTaskRequest
+              {
+                TaskPayload = new DataChunk(),
+              };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
   public void NullDataInDataChunkShouldThrowError()
-  {
-    Assert.Throws<ArgumentNullException>(() => new CreateLargeTaskRequest()
-    {
-      TaskPayload = new DataChunk
-      {
-        Data = null,
-      },
-    });
-  }
+    => Assert.Throws<ArgumentNullException>(() => new CreateLargeTaskRequest
+                                                  {
+                                                    TaskPayload = new DataChunk
+                                                                  {
+                                                                    Data = null,
+                                                                  },
+                                                  });
 
   [Test]
   public void EmptyDataInDataChunkShouldSucceed()
   {
-    var ctr = new CreateLargeTaskRequest()
-    {
-      TaskPayload = new DataChunk
-      {
-        Data = ByteString.Empty,
-      },
-    };
+    var ctr = new CreateLargeTaskRequest
+              {
+                TaskPayload = new DataChunk
+                              {
+                                Data = ByteString.Empty,
+                              },
+              };
 
-    Assert.IsTrue(validator_.Validate(ctr).IsValid);
+    Assert.IsTrue(validator_.Validate(ctr)
+                            .IsValid);
   }
 
   [Test]
   public void LargeDataInDataChunkShouldSucceed()
   {
-    Random rnd       = new Random();
+    var rnd = new Random();
     Console.WriteLine(PayloadConfiguration.MaxChunkSize);
-    byte[] dataBytes = new byte[PayloadConfiguration.MaxChunkSize];
+    var dataBytes = new byte[PayloadConfiguration.MaxChunkSize];
     rnd.NextBytes(dataBytes);
     var byteString = ByteString.CopyFrom(dataBytes);
     Console.WriteLine(byteString.Length);
 
-    var ctr = new CreateLargeTaskRequest()
-    {
-      TaskPayload = new DataChunk
-      {
-        Data = byteString,
-      },
-    };
+    var ctr = new CreateLargeTaskRequest
+              {
+                TaskPayload = new DataChunk
+                              {
+                                Data = byteString,
+                              },
+              };
 
-    Assert.IsTrue(validator_.Validate(ctr).IsValid);
+    Assert.IsTrue(validator_.Validate(ctr)
+                            .IsValid);
   }
 
   [Test]
   public void TooLargeDataInDataChunkShouldFail()
   {
-    Random rnd = new Random();
+    var rnd = new Random();
     Console.WriteLine(PayloadConfiguration.MaxChunkSize);
-    byte[] dataBytes = new byte[PayloadConfiguration.MaxChunkSize + 100];
+    var dataBytes = new byte[PayloadConfiguration.MaxChunkSize + 100];
     rnd.NextBytes(dataBytes);
     var byteString = ByteString.CopyFrom(dataBytes);
     Console.WriteLine(byteString.Length);
 
-    var ctr = new CreateLargeTaskRequest()
-    {
-      TaskPayload = new DataChunk
-      {
-        Data = byteString,
-      },
-    };
+    var ctr = new CreateLargeTaskRequest
+              {
+                TaskPayload = new DataChunk
+                              {
+                                Data = byteString,
+                              },
+              };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 }

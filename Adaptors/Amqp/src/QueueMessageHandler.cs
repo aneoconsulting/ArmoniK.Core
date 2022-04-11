@@ -27,8 +27,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Amqp;
+using Amqp.Framing;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
@@ -43,7 +43,12 @@ public class QueueMessageHandler : IQueueMessageHandler
   private readonly IReceiverLink receiver_;
   private readonly ISenderLink   sender_;
 
-  public QueueMessageHandler(Message message, ISenderLink sender, IReceiverLink receiver, string taskId, ILogger logger, CancellationToken cancellationToken)
+  public QueueMessageHandler(Message           message,
+                             ISenderLink       sender,
+                             IReceiverLink     receiver,
+                             string            taskId,
+                             ILogger           logger,
+                             CancellationToken cancellationToken)
   {
     message_          = message;
     sender_           = sender;
@@ -57,7 +62,8 @@ public class QueueMessageHandler : IQueueMessageHandler
   public CancellationToken CancellationToken { get; }
 
   /// <inheritdoc />
-  public string MessageId => message_.Properties.MessageId;
+  public string MessageId
+    => message_.Properties.MessageId;
 
   /// <inheritdoc />
   public string TaskId { get; }
@@ -73,14 +79,15 @@ public class QueueMessageHandler : IQueueMessageHandler
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
-        await sender_.SendAsync(new(message_.Body)
+        await sender_.SendAsync(new Message(message_.Body)
                                 {
-                                  Header = new()
+                                  Header = new Header
                                            {
                                              Priority = message_.Header.Priority,
                                            },
-                                  Properties = new(),
-                                });
+                                  Properties = new Properties(),
+                                })
+                     .ConfigureAwait(false);
         receiver_.Accept(message_);
         break;
       case QueueMessageStatus.Failed:

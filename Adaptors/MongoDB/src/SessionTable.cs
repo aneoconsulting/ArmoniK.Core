@@ -49,11 +49,17 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class SessionTable : ISessionTable
 {
-  private readonly SessionProvider                                               sessionProvider_;
-  private readonly MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider_;
   private readonly ActivitySource                                                activitySource_;
+  private readonly MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider_;
+  private readonly SessionProvider                                               sessionProvider_;
 
-  public SessionTable(SessionProvider sessionProvider, MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider, ILogger<SessionTable> logger, ActivitySource activitySource)
+
+  private bool isInitialized_;
+
+  public SessionTable(SessionProvider                                               sessionProvider,
+                      MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider,
+                      ILogger<SessionTable>                                         logger,
+                      ActivitySource                                                activitySource)
   {
     sessionProvider_           = sessionProvider;
     sessionCollectionProvider_ = sessionCollectionProvider;
@@ -69,65 +75,77 @@ public class SessionTable : ISessionTable
                                            TaskOptions       defaultOptions,
                                            CancellationToken cancellationToken = default)
   {
-    using var activity          = activitySource_.StartActivity($"{nameof(CreateSessionDataAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(CreateSessionDataAsync)}");
     activity?.SetTag($"{nameof(CreateSessionDataAsync)}_sessionId",
                      rootSessionId);
     activity?.SetTag($"{nameof(CreateSessionDataAsync)}_parentTaskId",
                      parentTaskId);
     activity?.SetTag($"{nameof(CreateSessionDataAsync)}_dispatchId",
                      dispatchId);
-    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+    var sessionCollection = await sessionCollectionProvider_.GetAsync()
+                                                            .ConfigureAwait(false);
 
     SessionData data = new(IsCancelled: false,
                            Options: defaultOptions,
                            SessionId: rootSessionId,
                            DispatchId: dispatchId,
                            AncestorsDispatchId: Array.Empty<string>() // TODO : look how to fill this field
-                           );
+                          );
 
     await sessionCollection.InsertOneAsync(data,
-                                           cancellationToken: cancellationToken);
+                                           cancellationToken: cancellationToken)
+                           .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task<SessionData> GetSessionAsync(string dispatchId, CancellationToken cancellationToken = default)
+  public async Task<SessionData> GetSessionAsync(string            dispatchId,
+                                                 CancellationToken cancellationToken = default)
   {
-    using var activity          = activitySource_.StartActivity($"{nameof(GetSessionAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(GetSessionAsync)}");
     activity?.SetTag($"{nameof(GetSessionAsync)}_dispatchId",
                      dispatchId);
-    var       sessionHandle     = await sessionProvider_.GetAsync();
-    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var sessionCollection = await sessionCollectionProvider_.GetAsync()
+                                                            .ConfigureAwait(false);
 
     var queryableSessionCollection = sessionCollection.AsQueryable(sessionHandle)
-                                                   .Where(model => model.DispatchId == dispatchId);
+                                                      .Where(model => model.DispatchId == dispatchId);
 
     if (!queryableSessionCollection.Any())
     {
       throw new ArmoniKException($"Key '{dispatchId}' not found");
     }
 
-    return await queryableSessionCollection.FirstAsync(cancellationToken);
+    return await queryableSessionCollection.FirstAsync(cancellationToken)
+                                           .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task<bool> IsSessionCancelledAsync(string sessionId, CancellationToken cancellationToken = default)
+  public async Task<bool> IsSessionCancelledAsync(string            sessionId,
+                                                  CancellationToken cancellationToken = default)
   {
-    using var activity          = activitySource_.StartActivity($"{nameof(IsSessionCancelledAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(IsSessionCancelledAsync)}");
     return await IsDispatchCancelledAsync(sessionId,
                                           sessionId,
-                                          cancellationToken);
+                                          cancellationToken)
+             .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task<bool> IsDispatchCancelledAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
+  public async Task<bool> IsDispatchCancelledAsync(string            rootSessionId,
+                                                   string            dispatchId,
+                                                   CancellationToken cancellationToken = default)
   {
-    using var activity          = activitySource_.StartActivity($"{nameof(IsDispatchCancelledAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(IsDispatchCancelledAsync)}");
     activity?.SetTag($"{nameof(IsDispatchCancelledAsync)}_sessionId",
                      rootSessionId);
     activity?.SetTag($"{nameof(IsDispatchCancelledAsync)}_dispatchId",
                      dispatchId);
-    var       sessionHandle     = await sessionProvider_.GetAsync();
-    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var sessionCollection = await sessionCollectionProvider_.GetAsync()
+                                                            .ConfigureAwait(false);
 
 
     var queryableSessionCollection = sessionCollection.AsQueryable(sessionHandle)
@@ -138,36 +156,46 @@ public class SessionTable : ISessionTable
       throw new ArmoniKException($"Key '{dispatchId}' not found");
     }
 
-    return await queryableSessionCollection.Select(model => model.IsCancelled).FirstAsync(cancellationToken);
+    return await queryableSessionCollection.Select(model => model.IsCancelled)
+                                           .FirstAsync(cancellationToken)
+                                           .ConfigureAwait(false);
   }
 
 
   /// <inheritdoc />
-  public async Task<TaskOptions> GetDefaultTaskOptionAsync(string sessionId, CancellationToken cancellationToken = default)
+  public async Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
+                                                           CancellationToken cancellationToken = default)
   {
-    using var activity          = activitySource_.StartActivity($"{nameof(GetDefaultTaskOptionAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(GetDefaultTaskOptionAsync)}");
     activity?.SetTag($"{nameof(GetDefaultTaskOptionAsync)}_sessionId",
                      sessionId);
-    var       sessionHandle     = await sessionProvider_.GetAsync();
-    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var sessionCollection = await sessionCollectionProvider_.GetAsync()
+                                                            .ConfigureAwait(false);
 
     return await sessionCollection.AsQueryable(sessionHandle)
                                   .Where(sdm => sdm.DispatchId == sessionId)
                                   .Select(sdm => sdm.Options)
-                                  .FirstAsync(cancellationToken);
+                                  .FirstAsync(cancellationToken)
+                                  .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+  public async Task CancelSessionAsync(string            sessionId,
+                                       CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CancelSessionAsync)}");
     await CancelDispatchAsync(sessionId,
                               sessionId,
-                              cancellationToken);
+                              cancellationToken)
+      .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task CancelDispatchAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
+  public async Task CancelDispatchAsync(string            rootSessionId,
+                                        string            dispatchId,
+                                        CancellationToken cancellationToken = default)
   {
     using var _        = Logger.LogFunction(dispatchId);
     using var activity = activitySource_.StartActivity($"{nameof(CancelDispatchAsync)}");
@@ -176,37 +204,46 @@ public class SessionTable : ISessionTable
     activity?.SetTag($"{nameof(CancelDispatchAsync)}_dispatchId",
                      dispatchId);
 
-    var sessionCollection = await sessionCollectionProvider_.GetAsync();
+    var sessionCollection = await sessionCollectionProvider_.GetAsync()
+                                                            .ConfigureAwait(false);
 
 
     var resSession = sessionCollection.UpdateOneAsync(model => model.DispatchId == dispatchId,
-                                                      Builders<SessionData>.Update
-                                                                                .Set(model => model.IsCancelled,
-                                                                                     true),
+                                                      Builders<SessionData>.Update.Set(model => model.IsCancelled,
+                                                                                       true),
                                                       cancellationToken: cancellationToken);
 
-    if ((await resSession).MatchedCount < 1)
+    if ((await resSession.ConfigureAwait(false)).MatchedCount < 1)
+    {
       throw new ArmoniKException("No open session found. Was the session closed?");
+    }
   }
 
   /// <inheritdoc />
-  public async Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+  public async Task DeleteSessionAsync(string            sessionId,
+                                       CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(DeleteSessionAsync)}");
     activity?.SetTag($"{nameof(DeleteSessionAsync)}_sessionId",
                      sessionId);
 
-    var sessionCollection = await sessionCollectionProvider_.GetAsync();
+    var sessionCollection = await sessionCollectionProvider_.GetAsync()
+                                                            .ConfigureAwait(false);
 
     var res = await sessionCollection.DeleteManyAsync(model => model.SessionId == sessionId,
-                                            cancellationToken);
+                                                      cancellationToken)
+                                     .ConfigureAwait(false);
 
     if (res.DeletedCount == 0)
+    {
       throw new ArmoniKException($"Key '{sessionId}' not found");
+    }
   }
 
   /// <inheritdoc />
-  public async Task DeleteDispatchAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
+  public async Task DeleteDispatchAsync(string            rootSessionId,
+                                        string            dispatchId,
+                                        CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(DeleteDispatchAsync)}");
     activity?.SetTag($"{nameof(DeleteDispatchAsync)}_sessionId",
@@ -214,10 +251,12 @@ public class SessionTable : ISessionTable
     activity?.SetTag($"{nameof(DeleteDispatchAsync)}_dispatchId",
                      dispatchId);
 
-    var sessionCollection = await sessionCollectionProvider_.GetAsync();
+    var sessionCollection = await sessionCollectionProvider_.GetAsync()
+                                                            .ConfigureAwait(false);
 
     var res = await sessionCollection.DeleteManyAsync(model => model.AncestorsDispatchId.Contains(dispatchId),
-                                                     cancellationToken);
+                                                      cancellationToken)
+                                     .ConfigureAwait(false);
     // TODO: Enable pertinent check depending if what has to be erased are the ancestors or the dispatch itself
     //if (res.DeletedCount == 0)
     //  throw new ArmoniKException($"Key '{dispatchId}' not found");
@@ -227,40 +266,50 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async IAsyncEnumerable<string> ListSessionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _                 = Logger.LogFunction();
-    using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
-    var       sessionHandle     = await sessionProvider_.GetAsync();
-    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+    using var _        = Logger.LogFunction();
+    using var activity = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var sessionCollection = await sessionCollectionProvider_.GetAsync()
+                                                            .ConfigureAwait(false);
 
     await foreach (var session in sessionCollection.AsQueryable(sessionHandle)
                                                    .Select(model => model.SessionId)
                                                    .Distinct()
                                                    .ToAsyncEnumerable()
-                                                   .WithCancellation(cancellationToken))
+                                                   .WithCancellation(cancellationToken)
+                                                   .ConfigureAwait(false))
+    {
       yield return session;
+    }
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<string> ListDispatchesAsync(string rootSessionId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<string> ListDispatchesAsync(string                                     rootSessionId,
+                                                            [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var activity          = activitySource_.StartActivity($"{nameof(ListDispatchesAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(ListDispatchesAsync)}");
     activity?.SetTag($"{nameof(ListDispatchesAsync)}_sessionId",
                      rootSessionId);
-    var       sessionHandle     = await sessionProvider_.GetAsync();
-    var       sessionCollection = await sessionCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var sessionCollection = await sessionCollectionProvider_.GetAsync()
+                                                            .ConfigureAwait(false);
 
     await foreach (var session in sessionCollection.AsQueryable(sessionHandle)
                                                    .Where(model => model.SessionId == rootSessionId)
                                                    .Select(model => model.DispatchId)
                                                    .Distinct()
                                                    .ToAsyncEnumerable()
-                                                   .WithCancellation(cancellationToken))
+                                                   .WithCancellation(cancellationToken)
+                                                   .ConfigureAwait(false))
+    {
       yield return session;
+    }
   }
 
   /// <inheritdoc />
   public ILogger Logger { get; }
-
 
 
   /// <inheritdoc />
@@ -268,17 +317,16 @@ public class SessionTable : ISessionTable
   {
     if (!isInitialized_)
     {
-      await sessionCollectionProvider_.GetAsync();
-      await sessionProvider_.GetAsync();
+      await sessionCollectionProvider_.GetAsync()
+                                      .ConfigureAwait(false);
+      await sessionProvider_.GetAsync()
+                            .ConfigureAwait(false);
     }
 
     isInitialized_ = true;
   }
 
-
-  private bool isInitialized_ = false;
-
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
-
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
 }

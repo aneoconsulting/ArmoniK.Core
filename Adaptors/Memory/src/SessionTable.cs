@@ -44,12 +44,12 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class SessionTable : ISessionTable
 {
-  private readonly ConcurrentDictionary<string, SessionData>                          storage_;
   private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> session2Dispatches_;
+  private readonly ConcurrentDictionary<string, SessionData>                          storage_;
 
   public SessionTable(ConcurrentDictionary<string, SessionData>                          storage,
                       ConcurrentDictionary<string, ConcurrentDictionary<string, string>> session2Dispatches,
-                      ILogger<SessionTable>                                             logger)
+                      ILogger<SessionTable>                                              logger)
   {
     storage_            = storage;
     session2Dispatches_ = session2Dispatches;
@@ -76,38 +76,51 @@ public class SessionTable : ISessionTable
       var dispatches = new ConcurrentDictionary<string, string>();
       if (!session2Dispatches_.TryAdd(rootSessionId,
                                       dispatches))
+      {
         throw new InvalidOperationException("Session already created");
+      }
 
 
       if (!storage_.TryAdd(dispatchId,
-                           new(rootSessionId,
-                               dispatchId,
-                               false,
-                               defaultOptions)))
+                           new SessionData(rootSessionId,
+                                           dispatchId,
+                                           false,
+                                           defaultOptions)))
+      {
         throw new InvalidOperationException("Session already created");
+      }
     }
     else
     {
       if (!session2Dispatches_.TryGetValue(rootSessionId,
                                            out var dispatches))
+      {
         throw new KeyNotFoundException("Session does not exist");
+      }
 
       if (!storage_.TryAdd(dispatchId,
-                           new(rootSessionId,
-                               dispatchId,
-                               storage_[rootSessionId].IsCancelled,
-                               defaultOptions)))
+                           new SessionData(rootSessionId,
+                                           dispatchId,
+                                           storage_[rootSessionId]
+                                             .IsCancelled,
+                                           defaultOptions)))
+      {
         throw new InvalidOperationException("The dispatch value already exists.");
+      }
+
       if (!dispatches.TryAdd(dispatchId,
                              dispatchId))
+      {
         throw new InvalidOperationException("The dispatch value already exists.");
+      }
     }
 
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task<Common.Storage.SessionData> GetSessionAsync(string dispatchId, CancellationToken cancellationToken = default)
+  public Task<Common.Storage.SessionData> GetSessionAsync(string            dispatchId,
+                                                          CancellationToken cancellationToken = default)
   {
     if (!storage_.ContainsKey(dispatchId))
     {
@@ -118,96 +131,118 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public Task<bool> IsSessionCancelledAsync(string sessionId, CancellationToken cancellationToken = default)
+  public Task<bool> IsSessionCancelledAsync(string            sessionId,
+                                            CancellationToken cancellationToken = default)
   {
     if (!storage_.ContainsKey(sessionId))
     {
       throw new ArmoniKException($"Key '{sessionId}' not found");
     }
 
-    return Task.FromResult(storage_[sessionId].IsCancelled);
+    return Task.FromResult(storage_[sessionId]
+                             .IsCancelled);
   }
 
   /// <inheritdoc />
-  public Task<bool> IsDispatchCancelledAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
+  public Task<bool> IsDispatchCancelledAsync(string            rootSessionId,
+                                             string            dispatchId,
+                                             CancellationToken cancellationToken = default)
   {
     if (!storage_.ContainsKey(dispatchId))
     {
       throw new ArmoniKException($"Key '{dispatchId}' not found");
     }
 
-    return Task.FromResult(storage_[dispatchId].IsCancelled);
+    return Task.FromResult(storage_[dispatchId]
+                             .IsCancelled);
   }
 
   /// <inheritdoc />
-  public Task<TaskOptions> GetDefaultTaskOptionAsync(string sessionId, CancellationToken cancellationToken = default)
+  public Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
+                                                     CancellationToken cancellationToken = default)
   {
     if (!storage_.ContainsKey(sessionId))
     {
       throw new ArmoniKException($"Key '{sessionId}' not found");
     }
 
-    return Task.FromResult(storage_[sessionId].Options);
+    return Task.FromResult(storage_[sessionId]
+                             .Options);
   }
 
   /// <inheritdoc />
-  public async Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+  public async Task CancelSessionAsync(string            sessionId,
+                                       CancellationToken cancellationToken = default)
   {
     if (!session2Dispatches_.ContainsKey(sessionId))
     {
       throw new ArmoniKException($"Key '{sessionId}' not found");
     }
 
-    await session2Dispatches_[sessionId].Keys
-                                        .Select(s => CancelDispatchAsync(sessionId,
-                                                                         s,
-                                                                         cancellationToken))
-                                        .WhenAll();
+    await session2Dispatches_[sessionId]
+          .Keys.Select(s => CancelDispatchAsync(sessionId,
+                                                s,
+                                                cancellationToken))
+          .WhenAll()
+          .ConfigureAwait(false);
 
-    await CancelDispatchAsync(sessionId,sessionId,cancellationToken);
+    await CancelDispatchAsync(sessionId,
+                              sessionId,
+                              cancellationToken)
+      .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public Task CancelDispatchAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
+  public Task CancelDispatchAsync(string            rootSessionId,
+                                  string            dispatchId,
+                                  CancellationToken cancellationToken = default)
   {
     storage_.AddOrUpdate(dispatchId,
                          _ => throw new ArmoniKException($"Key '{dispatchId}' not found"),
-                         (_, data) => data with
-                                      {
-                                        IsCancelled = true,
-                                      });
+                         (_,
+                          data) => data with
+                                   {
+                                     IsCancelled = true,
+                                   });
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public async Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+  public async Task DeleteSessionAsync(string            sessionId,
+                                       CancellationToken cancellationToken = default)
   {
     if (!session2Dispatches_.ContainsKey(sessionId))
     {
       throw new ArmoniKException($"No session with id '{sessionId}' found");
     }
-    await session2Dispatches_[sessionId].Keys
-                                        .ToImmutableList()
-                                        .Select(dispatch => DeleteDispatchAsync(sessionId,
-                                                                                dispatch,
-                                                                                cancellationToken))
-                                        .WhenAll();
+
+    await session2Dispatches_[sessionId]
+          .Keys.ToImmutableList()
+          .Select(dispatch => DeleteDispatchAsync(sessionId,
+                                                  dispatch,
+                                                  cancellationToken))
+          .WhenAll()
+          .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public Task DeleteDispatchAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
+  public Task DeleteDispatchAsync(string            rootSessionId,
+                                  string            dispatchId,
+                                  CancellationToken cancellationToken = default)
   {
     if (!session2Dispatches_.ContainsKey(rootSessionId))
     {
       throw new ArmoniKException($"No session with id '{rootSessionId}' found");
     }
+
     if (!storage_.ContainsKey(dispatchId))
     {
       throw new ArmoniKException($"Key '{dispatchId}' not found");
     }
 
-    session2Dispatches_[rootSessionId].Remove(dispatchId,
-                                              out _);
+    session2Dispatches_[rootSessionId]
+      .Remove(dispatchId,
+              out _);
     storage_.Remove(dispatchId,
                     out _);
     return Task.CompletedTask;
@@ -218,8 +253,10 @@ public class SessionTable : ISessionTable
     => session2Dispatches_.Keys.ToAsyncEnumerable();
 
   /// <inheritdoc />
-  public IAsyncEnumerable<string> ListDispatchesAsync(string rootSessionId, CancellationToken cancellationToken = default)
-    => session2Dispatches_[rootSessionId].Keys.ToAsyncEnumerable();
+  public IAsyncEnumerable<string> ListDispatchesAsync(string            rootSessionId,
+                                                      CancellationToken cancellationToken = default)
+    => session2Dispatches_[rootSessionId]
+       .Keys.ToAsyncEnumerable();
 
   /// <inheritdoc />
   public ILogger Logger { get; }

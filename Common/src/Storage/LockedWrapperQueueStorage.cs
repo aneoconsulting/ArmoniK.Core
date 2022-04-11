@@ -39,7 +39,11 @@ public class LockedWrapperQueueStorage : IQueueStorage
   private readonly ILockedQueueStorage                lockedQueueStorage_;
   private readonly ILogger<LockedWrapperQueueStorage> logger_;
 
-  public LockedWrapperQueueStorage(ILockedQueueStorage lockedQueueStorage, ILogger<LockedWrapperQueueStorage> logger)
+
+  private bool isInitialized_;
+
+  public LockedWrapperQueueStorage(ILockedQueueStorage                lockedQueueStorage,
+                                   ILogger<LockedWrapperQueueStorage> logger)
   {
     lockedQueueStorage_ = lockedQueueStorage;
     logger_             = logger;
@@ -48,30 +52,33 @@ public class LockedWrapperQueueStorage : IQueueStorage
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
   {
-    if(!isInitialized_)
-      await lockedQueueStorage_.Init(cancellationToken);
+    if (!isInitialized_)
+    {
+      await lockedQueueStorage_.Init(cancellationToken)
+                               .ConfigureAwait(false);
+    }
 
     isInitialized_ = true;
   }
 
-
-  private bool isInitialized_ = false;
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
-
-  /// <inheritdoc />
-  public int MaxPriority => lockedQueueStorage_.MaxPriority;
+  public int MaxPriority
+    => lockedQueueStorage_.MaxPriority;
 
   /// <inheritdoc />
   public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
-                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
+                                                                [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var logFunction = logger_.LogFunction($"for {nbMessages} messages");
 
     await foreach (var qm in lockedQueueStorage_.PullAsync(nbMessages,
                                                            cancellationToken)
-                                                .WithCancellation(cancellationToken))
+                                                .WithCancellation(cancellationToken)
+                                                .ConfigureAwait(false))
     {
       using var logScope = logger_.BeginPropertyScope(("messageId", qm.MessageId),
                                                       ("taskId", qm.TaskId));
@@ -83,8 +90,8 @@ public class LockedWrapperQueueStorage : IQueueStorage
 
       logger_.LogInformation("Queue messageHandler ready to forward");
       yield return new LockedWrapperQueueMessageHandler(qm,
-                                                 deadlineHandler,
-                                                 cancellationToken);
+                                                        deadlineHandler,
+                                                        cancellationToken);
     }
   }
 
@@ -97,22 +104,26 @@ public class LockedWrapperQueueStorage : IQueueStorage
                                                 cancellationToken);
 
   /// <inheritdoc />
-  public Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default)
+  public Task MessageProcessedAsync(string            id,
+                                    CancellationToken cancellationToken = default)
     => lockedQueueStorage_.MessageProcessedAsync(id,
                                                  cancellationToken);
 
   /// <inheritdoc />
-  public Task MessageRejectedAsync(string id, CancellationToken cancellationToken = default)
+  public Task MessageRejectedAsync(string            id,
+                                   CancellationToken cancellationToken = default)
     => lockedQueueStorage_.MessageRejectedAsync(id,
                                                 cancellationToken);
 
   /// <inheritdoc />
-  public Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default)
+  public Task RequeueMessageAsync(string            id,
+                                  CancellationToken cancellationToken = default)
     => lockedQueueStorage_.RequeueMessageAsync(id,
                                                cancellationToken);
 
   /// <inheritdoc />
-  public Task ReleaseMessageAsync(string id, CancellationToken cancellationToken = default)
+  public Task ReleaseMessageAsync(string            id,
+                                  CancellationToken cancellationToken = default)
     => lockedQueueStorage_.ReleaseMessageAsync(id,
                                                cancellationToken);
 }

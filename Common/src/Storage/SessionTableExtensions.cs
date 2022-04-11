@@ -29,7 +29,10 @@ namespace ArmoniK.Core.Common.Storage;
 
 public static class SessionTableExtensions
 {
-  public static async Task CreateSessionAsync(this ISessionTable sessionTable, string id, Api.gRPC.V1.TaskOptions defaultOptions, CancellationToken cancellationToken = default)
+  public static async Task CreateSessionAsync(this ISessionTable      sessionTable,
+                                              string                  id,
+                                              Api.gRPC.V1.TaskOptions defaultOptions,
+                                              CancellationToken       cancellationToken = default)
   {
     using var _ = sessionTable.Logger.LogFunction(id);
 
@@ -37,21 +40,28 @@ public static class SessionTableExtensions
                                               id,
                                               id,
                                               defaultOptions,
-                                              cancellationToken);
+                                              cancellationToken)
+                      .ConfigureAwait(false);
   }
 
 
-  public static async Task CreateDispatchedSessionAsync(this ISessionTable sessionTable, string rootSessionId, string parentTaskId, string dispatchId, CancellationToken cancellationToken = default)
+  public static async Task CreateDispatchedSessionAsync(this ISessionTable sessionTable,
+                                                        string             rootSessionId,
+                                                        string             parentTaskId,
+                                                        string             dispatchId,
+                                                        CancellationToken  cancellationToken = default)
   {
     using var _ = sessionTable.Logger.LogFunction(dispatchId);
 
     var taskOptions = await sessionTable.GetDefaultTaskOptionAsync(rootSessionId,
-                                                                   cancellationToken);
+                                                                   cancellationToken)
+                                        .ConfigureAwait(false);
 
     await sessionTable.CreateSessionDataAsync(rootSessionId,
                                               parentTaskId,
                                               dispatchId,
                                               taskOptions,
-                                              cancellationToken);
+                                              cancellationToken)
+                      .ConfigureAwait(false);
   }
 }

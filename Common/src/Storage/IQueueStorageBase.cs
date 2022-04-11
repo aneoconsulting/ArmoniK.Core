@@ -30,10 +30,10 @@ namespace ArmoniK.Core.Common.Storage;
 
 public interface IQueueStorageBase : IInitializable
 {
-
   int MaxPriority { get; }
 
-  IAsyncEnumerable<IQueueMessageHandler> PullAsync(int nbMessages, CancellationToken cancellationToken = default);
+  IAsyncEnumerable<IQueueMessageHandler> PullAsync(int               nbMessages,
+                                                   CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Submit new messages

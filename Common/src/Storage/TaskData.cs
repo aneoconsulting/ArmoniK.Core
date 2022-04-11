@@ -32,22 +32,27 @@ using Google.Protobuf.WellKnownTypes;
 namespace ArmoniK.Core.Common.Storage;
 
 public record TaskOptions(IDictionary<string, string> Options,
-                           TimeSpan                    MaxDuration,
-                           int                         MaxRetries,
-                           int                         Priority)
+                          TimeSpan                    MaxDuration,
+                          int                         MaxRetries,
+                          int                         Priority)
 {
-  public static implicit operator Api.gRPC.V1.TaskOptions(TaskOptions taskOption) => new ()
-                                                                                     {
-                                                                                       MaxDuration = Duration.FromTimeSpan(taskOption.MaxDuration),
-                                                                                       MaxRetries = taskOption.MaxRetries,
-                                                                                       Priority = taskOption.Priority,
-                                                                                       Options = { taskOption.Options },
-                                                                                     };
+  public static implicit operator Api.gRPC.V1.TaskOptions(TaskOptions taskOption)
+    => new()
+       {
+         MaxDuration = Duration.FromTimeSpan(taskOption.MaxDuration),
+         MaxRetries  = taskOption.MaxRetries,
+         Priority    = taskOption.Priority,
+         Options =
+         {
+           taskOption.Options,
+         },
+       };
 
-  public static implicit operator TaskOptions(Api.gRPC.V1.TaskOptions taskOption) => new(taskOption.Options,
-                                                                                         taskOption.MaxDuration.ToTimeSpan(),
-                                                                                         taskOption.MaxRetries,
-                                                                                         taskOption.Priority);
+  public static implicit operator TaskOptions(Api.gRPC.V1.TaskOptions taskOption)
+    => new(taskOption.Options,
+           taskOption.MaxDuration.ToTimeSpan(),
+           taskOption.MaxRetries,
+           taskOption.Priority);
 }
 
 public record TaskData(string        SessionId,

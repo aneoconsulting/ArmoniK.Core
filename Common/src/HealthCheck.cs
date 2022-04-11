@@ -38,7 +38,8 @@ public class HealthCheck : IHealthCheck
   private readonly IHealthCheckProvider healthCheckProvider_;
   private readonly HealthCheckTag       tag_;
 
-  public HealthCheck(IHealthCheckProvider healthCheckProvider, HealthCheckTag tag)
+  public HealthCheck(IHealthCheckProvider healthCheckProvider,
+                     HealthCheckTag       tag)
   {
     healthCheckProvider_ = healthCheckProvider;
     tag_                 = tag;
@@ -47,10 +48,14 @@ public class HealthCheck : IHealthCheck
 
   /// <exception cref="ArgumentOutOfRangeException"></exception>
   /// <inheritdoc />
-  public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+  public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
+                                                        CancellationToken  cancellationToken = default)
   {
-    if(await healthCheckProvider_.Check(tag_))
+    if (await healthCheckProvider_.Check(tag_)
+                                  .ConfigureAwait(false))
+    {
       return HealthCheckResult.Healthy();
+    }
 
     return context.Registration.FailureStatus switch
            {
@@ -58,7 +63,7 @@ public class HealthCheck : IHealthCheck
              HealthStatus.Degraded  => HealthCheckResult.Degraded(),
              HealthStatus.Healthy   => HealthCheckResult.Healthy(),
              _ => throw new ArgumentOutOfRangeException(nameof(context),
-                                                        "Context has been registered with a non supported FailureStatus")
+                                                        "Context has been registered with a non supported FailureStatus"),
            };
   }
 }

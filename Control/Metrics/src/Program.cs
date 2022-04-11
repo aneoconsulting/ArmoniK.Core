@@ -23,16 +23,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Injection;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -49,14 +49,14 @@ namespace ArmoniK.Core.Control.Metrics;
 public static partial class Program
 {
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Control.Metrics");
+
   public static int Main(string[] args)
   {
     try
     {
       var builder = WebApplication.CreateBuilder(args);
 
-      builder.Configuration
-             .SetBasePath(Directory.GetCurrentDirectory())
+      builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
              .AddJsonFile("appsettings.json",
                           true,
                           true)
@@ -64,18 +64,16 @@ public static partial class Program
              .AddCommandLine(args);
 
       Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
-                                                .WriteTo.Console(new CompactJsonFormatter())
-                                                .Enrich.FromLogContext()
-                                                .CreateLogger();
+                                            .WriteTo.Console(new CompactJsonFormatter())
+                                            .Enrich.FromLogContext()
+                                            .CreateLogger();
 
       var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger))
                                 .CreateLogger("root");
 
-      builder.Host
-             .UseSerilog(Log.Logger);
+      builder.Host.UseSerilog(Log.Logger);
 
-      builder.Services
-             .AddLogging()
+      builder.Services.AddLogging()
              .AddMongoComponents(builder.Configuration,
                                  logger)
              .AddAmqp(builder.Configuration,
@@ -83,18 +81,21 @@ public static partial class Program
              .AddRedis(builder.Configuration,
                        logger)
              .AddOpenTelemetryMetrics(b =>
-             {
-               b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);
-               b.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("armonik-service"));
-               b.AddMeter(nameof(ArmoniKMeter));
-             })
+                                      {
+                                        b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);
+                                        b.SetResourceBuilder(ResourceBuilder.CreateDefault()
+                                                                            .AddService("armonik-service"));
+                                        b.AddMeter(nameof(ArmoniKMeter));
+                                      })
              .AddHostedService<ArmoniKMeter>()
              .AddControllers();
 
       var app = builder.Build();
 
       if (app.Environment.IsDevelopment())
+      {
         app.UseDeveloperExceptionPage();
+      }
 
       app.UseSerilogRequestLogging();
 
@@ -105,20 +106,20 @@ public static partial class Program
 
 
       app.UseEndpoints(endpoints =>
-      {
-        endpoints.MapHealthChecks("/startup",
-                                  new()
-                                  {
-                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
-                                  });
+                       {
+                         endpoints.MapHealthChecks("/startup",
+                                                   new HealthCheckOptions
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                                                   });
 
-        endpoints.MapHealthChecks("/liveness",
-                                  new()
-                                  {
-                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
-                                  });
-        endpoints.MapControllers();
-      });
+                         endpoints.MapHealthChecks("/liveness",
+                                                   new HealthCheckOptions
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                                                   });
+                         endpoints.MapControllers();
+                       });
 
       //app.MapGet("/metrics",
       //           (MetricGenerator generator) => generator.GetMetrics());

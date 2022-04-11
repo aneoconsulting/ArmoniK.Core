@@ -42,45 +42,48 @@ public class CreateSessionRequestValidatorTest
   public void NullDefaultTaskOptionShouldFail()
   {
     var csr = new CreateSessionRequest
-    {
-      DefaultTaskOption = null,
-      Id                = "SessionId",
-    };
+              {
+                DefaultTaskOption = null,
+                Id                = "SessionId",
+              };
 
-    Assert.IsFalse(validator_.Validate(csr).IsValid);
+    Assert.IsFalse(validator_.Validate(csr)
+                             .IsValid);
   }
 
   [Test]
   public void EmptyIdShouldFail()
   {
     var csr = new CreateSessionRequest
-    {
-      DefaultTaskOption = new TaskOptions
-      {
-        Priority    = 1,
-        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-        MaxRetries  = 2,
-      },
-      Id = "",
-    };
+              {
+                DefaultTaskOption = new TaskOptions
+                                    {
+                                      Priority    = 1,
+                                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                      MaxRetries  = 2,
+                                    },
+                Id = "",
+              };
 
-    Assert.IsFalse(validator_.Validate(csr).IsValid);
+    Assert.IsFalse(validator_.Validate(csr)
+                             .IsValid);
   }
 
   [Test]
   public void SessionOk()
   {
     var csr = new CreateSessionRequest
-    {
-      DefaultTaskOption = new TaskOptions
-      {
-        Priority    = 1,
-        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-        MaxRetries  = 2,
-      },
-      Id = "Id",
-    };
+              {
+                DefaultTaskOption = new TaskOptions
+                                    {
+                                      Priority    = 1,
+                                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                      MaxRetries  = 2,
+                                    },
+                Id = "Id",
+              };
 
-    Assert.IsTrue(validator_.Validate(csr).IsValid);
+    Assert.IsTrue(validator_.Validate(csr)
+                            .IsValid);
   }
 }

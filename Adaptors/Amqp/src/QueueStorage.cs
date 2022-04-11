@@ -31,12 +31,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Amqp;
+using Amqp.Framing;
 
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
-
-using Google.Protobuf;
 
 using Microsoft.Extensions.Logging;
 
@@ -50,27 +49,41 @@ public class QueueStorage : IQueueStorage
   private readonly AsyncLazy<IReceiverLink>[] receivers_;
   private readonly AsyncLazy<ISenderLink>[]   senders_;
 
-  public QueueStorage(Options.Amqp options, SessionProvider sessionProvider, ILogger<QueueStorage> logger)
+  private bool isInitialized_;
+
+  public QueueStorage(Options.Amqp          options,
+                      SessionProvider       sessionProvider,
+                      ILogger<QueueStorage> logger)
   {
     if (string.IsNullOrEmpty(options.Host))
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.Amqp.Host)} is not defined.");
+    }
 
     if (string.IsNullOrEmpty(options.User))
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.Amqp.User)} is not defined.");
+    }
 
     if (string.IsNullOrEmpty(options.Password))
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.Amqp.Password)} is not defined.");
+    }
 
     if (options.Port == 0)
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.Amqp.Port)} is not defined.");
+    }
 
     if (options.MaxPriority < 1)
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"Minimum value for {nameof(Options.Amqp.MaxPriority)} is 1.");
+    }
 
 
     MaxPriority = options.MaxPriority;
@@ -80,24 +93,18 @@ public class QueueStorage : IQueueStorage
 
     senders_ = Enumerable.Range(0,
                                 nbLinks)
-                         .Select(i => new AsyncLazy<ISenderLink>(async ()
-                                                                   => new
-                                                                     SenderLink(await sessionProvider.GetAsync(),
-                                                                                $"SenderLink{i}",
-                                                                                $"q{i}")))
+                         .Select(i => new AsyncLazy<ISenderLink>(async () => new SenderLink(await sessionProvider.GetAsync()
+                                                                                                                 .ConfigureAwait(false),
+                                                                                            $"SenderLink{i}",
+                                                                                            $"q{i}")))
                          .ToArray();
 
     receivers_ = Enumerable.Range(0,
                                   nbLinks)
-                           .Select(i => new AsyncLazy<IReceiverLink>(async ()
-                                                                       =>
-                                                                     {
-                                                                       var receiver = new
-                                                                         ReceiverLink(await sessionProvider.GetAsync(),
-                                                                                      $"ReceiverLink{i}",
-                                                                                      $"q{i}");
-                                                                       return receiver;
-                                                                     }))
+                           .Select(i => new AsyncLazy<IReceiverLink>(async () => new ReceiverLink(await sessionProvider.GetAsync()
+                                                                                                                       .ConfigureAwait(false),
+                                                                                                  $"ReceiverLink{i}",
+                                                                                                  $"q{i}")))
                            .ToArray();
   }
 
@@ -109,21 +116,22 @@ public class QueueStorage : IQueueStorage
       var senders   = Task.WhenAll(senders_.Select(async lazy => await lazy));
       var receivers = Task.WhenAll(receivers_.Select(async lazy => await lazy));
       await Task.WhenAll(senders,
-                         receivers);
+                         receivers)
+                .ConfigureAwait(false);
       isInitialized_ = true;
     }
   }
 
-  private bool isInitialized_ = false;
-
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
 
   /// <inheritdoc />
   public int MaxPriority { get; }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int nbMessages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
+                                                                [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _               = logger_.LogFunction();
     var       nbPulledMessage = 0;
@@ -135,7 +143,8 @@ public class QueueStorage : IQueueStorage
       {
         cancellationToken.ThrowIfCancellationRequested();
         var receiver = await receivers_[i];
-        var message  = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100));
+        var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
+                                    .ConfigureAwait(false);
         if (message is null)
         {
           logger_.LogDebug("Message is null receiver {i}",
@@ -155,7 +164,10 @@ public class QueueStorage : IQueueStorage
         break;
       }
 
-      if (nbPulledMessage == currentNbMessages) break;
+      if (nbPulledMessage == currentNbMessages)
+      {
+        break;
+      }
     }
   }
 
@@ -172,13 +184,14 @@ public class QueueStorage : IQueueStorage
                      priority % MaxInternalQueuePriority);
 
     var sender = await senders_[priority / MaxInternalQueuePriority];
-    await Task.WhenAll(messages.Select(id => sender.SendAsync(new(Encoding.UTF8.GetBytes(id))
+    await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
                                                               {
-                                                                Header = new()
+                                                                Header = new Header
                                                                          {
                                                                            Priority = (byte)(priority % MaxInternalQueuePriority),
                                                                          },
-                                                                Properties = new(),
-                                                              })));
+                                                                Properties = new Properties(),
+                                                              })))
+              .ConfigureAwait(false);
   }
 }

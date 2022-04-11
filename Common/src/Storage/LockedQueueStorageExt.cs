@@ -38,7 +38,10 @@ public static class LockedQueueStorageExt
                                   string                   message,
                                   int                      priority,
                                   CancellationToken        cancellationToken = default)
-    => lockedQueueStorage.EnqueueMessagesAsync(new[] { message },
+    => lockedQueueStorage.EnqueueMessagesAsync(new[]
+                                               {
+                                                 message,
+                                               },
                                                priority,
                                                cancellationToken);
 

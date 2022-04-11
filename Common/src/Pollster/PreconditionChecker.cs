@@ -39,13 +39,15 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class PreconditionChecker : IInitializable
 {
-  private readonly ActivitySource            activitySource_;
+  private readonly ActivitySource               activitySource_;
+  private readonly IDispatchTable               dispatchTable_;
   private readonly ILogger<PreconditionChecker> logger_;
+  private readonly IResultTable                 resultTable_;
 
-  private readonly ISessionTable  sessionTable_;
-  private readonly ITaskTable     taskTable_;
-  private readonly IResultTable   resultTable_;
-  private readonly IDispatchTable dispatchTable_;
+  private readonly ISessionTable sessionTable_;
+  private readonly ITaskTable    taskTable_;
+
+  private bool isInitialized_;
 
   public PreconditionChecker(ISessionTable                sessionTable,
                              ITaskTable                   taskTable,
@@ -54,12 +56,33 @@ public class PreconditionChecker : IInitializable
                              ActivitySource               activitySource,
                              ILogger<PreconditionChecker> logger)
   {
-    logger_              = logger;
-    activitySource_      = activitySource;
-    sessionTable_        = sessionTable;
-    taskTable_           = taskTable;
-    resultTable_         = resultTable;
-    dispatchTable_       = dispatchTable;
+    logger_         = logger;
+    activitySource_ = activitySource;
+    sessionTable_   = sessionTable;
+    taskTable_      = taskTable;
+    resultTable_    = resultTable;
+    dispatchTable_  = dispatchTable;
+  }
+
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      var resultTable  = resultTable_.Init(cancellationToken);
+      var sessionTable = sessionTable_.Init(cancellationToken);
+      var taskTable    = taskTable_.Init(cancellationToken);
+      await dispatchTable_.Init(cancellationToken)
+                          .ConfigureAwait(false);
+      await resultTable.ConfigureAwait(false);
+      await sessionTable.ConfigureAwait(false);
+      await taskTable.ConfigureAwait(false);
+      isInitialized_ = true;
+    }
   }
 
   public async Task<(TaskData TaskData, DispatchHandler Dispatch)?> CheckPreconditionsAsync(IQueueMessageHandler messageHandler,
@@ -68,8 +91,9 @@ public class PreconditionChecker : IInitializable
     using var activity = activitySource_.StartActivity($"{nameof(CheckPreconditionsAsync)}");
 
     var taskData = await taskTable_.ReadTaskAsync(messageHandler.TaskId,
-                                                  cancellationToken);
-    
+                                                  cancellationToken)
+                                   .ConfigureAwait(false);
+
     /*
      * Check preconditions:
      *  - Session is not cancelled
@@ -86,13 +110,18 @@ public class PreconditionChecker : IInitializable
       case TaskStatus.Canceling:
         logger_.LogInformation("Task is being cancelled");
         messageHandler.Status = QueueMessageStatus.Cancelled;
-        await sessionTable_.CancelDispatchAsync(taskData.SessionId, taskData.DispatchId,
-                                                cancellationToken);
-        await taskTable_.CancelDispatchAsync(taskData.SessionId, taskData.DispatchId,
-                                cancellationToken);
+        await sessionTable_.CancelDispatchAsync(taskData.SessionId,
+                                                taskData.DispatchId,
+                                                cancellationToken)
+                           .ConfigureAwait(false);
+        await taskTable_.CancelDispatchAsync(taskData.SessionId,
+                                             taskData.DispatchId,
+                                             cancellationToken)
+                        .ConfigureAwait(false);
         await taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
                                                TaskStatus.Canceled,
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                        .ConfigureAwait(false);
         return null;
       case TaskStatus.Completed:
         logger_.LogInformation("Task was already completed");
@@ -110,10 +139,12 @@ public class PreconditionChecker : IInitializable
         logger_.LogInformation("Task was on error elsewhere ; retrying");
         await taskTable_.CancelDispatchAsync(taskData.SessionId,
                                              taskData.DispatchId,
-                                             cancellationToken);
+                                             cancellationToken)
+                        .ConfigureAwait(false);
         await taskTable_.CancelDispatchAsync(taskData.SessionId,
                                              taskData.DispatchId,
-                                             cancellationToken);
+                                             cancellationToken)
+                        .ConfigureAwait(false);
         break;
       case TaskStatus.Timeout:
         logger_.LogInformation("Task was timeout elsewhere ; taking over here");
@@ -138,29 +169,28 @@ public class PreconditionChecker : IInitializable
 
     var dependencyCheckTask = taskData.DataDependencies.Any()
                                 ? resultTable_.AreResultsAvailableAsync(taskData.SessionId,
-                                                                         taskData.DataDependencies,
-                                                                         cancellationToken)
+                                                                        taskData.DataDependencies,
+                                                                        cancellationToken)
                                 : Task.FromResult(true);
 
     var isSessionCancelled = await sessionTable_.IsSessionCancelledAsync(taskData.SessionId,
-                                                                         cancellationToken);
+                                                                         cancellationToken)
+                                                .ConfigureAwait(false);
 
-    if (isSessionCancelled &&
-        taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.Error))
+    if (isSessionCancelled && taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.Error))
     {
       logger_.LogInformation("Task is being cancelled");
 
       messageHandler.Status = QueueMessageStatus.Cancelled;
       await taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                TaskStatus.Canceled,
-                                                cancellationToken);
+                                             TaskStatus.Canceled,
+                                             cancellationToken)
+                      .ConfigureAwait(false);
       return null;
     }
 
 
-
-
-    if (!await dependencyCheckTask)
+    if (!await dependencyCheckTask.ConfigureAwait(false))
     {
       logger_.LogInformation("Dependencies are not complete yet.");
       messageHandler.Status = QueueMessageStatus.Postponed;
@@ -168,13 +198,13 @@ public class PreconditionChecker : IInitializable
     }
 
 
-
     logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
     var dispatch = await AcquireDispatchHandler($"{taskData.TaskId}-{DateTime.Now.Ticks}",
-                                                              taskData.TaskId,
-                                                              taskData.SessionId,
-                                                              new Dictionary<string, string>(),
-                                                              cancellationToken);
+                                                taskData.TaskId,
+                                                taskData.SessionId,
+                                                new Dictionary<string, string>(),
+                                                cancellationToken)
+                     .ConfigureAwait(false);
 
     if (dispatch is null)
     {
@@ -188,22 +218,26 @@ public class PreconditionChecker : IInitializable
       logger_.LogInformation("Task has been retried too many times");
       messageHandler.Status = QueueMessageStatus.Poisonous;
       await Task.WhenAll(taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                             TaskStatus.Failed,
-                                                             CancellationToken.None),
-                         dispatch.DisposeAsync().AsTask(),
-                         taskTable_.CancelDispatchAsync(taskData.SessionId, dispatch.Id, cancellationToken),
+                                                          TaskStatus.Failed,
+                                                          CancellationToken.None),
+                         dispatch.DisposeAsync()
+                                 .AsTask(),
+                         taskTable_.CancelDispatchAsync(taskData.SessionId,
+                                                        dispatch.Id,
+                                                        cancellationToken),
                          dispatchTable_.DeleteDispatch(dispatch.Id,
-                                                      cancellationToken));
+                                                       cancellationToken))
+                .ConfigureAwait(false);
       return null;
     }
 
     logger_.LogDebug("Changing task status to 'Dispatched'");
     var updateTask = taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                         TaskStatus.Dispatched,
-                                                         cancellationToken);
+                                                      TaskStatus.Dispatched,
+                                                      cancellationToken);
 
     logger_.LogInformation("Task preconditions are OK");
-    await updateTask;
+    await updateTask.ConfigureAwait(false);
     return (TaskData: taskData, Dispatch: dispatch);
   }
 
@@ -216,41 +250,24 @@ public class PreconditionChecker : IInitializable
   {
     using var activity = activitySource_.StartActivity($"{nameof(AcquireDispatchHandler)}");
     var isAcquired = await dispatchTable_.TryAcquireDispatchAsync(sessionId,
-                                                                 taskId,
-                                                                 dispatchId,
-                                                                 metadata,
-                                                                 cancellationToken);
+                                                                  taskId,
+                                                                  dispatchId,
+                                                                  metadata,
+                                                                  cancellationToken)
+                                         .ConfigureAwait(false);
 
 
     if (!isAcquired)
-      return null;
-    var dispatch = await dispatchTable_.GetDispatchAsync(dispatchId,
-                                                         cancellationToken);
-    return new(dispatchTable_,
-               taskTable_,
-               dispatch,
-               cancellationToken);
-
-  }
-
-  private bool isInitialized_ = false;
-
-  /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
-
-  /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
     {
-      var resultTable   = resultTable_.Init(cancellationToken);
-      var sessionTable = sessionTable_.Init(cancellationToken);
-      var taskTable    = taskTable_.Init(cancellationToken);
-      await dispatchTable_.Init(cancellationToken);
-      await resultTable;
-      await sessionTable;
-      await taskTable;
-      isInitialized_ = true;
+      return null;
     }
+
+    var dispatch = await dispatchTable_.GetDispatchAsync(dispatchId,
+                                                         cancellationToken)
+                                       .ConfigureAwait(false);
+    return new DispatchHandler(dispatchTable_,
+                               taskTable_,
+                               dispatch,
+                               cancellationToken);
   }
 }

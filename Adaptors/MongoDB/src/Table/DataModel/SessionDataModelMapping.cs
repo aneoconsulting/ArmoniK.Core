@@ -39,40 +39,51 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
   static SessionDataModelMapping()
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(SessionData)))
+    {
       BsonClassMap.RegisterClassMap<SessionData>(cm =>
-                                                      {
-                                                        cm.MapIdProperty(nameof(SessionData.SessionId)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(SessionData.DispatchId)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(SessionData.AncestorsDispatchId)).SetIgnoreIfDefault(true);
-                                                        cm.MapProperty(nameof(SessionData.IsCancelled)).SetIsRequired(true);
-                                                        cm.MapProperty(nameof(SessionData.Options)).SetIsRequired(true).SetSerializer(new BsonProtoSerializer<TaskOptions>());
-                                                        cm.SetIgnoreExtraElements(true);
-                                                        cm.MapCreator(model => new(model.SessionId,
-                                                                                   model.DispatchId,
-                                                                                   model.AncestorsDispatchId,
-                                                                                   model.IsCancelled,
-                                                                                   model.Options));
-                                                      });
+                                                 {
+                                                   cm.MapIdProperty(nameof(SessionData.SessionId))
+                                                     .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.DispatchId))
+                                                     .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.AncestorsDispatchId))
+                                                     .SetIgnoreIfDefault(true);
+                                                   cm.MapProperty(nameof(SessionData.IsCancelled))
+                                                     .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.Options))
+                                                     .SetIsRequired(true)
+                                                     .SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                   cm.SetIgnoreExtraElements(true);
+                                                   cm.MapCreator(model => new SessionData(model.SessionId,
+                                                                                          model.DispatchId,
+                                                                                          model.AncestorsDispatchId,
+                                                                                          model.IsCancelled,
+                                                                                          model.Options));
+                                                 });
+    }
   }
 
   /// <inheritdoc />
-  public string CollectionName => nameof(SessionData);
+  public string CollectionName
+    => nameof(SessionData);
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionData> collection)
+  public async Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
+                                           IMongoCollection<SessionData> collection)
   {
     var dispatchIndex = Builders<SessionData>.IndexKeys.Hashed(model => model.DispatchId);
 
     var indexModels = new CreateIndexModel<SessionData>[]
                       {
                         new(dispatchIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name = nameof(dispatchIndex),
                             }),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,
-                                              indexModels);
+                                             indexModels)
+                    .ConfigureAwait(false);
   }
 }

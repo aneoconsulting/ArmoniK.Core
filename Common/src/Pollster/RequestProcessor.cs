@@ -42,27 +42,31 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 using Submitter = ArmoniK.Core.Common.gRPC.Services.Submitter;
+using TaskCanceledException = System.Threading.Tasks.TaskCanceledException;
+using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using TimeoutException = System.TimeoutException;
 
 namespace ArmoniK.Core.Common.Pollster;
 
 public class RequestProcessor : IInitializable
 {
   private readonly ActivitySource            activitySource_;
-  private readonly WorkerClientProvider      workerClientProvider_;
-  private readonly IObjectStorageFactory     objectStorageFactory_;
   private readonly ILogger<RequestProcessor> logger_;
+  private readonly IObjectStorageFactory     objectStorageFactory_;
   private readonly IObjectStorage            resourcesStorage_;
-  private readonly Submitter                 submitter_;
   private readonly IResultTable              resultTable_;
+  private readonly Submitter                 submitter_;
+  private readonly WorkerClientProvider      workerClientProvider_;
 
-  public RequestProcessor(
-    WorkerClientProvider      workerClientProvider,
-    IObjectStorageFactory     objectStorageFactory,
-    ILogger<RequestProcessor> logger,
-    Submitter                 submitter,
-    IResultTable              resultTable,
-    ActivitySource            activitySource)
+  private bool isInitialized_;
+
+  public RequestProcessor(WorkerClientProvider      workerClientProvider,
+                          IObjectStorageFactory     objectStorageFactory,
+                          ILogger<RequestProcessor> logger,
+                          Submitter                 submitter,
+                          IResultTable              resultTable,
+                          ActivitySource            activitySource)
   {
     workerClientProvider_ = workerClientProvider;
     objectStorageFactory_ = objectStorageFactory;
@@ -73,18 +77,36 @@ public class RequestProcessor : IInitializable
     resourcesStorage_     = objectStorageFactory.CreateResourcesStorage();
   }
 
-  public async Task<List<Task>> ProcessAsync(IQueueMessageHandler messageHandler,
-                                             TaskData taskData,
-                                             Dispatch dispatch,
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      var resultTable          = resultTable_.Init(cancellationToken);
+      var workerClientProvider = workerClientProvider_.Init(cancellationToken);
+      await resultTable.ConfigureAwait(false);
+      await workerClientProvider.ConfigureAwait(false);
+      isInitialized_ = true;
+    }
+  }
+
+  public async Task<List<Task>> ProcessAsync(IQueueMessageHandler                       messageHandler,
+                                             TaskData                                   taskData,
+                                             Dispatch                                   dispatch,
                                              Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
-                                             CancellationToken cancellationToken)
+                                             CancellationToken                          cancellationToken)
   {
     try
     {
-      var result =  await ProcessInternalsAsync(taskData,
-                                         dispatch,
-                                         computeRequests,
-                                         cancellationToken);
+      var result = await ProcessInternalsAsync(taskData,
+                                               dispatch,
+                                               computeRequests,
+                                               cancellationToken)
+                     .ConfigureAwait(false);
 
       messageHandler.Status = QueueMessageStatus.Processed;
       return result;
@@ -94,12 +116,15 @@ public class RequestProcessor : IInitializable
       logger_.LogError(e,
                        "Error while processing request");
       await submitter_.CancelDispatchSessionAsync(taskData.SessionId,
-                                                  dispatch.Id, cancellationToken);
+                                                  dispatch.Id,
+                                                  cancellationToken)
+                      .ConfigureAwait(false);
 
       if (!await HandleExceptionAsync(e,
                                       taskData,
                                       messageHandler,
-                                      cancellationToken))
+                                      cancellationToken)
+             .ConfigureAwait(false))
       {
         throw;
       }
@@ -108,13 +133,16 @@ public class RequestProcessor : IInitializable
     }
   }
 
-  
+
   [PublicAPI]
-  private async Task<bool> HandleExceptionAsync(Exception e, TaskData taskData, IQueueMessageHandler messageHandler, CancellationToken cancellationToken)
+  private async Task<bool> HandleExceptionAsync(Exception            e,
+                                                TaskData             taskData,
+                                                IQueueMessageHandler messageHandler,
+                                                CancellationToken    cancellationToken)
   {
     switch (e)
     {
-      case System.TimeoutException:
+      case TimeoutException:
       {
         logger_.LogError(e,
                          "Deadline exceeded when computing task {taskId} from session {sessionId}",
@@ -123,15 +151,23 @@ public class RequestProcessor : IInitializable
         messageHandler.Status = QueueMessageStatus.Failed;
         await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
                                                TaskStatus.Timeout,
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                        .ConfigureAwait(false);
         return true;
       }
-      case System.Threading.Tasks.TaskCanceledException:
+      case TaskCanceledException:
       {
         var details = string.Empty;
 
-        if (messageHandler.CancellationToken.IsCancellationRequested) details += "Message was cancelled. ";
-        if (cancellationToken.IsCancellationRequested) details                += "Root token was cancelled. ";
+        if (messageHandler.CancellationToken.IsCancellationRequested)
+        {
+          details += "Message was cancelled. ";
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+          details += "Root token was cancelled. ";
+        }
 
         logger_.LogError(e,
                          "Execution has been cancelled for task {taskId} from session {sessionId}. {details}",
@@ -141,7 +177,8 @@ public class RequestProcessor : IInitializable
         messageHandler.Status = QueueMessageStatus.Cancelled;
         await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
                                                TaskStatus.Canceling,
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                        .ConfigureAwait(false);
         return true;
       }
       case ArmoniKException:
@@ -155,7 +192,8 @@ public class RequestProcessor : IInitializable
         messageHandler.Status = QueueMessageStatus.Failed;
         await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
                                                TaskStatus.Error,
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                        .ConfigureAwait(false);
         return true;
       }
       case AggregateException ae:
@@ -163,11 +201,16 @@ public class RequestProcessor : IInitializable
         foreach (var ie in ae.InnerExceptions)
           // If the exception was not handled, lazily allocate a list of unhandled
           // exceptions (to be rethrown later) and add it.
+        {
           if (!await HandleExceptionAsync(ie,
                                           taskData,
                                           messageHandler,
-                                          cancellationToken))
+                                          cancellationToken)
+                 .ConfigureAwait(false))
+          {
             return false;
+          }
+        }
 
         return true;
       }
@@ -180,17 +223,18 @@ public class RequestProcessor : IInitializable
         messageHandler.Status = QueueMessageStatus.Failed;
         await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
                                                TaskStatus.Error,
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                        .ConfigureAwait(false);
         return false;
       }
     }
   }
 
 
-  public async Task<List<Task>> ProcessInternalsAsync(TaskData                         taskData,
-                                                      Dispatch                         dispatch,
-                                             Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
-                                             CancellationToken                          cancellationToken)
+  public async Task<List<Task>> ProcessInternalsAsync(TaskData                                   taskData,
+                                                      Dispatch                                   dispatch,
+                                                      Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
+                                                      CancellationToken                          cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}");
     activity?.SetBaggage("SessionId",
@@ -200,29 +244,32 @@ public class RequestProcessor : IInitializable
     activity?.SetBaggage("DispatchId",
                          taskData.DispatchId);
 
-    var workerClient = await workerClientProvider_.GetAsync();
+    var workerClient = await workerClientProvider_.GetAsync()
+                                                  .ConfigureAwait(false);
 
     logger_.LogDebug("Set task status to Processing");
     await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
                                            TaskStatus.Processing,
-                                           cancellationToken);
+                                           cancellationToken)
+                    .ConfigureAwait(false);
 
     using var stream = workerClient.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
                                             cancellationToken: cancellationToken);
 
     var resultStorage = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
 
-    stream.RequestStream.WriteOptions = new(WriteFlags.NoCompress);
+    stream.RequestStream.WriteOptions = new WriteOptions(WriteFlags.NoCompress);
     {
       using var activity2 = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.SendComputeRequests");
       // send the compute requests
       while (computeRequests.TryDequeue(out var computeRequest))
       {
         activity?.AddEvent(new ActivityEvent(computeRequest.TypeCase.ToString()));
-        await stream.RequestStream.WriteAsync(new()
+        await stream.RequestStream.WriteAsync(new ProcessRequest
                                               {
                                                 Compute = computeRequest,
-                                              });
+                                              })
+                    .ConfigureAwait(false);
       }
     }
 
@@ -234,9 +281,11 @@ public class RequestProcessor : IInitializable
     activity?.AddEvent(new ActivityEvent("Processing ResponseStream"));
     // process incoming messages
     // TODO : To reduce memory consumption, do not generate subStream. Implement a state machine instead.
-    await foreach (var singleReplyStream in stream.ResponseStream.Separate(logger_, cancellationToken))
+    await foreach (var singleReplyStream in stream.ResponseStream.Separate(logger_,
+                                                                           cancellationToken)
+                                                  .ConfigureAwait(false))
     {
-      var       first     = Enumerable.First<ProcessReply>(singleReplyStream);
+      var       first     = singleReplyStream.First();
       using var activity2 = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.ProcessReply");
       if (isComplete)
       {
@@ -250,7 +299,8 @@ public class RequestProcessor : IInitializable
           throw new ArgumentOutOfRangeException(nameof(ProcessReply),
                                                 $"received a {nameof(ProcessReply.TypeOneofCase.None)} reply type.");
         case ProcessReply.TypeOneofCase.Output:
-          await output.WhenAll();
+          await output.WhenAll()
+                      .ConfigureAwait(false);
           output.Clear();
           output.Add(submitter_.FinalizeDispatch(taskData.TaskId,
                                                  dispatch,
@@ -270,45 +320,52 @@ public class RequestProcessor : IInitializable
           break;
         case ProcessReply.TypeOneofCase.CreateSmallTask:
           var replySmallTasksAsync = await SubmitSmallTasksAsync(taskData,
-                                                  dispatch.Id,
-                                                  first,
-                                                  cancellationToken);
-          await stream.RequestStream.WriteAsync(new()
-          {
-            CreateTask = new()
-            {
-              Reply   = replySmallTasksAsync,
-              ReplyId = first.RequestId,
-            },
-          });
+                                                                 dispatch.Id,
+                                                                 first,
+                                                                 cancellationToken)
+                                       .ConfigureAwait(false);
+          await stream.RequestStream.WriteAsync(new ProcessRequest
+                                                {
+                                                  CreateTask = new ProcessRequest.Types.CreateTask
+                                                               {
+                                                                 Reply   = replySmallTasksAsync,
+                                                                 ReplyId = first.RequestId,
+                                                               },
+                                                })
+                      .ConfigureAwait(false);
           break;
         case ProcessReply.TypeOneofCase.CreateLargeTask:
           var replyLargeTasksAsync = await SubmitLargeTasksAsync(taskData,
-                                                  dispatch.Id,
-                                                  first,
-                                                  singleReplyStream,
-                                                  cancellationToken);
-          await stream.RequestStream.WriteAsync(new()
-          {
-            CreateTask = new()
-            {
-              Reply   = replyLargeTasksAsync,
-              ReplyId = first.RequestId,
-            },
-          });
+                                                                 dispatch.Id,
+                                                                 first,
+                                                                 singleReplyStream,
+                                                                 cancellationToken)
+                                       .ConfigureAwait(false);
+          await stream.RequestStream.WriteAsync(new ProcessRequest
+                                                {
+                                                  CreateTask = new ProcessRequest.Types.CreateTask
+                                                               {
+                                                                 Reply   = replyLargeTasksAsync,
+                                                                 ReplyId = first.RequestId,
+                                                               },
+                                                })
+                      .ConfigureAwait(false);
           break;
         case ProcessReply.TypeOneofCase.Resource:
           await ProvideResourcesAsync(stream.RequestStream,
                                       first,
-                                      cancellationToken);
+                                      cancellationToken)
+            .ConfigureAwait(false);
           break;
         case ProcessReply.TypeOneofCase.CommonData:
           await ProvideCommonDataAsync(stream.RequestStream,
-                                       first);
+                                       first)
+            .ConfigureAwait(false);
           break;
         case ProcessReply.TypeOneofCase.DirectData:
           await ProvideDirectDataAsync(stream.RequestStream,
-                                       first);
+                                       first)
+            .ConfigureAwait(false);
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(ProcessReply),
@@ -319,46 +376,55 @@ public class RequestProcessor : IInitializable
 
     using (var _ = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.CloseStreams"))
     {
-      await stream.RequestStream.CompleteAsync();
-      await stream.ResponseStream.MoveNext();
+      await stream.RequestStream.CompleteAsync()
+                  .ConfigureAwait(false);
+      await stream.ResponseStream.MoveNext()
+                  .ConfigureAwait(false);
     }
 
     if (!isComplete)
+    {
       throw new InvalidOperationException("Unexpected end of stream from the worker");
+    }
 
 
     return output;
   }
 
 
-  private async Task ProvideResourcesAsync(IAsyncStreamWriter<ProcessRequest> requestStream, ProcessReply processReply, CancellationToken cancellationToken)
+  private async Task ProvideResourcesAsync(IAsyncStreamWriter<ProcessRequest> requestStream,
+                                           ProcessReply                       processReply,
+                                           CancellationToken                  cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ProvideResourcesAsync)}");
     var bytes = resourcesStorage_.GetValuesAsync(processReply.Resource.Key,
-                                                    cancellationToken);
+                                                 cancellationToken);
 
-    await foreach (var dataReply in TaskAsyncEnumerableExtensions.WithCancellation<ProcessRequest.Types.DataReply>(bytes.ToDataReply(processReply.RequestId,
-                                                                                                        processReply.Resource.Key,
-                                                                                                        cancellationToken),
-                                                                                      cancellationToken))
+    await foreach (var dataReply in bytes.ToDataReply(processReply.RequestId,
+                                                      processReply.Resource.Key,
+                                                      cancellationToken)
+                                         .WithCancellation(cancellationToken)
+                                         .ConfigureAwait(false))
     {
-      await requestStream.WriteAsync(new()
+      await requestStream.WriteAsync(new ProcessRequest
                                      {
                                        Resource = dataReply,
-                                     });
+                                     })
+                         .ConfigureAwait(false);
     }
   }
 
   [PublicAPI]
-  public Task ProvideDirectDataAsync(IAsyncStreamWriter<ProcessRequest> streamRequestStream, ProcessReply reply)
+  public Task ProvideDirectDataAsync(IAsyncStreamWriter<ProcessRequest> streamRequestStream,
+                                     ProcessReply                       reply)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ProvideDirectDataAsync)}");
-    return streamRequestStream.WriteAsync(new()
+    return streamRequestStream.WriteAsync(new ProcessRequest
                                           {
-                                            DirectData = new()
+                                            DirectData = new ProcessRequest.Types.DataReply
                                                          {
                                                            ReplyId = reply.RequestId,
-                                                           Init = new()
+                                                           Init = new ProcessRequest.Types.DataReply.Types.Init
                                                                   {
                                                                     Key   = reply.CommonData.Key,
                                                                     Error = "Common data are not supported yet",
@@ -368,15 +434,16 @@ public class RequestProcessor : IInitializable
   }
 
   [PublicAPI]
-  public Task ProvideCommonDataAsync(IAsyncStreamWriter<ProcessRequest> streamRequestStream, ProcessReply reply)
+  public Task ProvideCommonDataAsync(IAsyncStreamWriter<ProcessRequest> streamRequestStream,
+                                     ProcessReply                       reply)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ProvideCommonDataAsync)}");
-    return streamRequestStream.WriteAsync(new()
+    return streamRequestStream.WriteAsync(new ProcessRequest
                                           {
-                                            CommonData = new()
+                                            CommonData = new ProcessRequest.Types.DataReply
                                                          {
                                                            ReplyId = reply.RequestId,
-                                                           Init = new()
+                                                           Init = new ProcessRequest.Types.DataReply.Types.Init
                                                                   {
                                                                     Key   = reply.CommonData.Key,
                                                                     Error = "Common data are not supported yet",
@@ -387,11 +454,11 @@ public class RequestProcessor : IInitializable
 
 
   [PublicAPI]
-  public Task<CreateTaskReply> SubmitLargeTasksAsync(TaskData                      taskData,
-                                                         string                         dispatchId,
-                                                         ProcessReply                   first,
-                                                         IList<ProcessReply> singleReplyStream,
-                                                         CancellationToken              cancellationToken)
+  public Task<CreateTaskReply> SubmitLargeTasksAsync(TaskData            taskData,
+                                                     string              dispatchId,
+                                                     ProcessReply        first,
+                                                     IList<ProcessReply> singleReplyStream,
+                                                     CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SubmitLargeTasksAsync)}");
     return submitter_.CreateTasks(taskData.SessionId,
@@ -404,7 +471,7 @@ public class RequestProcessor : IInitializable
   }
 
   [PublicAPI]
-  public Task<CreateTaskReply> SubmitSmallTasksAsync(TaskData         taskData,
+  public Task<CreateTaskReply> SubmitSmallTasksAsync(TaskData          taskData,
                                                      string            dispatchId,
                                                      ProcessReply      request,
                                                      CancellationToken cancellationToken)
@@ -414,48 +481,36 @@ public class RequestProcessor : IInitializable
                                   taskData.ParentTaskId,
                                   dispatchId,
                                   request.CreateSmallTask.TaskOptions,
-                                  request.CreateSmallTask.TaskRequests
-                                         .ToAsyncEnumerable()
-                                         .Select(taskRequest => new Common.gRPC.Services.TaskRequest(taskRequest.Id,
-                                                                                                     taskRequest.ExpectedOutputKeys,
-                                                                                                     taskRequest.DataDependencies,
-                                                                                                     new[] { taskRequest.Payload.Memory }.ToAsyncEnumerable())),
+                                  request.CreateSmallTask.TaskRequests.ToAsyncEnumerable()
+                                         .Select(taskRequest => new TaskRequest(taskRequest.Id,
+                                                                                taskRequest.ExpectedOutputKeys,
+                                                                                taskRequest.DataDependencies,
+                                                                                new[]
+                                                                                {
+                                                                                  taskRequest.Payload.Memory,
+                                                                                }.ToAsyncEnumerable())),
                                   cancellationToken);
   }
 
   [PublicAPI]
-  public async Task StoreResultAsync(IObjectStorage resultStorage,
-                                     ProcessReply first,
+  public async Task StoreResultAsync(IObjectStorage      resultStorage,
+                                     ProcessReply        first,
                                      IList<ProcessReply> singleReplyStream,
-                                     string sessionId,
-                                     string ownerTaskId,
-                                     CancellationToken cancellationToken)
+                                     string              sessionId,
+                                     string              ownerTaskId,
+                                     CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(StoreResultAsync)}");
     await resultStorage.AddOrUpdateAsync(first.Result.Init.Key,
-                                          singleReplyStream.Skip(1).Select(reply => reply.Result.Data.Data.Memory).ToAsyncEnumerable(),
-                                          cancellationToken);
+                                         singleReplyStream.Skip(1)
+                                                          .Select(reply => reply.Result.Data.Data.Memory)
+                                                          .ToAsyncEnumerable(),
+                                         cancellationToken)
+                       .ConfigureAwait(false);
     await resultTable_.SetResult(sessionId,
                                  ownerTaskId,
                                  first.Result.Init.Key,
-                                 cancellationToken);
-  }
-
-  private bool isInitialized_ = false;
-
-  /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
-
-  /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
-    {
-      var resultTable  = resultTable_.Init(cancellationToken);
-      var workerClientProvider = workerClientProvider_.Init(cancellationToken);
-      await resultTable;
-      await workerClientProvider;
-      isInitialized_ = true;
-    }
+                                 cancellationToken)
+                      .ConfigureAwait(false);
   }
 }

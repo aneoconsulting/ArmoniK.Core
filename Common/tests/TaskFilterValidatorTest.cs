@@ -22,14 +22,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Text;
-
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.gRPC.Validators;
-
-using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 
 using NUnit.Framework;
 
@@ -44,49 +38,51 @@ public class TaskFilterValidatorTest
   public void MultipleExcludedStatusesShouldBeValid()
   {
     var tf = new TaskFilter
-    {
-      Excluded = new TaskFilter.Types.StatusesRequest
-      {
-        Statuses =
-        {
-          TaskStatus.Completed,
-          TaskStatus.Canceled,
-        },
-      },
-      Dispatch = new TaskFilter.Types.IdsRequest
-      {
-        Ids =
-        {
-          "DispatchId",
-        },
-      },
-    };
+             {
+               Excluded = new TaskFilter.Types.StatusesRequest
+                          {
+                            Statuses =
+                            {
+                              TaskStatus.Completed,
+                              TaskStatus.Canceled,
+                            },
+                          },
+               Dispatch = new TaskFilter.Types.IdsRequest
+                          {
+                            Ids =
+                            {
+                              "DispatchId",
+                            },
+                          },
+             };
 
-    Assert.IsTrue(validator_.Validate(tf).IsValid);
+    Assert.IsTrue(validator_.Validate(tf)
+                            .IsValid);
   }
 
   [Test]
   public void MultipleIncludedStatusesShouldBeValid()
   {
     var tf = new TaskFilter
-    {
-      Included = new TaskFilter.Types.StatusesRequest
-      {
-        Statuses =
-        {
-          TaskStatus.Completed,
-          TaskStatus.Canceled,
-        },
-      },
-      Dispatch = new TaskFilter.Types.IdsRequest
-      {
-        Ids =
-        {
-          "DispatchId",
-        },
-      },
-    };
+             {
+               Included = new TaskFilter.Types.StatusesRequest
+                          {
+                            Statuses =
+                            {
+                              TaskStatus.Completed,
+                              TaskStatus.Canceled,
+                            },
+                          },
+               Dispatch = new TaskFilter.Types.IdsRequest
+                          {
+                            Ids =
+                            {
+                              "DispatchId",
+                            },
+                          },
+             };
 
-    Assert.IsTrue(validator_.Validate(tf).IsValid);
+    Assert.IsTrue(validator_.Validate(tf)
+                            .IsValid);
   }
 }

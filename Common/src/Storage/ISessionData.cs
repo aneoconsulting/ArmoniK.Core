@@ -26,9 +26,8 @@ using System.Collections.Generic;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public record SessionData(string              SessionId,
-                          string              DispatchId,
-                          IEnumerable<string> AncestorsDispatchId,
-                          bool                IsCancelled,
-                          Api.gRPC.V1.TaskOptions         Options);
-
+public record SessionData(string                  SessionId,
+                          string                  DispatchId,
+                          IEnumerable<string>     AncestorsDispatchId,
+                          bool                    IsCancelled,
+                          Api.gRPC.V1.TaskOptions Options);

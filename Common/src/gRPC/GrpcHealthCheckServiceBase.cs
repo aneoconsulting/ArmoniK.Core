@@ -37,40 +37,43 @@ namespace ArmoniK.Core.Common.gRPC;
 [PublicAPI]
 public abstract class GrpcHealthCheckServiceBase : Health.HealthBase
 {
-  private readonly HealthCheckService healthCheckService_;
   private readonly string[]           grpcServices_;
+  private readonly HealthCheckService healthCheckService_;
 
-  protected GrpcHealthCheckServiceBase(HealthCheckService healthCheckService, string[] grpcServices)
+  protected GrpcHealthCheckServiceBase(HealthCheckService healthCheckService,
+                                       string[]           grpcServices)
   {
     healthCheckService_ = healthCheckService;
     grpcServices_       = grpcServices;
   }
 
-  public override async Task<HealthCheckResponse> Check(HealthCheckRequest request, ServerCallContext context)
+  public override async Task<HealthCheckResponse> Check(HealthCheckRequest request,
+                                                        ServerCallContext  context)
   {
     if (string.IsNullOrEmpty(request.Service) || grpcServices_.Contains(request.Service))
     {
       var healthReport = await healthCheckService_.CheckHealthAsync(registration => registration.Tags.Contains(nameof(HealthCheckTag.Readiness)),
-                                                                    context.CancellationToken);
+                                                                    context.CancellationToken)
+                                                  .ConfigureAwait(false);
 
       if (healthReport.Status == HealthStatus.Healthy)
       {
         context.Status = Status.DefaultSuccess;
-        return new()
+        return new HealthCheckResponse
                {
                  Status = HealthCheckResponse.Types.ServingStatus.Serving,
                };
       }
 
       context.Status = Status.DefaultSuccess;
-      return new()
+      return new HealthCheckResponse
              {
                Status = HealthCheckResponse.Types.ServingStatus.NotServing,
              };
     }
 
     context.Status = Status.DefaultSuccess;
-    return new()
+    return new HealthCheckResponse
            {
              Status = HealthCheckResponse.Types.ServingStatus.Unknown,
            };

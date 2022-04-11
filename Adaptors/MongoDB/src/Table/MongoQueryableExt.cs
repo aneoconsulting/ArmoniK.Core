@@ -32,6 +32,6 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table;
 public static class MongoQueryableExt
 {
   public static IMongoQueryable<TaskData> FilterQuery(this IMongoQueryable<TaskData> taskQueryable,
-                                                           TaskFilter                          filter)
+                                                      TaskFilter                     filter)
     => taskQueryable.Where(filter.ToFilterExpression());
 }

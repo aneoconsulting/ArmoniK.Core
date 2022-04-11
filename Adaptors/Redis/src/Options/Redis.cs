@@ -22,20 +22,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Adapters.Redis.Options
+namespace ArmoniK.Core.Adapters.Redis.Options;
+
+internal class Redis
 {
-  internal class Redis
-  {
-    public const string  SettingSection = nameof(Redis);
-    public string InstanceName { get; set; }
-    public string EndpointUrl { get; set; }
-    public string ClientName { get; set; }
-    public string SslHost { get; set; }
-    public int Timeout { get; set; }
-    public string Password { get; set; }
-    public string User { get; set; }
-    public bool Ssl { get; set; }
-    public string CredentialsPath { get; set; }
-    public string CaPath { get; set; }
-  }
+  public const string SettingSection = nameof(Redis);
+  public       string InstanceName    { get; set; }
+  public       string EndpointUrl     { get; set; }
+  public       string ClientName      { get; set; }
+  public       string SslHost         { get; set; }
+  public       int    Timeout         { get; set; }
+  public       string Password        { get; set; }
+  public       string User            { get; set; }
+  public       bool   Ssl             { get; set; }
+  public       string CredentialsPath { get; set; }
+  public       string CaPath          { get; set; }
 }

@@ -31,22 +31,19 @@ namespace ArmoniK.Core.ProfilingTools.OpenTelemetryExporter;
 public static class ActivityExt
 {
   public static OpenTelemetryData ToOpenTelemetryData(this Activity activity)
-  {
-    return new OpenTelemetryData(activity.Id,
-                                 activity.Baggage,
-                                 activity.Duration,
-                                 activity.Tags,
-                                 activity.Context.SpanId.ToString(),
-                                 activity.Context.TraceId.ToString(),
-                                 activity.ParentId,
-                                 activity.ParentSpanId.ToString(),
-                                 activity.RootId,
-                                 activity.DisplayName,
-                                 activity.Source.Name,
-                                 activity.StartTimeUtc);
-  }
+    => new(activity.Id,
+           activity.Baggage,
+           activity.Duration,
+           activity.Tags,
+           activity.Context.SpanId.ToString(),
+           activity.Context.TraceId.ToString(),
+           activity.ParentId,
+           activity.ParentSpanId.ToString(),
+           activity.RootId,
+           activity.DisplayName,
+           activity.Source.Name,
+           activity.StartTimeUtc);
 }
-
 
 public record OpenTelemetryData(string                                    ActivityId,
                                 IEnumerable<KeyValuePair<string, string>> Baggage,

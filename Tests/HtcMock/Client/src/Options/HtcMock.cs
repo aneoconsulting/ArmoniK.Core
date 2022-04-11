@@ -26,16 +26,15 @@ using System;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Samples.HtcMock.Client.Options
+namespace ArmoniK.Samples.HtcMock.Client.Options;
+
+[PublicAPI]
+public class HtcMock
 {
-  [PublicAPI]
-  public class HtcMock
-  {
-    public const string SettingSection = nameof(HtcMock);
-    public int NTasks { get; set; } = 100;
-    public TimeSpan TotalCalculationTime { get; set; } = TimeSpan.FromMilliseconds(100);
-    public int DataSize { get; set; } = 1;
-    public int MemorySize { get; set; } = 1;
-    public int SubTasksLevels { get; set; } = 4;
-  }
+  public const string   SettingSection = nameof(HtcMock);
+  public       int      NTasks               { get; set; } = 100;
+  public       TimeSpan TotalCalculationTime { get; set; } = TimeSpan.FromMilliseconds(100);
+  public       int      DataSize             { get; set; } = 1;
+  public       int      MemorySize           { get; set; } = 1;
+  public       int      SubTasksLevels       { get; set; } = 4;
 }

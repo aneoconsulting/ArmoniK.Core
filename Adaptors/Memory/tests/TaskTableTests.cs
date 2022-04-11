@@ -35,17 +35,17 @@ namespace ArmoniK.Core.Adapters.Memory.Tests;
 
 [TestFixture]
 public class TaskTableTests : TaskTableTestBase
-{ 
+{
   public override void GetTaskTableInstance()
   {
-    var services      = new ServiceCollection();
+    var services = new ServiceCollection();
 
-    services.AddTransient<ITaskTable,TaskTable>();
+    services.AddTransient<ITaskTable, TaskTable>();
     services.AddTransient<ConcurrentDictionary<string, TaskData>>();
     services.AddTransient<ConcurrentDictionary<string, ConcurrentQueue<string>>>();
     services.AddLogging();
 
-    var provider = services.BuildServiceProvider(validateScopes:true);
+    var provider = services.BuildServiceProvider(true);
     var scope    = provider.CreateScope();
 
     TaskTable = scope.ServiceProvider.GetRequiredService<ITaskTable>();

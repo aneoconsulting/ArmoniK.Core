@@ -31,35 +31,40 @@ using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 
 using Grpc.Core;
+using Grpc.Net.Client;
 
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Common.gRPC;
+using GrpcChannel = ArmoniK.Core.Common.Injection.Options.GrpcChannel;
 
+namespace ArmoniK.Core.Common.gRPC;
 
 [UsedImplicitly]
 public class GrpcChannelProvider : ProviderBase<ChannelBase>
 {
+  private readonly bool isInitialized_;
+
   // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-  public GrpcChannelProvider(GrpcChannel options, ILogger<GrpcChannelProvider> logger)
+  public GrpcChannelProvider(GrpcChannel                  options,
+                             ILogger<GrpcChannelProvider> logger)
     : base(options.SocketType == GrpcSocketType.Web
              ? () => Task.FromResult(BuildWebGrpcChannel(options.Address ?? throw new InvalidOperationException(),
                                                          logger))
              : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Address ?? throw new InvalidOperationException(),
                                                                 logger)))
-  {
-    isInitialized_ = true;
-  }
+    => isInitialized_ = true;
 
-  private static ChannelBase BuildWebGrpcChannel(string address, ILogger logger)
+  private static ChannelBase BuildWebGrpcChannel(string  address,
+                                                 ILogger logger)
   {
     using var _ = logger.LogFunction();
     return Grpc.Net.Client.GrpcChannel.ForAddress(address);
   }
 
-  private static ChannelBase BuildUnixSocketGrpcChannel(string address, ILogger logger)
+  private static ChannelBase BuildUnixSocketGrpcChannel(string  address,
+                                                        ILogger logger)
   {
     using var _ = logger.LogFunction();
 
@@ -67,7 +72,8 @@ public class GrpcChannelProvider : ProviderBase<ChannelBase>
 
     var socketsHttpHandler = new SocketsHttpHandler
                              {
-                               ConnectCallback = async (unknown, cancellationToken) =>
+                               ConnectCallback = async (unknown,
+                                                        cancellationToken) =>
                                                  {
                                                    var socket = new Socket(AddressFamily.Unix,
                                                                            SocketType.Stream,
@@ -76,7 +82,8 @@ public class GrpcChannelProvider : ProviderBase<ChannelBase>
                                                    try
                                                    {
                                                      await socket.ConnectAsync(udsEndPoint,
-                                                                               cancellationToken).ConfigureAwait(false);
+                                                                               cancellationToken)
+                                                                 .ConfigureAwait(false);
                                                      return new NetworkStream(socket,
                                                                               true);
                                                    }
@@ -89,13 +96,12 @@ public class GrpcChannelProvider : ProviderBase<ChannelBase>
                              };
 
     return Grpc.Net.Client.GrpcChannel.ForAddress("http://localhost",
-                                                  new()
+                                                  new GrpcChannelOptions
                                                   {
                                                     HttpHandler = socketsHttpHandler,
                                                   });
   }
 
-  private readonly bool isInitialized_ = false;
-
-  public override ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+  public override ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
 }

@@ -62,9 +62,8 @@ public class QueueMessageModelMapping : IMongoDataModelMapping<QueueMessageModel
   public string CollectionName { get; } = Collection;
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(
-    IClientSessionHandle                sessionHandle,
-    IMongoCollection<QueueMessageModelMapping> collection)
+  public Task InitializeIndexesAsync(IClientSessionHandle                       sessionHandle,
+                                     IMongoCollection<QueueMessageModelMapping> collection)
   {
     var messageIdIndex  = Builders<QueueMessageModelMapping>.IndexKeys.Text(model => model.MessageId);
     var ownerIdIndex    = Builders<QueueMessageModelMapping>.IndexKeys.Text(model => model.OwnerId);
@@ -72,34 +71,34 @@ public class QueueMessageModelMapping : IMongoDataModelMapping<QueueMessageModel
     var priorityIndex   = Builders<QueueMessageModelMapping>.IndexKeys.Descending(model => model.Priority);
     var ownedUntilIndex = Builders<QueueMessageModelMapping>.IndexKeys.Text(model => model.OwnedUntil);
     var pullIndex = Builders<QueueMessageModelMapping>.IndexKeys.Combine(priorityIndex,
-                                                                  submissionIndex);
+                                                                         submissionIndex);
     var pullIndex2 = Builders<QueueMessageModelMapping>.IndexKeys.Combine(priorityIndex,
-                                                                   submissionIndex,
-                                                                   ownedUntilIndex);
+                                                                          submissionIndex,
+                                                                          ownedUntilIndex);
     var lockedIndex = Builders<QueueMessageModelMapping>.IndexKeys.Combine(messageIdIndex,
-                                                                    ownerIdIndex);
+                                                                           ownerIdIndex);
 
 
     var indexModels = new CreateIndexModel<QueueMessageModelMapping>[]
                       {
                         new(pullIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name = nameof(pullIndex),
                             }),
                         new(pullIndex2,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name = nameof(pullIndex2),
                             }),
                         new(lockedIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name   = nameof(lockedIndex),
                               Unique = true,
                             }),
                         new(messageIdIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name   = nameof(messageIdIndex),
                               Unique = true,

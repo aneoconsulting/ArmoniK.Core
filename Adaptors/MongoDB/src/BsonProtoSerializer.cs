@@ -30,37 +30,47 @@ using MongoDB.Bson.Serialization;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
-public class BsonProtoSerializer<T> : IBsonSerializer<T> where T : IMessage<T>, new()
+public class BsonProtoSerializer<T> : IBsonSerializer<T>
+  where T : IMessage<T>, new()
 {
   /// <inheritdoc />
-  object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+  object IBsonSerializer.Deserialize(BsonDeserializationContext context,
+                                     BsonDeserializationArgs    args)
     => Deserialize(context,
                    args);
 
   /// <inheritdoc />
-  public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, T value)
-  {
-    context.Writer.WriteString(value.ToString());
-  }
+  public void Serialize(BsonSerializationContext context,
+                        BsonSerializationArgs    args,
+                        T                        value)
+    => context.Writer.WriteString(value.ToString());
 
   /// <inheritdoc />
-  public T Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+  public T Deserialize(BsonDeserializationContext context,
+                       BsonDeserializationArgs    args)
   {
     var parser = new JsonParser(JsonParser.Settings.Default);
     return parser.Parse<T>(context.Reader.ReadString());
   }
 
   /// <inheritdoc />
-  public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
+  public void Serialize(BsonSerializationContext context,
+                        BsonSerializationArgs    args,
+                        object                   value)
   {
     if (value is T t)
+    {
       Serialize(context,
                 args,
                 t);
+    }
     else
-      throw new("Not supported type");
+    {
+      throw new Exception("Not supported type");
+    }
   }
 
   /// <inheritdoc />
-  public Type ValueType => typeof(T);
+  public Type ValueType
+    => typeof(T);
 }

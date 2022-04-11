@@ -35,17 +35,15 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-
-
 public class Pollster
 {
   private readonly ActivitySource           activitySource_;
+  private readonly DataPrefetcher           dataPrefetcher_;
   private readonly IHostApplicationLifetime lifeTime_;
   private readonly ILogger<Pollster>        logger_;
   private readonly int                      messageBatchSize_;
-  private readonly IQueueStorage            queueStorage_;
   private readonly PreconditionChecker      preconditionChecker_;
-  private readonly DataPrefetcher           dataPrefetcher_;
+  private readonly IQueueStorage            queueStorage_;
   private readonly RequestProcessor         requestProcessor_;
 
   public Pollster(IQueueStorage            queueStorage,
@@ -58,8 +56,10 @@ public class Pollster
                   ILogger<Pollster>        logger)
   {
     if (options.MessageBatchSize < 1)
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
+    }
 
     logger_              = logger;
     activitySource_      = activitySource;
@@ -73,15 +73,20 @@ public class Pollster
 
   public async Task Init(CancellationToken cancellationToken)
   {
-    await queueStorage_.Init(cancellationToken);
-    await dataPrefetcher_.Init(cancellationToken);
-    await preconditionChecker_.Init(cancellationToken);
-    await requestProcessor_.Init(cancellationToken);
+    await queueStorage_.Init(cancellationToken)
+                       .ConfigureAwait(false);
+    await dataPrefetcher_.Init(cancellationToken)
+                         .ConfigureAwait(false);
+    await preconditionChecker_.Init(cancellationToken)
+                              .ConfigureAwait(false);
+    await requestProcessor_.Init(cancellationToken)
+                           .ConfigureAwait(false);
   }
 
   public async Task MainLoop(CancellationToken cancellationToken)
   {
-    await Init(cancellationToken);
+    await Init(cancellationToken)
+      .ConfigureAwait(false);
 
     cancellationToken.Register(() => logger_.LogError("Global cancellation has been triggered."));
     try
@@ -91,12 +96,12 @@ public class Pollster
       {
         logger_.LogDebug("Trying to fetch messages");
 
-        logger_.LogFunction(functionName:
-                            $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
+        logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
         var messages = queueStorage_.PullAsync(messageBatchSize_,
                                                cancellationToken);
 
-        await foreach (var message in messages.WithCancellation(cancellationToken))
+        await foreach (var message in messages.WithCancellation(cancellationToken)
+                                              .ConfigureAwait(false))
         {
           await using var msg = message;
 
@@ -119,7 +124,8 @@ public class Pollster
             logger_.LogDebug("Loading task data");
 
             var precondition = await preconditionChecker_.CheckPreconditionsAsync(message,
-                                                                                  cancellationToken);
+                                                                                  cancellationToken)
+                                                         .ConfigureAwait(false);
 
             if (precondition is not null)
             {
@@ -129,7 +135,8 @@ public class Pollster
 
               logger_.LogDebug("Start prefetch data");
               var computeRequestStream = await dataPrefetcher_.PrefetchDataAsync(taskData,
-                                                                                 cancellationToken);
+                                                                                 cancellationToken)
+                                                              .ConfigureAwait(false);
 
 
               logger_.LogDebug("Start a new Task to process the messageHandler");
@@ -137,12 +144,14 @@ public class Pollster
                                                                        taskData,
                                                                        dispatch,
                                                                        computeRequestStream,
-                                                                       cancellationToken);
+                                                                       cancellationToken)
+                                                         .ConfigureAwait(false);
 
               logger_.LogDebug("Finish task processing");
 
 
-              await Task.WhenAll(processResult);
+              await Task.WhenAll(processResult)
+                        .ConfigureAwait(false);
 
               logger_.LogDebug("Task returned");
             }
@@ -156,7 +165,6 @@ public class Pollster
           }
         }
       }
-
     }
     catch (Exception e)
     {
@@ -166,5 +174,4 @@ public class Pollster
 
     lifeTime_.StopApplication();
   }
-
 }

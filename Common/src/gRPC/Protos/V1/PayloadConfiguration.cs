@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // ReSharper disable once CheckNamespace
+
 namespace ArmoniK.Api.gRPC.V1;
 
 public static class PayloadConfiguration

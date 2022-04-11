@@ -36,11 +36,9 @@ namespace ArmoniK.Core.Adapters.Memory;
 public static class ServiceCollectionExt
 {
   [PublicAPI]
-  public static IServiceCollection AddMongoComponents(
-    this IServiceCollection services,
-    ConfigurationManager    configuration,
-    ILogger                 logger
-  )
+  public static IServiceCollection AddMongoComponents(this IServiceCollection services,
+                                                      ConfigurationManager    configuration,
+                                                      ILogger                 logger)
   {
     logger.LogInformation("Configure MongoDB client");
 
@@ -58,9 +56,8 @@ public static class ServiceCollectionExt
     if (components["QueueStorage"] == "ArmoniK.Adapters.Memory.LockedQueueStorage")
     {
       services.AddTransient<ILockedQueueStorage, LockedQueueStorage>();
-
     }
-    
+
 
     return services;
   }

@@ -33,7 +33,6 @@ namespace ArmoniK.Core.Common.Storage;
 
 public static class TaskTableExtensions
 {
-
   public static Task<int> CancelTasks(this ITaskTable   taskTable,
                                       TaskFilter        filter,
                                       CancellationToken cancellationToken = default)

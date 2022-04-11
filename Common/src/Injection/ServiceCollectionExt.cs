@@ -25,7 +25,6 @@
 using System;
 
 using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Injection.Options;
 
@@ -41,8 +40,10 @@ namespace ArmoniK.Core.Common.Injection;
 
 public static class ConfigurationExt
 {
-  public static T GetRequiredValue<T>(this IConfiguration configuration, string key) 
-    => configuration.GetRequiredSection(key).Get<T>();
+  public static T GetRequiredValue<T>(this IConfiguration configuration,
+                                      string              key)
+    => configuration.GetRequiredSection(key)
+                    .Get<T>();
 }
 
 public static class ServiceCollectionExt
@@ -50,7 +51,8 @@ public static class ServiceCollectionExt
   [PublicAPI]
   public static IServiceCollection AddOption<T>(this IServiceCollection services,
                                                 IConfiguration          configuration,
-                                                string                  key) where T : class
+                                                string                  key)
+    where T : class
     => services.AddSingleton(configuration.GetRequiredValue<T>(key));
 
 
@@ -58,7 +60,8 @@ public static class ServiceCollectionExt
   public static IServiceCollection AddOption<T>(this IServiceCollection services,
                                                 IConfiguration          configuration,
                                                 string                  key,
-                                                out T                   option) where T : class
+                                                out T                   option)
+    where T : class
   {
     option = configuration.GetRequiredValue<T>(key);
     return services.AddSingleton(option);
@@ -66,11 +69,14 @@ public static class ServiceCollectionExt
 
   [PublicAPI]
   public static IServiceCollection AddArmoniKWorkerConnection(this IServiceCollection services,
-                                                  IConfiguration          configuration)
+                                                              IConfiguration          configuration)
   {
     var computePlanComponent = configuration.GetSection(ComputePlan.SettingSection);
     if (!computePlanComponent.Exists())
+    {
       return services;
+    }
+
     var computePlanOptions = computePlanComponent.Get<ComputePlan>();
 
     if (computePlanOptions.GrpcChannel is not null)
@@ -82,151 +88,199 @@ public static class ServiceCollectionExt
               .AddSingletonWithHealthCheck<GrpcChannelProvider>(nameof(GrpcChannelProvider))
               .AddSingletonWithHealthCheck<WorkerClientProvider>(nameof(WorkerClientProvider));
     }
+
     return services;
   }
 
   [PublicAPI]
-  public static IServiceCollection AddSingletonWithHealthCheck<T>(this IServiceCollection services, string checkName)
+  public static IServiceCollection AddSingletonWithHealthCheck<T>(this IServiceCollection services,
+                                                                  string                  checkName)
     where T : class, IHealthCheckProvider
   {
     services.AddSingleton<T>();
 
     services.AddHealthChecks()
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Startup)}",
-                     provider => new HealthCheck(provider.GetRequiredService<T>(),
-                                                 HealthCheckTag.Startup),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Startup) }))
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
-                     provider => new HealthCheck(provider.GetRequiredService<T>(),
-                                                 HealthCheckTag.Liveness),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Liveness) }))
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
-                     provider => new HealthCheck(provider.GetRequiredService<T>(),
-                                                 HealthCheckTag.Readiness),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Readiness) }));
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Startup)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                                         HealthCheckTag.Startup),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Startup),
+                                             }))
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                                         HealthCheckTag.Liveness),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Liveness),
+                                             }))
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                                         HealthCheckTag.Readiness),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Readiness),
+                                             }));
     return services;
   }
 
   [PublicAPI]
-  public static IServiceCollection AddSingletonWithHealthCheck<TService, TImplementation>(this IServiceCollection services, string checkName)
-    where TImplementation : class, IHealthCheckProvider, TService where TService : class
+  public static IServiceCollection AddSingletonWithHealthCheck<TService, TImplementation>(this IServiceCollection services,
+                                                                                          string                  checkName)
+    where TImplementation : class, IHealthCheckProvider, TService
+    where TService : class
   {
     services.AddSingleton<TService, TImplementation>();
 
     services.AddHealthChecks()
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Startup)}",
-                     provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
-                                                 HealthCheckTag.Startup),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Startup) }))
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
-                     provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
-                                                 HealthCheckTag.Liveness),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Liveness) }))
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
-                     provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
-                                                 HealthCheckTag.Readiness),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Readiness) }));
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Startup)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                                         HealthCheckTag.Startup),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Startup),
+                                             }))
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                                         HealthCheckTag.Liveness),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Liveness),
+                                             }))
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                                         HealthCheckTag.Readiness),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Readiness),
+                                             }));
     return services;
   }
 
   [PublicAPI]
-  public static IServiceCollection AddTransientWithHealthCheck<T>(this IServiceCollection services, string checkName)
+  public static IServiceCollection AddTransientWithHealthCheck<T>(this IServiceCollection services,
+                                                                  string                  checkName)
     where T : class, IHealthCheckProvider
   {
     services.AddTransient<T>();
 
     services.AddHealthChecks()
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Startup)}",
-                     provider => new HealthCheck(provider.GetRequiredService<T>(),
-                                                 HealthCheckTag.Startup),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Startup) }))
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
-                     provider => new HealthCheck(provider.GetRequiredService<T>(),
-                                                 HealthCheckTag.Liveness),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Liveness) }))
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
-                     provider => new HealthCheck(provider.GetRequiredService<T>(),
-                                                 HealthCheckTag.Readiness),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Readiness) }));
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Startup)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                                         HealthCheckTag.Startup),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Startup),
+                                             }))
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                                         HealthCheckTag.Liveness),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Liveness),
+                                             }))
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<T>(),
+                                                                         HealthCheckTag.Readiness),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Readiness),
+                                             }));
     return services;
   }
 
   [PublicAPI]
-  public static IServiceCollection AddTransientWithHealthCheck<TService, TImplementation>(this IServiceCollection services, string checkName)
-    where TImplementation : class, IHealthCheckProvider, TService where TService : class
+  public static IServiceCollection AddTransientWithHealthCheck<TService, TImplementation>(this IServiceCollection services,
+                                                                                          string                  checkName)
+    where TImplementation : class, IHealthCheckProvider, TService
+    where TService : class
   {
     services.AddTransient<TService, TImplementation>();
 
     services.AddHealthChecks()
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Startup)}",
-                     provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
-                                                 HealthCheckTag.Startup),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Startup) }))
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
-                     provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
-                                                 HealthCheckTag.Liveness),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Liveness) }))
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
-                     provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
-                                                 HealthCheckTag.Readiness),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Readiness) }));
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Startup)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                                         HealthCheckTag.Startup),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Startup),
+                                             }))
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                                         HealthCheckTag.Liveness),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Liveness),
+                                             }))
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<TImplementation>(),
+                                                                         HealthCheckTag.Readiness),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Readiness),
+                                             }));
     return services;
   }
 
-  public static IServiceCollection AddTransientWithHealthCheck<TService>(
-    this IServiceCollection          services,
-    Func<IServiceProvider, TService> implementationFactory,
-    string                           checkName)
+  public static IServiceCollection AddTransientWithHealthCheck<TService>(this IServiceCollection          services,
+                                                                         Func<IServiceProvider, TService> implementationFactory,
+                                                                         string                           checkName)
     where TService : class, IHealthCheckProvider
   {
     services.AddTransient(implementationFactory);
 
     services.AddHealthChecks()
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Startup)}",
-                     provider => new HealthCheck(provider.GetRequiredService<TService>(),
-                                                 HealthCheckTag.Startup),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Startup) }))
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
-                     provider => new HealthCheck(provider.GetRequiredService<TService>(),
-                                                 HealthCheckTag.Liveness),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Liveness) }))
-            .Add(new($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
-                     provider => new HealthCheck(provider.GetRequiredService<TService>(),
-                                                 HealthCheckTag.Readiness),
-                     HealthStatus.Unhealthy,
-                     new[] { nameof(HealthCheckTag.Readiness) }));
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Startup)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<TService>(),
+                                                                         HealthCheckTag.Startup),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Startup),
+                                             }))
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Liveness)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<TService>(),
+                                                                         HealthCheckTag.Liveness),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Liveness),
+                                             }))
+            .Add(new HealthCheckRegistration($"{checkName}.{nameof(HealthCheckTag.Readiness)}",
+                                             provider => new HealthCheck(provider.GetRequiredService<TService>(),
+                                                                         HealthCheckTag.Readiness),
+                                             HealthStatus.Unhealthy,
+                                             new[]
+                                             {
+                                               nameof(HealthCheckTag.Readiness),
+                                             }));
     return services;
   }
 
   [PublicAPI]
   public static IServiceCollection ValidateGrpcRequests(this IServiceCollection services)
-  {
-    return services.AddGrpc(options =>
-                            {
-                              options.EnableMessageValidation();
-                              options.MaxReceiveMessageSize = null;
-                            })
-                   .Services
-                   .AddValidator<CreateLargeTaskRequestValidator>()
-                   .AddValidator<CreateSmallTaskRequestValidator>()
-                   .AddValidator<CreateSessionRequestValidator>()
-                   .AddValidator<TaskOptionsValidator>()
-                   .AddValidator<TaskFilterValidator>()
-                   .AddGrpcReflection()
-                   .AddGrpcValidation();
-  }
+    => services.AddGrpc(options =>
+                        {
+                          options.EnableMessageValidation();
+                          options.MaxReceiveMessageSize = null;
+                        })
+               .Services.AddValidator<CreateLargeTaskRequestValidator>()
+               .AddValidator<CreateSmallTaskRequestValidator>()
+               .AddValidator<CreateSessionRequestValidator>()
+               .AddValidator<TaskOptionsValidator>()
+               .AddValidator<TaskFilterValidator>()
+               .AddGrpcReflection()
+               .AddGrpcValidation();
 }

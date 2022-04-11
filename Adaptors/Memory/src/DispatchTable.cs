@@ -42,13 +42,13 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class DispatchTable : IDispatchTable
 {
-
-  private readonly ConcurrentDictionary<string, Dispatch> taskIndexedStorage_;
   private readonly ConcurrentDictionary<string, Dispatch> idIndexedStorage_;
 
-  public DispatchTable(ConcurrentDictionary<string, Dispatch> taskIndexedStorage, 
-                       ConcurrentDictionary<string, Dispatch> idIndexedStorage, 
-                       ILogger<DispatchTable> logger)
+  private readonly ConcurrentDictionary<string, Dispatch> taskIndexedStorage_;
+
+  public DispatchTable(ConcurrentDictionary<string, Dispatch> taskIndexedStorage,
+                       ConcurrentDictionary<string, Dispatch> idIndexedStorage,
+                       ILogger<DispatchTable>                 logger)
   {
     taskIndexedStorage_ = taskIndexedStorage;
     idIndexedStorage_   = idIndexedStorage;
@@ -56,13 +56,15 @@ public class DispatchTable : IDispatchTable
   }
 
   /// <inheritdoc />
-  public TimeSpan DispatchTimeToLiveDuration => TimeSpan.FromHours(1);
+  public TimeSpan DispatchTimeToLiveDuration
+    => TimeSpan.FromHours(1);
 
   /// <inheritdoc />
   public ILogger Logger { get; }
 
   /// <inheritdoc />
-  public TimeSpan DispatchRefreshPeriod => TimeSpan.FromMinutes(1);
+  public TimeSpan DispatchRefreshPeriod
+    => TimeSpan.FromMinutes(1);
 
   /// <inheritdoc />
   public Task<bool> TryAcquireDispatchAsync(string                      sessionId,
@@ -76,7 +78,7 @@ public class DispatchTable : IDispatchTable
                                 dispatchId,
                                 DateTime.UtcNow + DispatchTimeToLiveDuration,
                                 1,
-                                new()
+                                new ConcurrentBag<StatusTime>
                                 {
                                   new(TaskStatus.Dispatched,
                                       DateTime.UtcNow,
@@ -102,21 +104,21 @@ public class DispatchTable : IDispatchTable
                                d.Id,
                                DateTime.MinValue,
                                d.Attempt,
-                               new (d.Statuses),
+                               new ConcurrentBag<StatusTime>(d.Statuses),
                                d.CreationDate);
-        old.StatusesBag.Add(new(TaskStatus.Error,
-                             DateTime.UtcNow,
-                             "Ttl expired"));
+        old.StatusesBag.Add(new StatusTime(TaskStatus.Error,
+                                           DateTime.UtcNow,
+                                           "Ttl expired"));
 
         idIndexedStorage_[d.Id] = old;
 
         idIndexedStorage_.AddOrUpdate(dispatchId,
                                       s => throw new InvalidOperationException("This path should never be executed"),
-                                      (s, dispatch1) => dispatch with
-                                                        {
-                                                          Attempt = dispatch1.Attempt + 1,
-                                                        });
-
+                                      (s,
+                                       dispatch1) => dispatch with
+                                                     {
+                                                       Attempt = dispatch1.Attempt + 1,
+                                                     });
       }
     }
 
@@ -125,11 +127,12 @@ public class DispatchTable : IDispatchTable
   }
 
   /// <inheritdoc />
-  public Task<Common.Storage.Dispatch> GetDispatchAsync(string dispatchId, CancellationToken cancellationToken = default)
+  public Task<Common.Storage.Dispatch> GetDispatchAsync(string            dispatchId,
+                                                        CancellationToken cancellationToken = default)
   {
     // ReSharper disable once InconsistentlySynchronizedField
-    var locker = idIndexedStorage_.GetOrAdd(dispatchId, s =>
-                                              throw new ArmoniKException($"Key '{dispatchId}' not found"));
+    var locker = idIndexedStorage_.GetOrAdd(dispatchId,
+                                            s => throw new ArmoniKException($"Key '{dispatchId}' not found"));
     lock (locker)
     {
       return Task.FromResult(idIndexedStorage_[dispatchId] as Common.Storage.Dispatch);
@@ -137,61 +140,63 @@ public class DispatchTable : IDispatchTable
   }
 
   /// <inheritdoc />
-  public Task AddStatusToDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default)
+  public Task AddStatusToDispatch(string            id,
+                                  TaskStatus        status,
+                                  CancellationToken cancellationToken = default)
   {
     // ReSharper disable once InconsistentlySynchronizedField
     var locker = idIndexedStorage_.GetOrAdd(id,
-                                            s =>
-                                              throw new ArmoniKException($"Key '{id}' not found"));
+                                            s => throw new ArmoniKException($"Key '{id}' not found"));
     lock (locker)
     {
-      idIndexedStorage_[id].StatusesBag.Add(new(status,
-                                             DateTime.UtcNow,
-                                             string.Empty));
+      idIndexedStorage_[id]
+        .StatusesBag.Add(new StatusTime(status,
+                                        DateTime.UtcNow,
+                                        string.Empty));
     }
 
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task ExtendDispatchTtl(string id, CancellationToken cancellationToken = default)
+  public Task ExtendDispatchTtl(string            id,
+                                CancellationToken cancellationToken = default)
   {
     // ReSharper disable once InconsistentlySynchronizedField
     var locker = idIndexedStorage_.GetOrAdd(id,
-                                            s =>
-                                              throw new ArmoniKException($"Key '{id}' not found"));
+                                            s => throw new ArmoniKException($"Key '{id}' not found"));
 
     lock (locker)
     {
       idIndexedStorage_.AddOrUpdate(id,
                                     _ => throw new InvalidOperationException("Should never come here."),
-                                    (s, dispatch) => dispatch.TimeToLive >= DateTime.UtcNow
-                                                       ? dispatch with
-                                                         {
-                                                           TimeToLive = DateTime.UtcNow + DispatchTimeToLiveDuration,
-                                                         }
-                                                       : throw new InvalidOperationException("Ttl was expired"));
+                                    (s,
+                                     dispatch) => dispatch.TimeToLive >= DateTime.UtcNow
+                                                    ? dispatch with
+                                                      {
+                                                        TimeToLive = DateTime.UtcNow + DispatchTimeToLiveDuration,
+                                                      }
+                                                    : throw new InvalidOperationException("Ttl was expired"));
     }
 
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task DeleteDispatchFromTaskIdAsync(string id, CancellationToken cancellationToken = default)
+  public Task DeleteDispatchFromTaskIdAsync(string            id,
+                                            CancellationToken cancellationToken = default)
   {
     // ReSharper disable once InconsistentlySynchronizedField
     var locker = taskIndexedStorage_.GetOrAdd(id,
-                                            s =>
-                                              throw new ArmoniKException($"Key '{id}' not found"));
+                                              s => throw new ArmoniKException($"Key '{id}' not found"));
     lock (locker)
     {
       taskIndexedStorage_.Remove(id,
-                               out var dispatch);
+                                 out var dispatch);
       if (dispatch != null && dispatch.TaskId == id)
       {
         idIndexedStorage_.Remove(dispatch.Id,
-                                   out _);
-
+                                 out _);
       }
     }
 
@@ -199,17 +204,18 @@ public class DispatchTable : IDispatchTable
   }
 
   /// <inheritdoc />
-  public Task DeleteDispatch(string id, CancellationToken cancellationToken = default)
+  public Task DeleteDispatch(string            id,
+                             CancellationToken cancellationToken = default)
   {
     // ReSharper disable once InconsistentlySynchronizedField
     var locker = idIndexedStorage_.GetOrAdd(id,
-                                            s =>
-                                              throw new ArmoniKException($"Key '{id}' not found"));
+                                            s => throw new ArmoniKException($"Key '{id}' not found"));
     lock (locker)
     {
       idIndexedStorage_.Remove(id,
                                out var dispatch);
-      if (dispatch != null && taskIndexedStorage_[dispatch.TaskId].Id == id)
+      if (dispatch != null && taskIndexedStorage_[dispatch.TaskId]
+            .Id == id)
       {
         taskIndexedStorage_.Remove(dispatch.TaskId,
                                    out _);
@@ -220,38 +226,41 @@ public class DispatchTable : IDispatchTable
   }
 
   /// <inheritdoc />
-  public IAsyncEnumerable<string> ListDispatchAsync(string taskId, CancellationToken cancellationToken = default)
+  public IAsyncEnumerable<string> ListDispatchAsync(string            taskId,
+                                                    CancellationToken cancellationToken = default)
     // ReSharper disable once InconsistentlySynchronizedField
-    => idIndexedStorage_.Values
-                        .ToImmutableList()
+    => idIndexedStorage_.Values.ToImmutableList()
                         .Where(dispatch => dispatch.TaskId == taskId)
                         .Select(dispatch => dispatch.Id)
                         .ToAsyncEnumerable();
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
-  {
-    return Task.CompletedTask;
-  }
+    => Task.CompletedTask;
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(true);
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(true);
 
   /* This functions is only for testing purposes */
-  public void InitDispatchForTesting(string sessionId, string taskId, string dispatchId, int delaySpanInSeconds)
+  public void InitDispatchForTesting(string sessionId,
+                                     string taskId,
+                                     string dispatchId,
+                                     int    delaySpanInSeconds)
   {
     var dispatch = new Dispatch(sessionId,
                                 taskId,
                                 dispatchId,
                                 DateTime.UtcNow - TimeSpan.FromSeconds(delaySpanInSeconds),
                                 1,
-                                new()
+                                new ConcurrentBag<StatusTime>
                                 {
                                   new(TaskStatus.Dispatched,
                                       DateTime.UtcNow - TimeSpan.FromSeconds(delaySpanInSeconds),
                                       string.Empty),
                                 },
                                 DateTime.UtcNow);
-    taskIndexedStorage_.TryAdd(taskId, dispatch);
+    taskIndexedStorage_.TryAdd(taskId,
+                               dispatch);
   }
 }

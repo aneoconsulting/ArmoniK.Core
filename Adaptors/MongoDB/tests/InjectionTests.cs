@@ -41,34 +41,72 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture]
 internal class InjectionTests
 {
-  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
-
   [SetUp]
   public void SetUp()
   {
     Dictionary<string, string> baseConfig = new()
-    {
-      { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
-      { "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage" },
-      { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
-      { "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Host)}", "localhost" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Port)}", "3232" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Tls)}", "true" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.User)}", "user" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Password)}", "password" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.CredentialsPath)}", "" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.CAFile)}", "" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ReplicaSet)}", "rs0" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", "database" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DataRetention)}", "10.00:00:00" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelayMin", "00:00:10" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelayMax", "00:00:20" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:ChunkSize", "100000" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshPeriodicity", "00:20:00" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:PollPeriodicity", "00:00:50" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshExtension", "00:50:00" },
-    };
+                                            {
+                                              {
+                                                "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
+                                              },
+                                              {
+                                                "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage"
+                                              },
+                                              {
+                                                "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
+                                              },
+                                              {
+                                                "Components:LeaseProvider", "ArmoniK.Adapters.MongoDB.LeaseProvider"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Host)}", "localhost"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Port)}", "3232"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Tls)}", "true"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.User)}", "user"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.Password)}", "password"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.CredentialsPath)}", ""
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.CAFile)}", ""
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ReplicaSet)}", "rs0"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", "database"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DataRetention)}", "10.00:00:00"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelayMin", "00:00:10"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelayMax", "00:00:20"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:ChunkSize", "100000"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshPeriodicity", "00:20:00"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:PollPeriodicity", "00:00:50"
+                                              },
+                                              {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshExtension", "00:50:00"
+                                              },
+                                            };
 
     var logger_ = NullLogger.Instance;
 
@@ -81,10 +119,12 @@ internal class InjectionTests
     services.AddSingleton(ActivitySource);
     services.AddLogging();
     provider_ = services.BuildServiceProvider(new ServiceProviderOptions
-    {
-      ValidateOnBuild = true,
-    });
+                                              {
+                                                ValidateOnBuild = true,
+                                              });
   }
+
+  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
 
   private ServiceProvider      provider_;
   private ConfigurationManager configuration_;

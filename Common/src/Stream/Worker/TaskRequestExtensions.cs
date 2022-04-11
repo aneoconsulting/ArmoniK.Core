@@ -31,124 +31,120 @@ using Google.Protobuf;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Common.Stream.Worker
+namespace ArmoniK.Core.Common.Stream.Worker;
+
+[PublicAPI]
+public static class TaskRequestExtensions
 {
-  [PublicAPI]
-  public static class TaskRequestExtensions
+  public static IEnumerable<ProcessReply.Types.CreateLargeTaskRequest> ToRequestStream(this IEnumerable<TaskRequest> taskRequests,
+                                                                                       TaskOptions?                  taskOptions,
+                                                                                       int                           chunkMaxSize)
   {
-    public static IEnumerable<ProcessReply.Types.CreateLargeTaskRequest> ToRequestStream(this IEnumerable<TaskRequest> taskRequests,
-                                                                                         TaskOptions?                  taskOptions,
-                                                                                         int                           chunkMaxSize)
+    if (taskOptions is not null)
     {
-      if(taskOptions is not null)
-      {
-        yield return new()
-        {
-          InitRequest = new()
-          {
-            TaskOptions = taskOptions,
-          },
-        };
-      }
-      else
-      {
-        yield return new()
-        {
-          InitRequest = new(),
-        };
-      }
+      yield return new ProcessReply.Types.CreateLargeTaskRequest
+                   {
+                     InitRequest = new ProcessReply.Types.CreateLargeTaskRequest.Types.InitRequest
+                                   {
+                                     TaskOptions = taskOptions,
+                                   },
+                   };
+    }
+    else
+    {
+      yield return new ProcessReply.Types.CreateLargeTaskRequest
+                   {
+                     InitRequest = new ProcessReply.Types.CreateLargeTaskRequest.Types.InitRequest(),
+                   };
+    }
 
-      using var taskRequestEnumerator = taskRequests.GetEnumerator();
+    using var taskRequestEnumerator = taskRequests.GetEnumerator();
 
-      if (!taskRequestEnumerator.MoveNext())
-      {
-        yield break;
-      }
+    if (!taskRequestEnumerator.MoveNext())
+    {
+      yield break;
+    }
 
-      var currentRequest = taskRequestEnumerator.Current;
+    var currentRequest = taskRequestEnumerator.Current;
 
-      while (taskRequestEnumerator.MoveNext())
-      {
-
-        foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(false,
-                                                                              chunkMaxSize))
-        {
-          yield return createLargeTaskRequest;
-        }
-
-
-        currentRequest = taskRequestEnumerator.Current;
-      }
-
-      foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(true,
+    while (taskRequestEnumerator.MoveNext())
+    {
+      foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(false,
                                                                             chunkMaxSize))
       {
         yield return createLargeTaskRequest;
       }
+
+
+      currentRequest = taskRequestEnumerator.Current;
     }
 
-    public static IEnumerable<ProcessReply.Types.CreateLargeTaskRequest> ToRequestStream(this TaskRequest taskRequest,
-                                                                                         bool             isLast,
-                                                                                         int              chunkMaxSize)
+    foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(true,
+                                                                          chunkMaxSize))
     {
-      yield return new()
-      {
-        InitTask = new()
-        {
-          Header = new()
-          {
-            DataDependencies =
-            {
-              taskRequest.DataDependencies,
-            },
-            ExpectedOutputKeys =
-            {
-              taskRequest.ExpectedOutputKeys,
-            },
-            Id = taskRequest.Id,
-          },
-        },
-      };
+      yield return createLargeTaskRequest;
+    }
+  }
 
-      var start = 0;
+  public static IEnumerable<ProcessReply.Types.CreateLargeTaskRequest> ToRequestStream(this TaskRequest taskRequest,
+                                                                                       bool             isLast,
+                                                                                       int              chunkMaxSize)
+  {
+    yield return new ProcessReply.Types.CreateLargeTaskRequest
+                 {
+                   InitTask = new InitTaskRequest
+                              {
+                                Header = new TaskRequestHeader
+                                         {
+                                           DataDependencies =
+                                           {
+                                             taskRequest.DataDependencies,
+                                           },
+                                           ExpectedOutputKeys =
+                                           {
+                                             taskRequest.ExpectedOutputKeys,
+                                           },
+                                           Id = taskRequest.Id,
+                                         },
+                              },
+                 };
 
-      while (start < taskRequest.Payload.Length)
-      {
-        var chunkSize = Math.Min(chunkMaxSize,
-                                 taskRequest.Payload.Length - start);
+    var start = 0;
 
-        yield return new()
-        {
-          TaskPayload = new()
-          {
-            Data = ByteString.CopyFrom(taskRequest.Payload.Span.Slice(start,
-                                                                      chunkSize)),
-          },
-        };
+    while (start < taskRequest.Payload.Length)
+    {
+      var chunkSize = Math.Min(chunkMaxSize,
+                               taskRequest.Payload.Length - start);
 
-        start += chunkSize;
-      }
+      yield return new ProcessReply.Types.CreateLargeTaskRequest
+                   {
+                     TaskPayload = new DataChunk
+                                   {
+                                     Data = ByteString.CopyFrom(taskRequest.Payload.Span.Slice(start,
+                                                                                               chunkSize)),
+                                   },
+                   };
 
-      yield return new()
-      {
-        TaskPayload = new()
-        {
-          DataComplete = true,
-        },
-      };
+      start += chunkSize;
+    }
 
-      if (isLast)
-      {
-        yield return new()
-        {
-          InitTask = new()
-          {
-            LastTask = true,
-          },
-        };
+    yield return new ProcessReply.Types.CreateLargeTaskRequest
+                 {
+                   TaskPayload = new DataChunk
+                                 {
+                                   DataComplete = true,
+                                 },
+                 };
 
-      }
-
+    if (isLast)
+    {
+      yield return new ProcessReply.Types.CreateLargeTaskRequest
+                   {
+                     InitTask = new InitTaskRequest
+                                {
+                                  LastTask = true,
+                                },
+                   };
     }
   }
 }

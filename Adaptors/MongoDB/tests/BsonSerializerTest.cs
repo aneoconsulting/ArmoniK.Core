@@ -46,7 +46,6 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture]
 internal class BsonSerializerTest
 {
-
   [Test]
   public void SerializeSessionDataModel()
   {
@@ -61,8 +60,8 @@ internal class BsonSerializerTest
                               new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                                MaxRetries = 2,
-                                Priority = 1,
+                                MaxRetries  = 2,
+                                Priority    = 1,
                               });
 
     var serialized = rdm.ToBson();
@@ -93,21 +92,32 @@ internal class BsonSerializerTest
                          "Owner",
                          "Origin",
                          true,
-                         DateTime.Parse("2022-02-15 8:55:05.954").ToUniversalTime(),
-                         new[] { (byte)1, (byte)2, (byte)3 });
-    
+                         DateTime.Parse("2022-02-15 8:55:05.954")
+                                 .ToUniversalTime(),
+                         new[]
+                         {
+                           (byte)1,
+                           (byte)2,
+                           (byte)3,
+                         });
+
     var serialized = rdm.ToBson();
 
     var deserialized = BsonSerializer.Deserialize<Result>(serialized);
 
-    Assert.AreEqual(rdm.Id, deserialized.Id);
-    Assert.AreEqual(rdm.Key, deserialized.Key);
-    Assert.AreEqual(rdm.OwnerTaskId, deserialized.OwnerTaskId);
-    Assert.AreEqual(rdm.OriginDispatchId, deserialized.OriginDispatchId);
-    Assert.AreEqual(rdm.IsResultAvailable, deserialized.IsResultAvailable);
-    Assert.AreEqual(rdm.CreationDate, deserialized.CreationDate);
+    Assert.AreEqual(rdm.Id,
+                    deserialized.Id);
+    Assert.AreEqual(rdm.Key,
+                    deserialized.Key);
+    Assert.AreEqual(rdm.OwnerTaskId,
+                    deserialized.OwnerTaskId);
+    Assert.AreEqual(rdm.OriginDispatchId,
+                    deserialized.OriginDispatchId);
+    Assert.AreEqual(rdm.IsResultAvailable,
+                    deserialized.IsResultAvailable);
+    Assert.AreEqual(rdm.CreationDate,
+                    deserialized.CreationDate);
     Assert.IsTrue(rdm.Data.SequenceEqual(deserialized.Data));
-
   }
 
   [Test]
@@ -117,25 +127,23 @@ internal class BsonSerializerTest
                            "task",
                            "id",
                            1,
-                           DateTime.Parse("2022-02-22 22:22:22").ToUniversalTime(),
+                           DateTime.Parse("2022-02-22 22:22:22")
+                                   .ToUniversalTime(),
                            new[]
                            {
                              new StatusTime(TaskStatus.Creating,
-                                            DateTime.Parse("2021-02-21 21:21:21").ToUniversalTime(),
+                                            DateTime.Parse("2021-02-21 21:21:21")
+                                                    .ToUniversalTime(),
                                             string.Empty),
                            },
-                           DateTime.Parse("2020-02-20 20:20:20").ToUniversalTime());
-
-
-
+                           DateTime.Parse("2020-02-20 20:20:20")
+                                   .ToUniversalTime());
 
 
     var serialized = rdm.ToBson();
 
 
-
     var deserialized = BsonSerializer.Deserialize<Dispatch>(serialized);
-
 
 
     Assert.AreEqual(rdm.Id,
@@ -150,9 +158,6 @@ internal class BsonSerializerTest
                     deserialized.TimeToLive);
     Assert.AreEqual(rdm.CreationDate,
                     deserialized.CreationDate);
-
-
-
   }
 
 
@@ -160,36 +165,45 @@ internal class BsonSerializerTest
   public void SerializeTaskDataModel()
   {
     var tdm = new TaskData(HasPayload: true,
-                           Options: new(Priority: 2,
-                                        Options: new Dictionary<string, string>()
-                                        {
-                                          { "key1", "Value1" },
-                                          { "key2", "value2" },
-                                        },
-                                        MaxDuration: TimeSpan.FromMinutes(42),
-                                        MaxRetries: 7),
+                           Options: new Core.Common.Storage.TaskOptions(Priority: 2,
+                                                                        Options: new Dictionary<string, string>
+                                                                                 {
+                                                                                   {
+                                                                                     "key1", "Value1"
+                                                                                   },
+                                                                                   {
+                                                                                     "key2", "value2"
+                                                                                   },
+                                                                                 },
+                                                                        MaxDuration: TimeSpan.FromMinutes(42),
+                                                                        MaxRetries: 7),
                            TaskId: "tid",
-                           Payload: new[] { (byte) 1, (byte) 2, (byte) 3 },
+                           Payload: new[]
+                                    {
+                                      (byte)1,
+                                      (byte)2,
+                                      (byte)3,
+                                    },
                            SessionId: "ses1",
                            Status: TaskStatus.Creating,
                            ParentTaskId: "par",
                            CreationDate: DateTime.Now,
                            DataDependencies: new List<string>
-                           {
-                             "dep1",
-                             "dep2",
-                           },
+                                             {
+                                               "dep1",
+                                               "dep2",
+                                             },
                            AncestorDispatchIds: new List<string>
-                           {
-                             "ancestor1",
-                             "ancestor2",
-                           },
+                                                {
+                                                  "ancestor1",
+                                                  "ancestor2",
+                                                },
                            DispatchId: "dispatchId1",
                            ExpectedOutput: new List<string>
-                           {
-                             "output1",
-                             "output2",
-                           },
+                                           {
+                                             "output1",
+                                             "output2",
+                                           },
                            Output: new Output(false,
                                               ""));
 
@@ -230,25 +244,17 @@ internal class BsonSerializerTest
 
   [Test]
   public void InitializeResultDataModelMapping()
-  {
-    _ = new ResultDataModelMapping();
-  }
+    => _ = new ResultDataModelMapping();
 
   [Test]
   public void InitializeTaskDataModelMapping()
-  {
-    _ = new TaskDataModelMapping();
-  }
+    => _ = new TaskDataModelMapping();
 
   [Test]
   public void InitializeDispatchDataModelMapping()
-  {
-    _ = new DispatchDataModelMapping();
-  }
+    => _ = new DispatchDataModelMapping();
 
   [Test]
   public void InitializeSessionDataModelMapping()
-  {
-    _ = new SessionDataModelMapping();
-  }
+    => _ = new SessionDataModelMapping();
 }

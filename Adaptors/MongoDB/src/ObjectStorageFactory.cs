@@ -36,8 +36,18 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class ObjectStorageFactory : IObjectStorageFactory
 {
+  private readonly ILoggerFactory                                                          loggerFactory_;
+  private readonly MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider_;
+  private readonly Options.ObjectStorage                                                   options_;
+  private readonly SessionProvider                                                         sessionProvider_;
 
-  public ObjectStorageFactory(ILoggerFactory loggerFactory, SessionProvider sessionProvider, MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider, Options.ObjectStorage options)
+
+  private bool isInitialized_;
+
+  public ObjectStorageFactory(ILoggerFactory                                                          loggerFactory,
+                              SessionProvider                                                         sessionProvider,
+                              MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider,
+                              Options.ObjectStorage                                                   options)
   {
     loggerFactory_            = loggerFactory;
     sessionProvider_          = sessionProvider;
@@ -50,23 +60,21 @@ public class ObjectStorageFactory : IObjectStorageFactory
   {
     if (!isInitialized_)
     {
-      await sessionProvider_.GetAsync();
+      await sessionProvider_.GetAsync()
+                            .ConfigureAwait(false);
     }
+
     isInitialized_ = true;
   }
 
-
-  private          bool                                                                    isInitialized_ = false;
-  private readonly ILoggerFactory                                                          loggerFactory_;
-  private readonly SessionProvider                                                         sessionProvider_;
-  private readonly MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider_;
-  private readonly Options.ObjectStorage                                                   options_;
-
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
 
   public IObjectStorage CreateObjectStorage(string objectStorageName)
-  {
-    return new ObjectStorage(sessionProvider_, objectCollectionProvider_, objectStorageName, loggerFactory_.CreateLogger<ObjectStorage>(), options_);
-  }
+    => new ObjectStorage(sessionProvider_,
+                         objectCollectionProvider_,
+                         objectStorageName,
+                         loggerFactory_.CreateLogger<ObjectStorage>(),
+                         options_);
 }

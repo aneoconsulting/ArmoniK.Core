@@ -35,7 +35,7 @@ namespace ArmoniK.Core.Adapters.Memory.Tests;
 
 [TestFixture]
 public class ResultTableTests : ResultTableTestBase
-{ 
+{
   public override void GetResultTableInstance()
   {
     var services = new ServiceCollection();
@@ -49,6 +49,6 @@ public class ResultTableTests : ResultTableTestBase
 
     ResultTable = scope.ServiceProvider.GetRequiredService<IResultTable>();
 
-    RunTests    = true;
+    RunTests = true;
   }
 }

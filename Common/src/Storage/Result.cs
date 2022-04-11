@@ -27,15 +27,18 @@ using System;
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
-/// 
 /// </summary>
 /// <param name="SessionId">Id of the session that produces and consumes this data</param>
 /// <param name="Key">Key to reference and access this result</param>
 /// <param name="OwnerTaskId">Id of the task that is responsible of generating this result.</param>
 /// <param name="OriginDispatchId">Id of the task that is responsible of generating this result.</param>
-/// <param name="IsResultAvailable">if <value>true</value>, the result is available</param>
+/// <param name="IsResultAvailable">
+///   if
+///   <value>true</value>
+///   , the result is available
+/// </param>
 /// <param name="CreationDate">Date of creation of the current object.</param>
-/// <param name="Data">Data for the current <paramref name="Key"/></param>
+/// <param name="Data">Data for the current <paramref name="Key" /></param>
 public record Result(string   SessionId,
                      string   Key,
                      string   OwnerTaskId,
@@ -43,4 +46,3 @@ public record Result(string   SessionId,
                      bool     IsResultAvailable,
                      DateTime CreationDate,
                      byte[]   Data);
-

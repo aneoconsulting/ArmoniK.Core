@@ -42,15 +42,14 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Session = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "Session",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                           {
+                             Ids =
+                             {
+                               "Session",
+                             },
+                           },
+               }.ToFilterExpression()
+                .Compile();
 
     var model = new TaskData("Session",
                              default,
@@ -74,15 +73,14 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Session = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "Session",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                           {
+                             Ids =
+                             {
+                               "Session",
+                             },
+                           },
+               }.ToFilterExpression()
+                .Compile();
 
     var model = new TaskData("OtherSession",
                              default,
@@ -106,22 +104,21 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Included = new TaskFilter.Types.StatusesRequest
-                 {
-                   Statuses =
-                   {
-                     TaskStatus.Completed,
-                   },
-                 },
+                            {
+                              Statuses =
+                              {
+                                TaskStatus.Completed,
+                              },
+                            },
                  Dispatch = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "DispatchId",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile(true);
+                            {
+                              Ids =
+                              {
+                                "DispatchId",
+                              },
+                            },
+               }.ToFilterExpression()
+                .Compile(true);
 
 
     var model = new TaskData(default,
@@ -146,22 +143,21 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Excluded = new TaskFilter.Types.StatusesRequest
-                 {
-                   Statuses =
-                   {
-                     TaskStatus.Completed,
-                   },
-                 },
+                            {
+                              Statuses =
+                              {
+                                TaskStatus.Completed,
+                              },
+                            },
                  Dispatch = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "DispatchId",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                            {
+                              Ids =
+                              {
+                                "DispatchId",
+                              },
+                            },
+               }.ToFilterExpression()
+                .Compile();
 
     var model = new TaskData(default,
                              default,
@@ -185,23 +181,22 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Included = new TaskFilter.Types.StatusesRequest
-                 {
-                   Statuses =
-                   {
-                     TaskStatus.Completed,
-                     TaskStatus.Canceled,
-                   },
-                 },
+                            {
+                              Statuses =
+                              {
+                                TaskStatus.Completed,
+                                TaskStatus.Canceled,
+                              },
+                            },
                  Dispatch = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "DispatchId",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                            {
+                              Ids =
+                              {
+                                "DispatchId",
+                              },
+                            },
+               }.ToFilterExpression()
+                .Compile();
 
     var model = new TaskData(default,
                              default,
@@ -225,23 +220,22 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Excluded = new TaskFilter.Types.StatusesRequest
-                 {
-                   Statuses =
-                   {
-                     TaskStatus.Completed,
-                     TaskStatus.Canceled,
-                   },
-                 },
+                            {
+                              Statuses =
+                              {
+                                TaskStatus.Completed,
+                                TaskStatus.Canceled,
+                              },
+                            },
                  Dispatch = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "DispatchId",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                            {
+                              Ids =
+                              {
+                                "DispatchId",
+                              },
+                            },
+               }.ToFilterExpression()
+                .Compile();
 
     var model = new TaskData("SessionId",
                              "ParentTaskId",
@@ -253,7 +247,11 @@ internal class TaskFilterExtTests
                                "output",
                              },
                              true,
-                             new[] { (byte) 1, (byte) 2 },
+                             new[]
+                             {
+                               (byte)1,
+                               (byte)2,
+                             },
                              TaskStatus.Canceled,
                              default,
                              new List<string>(),
@@ -269,22 +267,21 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Included = new TaskFilter.Types.StatusesRequest
-                 {
-                   Statuses =
-                   {
-                     TaskStatus.Completed,
-                   },
-                 },
+                            {
+                              Statuses =
+                              {
+                                TaskStatus.Completed,
+                              },
+                            },
                  Dispatch = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "DispatchId",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                            {
+                              Ids =
+                              {
+                                "DispatchId",
+                              },
+                            },
+               }.ToFilterExpression()
+                .Compile();
 
     var model = new TaskData("SessionId",
                              "ParentTaskId",
@@ -296,7 +293,11 @@ internal class TaskFilterExtTests
                                "output",
                              },
                              true,
-                             new[] { (byte) 1, (byte) 2 },
+                             new[]
+                             {
+                               (byte)1,
+                               (byte)2,
+                             },
                              TaskStatus.Canceled,
                              default,
                              new List<string>(),
@@ -312,22 +313,21 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Excluded = new TaskFilter.Types.StatusesRequest
-                 {
-                   Statuses =
-                   {
-                     TaskStatus.Completed,
-                   },
-                 },
+                            {
+                              Statuses =
+                              {
+                                TaskStatus.Completed,
+                              },
+                            },
                  Dispatch = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "DispatchId",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                            {
+                              Ids =
+                              {
+                                "DispatchId",
+                              },
+                            },
+               }.ToFilterExpression()
+                .Compile();
 
     var model = new TaskData(default,
                              default,
@@ -351,23 +351,22 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Included = new TaskFilter.Types.StatusesRequest
-                 {
-                   Statuses =
-                   {
-                     TaskStatus.Completed,
-                     TaskStatus.Canceling,
-                   },
-                 },
+                            {
+                              Statuses =
+                              {
+                                TaskStatus.Completed,
+                                TaskStatus.Canceling,
+                              },
+                            },
                  Dispatch = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "DispatchId",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                            {
+                              Ids =
+                              {
+                                "DispatchId",
+                              },
+                            },
+               }.ToFilterExpression()
+                .Compile();
 
     var model = new TaskData(default,
                              default,
@@ -391,23 +390,22 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Excluded = new TaskFilter.Types.StatusesRequest
-                 {
-                   Statuses =
-                   {
-                     TaskStatus.Completed,
-                     TaskStatus.Canceling,
-                   },
-                 },
+                            {
+                              Statuses =
+                              {
+                                TaskStatus.Completed,
+                                TaskStatus.Canceling,
+                              },
+                            },
                  Dispatch = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "DispatchId",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                            {
+                              Ids =
+                              {
+                                "DispatchId",
+                              },
+                            },
+               }.ToFilterExpression()
+                .Compile();
 
     var model = new TaskData(default,
                              default,
@@ -431,15 +429,14 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Task = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "Task",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                        {
+                          Ids =
+                          {
+                            "Task",
+                          },
+                        },
+               }.ToFilterExpression()
+                .Compile();
 
 
     var model = new TaskData(default,
@@ -464,16 +461,15 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Task = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "Task",
-                     "Task2",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                        {
+                          Ids =
+                          {
+                            "Task",
+                            "Task2",
+                          },
+                        },
+               }.ToFilterExpression()
+                .Compile();
 
 
     var model = new TaskData(default,
@@ -498,15 +494,14 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Task = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "Task",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                        {
+                          Ids =
+                          {
+                            "Task",
+                          },
+                        },
+               }.ToFilterExpression()
+                .Compile();
 
 
     var model = new TaskData(default,
@@ -531,16 +526,15 @@ internal class TaskFilterExtTests
     var func = new TaskFilter
                {
                  Task = new TaskFilter.Types.IdsRequest
-                 {
-                   Ids =
-                   {
-                     "Task",
-                     "Task2",
-                   },
-                 },
-               }
-               .ToFilterExpression()
-               .Compile();
+                        {
+                          Ids =
+                          {
+                            "Task",
+                            "Task2",
+                          },
+                        },
+               }.ToFilterExpression()
+                .Compile();
 
 
     var model = new TaskData(default,

@@ -22,8 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Storage;
-
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 public static class ResultExtensions
@@ -35,6 +33,6 @@ public static class ResultExtensions
       return resultModel;
     }
 
-    return new(result);
+    return new Result(result);
   }
 }

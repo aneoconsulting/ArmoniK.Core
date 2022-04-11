@@ -31,12 +31,12 @@ namespace ArmoniK.Core.Adapters.Memory;
 public record SessionData(string      SessionId,
                           string      DispatchId,
                           bool        IsCancelled,
-                          TaskOptions Options)
-  : ArmoniK.Core.Common.Storage.SessionData(SessionId,
-                                            DispatchId,
-                                            new ConcurrentBag<string>(),
-                                            IsCancelled,
-                                            Options)
+                          TaskOptions Options) : Common.Storage.SessionData(SessionId,
+                                                                            DispatchId,
+                                                                            new ConcurrentBag<string>(),
+                                                                            IsCancelled,
+                                                                            Options)
 {
-  public ConcurrentBag<string> AncestorsDispatchIdRaw => (ConcurrentBag<string>)AncestorsDispatchId;
+  public ConcurrentBag<string> AncestorsDispatchIdRaw
+    => (ConcurrentBag<string>)AncestorsDispatchId;
 }

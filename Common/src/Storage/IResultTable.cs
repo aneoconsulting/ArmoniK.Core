@@ -32,24 +32,48 @@ namespace ArmoniK.Core.Common.Storage;
 
 public interface IResultTable : IInitializable
 {
-  Task<bool> AreResultsAvailableAsync(string sessionId, IEnumerable<string> keys, CancellationToken cancellationToken = default);
-
-  Task ChangeResultDispatch(string sessionId, string oldDispatchId, string newDispatchId, CancellationToken cancellationToken);
-
-  Task ChangeResultOwnership(string sessionId, IEnumerable<string> keys, string oldTaskId, string newTaskId, CancellationToken cancellationToken);
-
-  Task Create(IEnumerable<Result> results, CancellationToken cancellationToken = default);
-
-  Task DeleteResult(string session, string key, CancellationToken cancellationToken = default);
-
-  Task DeleteResults(string sessionId, CancellationToken cancellationToken = default);
-
-  Task<Result> GetResult(string sessionId, string key, CancellationToken cancellationToken = default);
-
-  IAsyncEnumerable<string> ListResultsAsync(string sessionId, CancellationToken cancellationToken = default);
-
-  Task SetResult(string sessionId, string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default);
-
-  Task SetResult(string sessionId, string ownerTaskId, string key, CancellationToken cancellationToken = default);
   public ILogger Logger { get; }
+
+  Task<bool> AreResultsAvailableAsync(string              sessionId,
+                                      IEnumerable<string> keys,
+                                      CancellationToken   cancellationToken = default);
+
+  Task ChangeResultDispatch(string            sessionId,
+                            string            oldDispatchId,
+                            string            newDispatchId,
+                            CancellationToken cancellationToken);
+
+  Task ChangeResultOwnership(string              sessionId,
+                             IEnumerable<string> keys,
+                             string              oldTaskId,
+                             string              newTaskId,
+                             CancellationToken   cancellationToken);
+
+  Task Create(IEnumerable<Result> results,
+              CancellationToken   cancellationToken = default);
+
+  Task DeleteResult(string            session,
+                    string            key,
+                    CancellationToken cancellationToken = default);
+
+  Task DeleteResults(string            sessionId,
+                     CancellationToken cancellationToken = default);
+
+  Task<Result> GetResult(string            sessionId,
+                         string            key,
+                         CancellationToken cancellationToken = default);
+
+  IAsyncEnumerable<string> ListResultsAsync(string            sessionId,
+                                            CancellationToken cancellationToken = default);
+
+  Task SetResult(string            sessionId,
+                 string            ownerTaskId,
+                 string            key,
+                 byte[]            smallPayload,
+                 CancellationToken cancellationToken = default);
+
+  Task SetResult(string            sessionId,
+                 string            ownerTaskId,
+                 string            key,
+                 CancellationToken cancellationToken = default);
 }

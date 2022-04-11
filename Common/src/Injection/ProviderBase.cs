@@ -32,7 +32,12 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
   private readonly Func<Task<T>> builder_;
   private          T?            object_;
 
-  protected ProviderBase(Func<Task<T>> builder) => builder_ = builder;
+  protected ProviderBase(Func<Task<T>> builder)
+    => builder_ = builder;
+
+  /// <inheritdoc />
+  public virtual ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(object_ is not null);
 
   public async ValueTask<T> GetAsync()
   {
@@ -42,15 +47,14 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
       Task<T> task;
       lock (this)
       {
-        task = object_ is null ? builder_() : Task.FromResult(object_);
+        task = object_ is null
+                 ? builder_()
+                 : Task.FromResult(object_);
       }
 
-      object_ = await task;
+      object_ = await task.ConfigureAwait(false);
     }
 
     return object_;
   }
-
-  /// <inheritdoc />
-  public virtual ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(object_ is not null);
 }

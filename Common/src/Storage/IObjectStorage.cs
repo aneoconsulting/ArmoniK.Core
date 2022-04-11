@@ -36,24 +36,33 @@ public interface IObjectStorageFactory : IInitializable
 
 public static class ObjectStorageFactoryExt
 {
-  public static IObjectStorage CreatePayloadStorage(this IObjectStorageFactory factory, string session)
+  public static IObjectStorage CreatePayloadStorage(this IObjectStorageFactory factory,
+                                                    string                     session)
     => factory.CreateObjectStorage($"payloads/{session}");
-  public static IObjectStorage CreateResultStorage(this IObjectStorageFactory factory, string session)
+
+  public static IObjectStorage CreateResultStorage(this IObjectStorageFactory factory,
+                                                   string                     session)
     => factory.CreateObjectStorage($"results/{session}");
+
   public static IObjectStorage CreateResourcesStorage(this IObjectStorageFactory factory)
     => factory.CreateObjectStorage("resources/");
 }
 
-
 public interface IObjectStorage
 {
-  Task AddOrUpdateAsync(string key, IAsyncEnumerable<byte[]> valueChunks, CancellationToken cancellationToken = default);
+  Task AddOrUpdateAsync(string                   key,
+                        IAsyncEnumerable<byte[]> valueChunks,
+                        CancellationToken        cancellationToken = default);
 
-  Task AddOrUpdateAsync(string key, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default);
+  Task AddOrUpdateAsync(string                                 key,
+                        IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                        CancellationToken                      cancellationToken = default);
 
-  IAsyncEnumerable<byte[]> GetValuesAsync(string key, CancellationToken cancellationToken = default);
+  IAsyncEnumerable<byte[]> GetValuesAsync(string            key,
+                                          CancellationToken cancellationToken = default);
 
-  Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default);
+  Task<bool> TryDeleteAsync(string            key,
+                            CancellationToken cancellationToken = default);
 
   IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default);
 }

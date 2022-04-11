@@ -36,17 +36,22 @@ public class AppSettingsException : ArmoniKException
   {
   }
 
-  public AppSettingsException(string message) : base(message)
+  public AppSettingsException(string message)
+    : base(message)
   {
   }
 
-  public AppSettingsException(string message, Exception innerException) : base(message,
-                                                                                 innerException)
+  public AppSettingsException(string    message,
+                              Exception innerException)
+    : base(message,
+           innerException)
   {
   }
 
-  protected AppSettingsException(SerializationInfo info, StreamingContext context) : base(info,
-                                                                                          context)
+  protected AppSettingsException(SerializationInfo info,
+                                 StreamingContext  context)
+    : base(info,
+           context)
   {
   }
 }

@@ -46,11 +46,14 @@ internal class CreateSessionTests
   public void SetUp()
   {
     Dictionary<string, string> baseConfig = new()
-    {
-      { "Grpc:Endpoint", "http://localhost:5001" },
-    };
+                                            {
+                                              {
+                                                "Grpc:Endpoint", "http://localhost:5001"
+                                              },
+                                            };
 
-    var builder              = new ConfigurationBuilder().AddInMemoryCollection(baseConfig).AddEnvironmentVariables();
+    var builder = new ConfigurationBuilder().AddInMemoryCollection(baseConfig)
+                                            .AddEnvironmentVariables();
     var configuration        = builder.Build();
     var configurationSection = configuration.GetSection(Options.Grpc.SettingSection);
     var endpoint             = configurationSection.GetValue<string>("Endpoint");
@@ -69,10 +72,10 @@ internal class CreateSessionTests
 
     Assert.Throws(typeof(RpcException),
                   () => client_.CreateSession(new CreateSessionRequest
-                  {
-                    DefaultTaskOption = null,
-                    Id                = sessionId,
-                  }));
+                                              {
+                                                DefaultTaskOption = null,
+                                                Id                = sessionId,
+                                              }));
   }
 
   [Test]
@@ -81,15 +84,15 @@ internal class CreateSessionTests
     Console.WriteLine("EmptyIdTaskOptionShouldThrowException");
     Assert.Throws(typeof(RpcException),
                   () => client_.CreateSession(new CreateSessionRequest
-                  {
-                    DefaultTaskOption = new TaskOptions
-                    {
-                      Priority    = 1,
-                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                      MaxRetries  = 2,
-                    },
-                    Id = "",
-                  }));
+                                              {
+                                                DefaultTaskOption = new TaskOptions
+                                                                    {
+                                                                      Priority    = 1,
+                                                                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                      MaxRetries  = 2,
+                                                                    },
+                                                Id = "",
+                                              }));
   }
 
   [Test]
@@ -99,15 +102,15 @@ internal class CreateSessionTests
     Console.WriteLine("SessionShouldBeCreated");
 
     var createSessionReply = client_.CreateSession(new CreateSessionRequest
-    {
-      DefaultTaskOption = new TaskOptions
-      {
-        Priority    = 1,
-        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-        MaxRetries  = 2,
-      },
-      Id = sessionId,
-    });
+                                                   {
+                                                     DefaultTaskOption = new TaskOptions
+                                                                         {
+                                                                           Priority    = 1,
+                                                                           MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                           MaxRetries  = 2,
+                                                                         },
+                                                     Id = sessionId,
+                                                   });
     Assert.AreEqual(createSessionReply.ResultCase,
                     CreateSessionReply.ResultOneofCase.Ok);
   }

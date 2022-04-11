@@ -28,11 +28,11 @@ using System.Collections.Generic;
 namespace ArmoniK.Core.Common.Storage;
 
 public record Dispatch(string                  SessionId,
-                                string                  TaskId,
-                                string                  Id,
-                                int                     Attempt,
-                                DateTime                TimeToLive,
-                                IEnumerable<StatusTime> Statuses,
-                                DateTime                CreationDate)
+                       string                  TaskId,
+                       string                  Id,
+                       int                     Attempt,
+                       DateTime                TimeToLive,
+                       IEnumerable<StatusTime> Statuses,
+                       DateTime                CreationDate)
 {
 }

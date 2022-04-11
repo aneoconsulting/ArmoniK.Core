@@ -22,8 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,43 +31,56 @@ using ArmoniK.Core.Common.Storage;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-
-
 
 public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
 {
   static DispatchDataModelMapping()
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(Dispatch)))
+    {
       BsonClassMap.RegisterClassMap<Dispatch>(cm =>
-                                                     {
-                                                       cm.MapIdProperty(nameof(Dispatch.Id)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Dispatch.TaskId)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Dispatch.Attempt)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Dispatch.TimeToLive)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Dispatch.Statuses)).SetIgnoreIfDefault(true).SetDefaultValue(Enumerable.Empty<StatusTime>());
-                                                       cm.MapProperty(nameof(Dispatch.CreationDate)).SetIsRequired(true);
-                                                       cm.MapProperty(nameof(Dispatch.SessionId)).SetIsRequired(true);
-                                                     });
+                                              {
+                                                cm.MapIdProperty(nameof(Dispatch.Id))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(Dispatch.TaskId))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(Dispatch.Attempt))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(Dispatch.TimeToLive))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(Dispatch.Statuses))
+                                                  .SetIgnoreIfDefault(true)
+                                                  .SetDefaultValue(Enumerable.Empty<StatusTime>());
+                                                cm.MapProperty(nameof(Dispatch.CreationDate))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(Dispatch.SessionId))
+                                                  .SetIsRequired(true);
+                                              });
+    }
 
-    if(!BsonClassMap.IsClassMapRegistered(typeof(StatusTime)))
+    if (!BsonClassMap.IsClassMapRegistered(typeof(StatusTime)))
+    {
       BsonClassMap.RegisterClassMap<StatusTime>(cm =>
-                                                          {
-                                                            cm.MapProperty(nameof(StatusTime.Date)).SetIsRequired(true);
-                                                            cm.MapProperty(nameof(StatusTime.Status)).SetIsRequired(true);
-                                                            cm.MapProperty(nameof(StatusTime.Details)).SetIgnoreIfDefault(true);
-                                                          });
+                                                {
+                                                  cm.MapProperty(nameof(StatusTime.Date))
+                                                    .SetIsRequired(true);
+                                                  cm.MapProperty(nameof(StatusTime.Status))
+                                                    .SetIsRequired(true);
+                                                  cm.MapProperty(nameof(StatusTime.Details))
+                                                    .SetIgnoreIfDefault(true);
+                                                });
+    }
   }
 
 
   /// <inheritdoc />
-  public string CollectionName => nameof(DispatchHandler);
+  public string CollectionName
+    => nameof(DispatchHandler);
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<Dispatch> collection)
+  public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
+                                           IMongoCollection<Dispatch> collection)
   {
     var dispatchIndex = Builders<Dispatch>.IndexKeys.Hashed(model => model.Id);
     var taskIndex     = Builders<Dispatch>.IndexKeys.Hashed(model => model.TaskId);
@@ -77,18 +88,19 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
     var indexModels = new CreateIndexModel<Dispatch>[]
                       {
                         new(dispatchIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name = nameof(dispatchIndex),
                             }),
                         new(taskIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name = nameof(taskIndex),
                             }),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,
-                                              indexModels);
+                                             indexModels)
+                    .ConfigureAwait(false);
   }
 }

@@ -44,22 +44,23 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public static class WorkerClientExtensions
 {
-  public static IAsyncEnumerable<TaskRequest> ReconstituteTaskRequest(
-    this IEnumerable<ProcessReply> stream,
-    ILogger logger)
-    => stream.ToAsyncEnumerable().ReconstituteTaskRequest(CancellationToken.None, logger);
-  
-  public static async IAsyncEnumerable<TaskRequest> ReconstituteTaskRequest(
-    this                     IAsyncEnumerable<ProcessReply> stream,
-    [EnumeratorCancellation] CancellationToken              cancellationToken,
-    ILogger logger)
+  public static IAsyncEnumerable<TaskRequest> ReconstituteTaskRequest(this IEnumerable<ProcessReply> stream,
+                                                                      ILogger                        logger)
+    => stream.ToAsyncEnumerable()
+             .ReconstituteTaskRequest(CancellationToken.None,
+                                      logger);
+
+  public static async IAsyncEnumerable<TaskRequest> ReconstituteTaskRequest(this                     IAsyncEnumerable<ProcessReply> stream,
+                                                                            [EnumeratorCancellation] CancellationToken              cancellationToken,
+                                                                            ILogger                                                 logger)
   {
     var enumerator = stream.GetAsyncEnumerator(cancellationToken);
 
     Channel<ReadOnlyMemory<byte>>? channel = null;
 
     TaskRequest? taskRequest = null;
-    while (await enumerator.MoveNextAsync(cancellationToken))
+    while (await enumerator.MoveNextAsync(cancellationToken)
+                           .ConfigureAwait(false))
     {
       var current = enumerator.Current;
 
@@ -69,15 +70,15 @@ public static class WorkerClientExtensions
           switch (current.CreateLargeTask.InitTask.TypeCase)
           {
             case InitTaskRequest.TypeOneofCase.Header:
-              channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new()
+              channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
                                                                       {
                                                                         SingleWriter = true,
                                                                         SingleReader = true,
                                                                       });
-              taskRequest = new(current.CreateLargeTask.InitTask.Header.Id,
-                                current.CreateLargeTask.InitTask.Header.ExpectedOutputKeys,
-                                current.CreateLargeTask.InitTask.Header.DataDependencies,
-                                channel.Reader.ReadAllAsync(cancellationToken));
+              taskRequest = new TaskRequest(current.CreateLargeTask.InitTask.Header.Id,
+                                            current.CreateLargeTask.InitTask.Header.ExpectedOutputKeys,
+                                            current.CreateLargeTask.InitTask.Header.DataDependencies,
+                                            channel.Reader.ReadAllAsync(cancellationToken));
               break;
             case InitTaskRequest.TypeOneofCase.LastTask:
               yield break;
@@ -92,7 +93,8 @@ public static class WorkerClientExtensions
           {
             case DataChunk.TypeOneofCase.Data:
               await channel!.Writer.WriteAsync(current.CreateLargeTask.TaskPayload.Data.Memory,
-                                               cancellationToken);
+                                               cancellationToken)
+                            .ConfigureAwait(false);
               break;
             case DataChunk.TypeOneofCase.DataComplete:
               channel!.Writer.Complete();
@@ -120,14 +122,9 @@ public static class WorkerClientExtensions
   }
 
 
-
-
-
-
-  public static async IAsyncEnumerable<IList<ProcessReply>> Separate(
-    this                     IAsyncStreamReader<ProcessReply> stream,
-    ILogger                                                   logger,
-    [EnumeratorCancellation] CancellationToken                cancellationToken)
+  public static async IAsyncEnumerable<IList<ProcessReply>> Separate(this IAsyncStreamReader<ProcessReply>      stream,
+                                                                     ILogger                                    logger,
+                                                                     [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     List<ProcessReply>? output = null;
 
@@ -138,16 +135,19 @@ public static class WorkerClientExtensions
 
 
     await foreach (var reply in stream.ReadAllAsync(cancellationToken)
-                                      .WithCancellation(cancellationToken))
+                                      .WithCancellation(cancellationToken)
+                                      .ConfigureAwait(false))
     {
       void InitNewStream(bool singleStream)
       {
         if (output is not null || replyType is not ProcessReply.TypeOneofCase.None || !string.IsNullOrEmpty(requestId))
+        {
           throw new InvalidOperationException("Stream unexpectedly initialized a new object. Objects all need to be explicitly terminated.");
+        }
 
         if (!singleStream)
         {
-          output    = new();
+          output    = new List<ProcessReply>();
           replyType = reply.TypeCase;
           requestId = reply.RequestId;
         }
@@ -159,7 +159,6 @@ public static class WorkerClientExtensions
         replyType = ProcessReply.TypeOneofCase.None;
         requestId = string.Empty;
       }
-
 
 
       if (replyType != ProcessReply.TypeOneofCase.None && reply.TypeCase != replyType)
@@ -180,7 +179,10 @@ public static class WorkerClientExtensions
             case Output.TypeOneofCase.Error:
             case Output.TypeOneofCase.Ok:
               InitNewStream(true);
-              yield return new[] { reply };
+              yield return new[]
+                           {
+                             reply,
+                           };
               yield break;
             case Output.TypeOneofCase.None:
             default:
@@ -229,7 +231,10 @@ public static class WorkerClientExtensions
           break;
         case ProcessReply.TypeOneofCase.CreateSmallTask:
           InitNewStream(true);
-          yield return new[] { reply };
+          yield return new[]
+                       {
+                         reply,
+                       };
           break;
         case ProcessReply.TypeOneofCase.CreateLargeTask:
           switch (reply.CreateLargeTask.TypeCase)
@@ -243,13 +248,19 @@ public static class WorkerClientExtensions
               {
                 case InitTaskRequest.TypeOneofCase.Header:
                   if (!isLargeTaskPayloadFinished)
+                  {
                     throw new InvalidOperationException("Payload from the previous task has not been closed.");
+                  }
+
                   isLargeTaskPayloadFinished = false;
                   output!.Add(reply);
                   break;
                 case InitTaskRequest.TypeOneofCase.LastTask:
                   if (!isLargeTaskPayloadFinished)
+                  {
                     throw new InvalidOperationException("Payload from the previous task has not been closed.");
+                  }
+
                   yield return output!;
                   EndStream();
                   break;
@@ -264,7 +275,10 @@ public static class WorkerClientExtensions
               {
                 case DataChunk.TypeOneofCase.Data:
                   if (isLargeTaskPayloadFinished)
+                  {
                     throw new InvalidOperationException("Unexpectedly received a task payload chunk.");
+                  }
+
                   output!.Add(reply);
                   break;
                 case DataChunk.TypeOneofCase.DataComplete:
@@ -300,40 +314,42 @@ public static class WorkerClientExtensions
                                                                                    [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var enumerator = bytes.GetAsyncEnumerator(cancellationToken);
-    if (!await enumerator.MoveNextAsync(cancellationToken))
+    if (!await enumerator.MoveNextAsync(cancellationToken)
+                         .ConfigureAwait(false))
     {
       throw new InvalidOperationException("No data were retrieved.");
     }
 
-    yield return new()
+    yield return new ProcessRequest.Types.DataReply
                  {
                    ReplyId = replyId,
-                   Init = new()
+                   Init = new ProcessRequest.Types.DataReply.Types.Init
                           {
                             Key = key,
-                            Data = new()
+                            Data = new DataChunk
                                    {
                                      Data = UnsafeByteOperations.UnsafeWrap(enumerator.Current),
                                    },
                           },
                  };
 
-    while (await enumerator.MoveNextAsync())
+    while (await enumerator.MoveNextAsync()
+                           .ConfigureAwait(false))
     {
-      yield return new()
+      yield return new ProcessRequest.Types.DataReply
                    {
                      ReplyId = replyId,
-                     Data = new()
+                     Data = new DataChunk
                             {
                               Data = UnsafeByteOperations.UnsafeWrap(enumerator.Current),
                             },
                    };
     }
 
-    yield return new()
+    yield return new ProcessRequest.Types.DataReply
                  {
                    ReplyId = replyId,
-                   Data = new()
+                   Data = new DataChunk
                           {
                             DataComplete = true,
                           },

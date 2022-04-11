@@ -34,22 +34,25 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public static class GrpcSubmitterExtensions
 {
-  public static async IAsyncEnumerable<TaskRequest> BuildRequests(this
-                                                                    IAsyncEnumerator<CreateLargeTaskRequest> enumerator,
-                                                                  [EnumeratorCancellation] CancellationToken cancellationToken)
+  public static async IAsyncEnumerable<TaskRequest> BuildRequests(this                     IAsyncEnumerator<CreateLargeTaskRequest> enumerator,
+                                                                  [EnumeratorCancellation] CancellationToken                        cancellationToken)
   {
     var           id                 = string.Empty;
     IList<string> expectedOutputKeys = Array.Empty<string>();
     IList<string> dataDependencies   = Array.Empty<string>();
     var           chunks             = new Queue<ReadOnlyMemory<byte>>();
 
-    while (await enumerator.MoveNextAsync(cancellationToken))
+    while (await enumerator.MoveNextAsync(cancellationToken)
+                           .ConfigureAwait(false))
     {
       switch (enumerator.Current.TypeCase)
       {
         case CreateLargeTaskRequest.TypeOneofCase.InitTask:
           if (!string.IsNullOrEmpty(id) || dataDependencies.Any() || expectedOutputKeys.Any() || chunks.Any())
+          {
             throw new InvalidOperationException();
+          }
+
           switch (enumerator.Current.InitTask.TypeCase)
           {
             case InitTaskRequest.TypeOneofCase.Header:
@@ -68,22 +71,25 @@ public static class GrpcSubmitterExtensions
           break;
         case CreateLargeTaskRequest.TypeOneofCase.TaskPayload:
           if (string.IsNullOrEmpty(id) || !expectedOutputKeys.Any())
+          {
             throw new InvalidOperationException();
+          }
+
           switch (enumerator.Current.TaskPayload.TypeCase)
           {
             case DataChunk.TypeOneofCase.Data:
               chunks.Enqueue(enumerator.Current.TaskPayload.Data.Memory);
               break;
             case DataChunk.TypeOneofCase.DataComplete:
-              yield return new(id,
-                               expectedOutputKeys,
-                               dataDependencies,
-                               chunks.ToAsyncEnumerable());
+              yield return new TaskRequest(id,
+                                           expectedOutputKeys,
+                                           dataDependencies,
+                                           chunks.ToAsyncEnumerable());
 
               id                 = string.Empty;
               expectedOutputKeys = Array.Empty<string>();
               dataDependencies   = Array.Empty<string>();
-              chunks             = new();
+              chunks             = new Queue<ReadOnlyMemory<byte>>();
               break;
             case DataChunk.TypeOneofCase.None:
             default:

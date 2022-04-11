@@ -39,88 +39,89 @@ using Microsoft.Extensions.Logging;
 
 using StackExchange.Redis;
 
-namespace ArmoniK.Core.Adapters.Redis
+namespace ArmoniK.Core.Adapters.Redis;
+
+public static class ServiceCollectionExt
 {
-  public static class ServiceCollectionExt
+  [PublicAPI]
+  public static IServiceCollection AddRedis(this IServiceCollection serviceCollection,
+                                            ConfigurationManager    configuration,
+                                            ILogger                 logger)
   {
-    [PublicAPI]
-    public static IServiceCollection AddRedis(
-      this IServiceCollection serviceCollection,
-      ConfigurationManager    configuration,
-      ILogger                 logger)
+    var components = configuration.GetSection(Components.SettingSection);
+
+    if (components["ObjectStorage"] == "ArmoniK.Adapters.Redis.ObjectStorage")
     {
-      var components = configuration.GetSection(Components.SettingSection);
+      serviceCollection.AddOption<Options.Redis>(configuration,
+                                                 Options.Redis.SettingSection,
+                                                 out var redisOptions);
 
-      if (components["ObjectStorage"] == "ArmoniK.Adapters.Redis.ObjectStorage")
+      using var _ = logger.BeginNamedScope("Redis configuration",
+                                           ("EndpointUrl", redisOptions.EndpointUrl));
+
+      if (!string.IsNullOrEmpty(redisOptions.CredentialsPath))
       {
-        serviceCollection.AddOption<Options.Redis>(configuration,
-                                                   Options.Redis.SettingSection,
-                                                   out var redisOptions);
+        configuration.AddJsonFile(redisOptions.CredentialsPath);
 
-        using var _ = logger.BeginNamedScope("Redis configuration",
-                                             ("EndpointUrl", redisOptions.EndpointUrl));
+        serviceCollection.AddOption(configuration,
+                                    Options.Redis.SettingSection,
+                                    out redisOptions);
 
-        if (!string.IsNullOrEmpty(redisOptions.CredentialsPath))
-        {
-          configuration.AddJsonFile(redisOptions.CredentialsPath);
-
-          serviceCollection.AddOption(configuration,
-                                      Options.Redis.SettingSection,
-                                      out redisOptions);
-
-          logger.LogTrace("Loaded Redis credentials from file {path}",
-                          redisOptions.CredentialsPath);
-        }
-
-        if (!string.IsNullOrEmpty(redisOptions.CaPath))
-        {
-          var                  localTrustStore       = new X509Store(StoreName.Root);
-          var certificateCollection = new X509Certificate2Collection();
-          try
-          {
-            certificateCollection.ImportFromPemFile(redisOptions.CaPath);
-            localTrustStore.Open(OpenFlags.ReadWrite);
-            localTrustStore.AddRange(certificateCollection);
-            logger.LogTrace("Imported Redis certificate from file {path}",
-                            redisOptions.CaPath);
-          }
-          catch (Exception ex)
-          {
-            logger.LogError("Root certificate import failed: {error}",
-                            ex.Message);
-            throw;
-          }
-          finally
-          {
-            localTrustStore.Close();
-          }
-        }
-
-        var config = new ConfigurationOptions()
-        {
-          ClientName           = redisOptions.ClientName,
-          ReconnectRetryPolicy = new ExponentialRetry(10),
-          Ssl                  = redisOptions.Ssl,
-          AbortOnConnectFail   = true,
-          SslHost              = redisOptions.SslHost,
-          Password             = redisOptions.Password,
-          User                 = redisOptions.User,
-        };
-        config.EndPoints.Add(redisOptions.EndpointUrl);
-
-        if (redisOptions.Timeout > 0)
-          config.ConnectTimeout = redisOptions.Timeout;
-
-        logger.LogDebug("setup connection to Redis at {EndpointUrl} with user {user}",
-                        redisOptions.EndpointUrl,
-                        redisOptions.User);
-
-        serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
-                                                                                          TextWriter.Null).GetDatabase());
-        serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
+        logger.LogTrace("Loaded Redis credentials from file {path}",
+                        redisOptions.CredentialsPath);
       }
 
-      return serviceCollection;
+      if (!string.IsNullOrEmpty(redisOptions.CaPath))
+      {
+        var localTrustStore       = new X509Store(StoreName.Root);
+        var certificateCollection = new X509Certificate2Collection();
+        try
+        {
+          certificateCollection.ImportFromPemFile(redisOptions.CaPath);
+          localTrustStore.Open(OpenFlags.ReadWrite);
+          localTrustStore.AddRange(certificateCollection);
+          logger.LogTrace("Imported Redis certificate from file {path}",
+                          redisOptions.CaPath);
+        }
+        catch (Exception ex)
+        {
+          logger.LogError("Root certificate import failed: {error}",
+                          ex.Message);
+          throw;
+        }
+        finally
+        {
+          localTrustStore.Close();
+        }
+      }
+
+      var config = new ConfigurationOptions
+                   {
+                     ClientName           = redisOptions.ClientName,
+                     ReconnectRetryPolicy = new ExponentialRetry(10),
+                     Ssl                  = redisOptions.Ssl,
+                     AbortOnConnectFail   = true,
+                     SslHost              = redisOptions.SslHost,
+                     Password             = redisOptions.Password,
+                     User                 = redisOptions.User,
+                   };
+      config.EndPoints.Add(redisOptions.EndpointUrl);
+
+      if (redisOptions.Timeout > 0)
+      {
+        config.ConnectTimeout = redisOptions.Timeout;
+      }
+
+      logger.LogDebug("setup connection to Redis at {EndpointUrl} with user {user}",
+                      redisOptions.EndpointUrl,
+                      redisOptions.User);
+
+      serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
+                                                                                        TextWriter.Null)
+                                                                               .GetDatabase());
+      serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
     }
+
+    return serviceCollection;
   }
 }

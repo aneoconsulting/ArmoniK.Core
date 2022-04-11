@@ -52,11 +52,14 @@ internal class StreamWrapperTests
   public void SetUp()
   {
     Dictionary<string, string> baseConfig = new()
-    {
-      { "Grpc:Endpoint", "http://localhost:5001" },
-    };
+                                            {
+                                              {
+                                                "Grpc:Endpoint", "http://localhost:5001"
+                                              },
+                                            };
 
-    var builder              = new ConfigurationBuilder().AddInMemoryCollection(baseConfig).AddEnvironmentVariables();
+    var builder = new ConfigurationBuilder().AddInMemoryCollection(baseConfig)
+                                            .AddEnvironmentVariables();
     var configuration        = builder.Build();
     var configurationSection = configuration.GetSection(Options.Grpc.SettingSection);
     var endpoint             = configurationSection.GetValue<string>("Endpoint");
@@ -79,18 +82,18 @@ internal class StreamWrapperTests
     var taskId    = Guid.NewGuid() + "mytask";
 
     var taskOptions = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries  = 2,
-      Priority    = 1,
-    };
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                        MaxRetries  = 2,
+                        Priority    = 1,
+                      };
 
     Console.WriteLine("Creating Session");
     var session = client_.CreateSession(new CreateSessionRequest
-    {
-      DefaultTaskOption = taskOptions,
-      Id                = sessionId,
-    });
+                                        {
+                                          DefaultTaskOption = taskOptions,
+                                          Id                = sessionId,
+                                        });
     switch (session.ResultCase)
     {
       case CreateSessionReply.ResultOneofCase.Error:
@@ -106,27 +109,31 @@ internal class StreamWrapperTests
     Console.WriteLine("Session Created");
 
     var payload = new TestPayload
-    {
-      Type      = TestPayload.TaskType.Compute,
-      DataBytes = BitConverter.GetBytes(input),
-      ResultKey = taskId,
-    };
+                  {
+                    Type      = TestPayload.TaskType.Compute,
+                    DataBytes = BitConverter.GetBytes(input),
+                    ResultKey = taskId,
+                  };
 
     var req = new TaskRequest
-    {
-      Id      = taskId,
-      Payload = ByteString.CopyFrom(payload.Serialize()),
-      ExpectedOutputKeys =
-      {
-        taskId,
-      },
-    };
+              {
+                Id      = taskId,
+                Payload = ByteString.CopyFrom(payload.Serialize()),
+                ExpectedOutputKeys =
+                {
+                  taskId,
+                },
+              };
 
     Console.WriteLine("TaskRequest Created");
 
     var createTaskReply = await client_.CreateTasksAsync(sessionId,
                                                          taskOptions,
-                                                         new[] { req });
+                                                         new[]
+                                                         {
+                                                           req,
+                                                         })
+                                       .ConfigureAwait(false);
 
     switch (createTaskReply.DataCase)
     {
@@ -142,45 +149,47 @@ internal class StreamWrapperTests
     }
 
     var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-    {
-      Filter = new TaskFilter
-      {
-        Session = new TaskFilter.Types.IdsRequest
-        {
-          Ids =
-          {
-            sessionId,
-          },
-        },
-        //Included = new TaskFilter.Types.StatusesRequest
-        //{
-        //  Statuses =
-        //  {
-        //    TaskStatus.Completed,
-        //  },
-        //},
-      },
-      StopOnFirstTaskCancellation = true,
-      StopOnFirstTaskError        = true,
-    });
+                                                      {
+                                                        Filter = new TaskFilter
+                                                                 {
+                                                                   Session = new TaskFilter.Types.IdsRequest
+                                                                             {
+                                                                               Ids =
+                                                                               {
+                                                                                 sessionId,
+                                                                               },
+                                                                             },
+                                                                   //Included = new TaskFilter.Types.StatusesRequest
+                                                                   //{
+                                                                   //  Statuses =
+                                                                   //  {
+                                                                   //    TaskStatus.Completed,
+                                                                   //  },
+                                                                   //},
+                                                                 },
+                                                        StopOnFirstTaskCancellation = true,
+                                                        StopOnFirstTaskError        = true,
+                                                      });
 
     Console.WriteLine(waitForCompletion.ToString());
-    
+
     var resultRequest = new ResultRequest
-    {
-      Key     = taskId,
-      Session = sessionId,
-    };
+                        {
+                          Key     = taskId,
+                          Session = sessionId,
+                        };
 
     var availabilityReply = client_.WaitForAvailability(resultRequest);
 
-    Assert.AreEqual(availabilityReply.TypeCase, AvailabilityReply.TypeOneofCase.Ok);
+    Assert.AreEqual(availabilityReply.TypeCase,
+                    AvailabilityReply.TypeOneofCase.Ok);
 
     var streamingCall = client_.TryGetResultStream(resultRequest);
 
     var result = new List<byte>();
 
-    var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest));
+    var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest)
+                                                             .ConfigureAwait(false));
     Console.WriteLine($"Payload Type : {resultPayload.Type} - {taskId}");
     if (resultPayload.Type == TestPayload.TaskType.Result)
     {
@@ -200,18 +209,18 @@ internal class StreamWrapperTests
     var taskId    = Guid.NewGuid() + "mytask";
 
     var taskOptions = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries  = 2,
-      Priority    = 1,
-    };
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                        MaxRetries  = 2,
+                        Priority    = 1,
+                      };
 
     Console.WriteLine("Creating Session");
     var session = client_.CreateSession(new CreateSessionRequest
-    {
-      DefaultTaskOption = taskOptions,
-      Id                = sessionId,
-    });
+                                        {
+                                          DefaultTaskOption = taskOptions,
+                                          Id                = sessionId,
+                                        });
     switch (session.ResultCase)
     {
       case CreateSessionReply.ResultOneofCase.Error:
@@ -227,25 +236,29 @@ internal class StreamWrapperTests
     Console.WriteLine("Session Created");
 
     var payload = new TestPayload
-    {
-      Type = TestPayload.TaskType.Error,
-    };
+                  {
+                    Type = TestPayload.TaskType.Error,
+                  };
 
     var req = new TaskRequest
-    {
-      Id      = taskId,
-      Payload = ByteString.CopyFrom(payload.Serialize()),
-      ExpectedOutputKeys =
-      {
-        taskId,
-      },
-    };
+              {
+                Id      = taskId,
+                Payload = ByteString.CopyFrom(payload.Serialize()),
+                ExpectedOutputKeys =
+                {
+                  taskId,
+                },
+              };
 
     Console.WriteLine("TaskRequest Created");
 
     var createTaskReply = await client_.CreateTasksAsync(sessionId,
                                                          taskOptions,
-                                                         new[] { req });
+                                                         new[]
+                                                         {
+                                                           req,
+                                                         })
+                                       .ConfigureAwait(false);
 
     switch (createTaskReply.DataCase)
     {
@@ -261,28 +274,28 @@ internal class StreamWrapperTests
     }
 
     var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-    {
-      Filter = new TaskFilter
-      {
-        Session = new TaskFilter.Types.IdsRequest
-        {
-          Ids =
-          {
-            sessionId,
-          },
-        },
-      },
-      StopOnFirstTaskCancellation = true,
-      StopOnFirstTaskError        = true,
-    });
+                                                      {
+                                                        Filter = new TaskFilter
+                                                                 {
+                                                                   Session = new TaskFilter.Types.IdsRequest
+                                                                             {
+                                                                               Ids =
+                                                                               {
+                                                                                 sessionId,
+                                                                               },
+                                                                             },
+                                                                 },
+                                                        StopOnFirstTaskCancellation = true,
+                                                        StopOnFirstTaskError        = true,
+                                                      });
 
     Console.WriteLine(waitForCompletion.ToString());
 
     var resultRequest = new ResultRequest
-    {
-      Key     = taskId,
-      Session = sessionId,
-    };
+                        {
+                          Key     = taskId,
+                          Session = sessionId,
+                        };
 
     var taskOutput = client_.TryGetTaskOutput(resultRequest);
     Console.WriteLine(taskOutput.ToString());
@@ -295,20 +308,20 @@ internal class StreamWrapperTests
   public async Task TaskFailed()
   {
     var sessionId = Guid.NewGuid() + nameof(TaskFailed);
-    
+
     var taskOptions = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries = 5,
-      Priority = 1,
-    };
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                        MaxRetries  = 5,
+                        Priority    = 1,
+                      };
 
     Console.WriteLine("Creating Session");
     var session = client_.CreateSession(new CreateSessionRequest
-    {
-      DefaultTaskOption = taskOptions,
-      Id = sessionId,
-    });
+                                        {
+                                          DefaultTaskOption = taskOptions,
+                                          Id                = sessionId,
+                                        });
     switch (session.ResultCase)
     {
       case CreateSessionReply.ResultOneofCase.Error:
@@ -324,24 +337,24 @@ internal class StreamWrapperTests
     Console.WriteLine("Session Created");
 
     var payload = new TestPayload
-    {
-      Type = TestPayload.TaskType.ReturnFailed,
-    };
+                  {
+                    Type = TestPayload.TaskType.ReturnFailed,
+                  };
 
     var taskRequests = new List<TaskRequest>();
 
-    for (int i = 0; i < 10; i++)
+    for (var i = 0; i < 10; i++)
     {
       var taskId = Guid.NewGuid() + "mytask";
       var req = new TaskRequest
-      {
-        Id = taskId,
-        Payload = ByteString.CopyFrom(payload.Serialize()),
-        ExpectedOutputKeys =
-        {
-          taskId,
-        },
-      };
+                {
+                  Id      = taskId,
+                  Payload = ByteString.CopyFrom(payload.Serialize()),
+                  ExpectedOutputKeys =
+                  {
+                    taskId,
+                  },
+                };
       taskRequests.Add(req);
     }
 
@@ -349,7 +362,8 @@ internal class StreamWrapperTests
 
     var createTaskReply = await client_.CreateTasksAsync(sessionId,
                                                          taskOptions,
-                                                         taskRequests);
+                                                         taskRequests)
+                                       .ConfigureAwait(false);
 
     switch (createTaskReply.DataCase)
     {
@@ -365,61 +379,65 @@ internal class StreamWrapperTests
     }
 
     var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-    {
-      Filter = new TaskFilter
-      {
-        Task = new TaskFilter.Types.IdsRequest
-        {
-          Ids = { taskRequests.Select(request => request.Id) },
-        },
-      },
-      StopOnFirstTaskCancellation = true,
-      StopOnFirstTaskError = true,
-    });
+                                                      {
+                                                        Filter = new TaskFilter
+                                                                 {
+                                                                   Task = new TaskFilter.Types.IdsRequest
+                                                                          {
+                                                                            Ids =
+                                                                            {
+                                                                              taskRequests.Select(request => request.Id),
+                                                                            },
+                                                                          },
+                                                                 },
+                                                        StopOnFirstTaskCancellation = true,
+                                                        StopOnFirstTaskError        = true,
+                                                      });
 
     Console.WriteLine(waitForCompletion.ToString());
 
     var taskOutput = taskRequests.Select(request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key     = request.Id,
-        Session = sessionId,
-      };
+                                         {
+                                           var resultRequest = new ResultRequest
+                                                               {
+                                                                 Key     = request.Id,
+                                                                 Session = sessionId,
+                                                               };
 
-      var taskOutput = client_.TryGetTaskOutput(resultRequest);
-      Console.WriteLine(request.Id + " - " + taskOutput.ToString());
-      return taskOutput.Status;
-    });
+                                           var taskOutput = client_.TryGetTaskOutput(resultRequest);
+                                           Console.WriteLine(request.Id + " - " + taskOutput);
+                                           return taskOutput.Status;
+                                         });
 
     Assert.IsTrue(taskOutput.All(status => status == TaskStatus.Error));
   }
 
 
-
   [Test]
   public async Task MultipleTasks([Values(4,
-                                          5, 100)]
+                                          5,
+                                          100)]
                                   int n,
-                                  [Values(TestPayload.TaskType.Compute, TestPayload.TaskType.Transfer)]
+                                  [Values(TestPayload.TaskType.Compute,
+                                          TestPayload.TaskType.Transfer)]
                                   TestPayload.TaskType taskType)
   {
     var sessionId = "sessionId-" + Guid.NewGuid() + "-" + nameof(MultipleTasks) + " - " + taskType;
     Console.WriteLine($"Type of task {taskType}");
 
     var taskOptions = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries  = 3,
-      Priority    = 1,
-    };
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                        MaxRetries  = 3,
+                        Priority    = 1,
+                      };
 
     Console.WriteLine($"Creating Session {sessionId}");
     var session = client_.CreateSession(new CreateSessionRequest
-    {
-      DefaultTaskOption = taskOptions,
-      Id                = sessionId,
-    });
+                                        {
+                                          DefaultTaskOption = taskOptions,
+                                          Id                = sessionId,
+                                        });
     switch (session.ResultCase)
     {
       case CreateSessionReply.ResultOneofCase.Error:
@@ -441,21 +459,21 @@ internal class StreamWrapperTests
       var taskId = nameof(MultipleTasks) + "-" + i + "-" + Guid.NewGuid();
 
       var payload = new TestPayload
-      {
-        Type      = taskType,
-        DataBytes = BitConverter.GetBytes(i),
-        ResultKey = taskId,
-      };
+                    {
+                      Type      = taskType,
+                      DataBytes = BitConverter.GetBytes(i),
+                      ResultKey = taskId,
+                    };
 
       var req = new TaskRequest
-      {
-        Id      = taskId,
-        Payload = ByteString.CopyFrom(payload.Serialize()),
-        ExpectedOutputKeys =
-        {
-          taskId,
-        },
-      };
+                {
+                  Id      = taskId,
+                  Payload = ByteString.CopyFrom(payload.Serialize()),
+                  ExpectedOutputKeys =
+                  {
+                    taskId,
+                  },
+                };
       taskRequestList.Add(req);
     }
 
@@ -463,7 +481,8 @@ internal class StreamWrapperTests
 
     var createTaskReply = await client_.CreateTasksAsync(sessionId,
                                                          taskOptions,
-                                                         taskRequestList);
+                                                         taskRequestList)
+                                       .ConfigureAwait(false);
 
     switch (createTaskReply.DataCase)
     {
@@ -479,96 +498,99 @@ internal class StreamWrapperTests
     }
 
     var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-    {
-      Filter = new TaskFilter
-      {
-        Task = new TaskFilter.Types.IdsRequest
-        {
-          Ids =
-          {
-            taskRequestList.Select(request => request.Id),
-          },
-        },
-      },
-      StopOnFirstTaskCancellation = true,
-      StopOnFirstTaskError        = true,
-    });
+                                                      {
+                                                        Filter = new TaskFilter
+                                                                 {
+                                                                   Task = new TaskFilter.Types.IdsRequest
+                                                                          {
+                                                                            Ids =
+                                                                            {
+                                                                              taskRequestList.Select(request => request.Id),
+                                                                            },
+                                                                          },
+                                                                 },
+                                                        StopOnFirstTaskCancellation = true,
+                                                        StopOnFirstTaskError        = true,
+                                                      });
 
     Console.WriteLine(waitForCompletion.ToString());
 
     var resultAvailability = taskRequestList.Select(request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key     = request.Id,
-        Session = sessionId,
-      };
-      var availabilityReply = client_.WaitForAvailability(resultRequest);
-      return availabilityReply.TypeCase;
-    });
+                                                    {
+                                                      var resultRequest = new ResultRequest
+                                                                          {
+                                                                            Key     = request.Id,
+                                                                            Session = sessionId,
+                                                                          };
+                                                      var availabilityReply = client_.WaitForAvailability(resultRequest);
+                                                      return availabilityReply.TypeCase;
+                                                    });
 
     Assert.IsTrue(resultAvailability.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
 
     var resultTypeOneofCases = taskRequestList.Select(request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key     = request.Id,
-        Session = sessionId,
-      };
-      var taskOutput = client_.TryGetTaskOutput(resultRequest);
-      Console.WriteLine(request.Id + " - " + taskOutput);
-      return taskOutput.TypeCase;
-    });
+                                                      {
+                                                        var resultRequest = new ResultRequest
+                                                                            {
+                                                                              Key     = request.Id,
+                                                                              Session = sessionId,
+                                                                            };
+                                                        var taskOutput = client_.TryGetTaskOutput(resultRequest);
+                                                        Console.WriteLine(request.Id + " - " + taskOutput);
+                                                        return taskOutput.TypeCase;
+                                                      });
 
     Assert.IsTrue(resultTypeOneofCases.All(t => t == Output.TypeOneofCase.Ok));
 
     var resultList = taskRequestList.Select(async request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key     = request.Id,
-        Session = sessionId,
-      };
+                                            {
+                                              var resultRequest = new ResultRequest
+                                                                  {
+                                                                    Key     = request.Id,
+                                                                    Session = sessionId,
+                                                                  };
 
-      var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest));
-      Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.Id}");
-      if (resultPayload.Type == TestPayload.TaskType.Result)
-      {
-        var output = BitConverter.ToInt32(resultPayload.DataBytes);
-        Console.WriteLine($"Result : {output}");
-        return output;
-      }
+                                              var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest)
+                                                                                                       .ConfigureAwait(false));
+                                              Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.Id}");
+                                              if (resultPayload.Type == TestPayload.TaskType.Result)
+                                              {
+                                                var output = BitConverter.ToInt32(resultPayload.DataBytes);
+                                                Console.WriteLine($"Result : {output}");
+                                                return output;
+                                              }
 
-      return 0;
-    });
+                                              return 0;
+                                            });
 
-    var sum = resultList.Aggregate((t1, t2) => Task.FromResult(t1.Result + t2.Result));
+    var sum = resultList.Aggregate((t1,
+                                    t2) => Task.FromResult(t1.Result + t2.Result));
     Assert.AreEqual(n * (n - 1) * (2 * n - 1) / 6,
                     sum.Result);
   }
 
   [Test]
   public async Task MultipleDataDependencies([Values(1,
-                                                     5, 20)]
+                                                     5,
+                                                     20)]
                                              int n)
   {
     var sessionId = Guid.NewGuid() + "-MultipleDatadependencies";
 
 
     var taskOptions = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries = 2,
-      Priority = 1,
-    };
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                        MaxRetries  = 2,
+                        Priority    = 1,
+                      };
 
     Console.WriteLine("Creating Session");
     var session = client_.CreateSession(new CreateSessionRequest
-    {
-      DefaultTaskOption = taskOptions,
-      Id = sessionId,
-    });
+                                        {
+                                          DefaultTaskOption = taskOptions,
+                                          Id                = sessionId,
+                                        });
     switch (session.ResultCase)
     {
       case CreateSessionReply.ResultOneofCase.Error:
@@ -590,22 +612,22 @@ internal class StreamWrapperTests
       var taskId = "datadep-" + i + "-" + Guid.NewGuid();
 
       var payload = new TestPayload
-      {
-        Type      = TestPayload.TaskType.DatadepTransfer,
-        DataBytes = BitConverter.GetBytes(i + 5),
-        ResultKey = taskId,
-      };
+                    {
+                      Type      = TestPayload.TaskType.DatadepTransfer,
+                      DataBytes = BitConverter.GetBytes(i + 5),
+                      ResultKey = taskId,
+                    };
 
       var req = new TaskRequest
-      {
-        Id = taskId,
-        Payload = ByteString.CopyFrom(payload.Serialize()),
-        ExpectedOutputKeys =
-        {
-          taskId + "-res1",
-          taskId + "-res2",
-        },
-      };
+                {
+                  Id      = taskId,
+                  Payload = ByteString.CopyFrom(payload.Serialize()),
+                  ExpectedOutputKeys =
+                  {
+                    taskId + "-res1",
+                    taskId + "-res2",
+                  },
+                };
       taskRequestList.Add(req);
     }
 
@@ -613,7 +635,8 @@ internal class StreamWrapperTests
 
     var createTaskReply = await client_.CreateTasksAsync(sessionId,
                                                          taskOptions,
-                                                         taskRequestList);
+                                                         taskRequestList)
+                                       .ConfigureAwait(false);
 
     switch (createTaskReply.DataCase)
     {
@@ -629,97 +652,101 @@ internal class StreamWrapperTests
     }
 
     var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-    {
-      Filter = new TaskFilter
-      {
-        Task = new TaskFilter.Types.IdsRequest
-        {
-          Ids =
-          {
-            taskRequestList.Select(request => request.Id),
-          },
-        },
-      },
-      StopOnFirstTaskCancellation = true,
-      StopOnFirstTaskError = true,
-    });
+                                                      {
+                                                        Filter = new TaskFilter
+                                                                 {
+                                                                   Task = new TaskFilter.Types.IdsRequest
+                                                                          {
+                                                                            Ids =
+                                                                            {
+                                                                              taskRequestList.Select(request => request.Id),
+                                                                            },
+                                                                          },
+                                                                 },
+                                                        StopOnFirstTaskCancellation = true,
+                                                        StopOnFirstTaskError        = true,
+                                                      });
 
     Console.WriteLine(waitForCompletion.ToString());
 
     var resultAvailability1 = taskRequestList.Select(request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key = request.Id + "-res1",
-        Session = sessionId,
-      };
-      var availabilityReply = client_.WaitForAvailability(resultRequest);
-      return availabilityReply.TypeCase;
-    });
+                                                     {
+                                                       var resultRequest = new ResultRequest
+                                                                           {
+                                                                             Key     = request.Id + "-res1",
+                                                                             Session = sessionId,
+                                                                           };
+                                                       var availabilityReply = client_.WaitForAvailability(resultRequest);
+                                                       return availabilityReply.TypeCase;
+                                                     });
 
     Assert.IsTrue(resultAvailability1.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
 
     var resultAvailability2 = taskRequestList.Select(request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key     = request.Id + "-res1",
-        Session = sessionId,
-      };
-      var availabilityReply = client_.WaitForAvailability(resultRequest);
-      return availabilityReply.TypeCase;
-    });
+                                                     {
+                                                       var resultRequest = new ResultRequest
+                                                                           {
+                                                                             Key     = request.Id + "-res1",
+                                                                             Session = sessionId,
+                                                                           };
+                                                       var availabilityReply = client_.WaitForAvailability(resultRequest);
+                                                       return availabilityReply.TypeCase;
+                                                     });
 
     Assert.IsTrue(resultAvailability2.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
 
     var resultTypeOneofCases = taskRequestList.Select(request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key = request.Id,
-        Session = sessionId,
-      };
-      var taskOutput = client_.TryGetTaskOutput(resultRequest);
-      Console.WriteLine(request.Id + " - " + taskOutput);
-      return taskOutput.TypeCase;
-    });
+                                                      {
+                                                        var resultRequest = new ResultRequest
+                                                                            {
+                                                                              Key     = request.Id,
+                                                                              Session = sessionId,
+                                                                            };
+                                                        var taskOutput = client_.TryGetTaskOutput(resultRequest);
+                                                        Console.WriteLine(request.Id + " - " + taskOutput);
+                                                        return taskOutput.TypeCase;
+                                                      });
 
     Assert.IsTrue(resultTypeOneofCases.All(t => t == Output.TypeOneofCase.Ok));
 
     var results = taskRequestList.Select(async request =>
-    {
-      var resultRequest1 = new ResultRequest
-      {
-        Key = request.Id + "-res1",
-        Session = sessionId,
-      };
-      var resultBytes1   = await client_.GetResultAsync(resultRequest1);
-      if (resultBytes1.Length == 0)
-      {
-        throw new Exception();
-      }
-      var resultPayload1 = TestPayload.Deserialize(resultBytes1);
+                                         {
+                                           var resultRequest1 = new ResultRequest
+                                                                {
+                                                                  Key     = request.Id + "-res1",
+                                                                  Session = sessionId,
+                                                                };
+                                           var resultBytes1 = await client_.GetResultAsync(resultRequest1)
+                                                                           .ConfigureAwait(false);
+                                           if (resultBytes1.Length == 0)
+                                           {
+                                             throw new Exception();
+                                           }
 
-      var resultRequest2 = new ResultRequest
-      {
-        Key     = request.Id + "-res2",
-        Session = sessionId,
-      };
-      var resultBytes2 = await client_.GetResultAsync(resultRequest2);
-      if (resultBytes2.Length == 0)
-      {
-        throw new Exception();
-      }
-      var resultPayload2 = TestPayload.Deserialize(resultBytes2);
+                                           var resultPayload1 = TestPayload.Deserialize(resultBytes1);
 
-      var resultInt1 = BitConverter.ToInt32(resultPayload1.DataBytes);
-      var resultInt2 = BitConverter.ToInt32(resultPayload2.DataBytes);
+                                           var resultRequest2 = new ResultRequest
+                                                                {
+                                                                  Key     = request.Id + "-res2",
+                                                                  Session = sessionId,
+                                                                };
+                                           var resultBytes2 = await client_.GetResultAsync(resultRequest2)
+                                                                           .ConfigureAwait(false);
+                                           if (resultBytes2.Length == 0)
+                                           {
+                                             throw new Exception();
+                                           }
 
-      Console.WriteLine($"Result1 {resultInt1}");
-      Console.WriteLine($"Result2 {resultInt2}");
+                                           var resultPayload2 = TestPayload.Deserialize(resultBytes2);
 
-      return 2 * resultInt2 == resultInt1;
-    });
+                                           var resultInt1 = BitConverter.ToInt32(resultPayload1.DataBytes);
+                                           var resultInt2 = BitConverter.ToInt32(resultPayload2.DataBytes);
+
+                                           Console.WriteLine($"Result1 {resultInt1}");
+                                           Console.WriteLine($"Result2 {resultInt2}");
+
+                                           return 2 * resultInt2 == resultInt1;
+                                         });
     Assert.IsTrue(results.All(task => task.Result));
   }
 
@@ -727,24 +754,27 @@ internal class StreamWrapperTests
   [Test]
   public async Task LargePayloads([Values(2,
                                           10)]
-                                  int n, [Values(1,
-                                               2, 5, 10)]
+                                  int n,
+                                  [Values(1,
+                                          2,
+                                          5,
+                                          10)]
                                   int size)
   {
     var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
     var taskOptions = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries = 3,
-      Priority = 1,
-    };
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                        MaxRetries  = 3,
+                        Priority    = 1,
+                      };
 
     Console.WriteLine($"Creating Session {sessionId}");
     var session = client_.CreateSession(new CreateSessionRequest
-    {
-      DefaultTaskOption = taskOptions,
-      Id = sessionId,
-    });
+                                        {
+                                          DefaultTaskOption = taskOptions,
+                                          Id                = sessionId,
+                                        });
     switch (session.ResultCase)
     {
       case CreateSessionReply.ResultOneofCase.Error:
@@ -761,16 +791,16 @@ internal class StreamWrapperTests
 
     var taskRequestList = new List<TaskRequest>();
 
-    Random rnd       = new Random();
-    byte[] dataBytes = new byte[size * 1024 * 128];
+    var rnd       = new Random();
+    var dataBytes = new byte[size * 1024 * 128];
     rnd.NextBytes(dataBytes);
     var hash = SHA256.HashData(dataBytes);
 
     var payload = new TestPayload
-    {
-      Type      = TestPayload.TaskType.PayloadCheckSum,
-      DataBytes = dataBytes,
-    };
+                  {
+                    Type      = TestPayload.TaskType.PayloadCheckSum,
+                    DataBytes = dataBytes,
+                  };
     var serializedPayload = payload.Serialize();
     var byteString        = ByteString.CopyFrom(serializedPayload);
     Console.WriteLine("Payload Hash " + Convert.ToBase64String(SHA256.HashData(serializedPayload)));
@@ -780,14 +810,14 @@ internal class StreamWrapperTests
     {
       var taskId = nameof(LargePayloads) + "-" + i + "-" + Guid.NewGuid();
       var req = new TaskRequest
-      {
-        Id      = taskId,
-        Payload = byteString,
-        ExpectedOutputKeys =
-        {
-          taskId,
-        },
-      };
+                {
+                  Id      = taskId,
+                  Payload = byteString,
+                  ExpectedOutputKeys =
+                  {
+                    taskId,
+                  },
+                };
 
       taskRequestList.Add(req);
     }
@@ -796,7 +826,8 @@ internal class StreamWrapperTests
 
     var createTaskReply = await client_.CreateTasksAsync(sessionId,
                                                          taskOptions,
-                                                         taskRequestList);
+                                                         taskRequestList)
+                                       .ConfigureAwait(false);
 
     switch (createTaskReply.DataCase)
     {
@@ -812,66 +843,68 @@ internal class StreamWrapperTests
     }
 
     var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-    {
-      Filter = new TaskFilter
-      {
-        Task = new TaskFilter.Types.IdsRequest
-        {
-          Ids =
-          {
-            taskRequestList.Select(request => request.Id),
-          },
-        },
-      },
-      StopOnFirstTaskCancellation = true,
-      StopOnFirstTaskError = true,
-    });
+                                                      {
+                                                        Filter = new TaskFilter
+                                                                 {
+                                                                   Task = new TaskFilter.Types.IdsRequest
+                                                                          {
+                                                                            Ids =
+                                                                            {
+                                                                              taskRequestList.Select(request => request.Id),
+                                                                            },
+                                                                          },
+                                                                 },
+                                                        StopOnFirstTaskCancellation = true,
+                                                        StopOnFirstTaskError        = true,
+                                                      });
 
     Console.WriteLine(waitForCompletion.ToString());
 
     var resultAvailability = taskRequestList.Select(request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key = request.Id,
-        Session = sessionId,
-      };
-      var availabilityReply = client_.WaitForAvailability(resultRequest);
-      return availabilityReply.TypeCase;
-    });
+                                                    {
+                                                      var resultRequest = new ResultRequest
+                                                                          {
+                                                                            Key     = request.Id,
+                                                                            Session = sessionId,
+                                                                          };
+                                                      var availabilityReply = client_.WaitForAvailability(resultRequest);
+                                                      return availabilityReply.TypeCase;
+                                                    });
 
     Assert.IsTrue(resultAvailability.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
 
     var resultTypeOneofCases = taskRequestList.Select(request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key = request.Id,
-        Session = sessionId,
-      };
-      var taskOutput = client_.TryGetTaskOutput(resultRequest);
-      Console.WriteLine(request.Id + " - " + taskOutput);
-      return taskOutput.TypeCase;
-    });
+                                                      {
+                                                        var resultRequest = new ResultRequest
+                                                                            {
+                                                                              Key     = request.Id,
+                                                                              Session = sessionId,
+                                                                            };
+                                                        var taskOutput = client_.TryGetTaskOutput(resultRequest);
+                                                        Console.WriteLine(request.Id + " - " + taskOutput);
+                                                        return taskOutput.TypeCase;
+                                                      });
 
     Assert.IsTrue(resultTypeOneofCases.All(t => t == Output.TypeOneofCase.Ok));
 
     var resultList = taskRequestList.Select(async request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key = request.Id,
-        Session = sessionId,
-      };
+                                            {
+                                              var resultRequest = new ResultRequest
+                                                                  {
+                                                                    Key     = request.Id,
+                                                                    Session = sessionId,
+                                                                  };
 
-      var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest));
-      Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.Id}");
-      if (resultPayload.Type == TestPayload.TaskType.Result)
-      {
-        return hash.SequenceEqual(resultPayload.DataBytes);
-      }
-      return false;
-    });
+                                              var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest)
+                                                                                                       .ConfigureAwait(false));
+                                              Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.Id}");
+                                              if (resultPayload.Type == TestPayload.TaskType.Result)
+                                              {
+                                                return hash.SequenceEqual(resultPayload.DataBytes);
+                                              }
+
+                                              return false;
+                                            });
 
     Assert.IsTrue(resultList.All(_ => true));
   }
@@ -881,18 +914,18 @@ internal class StreamWrapperTests
   {
     var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
     var taskOptions = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries = 3,
-      Priority = 1,
-    };
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                        MaxRetries  = 3,
+                        Priority    = 1,
+                      };
 
     Console.WriteLine($"Creating Session {sessionId}");
     var session = client_.CreateSession(new CreateSessionRequest
-    {
-      DefaultTaskOption = taskOptions,
-      Id = sessionId,
-    });
+                                        {
+                                          DefaultTaskOption = taskOptions,
+                                          Id                = sessionId,
+                                        });
     switch (session.ResultCase)
     {
       case CreateSessionReply.ResultOneofCase.Error:
@@ -911,12 +944,19 @@ internal class StreamWrapperTests
 
     var createTaskReply = await client_.CreateTasksAsync(sessionId,
                                                          taskOptions,
-                                                         new []{new TaskRequest
+                                                         new[]
                                                          {
-                                                           Id = taskId,
-                                                           ExpectedOutputKeys = { taskId },
-                                                           Payload = ByteString.Empty,
-                                                         }});
+                                                           new TaskRequest
+                                                           {
+                                                             Id = taskId,
+                                                             ExpectedOutputKeys =
+                                                             {
+                                                               taskId,
+                                                             },
+                                                             Payload = ByteString.Empty,
+                                                           },
+                                                         })
+                                       .ConfigureAwait(false);
 
     switch (createTaskReply.DataCase)
     {
@@ -932,28 +972,28 @@ internal class StreamWrapperTests
     }
 
     var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-    {
-      Filter = new TaskFilter
-      {
-        Task = new TaskFilter.Types.IdsRequest
-        {
-          Ids =
-          {
-            taskId,
-          },
-        },
-      },
-      StopOnFirstTaskCancellation = true,
-      StopOnFirstTaskError = true,
-    });
+                                                      {
+                                                        Filter = new TaskFilter
+                                                                 {
+                                                                   Task = new TaskFilter.Types.IdsRequest
+                                                                          {
+                                                                            Ids =
+                                                                            {
+                                                                              taskId,
+                                                                            },
+                                                                          },
+                                                                 },
+                                                        StopOnFirstTaskCancellation = true,
+                                                        StopOnFirstTaskError        = true,
+                                                      });
 
     Console.WriteLine(waitForCompletion.ToString());
 
     var resultRequest = new ResultRequest
-    {
-      Key = taskId,
-      Session = sessionId,
-    };
+                        {
+                          Key     = taskId,
+                          Session = sessionId,
+                        };
     var availabilityReply = client_.WaitForAvailability(resultRequest);
 
     Assert.IsTrue(availabilityReply.TypeCase == AvailabilityReply.TypeOneofCase.Ok);
@@ -962,6 +1002,5 @@ internal class StreamWrapperTests
     Console.WriteLine(taskId + " - " + taskOutput);
 
     Assert.IsTrue(taskOutput.TypeCase == Output.TypeOneofCase.Error);
-
   }
 }

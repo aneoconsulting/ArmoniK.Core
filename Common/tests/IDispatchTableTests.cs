@@ -35,7 +35,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -53,14 +52,6 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture]
 public class DispatchTableTestBase
 {
-  protected IDispatchTable DispatchTable;
-
-  protected bool RunTests;
-
-  public virtual void GetDispatchTableInstance()
-  {
-  }
-
   [SetUp]
   public void SetUp()
   {
@@ -90,6 +81,14 @@ public class DispatchTableTestBase
     RunTests      = false;
   }
 
+  protected IDispatchTable DispatchTable;
+
+  protected bool RunTests;
+
+  public virtual void GetDispatchTableInstance()
+  {
+  }
+
   [Test]
   public async Task TryAcquireDispatchAsyncSucceeds()
   {
@@ -99,7 +98,8 @@ public class DispatchTableTestBase
                                                                "Task2Id",
                                                                "Dispatch2Id",
                                                                new Dictionary<string, string>(),
-                                                               CancellationToken.None);
+                                                               CancellationToken.None)
+                                      .ConfigureAwait(false);
       Assert.IsTrue(result);
     }
   }
@@ -113,7 +113,8 @@ public class DispatchTableTestBase
                                                                "TaskId",
                                                                "NonExistingDispatchId",
                                                                new Dictionary<string, string>(),
-                                                               CancellationToken.None);
+                                                               CancellationToken.None)
+                                      .ConfigureAwait(false);
       Assert.IsFalse(result);
     }
   }
@@ -124,21 +125,23 @@ public class DispatchTableTestBase
     if (RunTests)
     {
       var dispatch = await DispatchTable.GetDispatchAsync("DispatchId",
-                                                          CancellationToken.None);
+                                                          CancellationToken.None)
+                                        .ConfigureAwait(false);
       Assert.IsTrue(dispatch.Id == "DispatchId");
     }
   }
 
   [Test]
-  public void  GetDispatchAsyncFails()
+  public void GetDispatchAsyncFails()
   {
     if (RunTests)
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await DispatchTable.GetDispatchAsync("NonExistingDispatchId",
-                                             CancellationToken.None);
-      });
+                                           {
+                                             await DispatchTable.GetDispatchAsync("NonExistingDispatchId",
+                                                                                  CancellationToken.None)
+                                                                .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -147,14 +150,16 @@ public class DispatchTableTestBase
   {
     if (RunTests)
     {
-      var result =  DispatchTable.AddStatusToDispatch("DispatchId",
+      var result = DispatchTable.AddStatusToDispatch("DispatchId",
                                                      TaskStatus.Dispatched,
                                                      CancellationToken.None);
       var dispatch = await DispatchTable.GetDispatchAsync("DispatchId",
-                                                    CancellationToken.None);
+                                                          CancellationToken.None)
+                                        .ConfigureAwait(false);
 
-      var statusWasInserted = dispatch.Statuses.AsQueryable().
-                         Select(a => a.Status == TaskStatus.Dispatched).FirstOrDefault();
+      var statusWasInserted = dispatch.Statuses.AsQueryable()
+                                      .Select(a => a.Status == TaskStatus.Dispatched)
+                                      .FirstOrDefault();
 
       Assert.IsTrue(result.IsCompletedSuccessfully && statusWasInserted);
     }
@@ -165,12 +170,13 @@ public class DispatchTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<ArmoniKException>( async () =>
-      {
-        await DispatchTable.AddStatusToDispatch("BadDispatchId",
-                                          TaskStatus.Creating,
-                                          CancellationToken.None);
-      });
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+                                           {
+                                             await DispatchTable.AddStatusToDispatch("BadDispatchId",
+                                                                                     TaskStatus.Creating,
+                                                                                     CancellationToken.None)
+                                                                .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -181,7 +187,7 @@ public class DispatchTableTestBase
     {
       var result = DispatchTable.ExtendDispatchTtl("DispatchId",
                                                    CancellationToken.None);
-      await result;
+      await result.ConfigureAwait(false);
       Assert.IsTrue(result.IsCompletedSuccessfully);
     }
   }
@@ -192,10 +198,11 @@ public class DispatchTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await DispatchTable.ExtendDispatchTtl("BadDispatchId",
-                                              CancellationToken.None);
-      });
+                                           {
+                                             await DispatchTable.ExtendDispatchTtl("BadDispatchId",
+                                                                                   CancellationToken.None)
+                                                                .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -206,7 +213,7 @@ public class DispatchTableTestBase
     {
       var result = DispatchTable.DeleteDispatchFromTaskIdAsync("TaskId",
                                                                CancellationToken.None);
-      await result;
+      await result.ConfigureAwait(false);
       Assert.IsTrue(result.IsCompletedSuccessfully);
     }
   }
@@ -217,10 +224,11 @@ public class DispatchTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await DispatchTable.DeleteDispatchFromTaskIdAsync("BadTaskId",
-                                                          CancellationToken.None);
-      });
+                                           {
+                                             await DispatchTable.DeleteDispatchFromTaskIdAsync("BadTaskId",
+                                                                                               CancellationToken.None)
+                                                                .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -230,8 +238,8 @@ public class DispatchTableTestBase
     if (RunTests)
     {
       var result = DispatchTable.DeleteDispatch("DispatchId",
-                                                               CancellationToken.None);
-      await result;
+                                                CancellationToken.None);
+      await result.ConfigureAwait(false);
       Assert.IsTrue(result.IsCompletedSuccessfully);
     }
   }
@@ -242,10 +250,11 @@ public class DispatchTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await DispatchTable.DeleteDispatch("BadDispatchId",
-                                           CancellationToken.None);
-      });
+                                           {
+                                             await DispatchTable.DeleteDispatch("BadDispatchId",
+                                                                                CancellationToken.None)
+                                                                .ConfigureAwait(false);
+                                           });
     }
   }
 }

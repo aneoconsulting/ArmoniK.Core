@@ -32,5 +32,5 @@ public class Metrics
   public const string SettingSection = nameof(Metrics);
 
   public DescribedObject DescribedObject { get; set; }
-  public string ApiVersion { get; set; }
+  public string          ApiVersion      { get; set; }
 }

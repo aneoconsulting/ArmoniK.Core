@@ -22,9 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-
 using System;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
@@ -43,22 +40,25 @@ public record Result(string   SessionId,
                                                                  CreationDate,
                                                                  Data)
 {
-
-  public Result(Core.Common.Storage.Result original) : this(original.SessionId,
-                                                            original.Key,
-                                                            original.OwnerTaskId,
-                                                            original.OriginDispatchId,
-                                                            original.IsResultAvailable,
-                                                            original.CreationDate,
-                                                            original.Data)
+  public Result(Core.Common.Storage.Result original)
+    : this(original.SessionId,
+           original.Key,
+           original.OwnerTaskId,
+           original.OriginDispatchId,
+           original.IsResultAvailable,
+           original.CreationDate,
+           original.Data)
   {
   }
 
   /// <summary>
-  /// Database Id of the object. 
+  ///   Database Id of the object.
   /// </summary>
-  public string Id => GenerateId(SessionId, Key);
+  public string Id
+    => GenerateId(SessionId,
+                  Key);
 
-  public static string GenerateId(string SessionId, string Key) =>
-    $"{SessionId}.{Key}";
+  public static string GenerateId(string SessionId,
+                                  string Key)
+    => $"{SessionId}.{Key}";
 }
