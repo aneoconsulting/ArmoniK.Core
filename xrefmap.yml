@@ -11979,6 +11979,185 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.WaitForCompletion
   nameWithType: GrpcSubmitterService.WaitForCompletion
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter
+  name: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.html
+  commentId: N:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter
+  nameWithType: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt
+  name: ActivityExt
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt.html
+  commentId: T:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt
+  nameWithType: ActivityExt
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt.ToOpenTelemetryData(Activity)
+  name: ToOpenTelemetryData(Activity)
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_ActivityExt_ToOpenTelemetryData_Activity_
+  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt.ToOpenTelemetryData(Activity)
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt.ToOpenTelemetryData(Activity)
+  nameWithType: ActivityExt.ToOpenTelemetryData(Activity)
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt.ToOpenTelemetryData*
+  name: ToOpenTelemetryData
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_ActivityExt_ToOpenTelemetryData_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt.ToOpenTelemetryData
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.ActivityExt.ToOpenTelemetryData
+  nameWithType: ActivityExt.ToOpenTelemetryData
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions
+  name: MongoExporterHelperExtensions
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.html
+  commentId: T:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions
+  nameWithType: MongoExporterHelperExtensions
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder,Action{ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions})
+  name: AddMongoExporter(TracerProviderBuilder, Action<MongoExporterOptions>)
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterHelperExtensions_AddMongoExporter_TracerProviderBuilder_Action_ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions__
+  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder,Action{ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions})
+  name.vb: AddMongoExporter(TracerProviderBuilder, Action(Of MongoExporterOptions))
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, Action<ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions>)
+  fullName.vb: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, Action(Of ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions))
+  nameWithType: MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, Action<MongoExporterOptions>)
+  nameWithType.vb: MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, Action(Of MongoExporterOptions))
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter*
+  name: AddMongoExporter
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterHelperExtensions_AddMongoExporter_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter
+  nameWithType: MongoExporterHelperExtensions.AddMongoExporter
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions
+  name: MongoExporterOptions
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html
+  commentId: T:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions
+  nameWithType: MongoExporterOptions
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.#ctor
+  name: MongoExporterOptions()
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions__ctor
+  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.#ctor
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.MongoExporterOptions()
+  nameWithType: MongoExporterOptions.MongoExporterOptions()
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.#ctor*
+  name: MongoExporterOptions
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions__ctor_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.MongoExporterOptions
+  nameWithType: MongoExporterOptions.MongoExporterOptions
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentHost
+  name: AgentHost
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_AgentHost
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentHost
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentHost
+  nameWithType: MongoExporterOptions.AgentHost
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentHost*
+  name: AgentHost
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_AgentHost_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentHost
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentHost
+  nameWithType: MongoExporterOptions.AgentHost
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentPort
+  name: AgentPort
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_AgentPort
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentPort
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentPort
+  nameWithType: MongoExporterOptions.AgentPort
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentPort*
+  name: AgentPort
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_AgentPort_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentPort
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentPort
+  nameWithType: MongoExporterOptions.AgentPort
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.BatchExportProcessorOptions
+  name: BatchExportProcessorOptions
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_BatchExportProcessorOptions
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.BatchExportProcessorOptions
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.BatchExportProcessorOptions
+  nameWithType: MongoExporterOptions.BatchExportProcessorOptions
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.BatchExportProcessorOptions*
+  name: BatchExportProcessorOptions
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_BatchExportProcessorOptions_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.BatchExportProcessorOptions
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.BatchExportProcessorOptions
+  nameWithType: MongoExporterOptions.BatchExportProcessorOptions
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.DatabaseName
+  name: DatabaseName
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_DatabaseName
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.DatabaseName
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.DatabaseName
+  nameWithType: MongoExporterOptions.DatabaseName
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.DatabaseName*
+  name: DatabaseName
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_DatabaseName_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.DatabaseName
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.DatabaseName
+  nameWithType: MongoExporterOptions.DatabaseName
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.ExportProcessorType
+  name: ExportProcessorType
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_ExportProcessorType
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.ExportProcessorType
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.ExportProcessorType
+  nameWithType: MongoExporterOptions.ExportProcessorType
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.ExportProcessorType*
+  name: ExportProcessorType
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_ExportProcessorType_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.ExportProcessorType
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.ExportProcessorType
+  nameWithType: MongoExporterOptions.ExportProcessorType
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.Logger
+  name: Logger
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_Logger
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.Logger
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.Logger
+  nameWithType: MongoExporterOptions.Logger
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.Logger*
+  name: Logger
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_Logger_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.Logger
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.Logger
+  nameWithType: MongoExporterOptions.Logger
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping
+  name: OpenTelemetryDataModelMapping
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.html
+  commentId: T:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping
+  nameWithType: OpenTelemetryDataModelMapping
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.CollectionName
+  name: CollectionName
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryDataModelMapping_CollectionName
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.CollectionName
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.CollectionName
+  nameWithType: OpenTelemetryDataModelMapping.CollectionName
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.CollectionName*
+  name: CollectionName
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryDataModelMapping_CollectionName_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.CollectionName
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.CollectionName
+  nameWithType: OpenTelemetryDataModelMapping.CollectionName
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{OpenTelemetryData})
+  name: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<OpenTelemetryData>)
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryDataModelMapping_InitializeIndexesAsync_IClientSessionHandle_IMongoCollection_OpenTelemetryData__
+  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{OpenTelemetryData})
+  name.vb: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of OpenTelemetryData))
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<OpenTelemetryData>)
+  fullName.vb: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of OpenTelemetryData))
+  nameWithType: OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<OpenTelemetryData>)
+  nameWithType.vb: OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of OpenTelemetryData))
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync*
+  name: InitializeIndexesAsync
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryDataModelMapping_InitializeIndexesAsync_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync
+  nameWithType: OpenTelemetryDataModelMapping.InitializeIndexesAsync
 - uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options
   name: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options
   href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.html
