@@ -41,7 +41,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
     if (!BsonClassMap.IsClassMapRegistered(typeof(SessionData)))
       BsonClassMap.RegisterClassMap<SessionData>(cm =>
                                                       {
-                                                        cm.MapProperty(nameof(SessionData.SessionId)).SetIsRequired(true);
+                                                        cm.MapIdProperty(nameof(SessionData.SessionId)).SetIsRequired(true);
                                                         cm.MapProperty(nameof(SessionData.DispatchId)).SetIsRequired(true);
                                                         cm.MapProperty(nameof(SessionData.AncestorsDispatchId)).SetIgnoreIfDefault(true);
                                                         cm.MapProperty(nameof(SessionData.IsCancelled)).SetIsRequired(true);
@@ -59,18 +59,12 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
   public string CollectionName => nameof(SessionData);
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionData> collection)
+  public async Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<SessionData> collection)
   {
-    var sessionIndex  = Builders<SessionData>.IndexKeys.Hashed(model => model.SessionId);
     var dispatchIndex = Builders<SessionData>.IndexKeys.Hashed(model => model.DispatchId);
 
     var indexModels = new CreateIndexModel<SessionData>[]
                       {
-                        new(sessionIndex,
-                            new()
-                            {
-                              Name = nameof(sessionIndex),
-                            }),
                         new(dispatchIndex,
                             new()
                             {
@@ -78,7 +72,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                             }),
                       };
 
-    return collection.Indexes.CreateManyAsync(sessionHandle,
+    await collection.Indexes.CreateManyAsync(sessionHandle,
                                               indexModels);
   }
 }

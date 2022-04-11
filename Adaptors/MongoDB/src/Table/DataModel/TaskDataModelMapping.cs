@@ -113,10 +113,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
   {
     var sessionIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
     var statusIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
-    var sessionStatusIndex = Builders<TaskData>.IndexKeys.Combine(sessionIndex,
-                                                                  statusIndex);
     var dispatchIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.DispatchId);
-    var taskIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
 
     var indexModels = new CreateIndexModel<TaskData>[]
                       {
@@ -125,20 +122,15 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                             {
                               Name = nameof(sessionIndex),
                             }),
-                        new(sessionStatusIndex,
-                            new()
-                            {
-                              Name = nameof(sessionStatusIndex),
-                            }),
                         new(dispatchIndex,
                             new()
                             {
                               Name = nameof(dispatchIndex),
                             }),
-                        new(taskIndex,
+                        new(statusIndex,
                             new()
                             {
-                              Name = nameof(taskIndex),
+                              Name = nameof(statusIndex),
                             }),
                       };
 

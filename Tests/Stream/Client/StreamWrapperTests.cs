@@ -404,7 +404,7 @@ internal class StreamWrapperTests
                                   [Values(TestPayload.TaskType.Compute, TestPayload.TaskType.Transfer)]
                                   TestPayload.TaskType taskType)
   {
-    var sessionId = Guid.NewGuid() + "-" + nameof(MultipleTasks) + " - " + taskType;
+    var sessionId = "sessionId-" + Guid.NewGuid() + "-" + nameof(MultipleTasks) + " - " + taskType;
     Console.WriteLine($"Type of task {taskType}");
 
     var taskOptions = new TaskOptions

@@ -69,10 +69,9 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
   public string CollectionName => nameof(DispatchHandler);
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<Dispatch> collection)
+  public async Task InitializeIndexesAsync(IClientSessionHandle sessionHandle, IMongoCollection<Dispatch> collection)
   {
     var dispatchIndex = Builders<Dispatch>.IndexKeys.Hashed(model => model.Id);
-    var sessionIndex  = Builders<Dispatch>.IndexKeys.Hashed(model => model.SessionId);
     var taskIndex     = Builders<Dispatch>.IndexKeys.Hashed(model => model.TaskId);
 
     var indexModels = new CreateIndexModel<Dispatch>[]
@@ -82,11 +81,6 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
                             {
                               Name = nameof(dispatchIndex),
                             }),
-                        new(sessionIndex,
-                            new()
-                            {
-                              Name = nameof(sessionIndex),
-                            }),
                         new(taskIndex,
                             new()
                             {
@@ -94,7 +88,7 @@ public record DispatchDataModelMapping : IMongoDataModelMapping<Dispatch>
                             }),
                       };
 
-    return collection.Indexes.CreateManyAsync(sessionHandle,
+    await collection.Indexes.CreateManyAsync(sessionHandle,
                                               indexModels);
   }
 }
