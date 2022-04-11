@@ -12032,19 +12032,6 @@ references:
   commentId: T:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions
   fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions
   nameWithType: MongoExporterOptions
-- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.#ctor
-  name: MongoExporterOptions()
-  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions__ctor
-  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.#ctor
-  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.MongoExporterOptions()
-  nameWithType: MongoExporterOptions.MongoExporterOptions()
-- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.#ctor*
-  name: MongoExporterOptions
-  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions__ctor_
-  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.MongoExporterOptions
-  nameWithType: MongoExporterOptions.MongoExporterOptions
 - uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.AgentHost
   name: AgentHost
   href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions_AgentHost
