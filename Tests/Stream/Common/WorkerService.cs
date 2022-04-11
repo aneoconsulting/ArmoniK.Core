@@ -33,218 +33,249 @@ using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
+namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
+
+public class WorkerService : WorkerStreamWrapper
 {
-  public class WorkerService : WorkerStreamWrapper
+  public WorkerService(ILoggerFactory loggerFactory)
+    : base(loggerFactory)
   {
-    public WorkerService(ILoggerFactory loggerFactory) : base(loggerFactory)
+  }
+
+  public override async Task<Output> Process(ITaskHandler taskHandler)
+  {
+    var output = new Output();
+    logger_.LogInformation("Execute task {sessionId} {taskId}",
+                           taskHandler.SessionId,
+                           taskHandler.TaskId);
+    logger_.LogDebug("ExpectedResults {expectedResults}",
+                     taskHandler.ExpectedResults);
+    logger_.LogDebug("Execute Task {taskId}",
+                     taskHandler.TaskId);
+    logger_.LogDebug("Payload size {payloadSize}",
+                     taskHandler.Payload.Length);
+
+    if (taskHandler.Payload.Length == 0)
     {
-    }
-
-    public override async Task<Output> Process(ITaskHandler taskHandler)
-    {
-      var output = new Output();
-      logger_.LogInformation("Execute task {sessionId} {taskId}", taskHandler.SessionId, taskHandler.TaskId);
-      logger_.LogDebug("ExpectedResults {expectedResults}",
-                       taskHandler.ExpectedResults);
-      logger_.LogDebug("Execute Task {taskId}", taskHandler.TaskId);
-      logger_.LogDebug("Payload size {payloadSize}", taskHandler.Payload.Length);
-
-      if (taskHandler.Payload.Length == 0)
-      {
-        output.Error = new Output.Types.Error
-        {
-          Details      = "No payload",
-          KillSubTasks = true,
-        };
-        output.Status = TaskStatus.Failed;
-        return output;
-      }
-
-      try
-      {
-        var payload = TestPayload.Deserialize(taskHandler.Payload);
-        if (payload != null)
-          switch (payload.Type)
-          {
-            case TestPayload.TaskType.Compute:
-            {
-              var input = BitConverter.ToInt32(payload.DataBytes);
-              var result = new TestPayload
-              {
-                Type      = TestPayload.TaskType.Result,
-                DataBytes = BitConverter.GetBytes(input * input),
-              };
-              await taskHandler.SendResult(payload.ResultKey ?? throw new NullReferenceException(),
-                                           result.Serialize());
-              output = new Output
-              {
-                Ok     = new Empty(),
-                Status = TaskStatus.Completed,
-              };
-              break;
-            }
-            case TestPayload.TaskType.Result:
-              break;
-            case TestPayload.TaskType.Undefined:
-              break;
-            case TestPayload.TaskType.None:
-              break;
-            case TestPayload.TaskType.Error:
-              throw new Exception("Expected exception in Task");
-            case TestPayload.TaskType.Transfer:
-            {
-              var taskId = "transfer" + Guid.NewGuid();
-
-              payload.Type = TestPayload.TaskType.Compute;
-              var req = new TaskRequest
-              {
-                Id      = taskId,
-                Payload = ByteString.CopyFrom(payload.Serialize()),
-                ExpectedOutputKeys =
-                {
-                  payload.ResultKey,
-                },
-              };
-              await taskHandler.CreateTasksAsync(new[] { req });
-              logger_.LogDebug("Sub Task created : {subtaskid}",
-                               taskId);
-              output = new Output
-              {
-                Ok     = new Empty(),
-                Status = TaskStatus.Completed,
-              };
-            }
-              break;
-            case TestPayload.TaskType.DatadepTransfer:
-            {
-              var         taskId = "DatadepTransfer-" + Guid.NewGuid();
-              TaskRequest req;
-              if (taskHandler.ExpectedResults.Count != 2)
-                throw new ArgumentOutOfRangeException();
-
-              var resId = taskHandler.ExpectedResults.First();
-              var depId = taskHandler.ExpectedResults.Last();
-              var input = BitConverter.ToInt32(payload.DataBytes);
-
-              payload.Type = TestPayload.TaskType.DatadepCompute;
-
-              req = new TaskRequest
-              {
-                Id      = taskId,
-                Payload = ByteString.CopyFrom(payload.Serialize()),
-                ExpectedOutputKeys =
-                {
-                  resId,
-                },
-                DataDependencies =
-                {
-                  depId,
-                },
-              };
-
-              logger_.LogDebug("DataDepTransfer Input {input}", input);
-              var result = new TestPayload
-              {
-                Type      = TestPayload.TaskType.Result,
-                DataBytes = BitConverter.GetBytes(input * input),
-              };
-              await taskHandler.SendResult(depId,
-                                           result.Serialize());
-
-              await taskHandler.CreateTasksAsync(new[] { req });
-              logger_.LogDebug("Sub Task created : {subtaskid}",
-                               taskId);
-
-              output = new Output
-              {
-                Ok     = new Empty(),
-                Status = TaskStatus.Completed,
-              };
-            }
-              break;
-            case TestPayload.TaskType.DatadepCompute:
-            {
-              if (taskHandler.ExpectedResults.Count != 1)
-                throw new ArgumentOutOfRangeException();
-              if (taskHandler.DataDependencies.Count != 1)
-                throw new ArgumentOutOfRangeException();
-
-              var resId    = taskHandler.ExpectedResults.First();
-              var input    = BitConverter.ToInt32(payload.DataBytes);
-              var payload2 = TestPayload.Deserialize(taskHandler.DataDependencies.Values.First());
-
-              if (payload2 is not { Type: TestPayload.TaskType.Result })
-                throw new Exception();
-
-              var input2 = BitConverter.ToInt32(payload2.DataBytes);
-              
-              logger_.LogDebug("DataDepCompute Input1 {input}",
-                               input);
-              logger_.LogDebug("DataDepCompute Input2 {input}",
-                               input2);
-
-              var result = new TestPayload
-              {
-                Type      = TestPayload.TaskType.Result,
-                DataBytes = BitConverter.GetBytes(input * input + input2),
-              };
-              await taskHandler.SendResult(resId,
-                                           result.Serialize());
-
-              output = new Output
-              {
-                Ok     = new Empty(),
-                Status = TaskStatus.Completed,
-              };
-            }
-              break;
-            case TestPayload.TaskType.ReturnFailed:
-              output = new Output
-              {
-                Error = new Output.Types.Error
-                {
-                  Details = "Failed task",
-                  KillSubTasks = true,
-                },
-                Status = TaskStatus.Failed,
-              };
-              break;
-            case TestPayload.TaskType.PayloadCheckSum:
-              var resultPayloadCheckSum = new TestPayload
-              {
-                Type      = TestPayload.TaskType.Result,
-                DataBytes = SHA256.HashData(payload.DataBytes ?? throw new NullReferenceException()),
-              };
-              await taskHandler.SendResult(taskHandler.ExpectedResults.Single(),
-                                           resultPayloadCheckSum.Serialize());
-              output = new Output
-              {
-                Ok     = new Empty(),
-                Status = TaskStatus.Completed,
-              };
-              break;
-            default:
-              throw new ArgumentOutOfRangeException();
-          }
-      }
-      catch (Exception ex)
-      {
-        logger_.LogError(ex,
-                         "Error while computing task");
-
-        output = new Output
-        {
-          Error = new Output.Types.Error
-          {
-            Details = ex.Message + ex.StackTrace,
-            KillSubTasks = true,
-          },
-          Status = TaskStatus.Error,
-        };
-      }
-
+      output.Error = new Output.Types.Error
+                     {
+                       Details      = "No payload",
+                       KillSubTasks = true,
+                     };
+      output.Status = TaskStatus.Failed;
       return output;
     }
+
+    try
+    {
+      var payload = TestPayload.Deserialize(taskHandler.Payload);
+      if (payload != null)
+      {
+        switch (payload.Type)
+        {
+          case TestPayload.TaskType.Compute:
+          {
+            var input = BitConverter.ToInt32(payload.DataBytes);
+            var result = new TestPayload
+                         {
+                           Type      = TestPayload.TaskType.Result,
+                           DataBytes = BitConverter.GetBytes(input * input),
+                         };
+            await taskHandler.SendResult(payload.ResultKey ?? throw new NullReferenceException(),
+                                         result.Serialize())
+                             .ConfigureAwait(false);
+            output = new Output
+                     {
+                       Ok     = new Empty(),
+                       Status = TaskStatus.Completed,
+                     };
+            break;
+          }
+          case TestPayload.TaskType.Result:
+            break;
+          case TestPayload.TaskType.Undefined:
+            break;
+          case TestPayload.TaskType.None:
+            break;
+          case TestPayload.TaskType.Error:
+            throw new Exception("Expected exception in Task");
+          case TestPayload.TaskType.Transfer:
+          {
+            var taskId = "transfer" + Guid.NewGuid();
+
+            payload.Type = TestPayload.TaskType.Compute;
+            var req = new TaskRequest
+                      {
+                        Id      = taskId,
+                        Payload = ByteString.CopyFrom(payload.Serialize()),
+                        ExpectedOutputKeys =
+                        {
+                          payload.ResultKey,
+                        },
+                      };
+            await taskHandler.CreateTasksAsync(new[]
+                                               {
+                                                 req,
+                                               })
+                             .ConfigureAwait(false);
+            logger_.LogDebug("Sub Task created : {subtaskid}",
+                             taskId);
+            output = new Output
+                     {
+                       Ok     = new Empty(),
+                       Status = TaskStatus.Completed,
+                     };
+          }
+            break;
+          case TestPayload.TaskType.DatadepTransfer:
+          {
+            var         taskId = "DatadepTransfer-" + Guid.NewGuid();
+            TaskRequest req;
+            if (taskHandler.ExpectedResults.Count != 2)
+            {
+              throw new ArgumentOutOfRangeException();
+            }
+
+            var resId = taskHandler.ExpectedResults.First();
+            var depId = taskHandler.ExpectedResults.Last();
+            var input = BitConverter.ToInt32(payload.DataBytes);
+
+            payload.Type = TestPayload.TaskType.DatadepCompute;
+
+            req = new TaskRequest
+                  {
+                    Id      = taskId,
+                    Payload = ByteString.CopyFrom(payload.Serialize()),
+                    ExpectedOutputKeys =
+                    {
+                      resId,
+                    },
+                    DataDependencies =
+                    {
+                      depId,
+                    },
+                  };
+
+            logger_.LogDebug("DataDepTransfer Input {input}",
+                             input);
+            var result = new TestPayload
+                         {
+                           Type      = TestPayload.TaskType.Result,
+                           DataBytes = BitConverter.GetBytes(input * input),
+                         };
+            await taskHandler.SendResult(depId,
+                                         result.Serialize())
+                             .ConfigureAwait(false);
+
+            await taskHandler.CreateTasksAsync(new[]
+                                               {
+                                                 req,
+                                               })
+                             .ConfigureAwait(false);
+            logger_.LogDebug("Sub Task created : {subtaskid}",
+                             taskId);
+
+            output = new Output
+                     {
+                       Ok     = new Empty(),
+                       Status = TaskStatus.Completed,
+                     };
+          }
+            break;
+          case TestPayload.TaskType.DatadepCompute:
+          {
+            if (taskHandler.ExpectedResults.Count != 1)
+            {
+              throw new ArgumentOutOfRangeException();
+            }
+
+            if (taskHandler.DataDependencies.Count != 1)
+            {
+              throw new ArgumentOutOfRangeException();
+            }
+
+            var resId    = taskHandler.ExpectedResults.First();
+            var input    = BitConverter.ToInt32(payload.DataBytes);
+            var payload2 = TestPayload.Deserialize(taskHandler.DataDependencies.Values.First());
+
+            if (payload2 is not
+                {
+                  Type: TestPayload.TaskType.Result,
+                })
+            {
+              throw new Exception();
+            }
+
+            var input2 = BitConverter.ToInt32(payload2.DataBytes);
+
+            logger_.LogDebug("DataDepCompute Input1 {input}",
+                             input);
+            logger_.LogDebug("DataDepCompute Input2 {input}",
+                             input2);
+
+            var result = new TestPayload
+                         {
+                           Type      = TestPayload.TaskType.Result,
+                           DataBytes = BitConverter.GetBytes(input * input + input2),
+                         };
+            await taskHandler.SendResult(resId,
+                                         result.Serialize())
+                             .ConfigureAwait(false);
+
+            output = new Output
+                     {
+                       Ok     = new Empty(),
+                       Status = TaskStatus.Completed,
+                     };
+          }
+            break;
+          case TestPayload.TaskType.ReturnFailed:
+            output = new Output
+                     {
+                       Error = new Output.Types.Error
+                               {
+                                 Details      = "Failed task",
+                                 KillSubTasks = true,
+                               },
+                       Status = TaskStatus.Failed,
+                     };
+            break;
+          case TestPayload.TaskType.PayloadCheckSum:
+            var resultPayloadCheckSum = new TestPayload
+                                        {
+                                          Type      = TestPayload.TaskType.Result,
+                                          DataBytes = SHA256.HashData(payload.DataBytes ?? throw new NullReferenceException()),
+                                        };
+            await taskHandler.SendResult(taskHandler.ExpectedResults.Single(),
+                                         resultPayloadCheckSum.Serialize())
+                             .ConfigureAwait(false);
+            output = new Output
+                     {
+                       Ok     = new Empty(),
+                       Status = TaskStatus.Completed,
+                     };
+            break;
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+      }
+    }
+    catch (Exception ex)
+    {
+      logger_.LogError(ex,
+                       "Error while computing task");
+
+      output = new Output
+               {
+                 Error = new Output.Types.Error
+                         {
+                           Details      = ex.Message + ex.StackTrace,
+                           KillSubTasks = true,
+                         },
+                 Status = TaskStatus.Error,
+               };
+    }
+
+    return output;
   }
 }

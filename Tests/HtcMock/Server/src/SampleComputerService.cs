@@ -41,140 +41,150 @@ using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Samples.HtcMock.GridWorker
+namespace ArmoniK.Samples.HtcMock.GridWorker;
+
+public class SampleComputerService : WorkerStreamWrapper
 {
-  public class SampleComputerService : WorkerStreamWrapper
+  [SuppressMessage("CodeQuality",
+                   "IDE0052:Remove unread private members",
+                   Justification = "Used for side effects")]
+  private readonly ApplicationLifeTimeManager applicationLifeTime_;
+
+  private readonly ILoggerFactory loggerFactory_;
+
+  public SampleComputerService(ILoggerFactory             loggerFactory,
+                               ApplicationLifeTimeManager applicationLifeTime)
+    : base(loggerFactory)
   {
-    [SuppressMessage("CodeQuality",
-                     "IDE0052:Remove unread private members",
-                     Justification = "Used for side effects")]
-    private readonly ApplicationLifeTimeManager applicationLifeTime_;
+    logger_              = loggerFactory.CreateLogger<SampleComputerService>();
+    loggerFactory_       = loggerFactory;
+    applicationLifeTime_ = applicationLifeTime;
+  }
 
-    private readonly ILoggerFactory loggerFactory_;
+  public override async Task<Output> Process(ITaskHandler taskHandler)
+  {
+    using var scopedLog = logger_.BeginNamedScope("Execute task",
+                                                  ("Session", taskHandler.SessionId),
+                                                  ("taskId", taskHandler.TaskId));
+    logger_.LogTrace("DataDependencies {DataDependencies}",
+                     taskHandler.DataDependencies.Keys);
+    logger_.LogTrace("ExpectedResults {ExpectedResults}",
+                     taskHandler.ExpectedResults);
 
-    public SampleComputerService(ILoggerFactory             loggerFactory,
-                                 ApplicationLifeTimeManager applicationLifeTime) : base(loggerFactory)
+    Output output;
+    try
     {
-      logger_              = loggerFactory.CreateLogger<SampleComputerService>();
-      loggerFactory_       = loggerFactory;
-      applicationLifeTime_ = applicationLifeTime;
+      var (runConfiguration, request) = DataAdapter.ReadPayload(taskHandler.Payload);
+
+      var inputs = request.Dependencies.ToDictionary(id => id,
+                                                     id =>
+                                                     {
+                                                       logger_.LogInformation("Looking for result for Id {id}",
+                                                                              id);
+                                                       var armonikId = taskHandler.SessionId + "%" + id;
+                                                       var isOkay = taskHandler.DataDependencies.TryGetValue(armonikId,
+                                                                                                             out var data);
+                                                       if (!isOkay)
+                                                       {
+                                                         throw new KeyNotFoundException(armonikId);
+                                                       }
+
+                                                       return Encoding.Default.GetString(data);
+                                                     });
+      logger_.LogDebug("Inputs {input}",
+                       inputs);
+
+      var requestProcessor = new RequestProcessor(true,
+                                                  true,
+                                                  true,
+                                                  runConfiguration,
+                                                  logger_);
+      var res = requestProcessor.GetResult(request,
+                                           inputs);
+      logger_.LogDebug("Result for processing request is HasResult={hasResult}, Value={value}",
+                       res.Result.HasResult,
+                       res.Result.Value);
+
+      if (res.Result.HasResult)
+      {
+        await taskHandler.SendResult(taskHandler.ExpectedResults.Single(),
+                                     Encoding.Default.GetBytes(res.Result.Value))
+                         .ConfigureAwait(false);
+      }
+      else
+      {
+        var requests = res.SubRequests.GroupBy(r => r.Dependencies is null || r.Dependencies.Count == 0)
+                          .ToDictionary(g => g.Key,
+                                        g => g);
+        logger_.LogDebug("Will submit {count} new tasks",
+                         requests[true]
+                           .Count());
+        var readyRequests = requests[true];
+        await taskHandler.CreateTasksAsync(readyRequests.Select(r =>
+                                                                {
+                                                                  var taskId = taskHandler.SessionId + "%" + r.Id;
+                                                                  logger_.LogDebug("Create task {taskId}",
+                                                                                   taskId);
+                                                                  return new TaskRequest
+                                                                         {
+                                                                           Id = taskId,
+                                                                           Payload = ByteString.CopyFrom(DataAdapter.BuildPayload(runConfiguration,
+                                                                                                                                  r)),
+                                                                           DataDependencies =
+                                                                           {
+                                                                             r.Dependencies.Select(s => taskHandler.SessionId + "%" + s),
+                                                                           },
+                                                                           ExpectedOutputKeys =
+                                                                           {
+                                                                             taskId,
+                                                                           },
+                                                                         };
+                                                                }))
+                         .ConfigureAwait(false);
+        var req = requests[false]
+          .Single();
+        await taskHandler.CreateTasksAsync(new[]
+                                           {
+                                             new TaskRequest
+                                             {
+                                               Id = taskHandler.SessionId + "%" + req.Id,
+                                               Payload = ByteString.CopyFrom(DataAdapter.BuildPayload(runConfiguration,
+                                                                                                      req)),
+                                               DataDependencies =
+                                               {
+                                                 req.Dependencies.Select(s => taskHandler.SessionId + "%" + s),
+                                               },
+                                               ExpectedOutputKeys =
+                                               {
+                                                 taskHandler.TaskId,
+                                               },
+                                             },
+                                           })
+                         .ConfigureAwait(false);
+      }
+
+      output = new Output
+               {
+                 Ok     = new Empty(),
+                 Status = TaskStatus.Completed,
+               };
+    }
+    catch (Exception ex)
+    {
+      logger_.LogError(ex,
+                       "Error while computing task");
+
+      output = new Output
+               {
+                 Error = new Output.Types.Error
+                         {
+                           Details      = ex.Message + ex.StackTrace,
+                           KillSubTasks = true,
+                         },
+                 Status = TaskStatus.Error,
+               };
     }
 
-    public override async Task<Output> Process(ITaskHandler taskHandler)
-    {
-      using var scopedLog = logger_.BeginNamedScope("Execute task",
-                                                    ("Session", taskHandler.SessionId),
-                                                    ("taskId", taskHandler.TaskId));
-      logger_.LogTrace("DataDependencies {DataDependencies}", taskHandler.DataDependencies.Keys);
-      logger_.LogTrace("ExpectedResults {ExpectedResults}", taskHandler.ExpectedResults);
-
-      Output output;
-      try
-      {
-        var (runConfiguration, request) = DataAdapter.ReadPayload(taskHandler.Payload);
-
-        var inputs = request.Dependencies
-                            .ToDictionary(id => id,
-                                          id =>
-                                          {
-                                            logger_.LogInformation("Looking for result for Id {id}",
-                                                                   id);
-                                            var armonikId = taskHandler.SessionId + "%" + id;
-                                            var isOkay = taskHandler.DataDependencies.TryGetValue(armonikId,
-                                                                                     out var data);
-                                            if (!isOkay)
-                                            {
-                                              throw new KeyNotFoundException(armonikId);
-                                            }
-                                            return Encoding.Default.GetString(data);
-                                          });
-        logger_.LogDebug("Inputs {input}", inputs);
-
-        var requestProcessor = new RequestProcessor(true,
-                                                    true,
-                                                    true,
-                                                    runConfiguration,
-                                                    logger_);
-        var res = requestProcessor.GetResult(request,
-                                              inputs);
-        logger_.LogDebug("Result for processing request is HasResult={hasResult}, Value={value}",
-                         res.Result.HasResult,
-                         res.Result.Value);
-
-        if (res.Result.HasResult)
-        {
-          await taskHandler.SendResult(taskHandler.ExpectedResults.Single(),
-                                 Encoding.Default.GetBytes(res.Result.Value));
-        }
-        else
-        {
-          var requests = res.SubRequests.GroupBy(r => r.Dependencies is null || r.Dependencies.Count == 0)
-                            .ToDictionary(g => g.Key,
-                                          g => g);
-          logger_.LogDebug("Will submit {count} new tasks",
-                           requests[true].Count());
-          var readyRequests = requests[true];
-          await taskHandler.CreateTasksAsync(readyRequests.Select(r =>
-          {
-            var taskId = taskHandler.SessionId + "%" + r.Id;
-            logger_.LogDebug("Create task {taskId}",
-                             taskId);
-            return new TaskRequest
-            {
-              Id      = taskId,
-              Payload = ByteString.CopyFrom(DataAdapter.BuildPayload(runConfiguration, r)),
-              DataDependencies =
-              {
-                r.Dependencies.Select(s => taskHandler.SessionId + "%" + s),
-              },
-              ExpectedOutputKeys =
-              {
-                taskId,
-              },
-            };
-          }));
-          var req    = requests[false].Single();
-          await taskHandler.CreateTasksAsync(new[]
-          {
-            new TaskRequest
-            {
-              Id = taskHandler.SessionId + "%" +req.Id,
-              Payload = ByteString.CopyFrom(DataAdapter.BuildPayload(runConfiguration,
-                                                                     req)),
-              DataDependencies = 
-              {
-                req.Dependencies.Select(s => taskHandler.SessionId + "%" + s),
-              },
-              ExpectedOutputKeys = 
-              {
-                 taskHandler.TaskId,
-              },
-            },
-          });
-        }
-
-        output = new Output
-        {
-          Ok     = new Empty(),
-          Status = TaskStatus.Completed,
-        };
-      }
-      catch (Exception ex)
-      {
-        logger_.LogError(ex,
-                         "Error while computing task");
-
-        output = new Output
-        {
-          Error = new Output.Types.Error
-          {
-            Details = ex.Message + ex.StackTrace,
-            KillSubTasks = true,
-          },
-          Status = TaskStatus.Error,
-        };
-      }
-      return output;
-    }
+    return output;
   }
 }

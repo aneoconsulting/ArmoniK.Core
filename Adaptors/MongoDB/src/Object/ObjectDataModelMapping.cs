@@ -36,7 +36,8 @@ public class ObjectDataModelMapping : IMongoDataModelMapping<ObjectDataModelMapp
   public const string Collection = "Object";
 
   [BsonId]
-  public string Id => $"{Key}.{ChunkIdx}";
+  public string Id
+    => $"{Key}.{ChunkIdx}";
 
   [BsonElement]
   public string Key { get; set; }
@@ -52,32 +53,31 @@ public class ObjectDataModelMapping : IMongoDataModelMapping<ObjectDataModelMapp
   public string CollectionName { get; } = Collection;
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(
-    IClientSessionHandle              sessionHandle,
-    IMongoCollection<ObjectDataModelMapping> collection)
+  public Task InitializeIndexesAsync(IClientSessionHandle                     sessionHandle,
+                                     IMongoCollection<ObjectDataModelMapping> collection)
   {
     var keyIndex      = Builders<ObjectDataModelMapping>.IndexKeys.Text(model => model.Key);
     var chunkIdxIndex = Builders<ObjectDataModelMapping>.IndexKeys.Text(model => model.ChunkIdx);
     var iDIndex       = Builders<ObjectDataModelMapping>.IndexKeys.Text(model => model.Id);
     var combinedIndex = Builders<ObjectDataModelMapping>.IndexKeys.Combine(keyIndex,
-                                                                    chunkIdxIndex);
+                                                                           chunkIdxIndex);
 
 
     var indexModels = new CreateIndexModel<ObjectDataModelMapping>[]
                       {
                         new(iDIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name   = nameof(iDIndex),
                               Unique = true,
                             }),
                         new(keyIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name = nameof(keyIndex),
                             }),
                         new(combinedIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name   = nameof(combinedIndex),
                               Unique = true,

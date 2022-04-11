@@ -66,8 +66,10 @@ public class DispatchTableTests : DispatchTableTestBase
     /* Put a dispatch in the Table with a second delay w.r.t the current time,
      * that the given sessionId and taskId match at least one of the inserted
      * Dispatches in the SetUp of DispatchTableTestBase matters*/
-    ((DispatchTable) DispatchTable).InitDispatchForTesting("SessionId","TaskId","InitDispatchId",
-                                                           1);
+    ((DispatchTable)DispatchTable).InitDispatchForTesting("SessionId",
+                                                          "TaskId",
+                                                          "InitDispatchId",
+                                                          1);
     RunTests = true;
   }
 }

@@ -35,10 +35,10 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class ComputeRequestQueue
 {
-
-  private readonly ILogger                                    logger_;
   private readonly Queue<ProcessRequest.Types.ComputeRequest> computeRequests_;
-  private readonly ComputeRequestStateMachine                 machine_;
+
+  private readonly ILogger                    logger_;
+  private readonly ComputeRequestStateMachine machine_;
 
   public ComputeRequestQueue(ILogger logger)
   {
@@ -47,108 +47,113 @@ public class ComputeRequestQueue
     machine_         = new ComputeRequestStateMachine(logger_);
   }
 
-  public void Init(int dataChunkMaxSize, string sessionId, string taskId, IDictionary<string, string> taskOptions, ByteString? payload, IList<string> expectedOutputKeys)
+  public void Init(int                         dataChunkMaxSize,
+                   string                      sessionId,
+                   string                      taskId,
+                   IDictionary<string, string> taskOptions,
+                   ByteString?                 payload,
+                   IList<string>               expectedOutputKeys)
   {
     machine_.InitRequest();
-    computeRequests_.Enqueue(new()
-    {
-      InitRequest = new()
-      {
-        Configuration = new()
-        {
-          DataChunkMaxSize = dataChunkMaxSize,
-        },
-        TaskId    = taskId,
-        SessionId = sessionId,
-        TaskOptions =
-        {
-          taskOptions,
-        },
-        Payload = payload is not null
-          ? new DataChunk
-          {
-            Data = payload,
-          }
-          : new DataChunk(),
-        ExpectedOutputKeys =
-        {
-          expectedOutputKeys,
-        },
-      },
-    });
+    computeRequests_.Enqueue(new ProcessRequest.Types.ComputeRequest
+                             {
+                               InitRequest = new ProcessRequest.Types.ComputeRequest.Types.InitRequest
+                                             {
+                                               Configuration = new Configuration
+                                                               {
+                                                                 DataChunkMaxSize = dataChunkMaxSize,
+                                                               },
+                                               TaskId    = taskId,
+                                               SessionId = sessionId,
+                                               TaskOptions =
+                                               {
+                                                 taskOptions,
+                                               },
+                                               Payload = payload is not null
+                                                           ? new DataChunk
+                                                             {
+                                                               Data = payload,
+                                                             }
+                                                           : new DataChunk(),
+                                               ExpectedOutputKeys =
+                                               {
+                                                 expectedOutputKeys,
+                                               },
+                                             },
+                             });
   }
 
   public void AddPayloadChunk(ByteString chunk)
   {
     machine_.AddPayloadChunk();
-    computeRequests_.Enqueue(new()
-    {
-      Payload = new()
-      {
-        Data = chunk,
-      },
-    });
+    computeRequests_.Enqueue(new ProcessRequest.Types.ComputeRequest
+                             {
+                               Payload = new DataChunk
+                                         {
+                                           Data = chunk,
+                                         },
+                             });
   }
 
   public void CompletePayload()
   {
     machine_.CompletePayload();
-    computeRequests_.Enqueue(new()
-    {
-      Payload = new()
-      {
-        DataComplete = true,
-      },
-    });
+    computeRequests_.Enqueue(new ProcessRequest.Types.ComputeRequest
+                             {
+                               Payload = new DataChunk
+                                         {
+                                           DataComplete = true,
+                                         },
+                             });
   }
 
   public void InitDataDependency(string key)
   {
     machine_.InitDataDependency();
-    computeRequests_.Enqueue(new()
-    {
-      InitData = new()
-      {
-        Key = key,
-      },
-    });
+    computeRequests_.Enqueue(new ProcessRequest.Types.ComputeRequest
+                             {
+                               InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
+                                          {
+                                            Key = key,
+                                          },
+                             });
   }
 
 
   public void AddDataDependencyChunk(ByteString chunk)
   {
     machine_.AddDataDependencyChunk();
-    computeRequests_.Enqueue(new()
-    {
-      Data = new()
-      {
-        Data = chunk,
-      },
-    });
+    computeRequests_.Enqueue(new ProcessRequest.Types.ComputeRequest
+                             {
+                               Data = new DataChunk
+                                      {
+                                        Data = chunk,
+                                      },
+                             });
   }
 
   public void CompleteDataDependency()
   {
     machine_.CompleteDataDependency();
-    computeRequests_.Enqueue(new()
-    {
-      Data = new()
-      {
-        DataComplete = true,
-      },
-    });
+    computeRequests_.Enqueue(new ProcessRequest.Types.ComputeRequest
+                             {
+                               Data = new DataChunk
+                                      {
+                                        DataComplete = true,
+                                      },
+                             });
   }
 
   public Queue<ProcessRequest.Types.ComputeRequest> GetQueue()
   {
     machine_.CompleteRequest();
-    computeRequests_.Enqueue(new()
-    {
-      InitData = new()
-      {
-        LastData = true,
-      },
-    });
+    computeRequests_.Enqueue(new ProcessRequest.Types.ComputeRequest
+                             {
+                               InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
+                                          {
+                                            LastData = true,
+                                          },
+                             });
     return computeRequests_;
   }
 }

@@ -63,6 +63,6 @@ public class SessionTableTests : SessionTableTestBase
     var scope    = provider.CreateScope();
 
     SessionTable = scope.ServiceProvider.GetRequiredService<ISessionTable>();
-    RunTests      = true;
+    RunTests     = true;
   }
 }

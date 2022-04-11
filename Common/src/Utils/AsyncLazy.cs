@@ -30,15 +30,16 @@ namespace ArmoniK.Core.Common.Utils;
 
 public class AsyncLazy<T> : Lazy<Task<T>>
 {
-  public AsyncLazy(Func<T> valueFactory) :
-    base(() => Task.FromResult(valueFactory()))
+  public AsyncLazy(Func<T> valueFactory)
+    : base(() => Task.FromResult(valueFactory()))
   {
   }
 
-  public AsyncLazy(Func<Task<T>> taskFactory) :
-    base(taskFactory)
+  public AsyncLazy(Func<Task<T>> taskFactory)
+    : base(taskFactory)
   {
   }
 
-  public TaskAwaiter<T> GetAwaiter() => Value.GetAwaiter();
+  public TaskAwaiter<T> GetAwaiter()
+    => Value.GetAwaiter();
 }

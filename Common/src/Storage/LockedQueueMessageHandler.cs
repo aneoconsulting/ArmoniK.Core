@@ -36,7 +36,11 @@ public class LockedQueueMessageHandler : IQueueMessageHandler
   private readonly ILockedQueueStorage lockedQueueStorage_;
   private readonly ILogger             logger_;
 
-  public LockedQueueMessageHandler(ILockedQueueStorage lockedQueueStorage, string messageId, string taskId, ILogger logger, CancellationToken cancellationToken)
+  public LockedQueueMessageHandler(ILockedQueueStorage lockedQueueStorage,
+                                   string              messageId,
+                                   string              taskId,
+                                   ILogger             logger,
+                                   CancellationToken   cancellationToken)
   {
     lockedQueueStorage_ = lockedQueueStorage;
     logger_             = logger;
@@ -46,7 +50,8 @@ public class LockedQueueMessageHandler : IQueueMessageHandler
   }
 
   /// <inheritdoc />
-  public CancellationToken CancellationToken => CancellationToken.None;
+  public CancellationToken CancellationToken
+    => CancellationToken.None;
 
   /// <inheritdoc />
   public string MessageId { get; }
@@ -66,19 +71,23 @@ public class LockedQueueMessageHandler : IQueueMessageHandler
     {
       case QueueMessageStatus.Postponed:
         await lockedQueueStorage_.RequeueMessageAsync(MessageId,
-                                                      cancellationToken_);
+                                                      cancellationToken_)
+                                 .ConfigureAwait(false);
         break;
       case QueueMessageStatus.Failed:
         await lockedQueueStorage_.ReleaseMessageAsync(MessageId,
-                                                      cancellationToken_);
+                                                      cancellationToken_)
+                                 .ConfigureAwait(false);
         break;
       case QueueMessageStatus.Processed:
         await lockedQueueStorage_.MessageProcessedAsync(MessageId,
-                                                        cancellationToken_);
+                                                        cancellationToken_)
+                                 .ConfigureAwait(false);
         break;
       case QueueMessageStatus.Poisonous:
         await lockedQueueStorage_.MessageRejectedAsync(MessageId,
-                                                       cancellationToken_);
+                                                       cancellationToken_)
+                                 .ConfigureAwait(false);
         break;
       default:
         throw new ArgumentOutOfRangeException();

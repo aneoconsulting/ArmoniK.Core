@@ -42,11 +42,13 @@ namespace ArmoniK.Core.Adapters.Redis;
 
 public class ObjectStorage : IObjectStorage
 {
-  private readonly IDatabaseAsync         redis_;
-  private readonly string                 objectStorageName_;
   private readonly ILogger<ObjectStorage> logger_;
+  private readonly string                 objectStorageName_;
+  private readonly IDatabaseAsync         redis_;
 
-  public ObjectStorage(IDatabaseAsync redis, string objectStorageName, ILogger<ObjectStorage> logger)
+  public ObjectStorage(IDatabaseAsync         redis,
+                       string                 objectStorageName,
+                       ILogger<ObjectStorage> logger)
   {
     redis_             = redis;
     objectStorageName_ = objectStorageName;
@@ -54,74 +56,99 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<byte[]> valueChunks, CancellationToken cancellationToken = default)
-  {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-
-    var idx = 0;
-    var taskList = new List<Task>();
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken))
-    {
-      taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
-                                         chunk));
-      ++idx;
-    }
-
-    if (idx == 0) throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
-    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                                idx);
-    await taskList.WhenAll();
-  }
-
-  /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default)
+  public async Task AddOrUpdateAsync(string                   key,
+                                     IAsyncEnumerable<byte[]> valueChunks,
+                                     CancellationToken        cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
 
     var idx      = 0;
     var taskList = new List<Task>();
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken))
+    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
+                                           .ConfigureAwait(false))
     {
       taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
                                          chunk));
       ++idx;
     }
 
-    if (idx == 0) throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+    if (idx == 0)
+    {
+      throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+    }
+
     await redis_.StringSetAsync(objectStorageName_ + key + "_count",
-                                idx);
-    await taskList.WhenAll();
+                                idx)
+                .ConfigureAwait(false);
+    await taskList.WhenAll()
+                  .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<byte[]> GetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async Task AddOrUpdateAsync(string                                 key,
+                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                     CancellationToken                      cancellationToken = default)
   {
-    using var _   = logger_.LogFunction(objectStorageName_ + key);
-    var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count");
+    using var _ = logger_.LogFunction(objectStorageName_ + key);
+
+    var idx      = 0;
+    var taskList = new List<Task>();
+    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
+                                           .ConfigureAwait(false))
+    {
+      taskList.Add(redis_.StringSetAsync(objectStorageName_ + key + "_" + idx,
+                                         chunk));
+      ++idx;
+    }
+
+    if (idx == 0)
+    {
+      throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+    }
+
+    await redis_.StringSetAsync(objectStorageName_ + key + "_count",
+                                idx)
+                .ConfigureAwait(false);
+    await taskList.WhenAll()
+                  .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
+  public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
+                                                       [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  {
+    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var value = await redis_.StringGetAsync(objectStorageName_ + key + "_count")
+                            .ConfigureAwait(false);
 
     if (!value.HasValue)
+    {
       throw new ArmoniKException($"Key {key} not found");
+    }
 
     var valuesCount = int.Parse(value);
 
-    if(valuesCount == 0)
+    if (valuesCount == 0)
+    {
       yield break;
+    }
 
     foreach (var chunckTask in Enumerable.Range(0,
                                                 valuesCount)
                                          .Select(index => redis_.StringGetAsync(objectStorageName_ + key + "_" + index))
                                          .ToList())
     {
-      yield return await chunckTask;
+      yield return await chunckTask.ConfigureAwait(false);
     }
-
   }
 
   /// <inheritdoc />
-  public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
+  public async Task<bool> TryDeleteAsync(string            key,
+                                         CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    return await redis_.KeyDeleteAsync(new RedisKey(objectStorageName_ + key));
+    return await redis_.KeyDeleteAsync(new RedisKey(objectStorageName_ + key))
+                       .ConfigureAwait(false);
   }
 
   /// <inheritdoc />

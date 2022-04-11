@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
@@ -50,101 +51,129 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class TaskTable : ITaskTable
 {
+  private readonly ActivitySource                                          activitySource_;
   private readonly SessionProvider                                         sessionProvider_;
   private readonly MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider_;
-  private readonly ActivitySource                                          activitySource_;
 
-  public TaskTable(SessionProvider sessionProvider, MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider, ILogger<TaskTable> logger, ActivitySource activitySource, Options.TableStorage option)
+  private bool isInitialized_;
+
+  public TaskTable(SessionProvider                                         sessionProvider,
+                   MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider,
+                   ILogger<TaskTable>                                      logger,
+                   ActivitySource                                          activitySource,
+                   TableStorage                                            option)
   {
     sessionProvider_        = sessionProvider;
     taskCollectionProvider_ = taskCollectionProvider;
     Logger                  = logger;
     activitySource_         = activitySource;
-    PollingDelayMin = option.PollingDelayMin;
-    PollingDelayMax = option.PollingDelayMax;
+    PollingDelayMin         = option.PollingDelayMin;
+    PollingDelayMax         = option.PollingDelayMax;
   }
 
   public TimeSpan PollingDelayMin { get; set; }
   public TimeSpan PollingDelayMax { get; set; }
 
   /// <inheritdoc />
-  public async Task CreateTasks(IEnumerable<TaskData> tasks, CancellationToken cancellationToken = default)
+  public async Task CreateTasks(IEnumerable<TaskData> tasks,
+                                CancellationToken     cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateTasks)}");
 
-    var taskCollection = await taskCollectionProvider_.GetAsync();
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     await taskCollection.InsertManyAsync(tasks.Select(taskData => taskData),
-                                         cancellationToken: cancellationToken);
+                                         cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task<TaskData> ReadTaskAsync(string taskId, CancellationToken cancellationToken = default)
+  public async Task<TaskData> ReadTaskAsync(string            taskId,
+                                            CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(ReadTaskAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(ReadTaskAsync)}");
     activity?.SetTag("ReadTaskId",
-                    taskId);
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+                     taskId);
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
-                               .FirstAsync(cancellationToken);
+                               .FirstAsync(cancellationToken)
+                               .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task<string> GetTaskDispatchId(string taskId, CancellationToken cancellationToken = default)
+  public async Task<string> GetTaskDispatchId(string            taskId,
+                                              CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(GetTaskDispatchId)}");
+    using var activity = activitySource_.StartActivity($"{nameof(GetTaskDispatchId)}");
     activity?.SetTag($"{nameof(GetTaskDispatchId)}_TaskId",
                      taskId);
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
-    var queryableTaskCollection = taskCollection.AsQueryable(sessionHandle).Where(tdm => tdm.TaskId == taskId);
+    var queryableTaskCollection = taskCollection.AsQueryable(sessionHandle)
+                                                .Where(tdm => tdm.TaskId == taskId);
 
     if (!queryableTaskCollection.Any())
     {
       throw new ArmoniKException($"Key '{taskId}' not found");
     }
 
-    return await queryableTaskCollection.Select(model => model.DispatchId).FirstAsync(cancellationToken);
+    return await queryableTaskCollection.Select(model => model.DispatchId)
+                                        .FirstAsync(cancellationToken)
+                                        .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task<IList<string>> GetTaskAncestorDispatchIds(string taskId, CancellationToken cancellationToken = default)
+  public async Task<IList<string>> GetTaskAncestorDispatchIds(string            taskId,
+                                                              CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(GetTaskAncestorDispatchIds)}");
+    using var activity = activitySource_.StartActivity($"{nameof(GetTaskAncestorDispatchIds)}");
     activity?.SetTag($"{nameof(GetTaskAncestorDispatchIds)}_TaskId",
                      taskId);
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
-    var queryableTaskCollection = taskCollection.AsQueryable(sessionHandle).Where(tdm => tdm.TaskId == taskId);
+    var queryableTaskCollection = taskCollection.AsQueryable(sessionHandle)
+                                                .Where(tdm => tdm.TaskId == taskId);
 
     if (!queryableTaskCollection.Any())
     {
       throw new ArmoniKException($"Key '{taskId}' not found");
     }
 
-    return await queryableTaskCollection.Select(model => model.AncestorDispatchIds).FirstAsync(cancellationToken);
+    return await queryableTaskCollection.Select(model => model.AncestorDispatchIds)
+                                        .FirstAsync(cancellationToken)
+                                        .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task ChangeTaskDispatch(string oldDispatchId, string newDispatchId, CancellationToken cancellationToken)
+  public async Task ChangeTaskDispatch(string            oldDispatchId,
+                                       string            newDispatchId,
+                                       CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ChangeTaskDispatch)}");
     activity?.SetTag("oldDispatchId",
                      oldDispatchId);
     activity?.SetTag("newDispatchId",
                      newDispatchId);
-    var taskCollection = await taskCollectionProvider_.GetAsync();
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     var result = await taskCollection.UpdateManyAsync(model => model.DispatchId == oldDispatchId,
-                                         Builders<TaskData>.Update
-                                                                .Set(model => model.DispatchId,
-                                                                     newDispatchId),
-                                         cancellationToken: cancellationToken);
+                                                      Builders<TaskData>.Update.Set(model => model.DispatchId,
+                                                                                    newDispatchId),
+                                                      cancellationToken: cancellationToken)
+                                     .ConfigureAwait(false);
     if (result.ModifiedCount == 0)
     {
       Logger.LogWarning($"Key '{oldDispatchId}' not found");
@@ -156,30 +185,31 @@ public class TaskTable : ITaskTable
                                           TaskStatus        status,
                                           CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(UpdateTaskStatusAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(UpdateTaskStatusAsync)}");
     activity?.SetTag($"{nameof(UpdateTaskStatusAsync)}_TaskId",
                      id);
     activity?.SetTag($"{nameof(UpdateTaskStatusAsync)}_Status",
                      status);
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
-                                                                            status);
+                                                                       status);
     Logger.LogInformation("update task {taskId} to status {status}",
-                    id,
-                    status);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id &&
-                                                        x.Status != TaskStatus.Completed &&
-                                                        x.Status != TaskStatus.Failed &&
+                          id,
+                          status);
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Failed &&
                                                         x.Status != TaskStatus.Canceled,
                                                    updateDefinition,
-                                                   cancellationToken: cancellationToken);
+                                                   cancellationToken: cancellationToken)
+                                  .ConfigureAwait(false);
 
     switch (res.MatchedCount)
     {
       case 0:
         var taskStatus = await GetTaskStatus(id,
-                            cancellationToken);
+                                             cancellationToken)
+                           .ConfigureAwait(false);
         throw new ArmoniKException($"Task not found or task already in a terminal state - {id} from {taskStatus} to {status}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
@@ -191,88 +221,102 @@ public class TaskTable : ITaskTable
                                                   TaskStatus        status,
                                                   CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(UpdateAllTaskStatusAsync)}");
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    using var activity = activitySource_.StartActivity($"{nameof(UpdateAllTaskStatusAsync)}");
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
-    if (filter.Included != null &&
-        filter.Included.Statuses.Contains(TaskStatus.Completed) |
-        filter.Included.Statuses.Contains(TaskStatus.Failed) |
+    if (filter.Included != null && filter.Included.Statuses.Contains(TaskStatus.Completed) | filter.Included.Statuses.Contains(TaskStatus.Failed) |
         filter.Included.Statuses.Contains(TaskStatus.Canceled))
     {
-      throw new ArmoniKException($"The given TaskFilter contains a terminal state, update forbidden");
+      throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
     }
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
-                                                                            status);
+                                                                       status);
     Logger.LogInformation("update all tasks to statuses to status {status}",
                           status);
     var res = await taskCollection.UpdateManyAsync(filter.ToFilterExpression(),
                                                    updateDefinition,
-                                                   cancellationToken: cancellationToken);
+                                                   cancellationToken: cancellationToken)
+                                  .ConfigureAwait(false);
     return (int)res.MatchedCount;
   }
 
   /// <inheritdoc />
-  public async Task<bool> IsTaskCancelledAsync(string taskId, CancellationToken cancellationToken = default)
+  public async Task<bool> IsTaskCancelledAsync(string            taskId,
+                                               CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(IsTaskCancelledAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(IsTaskCancelledAsync)}");
     activity?.SetTag($"{nameof(IsTaskCancelledAsync)}_taskId",
                      taskId);
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(model => model.TaskId == taskId)
                                .Select(model => model.Status == TaskStatus.Canceled || model.Status == TaskStatus.Canceling)
-                               .FirstAsync(cancellationToken);
-
+                               .FirstAsync(cancellationToken)
+                               .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+  public async Task CancelSessionAsync(string            sessionId,
+                                       CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(CancelSessionAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(CancelSessionAsync)}");
     activity?.SetTag($"{nameof(CancelSessionAsync)}_sessionId",
                      sessionId);
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     var result = await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId,
-                                         Builders<TaskData>.Update
-                                                           .Set(model => model.Status,
-                                                                TaskStatus.Canceling),
-                                         cancellationToken: cancellationToken);
+                                                      Builders<TaskData>.Update.Set(model => model.Status,
+                                                                                    TaskStatus.Canceling),
+                                                      cancellationToken: cancellationToken)
+                                     .ConfigureAwait(false);
     if (result.MatchedCount == 0)
+    {
       throw new ArmoniKException($"Key '{sessionId}' not found");
+    }
   }
 
   /// <inheritdoc />
-  public async Task CancelDispatchAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken = default)
+  public async Task CancelDispatchAsync(string            rootSessionId,
+                                        string            dispatchId,
+                                        CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CancelDispatchAsync)}");
     activity?.SetTag($"{nameof(CancelSessionAsync)}_sessionId",
                      rootSessionId);
     activity?.SetTag($"{nameof(CancelSessionAsync)}_dispatchId",
                      dispatchId);
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     var result = await taskCollection.UpdateManyAsync(model => model.DispatchId == dispatchId,
-                                         Builders<TaskData>.Update
-                                                                .Set(model => model.Status,
-                                                                     TaskStatus.Canceling),
-                                         cancellationToken: cancellationToken);
+                                                      Builders<TaskData>.Update.Set(model => model.Status,
+                                                                                    TaskStatus.Canceling),
+                                                      cancellationToken: cancellationToken)
+                                     .ConfigureAwait(false);
 
     if (result.MatchedCount == 0)
+    {
       throw new ArmoniKException($"Key '{dispatchId}' not found");
+    }
   }
 
   /// <inheritdoc />
-  public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter filter, CancellationToken cancellationToken = default)
+  public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
+                                                                  CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CountTasksAsync)}");
 
-    var sessionHandle  = await sessionProvider_.GetAsync();
-    var taskCollection = await taskCollectionProvider_.GetAsync();
-
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
 
     var res = await taskCollection.AsQueryable(sessionHandle)
@@ -280,71 +324,89 @@ public class TaskTable : ITaskTable
                                   .GroupBy(model => model.Status)
                                   .Select(models => new TaskStatusCount(models.Key,
                                                                         models.Count()))
-                                  .ToListAsync(cancellationToken);
+                                  .ToListAsync(cancellationToken)
+                                  .ConfigureAwait(false);
 
-    return res.Select(tuple => new TaskStatusCount(tuple.Status, tuple.Count));
+    return res.Select(tuple => new TaskStatusCount(tuple.Status,
+                                                   tuple.Count));
   }
 
   /// <inheritdoc />
-  public async Task<int> CountAllTasksAsync(TaskStatus status, CancellationToken cancellationToken = default)
+  public async Task<int> CountAllTasksAsync(TaskStatus        status,
+                                            CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CountAllTasksAsync)}");
 
-    var sessionHandle  = await sessionProvider_.GetAsync();
-    var taskCollection = await taskCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
-    var res = taskCollection
-              .AsQueryable(sessionHandle)
-              .Count(model => model.Status == status);
+    var res = taskCollection.AsQueryable(sessionHandle)
+                            .Count(model => model.Status == status);
 
     return res;
   }
 
   /// <inheritdoc />
-  public async Task DeleteTaskAsync(string id, CancellationToken cancellationToken = default)
+  public async Task DeleteTaskAsync(string            id,
+                                    CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(DeleteTaskAsync)}");
     activity?.SetTag($"{nameof(DeleteTaskAsync)}_TaskId",
                      id);
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     await taskCollection.DeleteOneAsync(tdm => tdm.TaskId == id,
-                                        cancellationToken);
-
+                                        cancellationToken)
+                        .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<string> ListTasksAsync(TaskFilter filter, [EnumeratorCancellation] CancellationToken cancellationToken)
+  public async IAsyncEnumerable<string> ListTasksAsync(TaskFilter                                 filter,
+                                                       [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    using var activity = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     await foreach (var taskId in taskCollection.AsQueryable(sessionHandle)
                                                .FilterQuery(filter)
                                                .Select(model => model.TaskId)
-                                               .AsAsyncEnumerable().WithCancellation(cancellationToken))
+                                               .AsAsyncEnumerable()
+                                               .WithCancellation(cancellationToken)
+                                               .ConfigureAwait(false))
+    {
       yield return taskId;
+    }
   }
 
-  public async Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken = default)
+  public async Task SetTaskSuccessAsync(string            taskId,
+                                        CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(SetTaskSuccessAsync)}");
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    using var activity = activitySource_.StartActivity($"{nameof(SetTaskSuccessAsync)}");
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     var taskOutput = new Output(Error: "",
-                               Success: true);
+                                Success: true);
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
-                                                                       taskOutput).Set(tdm => tdm.Status,
-                                                                                      TaskStatus.Completed);
+                                                                       taskOutput)
+                                                                  .Set(tdm => tdm.Status,
+                                                                       TaskStatus.Completed);
     Logger.LogDebug("update task {taskId} to output {output}",
                     taskId,
                     taskOutput);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
                                                    updateDefinition,
-                                                   cancellationToken: cancellationToken);
+                                                   cancellationToken: cancellationToken)
+                                  .ConfigureAwait(false);
 
     switch (res.MatchedCount)
     {
@@ -355,26 +417,32 @@ public class TaskTable : ITaskTable
     }
   }
 
-  public async Task SetTaskErrorAsync(string taskId, string errorDetail, CancellationToken cancellationToken = default)
+  public async Task SetTaskErrorAsync(string            taskId,
+                                      string            errorDetail,
+                                      CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(SetTaskErrorAsync)}");
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    using var activity = activitySource_.StartActivity($"{nameof(SetTaskErrorAsync)}");
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     var taskOutput = new Output(Error: errorDetail,
-                               Success: false);
+                                Success: false);
 
     /* A Task that errors is conceptually a  completed task,
      * the error is reported and detailed in its Output*/
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
-                                                                       taskOutput).Set(tdm => tdm.Status,
-                                                                                      TaskStatus.Completed);
+                                                                       taskOutput)
+                                                                  .Set(tdm => tdm.Status,
+                                                                       TaskStatus.Completed);
     Logger.LogDebug("update task {taskId} to output {output}",
                     taskId,
                     taskOutput);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
                                                    updateDefinition,
-                                                   cancellationToken: cancellationToken);
+                                                   cancellationToken: cancellationToken)
+                                  .ConfigureAwait(false);
 
     switch (res.MatchedCount)
     {
@@ -386,54 +454,66 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<Output> GetTaskOutput(string taskId, CancellationToken cancellationToken = default)
+  public async Task<Output> GetTaskOutput(string            taskId,
+                                          CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetTaskOutput)}");
     activity?.SetTag($"{nameof(GetTaskOutput)}_TaskId",
                      taskId);
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.Output)
-                               .FirstAsync(cancellationToken);
+                               .FirstAsync(cancellationToken)
+                               .ConfigureAwait(false);
   }
 
-  public async Task<TaskStatus> GetTaskStatus(string taskId, CancellationToken cancellationToken = default)
+  public async Task<TaskStatus> GetTaskStatus(string            taskId,
+                                              CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatus)}");
     activity?.SetTag($"{nameof(GetTaskStatus)}_TaskId",
                      taskId);
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.Status)
-                               .FirstAsync(cancellationToken);
+                               .FirstAsync(cancellationToken)
+                               .ConfigureAwait(false);
   }
 
-  public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string taskId, CancellationToken cancellationToken = default)
+  public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
+                                                                   CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetTaskExpectedOutputKeys)}");
     activity?.SetTag($"{nameof(GetTaskExpectedOutputKeys)}_TaskId",
                      taskId);
-    var       sessionHandle  = await sessionProvider_.GetAsync();
-    var       taskCollection = await taskCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
 
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.ExpectedOutput)
-                               .FirstAsync(cancellationToken);
+                               .FirstAsync(cancellationToken)
+                               .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
   public ILogger Logger { get; }
 
-  private bool isInitialized_ = false;
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
@@ -442,8 +522,8 @@ public class TaskTable : ITaskTable
     {
       var session        = sessionProvider_.GetAsync();
       var taskCollection = taskCollectionProvider_.GetAsync();
-      await session;
-      await taskCollection;
+      await session.ConfigureAwait(false);
+      await taskCollection.ConfigureAwait(false);
       isInitialized_ = true;
     }
   }

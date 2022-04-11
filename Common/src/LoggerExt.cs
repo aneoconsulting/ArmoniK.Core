@@ -59,13 +59,16 @@ public static class LoggerExt
                                         [CallerMemberName] string                       functionName = "",
                                         params             ValueTuple<string, object>[] properties)
   {
-    var methodInfo = new StackTrace().GetFrame(1)?.GetMethod();
-    var className  = methodInfo!.ReflectedType!.Name;
+    var methodInfo = new StackTrace().GetFrame(1)
+                                     ?.GetMethod();
+    var className = methodInfo!.ReflectedType!.Name;
 
     var prop = properties.Append((nameof(className), className))
                          .Append((nameof(functionName), functionName));
-    if(!string.IsNullOrEmpty(id))
+    if (!string.IsNullOrEmpty(id))
+    {
       prop = prop.Append(("Id", id));
+    }
 
 
     var scope = logger.BeginNamedScope($"{className}.{functionName}",

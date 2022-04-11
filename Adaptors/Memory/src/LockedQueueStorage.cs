@@ -37,60 +37,14 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class LockedQueueStorage : ILockedQueueStorage
 {
-  private class MessageHandler : IQueueMessageHandler
-  {
-    /// <inheritdoc />
-    public ValueTask DisposeAsync()
-    {
-      Semaphore.Dispose();
-      return ValueTask.CompletedTask;
-    }
+  private static readonly MessageHandler DefaultMessage = new();
 
-    /// <inheritdoc />
-    public CancellationToken CancellationToken { get; init; }
-
-    /// <inheritdoc />
-    public string MessageId => $"Message#{Order}";
-
-    /// <inheritdoc />
-    public string TaskId { get; init; }
-
-    /// <inheritdoc />
-    public QueueMessageStatus Status { get; set; }
-
-    public int Priority { get; init; }
-
-    public bool IsVisible { get; set; }
-
-    public SemaphoreSlim Semaphore { get; } = new(1);
-
-    public long Order { get; } = Interlocked.Increment(ref count_);
-
-    private static long count_;
-
-  }
-
-  private class MessageComparer : IComparer<MessageHandler>
-  {
-    public static readonly IComparer<MessageHandler> Instance = new MessageComparer();
-
-    public int Compare(MessageHandler x, MessageHandler y)
-    {
-      if (ReferenceEquals(x,
-                          y))
-        return 0;
-      if (y is null)
-        return 1;
-      if (x is null)
-        return -1;
-      var priorityComparison = x.Priority.CompareTo(y.Priority);
-      return priorityComparison == 0 ? x.Order.CompareTo(y.Order) : priorityComparison;
-    }
-  }
-
-  private readonly SortedList<MessageHandler, MessageHandler>   queues_       = new(MessageComparer.Instance);
+  private static readonly KeyValuePair<MessageHandler, MessageHandler> DefaultPair = new(DefaultMessage,
+                                                                                         DefaultMessage);
 
   private readonly ConcurrentDictionary<string, MessageHandler> id2Handlers_ = new();
+
+  private readonly SortedList<MessageHandler, MessageHandler> queues_ = new(MessageComparer.Instance);
 
   /// <inheritdoc />
   public ValueTask<bool> Check(HealthCheckTag tag)
@@ -101,28 +55,28 @@ public class LockedQueueStorage : ILockedQueueStorage
     => Task.CompletedTask;
 
   /// <inheritdoc />
-  public int MaxPriority => 100;
-
-  private static readonly MessageHandler DefaultMessage = new();
-
-  private static readonly KeyValuePair<MessageHandler, MessageHandler> DefaultPair = new(DefaultMessage,
-                                                                                         DefaultMessage);
+  public int MaxPriority
+    => 100;
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int nbMessages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
+                                                                [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     while (nbMessages > 0 && queues_.Any())
     {
       cancellationToken.ThrowIfCancellationRequested();
       var (message, _) = queues_.FirstOrDefault(pair => pair.Key.IsVisible = true,
-                                               DefaultPair);
+                                                DefaultPair);
       if (ReferenceEquals(message,
                           DefaultMessage))
+      {
         continue;
+      }
 
       try
       {
-        await message.Semaphore.WaitAsync(CancellationToken.None);
+        await message.Semaphore.WaitAsync(CancellationToken.None)
+                     .ConfigureAwait(false);
         if (message.IsVisible)
         {
           message.IsVisible = false;
@@ -143,24 +97,27 @@ public class LockedQueueStorage : ILockedQueueStorage
   }
 
   /// <inheritdoc />
-  public Task EnqueueMessagesAsync(IEnumerable<string> messages, int priority = 1, CancellationToken cancellationToken = default)
+  public Task EnqueueMessagesAsync(IEnumerable<string> messages,
+                                   int                 priority          = 1,
+                                   CancellationToken   cancellationToken = default)
   {
-    var messageHandlers = messages.Select(message => new MessageHandler()
+    var messageHandlers = messages.Select(message => new MessageHandler
                                                      {
                                                        IsVisible         = true,
                                                        Priority          = priority,
                                                        TaskId            = message,
                                                        CancellationToken = CancellationToken.None,
                                                        Status            = QueueMessageStatus.Waiting,
-
                                                      });
     foreach (var messageHandler in messageHandlers)
     {
       queues_.Add(messageHandler,
-                 messageHandler);
+                  messageHandler);
       if (!id2Handlers_.TryAdd(messageHandler.TaskId,
                                messageHandler))
+      {
         throw new InvalidOperationException("Duplicate messageId found.");
+      }
     }
 
     return Task.CompletedTask;
@@ -173,49 +130,78 @@ public class LockedQueueStorage : ILockedQueueStorage
   public TimeSpan LockRefreshExtension { get; } = TimeSpan.FromMinutes(10);
 
   /// <inheritdoc />
-  public bool AreMessagesUnique => true;
+  public bool AreMessagesUnique
+    => true;
 
   /// <inheritdoc />
-  public Task<bool> RenewDeadlineAsync(string id, CancellationToken cancellationToken = default)
+  public Task<bool> RenewDeadlineAsync(string            id,
+                                       CancellationToken cancellationToken = default)
     => Task.FromResult(true);
 
   /// <inheritdoc />
-  public Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default)
+  public Task MessageProcessedAsync(string            id,
+                                    CancellationToken cancellationToken = default)
   {
     if (!id2Handlers_.TryRemove(id,
                                 out var handler))
+    {
       throw new KeyNotFoundException();
+    }
+
     if (handler.IsVisible)
+    {
       throw new InvalidOperationException("Cannot change the status of a message that is visible.");
+    }
+
     if (!queues_.Remove(handler,
-                       out _))
+                        out _))
+    {
       throw new KeyNotFoundException();
+    }
+
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task MessageRejectedAsync(string id, CancellationToken cancellationToken = default)
+  public Task MessageRejectedAsync(string            id,
+                                   CancellationToken cancellationToken = default)
   {
     if (!id2Handlers_.TryRemove(id,
                                 out var handler))
+    {
       throw new KeyNotFoundException();
+    }
+
     if (handler.IsVisible)
+    {
       throw new InvalidOperationException("Cannot change the status of a message that is visible.");
+    }
+
     if (!queues_.Remove(handler,
-                       out _))
+                        out _))
+    {
       throw new KeyNotFoundException();
+    }
+
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default)
+  public Task RequeueMessageAsync(string            id,
+                                  CancellationToken cancellationToken = default)
   {
     if (!id2Handlers_.TryRemove(id,
                                 out var handler))
+    {
       throw new KeyNotFoundException();
+    }
+
     if (handler.IsVisible)
+    {
       throw new InvalidOperationException("Cannot change the status of a message that is visible.");
-    var newMessage = new MessageHandler()
+    }
+
+    var newMessage = new MessageHandler
                      {
                        IsVisible         = true,
                        Priority          = handler.Priority,
@@ -225,25 +211,96 @@ public class LockedQueueStorage : ILockedQueueStorage
                      };
 
     queues_.Add(newMessage,
-               newMessage);
+                newMessage);
     if (!id2Handlers_.TryAdd(newMessage.TaskId,
                              newMessage))
+    {
       throw new InvalidOperationException("Duplicate messageId found.");
+    }
 
     if (!queues_.Remove(handler,
-                       out _))
+                        out _))
+    {
       throw new KeyNotFoundException();
+    }
+
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task ReleaseMessageAsync(string id, CancellationToken cancellationToken = default)
+  public Task ReleaseMessageAsync(string            id,
+                                  CancellationToken cancellationToken = default)
   {
-
     if (!id2Handlers_.TryRemove(id,
                                 out var handler))
+    {
       throw new KeyNotFoundException();
+    }
+
     handler.IsVisible = true;
     return Task.CompletedTask;
+  }
+
+  private class MessageHandler : IQueueMessageHandler
+  {
+    private static long count_;
+
+    public int Priority { get; init; }
+
+    public bool IsVisible { get; set; }
+
+    public SemaphoreSlim Semaphore { get; } = new(1);
+
+    public long Order { get; } = Interlocked.Increment(ref count_);
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+      Semaphore.Dispose();
+      return ValueTask.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public CancellationToken CancellationToken { get; init; }
+
+    /// <inheritdoc />
+    public string MessageId
+      => $"Message#{Order}";
+
+    /// <inheritdoc />
+    public string TaskId { get; init; }
+
+    /// <inheritdoc />
+    public QueueMessageStatus Status { get; set; }
+  }
+
+  private class MessageComparer : IComparer<MessageHandler>
+  {
+    public static readonly IComparer<MessageHandler> Instance = new MessageComparer();
+
+    public int Compare(MessageHandler x,
+                       MessageHandler y)
+    {
+      if (ReferenceEquals(x,
+                          y))
+      {
+        return 0;
+      }
+
+      if (y is null)
+      {
+        return 1;
+      }
+
+      if (x is null)
+      {
+        return -1;
+      }
+
+      var priorityComparison = x.Priority.CompareTo(y.Priority);
+      return priorityComparison == 0
+               ? x.Order.CompareTo(y.Order)
+               : priorityComparison;
+    }
   }
 }

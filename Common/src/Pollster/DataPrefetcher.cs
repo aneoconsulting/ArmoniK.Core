@@ -40,20 +40,37 @@ namespace ArmoniK.Core.Common.Pollster;
 public class DataPrefetcher : IInitializable
 {
   private readonly ActivitySource          activitySource_;
-  private readonly IObjectStorageFactory   objectStorageFactory_;
   private readonly ILogger<DataPrefetcher> logger_;
+  private readonly IObjectStorageFactory   objectStorageFactory_;
 
-  public DataPrefetcher(
-    IObjectStorageFactory   objectStorageFactory,
-    ActivitySource          activitySource,
-    ILogger<DataPrefetcher> logger)
+  private bool isInitialized_;
+
+  public DataPrefetcher(IObjectStorageFactory   objectStorageFactory,
+                        ActivitySource          activitySource,
+                        ILogger<DataPrefetcher> logger)
   {
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
     activitySource_       = activitySource;
   }
 
-  public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData taskData, CancellationToken cancellationToken)
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
+
+  /// <inheritdoc />
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (!isInitialized_)
+    {
+      await objectStorageFactory_.Init(cancellationToken)
+                                 .ConfigureAwait(false);
+      isInitialized_ = true;
+    }
+  }
+
+  public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData          taskData,
+                                                                                  CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity(nameof(PrefetchDataAsync));
 
@@ -62,11 +79,11 @@ public class DataPrefetcher : IInitializable
 
     List<ByteString> payloadChunks;
 
-    activity?.AddEvent(new("Load payload"));
+    activity?.AddEvent(new ActivityEvent("Load payload"));
 
     if (taskData.HasPayload)
     {
-      payloadChunks = new()
+      payloadChunks = new List<ByteString>
                       {
                         UnsafeByteOperations.UnsafeWrap(taskData.Payload),
                       };
@@ -74,50 +91,44 @@ public class DataPrefetcher : IInitializable
     else
     {
       payloadChunks = await payloadStorage.GetValuesAsync(taskData.TaskId,
-                                                             cancellationToken)
+                                                          cancellationToken)
                                           .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                          .ToListAsync(cancellationToken);
+                                          .ToListAsync(cancellationToken)
+                                          .ConfigureAwait(false);
     }
 
     var computeRequests = new ComputeRequestQueue(logger_);
-    computeRequests.Init(PayloadConfiguration.MaxChunkSize, taskData.SessionId, taskData.TaskId, taskData.Options.Options, payloadChunks.FirstOrDefault(), taskData.ExpectedOutput);
+    computeRequests.Init(PayloadConfiguration.MaxChunkSize,
+                         taskData.SessionId,
+                         taskData.TaskId,
+                         taskData.Options.Options,
+                         payloadChunks.FirstOrDefault(),
+                         taskData.ExpectedOutput);
 
     for (var i = 1; i < payloadChunks.Count; i++)
     {
       computeRequests.AddPayloadChunk(payloadChunks[i]);
     }
+
     computeRequests.CompletePayload();
 
     foreach (var dataDependency in taskData.DataDependencies)
     {
       var dependencyChunks = await resultStorage.GetValuesAsync(dataDependency,
-                                                                   cancellationToken)
+                                                                cancellationToken)
                                                 .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                                .ToListAsync(cancellationToken);
+                                                .ToListAsync(cancellationToken)
+                                                .ConfigureAwait(false);
 
       computeRequests.InitDataDependency(dataDependency);
       foreach (var chunk in dependencyChunks)
       {
         computeRequests.AddDataDependencyChunk(chunk);
       }
+
       computeRequests.CompleteDataDependency();
     }
 
     return computeRequests.GetQueue();
-  }
-
-  private bool isInitialized_ = false;
-
-  /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
-
-  /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
-    {
-      await objectStorageFactory_.Init(cancellationToken);
-      isInitialized_ = true;
-    }
   }
 }

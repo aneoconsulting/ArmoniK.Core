@@ -23,43 +23,35 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.StateMachines;
+
 using Microsoft.Extensions.Logging.Abstractions;
+
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests.StateMachines;
-
 
 [TestFixture]
 public class ComputeRequestStateMachineTest
 {
   [SetUp]
   public void Setup()
-  {
-    sm_ = new ComputeRequestStateMachine(NullLogger<ComputeRequestStateMachine>.Instance);
-  }
+    => sm_ = new ComputeRequestStateMachine(NullLogger<ComputeRequestStateMachine>.Instance);
 
   private ComputeRequestStateMachine sm_;
 
   [Test]
   public void PayloadFirstShouldFail()
-  {
-    Assert.Throws<InvalidOperationException>( () => sm_.AddPayloadChunk());
-  }
+    => Assert.Throws<InvalidOperationException>(() => sm_.AddPayloadChunk());
 
   [Test]
   public void DataChunkFirstShouldFail()
-  {
-    Assert.Throws<InvalidOperationException>( () => sm_.AddDataDependencyChunk());
-  }
+    => Assert.Throws<InvalidOperationException>(() => sm_.AddDataDependencyChunk());
 
   [Test]
   public void InitDataFirstShouldFail()
-  {
-    Assert.Throws<InvalidOperationException>( () => sm_.InitDataDependency());
-  }
+    => Assert.Throws<InvalidOperationException>(() => sm_.InitDataDependency());
 
   [Test]
   public void TwoInitRequestsShouldFail()
@@ -76,7 +68,7 @@ public class ComputeRequestStateMachineTest
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
 
-    Assert.Throws<InvalidOperationException>( () => sm_.CompleteRequest());
+    Assert.Throws<InvalidOperationException>(() => sm_.CompleteRequest());
   }
 
   [Test]
@@ -104,7 +96,7 @@ public class ComputeRequestStateMachineTest
     sm_.CompletePayload();
 
     sm_.InitDataDependency();
-    Assert.Throws<InvalidOperationException>( () => sm_.CompleteDataDependency());
+    Assert.Throws<InvalidOperationException>(() => sm_.CompleteDataDependency());
   }
 
   [Test]
@@ -130,7 +122,7 @@ public class ComputeRequestStateMachineTest
   }
 
   [Test]
-  public  void HappyPathSmallShouldSucceed()
+  public void HappyPathSmallShouldSucceed()
   {
     sm_.InitRequest();
     sm_.CompletePayload();
@@ -145,7 +137,7 @@ public class ComputeRequestStateMachineTest
   }
 
   [Test]
-  public  void HappyPathNoDataDepShouldSucceed()
+  public void HappyPathNoDataDepShouldSucceed()
   {
     sm_.InitRequest();
     sm_.CompletePayload();
@@ -155,12 +147,12 @@ public class ComputeRequestStateMachineTest
   }
 
   [Test]
-  public  void HappyPathNoDataDepNoGetQueueShouldFail()
+  public void HappyPathNoDataDepNoGetQueueShouldFail()
   {
     sm_.InitRequest();
     sm_.CompletePayload();
     Assert.AreNotEqual(ComputeRequestStateMachine.State.DataLast,
-                    sm_.GetState());
+                       sm_.GetState());
   }
 
   [Test]

@@ -73,17 +73,18 @@ public class Heart
   /// <returns></returns>
   public Heart(Func<bool>        pulse,
                TimeSpan          beatPeriod,
-               CancellationToken cancellationToken = default) :
-    this(token => Task.FromResult(pulse()),
-         beatPeriod,
-         cancellationToken)
+               CancellationToken cancellationToken = default)
+    : this(token => Task.FromResult(pulse()),
+           beatPeriod,
+           cancellationToken)
   {
   }
 
   /// <summary>
   ///   Triggered when the heart stops
   /// </summary>
-  public CancellationToken HeartStopped => stoppedHeartCts_.Token;
+  public CancellationToken HeartStopped
+    => stoppedHeartCts_.Token;
 
   /// <summary>
   ///   Stops the heart
@@ -95,7 +96,9 @@ public class Heart
     try
     {
       if (runningTask_ != null)
+      {
         await runningTask_;
+      }
     }
     catch (TaskCanceledException)
     {
@@ -112,23 +115,28 @@ public class Heart
   public void Start()
   {
     if (!stoppedHeartCts_.IsCancellationRequested) // already running with infinite loop
+    {
       return;
+    }
 
-    stoppedHeartCts_ = new();
+    stoppedHeartCts_ = new CancellationTokenSource();
     combinedSource_ = CancellationTokenSource.CreateLinkedTokenSource(stoppedHeartCts_.Token,
                                                                       cancellationToken_);
 
-    runningTask_ = Task<Task>.Factory
-                             .StartNew(async () =>
-                                       {
-                                         await Task.Delay(beatPeriod_,
-                                                          combinedSource_.Token);
-                                         while (!stoppedHeartCts_.IsCancellationRequested)
-                                           await FullCycle();
-                                       },
-                                       cancellationToken_,
-                                       TaskCreationOptions.LongRunning,
-                                       TaskScheduler.Current)
+    runningTask_ = Task<Task>.Factory.StartNew(async () =>
+                                               {
+                                                 await Task.Delay(beatPeriod_,
+                                                                  combinedSource_.Token)
+                                                           .ConfigureAwait(false);
+                                                 while (!stoppedHeartCts_.IsCancellationRequested)
+                                                 {
+                                                   await FullCycle()
+                                                     .ConfigureAwait(false);
+                                                 }
+                                               },
+                                               cancellationToken_,
+                                               TaskCreationOptions.LongRunning,
+                                               TaskScheduler.Current)
                              .Unwrap();
   }
 
@@ -136,12 +144,13 @@ public class Heart
   {
     var delayTask = Task.Delay(beatPeriod_,
                                combinedSource_?.Token ?? cancellationToken_);
-    if (!await pulse_(cancellationToken_))
+    if (!await pulse_(cancellationToken_)
+           .ConfigureAwait(false))
     {
       stoppedHeartCts_.Cancel();
       return;
     }
 
-    await delayTask;
+    await delayTask.ConfigureAwait(false);
   }
 }

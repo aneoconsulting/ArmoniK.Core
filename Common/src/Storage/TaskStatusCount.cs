@@ -26,4 +26,5 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public record TaskStatusCount(TaskStatus Status, int Count);
+public record TaskStatusCount(TaskStatus Status,
+                              int        Count);

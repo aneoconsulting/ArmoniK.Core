@@ -25,35 +25,29 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Server
+namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Server;
+
+public class ApplicationLifeTimeManager
 {
-  public class ApplicationLifeTimeManager
+  private readonly IHostApplicationLifetime            lifetime_;
+  private readonly ILogger<ApplicationLifeTimeManager> logger_;
+
+  public ApplicationLifeTimeManager(ILogger<ApplicationLifeTimeManager> logger,
+                                    IHostApplicationLifetime            lifetime)
   {
-    private readonly IHostApplicationLifetime            lifetime_;
-    private readonly ILogger<ApplicationLifeTimeManager> logger_;
-
-    public ApplicationLifeTimeManager(ILogger<ApplicationLifeTimeManager> logger, IHostApplicationLifetime lifetime)
-    {
-      logger_   = logger;
-      lifetime_ = lifetime;
-      lifetime_.ApplicationStopping.Register(GracefulTerminationStarted);
-      lifetime_.ApplicationStopped.Register(GracefulTerminationFinished);
-      lifetime_.ApplicationStarted.Register(ApplicationStarted);
-    }
-
-    private void GracefulTerminationStarted()
-    {
-      logger_.LogWarning("Application host is starting graceful termination");
-    }
-
-    private void GracefulTerminationFinished()
-    {
-      logger_.LogWarning("Application host has finished graceful termination");
-    }
-
-    private void ApplicationStarted()
-    {
-      logger_.LogWarning("Application host has finished starting");
-    }
+    logger_   = logger;
+    lifetime_ = lifetime;
+    lifetime_.ApplicationStopping.Register(GracefulTerminationStarted);
+    lifetime_.ApplicationStopped.Register(GracefulTerminationFinished);
+    lifetime_.ApplicationStarted.Register(ApplicationStarted);
   }
+
+  private void GracefulTerminationStarted()
+    => logger_.LogWarning("Application host is starting graceful termination");
+
+  private void GracefulTerminationFinished()
+    => logger_.LogWarning("Application host has finished graceful termination");
+
+  private void ApplicationStarted()
+    => logger_.LogWarning("Application host has finished starting");
 }

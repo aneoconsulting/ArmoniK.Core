@@ -44,102 +44,121 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
 
 
   /// <inheritdoc />
-  public override Task<Configuration> GetServiceConfiguration(Empty request, ServerCallContext context)
+  public override Task<Configuration> GetServiceConfiguration(Empty             request,
+                                                              ServerCallContext context)
     => submitter_.GetServiceConfiguration(request,
                                           context.CancellationToken);
 
-  public override async Task<Empty> CancelSession(Session request, ServerCallContext context)
+  public override async Task<Empty> CancelSession(Session           request,
+                                                  ServerCallContext context)
   {
     await submitter_.CancelSession(request.Id,
-                                    context.CancellationToken);
-    return new();
+                                   context.CancellationToken)
+                    .ConfigureAwait(false);
+    return new Empty();
   }
 
-  public override async Task<Empty> CancelTasks(TaskFilter request, ServerCallContext context)
+  public override async Task<Empty> CancelTasks(TaskFilter        request,
+                                                ServerCallContext context)
   {
     await submitter_.CancelTasks(request,
-                                  context.CancellationToken);
-    return new();
+                                 context.CancellationToken)
+                    .ConfigureAwait(false);
+    return new Empty();
   }
 
   /// <inheritdoc />
-  public override Task<CreateSessionReply> CreateSession(CreateSessionRequest request, ServerCallContext context)
+  public override Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
+                                                         ServerCallContext    context)
     => submitter_.CreateSession(request.Id,
                                 request.DefaultTaskOption,
                                 context.CancellationToken);
 
-  public override Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request, ServerCallContext context)
+  public override Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request,
+                                                         ServerCallContext      context)
     => submitter_.CreateTasks(request.SessionId,
                               request.SessionId,
                               request.SessionId,
                               request.TaskOptions,
-                              request.TaskRequests
-                                     .ToAsyncEnumerable()
+                              request.TaskRequests.ToAsyncEnumerable()
                                      .Select(taskRequest => new TaskRequest(taskRequest.Id,
                                                                             taskRequest.ExpectedOutputKeys,
                                                                             taskRequest.DataDependencies,
-                                                                            new[] { taskRequest.Payload.Memory }.ToAsyncEnumerable())),
+                                                                            new[]
+                                                                            {
+                                                                              taskRequest.Payload.Memory,
+                                                                            }.ToAsyncEnumerable())),
                               context.CancellationToken);
 
 
   /// <inheritdoc />
-  public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream, ServerCallContext context)
+  public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream,
+                                                               ServerCallContext                          context)
   {
-    var enumerator = requestStream.ReadAllAsync(context.CancellationToken).GetAsyncEnumerator(context.CancellationToken);
+    var enumerator = requestStream.ReadAllAsync(context.CancellationToken)
+                                  .GetAsyncEnumerator(context.CancellationToken);
 
-    if (!await enumerator.MoveNextAsync(context.CancellationToken))
-      throw new RpcException(new(StatusCode.InvalidArgument,
-                                 "stream contained no message"));
+    if (!await enumerator.MoveNextAsync(context.CancellationToken)
+                         .ConfigureAwait(false))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "stream contained no message"));
+    }
 
     var first = enumerator.Current;
 
     if (first.TypeCase != CreateLargeTaskRequest.TypeOneofCase.InitRequest)
-      throw new RpcException(new(StatusCode.InvalidArgument,
-                                 "First message in stream must be of type InitRequest"),
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "First message in stream must be of type InitRequest"),
                              "First message in stream must be of type InitRequest");
+    }
 
     return await submitter_.CreateTasks(first.InitRequest.SessionId,
                                         first.InitRequest.SessionId,
                                         first.InitRequest.SessionId,
                                         first.InitRequest.TaskOptions,
                                         enumerator.BuildRequests(context.CancellationToken),
-                                        context.CancellationToken);
+                                        context.CancellationToken)
+                           .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public override Task<Count> CountTasks(TaskFilter request, ServerCallContext context)
+  public override Task<Count> CountTasks(TaskFilter        request,
+                                         ServerCallContext context)
     => submitter_.CountTasks(request,
                              context.CancellationToken);
 
   /// <inheritdoc />
-  public override Task TryGetResultStream(ResultRequest request, IServerStreamWriter<ResultReply> responseStream, ServerCallContext context)
+  public override Task TryGetResultStream(ResultRequest                    request,
+                                          IServerStreamWriter<ResultReply> responseStream,
+                                          ServerCallContext                context)
     => submitter_.TryGetResult(request,
                                responseStream,
                                context.CancellationToken);
 
-  public override Task<Count> WaitForCompletion(WaitRequest request, ServerCallContext context)
+  public override Task<Count> WaitForCompletion(WaitRequest       request,
+                                                ServerCallContext context)
     => submitter_.WaitForCompletion(request,
                                     context.CancellationToken);
 
-  public override Task<Output> TryGetTaskOutput(ResultRequest request, ServerCallContext context)
+  public override Task<Output> TryGetTaskOutput(ResultRequest     request,
+                                                ServerCallContext context)
     => submitter_.TryGetTaskOutputAsync(request,
                                         context.CancellationToken);
 
-  public override Task<AvailabilityReply> WaitForAvailability(ResultRequest request, ServerCallContext context)
-  {
-    return submitter_.WaitForAvailabilityAsync(request,
-                                               context.CancellationToken);
-  }
+  public override Task<AvailabilityReply> WaitForAvailability(ResultRequest     request,
+                                                              ServerCallContext context)
+    => submitter_.WaitForAvailabilityAsync(request,
+                                           context.CancellationToken);
 
-  public override Task<GetStatusReply> GetStatus(GetStatusrequest request, ServerCallContext context)
-  {
-    return submitter_.GetStatusAsync(request,
-                                     context.CancellationToken);
-  }
+  public override Task<GetStatusReply> GetStatus(GetStatusrequest  request,
+                                                 ServerCallContext context)
+    => submitter_.GetStatusAsync(request,
+                                 context.CancellationToken);
 
-  public override Task<TaskIdList> ListTasks(TaskFilter request, ServerCallContext context)
-  {
-    return submitter_.ListTasksAsync(request,
-                                     context.CancellationToken);
-  }
+  public override Task<TaskIdList> ListTasks(TaskFilter        request,
+                                             ServerCallContext context)
+    => submitter_.ListTasksAsync(request,
+                                 context.CancellationToken);
 }

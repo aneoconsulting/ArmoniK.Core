@@ -46,13 +46,16 @@ public class LockedWrapperQueueMessageHandler : IQueueMessageHandler
   }
 
   /// <inheritdoc />
-  public CancellationToken CancellationToken => cancellationTokenSource_.Token;
+  public CancellationToken CancellationToken
+    => cancellationTokenSource_.Token;
 
   /// <inheritdoc />
-  public string MessageId => queueMessageHandler_.MessageId;
+  public string MessageId
+    => queueMessageHandler_.MessageId;
 
   /// <inheritdoc />
-  public string TaskId => queueMessageHandler_.TaskId;
+  public string TaskId
+    => queueMessageHandler_.TaskId;
 
   /// <inheritdoc />
   public QueueMessageStatus Status
@@ -64,8 +67,9 @@ public class LockedWrapperQueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
-    await (deadlineHandler_?.DisposeAsync() ?? ValueTask.CompletedTask);
-    await queueMessageHandler_.DisposeAsync();
+    await (deadlineHandler_?.DisposeAsync() ?? ValueTask.CompletedTask).ConfigureAwait(false);
+    await queueMessageHandler_.DisposeAsync()
+                              .ConfigureAwait(false);
     GC.SuppressFinalize(this);
   }
 }

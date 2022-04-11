@@ -22,10 +22,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests;
@@ -45,6 +43,12 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture]
 public class ObjectStorageTests : ObjectStorageTestBase
 {
+  public override void TearDown()
+  {
+    ObjectStorage = null;
+    RunTests      = false;
+  }
+
   private                 MongoDbRunner  runner_;
   private                 IMongoClient   client_;
   private const           string         DatabaseName   = "ArmoniK_TestDB";
@@ -52,7 +56,6 @@ public class ObjectStorageTests : ObjectStorageTestBase
 
   public override void GetObjectStorageInstance()
   {
-
     var logger = NullLogger.Instance;
     runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
                                   logger: logger);
@@ -60,11 +63,17 @@ public class ObjectStorageTests : ObjectStorageTestBase
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string> minimalConfig = new()
-    {
-      { "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:PollingDelay", "00:00:10" },
-    };
+                                               {
+                                                 {
+                                                   "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
+                                                 },
+                                                 {
+                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
+                                                 },
+                                                 {
+                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:PollingDelay", "00:00:10"
+                                                 },
+                                               };
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(minimalConfig);
@@ -73,24 +82,18 @@ public class ObjectStorageTests : ObjectStorageTestBase
     services.AddMongoStorages(configuration,
                               logger);
     services.AddSingleton(ActivitySource);
-    services.AddTransient<IMongoClient>(serviceProvider => client_);
+    services.AddTransient(serviceProvider => client_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-    {
-      ValidateOnBuild = true,
-    });
+                                                 {
+                                                   ValidateOnBuild = true,
+                                                 });
 
     services.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
 
     var objectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
     ObjectStorage = objectStorageFactory.CreateObjectStorage("storage");
     RunTests      = true;
-  }
-
-  public override void TearDown()
-  {
-    ObjectStorage = null;
-    RunTests      = false;
   }
 }

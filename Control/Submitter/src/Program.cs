@@ -25,30 +25,28 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Amqp;
+using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Control.Submitter.Services;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using Serilog;
-using ArmoniK.Core.Control.Submitter.Services;
-
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-
 using OpenTelemetry.Trace;
 
+using Serilog;
 using Serilog.Formatting.Compact;
 
 using SessionProvider = ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider;
@@ -58,6 +56,7 @@ namespace ArmoniK.Core.Control.Submitter;
 public static class Program
 {
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Control.Submitter");
+
   public static async Task<int> Main(string[] args)
   {
     try
@@ -67,8 +66,7 @@ public static class Program
 
       var builder = WebApplication.CreateBuilder(args);
 
-      builder.Configuration
-             .SetBasePath(Directory.GetCurrentDirectory())
+      builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
              .AddJsonFile("appsettings.json",
                           true,
                           true)
@@ -76,18 +74,16 @@ public static class Program
              .AddCommandLine(args);
 
       Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
-                                                .WriteTo.Console(new CompactJsonFormatter())
-                                                .Enrich.FromLogContext()
-                                                .CreateLogger();
+                                            .WriteTo.Console(new CompactJsonFormatter())
+                                            .Enrich.FromLogContext()
+                                            .CreateLogger();
 
       var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger))
                                 .CreateLogger("root");
 
-      builder.Host
-             .UseSerilog(Log.Logger);
+      builder.Host.UseSerilog(Log.Logger);
 
-      builder.Services
-             .AddLogging()
+      builder.Services.AddLogging()
              .AddMongoComponents(builder.Configuration,
                                  logger)
              .AddAmqp(builder.Configuration,
@@ -102,35 +98,37 @@ public static class Program
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
       {
         ActivitySource.AddActivityListener(new ActivityListener
-        {
-          ShouldListenTo = _ => true,
-          //Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
-          ActivityStopped = activity =>
-          {
-            foreach (var (key, value) in activity.Baggage)
-              activity.AddTag(key,
-                              value);
-          },
-        });
+                                           {
+                                             ShouldListenTo = _ => true,
+                                             //Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+                                             ActivityStopped = activity =>
+                                                               {
+                                                                 foreach (var (key, value) in activity.Baggage)
+                                                                 {
+                                                                   activity.AddTag(key,
+                                                                                   value);
+                                                                 }
+                                                               },
+                                           });
 
-        builder.Services
-               .AddSingleton(ActivitySource)
+        builder.Services.AddSingleton(ActivitySource)
                .AddOpenTelemetryTracing(b =>
-               {
-                 b.AddSource(ActivitySource.Name);
-                 b.AddAspNetCoreInstrumentation();
-                 b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
-               });
+                                        {
+                                          b.AddSource(ActivitySource.Name);
+                                          b.AddAspNetCoreInstrumentation();
+                                          b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
+                                        });
       }
 
-      builder.WebHost
-             .UseKestrel(options => options.ListenAnyIP(80,
-                                                        listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
+      builder.WebHost.UseKestrel(options => options.ListenAnyIP(80,
+                                                                listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
 
       var app = builder.Build();
 
       if (app.Environment.IsDevelopment())
+      {
         app.UseDeveloperExceptionPage();
+      }
 
       app.UseSerilogRequestLogging();
 
@@ -139,25 +137,29 @@ public static class Program
       app.MapGrpcService<GrpcSubmitterService>();
 
       app.MapHealthChecks("/startup",
-                          new()
+                          new HealthCheckOptions
                           {
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
                           });
 
       app.MapHealthChecks("/liveness",
-                          new()
+                          new HealthCheckOptions
                           {
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
                           });
 
 
       if (app.Environment.IsDevelopment())
+      {
         app.MapGrpcReflectionService();
+      }
 
-      var   sessionProvider = app.Services.GetRequiredService<SessionProvider>();
-      await sessionProvider.GetAsync();
+      var sessionProvider = app.Services.GetRequiredService<SessionProvider>();
+      await sessionProvider.GetAsync()
+                           .ConfigureAwait(false);
 
-      await app.RunAsync();
+      await app.RunAsync()
+               .ConfigureAwait(false);
 
       return 0;
     }

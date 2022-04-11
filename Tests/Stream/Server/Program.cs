@@ -38,92 +38,93 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Compact;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Server
+namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Server;
+
+public static class Program
 {
-  public static class Program
+  private static readonly string SocketPath = "/cache/armonik.sock";
+
+  public static int Main(string[] args)
   {
-    private static readonly string SocketPath = "/cache/armonik.sock";
-
-    public static int Main(string[] args)
+    try
     {
-      try
+      Log.Information("Starting web host");
+
+      var builder = WebApplication.CreateBuilder(args);
+
+      builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
+             .AddJsonFile("appsettings.json",
+                          true,
+                          true)
+             .AddEnvironmentVariables()
+             .AddCommandLine(args);
+
+      Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
+                                            .WriteTo.Console(new CompactJsonFormatter())
+                                            .Enrich.FromLogContext()
+                                            .CreateLogger();
+
+      var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger));
+      var logger        = loggerFactory.CreateLogger("root");
+
+      builder.Host.UseSerilog(Log.Logger);
+
+      builder.WebHost.ConfigureKestrel(options =>
+                                       {
+                                         if (File.Exists(SocketPath))
+                                         {
+                                           File.Delete(SocketPath);
+                                         }
+
+                                         options.ListenUnixSocket(SocketPath,
+                                                                  listenOptions =>
+                                                                  {
+                                                                    listenOptions.Protocols = HttpProtocols.Http2;
+                                                                  });
+                                       });
+
+      builder.Services.AddSingleton<ApplicationLifeTimeManager>()
+             .AddSingleton(sp => loggerFactory)
+             .AddLogging()
+             .AddGrpc(options => options.MaxReceiveMessageSize = null);
+
+
+      var app = builder.Build();
+
+      if (app.Environment.IsDevelopment())
       {
-        Log.Information("Starting web host");
-
-        var builder = WebApplication.CreateBuilder(args);
-
-        builder.Configuration
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json",
-                            true,
-                            true)
-               .AddEnvironmentVariables()
-               .AddCommandLine(args);
-
-        Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
-                                              .WriteTo.Console(new CompactJsonFormatter())
-                                              .Enrich.FromLogContext()
-                                              .CreateLogger();
-
-        var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger));
-        var logger        = loggerFactory.CreateLogger("root");
-
-        builder.Host
-               .UseSerilog(Log.Logger);
-
-        builder.WebHost.ConfigureKestrel(options =>
-        {
-          if (File.Exists(SocketPath))
-          {
-            File.Delete(SocketPath);
-          }
-
-          options.ListenUnixSocket(SocketPath,
-                                   listenOptions => { listenOptions.Protocols = HttpProtocols.Http2; });
-        });
-
-        builder.Services
-               .AddSingleton<ApplicationLifeTimeManager>()
-               .AddSingleton(sp => loggerFactory)
-               .AddLogging()
-               .AddGrpc(options => options.MaxReceiveMessageSize = null);
-
-
-        var app = builder.Build();
-
-        if (app.Environment.IsDevelopment())
-          app.UseDeveloperExceptionPage();
-
-        app.UseSerilogRequestLogging();
-
-        app.UseRouting();
-
-
-        app.UseEndpoints(endpoints =>
-        {
-          endpoints.MapGrpcService<WorkerService>();
-
-          if (app.Environment.IsDevelopment())
-          {
-            endpoints.MapGrpcReflectionService();
-            logger.LogInformation("Grpc Reflection Activated");
-          }
-        });
-
-        app.Run();
-
-        return 0;
+        app.UseDeveloperExceptionPage();
       }
-      catch (Exception ex)
-      {
-        Log.Fatal(ex,
-                  "Host terminated unexpectedly");
-        return 1;
-      }
-      finally
-      {
-        Log.CloseAndFlush();
-      }
+
+      app.UseSerilogRequestLogging();
+
+      app.UseRouting();
+
+
+      app.UseEndpoints(endpoints =>
+                       {
+                         endpoints.MapGrpcService<WorkerService>();
+
+                         if (app.Environment.IsDevelopment())
+                         {
+                           endpoints.MapGrpcReflectionService();
+                           logger.LogInformation("Grpc Reflection Activated");
+                         }
+                       });
+
+      app.Run();
+
+      return 0;
+    }
+    catch (Exception ex)
+    {
+      Log.Fatal(ex,
+                "Host terminated unexpectedly");
+      return 1;
+    }
+    finally
+    {
+      Log.CloseAndFlush();
     }
   }
 }

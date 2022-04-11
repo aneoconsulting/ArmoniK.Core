@@ -33,8 +33,8 @@ namespace ArmoniK.Core.Adapters.MongoDB.Common;
 public class SessionProvider : ProviderBase<IClientSessionHandle>
 {
   [UsedImplicitly]
-  public SessionProvider(IMongoClient client) :
-    base(() => client.StartSessionAsync())
+  public SessionProvider(IMongoClient client)
+    : base(() => client.StartSessionAsync())
   {
   }
 }

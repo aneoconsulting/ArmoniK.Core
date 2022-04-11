@@ -25,67 +25,81 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-
-using ArmoniK.Api.gRPC.V1;
-
-using Grpc.Core;
-
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Storage;
+
+using Grpc.Core;
 
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
-namespace ArmoniK.Core.Common.gRPC.Services
+namespace ArmoniK.Core.Common.gRPC.Services;
+
+public record TaskRequest(string                                 Id,
+                          IEnumerable<string>                    ExpectedOutputKeys,
+                          IEnumerable<string>                    DataDependencies,
+                          IAsyncEnumerable<ReadOnlyMemory<byte>> PayloadChunks);
+
+public interface ISubmitter
 {
-  public record TaskRequest(
-    string                                 Id,
-    IEnumerable<string>                    ExpectedOutputKeys,
-    IEnumerable<string>                    DataDependencies,
-    IAsyncEnumerable<ReadOnlyMemory<byte>> PayloadChunks
-  );
+  Task CancelSession(string            sessionId,
+                     CancellationToken cancellationToken);
 
-  public interface ISubmitter
-  {
-    Task CancelSession(string sessionId, CancellationToken cancellationToken);
+  Task CancelDispatchSessionAsync(string            rootSessionId,
+                                  string            dispatchId,
+                                  CancellationToken cancellationToken);
 
-    Task CancelDispatchSessionAsync(string rootSessionId, string dispatchId, CancellationToken cancellationToken);
+  Task CancelTasks(TaskFilter        request,
+                   CancellationToken cancellationToken);
 
-    Task CancelTasks(TaskFilter request, CancellationToken cancellationToken);
+  Task<Count> CountTasks(TaskFilter        request,
+                         CancellationToken cancellationToken);
 
-    Task<Count> CountTasks(TaskFilter request, CancellationToken cancellationToken);
+  Task<CreateSessionReply> CreateSession(string            sessionId,
+                                         TaskOptions       defaultTaskOptions,
+                                         CancellationToken cancellationToken);
 
-    Task<CreateSessionReply> CreateSession(string sessionId, TaskOptions defaultTaskOptions, CancellationToken cancellationToken);
+  Task<CreateTaskReply> CreateTasks(string                        sessionId,
+                                    string                        parentId,
+                                    string                        dispatchId,
+                                    TaskOptions                   options,
+                                    IAsyncEnumerable<TaskRequest> taskRequests,
+                                    CancellationToken             cancellationToken);
 
-    Task<CreateTaskReply> CreateTasks(string                        sessionId,
-                                      string                        parentId,
-                                      string                        dispatchId,
-                                      TaskOptions                   options,
-                                      IAsyncEnumerable<TaskRequest> taskRequests,
-                                      CancellationToken             cancellationToken);
+  Task<Configuration> GetServiceConfiguration(Empty             request,
+                                              CancellationToken cancellationToken);
 
-    Task<Configuration> GetServiceConfiguration(Empty request, CancellationToken cancellationToken);
+  Task TryGetResult(ResultRequest                    request,
+                    IServerStreamWriter<ResultReply> responseStream,
+                    CancellationToken                cancellationToken);
 
-    Task TryGetResult(ResultRequest request, IServerStreamWriter<ResultReply> responseStream, CancellationToken cancellationToken);
+  Task<Count> WaitForCompletion(WaitRequest       request,
+                                CancellationToken cancellationToken);
 
-    Task<Count> WaitForCompletion(WaitRequest request, CancellationToken cancellationToken);
+  Task UpdateTaskStatusAsync(string            id,
+                             TaskStatus        status,
+                             CancellationToken cancellationToken = default);
 
-    Task UpdateTaskStatusAsync(string            id,
-                               TaskStatus        status,
-                               CancellationToken cancellationToken = default);
+  Task FinalizeDispatch(string            taskId,
+                        Dispatch          dispatchId,
+                        CancellationToken cancellationToken);
 
-    Task FinalizeDispatch(string taskId, Dispatch dispatchId, CancellationToken cancellationToken);
+  Task CompleteTaskAsync(string            id,
+                         Output            output,
+                         CancellationToken cancellationToken = default);
 
-    Task CompleteTaskAsync(string id, Output output, CancellationToken cancellationToken = default);
+  Task<Output> TryGetTaskOutputAsync(ResultRequest     request,
+                                     CancellationToken contextCancellationToken);
 
-    Task<Output> TryGetTaskOutputAsync(ResultRequest          request, CancellationToken contextCancellationToken);
+  Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
+                                                   CancellationToken contextCancellationToken);
 
-    Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest request, CancellationToken contextCancellationToken);
+  Task<GetStatusReply> GetStatusAsync(GetStatusrequest  request,
+                                      CancellationToken contextCancellationToken);
 
-    Task<GetStatusReply> GetStatusAsync(GetStatusrequest request, CancellationToken contextCancellationToken);
-
-    Task<TaskIdList> ListTasksAsync(TaskFilter           request, CancellationToken contextCancellationToken);
-  }
+  Task<TaskIdList> ListTasksAsync(TaskFilter        request,
+                                  CancellationToken contextCancellationToken);
 }

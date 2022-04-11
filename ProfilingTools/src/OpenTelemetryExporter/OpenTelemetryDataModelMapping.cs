@@ -31,7 +31,6 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.ProfilingTools.OpenTelemetryExporter;
 
-
 public class OpenTelemetryDataModelMapping : IMongoDataModelMapping<OpenTelemetryData>
 {
   static OpenTelemetryDataModelMapping()
@@ -39,69 +38,82 @@ public class OpenTelemetryDataModelMapping : IMongoDataModelMapping<OpenTelemetr
     if (!BsonClassMap.IsClassMapRegistered(typeof(OpenTelemetryData)))
     {
       BsonClassMap.RegisterClassMap<OpenTelemetryData>(cm =>
-      {
-        cm.MapIdProperty(nameof(OpenTelemetryData.ActivityId)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.Baggage)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.Duration)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.Tags)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.SpanId)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.TraceId)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.ParentId)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.ParentSpanId)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.RootId)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.DisplayName)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.SourceName)).SetIsRequired(true);
-        cm.MapIdProperty(nameof(OpenTelemetryData.StartTime)).SetIsRequired(true);
+                                                       {
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.ActivityId))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.Baggage))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.Duration))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.Tags))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.SpanId))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.TraceId))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.ParentId))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.ParentSpanId))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.RootId))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.DisplayName))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.SourceName))
+                                                           .SetIsRequired(true);
+                                                         cm.MapIdProperty(nameof(OpenTelemetryData.StartTime))
+                                                           .SetIsRequired(true);
 
-        cm.SetIgnoreExtraElements(true);
-        cm.MapCreator(model => new(model.ActivityId,
-                                   model.Baggage,
-                                   model.Duration,
-                                   model.Tags,
-                                   model.SpanId,
-                                   model.TraceId,
-                                   model.ParentId,
-                                   model.ParentSpanId,
-                                   model.RootId,
-                                   model.DisplayName,
-                                   model.SourceName,
-                                   model.StartTime));
-      });
+                                                         cm.SetIgnoreExtraElements(true);
+                                                         cm.MapCreator(model => new OpenTelemetryData(model.ActivityId,
+                                                                                                      model.Baggage,
+                                                                                                      model.Duration,
+                                                                                                      model.Tags,
+                                                                                                      model.SpanId,
+                                                                                                      model.TraceId,
+                                                                                                      model.ParentId,
+                                                                                                      model.ParentSpanId,
+                                                                                                      model.RootId,
+                                                                                                      model.DisplayName,
+                                                                                                      model.SourceName,
+                                                                                                      model.StartTime));
+                                                       });
     }
-
   }
 
 
   /// <inheritdoc />
-  public string CollectionName => nameof(OpenTelemetryData);
+  public string CollectionName
+    => nameof(OpenTelemetryData);
 
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
-                                     IMongoCollection<OpenTelemetryData> collection)
+  public async Task InitializeIndexesAsync(IClientSessionHandle                sessionHandle,
+                                           IMongoCollection<OpenTelemetryData> collection)
   {
-    var sourceNameIndex        = Builders<OpenTelemetryData>.IndexKeys.Hashed(model => model.SourceName);
-    var displayNameIndex      = Builders<OpenTelemetryData>.IndexKeys.Hashed(model => model.DisplayName);
-    var activityIdIndex = Builders<OpenTelemetryData>.IndexKeys.Hashed(model => model.ActivityId);
+    var sourceNameIndex  = Builders<OpenTelemetryData>.IndexKeys.Hashed(model => model.SourceName);
+    var displayNameIndex = Builders<OpenTelemetryData>.IndexKeys.Hashed(model => model.DisplayName);
+    var activityIdIndex  = Builders<OpenTelemetryData>.IndexKeys.Hashed(model => model.ActivityId);
 
     var combinedIndex = Builders<OpenTelemetryData>.IndexKeys.Combine(sourceNameIndex,
-                                                                           displayNameIndex);
+                                                                      displayNameIndex);
 
     var indexModels = new CreateIndexModel<OpenTelemetryData>[]
-    {
-      new(combinedIndex,
-          new()
-          {
-            Name = nameof(combinedIndex),
-          }),
-      new(activityIdIndex,
-          new()
-          {
-            Name = nameof(activityIdIndex),
-          }),
-    };
+                      {
+                        new(combinedIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(combinedIndex),
+                            }),
+                        new(activityIdIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(activityIdIndex),
+                            }),
+                      };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,
-                                             indexModels);
+                                             indexModels)
+                    .ConfigureAwait(false);
   }
 }

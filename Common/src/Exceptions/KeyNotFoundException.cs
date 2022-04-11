@@ -33,17 +33,22 @@ public class KeyNotFoundException : ArmoniKException
   {
   }
 
-  public KeyNotFoundException(string message) : base(message)
+  public KeyNotFoundException(string message)
+    : base(message)
   {
   }
 
-  public KeyNotFoundException(string message, Exception innerException) : base(message,
-                                                                               innerException)
+  public KeyNotFoundException(string    message,
+                              Exception innerException)
+    : base(message,
+           innerException)
   {
   }
 
-  protected KeyNotFoundException(SerializationInfo info, StreamingContext context) : base(info,
-                                                                                          context)
+  protected KeyNotFoundException(SerializationInfo info,
+                                 StreamingContext  context)
+    : base(info,
+           context)
   {
   }
 }

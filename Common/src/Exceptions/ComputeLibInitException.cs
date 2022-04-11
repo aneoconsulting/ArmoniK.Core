@@ -34,17 +34,22 @@ public class ComputeLibInitException : ArmoniKException
   {
   }
 
-  public ComputeLibInitException(string message) : base(message)
+  public ComputeLibInitException(string message)
+    : base(message)
   {
   }
 
-  public ComputeLibInitException(string message, Exception innerException) : base(message,
-                                                                                  innerException)
+  public ComputeLibInitException(string    message,
+                                 Exception innerException)
+    : base(message,
+           innerException)
   {
   }
 
-  protected ComputeLibInitException(SerializationInfo info, StreamingContext context) : base(info,
-                                                                                             context)
+  protected ComputeLibInitException(SerializationInfo info,
+                                    StreamingContext  context)
+    : base(info,
+           context)
   {
   }
 }

@@ -31,11 +31,7 @@ using ArmoniK.Core.Common.Storage;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
-
-
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-
 
 public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
 {
@@ -44,45 +40,62 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
     if (!BsonClassMap.IsClassMapRegistered(typeof(TaskData)))
     {
       BsonClassMap.RegisterClassMap<TaskData>(cm =>
-                                                   {
-                                                     cm.MapIdProperty(nameof(TaskData.TaskId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.SessionId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.ParentTaskId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.DispatchId)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.DataDependencies)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                     cm.MapProperty(nameof(TaskData.Status)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.Options)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.CreationDate)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.HasPayload)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.Payload)).SetIgnoreIfDefault(true);
-                                                     cm.MapProperty(nameof(TaskData.AncestorDispatchIds)).SetIgnoreIfDefault(true).SetDefaultValue(Array.Empty<string>());
-                                                     cm.MapProperty(nameof(TaskData.ExpectedOutput)).SetIsRequired(true);
-                                                     cm.MapProperty(nameof(TaskData.Output)).SetIsRequired(true);
-                                                     cm.SetIgnoreExtraElements(true);
-                                                     cm.MapCreator(model => new(model.SessionId,
-                                                                                model.ParentTaskId,
-                                                                                model.DispatchId,
-                                                                                model.TaskId,
-                                                                                model.DataDependencies,
-                                                                                model.ExpectedOutput,
-                                                                                model.HasPayload,
-                                                                                model.Payload,
-                                                                                model.Status,
-                                                                                model.Options,
-                                                                                model.AncestorDispatchIds,
-                                                                                model.CreationDate,
-                                                                     model.Output));
-                                                   });
+                                              {
+                                                cm.MapIdProperty(nameof(TaskData.TaskId))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.SessionId))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.ParentTaskId))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.DispatchId))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.DataDependencies))
+                                                  .SetIgnoreIfDefault(true)
+                                                  .SetDefaultValue(Array.Empty<string>());
+                                                cm.MapProperty(nameof(TaskData.Status))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.Options))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.CreationDate))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.HasPayload))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.Payload))
+                                                  .SetIgnoreIfDefault(true);
+                                                cm.MapProperty(nameof(TaskData.AncestorDispatchIds))
+                                                  .SetIgnoreIfDefault(true)
+                                                  .SetDefaultValue(Array.Empty<string>());
+                                                cm.MapProperty(nameof(TaskData.ExpectedOutput))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.Output))
+                                                  .SetIsRequired(true);
+                                                cm.SetIgnoreExtraElements(true);
+                                                cm.MapCreator(model => new TaskData(model.SessionId,
+                                                                                    model.ParentTaskId,
+                                                                                    model.DispatchId,
+                                                                                    model.TaskId,
+                                                                                    model.DataDependencies,
+                                                                                    model.ExpectedOutput,
+                                                                                    model.HasPayload,
+                                                                                    model.Payload,
+                                                                                    model.Status,
+                                                                                    model.Options,
+                                                                                    model.AncestorDispatchIds,
+                                                                                    model.CreationDate,
+                                                                                    model.Output));
+                                              });
     }
 
     if (!BsonClassMap.IsClassMapRegistered(typeof(TaskStatusCount)))
     {
       BsonClassMap.RegisterClassMap<TaskStatusCount>(map =>
                                                      {
-                                                       map.MapProperty(nameof(TaskStatusCount.Status)).SetIsRequired(true);
-                                                       map.MapProperty(nameof(TaskStatusCount.Count)).SetIsRequired(true);
-                                                       map.MapCreator(count => new(count.Status,
-                                                                                   count.Count));
+                                                       map.MapProperty(nameof(TaskStatusCount.Status))
+                                                          .SetIsRequired(true);
+                                                       map.MapProperty(nameof(TaskStatusCount.Count))
+                                                          .SetIsRequired(true);
+                                                       map.MapCreator(count => new TaskStatusCount(count.Status,
+                                                                                                   count.Count));
                                                      });
     }
 
@@ -90,51 +103,57 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
     {
       BsonClassMap.RegisterClassMap<TaskOptions>(map =>
                                                  {
-                                                   map.MapProperty(nameof(TaskOptions.MaxDuration)).SetIsRequired(true);
-                                                   map.MapProperty(nameof(TaskOptions.MaxRetries)).SetIsRequired(true);
-                                                   map.MapProperty(nameof(TaskOptions.Options)).SetIsRequired(true);
-                                                   map.MapProperty(nameof(TaskOptions.Priority)).SetIsRequired(true);
-                                                   map.MapCreator(options => new(options.Options,
-                                                                                 options.MaxDuration,
-                                                                                 options.MaxRetries,
-                                                                                 options.Priority));
+                                                   map.MapProperty(nameof(TaskOptions.MaxDuration))
+                                                      .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.MaxRetries))
+                                                      .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.Options))
+                                                      .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.Priority))
+                                                      .SetIsRequired(true);
+                                                   map.MapCreator(options => new TaskOptions(options.Options,
+                                                                                             options.MaxDuration,
+                                                                                             options.MaxRetries,
+                                                                                             options.Priority));
                                                  });
     }
   }
 
 
   /// <inheritdoc />
-  public string CollectionName => nameof(TaskData);
+  public string CollectionName
+    => nameof(TaskData);
 
 
   /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                     IMongoCollection<TaskData> collection)
+                                           IMongoCollection<TaskData> collection)
   {
-    var sessionIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
-    var statusIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
+    var sessionIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
+    var statusIndex   = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
     var dispatchIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.DispatchId);
 
     var indexModels = new CreateIndexModel<TaskData>[]
                       {
                         new(sessionIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name = nameof(sessionIndex),
                             }),
                         new(dispatchIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name = nameof(dispatchIndex),
                             }),
                         new(statusIndex,
-                            new()
+                            new CreateIndexOptions
                             {
                               Name = nameof(statusIndex),
                             }),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,
-                                              indexModels);
+                                             indexModels)
+                    .ConfigureAwait(false);
   }
 }

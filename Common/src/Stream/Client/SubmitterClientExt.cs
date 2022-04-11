@@ -35,182 +35,180 @@ using Grpc.Core;
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Common.Stream.Client
+namespace ArmoniK.Core.Common.Stream.Client;
+
+[PublicAPI]
+public static class SubmitterClientExt
 {
-  [PublicAPI]
-  public static class SubmitterClientExt
+  public static async Task<CreateTaskReply> CreateTasksAsync(this Submitter.SubmitterClient client,
+                                                             string                         sessionId,
+                                                             TaskOptions                    taskOptions,
+                                                             IEnumerable<TaskRequest>       taskRequests,
+                                                             CancellationToken              cancellationToken = default)
   {
-    public static async Task<CreateTaskReply> CreateTasksAsync(this Submitter.SubmitterClient client,
-                                                               string                         sessionId,
-                                                               TaskOptions                    taskOptions,
-                                                               IEnumerable<TaskRequest>       taskRequests,
-                                                               CancellationToken              cancellationToken = default)
+    var serviceConfiguration = await client.GetServiceConfigurationAsync(new Empty(),
+                                                                         cancellationToken: cancellationToken);
+
+    var stream = client.CreateLargeTasks(cancellationToken: cancellationToken);
+
+    foreach (var createLargeTaskRequest in taskRequests.ToRequestStream(sessionId,
+                                                                        taskOptions,
+                                                                        serviceConfiguration.DataChunkMaxSize))
     {
-      var serviceConfiguration = await client.GetServiceConfigurationAsync(new(),
-                                                                           cancellationToken: cancellationToken);
-
-      var stream = client.CreateLargeTasks(cancellationToken: cancellationToken);
-
-      foreach (var createLargeTaskRequest in taskRequests.ToRequestStream(sessionId,
-                                                                          taskOptions,
-                                                                          serviceConfiguration.DataChunkMaxSize))
-      {
-        await stream.RequestStream.WriteAsync(createLargeTaskRequest);
-      }
-
-      return await stream.ResponseAsync;
+      await stream.RequestStream.WriteAsync(createLargeTaskRequest)
+                  .ConfigureAwait(false);
     }
 
+    return await stream.ResponseAsync.ConfigureAwait(false);
+  }
 
 
-    
+  public static IEnumerable<CreateLargeTaskRequest> ToRequestStream(this IEnumerable<TaskRequest> taskRequests,
+                                                                    string                        sessionId,
+                                                                    TaskOptions                   taskOptions,
+                                                                    int                           chunkMaxSize)
+  {
+    yield return new CreateLargeTaskRequest
+                 {
+                   InitRequest = new CreateLargeTaskRequest.Types.InitRequest
+                                 {
+                                   SessionId   = sessionId,
+                                   TaskOptions = taskOptions,
+                                 },
+                 };
 
-    public static IEnumerable<CreateLargeTaskRequest> ToRequestStream(this IEnumerable<TaskRequest> taskRequests,
-                                                                      string                        sessionId,
-                                                                      TaskOptions                   taskOptions,
-                                                                      int                           chunkMaxSize)
+    using var taskRequestEnumerator = taskRequests.GetEnumerator();
+
+    if (!taskRequestEnumerator.MoveNext())
     {
-      yield return new()
-                   {
-                     InitRequest = new()
-                                   {
-                                     SessionId   = sessionId,
-                                     TaskOptions = taskOptions,
-                                   },
-                   };
+      yield break;
+    }
 
-      using var taskRequestEnumerator = taskRequests.GetEnumerator();
+    var currentRequest = taskRequestEnumerator.Current;
 
-      if (!taskRequestEnumerator.MoveNext())
-      {
-        yield break;
-      }
-
-      var currentRequest = taskRequestEnumerator.Current;
-
-      while (taskRequestEnumerator.MoveNext())
-      {
-
-        foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(false,
-                                                                              chunkMaxSize))
-        {
-          yield return createLargeTaskRequest;
-        }
-
-
-        currentRequest = taskRequestEnumerator.Current;
-      }
-
-      foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(true,
+    while (taskRequestEnumerator.MoveNext())
+    {
+      foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(false,
                                                                             chunkMaxSize))
       {
         yield return createLargeTaskRequest;
       }
+
+
+      currentRequest = taskRequestEnumerator.Current;
     }
 
-    public static IEnumerable<CreateLargeTaskRequest> ToRequestStream(this TaskRequest taskRequest,
-                                                                      bool             isLast,
-                                                                      int              chunkMaxSize)
+    foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(true,
+                                                                          chunkMaxSize))
     {
-      yield return new()
-                   {
-                     InitTask = new()
-                                {
-                                  Header = new()
+      yield return createLargeTaskRequest;
+    }
+  }
+
+  public static IEnumerable<CreateLargeTaskRequest> ToRequestStream(this TaskRequest taskRequest,
+                                                                    bool             isLast,
+                                                                    int              chunkMaxSize)
+  {
+    yield return new CreateLargeTaskRequest
+                 {
+                   InitTask = new InitTaskRequest
+                              {
+                                Header = new TaskRequestHeader
+                                         {
+                                           DataDependencies =
                                            {
-                                             DataDependencies =
-                                             {
-                                               taskRequest.DataDependencies,
-                                             },
-                                             ExpectedOutputKeys =
-                                             {
-                                               taskRequest.ExpectedOutputKeys,
-                                             },
-                                             Id       = taskRequest.Id,
+                                             taskRequest.DataDependencies,
                                            },
-                                },
+                                           ExpectedOutputKeys =
+                                           {
+                                             taskRequest.ExpectedOutputKeys,
+                                           },
+                                           Id = taskRequest.Id,
+                                         },
+                              },
+                 };
+
+    var start = 0;
+
+    if (taskRequest.Payload.Length == 0)
+    {
+      yield return new CreateLargeTaskRequest
+                   {
+                     TaskPayload = new DataChunk
+                                   {
+                                     Data = ByteString.Empty,
+                                   },
+                   };
+    }
+
+    while (start < taskRequest.Payload.Length)
+    {
+      var chunkSize = Math.Min(chunkMaxSize,
+                               taskRequest.Payload.Length - start);
+
+      yield return new CreateLargeTaskRequest
+                   {
+                     TaskPayload = new DataChunk
+                                   {
+                                     Data = ByteString.CopyFrom(taskRequest.Payload.Span.Slice(start,
+                                                                                               chunkSize)),
+                                   },
                    };
 
-      var start = 0;
+      start += chunkSize;
+    }
 
-      if (taskRequest.Payload.Length == 0)
-      {
-        yield return new()
-        {
-          TaskPayload = new()
-          {
-            Data = ByteString.Empty,
-          },
-        };
-      }
-
-      while (start < taskRequest.Payload.Length)
-      {
-        var chunkSize = Math.Min(chunkMaxSize,
-                                 taskRequest.Payload.Length - start);
-
-        yield return new()
-                     {
-                       TaskPayload = new()
-                                     {
-                                       Data = ByteString.CopyFrom(taskRequest.Payload.Span.Slice(start,
-                                                                                                 chunkSize)),
-                                     },
-                     };
-
-        start += chunkSize;
-      }
-
-      yield return new()
-      {
-        TaskPayload = new()
-        {
-          DataComplete = true,
-        },
-      };
-
-      if (isLast)
-      {
-        yield return new()
-                    {
-                      InitTask = new()
+    yield return new CreateLargeTaskRequest
+                 {
+                   TaskPayload = new DataChunk
                                  {
-                                   LastTask = true,
+                                   DataComplete = true,
                                  },
-                    };
+                 };
 
-      }
-
-    }
-
-    public static async Task<byte[]> GetResultAsync(this Submitter.SubmitterClient client,
-                                                               ResultRequest resultRequest,
-                                                               CancellationToken              cancellationToken = default)
+    if (isLast)
     {
-      var streamingCall = client.TryGetResultStream(resultRequest);
-
-      var result = new List<byte>();
-
-      await foreach (var reply in streamingCall.ResponseStream.ReadAllAsync(cancellationToken))
-        switch (reply.TypeCase)
-        {
-          case ResultReply.TypeOneofCase.Result:
-            if (!reply.Result.DataComplete)
-            {
-              result.AddRange(reply.Result.Data.ToByteArray());
-            }
-            break;
-          case ResultReply.TypeOneofCase.None:
-            throw new Exception("Issue with Server !");
-          case ResultReply.TypeOneofCase.Error:
-            throw new Exception($"Error in task {reply.Error.TaskId}");
-          case ResultReply.TypeOneofCase.NotCompletedTask:
-            throw new Exception($"Task {reply.NotCompletedTask} not completed");
-          default:
-            throw new ArgumentOutOfRangeException();
-        }
-
-      return result.ToArray();
+      yield return new CreateLargeTaskRequest
+                   {
+                     InitTask = new InitTaskRequest
+                                {
+                                  LastTask = true,
+                                },
+                   };
     }
+  }
+
+  public static async Task<byte[]> GetResultAsync(this Submitter.SubmitterClient client,
+                                                  ResultRequest                  resultRequest,
+                                                  CancellationToken              cancellationToken = default)
+  {
+    var streamingCall = client.TryGetResultStream(resultRequest);
+
+    var result = new List<byte>();
+
+    await foreach (var reply in streamingCall.ResponseStream.ReadAllAsync(cancellationToken)
+                                             .ConfigureAwait(false))
+    {
+      switch (reply.TypeCase)
+      {
+        case ResultReply.TypeOneofCase.Result:
+          if (!reply.Result.DataComplete)
+          {
+            result.AddRange(reply.Result.Data.ToByteArray());
+          }
+
+          break;
+        case ResultReply.TypeOneofCase.None:
+          throw new Exception("Issue with Server !");
+        case ResultReply.TypeOneofCase.Error:
+          throw new Exception($"Error in task {reply.Error.TaskId}");
+        case ResultReply.TypeOneofCase.NotCompletedTask:
+          throw new Exception($"Task {reply.NotCompletedTask} not completed");
+        default:
+          throw new ArgumentOutOfRangeException();
+      }
+    }
+
+    return result.ToArray();
   }
 }

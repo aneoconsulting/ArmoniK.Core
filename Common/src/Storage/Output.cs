@@ -26,32 +26,36 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public record Output(bool Success, string Error)
+public record Output(bool   Success,
+                     string Error)
 {
   public static implicit operator Api.gRPC.V1.Output(Output output)
   {
     if (output.Success)
-      return new Api.gRPC.V1.Output
-      {
-        Ok = new Empty(),
-        Status = TaskStatus.Completed,
-      };
-    return new Api.gRPC.V1.Output
     {
-      Error = new Api.gRPC.V1.Output.Types.Error
-      {
-        Details = output.Error,
-      },
-      Status = TaskStatus.Error,
-    };
+      return new Api.gRPC.V1.Output
+             {
+               Ok     = new Empty(),
+               Status = TaskStatus.Completed,
+             };
+    }
+
+    return new Api.gRPC.V1.Output
+           {
+             Error = new Api.gRPC.V1.Output.Types.Error
+                     {
+                       Details = output.Error,
+                     },
+             Status = TaskStatus.Error,
+           };
   }
 
-  public static implicit operator Output(Api.gRPC.V1.Output output) =>
-    output.Status switch
-    {
-      TaskStatus.Completed => new Output(true,
-                                         ""),
-      _                    => new Output(false,
-                                         output.Error.Details),
-    };
+  public static implicit operator Output(Api.gRPC.V1.Output output)
+    => output.Status switch
+       {
+         TaskStatus.Completed => new Output(true,
+                                            ""),
+         _ => new Output(false,
+                         output.Error.Details),
+       };
 }

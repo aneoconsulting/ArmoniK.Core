@@ -33,17 +33,22 @@ public class TaskCanceledException : ArmoniKException
   {
   }
 
-  public TaskCanceledException(string message) : base(message)
+  public TaskCanceledException(string message)
+    : base(message)
   {
   }
 
-  public TaskCanceledException(string message, Exception innerException) : base(message,
-                                                                                innerException)
+  public TaskCanceledException(string    message,
+                               Exception innerException)
+    : base(message,
+           innerException)
   {
   }
 
-  protected TaskCanceledException(SerializationInfo info, StreamingContext context) : base(info,
-                                                                                           context)
+  protected TaskCanceledException(SerializationInfo info,
+                                  StreamingContext  context)
+    : base(info,
+           context)
   {
   }
 }

@@ -33,41 +33,50 @@ namespace ArmoniK.Api.gRPC.V1;
 
 public sealed partial class CreateLargeTaskRequest
 {
-  private void CheckCase(TypeOneofCase oneOfCase, ILogger logger, string errorDetails)
+  private void CheckCase(TypeOneofCase oneOfCase,
+                         ILogger       logger,
+                         string        errorDetails)
   {
     if (TypeCase != oneOfCase)
     {
-      var exception = new RpcException(new(StatusCode.InvalidArgument,
-                                           $"Expected a stream message of type {oneOfCase}: {errorDetails}"));
+      var exception = new RpcException(new Status(StatusCode.InvalidArgument,
+                                                  $"Expected a stream message of type {oneOfCase}: {errorDetails}"));
       logger.LogError(exception,
                       "Invalid stream");
       throw exception;
     }
   }
 
-  public InitRequest GetInitRequest(ILogger logger, string errorDetails)
+  public InitRequest GetInitRequest(ILogger logger,
+                                    string  errorDetails)
   {
     logger.LogDebug("reading CreateLargeTaskRequest.{case}",
                     TypeOneofCase.InitRequest);
-    CheckCase(TypeOneofCase.InitRequest, logger, errorDetails);
+    CheckCase(TypeOneofCase.InitRequest,
+              logger,
+              errorDetails);
     return InitRequest;
   }
 
-  public InitTaskRequest GetInitTask(ILogger logger, string errorDetails)
+  public InitTaskRequest GetInitTask(ILogger logger,
+                                     string  errorDetails)
   {
     logger.LogDebug("reading CreateLargeTaskRequest.{case}",
                     TypeOneofCase.InitTask);
-    CheckCase(TypeOneofCase.InitTask, logger, errorDetails);
+    CheckCase(TypeOneofCase.InitTask,
+              logger,
+              errorDetails);
     return InitTask;
   }
 
-  public DataChunk GetTaskPayload(ILogger logger, string errorDetails)
+  public DataChunk GetTaskPayload(ILogger logger,
+                                  string  errorDetails)
   {
     logger.LogDebug("reading CreateLargeTaskRequest.{case}",
                     TypeOneofCase.TaskPayload);
-    CheckCase(TypeOneofCase.TaskPayload, logger, errorDetails);
+    CheckCase(TypeOneofCase.TaskPayload,
+              logger,
+              errorDetails);
     return TaskPayload;
   }
-
-
 }

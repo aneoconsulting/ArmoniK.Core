@@ -24,17 +24,14 @@
 
 using System.Text.Json;
 
-namespace ArmoniK.Samples.HtcMock.Client
-{
-  internal class SimpleStats
-  {
-    public long EllapsedTime { get; set; }
-    public string Test { get; set; }
-    public int NRun { get; set; }
+namespace ArmoniK.Samples.HtcMock.Client;
 
-    public string ToJson()
-    {
-      return JsonSerializer.Serialize(this);
-    }
-  }
+internal class SimpleStats
+{
+  public long   EllapsedTime { get; set; }
+  public string Test         { get; set; }
+  public int    NRun         { get; set; }
+
+  public string ToJson()
+    => JsonSerializer.Serialize(this);
 }

@@ -32,19 +32,19 @@ namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
 public static class AsyncCursorSourceExt
 {
-  public static IAsyncEnumerable<T> AsAsyncEnumerable<T>(
-    this IAsyncCursorSource<T> asyncCursorSource)
+  public static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IAsyncCursorSource<T> asyncCursorSource)
     => new AsyncEnumerableAdapter<T>(asyncCursorSource);
 
   private class AsyncEnumerableAdapter<T> : IAsyncEnumerable<T>
   {
     private readonly IAsyncCursorSource<T> asyncCursorSource_;
 
-    public AsyncEnumerableAdapter(IAsyncCursorSource<T> asyncCursorSource) => asyncCursorSource_ = asyncCursorSource;
+    public AsyncEnumerableAdapter(IAsyncCursorSource<T> asyncCursorSource)
+      => asyncCursorSource_ = asyncCursorSource;
 
-    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
-      new AsyncEnumeratorAdapter<T>(asyncCursorSource_,
-                                    cancellationToken);
+    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+      => new AsyncEnumeratorAdapter<T>(asyncCursorSource_,
+                                       cancellationToken);
   }
 
   private class AsyncEnumeratorAdapter<T> : IAsyncEnumerator<T>
@@ -54,25 +54,31 @@ public static class AsyncCursorSourceExt
     private          IAsyncCursor<T>       asyncCursor_;
     private          IEnumerator<T>        batchEnumerator_;
 
-    public AsyncEnumeratorAdapter(IAsyncCursorSource<T> asyncCursorSource, CancellationToken cancellationToken = default)
+    public AsyncEnumeratorAdapter(IAsyncCursorSource<T> asyncCursorSource,
+                                  CancellationToken     cancellationToken = default)
     {
       asyncCursorSource_ = asyncCursorSource;
       cancellationToken_ = cancellationToken;
     }
 
-    public T Current => batchEnumerator_.Current;
+    public T Current
+      => batchEnumerator_.Current;
 
     public async ValueTask<bool> MoveNextAsync()
     {
       if (asyncCursor_ == null)
-        asyncCursor_ = await asyncCursorSource_.ToCursorAsync(cancellationToken_);
+      {
+        asyncCursor_ = await asyncCursorSource_.ToCursorAsync(cancellationToken_)
+                                               .ConfigureAwait(false);
+      }
 
-      if (batchEnumerator_ != null &&
-          batchEnumerator_.MoveNext())
+      if (batchEnumerator_ != null && batchEnumerator_.MoveNext())
+      {
         return true;
+      }
 
-      if (asyncCursor_ != null &&
-          await asyncCursor_.MoveNextAsync(cancellationToken_))
+      if (asyncCursor_ != null && await asyncCursor_.MoveNextAsync(cancellationToken_)
+                                                    .ConfigureAwait(false))
       {
         batchEnumerator_?.Dispose();
         batchEnumerator_ = asyncCursor_.Current.GetEnumerator();

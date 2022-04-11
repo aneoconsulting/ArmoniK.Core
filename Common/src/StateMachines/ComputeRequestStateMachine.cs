@@ -22,8 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading.Tasks;
-
 using Microsoft.Extensions.Logging;
 
 using Stateless;
@@ -56,8 +54,9 @@ public class ComputeRequestStateMachine
     InitRequest,
   }
 
-  private readonly StateMachine<State, Triggers>              machine_;
-  private readonly ILogger                                    logger_;
+  private readonly ILogger logger_;
+
+  private readonly StateMachine<State, Triggers> machine_;
 
   public ComputeRequestStateMachine(ILogger logger)
   {
@@ -66,67 +65,72 @@ public class ComputeRequestStateMachine
 
     machine_.Configure(State.Init)
             .Permit(Triggers.InitRequest,
-                      State.InitRequest);
+                    State.InitRequest);
 
     machine_.Configure(State.InitRequest)
             .Permit(Triggers.AddPayloadChunk,
-                      State.PayloadData)
+                    State.PayloadData)
             .Permit(Triggers.CompletePayload,
-                      State.PayloadComplete);
+                    State.PayloadComplete);
 
     machine_.Configure(State.PayloadData)
             .PermitReentry(Triggers.AddPayloadChunk)
             .Permit(Triggers.CompletePayload,
-                      State.PayloadComplete);
+                    State.PayloadComplete);
 
     machine_.Configure(State.PayloadComplete)
             .Permit(Triggers.InitDataDependency,
-                      State.DataInit)
+                    State.DataInit)
             .Permit(Triggers.CompleteRequest,
                     State.DataLast);
 
     machine_.Configure(State.DataInit)
             .Permit(Triggers.AddDataDependencyChunk,
-                      State.Data);
+                    State.Data);
 
     machine_.Configure(State.Data)
             .PermitReentry(Triggers.AddDataDependencyChunk)
             .Permit(Triggers.CompleteDataDependency,
-                      State.DataComplete);
+                    State.DataComplete);
 
     machine_.Configure(State.DataComplete)
             .Permit(Triggers.CompleteRequest,
-                      State.DataLast)
+                    State.DataLast)
             .Permit(Triggers.InitDataDependency,
-                      State.DataInit);
+                    State.DataInit);
 
     if (logger_.IsEnabled(LogLevel.Debug))
+    {
       machine_.OnTransitioned(t => logger_.LogDebug("OnTransitioned: {Source} -> {Destination}",
                                                     t.Source,
                                                     t.Destination));
+    }
   }
 
-  public void InitRequest() =>
-    machine_.Fire(Triggers.InitRequest);
+  public void InitRequest()
+    => machine_.Fire(Triggers.InitRequest);
 
-  public void AddPayloadChunk() =>
-    machine_.Fire(Triggers.AddPayloadChunk);
+  public void AddPayloadChunk()
+    => machine_.Fire(Triggers.AddPayloadChunk);
 
-  public void CompletePayload() =>
-    machine_.Fire(Triggers.CompletePayload);
+  public void CompletePayload()
+    => machine_.Fire(Triggers.CompletePayload);
 
-  public void InitDataDependency() =>
-    machine_.Fire(Triggers.InitDataDependency);
+  public void InitDataDependency()
+    => machine_.Fire(Triggers.InitDataDependency);
 
-  public void AddDataDependencyChunk() =>
-    machine_.Fire(Triggers.AddDataDependencyChunk);
+  public void AddDataDependencyChunk()
+    => machine_.Fire(Triggers.AddDataDependencyChunk);
 
-  public void CompleteDataDependency() => machine_.Fire(Triggers.CompleteDataDependency);
+  public void CompleteDataDependency()
+    => machine_.Fire(Triggers.CompleteDataDependency);
 
-  public void CompleteRequest() => machine_.Fire(Triggers.CompleteRequest);
+  public void CompleteRequest()
+    => machine_.Fire(Triggers.CompleteRequest);
 
-  public string GenerateGraph() =>
-    UmlDotGraph.Format(machine_.GetInfo());
+  public string GenerateGraph()
+    => UmlDotGraph.Format(machine_.GetInfo());
 
-  public State GetState() => machine_.State;
+  public State GetState()
+    => machine_.State;
 }

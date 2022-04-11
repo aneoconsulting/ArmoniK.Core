@@ -43,25 +43,37 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class LockedQueueStorage : ILockedQueueStorage
 {
-  private readonly ILogger<LockedQueueStorage>                                                 logger_;
-  private readonly string                                                                      ownerId_ = Guid.NewGuid().ToString();
+  private readonly ILogger<LockedQueueStorage> logger_;
+
+  private readonly string ownerId_ = Guid.NewGuid()
+                                         .ToString();
+
   private readonly MongoCollectionProvider<QueueMessageModelMapping, QueueMessageModelMapping> queueCollectionProvider_;
 
+
+  private bool isInitialized_;
+
   public LockedQueueStorage(MongoCollectionProvider<QueueMessageModelMapping, QueueMessageModelMapping> queueCollectionProvider,
-                            QueueStorage                               options,
-                            ILogger<LockedQueueStorage>                logger)
+                            QueueStorage                                                                options,
+                            ILogger<LockedQueueStorage>                                                 logger)
   {
     if (options.LockRefreshExtension == TimeSpan.Zero)
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(QueueStorage.LockRefreshExtension)} is not defined.");
+    }
 
     if (options.PollPeriodicity == TimeSpan.Zero)
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(QueueStorage.PollPeriodicity)} is not defined.");
+    }
 
     if (options.LockRefreshPeriodicity == TimeSpan.Zero)
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(QueueStorage.LockRefreshPeriodicity)} is not defined.");
+    }
 
     queueCollectionProvider_ = queueCollectionProvider;
     logger_                  = logger;
@@ -80,113 +92,116 @@ public class LockedQueueStorage : ILockedQueueStorage
   public TimeSpan LockRefreshExtension { get; }
 
   /// <inheritdoc />
-  public bool AreMessagesUnique => true;
+  public bool AreMessagesUnique
+    => true;
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
-      await queueCollectionProvider_.GetAsync();
+    {
+      await queueCollectionProvider_.GetAsync()
+                                    .ConfigureAwait(false);
+    }
 
     isInitialized_ = true;
   }
 
-
-  private bool isInitialized_ = false;
+  /// <inheritdoc />
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+  public int MaxPriority
+    => int.MaxValue;
 
   /// <inheritdoc />
-  public int MaxPriority => int.MaxValue;
-
-  /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(
-    int                                        nbMessages,
-    [EnumeratorCancellation] CancellationToken cancellationToken = default
-  )
+  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
+                                                                [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _               = logger_.LogFunction();
-    var       queueCollection = await queueCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction();
+    var queueCollection = await queueCollectionProvider_.GetAsync()
+                                                        .ConfigureAwait(false);
 
     var nbPulledMessage = 0;
 
     while (nbPulledMessage < nbMessages && !cancellationToken.IsCancellationRequested)
     {
-      var updateDefinition = Builders<QueueMessageModelMapping>.Update
-                                                        .Set(qmdm => qmdm.OwnedUntil,
-                                                             DateTime.UtcNow + LockRefreshExtension)
-                                                        .Set(qmm => qmm.OwnerId,
-                                                             ownerId_);
+      var updateDefinition = Builders<QueueMessageModelMapping>.Update.Set(qmdm => qmdm.OwnedUntil,
+                                                                           DateTime.UtcNow + LockRefreshExtension)
+                                                               .Set(qmm => qmm.OwnerId,
+                                                                    ownerId_);
 
-      var sort = Builders<QueueMessageModelMapping>.Sort
-                                            .Descending(qmm => qmm.Priority)
-                                            .Ascending(qmm => qmm.SubmissionDate);
+      var sort = Builders<QueueMessageModelMapping>.Sort.Descending(qmm => qmm.Priority)
+                                                   .Ascending(qmm => qmm.SubmissionDate);
 
-      var filter = Builders<QueueMessageModelMapping>.Filter
-                                              .Or(Builders<QueueMessageModelMapping>.Filter.Exists(model => model.OwnedUntil,
-                                                                                            false),
-                                                  Builders<QueueMessageModelMapping>.Filter.Where(model => model.OwnedUntil < DateTime.UtcNow));
+      var filter = Builders<QueueMessageModelMapping>.Filter.Or(Builders<QueueMessageModelMapping>.Filter.Exists(model => model.OwnedUntil,
+                                                                                                                 false),
+                                                                Builders<QueueMessageModelMapping>.Filter.Where(model => model.OwnedUntil < DateTime.UtcNow));
 
       logger_.LogDebug("Trying to get a new messageHandler from Mongo queue");
       var message = await queueCollection.FindOneAndUpdateAsync(filter,
                                                                 updateDefinition,
-                                                                new FindOneAndUpdateOptions<
-                                                                  QueueMessageModelMapping>
+                                                                new FindOneAndUpdateOptions<QueueMessageModelMapping>
                                                                 {
                                                                   ReturnDocument = ReturnDocument.After,
                                                                   IsUpsert       = false,
                                                                   Sort           = sort,
                                                                 },
-                                                                cancellationToken);
+                                                                cancellationToken)
+                                         .ConfigureAwait(false);
 
       if (message is not null)
       {
         nbPulledMessage++;
         yield return new LockedQueueMessageHandler(this,
-                                            message.MessageId,
-                                            message.TaskId,
-                                            logger_,
-                                            CancellationToken.None);
+                                                   message.MessageId,
+                                                   message.TaskId,
+                                                   logger_,
+                                                   CancellationToken.None);
       }
       else
       {
         await Task.Delay(PollPeriodicity,
-                         cancellationToken);
+                         cancellationToken)
+                  .ConfigureAwait(false);
       }
     }
   }
 
   /// <inheritdoc />
-  public async Task MessageProcessedAsync(string id, CancellationToken cancellationToken = default)
+  public async Task MessageProcessedAsync(string            id,
+                                          CancellationToken cancellationToken = default)
   {
-    using var _               = logger_.LogFunction(id);
-    var       queueCollection = await queueCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(id);
+    var queueCollection = await queueCollectionProvider_.GetAsync()
+                                                        .ConfigureAwait(false);
 
     await queueCollection.FindOneAndDeleteAsync(qmm => qmm.MessageId == id && qmm.OwnerId == ownerId_,
-                                                cancellationToken: cancellationToken);
+                                                cancellationToken: cancellationToken)
+                         .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task<bool> RenewDeadlineAsync(string id, CancellationToken cancellationToken = default)
+  public async Task<bool> RenewDeadlineAsync(string            id,
+                                             CancellationToken cancellationToken = default)
   {
-    using var _               = logger_.LogFunction(id);
-    var       queueCollection = await queueCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(id);
+    var queueCollection = await queueCollectionProvider_.GetAsync()
+                                                        .ConfigureAwait(false);
 
-    var updateDefinition = Builders<QueueMessageModelMapping>.Update
-                                                      .Set(qmdm => qmdm.OwnedUntil,
-                                                           DateTime.UtcNow + LockRefreshExtension);
+    var updateDefinition = Builders<QueueMessageModelMapping>.Update.Set(qmdm => qmdm.OwnedUntil,
+                                                                         DateTime.UtcNow + LockRefreshExtension);
 
-    var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModelMapping>(qmdm => qmdm.MessageId == id &&
-                                                                                         qmdm.OwnerId == ownerId_,
-                                                                                 updateDefinition,
-                                                                                 new FindOneAndUpdateOptions<QueueMessageModelMapping>
-                                                                                 {
-                                                                                   ReturnDocument =
-                                                                                     ReturnDocument.After,
-                                                                                   IsUpsert = false,
-                                                                                 },
-                                                                                 cancellationToken);
+    var message = await queueCollection.FindOneAndUpdateAsync<QueueMessageModelMapping>(qmdm => qmdm.MessageId == id && qmdm.OwnerId == ownerId_,
+                                                                                        updateDefinition,
+                                                                                        new FindOneAndUpdateOptions<QueueMessageModelMapping>
+                                                                                        {
+                                                                                          ReturnDocument = ReturnDocument.After,
+                                                                                          IsUpsert       = false,
+                                                                                        },
+                                                                                        cancellationToken)
+                                       .ConfigureAwait(false);
     return message is not null;
   }
 
@@ -195,8 +210,9 @@ public class LockedQueueStorage : ILockedQueueStorage
                                          int                 priority          = 1,
                                          CancellationToken   cancellationToken = default)
   {
-    using var _               = logger_.LogFunction();
-    var       queueCollection = await queueCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction();
+    var queueCollection = await queueCollectionProvider_.GetAsync()
+                                                        .ConfigureAwait(false);
 
     var qmms = messages.Select(message => new QueueMessageModelMapping
                                           {
@@ -206,52 +222,59 @@ public class LockedQueueStorage : ILockedQueueStorage
                                           });
 
     await queueCollection.InsertManyAsync(qmms,
-                                          cancellationToken: cancellationToken);
+                                          cancellationToken: cancellationToken)
+                         .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task RequeueMessageAsync(string id, CancellationToken cancellationToken = default)
+  public async Task RequeueMessageAsync(string            id,
+                                        CancellationToken cancellationToken = default)
   {
-    using var _               = logger_.LogFunction(id);
-    var       queueCollection = await queueCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(id);
+    var queueCollection = await queueCollectionProvider_.GetAsync()
+                                                        .ConfigureAwait(false);
 
-    var updateDefinition = Builders<QueueMessageModelMapping>.Update
-                                                      .Unset(qmm => qmm.OwnerId)
-                                                      .Unset(qmdm => qmdm.OwnedUntil)
-                                                      .Set(qmm => qmm.SubmissionDate,
-                                                           DateTime.UtcNow);
+    var updateDefinition = Builders<QueueMessageModelMapping>.Update.Unset(qmm => qmm.OwnerId)
+                                                             .Unset(qmdm => qmdm.OwnedUntil)
+                                                             .Set(qmm => qmm.SubmissionDate,
+                                                                  DateTime.UtcNow);
 
     await queueCollection.FindOneAndUpdateAsync(qmm => qmm.MessageId == id,
                                                 updateDefinition,
-                                                cancellationToken: cancellationToken);
+                                                cancellationToken: cancellationToken)
+                         .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task MessageRejectedAsync(string id, CancellationToken cancellationToken)
+  public async Task MessageRejectedAsync(string            id,
+                                         CancellationToken cancellationToken)
   {
-    using var _               = logger_.LogFunction(id);
-    var       queueCollection = await queueCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(id);
+    var queueCollection = await queueCollectionProvider_.GetAsync()
+                                                        .ConfigureAwait(false);
 
     await queueCollection.FindOneAndDeleteAsync(qmm => qmm.MessageId == id,
-                                                cancellationToken: cancellationToken);
+                                                cancellationToken: cancellationToken)
+                         .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task ReleaseMessageAsync(string id, CancellationToken cancellationToken)
+  public async Task ReleaseMessageAsync(string            id,
+                                        CancellationToken cancellationToken)
   {
-    using var _               = logger_.LogFunction(id);
-    var       queueCollection = await queueCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(id);
+    var queueCollection = await queueCollectionProvider_.GetAsync()
+                                                        .ConfigureAwait(false);
 
-    var updateDefinition = Builders<QueueMessageModelMapping>.Update
-                                                      .Unset(qmdm => qmdm.OwnedUntil);
+    var updateDefinition = Builders<QueueMessageModelMapping>.Update.Unset(qmdm => qmdm.OwnedUntil);
 
-    await queueCollection.FindOneAndUpdateAsync<QueueMessageModelMapping>(qmdm => qmdm.MessageId == id &&
-                                                                           qmdm.OwnerId == ownerId_,
-                                                                   updateDefinition,
-                                                                   new FindOneAndUpdateOptions<QueueMessageModelMapping>
-                                                                   {
-                                                                     IsUpsert = false,
-                                                                   },
-                                                                   cancellationToken);
+    await queueCollection.FindOneAndUpdateAsync<QueueMessageModelMapping>(qmdm => qmdm.MessageId == id && qmdm.OwnerId == ownerId_,
+                                                                          updateDefinition,
+                                                                          new FindOneAndUpdateOptions<QueueMessageModelMapping>
+                                                                          {
+                                                                            IsUpsert = false,
+                                                                          },
+                                                                          cancellationToken)
+                         .ConfigureAwait(false);
   }
 }

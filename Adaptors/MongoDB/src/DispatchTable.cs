@@ -31,6 +31,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
@@ -43,27 +44,26 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class DispatchTable : IDispatchTable
 {
-  public ILogger  Logger                { get; }
-
-  /// <inheritdoc />
-  public TimeSpan DispatchRefreshPeriod { get; set; }
-
-  private readonly SessionProvider                                             sessionProvider_;
-  private readonly MongoCollectionProvider<Dispatch, DispatchDataModelMapping> dispatchCollectionProvider_;
   private readonly ActivitySource                                              activitySource_;
+  private readonly MongoCollectionProvider<Dispatch, DispatchDataModelMapping> dispatchCollectionProvider_;
+
+  private readonly SessionProvider sessionProvider_;
+
+
+  private bool isInitialized_;
 
   [UsedImplicitly]
-  public DispatchTable(SessionProvider        sessionProvider, MongoCollectionProvider<Dispatch, DispatchDataModelMapping> dispatchCollectionProvider,
-                       Options.TableStorage   options,
-                       ActivitySource         activitySource,
-                       ILogger<DispatchTable> logger)
+  public DispatchTable(SessionProvider                                             sessionProvider,
+                       MongoCollectionProvider<Dispatch, DispatchDataModelMapping> dispatchCollectionProvider,
+                       TableStorage                                                options,
+                       ActivitySource                                              activitySource,
+                       ILogger<DispatchTable>                                      logger)
   {
     sessionProvider_            = sessionProvider;
     dispatchCollectionProvider_ = dispatchCollectionProvider;
@@ -72,6 +72,11 @@ public class DispatchTable : IDispatchTable
     Logger                      = logger;
     activitySource_             = activitySource;
   }
+
+  public ILogger Logger { get; }
+
+  /// <inheritdoc />
+  public TimeSpan DispatchRefreshPeriod { get; set; }
 
   /// <inheritdoc />
   public TimeSpan DispatchTimeToLiveDuration { get; set; }
@@ -83,7 +88,7 @@ public class DispatchTable : IDispatchTable
                                                   IDictionary<string, string> metadata,
                                                   CancellationToken           cancellationToken = default)
   {
-    using var activity           = activitySource_.StartActivity($"{nameof(TryAcquireDispatchAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(TryAcquireDispatchAsync)}");
     activity?.SetTag($"{nameof(TryAcquireDispatchAsync)}_sessionId",
                      sessionId);
     activity?.SetTag($"{nameof(TryAcquireDispatchAsync)}_TaskId",
@@ -91,30 +96,31 @@ public class DispatchTable : IDispatchTable
     activity?.SetTag($"{nameof(TryAcquireDispatchAsync)}_dispatchId",
                      dispatchId);
 
-    var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+    var dispatchCollection = await dispatchCollectionProvider_.GetAsync()
+                                                              .ConfigureAwait(false);
 
-    var updateDefinition = Builders<Dispatch>.Update
-                                                    .SetOnInsert(model => model.TimeToLive,
+    var updateDefinition = Builders<Dispatch>.Update.SetOnInsert(model => model.TimeToLive,
                                                                  DateTime.UtcNow + DispatchTimeToLiveDuration)
-                                                    .SetOnInsert(model => model.Id,
-                                                                 dispatchId)
-                                                    .SetOnInsert(model => model.Attempt,
-                                                                 1)
-                                                    .SetOnInsert(model => model.CreationDate,
-                                                                 DateTime.UtcNow)
-                                                    .SetOnInsert(model => model.TaskId,
-                                                                 taskId)
-                                                    .SetOnInsert(model => model.SessionId,
-                                                                 sessionId);
+                                             .SetOnInsert(model => model.Id,
+                                                          dispatchId)
+                                             .SetOnInsert(model => model.Attempt,
+                                                          1)
+                                             .SetOnInsert(model => model.CreationDate,
+                                                          DateTime.UtcNow)
+                                             .SetOnInsert(model => model.TaskId,
+                                                          taskId)
+                                             .SetOnInsert(model => model.SessionId,
+                                                          sessionId);
 
     var res = await dispatchCollection.FindOneAndUpdateAsync<Dispatch>(model => model.TaskId == taskId && model.TimeToLive > DateTime.UtcNow,
-                                                                              updateDefinition,
-                                                                              new FindOneAndUpdateOptions<Dispatch>
-                                                                              {
-                                                                                IsUpsert       = true,
-                                                                                ReturnDocument = ReturnDocument.After,
-                                                                              },
-                                                                              cancellationToken);
+                                                                       updateDefinition,
+                                                                       new FindOneAndUpdateOptions<Dispatch>
+                                                                       {
+                                                                         IsUpsert       = true,
+                                                                         ReturnDocument = ReturnDocument.After,
+                                                                       },
+                                                                       cancellationToken)
+                                      .ConfigureAwait(false);
 
     if (dispatchId == res.Id)
     {
@@ -122,24 +128,27 @@ public class DispatchTable : IDispatchTable
                             dispatchId,
                             taskId);
 
-      var oldDispatchUpdates = Builders<Dispatch>.Update
-                                                 .Set(model => model.TimeToLive,
-                                                      DateTime.MinValue)
+      var oldDispatchUpdates = Builders<Dispatch>.Update.Set(model => model.TimeToLive,
+                                                             DateTime.MinValue)
                                                  .AddToSet(model => model.Statuses,
-                                                           new(TaskStatus.Failed,
-                                                               DateTime.UtcNow,
-                                                               "Dispatch Ttl expired"));
+                                                           new StatusTime(TaskStatus.Failed,
+                                                                          DateTime.UtcNow,
+                                                                          "Dispatch Ttl expired"));
 
       var olds = await dispatchCollection.UpdateManyAsync(model => model.TaskId == taskId && model.Id != dispatchId,
                                                           oldDispatchUpdates,
-                                                          cancellationToken: cancellationToken);
+                                                          cancellationToken: cancellationToken)
+                                         .ConfigureAwait(false);
 
       if (olds.ModifiedCount > 0)
+      {
         await dispatchCollection.FindOneAndUpdateAsync(model => model.Id == dispatchId,
-                                                       Builders<Dispatch>.Update
-                                                                         .Set(m => m.Attempt,
-                                                                              olds.ModifiedCount + 1),
-                                                       cancellationToken: cancellationToken);
+                                                       Builders<Dispatch>.Update.Set(m => m.Attempt,
+                                                                                     olds.ModifiedCount + 1),
+                                                       cancellationToken: cancellationToken)
+                                .ConfigureAwait(false);
+      }
+
       return true;
     }
 
@@ -150,20 +159,25 @@ public class DispatchTable : IDispatchTable
 
 
   /// <inheritdoc />
-  public async Task<Dispatch> GetDispatchAsync(string dispatchId, CancellationToken cancellationToken = default)
+  public async Task<Dispatch> GetDispatchAsync(string            dispatchId,
+                                               CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetDispatchAsync)}");
     activity?.SetTag($"{nameof(GetDispatchAsync)}_dispatchId",
                      dispatchId);
 
-    var sessionHandle      = await sessionProvider_.GetAsync();
-    var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var dispatchCollection = await dispatchCollectionProvider_.GetAsync()
+                                                              .ConfigureAwait(false);
 
-    var result  = dispatchCollection.AsQueryable(sessionHandle).Where(model => model.Id == dispatchId);
+    var result = dispatchCollection.AsQueryable(sessionHandle)
+                                   .Where(model => model.Id == dispatchId);
 
     try
     {
-      return await result.FirstAsync(cancellationToken);
+      return await result.FirstAsync(cancellationToken)
+                         .ConfigureAwait(false);
     }
     catch (InvalidOperationException)
     {
@@ -172,18 +186,20 @@ public class DispatchTable : IDispatchTable
   }
 
   /// <inheritdoc />
-  public async Task AddStatusToDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default)
+  public async Task AddStatusToDispatch(string            id,
+                                        TaskStatus        status,
+                                        CancellationToken cancellationToken = default)
   {
-    using var activity           = activitySource_.StartActivity($"{nameof(AddStatusToDispatch)}");
+    using var activity = activitySource_.StartActivity($"{nameof(AddStatusToDispatch)}");
     activity?.SetTag($"{nameof(AddStatusToDispatch)}_dispatchId",
                      id);
-    var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+    var dispatchCollection = await dispatchCollectionProvider_.GetAsync()
+                                                              .ConfigureAwait(false);
 
-    var updateDefinition = Builders<Dispatch>.Update
-                                             .AddToSet(model => model.Statuses,
-                                                       new(status,
-                                                           DateTime.UtcNow,
-                                                           string.Empty));
+    var updateDefinition = Builders<Dispatch>.Update.AddToSet(model => model.Statuses,
+                                                              new StatusTime(status,
+                                                                             DateTime.UtcNow,
+                                                                             string.Empty));
 
     var res = await dispatchCollection.FindOneAndUpdateAsync<Dispatch>(model => model.Id == id && model.TimeToLive > DateTime.UtcNow,
                                                                        updateDefinition,
@@ -192,78 +208,101 @@ public class DispatchTable : IDispatchTable
                                                                          IsUpsert       = false,
                                                                          ReturnDocument = ReturnDocument.After,
                                                                        },
-                                                                       cancellationToken);
+                                                                       cancellationToken)
+                                      .ConfigureAwait(false);
 
     if (res == null)
+    {
       throw new ArmoniKException($"Key '{id}' not found");
+    }
   }
 
 
   /// <inheritdoc />
-  public async Task ExtendDispatchTtl(string id, CancellationToken cancellationToken = default)
+  public async Task ExtendDispatchTtl(string            id,
+                                      CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ExtendDispatchTtl)}");
     activity?.SetTag($"{nameof(ExtendDispatchTtl)}_dispatchId",
                      id);
 
-    var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+    var dispatchCollection = await dispatchCollectionProvider_.GetAsync()
+                                                              .ConfigureAwait(false);
 
     var res = await dispatchCollection.FindOneAndUpdateAsync(model => model.Id == id,
-                                                             Builders<Dispatch>.Update
-                                                                               .Set(model => model.TimeToLive,
-                                                                                    DateTime.UtcNow + DispatchTimeToLiveDuration),
-                                                             cancellationToken: cancellationToken);
+                                                             Builders<Dispatch>.Update.Set(model => model.TimeToLive,
+                                                                                           DateTime.UtcNow + DispatchTimeToLiveDuration),
+                                                             cancellationToken: cancellationToken)
+                                      .ConfigureAwait(false);
     if (res == null)
+    {
       throw new ArmoniKException($"Key '{id}' not found");
+    }
   }
 
   /// <inheritdoc />
-  public async Task DeleteDispatchFromTaskIdAsync(string id, CancellationToken cancellationToken = default)
+  public async Task DeleteDispatchFromTaskIdAsync(string            id,
+                                                  CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(DeleteDispatchFromTaskIdAsync)}");
     activity?.SetTag($"{nameof(DeleteDispatchFromTaskIdAsync)}_dispatchId",
                      id);
 
-    var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+    var dispatchCollection = await dispatchCollectionProvider_.GetAsync()
+                                                              .ConfigureAwait(false);
 
     var res = await dispatchCollection.DeleteManyAsync(model => model.TaskId == id,
-                                                     cancellationToken);
+                                                       cancellationToken)
+                                      .ConfigureAwait(false);
 
     if (res.DeletedCount == 0)
+    {
       throw new ArmoniKException($"No dispatch was deleted; TaskId: '{id}' not found");
+    }
   }
 
   /// <inheritdoc />
-  public async Task DeleteDispatch(string id, CancellationToken cancellationToken = default)
+  public async Task DeleteDispatch(string            id,
+                                   CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(DeleteDispatch)}");
     activity?.SetTag($"{nameof(DeleteDispatch)}_dispatchId",
                      id);
 
-    var dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+    var dispatchCollection = await dispatchCollectionProvider_.GetAsync()
+                                                              .ConfigureAwait(false);
 
     var res = await dispatchCollection.DeleteManyAsync(model => model.Id == id,
-                                             cancellationToken);
+                                                       cancellationToken)
+                                      .ConfigureAwait(false);
     if (res.DeletedCount == 0)
+    {
       throw new ArmoniKException($"No dispatch was deleted; DispatchId: '{id}' not found");
+    }
   }
 
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<string> ListDispatchAsync(string taskId, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<string> ListDispatchAsync(string                                     taskId,
+                                                          [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var activity           = activitySource_.StartActivity($"{nameof(ListDispatchAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(ListDispatchAsync)}");
     activity?.SetTag($"{nameof(ListDispatchAsync)}_TaskId",
                      taskId);
-    var       sessionHandle      = await sessionProvider_.GetAsync();
-    var       dispatchCollection = await dispatchCollectionProvider_.GetAsync();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var dispatchCollection = await dispatchCollectionProvider_.GetAsync()
+                                                              .ConfigureAwait(false);
 
     await foreach (var dispatch in dispatchCollection.AsQueryable(sessionHandle)
                                                      .Where(model => model.TaskId == taskId)
                                                      .Select(model => model.Id)
                                                      .ToAsyncEnumerable()
-                                                     .WithCancellation(cancellationToken))
+                                                     .WithCancellation(cancellationToken)
+                                                     .ConfigureAwait(false))
+    {
       yield return dispatch;
+    }
   }
 
   /// <inheritdoc />
@@ -271,17 +310,15 @@ public class DispatchTable : IDispatchTable
   {
     if (!isInitialized_)
     {
-      var session        = sessionProvider_.GetAsync();
+      var session  = sessionProvider_.GetAsync();
       var dispatch = dispatchCollectionProvider_.GetAsync();
-      await session;
-      await dispatch;
+      await session.ConfigureAwait(false);
+      await dispatch.ConfigureAwait(false);
       isInitialized_ = true;
     }
   }
 
-
-  private bool isInitialized_ = false;
-
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
 }

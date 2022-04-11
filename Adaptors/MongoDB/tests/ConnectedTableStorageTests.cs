@@ -23,19 +23,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.Linq;
-
-using ArmoniK.Api.gRPC.V1;
+using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
-using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
-
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
@@ -49,16 +42,36 @@ internal class ConnectedTableStorageTests
   {
     Dictionary<string, string> baseConfig = new()
                                             {
-                                              { "MongoDB:ConnectionString", "mongodb://localhost" },
-                                              { "MongoDB:DatabaseName", "ConnectedTableStorageTests" },
-                                              { "MongoDB:DataRetention", "10.00:00:00" },
-                                              { "MongoDB:TableStorage:PollingDelay", "00:00:10" },
-                                              { "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00" },
-                                              { "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00" },
-                                              { "MongoDB:ObjectStorage:ChunkSize", "100000" },
-                                              { "MongoDB:LockedQueueStorage:LockRefreshPeriodicity", "00:20:00" },
-                                              { "MongoDB:LockedQueueStorage:PollPeriodicity", "00:00:50" },
-                                              { "MongoDB:LockedQueueStorage:LockRefreshExtension", "00:50:00" },
+                                              {
+                                                "MongoDB:ConnectionString", "mongodb://localhost"
+                                              },
+                                              {
+                                                "MongoDB:DatabaseName", "ConnectedTableStorageTests"
+                                              },
+                                              {
+                                                "MongoDB:DataRetention", "10.00:00:00"
+                                              },
+                                              {
+                                                "MongoDB:TableStorage:PollingDelay", "00:00:10"
+                                              },
+                                              {
+                                                "MongoDB:LeaseProvider:AcquisitionPeriod", "00:20:00"
+                                              },
+                                              {
+                                                "MongoDB:LeaseProvider:AcquisitionDuration", "00:50:00"
+                                              },
+                                              {
+                                                "MongoDB:ObjectStorage:ChunkSize", "100000"
+                                              },
+                                              {
+                                                "MongoDB:LockedQueueStorage:LockRefreshPeriodicity", "00:20:00"
+                                              },
+                                              {
+                                                "MongoDB:LockedQueueStorage:PollPeriodicity", "00:00:50"
+                                              },
+                                              {
+                                                "MongoDB:LockedQueueStorage:LockRefreshExtension", "00:50:00"
+                                              },
                                             };
 
     var configSource = new MemoryConfigurationSource
@@ -66,14 +79,15 @@ internal class ConnectedTableStorageTests
                          InitialData = baseConfig,
                        };
 
-    var builder = new ConfigurationBuilder()
-     .Add(configSource);
+    var builder = new ConfigurationBuilder().Add(configSource);
 
     configuration_ = builder.Build();
   }
 
 
   // TODO : remove this comment when some tests using configuration_ are written
-  [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "<Pending>")]
+  [SuppressMessage("CodeQuality",
+                   "IDE0052:Remove unread private members",
+                   Justification = "<Pending>")]
   private IConfiguration configuration_;
 }

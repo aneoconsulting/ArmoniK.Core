@@ -46,31 +46,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
-                              {
-                                MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-                                MaxRetries  = 1,
-                                Priority    = 1,
-                              },
-                TaskRequests =
-                {
-                  new TaskRequest
-                  {
-                    Payload = ByteString.CopyFrom("payload",
-                                                           Encoding.ASCII),
-                  },
-                },
-              };
-
-    Assert.IsTrue(validator_.Validate(ctr).IsValid);
-  }
-
-  [Test]
-  public void MissingSessionIdShouldFail()
-  {
-    var ctr = new CreateSmallTaskRequest
-              {
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -86,7 +62,33 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsTrue(validator_.Validate(ctr)
+                            .IsValid);
+  }
+
+  [Test]
+  public void MissingSessionIdShouldFail()
+  {
+    var ctr = new CreateSmallTaskRequest
+              {
+                TaskOptions = new TaskOptions
+                              {
+                                MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
+                                MaxRetries  = 1,
+                                Priority    = 1,
+                              },
+                TaskRequests =
+                {
+                  new TaskRequest
+                  {
+                    Payload = ByteString.CopyFrom("payload",
+                                                  Encoding.ASCII),
+                  },
+                },
+              };
+
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -95,7 +97,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = string.Empty,
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -111,7 +113,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -120,7 +123,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "      ",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -136,7 +139,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -155,7 +159,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -164,7 +169,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxRetries = 1,
                                 Priority   = 1,
@@ -179,7 +184,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsTrue(validator_.Validate(ctr).IsValid);
+    Assert.IsTrue(validator_.Validate(ctr)
+                            .IsValid);
   }
 
   [Test]
@@ -188,7 +194,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 Priority    = 1,
@@ -203,7 +209,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -212,7 +219,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 0,
@@ -228,7 +235,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -237,7 +245,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = -6,
@@ -253,7 +261,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
 
@@ -263,7 +272,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -279,7 +288,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsTrue(validator_.Validate(ctr).IsValid);
+    Assert.IsTrue(validator_.Validate(ctr)
+                            .IsValid);
   }
 
   [Test]
@@ -288,7 +298,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -303,7 +313,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -312,7 +323,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -328,7 +339,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -337,7 +349,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -353,7 +365,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -362,7 +375,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -378,7 +391,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -387,7 +401,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxRetries = 1,
                                 Priority   = 1,
@@ -402,7 +416,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsTrue(validator_.Validate(ctr).IsValid);
+    Assert.IsTrue(validator_.Validate(ctr)
+                            .IsValid);
   }
 
   [Test]
@@ -411,7 +426,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -419,7 +434,8 @@ public class CreateSmallTaskRequestValidatorTest
                               },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -428,7 +444,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -436,7 +452,8 @@ public class CreateSmallTaskRequestValidatorTest
                               },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -445,7 +462,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -457,7 +474,8 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 
   [Test]
@@ -466,7 +484,7 @@ public class CreateSmallTaskRequestValidatorTest
     var ctr = new CreateSmallTaskRequest
               {
                 SessionId = "Session",
-                TaskOptions = new()
+                TaskOptions = new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
                                 MaxRetries  = 1,
@@ -481,6 +499,7 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr).IsValid);
+    Assert.IsFalse(validator_.Validate(ctr)
+                             .IsValid);
   }
 }

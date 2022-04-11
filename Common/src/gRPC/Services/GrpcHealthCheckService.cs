@@ -31,9 +31,12 @@ namespace ArmoniK.Core.Control.Submitter;
 public class GrpcHealthCheckService : GrpcHealthCheckServiceBase
 {
   /// <inheritdoc />
-  public GrpcHealthCheckService(HealthCheckService healthCheckService) 
-    : base(healthCheckService, new []{"ArmoniK.Core.gRPC.V1.Submitter"}
-          )
+  public GrpcHealthCheckService(HealthCheckService healthCheckService)
+    : base(healthCheckService,
+           new[]
+           {
+             "ArmoniK.Core.gRPC.V1.Submitter",
+           })
   {
   }
 }

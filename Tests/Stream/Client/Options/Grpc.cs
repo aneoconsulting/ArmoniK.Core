@@ -24,12 +24,11 @@
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options
+namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options;
+
+[PublicAPI]
+public class Grpc
 {
-  [PublicAPI]
-  public class Grpc
-  {
-    public const string SettingSection = nameof(Grpc);
-    public string Endpoint { get; set; }
-  }
+  public const string SettingSection = nameof(Grpc);
+  public       string Endpoint { get; set; }
 }

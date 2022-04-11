@@ -56,10 +56,8 @@ public class RpcExtTests
   [TestCase(StatusCode.Unavailable)]
   [TestCase(StatusCode.DataLoss)]
   public void HandleRpcExceptionsWithStatus(StatusCode status)
-  {
-    Assert.IsTrue(RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
-                                          status));
-  }
+    => Assert.IsTrue(RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
+                                             status));
 
   [Test]
   [TestCase(StatusCode.OK)]
@@ -79,37 +77,27 @@ public class RpcExtTests
   [TestCase(StatusCode.Unavailable)]
   [TestCase(StatusCode.DataLoss)]
   public void HandleAggregateExceptionsWithStatus(StatusCode status)
-  {
-    Assert.IsTrue(RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
-                                          status));
-  }
+    => Assert.IsTrue(RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
+                                             status));
 
 
   [Test]
   public void ThrowCancelledExceptionWhenCallWasCancelled()
-  {
-    Assert.Throws<TaskCanceledException>(() => RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
-                                                                       StatusCode.Cancelled));
-  }
+    => Assert.Throws<TaskCanceledException>(() => RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
+                                                                          StatusCode.Cancelled));
 
   [Test]
   public void ThrowTimeoutExceptionWhenCallReachedDeadline()
-  {
-    Assert.Throws<TimeoutException>(() => RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
-                                                                  StatusCode.DeadlineExceeded));
-  }
+    => Assert.Throws<TimeoutException>(() => RpcExt.HandleExceptions(new RpcException(Status.DefaultSuccess),
+                                                                     StatusCode.DeadlineExceeded));
 
   [Test]
   public void ThrowCancelledExceptionWhenCallWasCancelledAggregated()
-  {
-    Assert.Throws<TaskCanceledException>(() => RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
-                                                                       StatusCode.Cancelled));
-  }
+    => Assert.Throws<TaskCanceledException>(() => RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
+                                                                          StatusCode.Cancelled));
 
   [Test]
   public void ThrowTimeoutExceptionWhenCallReachedDeadlineAggregated()
-  {
-    Assert.Throws<TimeoutException>(() => RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
-                                                                  StatusCode.DeadlineExceeded));
-  }
+    => Assert.Throws<TimeoutException>(() => RpcExt.HandleExceptions(new AggregateException(new RpcException(Status.DefaultSuccess)),
+                                                                     StatusCode.DeadlineExceeded));
 }

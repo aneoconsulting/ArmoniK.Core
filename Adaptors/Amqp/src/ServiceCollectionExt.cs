@@ -44,11 +44,9 @@ namespace ArmoniK.Core.Adapters.Amqp;
 public static class ServiceCollectionExt
 {
   [PublicAPI]
-  public static IServiceCollection AddAmqp(
-    this IServiceCollection serviceCollection,
-    ConfigurationManager    configuration,
-    ILogger                 logger
-  )
+  public static IServiceCollection AddAmqp(this IServiceCollection serviceCollection,
+                                           ConfigurationManager    configuration,
+                                           ILogger                 logger)
   {
     logger.LogInformation("Configure Amqp client");
 
@@ -114,8 +112,11 @@ public static class ServiceCollectionExt
                        .AddAsyncCheck("AmqpHealthCheck",
                                       async () =>
                                       {
-                                        var t = await sessionProvider.GetAsync();
-                                        return t.SessionState == SessionState.Opened ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy();
+                                        var t = await sessionProvider.GetAsync()
+                                                                     .ConfigureAwait(false);
+                                        return t.SessionState == SessionState.Opened
+                                                 ? HealthCheckResult.Healthy()
+                                                 : HealthCheckResult.Unhealthy();
                                       });
 
       logger.LogInformation("Amqp configuration complete");

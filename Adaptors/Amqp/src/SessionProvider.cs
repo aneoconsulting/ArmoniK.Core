@@ -39,68 +39,90 @@ namespace ArmoniK.Core.Adapters.Amqp;
 public class SessionProvider : ProviderBase<Session>
 {
   /// <inheritdoc />
-  public SessionProvider(Options.Amqp options, ILogger logger)
+  public SessionProvider(Options.Amqp options,
+                         ILogger      logger)
     : base(async () =>
-    {
-      var address = new Address(options.Host,
-                                options.Port,
-                                options.User,
-                                options.Password,
-                                scheme: options.Scheme);
+           {
+             var address = new Address(options.Host,
+                                       options.Port,
+                                       options.User,
+                                       options.Password,
+                                       scheme: options.Scheme);
 
-      var connectionFactory = new ConnectionFactory();
-      if (options.Scheme.Equals("AMQPS"))
-      {
-        connectionFactory.SSL.RemoteCertificateValidationCallback = delegate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
-        {
-          switch (errors)
-          {
-            case SslPolicyErrors.RemoteCertificateNameMismatch when options.AllowHostMismatch:
-            case SslPolicyErrors.None:
-              return true;
-            default:
-              logger.LogError("SSL error : {error}",
-                              errors);
-              return false;
-          }
-        };
-      }
+             var connectionFactory = new ConnectionFactory();
+             if (options.Scheme.Equals("AMQPS"))
+             {
+               connectionFactory.SSL.RemoteCertificateValidationCallback = delegate(object          sender,
+                                                                                    X509Certificate certificate,
+                                                                                    X509Chain       chain,
+                                                                                    SslPolicyErrors errors)
+                                                                           {
+                                                                             switch (errors)
+                                                                             {
+                                                                               case SslPolicyErrors.RemoteCertificateNameMismatch when options.AllowHostMismatch:
+                                                                               case SslPolicyErrors.None:
+                                                                                 return true;
+                                                                               default:
+                                                                                 logger.LogError("SSL error : {error}",
+                                                                                                 errors);
+                                                                                 return false;
+                                                                             }
+                                                                           };
+             }
 
-      Session session;
+             Session session;
 
-      var retries = 1;
-      while (true)
-      {
-        try
-        {
-          session = new Session(await connectionFactory.CreateAsync(address));
-          break;
-        }
-        catch
-        {
-          if (++retries == 6)
-            throw;
-          Thread.Sleep(1000 * retries);
-        }
-      }
+             var retries = 1;
+             while (true)
+             {
+               try
+               {
+                 session = new Session(await connectionFactory.CreateAsync(address)
+                                                              .ConfigureAwait(false));
+                 break;
+               }
+               catch
+               {
+                 if (++retries == 6)
+                 {
+                   throw;
+                 }
 
-      return session;
-    })
+                 Thread.Sleep(1000 * retries);
+               }
+             }
+
+             return session;
+           })
   {
     if (string.IsNullOrEmpty(options.Host))
+    {
       throw new ArgumentNullException(nameof(options),
                                       $"Contains a null or empty {nameof(options.Host)} field");
+    }
+
     if (options.Port == 0)
+    {
       throw new ArgumentNullException(nameof(options),
                                       $"Contains a zero {nameof(options.Port)} field");
+    }
+
     if (string.IsNullOrEmpty(options.User))
+    {
       throw new ArgumentNullException(nameof(options),
                                       $"Contains a null or empty {nameof(options.User)} field");
+    }
+
     if (string.IsNullOrEmpty(options.Password))
+    {
       throw new ArgumentNullException(nameof(options),
                                       $"Contains a null or empty {nameof(options.Password)} field");
+    }
+
     if (string.IsNullOrEmpty(options.Scheme))
+    {
       throw new ArgumentNullException(nameof(options),
                                       $"Contains a null or empty {nameof(options.Scheme)} field");
+    }
   }
 }

@@ -30,8 +30,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
 
@@ -39,66 +39,77 @@ using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
-
-
 public class ResultTable : IResultTable
 {
-  private readonly ConcurrentDictionary<string,ConcurrentDictionary<string, Result>> results_;
+  private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, Result>> results_;
 
   public ResultTable(ConcurrentDictionary<string, ConcurrentDictionary<string, Result>> results,
-                       ILogger<ResultTable>  logger)
+                     ILogger<ResultTable>                                               logger)
   {
     results_ = results;
-    Logger  = logger;
+    Logger   = logger;
   }
 
   /// <inheritdoc />
-  public Task<bool> AreResultsAvailableAsync(string sessionId, IEnumerable<string> keys, CancellationToken cancellationToken = default)
-    => Task.FromResult(keys.All(key => results_[sessionId][key].IsResultAvailable));
+  public Task<bool> AreResultsAvailableAsync(string              sessionId,
+                                             IEnumerable<string> keys,
+                                             CancellationToken   cancellationToken = default)
+    => Task.FromResult(keys.All(key => results_[sessionId][key]
+                                  .IsResultAvailable));
 
   /// <inheritdoc />
-  public Task ChangeResultDispatch(string sessionId, string oldDispatchId, string newDispatchId, CancellationToken cancellationToken)
+  public Task ChangeResultDispatch(string            sessionId,
+                                   string            oldDispatchId,
+                                   string            newDispatchId,
+                                   CancellationToken cancellationToken)
   {
     if (!results_.ContainsKey(sessionId))
     {
       return Task.FromException<ArmoniKException>(new ArmoniKException($"Key '{sessionId}' not found"));
     }
 
-    foreach (var result in results_[sessionId].Values
-                                              .ToImmutableList()
-                                              .Where(result => result.OriginDispatchId == oldDispatchId))
+    foreach (var result in results_[sessionId]
+                           .Values.ToImmutableList()
+                           .Where(result => result.OriginDispatchId == oldDispatchId))
     {
-      results_[result.SessionId].TryUpdate(result.Key,
-                                           result with
-                                           {
-                                             OriginDispatchId = newDispatchId,
-                                           },
-                                           result);
+      results_[result.SessionId]
+        .TryUpdate(result.Key,
+                   result with
+                   {
+                     OriginDispatchId = newDispatchId,
+                   },
+                   result);
     }
 
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task ChangeResultOwnership(string sessionId, IEnumerable<string> keys, string oldTaskId, string newTaskId, CancellationToken cancellationToken)
+  public Task ChangeResultOwnership(string              sessionId,
+                                    IEnumerable<string> keys,
+                                    string              oldTaskId,
+                                    string              newTaskId,
+                                    CancellationToken   cancellationToken)
   {
-    foreach (var result in results_[sessionId].Values
-                                              .ToImmutableList()
-                                              .Where(result => result.OwnerTaskId == oldTaskId))
+    foreach (var result in results_[sessionId]
+                           .Values.ToImmutableList()
+                           .Where(result => result.OwnerTaskId == oldTaskId))
     {
-      results_[result.SessionId].TryUpdate(result.Key,
-                                           result with
-                                           {
-                                             OwnerTaskId = newTaskId,
-                                           },
-                                           result);
+      results_[result.SessionId]
+        .TryUpdate(result.Key,
+                   result with
+                   {
+                     OwnerTaskId = newTaskId,
+                   },
+                   result);
     }
 
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task Create(IEnumerable<Result> results, CancellationToken cancellationToken = default)
+  public Task Create(IEnumerable<Result> results,
+                     CancellationToken   cancellationToken = default)
   {
     foreach (var result in results)
     {
@@ -106,82 +117,99 @@ public class ResultTable : IResultTable
                                              new ConcurrentDictionary<string, Result>());
       if (!sessionResults.TryAdd(result.Key,
                                  result))
+      {
         throw new ArmoniKException($"Key {result.Key} already exists");
+      }
     }
 
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task DeleteResult(string session, string key, CancellationToken cancellationToken = default)
-    => Task.FromResult(results_[session].Remove(key,
-                                                out _));
+  public Task DeleteResult(string            session,
+                           string            key,
+                           CancellationToken cancellationToken = default)
+    => Task.FromResult(results_[session]
+                         .Remove(key,
+                                 out _));
 
   /// <inheritdoc />
-  public Task DeleteResults(string sessionId, CancellationToken cancellationToken = default)
+  public Task DeleteResults(string            sessionId,
+                            CancellationToken cancellationToken = default)
   {
-    results_[sessionId].Clear();
+    results_[sessionId]
+      .Clear();
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task<Result> GetResult(string sessionId, string key, CancellationToken cancellationToken = default)
+  public Task<Result> GetResult(string            sessionId,
+                                string            key,
+                                CancellationToken cancellationToken = default)
   {
     try
     {
       return Task.FromResult(results_[sessionId][key]);
     }
-    catch(KeyNotFoundException)
+    catch (KeyNotFoundException)
     {
       throw new ArmoniKException($"Key '{key}' not found");
     }
   }
 
   /// <inheritdoc />
-  public IAsyncEnumerable<string> ListResultsAsync(string sessionId, CancellationToken cancellationToken = default)
-    => results_.Values
-               .SelectMany(results => results.Keys)
+  public IAsyncEnumerable<string> ListResultsAsync(string            sessionId,
+                                                   CancellationToken cancellationToken = default)
+    => results_.Values.SelectMany(results => results.Keys)
                .ToImmutableList()
                .ToAsyncEnumerable();
 
   /// <inheritdoc />
-  public Task SetResult(string sessionId, string ownerTaskId, string key, byte[] smallPayload, CancellationToken cancellationToken = default)
+  public Task SetResult(string            sessionId,
+                        string            ownerTaskId,
+                        string            key,
+                        byte[]            smallPayload,
+                        CancellationToken cancellationToken = default)
   {
     var result = results_[sessionId][key];
 
-    results_[result.SessionId].TryUpdate(result.Key,
-                                         result with
-                                         {
-                                           Data = smallPayload,
-                                           IsResultAvailable = true,
-                                         },
-                                         result);
+    results_[result.SessionId]
+      .TryUpdate(result.Key,
+                 result with
+                 {
+                   Data = smallPayload,
+                   IsResultAvailable = true,
+                 },
+                 result);
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task SetResult(string sessionId, string ownerTaskId, string key, CancellationToken cancellationToken = default)
+  public Task SetResult(string            sessionId,
+                        string            ownerTaskId,
+                        string            key,
+                        CancellationToken cancellationToken = default)
   {
     var result = results_[sessionId][key];
 
-    results_[result.SessionId].TryUpdate(result.Key,
-                                         result with
-                                         {
-                                           IsResultAvailable = true,
-                                         },
-                                         result);
+    results_[result.SessionId]
+      .TryUpdate(result.Key,
+                 result with
+                 {
+                   IsResultAvailable = true,
+                 },
+                 result);
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
-  {
-    return Task.CompletedTask;
-  }
+    => Task.CompletedTask;
 
   /// <inheritdoc />
   public ILogger Logger { get; }
 
   /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(true);
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(true);
 }

@@ -32,10 +32,13 @@ public class TaskOptionsValidator : AbstractValidator<TaskOptions>
 {
   public TaskOptionsValidator()
   {
-    RuleFor(o => o.MaxRetries).GreaterThanOrEqualTo(1).WithName(nameof(TaskOptions.MaxRetries));
-    RuleFor(o => o.Priority).GreaterThanOrEqualTo(1)
-                            .LessThanOrEqualTo(99)
-                            .WithMessage("Priority should be included between 1 and 99")
-                            .WithName(nameof(TaskOptions.Priority));
+    RuleFor(o => o.MaxRetries)
+      .GreaterThanOrEqualTo(1)
+      .WithName(nameof(TaskOptions.MaxRetries));
+    RuleFor(o => o.Priority)
+      .GreaterThanOrEqualTo(1)
+      .LessThanOrEqualTo(99)
+      .WithMessage("Priority should be included between 1 and 99")
+      .WithName(nameof(TaskOptions.Priority));
   }
 }

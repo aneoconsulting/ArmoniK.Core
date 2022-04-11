@@ -33,47 +33,52 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Common.Stream.Worker
+namespace ArmoniK.Core.Common.Stream.Worker;
+
+[PublicAPI]
+public class WorkerStreamWrapper : Api.gRPC.V1.Worker.WorkerBase
 {
-  [PublicAPI]
-  public class WorkerStreamWrapper : Api.gRPC.V1.Worker.WorkerBase
+  private readonly ILoggerFactory               loggerFactory_;
+  public           ILogger<WorkerStreamWrapper> logger_;
+
+  public WorkerStreamWrapper(ILoggerFactory loggerFactory)
   {
-    public           ILogger<WorkerStreamWrapper> logger_;
-    private readonly ILoggerFactory               loggerFactory_;
-
-    public WorkerStreamWrapper(ILoggerFactory loggerFactory)
-    {
-      logger_ = loggerFactory.CreateLogger<WorkerStreamWrapper>();
-      loggerFactory_ = loggerFactory;
-    }
-
-    /// <inheritdoc />
-    public sealed override async Task Process(IAsyncStreamReader<ProcessRequest> requestStream,
-                                              IServerStreamWriter<ProcessReply>  responseStream,
-                                              ServerCallContext                  context)
-    {
-      var taskHandler = await TaskHandler.Create(requestStream,
-                                                 responseStream,
-                                                 new()
-                                                 {
-                                                   DataChunkMaxSize = 50 * 1024,
-                                                 },
-                                                 loggerFactory_.CreateLogger<TaskHandler>(),
-                                                 context.CancellationToken);
-
-      logger_.LogDebug("Execute Process");
-      var output = await Process(taskHandler);
-
-      await responseStream.WriteAsync(new ()
-                                      {
-                                        Output = output,
-                                      });
-      if (await requestStream.MoveNext(context.CancellationToken))
-        throw new InvalidOperationException("The request stream is expected to be finished.");
-    }
-
-    public virtual Task<Output> Process(ITaskHandler taskHandler)
-      => throw new RpcException(new(StatusCode.Unimplemented,
-                                    ""));
+    logger_        = loggerFactory.CreateLogger<WorkerStreamWrapper>();
+    loggerFactory_ = loggerFactory;
   }
+
+  /// <inheritdoc />
+  public sealed override async Task Process(IAsyncStreamReader<ProcessRequest> requestStream,
+                                            IServerStreamWriter<ProcessReply>  responseStream,
+                                            ServerCallContext                  context)
+  {
+    var taskHandler = await TaskHandler.Create(requestStream,
+                                               responseStream,
+                                               new Configuration
+                                               {
+                                                 DataChunkMaxSize = 50 * 1024,
+                                               },
+                                               loggerFactory_.CreateLogger<TaskHandler>(),
+                                               context.CancellationToken)
+                                       .ConfigureAwait(false);
+
+    logger_.LogDebug("Execute Process");
+    var output = await Process(taskHandler)
+                   .ConfigureAwait(false);
+
+    await responseStream.WriteAsync(new ProcessReply
+                                    {
+                                      Output = output,
+                                    })
+                        .ConfigureAwait(false);
+    if (await requestStream.MoveNext(context.CancellationToken)
+                           .ConfigureAwait(false))
+    {
+      throw new InvalidOperationException("The request stream is expected to be finished.");
+    }
+  }
+
+  public virtual Task<Output> Process(ITaskHandler taskHandler)
+    => throw new RpcException(new Status(StatusCode.Unimplemented,
+                                         ""));
 }

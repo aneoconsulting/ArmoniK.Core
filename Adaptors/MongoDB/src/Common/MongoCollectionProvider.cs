@@ -34,46 +34,50 @@ using MongoDB.Driver;
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
 [PublicAPI]
-public class MongoCollectionProvider<TData, TModelMapping>
-  : ProviderBase<IMongoCollection<TData>>
+public class MongoCollectionProvider<TData, TModelMapping> : ProviderBase<IMongoCollection<TData>>
   where TModelMapping : IMongoDataModelMapping<TData>, new()
 {
   public MongoCollectionProvider(Options.MongoDB   options,
                                  SessionProvider   sessionProvider,
                                  IMongoDatabase    mongoDatabase,
-                                 CancellationToken cancellationToken = default) :
-    base(async () =>
-         {
-           var model = new TModelMapping();
-           try
+                                 CancellationToken cancellationToken = default)
+    : base(async () =>
            {
-             await mongoDatabase.CreateCollectionAsync(model.CollectionName,
-                                                       new CreateCollectionOptions<TData>
-                                                       {
-                                                         ExpireAfter = options.DataRetention,
-                                                       },
-                                                       cancellationToken);
-           }
-           catch (MongoCommandException)
-           {
-           }
+             var model = new TModelMapping();
+             try
+             {
+               await mongoDatabase.CreateCollectionAsync(model.CollectionName,
+                                                         new CreateCollectionOptions<TData>
+                                                         {
+                                                           ExpireAfter = options.DataRetention,
+                                                         },
+                                                         cancellationToken)
+                                  .ConfigureAwait(false);
+             }
+             catch (MongoCommandException)
+             {
+             }
 
-           var output  = mongoDatabase.GetCollection<TData>(model.CollectionName);
-           var session = await sessionProvider.GetAsync();
-           try
-           {
-             await model.InitializeIndexesAsync(session,
-                                                output);
-           }
-           catch (MongoCommandException)
-           {
-           }
+             var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
+             var session = await sessionProvider.GetAsync()
+                                                .ConfigureAwait(false);
+             try
+             {
+               await model.InitializeIndexesAsync(session,
+                                                  output)
+                          .ConfigureAwait(false);
+             }
+             catch (MongoCommandException)
+             {
+             }
 
-           return output;
-         })
+             return output;
+           })
   {
     if (options.DataRetention == TimeSpan.Zero)
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.MongoDB.DataRetention)} is not defined.");
+    }
   }
 }

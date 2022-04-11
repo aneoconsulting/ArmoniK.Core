@@ -41,6 +41,13 @@ namespace ArmoniK.Core.Adapters.Redis.Tests;
 [TestFixture]
 public class ObjectStorageTests : ObjectStorageTestBase
 {
+  public override void TearDown()
+  {
+    redis.Dispose();
+    ObjectStorage = null;
+    RunTests      = false;
+  }
+
   private RedisInside.Redis redis;
 
   public override void GetObjectStorageInstance()
@@ -51,9 +58,11 @@ public class ObjectStorageTests : ObjectStorageTestBase
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string> minimalConfig = new()
-    {
-      { "Components:ObjectStorage", "ArmoniK.Adapters.Redis.ObjectStorage" },
-    };
+                                               {
+                                                 {
+                                                   "Components:ObjectStorage", "ArmoniK.Adapters.Redis.ObjectStorage"
+                                                 },
+                                               };
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(minimalConfig);
@@ -61,31 +70,28 @@ public class ObjectStorageTests : ObjectStorageTestBase
     var services = new ServiceCollection();
     services.AddLogging();
 
-    var config = new ConfigurationOptions()
-    {
-      ReconnectRetryPolicy = new ExponentialRetry(10),
-      AbortOnConnectFail   = true,
-      EndPoints = { redis.Endpoint },
-    };
+    var config = new ConfigurationOptions
+                 {
+                   ReconnectRetryPolicy = new ExponentialRetry(10),
+                   AbortOnConnectFail   = true,
+                   EndPoints =
+                   {
+                     redis.Endpoint,
+                   },
+                 };
 
     services.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
-                                                                                      TextWriter.Null).GetDatabase());
+                                                                             TextWriter.Null)
+                                                                    .GetDatabase());
     services.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-    {
-      ValidateOnBuild = true,
-    });
+                                                 {
+                                                   ValidateOnBuild = true,
+                                                 });
 
     var objectStorageFactory = provider.GetRequiredService<IObjectStorageFactory>();
     ObjectStorage = objectStorageFactory.CreateObjectStorage("storage");
     RunTests      = true;
-  }
-
-  public override void TearDown()
-  {
-    redis.Dispose();
-    ObjectStorage = null;
-    RunTests      = false;
   }
 }

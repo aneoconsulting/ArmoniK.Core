@@ -31,48 +31,51 @@ using MongoDB.Driver.Core.Configuration;
 
 using OpenTelemetry;
 
-namespace ArmoniK.Core.ProfilingTools.OpenTelemetryExporter
-{
-  class MongoExporter : BaseExporter<Activity>
-  {
-    private readonly IMongoClient                        client_;
-    private readonly IClientSessionHandle                session_;
-    private readonly IMongoDatabase                      db_;
-    private readonly IMongoCollection<OpenTelemetryData> collection_;
-    private readonly ILogger                             logger_;
+namespace ArmoniK.Core.ProfilingTools.OpenTelemetryExporter;
 
-    public MongoExporter(MongoExporterOptions options)
+internal class MongoExporter : BaseExporter<Activity>
+{
+  private readonly IMongoClient                        client_;
+  private readonly IMongoCollection<OpenTelemetryData> collection_;
+  private readonly IMongoDatabase                      db_;
+  private readonly ILogger                             logger_;
+  private readonly IClientSessionHandle                session_;
+
+  public MongoExporter(MongoExporterOptions options)
+  {
+    var template = "mongodb://{0}:{1}/{2}";
+    var connectionString = string.Format(template,
+                                         options.AgentHost,
+                                         options.AgentPort,
+                                         options.DatabaseName);
+    var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
+    settings.Scheme = ConnectionStringScheme.MongoDB;
+    client_         = new MongoClient(settings);
+    session_        = client_.StartSession();
+    db_             = client_.GetDatabase(options.DatabaseName);
+    db_.CreateCollection(session_,
+                         "traces");
+    collection_ = db_.GetCollection<OpenTelemetryData>("traces");
+    logger_     = options.Logger;
+    logger_.LogDebug("Mongo exporter created with connection : {connectionString}",
+                     connectionString);
+  }
+
+  public override ExportResult Export(in Batch<Activity> batch)
+  {
+    try
     {
-      var template = "mongodb://{0}:{1}/{2}";
-      var connectionString = string.Format(template,
-                                       options.AgentHost,
-                                       options.AgentPort,
-                                       options.DatabaseName);
-      var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
-      settings.Scheme = ConnectionStringScheme.MongoDB;
-      client_         = new MongoClient(settings);
-      session_        = client_.StartSession();
-      db_             = client_.GetDatabase(options.DatabaseName);
-      db_.CreateCollection(session_,
-                           "traces");
-      collection_ = db_.GetCollection<OpenTelemetryData>("traces");
-      logger_     = options.Logger;
-      logger_.LogDebug("Mongo exporter created with connection : {connectionString}", connectionString);
+      foreach (var activity in batch)
+      {
+        collection_.InsertOne(session_,
+                              activity.ToOpenTelemetryData());
+      }
+
+      return ExportResult.Success;
     }
-    public override ExportResult Export(in Batch<Activity> batch)
+    catch
     {
-      try
-      {
-        foreach (var activity in batch)
-        {
-          collection_.InsertOne(session_, activity.ToOpenTelemetryData());
-        }
-        return ExportResult.Success;
-      }
-      catch
-      {
-        return ExportResult.Failure;
-      }
+      return ExportResult.Failure;
     }
   }
 }

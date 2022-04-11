@@ -40,22 +40,25 @@ namespace ArmoniK.Core.Common.gRPC;
 [PublicAPI]
 public class WorkerClientProvider : ProviderBase<Worker.WorkerClient>
 {
+  private bool isInitialized_;
+
   /// <inheritdoc />
-  public WorkerClientProvider(GrpcChannelProvider channelProvider, ILogger<WorkerClientProvider> logger) :
-    base(() => BuildWorkerClient(channelProvider,
-                                  logger))
+  public WorkerClientProvider(GrpcChannelProvider           channelProvider,
+                              ILogger<WorkerClientProvider> logger)
+    : base(() => BuildWorkerClient(channelProvider,
+                                   logger))
   {
   }
 
-  private static async Task<Worker.WorkerClient> BuildWorkerClient(
-    GrpcChannelProvider channelProvider,
-    ILogger             logger)
+  private static async Task<Worker.WorkerClient> BuildWorkerClient(GrpcChannelProvider channelProvider,
+                                                                   ILogger             logger)
   {
     using var   _ = logger.LogFunction();
     ChannelBase channel;
     try
     {
-      channel = await channelProvider.GetAsync();
+      channel = await channelProvider.GetAsync()
+                                     .ConfigureAwait(false);
     }
     catch (Exception e)
     {
@@ -64,13 +67,12 @@ public class WorkerClientProvider : ProviderBase<Worker.WorkerClient>
       throw;
     }
 
-    return new(channel);
+    return new Worker.WorkerClient(channel);
   }
 
-  private bool isInitialized_ = false;
-
   /// <inheritdoc />
-  public override ValueTask<bool> Check(HealthCheckTag tag) => ValueTask.FromResult(isInitialized_);
+  public override ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(isInitialized_);
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)

@@ -33,30 +33,31 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 public record ResultDataModelMapping : IMongoDataModelMapping<Result>
 {
-  
   public ResultDataModelMapping()
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(Result)))
+    {
       BsonClassMap.RegisterClassMap<Result>(cm =>
                                             {
-
                                               cm.MapIdProperty(nameof(Result.Id));
-                                              cm.MapCreator(model => new(model.SessionId,
-                                                                         model.Key,
-                                                                         model.OwnerTaskId,
-                                                                         model.OriginDispatchId,
-                                                                         model.IsResultAvailable,
-                                                                         model.CreationDate,
-                                                                         model.Data));
+                                              cm.MapCreator(model => new Result(model.SessionId,
+                                                                                model.Key,
+                                                                                model.OwnerTaskId,
+                                                                                model.OriginDispatchId,
+                                                                                model.IsResultAvailable,
+                                                                                model.CreationDate,
+                                                                                model.Data));
                                             });
+    }
   }
 
 
   /// <inheritdoc />
-  public string CollectionName => nameof(Result);
+  public string CollectionName
+    => nameof(Result);
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
+  public async Task InitializeIndexesAsync(IClientSessionHandle     sessionHandle,
                                            IMongoCollection<Result> collection)
   {
     var sessionIndex        = Builders<Result>.IndexKeys.Hashed(model => model.SessionId);
@@ -64,26 +65,26 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
     var originDispatchIndex = Builders<Result>.IndexKeys.Hashed(model => model.OriginDispatchId);
 
     var indexModels = new CreateIndexModel<Result>[]
-    {
-      new(sessionIndex,
-          new()
-          {
-            Name = nameof(sessionIndex),
-          }),
-      new(ownerTaskIndex,
-          new()
-          {
-            Name = nameof(ownerTaskIndex),
-          }),
-      new(originDispatchIndex,
-          new()
-          {
-            Name = nameof(originDispatchIndex),
-          }),
-    };
+                      {
+                        new(sessionIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(sessionIndex),
+                            }),
+                        new(ownerTaskIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(ownerTaskIndex),
+                            }),
+                        new(originDispatchIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(originDispatchIndex),
+                            }),
+                      };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,
-                                             indexModels);
+                                             indexModels)
+                    .ConfigureAwait(false);
   }
-
 }

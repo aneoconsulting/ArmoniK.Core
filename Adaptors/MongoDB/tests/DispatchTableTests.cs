@@ -40,6 +40,13 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 public class DispatchTableTests : DispatchTableTestBase
 {
+  public override void TearDown()
+  {
+    client_ = null;
+    runner_.Dispose();
+    RunTests = false;
+  }
+
   private                 MongoClient    client_;
   private                 MongoDbRunner  runner_;
   private const           string         DatabaseName   = "ArmoniK_TestDB";
@@ -54,11 +61,17 @@ public class DispatchTableTests : DispatchTableTestBase
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string> minimalConfig = new()
-    {
-      { "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage" },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName },
-      { $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10" },
-    };
+                                               {
+                                                 {
+                                                   "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
+                                                 },
+                                                 {
+                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
+                                                 },
+                                                 {
+                                                   $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10"
+                                                 },
+                                               };
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(minimalConfig);
@@ -71,21 +84,14 @@ public class DispatchTableTests : DispatchTableTestBase
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-    {
-      ValidateOnBuild = true,
-      ValidateScopes  = true,
-    });
+                                                 {
+                                                   ValidateOnBuild = true,
+                                                   ValidateScopes  = true,
+                                                 });
 
     var scope = provider.CreateScope();
 
     DispatchTable = scope.ServiceProvider.GetRequiredService<IDispatchTable>();
     RunTests      = true;
-  }
-
-  public override void TearDown()
-  {
-    client_ = null;
-    runner_.Dispose();
-    RunTests = false;
   }
 }

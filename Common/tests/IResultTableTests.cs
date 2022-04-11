@@ -37,6 +37,47 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture]
 public class ResultTableTestBase
 {
+  [SetUp]
+  public void SetUp()
+  {
+    GetResultTableInstance();
+
+    if (RunTests)
+    {
+      ResultTable.Create(new[]
+                         {
+                           new Result("SessionId",
+                                      "ResultIsAvailable",
+                                      "OwnerId",
+                                      "DispatchId",
+                                      true,
+                                      DateTime.Today,
+                                      new[]
+                                      {
+                                        (byte)1,
+                                      }),
+                           new Result("SessionId",
+                                      "ResultIsNotAvailable",
+                                      "OwnerId",
+                                      "DispatchId",
+                                      false,
+                                      DateTime.Today,
+                                      new[]
+                                      {
+                                        (byte)1,
+                                      }),
+                         })
+                 .Wait();
+    }
+  }
+
+  [TearDown]
+  public virtual void TearDown()
+  {
+    ResultTable = null;
+    RunTests    = false;
+  }
+
   /* Interface to test */
   protected IResultTable ResultTable;
 
@@ -50,48 +91,18 @@ public class ResultTableTestBase
   {
   }
 
-  [SetUp]
-  public void SetUp()
-  {
-    GetResultTableInstance();
-
-    if (RunTests)
-    {
-      ResultTable.Create(new[]
-      {
-        new Result("SessionId",
-                   "ResultIsAvailable",
-                   "OwnerId",
-                   "DispatchId",
-                   true,
-                   DateTime.Today,
-                   new[] { (byte) 1 }),
-        new Result("SessionId",
-                   "ResultIsNotAvailable",
-                   "OwnerId",
-                   "DispatchId",
-                   false,
-                   DateTime.Today,
-                   new[] { (byte) 1 }),
-      }).Wait();
-    }
-  }
-
-  [TearDown]
-  public virtual void TearDown()
-  {
-    ResultTable = null;
-    RunTests    = false;
-  }
-
   [Test]
   public async Task ResultsAreAvailableShouldSucceed()
   {
     if (RunTests)
     {
       var checkTable = await ResultTable.AreResultsAvailableAsync("SessionId",
-                                                                  new[] { "ResultIsAvailable" },
-                                                                  CancellationToken.None);
+                                                                  new[]
+                                                                  {
+                                                                    "ResultIsAvailable",
+                                                                  },
+                                                                  CancellationToken.None)
+                                        .ConfigureAwait(false);
       Assert.IsTrue(checkTable);
     }
   }
@@ -102,8 +113,12 @@ public class ResultTableTestBase
     if (RunTests)
     {
       var checkTable = await ResultTable.AreResultsAvailableAsync("SessionId",
-                                                                  new[] { "ResultIsNotAvailable" },
-                                                                  CancellationToken.None);
+                                                                  new[]
+                                                                  {
+                                                                    "ResultIsNotAvailable",
+                                                                  },
+                                                                  CancellationToken.None)
+                                        .ConfigureAwait(false);
       Assert.IsFalse(checkTable);
     }
   }
@@ -116,10 +131,12 @@ public class ResultTableTestBase
       await ResultTable.ChangeResultDispatch("SessionId",
                                              "DispatchId",
                                              "NewDispatchId",
-                                             CancellationToken.None);
+                                             CancellationToken.None)
+                       .ConfigureAwait(false);
       var result = await ResultTable.GetResult("SessionId",
                                                "ResultIsAvailable",
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                                    .ConfigureAwait(false);
 
       Assert.IsTrue(result.OriginDispatchId == "NewDispatchId");
     }
@@ -133,10 +150,12 @@ public class ResultTableTestBase
       await ResultTable.ChangeResultDispatch("SessionId",
                                              "NonExistingDispatchId",
                                              "NewDispatchId",
-                                             CancellationToken.None);
+                                             CancellationToken.None)
+                       .ConfigureAwait(false);
       var result = await ResultTable.GetResult("SessionId",
                                                "ResultIsAvailable",
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                                    .ConfigureAwait(false);
 
       Assert.IsFalse(result.OriginDispatchId == "NewDispatchId");
     }
@@ -148,12 +167,13 @@ public class ResultTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await ResultTable.ChangeResultDispatch("NonExistingSessionId",
-                                               "DispatchId",
-                                               "NewDispatchId",
-                                               CancellationToken.None);
-      });
+                                           {
+                                             await ResultTable.ChangeResultDispatch("NonExistingSessionId",
+                                                                                    "DispatchId",
+                                                                                    "NewDispatchId",
+                                                                                    CancellationToken.None)
+                                                              .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -163,13 +183,18 @@ public class ResultTableTestBase
     if (RunTests)
     {
       await ResultTable.ChangeResultOwnership("SessionId",
-                                              new[] { "ResultIsAvailable" },
+                                              new[]
+                                              {
+                                                "ResultIsAvailable",
+                                              },
                                               "OwnerId",
                                               "NewOwnerId",
-                                              CancellationToken.None);
+                                              CancellationToken.None)
+                       .ConfigureAwait(false);
       var result = await ResultTable.GetResult("SessionId",
                                                "ResultIsAvailable",
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                                    .ConfigureAwait(false);
       Assert.IsTrue(result.OwnerTaskId == "NewOwnerId");
     }
   }
@@ -178,21 +203,29 @@ public class ResultTableTestBase
   public async Task CreateShouldSucceed()
   {
     if (!RunTests)
-      return;
-    await ResultTable.Create(new[]
     {
-      new Result("AnotherSessionId",
-                 "Key",
-                 "OwnerId",
-                 "DispatchId",
-                 true,
-                 DateTime.Today,
-                 new[] { (byte) 1 }),
-    });
+      return;
+    }
+
+    await ResultTable.Create(new[]
+                             {
+                               new Result("AnotherSessionId",
+                                          "Key",
+                                          "OwnerId",
+                                          "DispatchId",
+                                          true,
+                                          DateTime.Today,
+                                          new[]
+                                          {
+                                            (byte)1,
+                                          }),
+                             })
+                     .ConfigureAwait(false);
 
     var success = await ResultTable.GetResult("AnotherSessionId",
                                               "Key",
-                                              CancellationToken.None);
+                                              CancellationToken.None)
+                                   .ConfigureAwait(false);
 
     Assert.IsTrue(success.IsResultAvailable);
   }
@@ -205,18 +238,22 @@ public class ResultTableTestBase
       /* Check if an exception is thrown when attempting to
          create an already existing result entry */
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await ResultTable.Create(new[]
-        {
-          new Result("SessionId",
-                     "ResultIsAvailable",
-                     "",
-                     "",
-                     true,
-                     DateTime.Today,
-                     new[] { (byte) 1 })
-        });
-      });
+                                           {
+                                             await ResultTable.Create(new[]
+                                                                      {
+                                                                        new Result("SessionId",
+                                                                                   "ResultIsAvailable",
+                                                                                   "",
+                                                                                   "",
+                                                                                   true,
+                                                                                   DateTime.Today,
+                                                                                   new[]
+                                                                                   {
+                                                                                     (byte)1,
+                                                                                   }),
+                                                                      })
+                                                              .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -226,13 +263,15 @@ public class ResultTableTestBase
     if (RunTests)
     {
       await ResultTable.DeleteResults("SessionId",
-                                      CancellationToken.None);
+                                      CancellationToken.None)
+                       .ConfigureAwait(false);
 
       var resList = ResultTable.ListResultsAsync("SessionId",
                                                  CancellationToken.None);
 
       // Query first element, function returns default if the list is empty
-      var firstElement = await resList.FirstOrDefaultAsync();
+      var firstElement = await resList.FirstOrDefaultAsync()
+                                      .ConfigureAwait(false);
 
       Assert.IsTrue(firstElement == default);
     }
@@ -245,14 +284,16 @@ public class ResultTableTestBase
     {
       await ResultTable.DeleteResult("SessionId",
                                      "ResultIsAvailable",
-                                     CancellationToken.None);
+                                     CancellationToken.None)
+                       .ConfigureAwait(false);
 
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await ResultTable.GetResult("SessionId",
-                                    "ResultIsAvailable",
-                                    CancellationToken.None);
-      });
+                                           {
+                                             await ResultTable.GetResult("SessionId",
+                                                                         "ResultIsAvailable",
+                                                                         CancellationToken.None)
+                                                              .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -264,11 +305,13 @@ public class ResultTableTestBase
       await ResultTable.SetResult("SessionId",
                                   "OwnerId",
                                   "ResultIsNotAvailable",
-                                  CancellationToken.None);
+                                  CancellationToken.None)
+                       .ConfigureAwait(false);
 
       var result = await ResultTable.GetResult("SessionId",
                                                "ResultIsNotAvailable",
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                                    .ConfigureAwait(false);
 
       Assert.IsTrue(result.IsResultAvailable);
     }
@@ -279,16 +322,22 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      var smallPayload = new[] { (byte) (1), (byte) (2) };
+      var smallPayload = new[]
+                         {
+                           (byte)1,
+                           (byte)2,
+                         };
 
       await ResultTable.SetResult("SessionId",
                                   "OwnerId",
                                   "ResultIsNotAvailable",
                                   smallPayload,
-                                  CancellationToken.None);
+                                  CancellationToken.None)
+                       .ConfigureAwait(false);
       var result = await ResultTable.GetResult("SessionId",
                                                "ResultIsNotAvailable",
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                                    .ConfigureAwait(false);
 
       Assert.AreEqual(result.Data,
                       smallPayload);

@@ -32,10 +32,16 @@ public class CreateSmallTaskRequestValidator : AbstractValidator<CreateSmallTask
 {
   public CreateSmallTaskRequestValidator()
   {
-    RuleFor(r => r.SessionId).NotEmpty();
-    RuleFor(r => r.TaskOptions).SetValidator(new TaskOptionsValidator()).NotNull();
-    RuleFor(request => request.TaskRequests).NotEmpty();
-    RuleForEach(request => request.TaskRequests).NotEmpty().SetValidator(new TaskRequestValidator());
+    RuleFor(r => r.SessionId)
+      .NotEmpty();
+    RuleFor(r => r.TaskOptions)
+      .SetValidator(new TaskOptionsValidator())
+      .NotNull();
+    RuleFor(request => request.TaskRequests)
+      .NotEmpty();
+    RuleForEach(request => request.TaskRequests)
+      .NotEmpty()
+      .SetValidator(new TaskRequestValidator());
   }
 
 
@@ -43,30 +49,36 @@ public class CreateSmallTaskRequestValidator : AbstractValidator<CreateSmallTask
   {
     public TaskRequestValidator()
     {
-      RuleFor(r => r.DataDependencies).NotNull();
-      RuleFor(r => r.ExpectedOutputKeys).NotNull();
-      RuleFor(r => r.Payload).NotNull()
-                             .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize)
-                             .WithName(nameof(TaskRequest.Payload));
+      RuleFor(r => r.DataDependencies)
+        .NotNull();
+      RuleFor(r => r.ExpectedOutputKeys)
+        .NotNull();
+      RuleFor(r => r.Payload)
+        .NotNull()
+        .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize)
+        .WithName(nameof(TaskRequest.Payload));
     }
   }
 }
-
 
 public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTaskRequest>
 {
   public CreateLargeTaskRequestValidator()
   {
-    RuleFor(r => r.TypeCase).NotEqual(CreateLargeTaskRequest.TypeOneofCase.None);
-    RuleFor(r => r.InitRequest).NotNull()
-                               .SetValidator(new CreateLargeTaskInitRequestValidator())
-                               .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.InitRequest);
-    RuleFor(r => r.InitTask).NotNull()
-                            .SetValidator(new CreateLargeTaskInitTaskValidator())
-                            .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.InitTask);
-    RuleFor(r => r.TaskPayload).NotNull()
-                            .SetValidator(new DataChunkValidator())
-                            .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.TaskPayload);
+    RuleFor(r => r.TypeCase)
+      .NotEqual(CreateLargeTaskRequest.TypeOneofCase.None);
+    RuleFor(r => r.InitRequest)
+      .NotNull()
+      .SetValidator(new CreateLargeTaskInitRequestValidator())
+      .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.InitRequest);
+    RuleFor(r => r.InitTask)
+      .NotNull()
+      .SetValidator(new CreateLargeTaskInitTaskValidator())
+      .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.InitTask);
+    RuleFor(r => r.TaskPayload)
+      .NotNull()
+      .SetValidator(new DataChunkValidator())
+      .When(r => r.TypeCase == CreateLargeTaskRequest.TypeOneofCase.TaskPayload);
   }
 
 
@@ -74,8 +86,10 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
   {
     public CreateLargeTaskInitRequestValidator()
     {
-      RuleFor(r => r.SessionId).NotEmpty();
-      RuleFor(r => r.TaskOptions).SetValidator(new TaskOptionsValidator());
+      RuleFor(r => r.SessionId)
+        .NotEmpty();
+      RuleFor(r => r.TaskOptions)
+        .SetValidator(new TaskOptionsValidator());
     }
   }
 
@@ -83,12 +97,15 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
   {
     public CreateLargeTaskInitTaskValidator()
     {
-      RuleFor(r => r.TypeCase).NotEqual(InitTaskRequest.TypeOneofCase.None);
-      RuleFor(r => r.Header).NotNull().
-                             SetValidator(new CreateLargeTaskInitTaskHeaderValidator())
-                            .When(r => r.TypeCase == InitTaskRequest.TypeOneofCase.Header);
-      RuleFor(r => r.LastTask).Equal(true)
-                              .When(r=>r.TypeCase == InitTaskRequest.TypeOneofCase.LastTask);
+      RuleFor(r => r.TypeCase)
+        .NotEqual(InitTaskRequest.TypeOneofCase.None);
+      RuleFor(r => r.Header)
+        .NotNull()
+        .SetValidator(new CreateLargeTaskInitTaskHeaderValidator())
+        .When(r => r.TypeCase == InitTaskRequest.TypeOneofCase.Header);
+      RuleFor(r => r.LastTask)
+        .Equal(true)
+        .When(r => r.TypeCase == InitTaskRequest.TypeOneofCase.LastTask);
     }
   }
 
@@ -96,9 +113,14 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
   {
     public CreateLargeTaskInitTaskHeaderValidator()
     {
-      RuleFor(r => r.Id).NotNull().NotEmpty();
-      RuleFor(r => r.ExpectedOutputKeys).NotNull().NotEmpty();
-      RuleFor(r => r.DataDependencies).NotNull();
+      RuleFor(r => r.Id)
+        .NotNull()
+        .NotEmpty();
+      RuleFor(r => r.ExpectedOutputKeys)
+        .NotNull()
+        .NotEmpty();
+      RuleFor(r => r.DataDependencies)
+        .NotNull();
     }
   }
 
@@ -106,14 +128,15 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
   {
     public DataChunkValidator()
     {
-      RuleFor(r => r.TypeCase).NotEqual(DataChunk.TypeOneofCase.None);
-      RuleFor(r => r.Data).NotNull()
-                          .Must(s => s.Length <= PayloadConfiguration.MaxChunkSize)
-                          .When(r => r.TypeCase == DataChunk.TypeOneofCase.Data);
-      RuleFor(r => r.DataComplete).Equal(true)
-                                  .When(r => r.TypeCase == DataChunk.TypeOneofCase.DataComplete);
+      RuleFor(r => r.TypeCase)
+        .NotEqual(DataChunk.TypeOneofCase.None);
+      RuleFor(r => r.Data)
+        .NotNull()
+        .Must(s => s.Length   <= PayloadConfiguration.MaxChunkSize)
+        .When(r => r.TypeCase == DataChunk.TypeOneofCase.Data);
+      RuleFor(r => r.DataComplete)
+        .Equal(true)
+        .When(r => r.TypeCase == DataChunk.TypeOneofCase.DataComplete);
     }
   }
-
-
 }

@@ -36,35 +36,43 @@ using Microsoft.Extensions.Logging;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Control.Metrics;
+
 public class ArmoniKMeter : Meter, IHostedService
 {
-  private int i = 0;
-  public ArmoniKMeter(ITaskTable taskTable, ILogger<ArmoniKMeter> logger) : base(nameof(ArmoniKMeter))
+  private int i;
+
+  public ArmoniKMeter(ITaskTable            taskTable,
+                      ILogger<ArmoniKMeter> logger)
+    : base(nameof(ArmoniKMeter))
   {
     using var _ = logger.LogFunction();
-    foreach (var status in (TaskStatus[]) Enum.GetValues(typeof(TaskStatus)))
+    foreach (var status in (TaskStatus[])Enum.GetValues(typeof(TaskStatus)))
     {
-      CreateObservableGauge("armonik_tasks_" + status.ToString().ToLower(),
-                            () => new Measurement<int>(taskTable.CountAllTasksAsync(status).Result));
+      CreateObservableGauge("armonik_tasks_" + status.ToString()
+                                                     .ToLower(),
+                            () => new Measurement<int>(taskTable.CountAllTasksAsync(status)
+                                                                .Result));
     }
 
     CreateObservableGauge("armonik_tasks_queued",
-                          () => new Measurement<int>(taskTable.CountAllTasksAsync(TaskStatus.Dispatched).Result +
-                                                     taskTable.CountAllTasksAsync(TaskStatus.Creating).Result +
-                                                     taskTable.CountAllTasksAsync(TaskStatus.Submitted).Result +
-                                                     taskTable.CountAllTasksAsync(TaskStatus.Processing).Result));
+                          () => new Measurement<int>(taskTable.CountAllTasksAsync(TaskStatus.Dispatched)
+                                                              .Result + taskTable.CountAllTasksAsync(TaskStatus.Creating)
+                                                                                                                       .Result + taskTable
+                                                                                                                                                    .CountAllTasksAsync(TaskStatus
+                                                                                                                                                                          .Submitted)
+                                                                                                                                                    .Result + taskTable
+                                                                                                                                                              .CountAllTasksAsync(TaskStatus
+                                                                                                                                                                                    .Processing)
+                                                                                                                                                              .Result));
 
-    CreateObservableCounter("test", () => i++);
+    CreateObservableCounter("test",
+                            () => i++);
     logger.LogDebug("Meter added");
   }
 
   public Task StartAsync(CancellationToken cancellationToken)
-  {
-    return Task.CompletedTask;
-  }
+    => Task.CompletedTask;
 
-  public Task StopAsync(CancellationToken  cancellationToken)
-  {
-    return Task.CompletedTask;
-  }
+  public Task StopAsync(CancellationToken cancellationToken)
+    => Task.CompletedTask;
 }

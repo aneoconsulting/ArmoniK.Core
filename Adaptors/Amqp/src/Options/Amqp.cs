@@ -31,13 +31,13 @@ public class Amqp
 {
   public const string SettingSection = nameof(Amqp);
 
-  public string Host            { get; set; }
-  public string CredentialsPath { get; set; }
-  public string User            { get; set; }
-  public string Password        { get; set; }
-  public string Scheme          { get; set; }
-  public string CaPath          { get; set; }
-  public int    Port            { get; set; }
-  public int    MaxPriority     { get; set; }
-  public bool AllowHostMismatch { get; set; }
+  public string Host              { get; set; }
+  public string CredentialsPath   { get; set; }
+  public string User              { get; set; }
+  public string Password          { get; set; }
+  public string Scheme            { get; set; }
+  public string CaPath            { get; set; }
+  public int    Port              { get; set; }
+  public int    MaxPriority       { get; set; }
+  public bool   AllowHostMismatch { get; set; }
 }

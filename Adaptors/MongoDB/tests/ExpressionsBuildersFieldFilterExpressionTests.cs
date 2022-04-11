@@ -22,14 +22,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
-using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common.Storage;
-
-using Grpc.Core;
 
 using NUnit.Framework;
 
@@ -42,23 +37,25 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRecognizeSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.SessionId,
-                                                         new[] { "Session" }).Compile();
+                                                         new[]
+                                                         {
+                                                           "Session",
+                                                         })
+                                  .Compile();
 
-    var model = new TaskData(
-                                SessionId : "Session",
-                                default,
-                                default,
-                                default,
-                                default,
-                                default,
-                                default,
-                                default,
-                                default,
-                                default,
-                                default,
-                                default,
-                                default
-                              );
+    var model = new TaskData("Session",
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default,
+                             default);
 
     Assert.IsTrue(func(model));
   }
@@ -67,10 +64,13 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRejectOtherSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.SessionId,
-                                                         new[] { "Session" })
+                                                         new[]
+                                                         {
+                                                           "Session",
+                                                         })
                                   .Compile();
 
-    var model = new TaskData(SessionId: "OtherSession",
+    var model = new TaskData("OtherSession",
                              default,
                              default,
                              default,
@@ -91,11 +91,14 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldExcludeSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.SessionId,
-                                                         new[] { "Session" },
+                                                         new[]
+                                                         {
+                                                           "Session",
+                                                         },
                                                          false)
                                   .Compile();
 
-    var model = new TaskData(SessionId: "Session",
+    var model = new TaskData("Session",
                              default,
                              default,
                              default,
@@ -116,11 +119,14 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldIncludeOtherSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.SessionId,
-                                                         new[] { "Session" },
+                                                         new[]
+                                                         {
+                                                           "Session",
+                                                         },
                                                          false)
                                   .Compile();
-    
-    var model = new TaskData(SessionId: "OtherSession",
+
+    var model = new TaskData("OtherSession",
                              default,
                              default,
                              default,
@@ -141,11 +147,14 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRecognizeSubSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[] { "SubSession" })
+                                                         new[]
+                                                         {
+                                                           "SubSession",
+                                                         })
                                   .Compile();
 
     var model = new TaskData(default,
-                             ParentTaskId: "SubSession",
+                             "SubSession",
                              default,
                              default,
                              default,
@@ -165,12 +174,15 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldExcludeSubSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[] { "SubSession" },
+                                                         new[]
+                                                         {
+                                                           "SubSession",
+                                                         },
                                                          false)
                                   .Compile();
 
     var model = new TaskData(default,
-                             ParentTaskId: "SubSession",
+                             "SubSession",
                              default,
                              default,
                              default,
@@ -190,11 +202,15 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRecognizeMultipleSubSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[] { "SubSession", "SubSession2" })
+                                                         new[]
+                                                         {
+                                                           "SubSession",
+                                                           "SubSession2",
+                                                         })
                                   .Compile();
 
     var model = new TaskData(default,
-                             ParentTaskId: "SubSession",
+                             "SubSession",
                              default,
                              default,
                              default,
@@ -214,12 +230,16 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldExcludeMultipleSubSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[] { "SubSession", "SubSession2" },
+                                                         new[]
+                                                         {
+                                                           "SubSession",
+                                                           "SubSession2",
+                                                         },
                                                          false)
                                   .Compile();
 
     var model = new TaskData(default,
-                             ParentTaskId: "SubSession",
+                             "SubSession",
                              default,
                              default,
                              default,
@@ -239,11 +259,14 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRejectOtherSubSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[] { "SubSession" })
+                                                         new[]
+                                                         {
+                                                           "SubSession",
+                                                         })
                                   .Compile();
-    
+
     var model = new TaskData(default,
-                             ParentTaskId: "OtherSubSession",
+                             "OtherSubSession",
                              default,
                              default,
                              default,
@@ -263,12 +286,15 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldIncludeOtherSubSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[] { "SubSession" },
+                                                         new[]
+                                                         {
+                                                           "SubSession",
+                                                         },
                                                          false)
                                   .Compile(true);
 
     var model = new TaskData(default,
-                             ParentTaskId: "OtherSubSession",
+                             "OtherSubSession",
                              default,
                              default,
                              default,
@@ -288,11 +314,15 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRejectOtherMultipleSubSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[] { "SubSession", "SubSession2" })
+                                                         new[]
+                                                         {
+                                                           "SubSession",
+                                                           "SubSession2",
+                                                         })
                                   .Compile();
 
     var model = new TaskData(default,
-                             ParentTaskId: "OtherSubSession",
+                             "OtherSubSession",
                              default,
                              default,
                              default,
@@ -312,12 +342,16 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldIncludeOtherMultipleSubSession()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[] { "SubSession", "SubSession2" },
+                                                         new[]
+                                                         {
+                                                           "SubSession",
+                                                           "SubSession2",
+                                                         },
                                                          false)
                                   .Compile();
 
     var model = new TaskData(default,
-                             ParentTaskId: "OtherSubSession",
+                             "OtherSubSession",
                              default,
                              default,
                              default,
@@ -337,9 +371,12 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRecognizeStatus()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                         new[] { TaskStatus.Completed })
+                                                         new[]
+                                                         {
+                                                           TaskStatus.Completed,
+                                                         })
                                   .Compile();
-    
+
 
     var model = new TaskData(default,
                              default,
@@ -349,7 +386,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
-                             Status : TaskStatus.Completed,
+                             TaskStatus.Completed,
                              default,
                              default,
                              default,
@@ -362,7 +399,10 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldExcludeStatus()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                         new[] { TaskStatus.Completed },
+                                                         new[]
+                                                         {
+                                                           TaskStatus.Completed,
+                                                         },
                                                          false)
                                   .Compile();
 
@@ -374,7 +414,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
-                             Status: TaskStatus.Completed,
+                             TaskStatus.Completed,
                              default,
                              default,
                              default,
@@ -387,7 +427,11 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRecognizeMultipleStatus()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                         new[] { TaskStatus.Completed, TaskStatus.Canceled })
+                                                         new[]
+                                                         {
+                                                           TaskStatus.Completed,
+                                                           TaskStatus.Canceled,
+                                                         })
                                   .Compile();
 
     var model = new TaskData(default,
@@ -398,7 +442,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
-                             Status: TaskStatus.Completed,
+                             TaskStatus.Completed,
                              default,
                              default,
                              default,
@@ -411,7 +455,11 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldExcludeMultipleStatus()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                         new[] { TaskStatus.Completed, TaskStatus.Canceled },
+                                                         new[]
+                                                         {
+                                                           TaskStatus.Completed,
+                                                           TaskStatus.Canceled,
+                                                         },
                                                          false)
                                   .Compile();
 
@@ -423,7 +471,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
-                             Status: TaskStatus.Completed,
+                             TaskStatus.Completed,
                              default,
                              default,
                              default,
@@ -436,7 +484,10 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRejectOtherStatus()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                         new[] { TaskStatus.Completed })
+                                                         new[]
+                                                         {
+                                                           TaskStatus.Completed,
+                                                         })
                                   .Compile();
 
     var model = new TaskData(default,
@@ -447,7 +498,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
-                             Status: TaskStatus.Canceled,
+                             TaskStatus.Canceled,
                              default,
                              default,
                              default,
@@ -460,7 +511,10 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldIncludeOtherStatus()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                         new[] { TaskStatus.Completed },
+                                                         new[]
+                                                         {
+                                                           TaskStatus.Completed,
+                                                         },
                                                          false)
                                   .Compile(true);
 
@@ -472,7 +526,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
-                             Status: TaskStatus.Canceled,
+                             TaskStatus.Canceled,
                              default,
                              default,
                              default,
@@ -485,7 +539,11 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRejectOtherMultipleStatus()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                         new[] { TaskStatus.Completed, TaskStatus.Canceling })
+                                                         new[]
+                                                         {
+                                                           TaskStatus.Completed,
+                                                           TaskStatus.Canceling,
+                                                         })
                                   .Compile();
 
     var model = new TaskData(default,
@@ -496,7 +554,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
-                             Status: TaskStatus.Canceled,
+                             TaskStatus.Canceled,
                              default,
                              default,
                              default,
@@ -509,7 +567,11 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldIncludeOtherMultipleStatus()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.Status,
-                                                         new[] { TaskStatus.Completed, TaskStatus.Canceling },
+                                                         new[]
+                                                         {
+                                                           TaskStatus.Completed,
+                                                           TaskStatus.Canceling,
+                                                         },
                                                          false)
                                   .Compile();
 
@@ -521,7 +583,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              default,
                              default,
                              default,
-                             Status: TaskStatus.Canceled,
+                             TaskStatus.Canceled,
                              default,
                              default,
                              default,
@@ -534,18 +596,21 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRecognizeTask()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                         new[] { "Task" })
+                                                         new[]
+                                                         {
+                                                           "Task",
+                                                         })
                                   .Compile();
-    
+
     var model = new TaskData(default,
                              default,
                              default,
-                             TaskId : "Task",
+                             "Task",
                              default,
                              default,
                              default,
                              default,
-                             Status: default,
+                             default,
                              default,
                              default,
                              default,
@@ -558,19 +623,22 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldExcludeTask()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                         new[] { "Task" },
+                                                         new[]
+                                                         {
+                                                           "Task",
+                                                         },
                                                          false)
                                   .Compile();
 
     var model = new TaskData(default,
                              default,
                              default,
-                             TaskId: "Task",
+                             "Task",
                              default,
                              default,
                              default,
                              default,
-                             Status: default,
+                             default,
                              default,
                              default,
                              default,
@@ -583,18 +651,22 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRecognizeMultipleTask()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                         new[] { "Task", "Task2" })
+                                                         new[]
+                                                         {
+                                                           "Task",
+                                                           "Task2",
+                                                         })
                                   .Compile();
 
     var model = new TaskData(default,
                              default,
                              default,
-                             TaskId: "Task",
+                             "Task",
                              default,
                              default,
                              default,
                              default,
-                             Status: default,
+                             default,
                              default,
                              default,
                              default,
@@ -607,19 +679,23 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldExcludeMultipleTask()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                         new[] { "Task", "Task2" },
+                                                         new[]
+                                                         {
+                                                           "Task",
+                                                           "Task2",
+                                                         },
                                                          false)
                                   .Compile();
 
     var model = new TaskData(default,
                              default,
                              default,
-                             TaskId: "Task",
+                             "Task",
                              default,
                              default,
                              default,
                              default,
-                             Status: default,
+                             default,
                              default,
                              default,
                              default,
@@ -632,18 +708,21 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRejectOtherTask()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                         new[] { "Task" })
+                                                         new[]
+                                                         {
+                                                           "Task",
+                                                         })
                                   .Compile();
-    
+
     var model = new TaskData(default,
                              default,
                              default,
-                             TaskId: "OtherTask",
+                             "OtherTask",
                              default,
                              default,
                              default,
                              default,
-                             Status: default,
+                             default,
                              default,
                              default,
                              default,
@@ -656,19 +735,22 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldIncludeOtherTask()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                         new[] { "Task" },
+                                                         new[]
+                                                         {
+                                                           "Task",
+                                                         },
                                                          false)
                                   .Compile(true);
 
     var model = new TaskData(default,
                              default,
                              default,
-                             TaskId: "OtherTask",
+                             "OtherTask",
                              default,
                              default,
                              default,
                              default,
-                             Status: default,
+                             default,
                              default,
                              default,
                              default,
@@ -681,18 +763,22 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldRejectOtherMultipleTask()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                         new[] { "Task", "Task2" })
+                                                         new[]
+                                                         {
+                                                           "Task",
+                                                           "Task2",
+                                                         })
                                   .Compile();
 
     var model = new TaskData(default,
                              default,
                              default,
-                             TaskId: "OtherTask",
+                             "OtherTask",
                              default,
                              default,
                              default,
                              default,
-                             Status: default,
+                             default,
                              default,
                              default,
                              default,
@@ -705,19 +791,23 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
   public void ShouldIncludeOtherMultipleTask()
   {
     var func = ExpressionsBuilders.FieldFilterExpression(model => model.TaskId,
-                                                         new[] { "Task", "Task2" },
+                                                         new[]
+                                                         {
+                                                           "Task",
+                                                           "Task2",
+                                                         },
                                                          false)
                                   .Compile();
 
     var model = new TaskData(default,
                              default,
                              default,
-                             TaskId: "OtherTask",
+                             "OtherTask",
                              default,
                              default,
                              default,
                              default,
-                             Status: default,
+                             default,
                              default,
                              default,
                              default,

@@ -58,8 +58,7 @@ public static class Program
     {
       var builder = WebApplication.CreateBuilder(args);
 
-      builder.Configuration
-             .SetBasePath(Directory.GetCurrentDirectory())
+      builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
              .AddJsonFile("appsettings.json",
                           true,
                           true)
@@ -74,12 +73,10 @@ public static class Program
       var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger))
                                 .CreateLogger("root");
 
-      builder.Host
-             .UseSerilog(Log.Logger);
+      builder.Host.UseSerilog(Log.Logger);
 
 
-      builder.Services
-             .AddLogging()
+      builder.Services.AddLogging()
              .AddArmoniKWorkerConnection(builder.Configuration)
              .AddMongoComponents(builder.Configuration,
                                  logger)
@@ -98,26 +95,27 @@ public static class Program
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
       {
         ActivitySource.AddActivityListener(new ActivityListener
-        {
-          ShouldListenTo = _ => true,
-          //Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
-          ActivityStopped = activity =>
-          {
-            foreach (var (key, value) in activity.Baggage)
-              activity.AddTag(key,
-                              value);
-          },
-        });
+                                           {
+                                             ShouldListenTo = _ => true,
+                                             //Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+                                             ActivityStopped = activity =>
+                                                               {
+                                                                 foreach (var (key, value) in activity.Baggage)
+                                                                 {
+                                                                   activity.AddTag(key,
+                                                                                   value);
+                                                                 }
+                                                               },
+                                           });
 
-        builder.Services
-               .AddSingleton(ActivitySource)
+        builder.Services.AddSingleton(ActivitySource)
                .AddOpenTelemetryTracing(b =>
-               {
-                 b.AddSource(ActivitySource.Name);
-                 b.AddAspNetCoreInstrumentation();
-                 b.AddMongoDBInstrumentation();
-                 b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
-               });
+                                        {
+                                          b.AddSource(ActivitySource.Name);
+                                          b.AddAspNetCoreInstrumentation();
+                                          b.AddMongoDBInstrumentation();
+                                          b.AddZipkinExporter(options => options.Endpoint = new Uri(builder.Configuration["Zipkin:Uri"]));
+                                        });
       }
 
       builder.Services.AddHealthChecks();
@@ -127,28 +125,30 @@ public static class Program
       app.UseRouting();
 
       if (app.Environment.IsDevelopment())
+      {
         app.UseDeveloperExceptionPage();
+      }
 
       app.UseEndpoints(endpoints =>
-      {
-        endpoints.MapHealthChecks("/startup",
-                                  new HealthCheckOptions
-                                  {
-                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
-                                  });
+                       {
+                         endpoints.MapHealthChecks("/startup",
+                                                   new HealthCheckOptions
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Startup)),
+                                                   });
 
-        endpoints.MapHealthChecks("/liveness",
-                                  new HealthCheckOptions
-                                  {
-                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
-                                  });
+                         endpoints.MapHealthChecks("/liveness",
+                                                   new HealthCheckOptions
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                                                   });
 
-        endpoints.MapHealthChecks("/readiness",
-                                  new HealthCheckOptions
-                                  {
-                                    Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
-                                  });
-      });
+                         endpoints.MapHealthChecks("/readiness",
+                                                   new HealthCheckOptions
+                                                   {
+                                                     Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
+                                                   });
+                       });
       app.Run();
       return 0;
     }

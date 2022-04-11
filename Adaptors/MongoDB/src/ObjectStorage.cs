@@ -48,8 +48,6 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 [PublicAPI]
 public class ObjectStorage : IObjectStorage
 {
-  public int ChunkSize { get; }
-
   private readonly ILogger<ObjectStorage>                                                  logger_;
   private readonly MongoCollectionProvider<ObjectDataModelMapping, ObjectDataModelMapping> objectCollectionProvider_;
   private readonly string                                                                  objectStorageName_;
@@ -62,8 +60,10 @@ public class ObjectStorage : IObjectStorage
                        Options.ObjectStorage                                                   options)
   {
     if (options.ChunkSize == 0)
+    {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"Minimum value for {nameof(Options.ObjectStorage.ChunkSize)} is 1.");
+    }
 
     sessionProvider_          = sessionProvider;
     objectCollectionProvider_ = objectCollectionProvider;
@@ -72,19 +72,25 @@ public class ObjectStorage : IObjectStorage
     logger_                   = logger;
   }
 
+  public int ChunkSize { get; }
+
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<byte[]> valueChunks, CancellationToken cancellationToken = default)
+  public async Task AddOrUpdateAsync(string                   key,
+                                     IAsyncEnumerable<byte[]> valueChunks,
+                                     CancellationToken        cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(objectStorageName_ + key);
-    var       objectCollection = await objectCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var objectCollection = await objectCollectionProvider_.GetAsync()
+                                                          .ConfigureAwait(false);
 
     var taskList = new List<Task>();
 
     var idx = 0;
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken))
+    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
+                                           .ConfigureAwait(false))
     {
-      taskList.Add(objectCollection.InsertOneAsync(new()
+      taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
                                                    {
                                                      Chunk    = chunk,
                                                      ChunkIdx = idx,
@@ -94,23 +100,31 @@ public class ObjectStorage : IObjectStorage
       ++idx;
     }
 
-    if (idx == 0) throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+    if (idx == 0)
+    {
+      throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+    }
 
-    await taskList.WhenAll();
+    await taskList.WhenAll()
+                  .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task AddOrUpdateAsync(string key, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default)
+  public async Task AddOrUpdateAsync(string                                 key,
+                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                     CancellationToken                      cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(objectStorageName_ + key);
-    var       objectCollection = await objectCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var objectCollection = await objectCollectionProvider_.GetAsync()
+                                                          .ConfigureAwait(false);
 
     var taskList = new List<Task>();
 
     var idx = 0;
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken))
+    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
+                                           .ConfigureAwait(false))
     {
-      taskList.Add(objectCollection.InsertOneAsync(new()
+      taskList.Add(objectCollection.InsertOneAsync(new ObjectDataModelMapping
                                                    {
                                                      Chunk    = chunk.ToArray(),
                                                      ChunkIdx = idx,
@@ -120,57 +134,75 @@ public class ObjectStorage : IObjectStorage
       ++idx;
     }
 
-    if (idx == 0) throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+    if (idx == 0)
+    {
+      throw new ArmoniKException($"{nameof(valueChunks)} should contain at least one chunk");
+    }
 
-    await taskList.WhenAll();
+    await taskList.WhenAll()
+                  .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  async IAsyncEnumerable<byte[]> IObjectStorage.GetValuesAsync(string key, [EnumeratorCancellation] CancellationToken cancellationToken)
+  async IAsyncEnumerable<byte[]> IObjectStorage.GetValuesAsync(string                                     key,
+                                                               [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    using var _                = logger_.LogFunction(objectStorageName_ + key);
-    var       sessionHandle    = await sessionProvider_.GetAsync();
-    var       objectCollection = await objectCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var objectCollection = await objectCollectionProvider_.GetAsync()
+                                                          .ConfigureAwait(false);
 
-    bool throwException = true;
+    var throwException = true;
     await foreach (var chunk in objectCollection.AsQueryable(sessionHandle)
                                                 .Where(odm => odm.Key == objectStorageName_ + key)
                                                 .OrderBy(odm => odm.ChunkIdx)
                                                 .Select(odm => odm.Chunk)
                                                 .ToAsyncEnumerable()
-                                                .WithCancellation(cancellationToken))
+                                                .WithCancellation(cancellationToken)
+                                                .ConfigureAwait(false))
     {
       throwException = false;
       yield return chunk;
     }
 
-    if (throwException) throw new ArmoniKException($"Key {key} not found");
+    if (throwException)
+    {
+      throw new ArmoniKException($"Key {key} not found");
+    }
   }
 
   /// <inheritdoc />
-  public async Task<bool> TryDeleteAsync(string key, CancellationToken cancellationToken = default)
+  public async Task<bool> TryDeleteAsync(string            key,
+                                         CancellationToken cancellationToken = default)
   {
-    using var _                = logger_.LogFunction(objectStorageName_ + key);
-    var       objectCollection = await objectCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction(objectStorageName_ + key);
+    var objectCollection = await objectCollectionProvider_.GetAsync()
+                                                          .ConfigureAwait(false);
 
     var res = await objectCollection.DeleteManyAsync(odm => odm.Key == objectStorageName_ + key,
-                                                     cancellationToken);
+                                                     cancellationToken)
+                                    .ConfigureAwait(false);
     return res.DeletedCount > 0;
   }
 
   /// <inheritdoc />
   public async IAsyncEnumerable<string> ListKeysAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _                = logger_.LogFunction();
-    var       sessionHandle    = await sessionProvider_.GetAsync();
-    var       objectCollection = await objectCollectionProvider_.GetAsync();
+    using var _ = logger_.LogFunction();
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var objectCollection = await objectCollectionProvider_.GetAsync()
+                                                          .ConfigureAwait(false);
 
     await foreach (var key in objectCollection.AsQueryable(sessionHandle)
                                               .Where(odm => odm.ChunkIdx == 0)
                                               .Select(odm => odm.Key)
                                               .ToAsyncEnumerable()
-                                              .WithCancellation(cancellationToken))
+                                              .WithCancellation(cancellationToken)
+                                              .ConfigureAwait(false))
+    {
       yield return key;
-
+    }
   }
 }

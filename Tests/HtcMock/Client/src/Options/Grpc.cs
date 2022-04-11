@@ -24,12 +24,11 @@
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Samples.HtcMock.Client.Options
+namespace ArmoniK.Samples.HtcMock.Client.Options;
+
+[PublicAPI]
+public class Grpc
 {
-  [PublicAPI]
-  public class Grpc
-  {
-    public const string SettingSection = nameof(Grpc);
-    public string Endpoint { get; set; }
-  }
+  public const string SettingSection = nameof(Grpc);
+  public       string Endpoint { get; set; }
 }

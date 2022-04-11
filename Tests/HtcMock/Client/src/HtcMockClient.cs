@@ -30,51 +30,51 @@ using Htc.Mock.Core;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Samples.HtcMock.Client
+namespace ArmoniK.Samples.HtcMock.Client;
+
+public class HtcMockClient
 {
-  public class HtcMockClient
+  private readonly GridClient               gridClient_;
+  private readonly ILogger<Htc.Mock.Client> logger_;
+
+  public HtcMockClient(GridClient               gridClient,
+                       ILogger<Htc.Mock.Client> logger)
   {
-    private readonly GridClient               gridClient_;
-    private readonly ILogger<Htc.Mock.Client> logger_;
+    gridClient_ = gridClient;
+    logger_     = logger;
+  }
 
-    public HtcMockClient(GridClient gridClient, ILogger<Htc.Mock.Client> logger)
-    {
-      gridClient_ = gridClient;
-      logger_ = logger;
-    }
+  public bool Start(RunConfiguration runConfiguration)
+  {
+    logger_.LogInformation("Start new run with {configuration}",
+                           runConfiguration.ToString());
+    var watch = Stopwatch.StartNew();
 
-    public bool Start(RunConfiguration runConfiguration)
-    {
-      logger_.LogInformation("Start new run with {configuration}",
-                             runConfiguration.ToString());
-      var watch = Stopwatch.StartNew();
+    var sessionClient = gridClient_.CreateSession();
 
-      var sessionClient = gridClient_.CreateSession();
+    var request = runConfiguration.BuildRequest(out var shape,
+                                                logger_);
 
-      var request = runConfiguration.BuildRequest(out var shape,
-                                                  logger_);
+    var taskId = sessionClient.SubmitTask(DataAdapter.BuildPayload(runConfiguration,
+                                                                   request));
 
-      var taskId = sessionClient.SubmitTask(DataAdapter.BuildPayload(runConfiguration,
-                                                                     request));
+    logger_.LogInformation("Submitted root task {taskId}",
+                           taskId);
+    sessionClient.WaitSubtasksCompletion(taskId)
+                 .Wait();
 
-      logger_.LogInformation("Submitted root task {taskId}",
-                             taskId);
-      sessionClient.WaitSubtasksCompletion(taskId).Wait();
+    var result = Encoding.Default.GetString(sessionClient.GetResult(taskId));
 
-      var result = Encoding.Default.GetString(sessionClient.GetResult(taskId));
+    logger_.LogWarning("Final result is {result}",
+                       result);
+    logger_.LogWarning("Expected result is 1.{result}",
+                       string.Join(".",
+                                   shape));
 
-      logger_.LogWarning("Final result is {result}",
-                         result);
-      logger_.LogWarning("Expected result is 1.{result}",
-                         string.Join(".",
-                                     shape));
+    watch.Stop();
+    logger_.LogWarning("Client was executed in {time}s",
+                       watch.Elapsed.TotalSeconds);
 
-      watch.Stop();
-      logger_.LogWarning("Client was executed in {time}s",
-                         watch.Elapsed.TotalSeconds);
-
-      return result.Equals($"1.{string.Join(".", shape)}");
-    }
-
+    return result.Equals($"1.{string.Join(".", shape)}");
   }
 }

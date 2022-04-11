@@ -35,11 +35,11 @@ public class QueueMessageHandler : IQueueMessageHandler
   private readonly Func<QueueMessageStatus, Task> disposeFunc_;
   private readonly ILogger                        logger_;
 
-  public QueueMessageHandler(string                  messageId,
-                      string                         taskId,
-                      Func<QueueMessageStatus, Task> disposeFunc,
-                      ILogger                        logger,
-                      CancellationToken              cancellationToken)
+  public QueueMessageHandler(string                         messageId,
+                             string                         taskId,
+                             Func<QueueMessageStatus, Task> disposeFunc,
+                             ILogger                        logger,
+                             CancellationToken              cancellationToken)
   {
     disposeFunc_      = disposeFunc;
     logger_           = logger;
@@ -61,7 +61,8 @@ public class QueueMessageHandler : IQueueMessageHandler
   {
     using var _ = logger_.LogFunction(MessageId,
                                       functionName: $"{nameof(QueueMessageHandler)}.{nameof(DisposeAsync)}");
-    await disposeFunc_(Status);
+    await disposeFunc_(Status)
+      .ConfigureAwait(false);
     GC.SuppressFinalize(this);
   }
 }

@@ -27,43 +27,44 @@ using System;
 using OpenTelemetry;
 using OpenTelemetry.Trace;
 
-namespace ArmoniK.Core.ProfilingTools.OpenTelemetryExporter
+namespace ArmoniK.Core.ProfilingTools.OpenTelemetryExporter;
+
+public static class MongoExporterHelperExtensions
 {
-  public static class MongoExporterHelperExtensions
+  public static TracerProviderBuilder AddMongoExporter(this TracerProviderBuilder   builder,
+                                                       Action<MongoExporterOptions> configure = null)
   {
-    public static TracerProviderBuilder AddMongoExporter(this TracerProviderBuilder builder, Action<MongoExporterOptions> configure = null)
+    if (builder is IDeferredTracerProviderBuilder deferredTracerProviderBuilder)
     {
-      if (builder is IDeferredTracerProviderBuilder deferredTracerProviderBuilder)
-      {
-        return deferredTracerProviderBuilder.Configure((sp, builder) =>
-        {
-          AddMongoExporter(builder,
-                           new MongoExporterOptions(),
-                           configure,
-                           sp);
-        });
-      }
-
-      return AddMongoExporter(builder,
-                              new MongoExporterOptions(),
-                              configure,
-                              serviceProvider: null);
+      return deferredTracerProviderBuilder.Configure((sp,
+                                                      builder) =>
+                                                     {
+                                                       AddMongoExporter(builder,
+                                                                        new MongoExporterOptions(),
+                                                                        configure,
+                                                                        sp);
+                                                     });
     }
 
-    private static TracerProviderBuilder AddMongoExporter(
-      TracerProviderBuilder        builder,
-      MongoExporterOptions         options,
-      Action<MongoExporterOptions> configure,
-      IServiceProvider             serviceProvider)
-    {
-      configure?.Invoke(options);
-      var mongoExporter = new MongoExporter(options);
+    return AddMongoExporter(builder,
+                            new MongoExporterOptions(),
+                            configure,
+                            null);
+  }
 
-      if (options.ExportProcessorType == ExportProcessorType.Simple)
-      {
-        return builder.AddProcessor(new SimpleActivityExportProcessor(mongoExporter));
-      }
-      return builder.AddProcessor(new BatchActivityExportProcessor(mongoExporter));
+  private static TracerProviderBuilder AddMongoExporter(TracerProviderBuilder        builder,
+                                                        MongoExporterOptions         options,
+                                                        Action<MongoExporterOptions> configure,
+                                                        IServiceProvider             serviceProvider)
+  {
+    configure?.Invoke(options);
+    var mongoExporter = new MongoExporter(options);
+
+    if (options.ExportProcessorType == ExportProcessorType.Simple)
+    {
+      return builder.AddProcessor(new SimpleActivityExportProcessor(mongoExporter));
     }
+
+    return builder.AddProcessor(new BatchActivityExportProcessor(mongoExporter));
   }
 }

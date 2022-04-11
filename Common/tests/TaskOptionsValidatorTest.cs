@@ -23,12 +23,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Text;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.gRPC.Validators;
 
-using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 using NUnit.Framework;
@@ -43,113 +41,122 @@ public class TaskOptionsValidatorTest
   [Test]
   public void UndefinedMaxDurationShouldBeValid()
   {
-    var to =  new TaskOptions
-                              {
-                                MaxRetries = 1,
-                                Priority   = 1,
-                              };
+    var to = new TaskOptions
+             {
+               MaxRetries = 1,
+               Priority   = 1,
+             };
 
-    Assert.IsTrue(validator_.Validate(to).IsValid);
+    Assert.IsTrue(validator_.Validate(to)
+                            .IsValid);
   }
 
   [Test]
   public void UndefinedMaxRetriesShouldFail()
   {
     var to = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-      Priority   = 1,
-    };
+             {
+               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
+               Priority    = 1,
+             };
 
-    Assert.IsFalse(validator_.Validate(to).IsValid);
+    Assert.IsFalse(validator_.Validate(to)
+                             .IsValid);
   }
 
   [Test]
   public void ZeroMaxRetryShouldFail()
   {
     var to = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-      Priority    = 1,
-      MaxRetries = 0,
-    };
+             {
+               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
+               Priority    = 1,
+               MaxRetries  = 0,
+             };
 
-    Assert.IsFalse(validator_.Validate(to).IsValid);
+    Assert.IsFalse(validator_.Validate(to)
+                             .IsValid);
   }
 
   [Test]
   public void NegativeMaxRetryShouldFail()
   {
     var to = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-      Priority    = 1,
-      MaxRetries  = -6,
-    };
+             {
+               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
+               Priority    = 1,
+               MaxRetries  = -6,
+             };
 
-    Assert.IsFalse(validator_.Validate(to).IsValid);
+    Assert.IsFalse(validator_.Validate(to)
+                             .IsValid);
   }
 
   [Test]
   public void UndefinedPriorityShouldFail()
   {
     var to = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-      MaxRetries  = 1,
-    };
+             {
+               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
+               MaxRetries  = 1,
+             };
 
-    Assert.IsFalse(validator_.Validate(to).IsValid);
+    Assert.IsFalse(validator_.Validate(to)
+                             .IsValid);
   }
 
   [Test]
   public void ZeroPriorityShouldFail()
   {
     var to = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-      MaxRetries  = 1,
-      Priority = 0,
-    };
+             {
+               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
+               MaxRetries  = 1,
+               Priority    = 0,
+             };
 
-    Assert.IsFalse(validator_.Validate(to).IsValid);
+    Assert.IsFalse(validator_.Validate(to)
+                             .IsValid);
   }
 
   [Test]
   public void NegativePriorityShouldFail()
   {
     var to = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-      MaxRetries  = 1,
-      Priority    = -6,
-    };
+             {
+               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
+               MaxRetries  = 1,
+               Priority    = -6,
+             };
 
-    Assert.IsFalse(validator_.Validate(to).IsValid);
+    Assert.IsFalse(validator_.Validate(to)
+                             .IsValid);
   }
 
   [Test]
   public void TooBigPriorityShouldFail()
   {
     var to = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-      MaxRetries  = 1,
-      Priority    = 100,
-    };
+             {
+               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
+               MaxRetries  = 1,
+               Priority    = 100,
+             };
 
-    Assert.IsFalse(validator_.Validate(to).IsValid);
+    Assert.IsFalse(validator_.Validate(to)
+                             .IsValid);
   }
 
   [Test]
   public void OnlyMaxRetryAndPriorityDefinedShouldBeValid()
   {
     var to = new TaskOptions
-    {
-      MaxRetries  = 1,
-      Priority    = 100,
-    };
+             {
+               MaxRetries = 1,
+               Priority   = 100,
+             };
 
-    Assert.IsFalse(validator_.Validate(to).IsValid);
+    Assert.IsFalse(validator_.Validate(to)
+                             .IsValid);
   }
 }

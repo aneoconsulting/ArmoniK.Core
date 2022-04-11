@@ -24,42 +24,42 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
-public record Dispatch : ArmoniK.Core.Common.Storage.Dispatch
+public record Dispatch : Common.Storage.Dispatch
 {
-  public Dispatch(string sessionId,
-                  string taskId,
-                  string id,
-                  DateTime timeToLive,
-                  int attempt,
+  public Dispatch(string                    sessionId,
+                  string                    taskId,
+                  string                    id,
+                  DateTime                  timeToLive,
+                  int                       attempt,
                   ConcurrentBag<StatusTime> statuses,
-                  DateTime creationDate) : base(sessionId,
-                                                taskId,
-                                                id,
-                                                attempt,
-                                                timeToLive,
-                                                statuses,
-                                                creationDate)
+                  DateTime                  creationDate)
+    : base(sessionId,
+           taskId,
+           id,
+           attempt,
+           timeToLive,
+           statuses,
+           creationDate)
     => StatusesBag = statuses;
 
   public Dispatch(string   sessionId,
                   string   taskId,
                   string   id,
                   DateTime timeToLive,
-                  int      attempt) : this(sessionId,
-                                           taskId,
-                                           id,
-                                           timeToLive,
-                                           attempt,
-                                           new(),
-                                           DateTime.UtcNow)
+                  int      attempt)
+    : this(sessionId,
+           taskId,
+           id,
+           timeToLive,
+           attempt,
+           new ConcurrentBag<StatusTime>(),
+           DateTime.UtcNow)
   {
-
   }
 
   public Dispatch(Common.Storage.Dispatch other)
@@ -68,7 +68,7 @@ public record Dispatch : ArmoniK.Core.Common.Storage.Dispatch
            other.Id,
            other.TimeToLive,
            other.Attempt,
-           new(other.Statuses),
+           new ConcurrentBag<StatusTime>(other.Statuses),
            other.CreationDate)
   {
   }

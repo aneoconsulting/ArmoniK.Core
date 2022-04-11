@@ -41,6 +41,145 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture]
 public class TaskTableTestBase
 {
+  [SetUp]
+  public void SetUp()
+  {
+    GetTaskTableInstance();
+
+    if (RunTests)
+    {
+      TaskTable.CreateTasks(new[]
+                            {
+                              new TaskData("SessionId",
+                                           "PTaskId",
+                                           "DispatchId",
+                                           "TaskCompletedId",
+                                           default,
+                                           new[]
+                                           {
+                                             "happy output",
+                                           },
+                                           true,
+                                           new[]
+                                           {
+                                             (byte)1,
+                                             (byte)2,
+                                           },
+                                           TaskStatus.Completed,
+                                           default,
+                                           new[]
+                                           {
+                                             "Ancestor1DispatchId",
+                                             "Ancestor2DispatchId",
+                                           },
+                                           DateTime.Now,
+                                           new Output(true,
+                                                      "")),
+                              new TaskData("SessionId",
+                                           "PTaskId",
+                                           "DispatchId",
+                                           "TaskCreatingId",
+                                           default,
+                                           new[]
+                                           {
+                                             "happy output",
+                                           },
+                                           false,
+                                           new List<byte>().ToArray(),
+                                           TaskStatus.Creating,
+                                           default,
+                                           new[]
+                                           {
+                                             "Ancestor3DispatchId",
+                                           },
+                                           DateTime.Now,
+                                           default),
+                              new TaskData("SessionId",
+                                           "PTaskId",
+                                           "DispatchId",
+                                           "TaskNoPayloadId",
+                                           default,
+                                           new[]
+                                           {
+                                             "happy output",
+                                           },
+                                           false,
+                                           Array.Empty<byte>(),
+                                           TaskStatus.Submitted,
+                                           default,
+                                           new[]
+                                           {
+                                             "Ancestor3DispatchId",
+                                           },
+                                           DateTime.Now,
+                                           default),
+                              new TaskData("SessionId",
+                                           "PTaskId",
+                                           "Dispatch2Id",
+                                           "TaskProcessingId",
+                                           default,
+                                           new[]
+                                           {
+                                             "happy output",
+                                           },
+                                           false,
+                                           new List<byte>().ToArray(),
+                                           TaskStatus.Processing,
+                                           default,
+                                           new[]
+                                           {
+                                             "Ancestor4DispatchId",
+                                           },
+                                           DateTime.Now,
+                                           default),
+                              new TaskData("SessionId",
+                                           "PTaskId",
+                                           "Dispatch2Id",
+                                           "AnotherTaskProcessingId",
+                                           default,
+                                           new[]
+                                           {
+                                             "happy output",
+                                           },
+                                           false,
+                                           new List<byte>().ToArray(),
+                                           TaskStatus.Processing,
+                                           default,
+                                           new[]
+                                           {
+                                             "Ancestor4DispatchId",
+                                           },
+                                           DateTime.Now,
+                                           default),
+                              new TaskData("SessionId",
+                                           "PTaskId",
+                                           "DispatchId",
+                                           "TaskFailedId",
+                                           default,
+                                           new[]
+                                           {
+                                             "happy output",
+                                           },
+                                           false,
+                                           new List<byte>().ToArray(),
+                                           TaskStatus.Failed,
+                                           default,
+                                           new List<string>(),
+                                           DateTime.Now,
+                                           new Output(false,
+                                                      "sad output")),
+                            })
+               .Wait();
+    }
+  }
+
+  [TearDown]
+  public virtual void TearDown()
+  {
+    TaskTable = null;
+    RunTests  = false;
+  }
+
   /* Interface to test */
   protected ITaskTable TaskTable;
 
@@ -54,113 +193,19 @@ public class TaskTableTestBase
   {
   }
 
-  [SetUp]
-  public void SetUp()
-  {
-    GetTaskTableInstance();
-
-    if (RunTests)
-    {
-      TaskTable.CreateTasks(new[]
-               {
-                 new TaskData("SessionId",
-                              "PTaskId",
-                              "DispatchId",
-                              "TaskCompletedId",
-                              default,
-                              new [] {"happy output"},
-                              true,
-                              new[] { (byte) (1), (byte) (2) },
-                              TaskStatus.Completed,
-                              default,
-                              new[] { "Ancestor1DispatchId", "Ancestor2DispatchId" },
-                              DateTime.Now,
-                              new Output(true,"")),
-                 new TaskData("SessionId",
-                              "PTaskId",
-                              "DispatchId",
-                              "TaskCreatingId",
-                              default,
-                              new[] { "happy output" },
-                              false,
-                              new List<byte>().ToArray(),
-                              TaskStatus.Creating,
-                              default,
-                              new[] { "Ancestor3DispatchId" },
-                              DateTime.Now,
-                              default),
-                 new TaskData("SessionId",
-                              "PTaskId",
-                              "DispatchId",
-                              "TaskNoPayloadId",
-                              default,
-                              new[] { "happy output" },
-                              false,
-                              Array.Empty<byte>(),
-                              TaskStatus.Submitted,
-                              default,
-                              new[] { "Ancestor3DispatchId" },
-                              DateTime.Now,
-                              default),
-                 new TaskData("SessionId",
-                              "PTaskId",
-                              "Dispatch2Id",
-                              "TaskProcessingId",
-                              default,
-                              new[] { "happy output" },
-                              false,
-                              new List<byte>().ToArray(),
-                              TaskStatus.Processing,
-                              default,
-                              new[] { "Ancestor4DispatchId" },
-                              DateTime.Now,
-                              default),
-                 new TaskData("SessionId",
-                              "PTaskId",
-                              "Dispatch2Id",
-                              "AnotherTaskProcessingId",
-                              default,
-                              new[] { "happy output" },
-                              false,
-                              new List<byte>().ToArray(),
-                              TaskStatus.Processing,
-                              default,
-                              new[] { "Ancestor4DispatchId" },
-                              DateTime.Now,
-                              default),
-                 new TaskData("SessionId",
-                              "PTaskId",
-                              "DispatchId",
-                              "TaskFailedId",
-                              default,
-                              new[] { "happy output" },
-                              false,
-                              new List<byte>().ToArray(),
-                              TaskStatus.Failed,
-                              default,
-                              new List<string>(),
-                              DateTime.Now,
-                              new Output(false,"sad output")),
-               })
-               .Wait();
-    }
-  }
-
-  [TearDown]
-  public virtual void TearDown()
-  {
-    TaskTable = null;
-    RunTests  = false;
-  }
-
   [Test]
   public async Task ReadTaskAsyncShouldSucceed()
   {
     if (RunTests)
     {
-      var payload = new[] { (byte) (1), (byte) (2) };
+      var payload = new[]
+                    {
+                      (byte)1,
+                      (byte)2,
+                    };
       var result = await TaskTable.ReadTaskAsync("TaskCompletedId",
-                                                 CancellationToken.None);
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.AreEqual(payload,
                       result.Payload);
@@ -173,7 +218,8 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var result = await TaskTable.ReadTaskAsync("TaskNoPayloadId",
-                                                 CancellationToken.None);
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.AreEqual("TaskNoPayloadId",
                       result.TaskId);
@@ -185,9 +231,14 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var payload = new[] { (byte) (1), (byte) (2) };
+      var payload = new[]
+                    {
+                      (byte)1,
+                      (byte)2,
+                    };
       var result = await TaskTable.ReadTaskAsync("TaskFailedId",
-                                                 CancellationToken.None);
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.AreNotEqual(payload,
                          result.Payload);
@@ -200,7 +251,8 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var result = await TaskTable.GetTaskDispatchId("TaskCompletedId",
-                                                     CancellationToken.None);
+                                                     CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.IsTrue(result == "DispatchId");
     }
@@ -212,10 +264,11 @@ public class TaskTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await TaskTable.GetTaskDispatchId("NonExistingTaskId",
-                                          CancellationToken.None);
-      });
+                                           {
+                                             await TaskTable.GetTaskDispatchId("NonExistingTaskId",
+                                                                               CancellationToken.None)
+                                                            .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -224,9 +277,14 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var ancestors = new[] { "Ancestor1DispatchId", "Ancestor2DispatchId" };
+      var ancestors = new[]
+                      {
+                        "Ancestor1DispatchId",
+                        "Ancestor2DispatchId",
+                      };
       var result = await TaskTable.GetTaskAncestorDispatchIds("TaskCompletedId",
-                                                              CancellationToken.None);
+                                                              CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.AreEqual(result,
                       ancestors);
@@ -239,10 +297,11 @@ public class TaskTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await TaskTable.GetTaskAncestorDispatchIds("NonExistingTaskId",
-                                                   CancellationToken.None);
-      });
+                                           {
+                                             await TaskTable.GetTaskAncestorDispatchIds("NonExistingTaskId",
+                                                                                        CancellationToken.None)
+                                                            .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -253,9 +312,11 @@ public class TaskTableTestBase
     {
       await TaskTable.ChangeTaskDispatch("DispatchId",
                                          "NewDispatchId",
-                                         CancellationToken.None);
+                                         CancellationToken.None)
+                     .ConfigureAwait(false);
       var result = await TaskTable.GetTaskDispatchId("TaskCompletedId",
-                                                     CancellationToken.None);
+                                                     CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.IsTrue(result == "NewDispatchId");
     }
@@ -284,9 +345,11 @@ public class TaskTableTestBase
     {
       await TaskTable.UpdateTaskStatusAsync("TaskProcessingId",
                                             TaskStatus.Processed,
-                                            CancellationToken.None);
+                                            CancellationToken.None)
+                     .ConfigureAwait(false);
       var result = await TaskTable.GetTaskStatus("TaskProcessingId",
-                                                 CancellationToken.None);
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.IsTrue(result == TaskStatus.Processed);
     }
@@ -298,11 +361,12 @@ public class TaskTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await TaskTable.UpdateTaskStatusAsync("TaskFailedId",
-                                              TaskStatus.Unspecified,
-                                              CancellationToken.None);
-      });
+                                           {
+                                             await TaskTable.UpdateTaskStatusAsync("TaskFailedId",
+                                                                                   TaskStatus.Unspecified,
+                                                                                   CancellationToken.None)
+                                                            .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -312,34 +376,37 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var testFilter = new TaskFilter
-      {
-        Included = new TaskFilter.Types.StatusesRequest
-        {
-          Statuses =
-          {
-            TaskStatus.Creating,
-            TaskStatus.Processing,
-          },
-        },
-        Dispatch = new TaskFilter.Types.IdsRequest
-        {
-          Ids =
-          {
-            "DispatchId",
-            "Dispatch2Id", /* Task with TaskStatus.Processing was given this Id,
+                       {
+                         Included = new TaskFilter.Types.StatusesRequest
+                                    {
+                                      Statuses =
+                                      {
+                                        TaskStatus.Creating,
+                                        TaskStatus.Processing,
+                                      },
+                                    },
+                         Dispatch = new TaskFilter.Types.IdsRequest
+                                    {
+                                      Ids =
+                                      {
+                                        "DispatchId",
+                                        "Dispatch2Id", /* Task with TaskStatus.Processing was given this Id,
                             * for the Memory interface, adding it here is necessary for the test
                             * to succeed. For the MongoDB interface it may be ignored.
                             * TODO: Check filter definitions */
-          },
-        },
-      };
+                                      },
+                                    },
+                       };
       await TaskTable.UpdateAllTaskStatusAsync(testFilter,
                                                TaskStatus.Timeout,
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                     .ConfigureAwait(false);
       var resCreating = await TaskTable.GetTaskStatus("TaskCreatingId",
-                                                 CancellationToken.None);
+                                                      CancellationToken.None)
+                                       .ConfigureAwait(false);
       var resProcessing = await TaskTable.GetTaskStatus("TaskProcessingId",
-                                                 CancellationToken.None);
+                                                        CancellationToken.None)
+                                         .ConfigureAwait(false);
 
       Assert.IsTrue(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout);
     }
@@ -351,24 +418,26 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var testFilter = new TaskFilter
-      {
-
-        Task = new TaskFilter.Types.IdsRequest
-        {
-          Ids =
-          {
-            "TaskProcessingId",
-            "TaskCreatingId",
-          },
-        },
-      };
+                       {
+                         Task = new TaskFilter.Types.IdsRequest
+                                {
+                                  Ids =
+                                  {
+                                    "TaskProcessingId",
+                                    "TaskCreatingId",
+                                  },
+                                },
+                       };
       await TaskTable.UpdateAllTaskStatusAsync(testFilter,
                                                TaskStatus.Timeout,
-                                               CancellationToken.None);
+                                               CancellationToken.None)
+                     .ConfigureAwait(false);
       var resCreating = await TaskTable.GetTaskStatus("TaskCreatingId",
-                                                      CancellationToken.None);
+                                                      CancellationToken.None)
+                                       .ConfigureAwait(false);
       var resProcessing = await TaskTable.GetTaskStatus("TaskProcessingId",
-                                                        CancellationToken.None);
+                                                        CancellationToken.None)
+                                         .ConfigureAwait(false);
 
       Assert.IsTrue(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout);
     }
@@ -380,30 +449,31 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var testFilter = new TaskFilter
-      {
-        Included = new TaskFilter.Types.StatusesRequest
-        {
-          Statuses =
-          {
-            TaskStatus.Failed, // Presence of this status should generate an exception
-            TaskStatus.Creating,
-            TaskStatus.Processing,
-          },
-        },
-        Dispatch = new TaskFilter.Types.IdsRequest
-        {
-          Ids =
-          {
-            "DispatchId",
-          },
-        },
-      };
+                       {
+                         Included = new TaskFilter.Types.StatusesRequest
+                                    {
+                                      Statuses =
+                                      {
+                                        TaskStatus.Failed, // Presence of this status should generate an exception
+                                        TaskStatus.Creating,
+                                        TaskStatus.Processing,
+                                      },
+                                    },
+                         Dispatch = new TaskFilter.Types.IdsRequest
+                                    {
+                                      Ids =
+                                      {
+                                        "DispatchId",
+                                      },
+                                    },
+                       };
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await TaskTable.UpdateAllTaskStatusAsync(testFilter,
-                                                 TaskStatus.Timeout,
-                                                 CancellationToken.None);
-      });
+                                           {
+                                             await TaskTable.UpdateAllTaskStatusAsync(testFilter,
+                                                                                      TaskStatus.Timeout,
+                                                                                      CancellationToken.None)
+                                                            .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -413,7 +483,8 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var result = await TaskTable.IsTaskCancelledAsync("TaskCreatingId",
-                                                        CancellationToken.None);
+                                                        CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.IsFalse(result);
     }
@@ -426,7 +497,7 @@ public class TaskTableTestBase
     {
       var result = TaskTable.CancelSessionAsync("SessionId",
                                                 CancellationToken.None);
-      await result;
+      await result.ConfigureAwait(false);
 
       Assert.IsTrue(result.IsCompletedSuccessfully);
     }
@@ -438,10 +509,11 @@ public class TaskTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await TaskTable.CancelSessionAsync("NonExistingSessionId",
-                                           CancellationToken.None);
-      });
+                                           {
+                                             await TaskTable.CancelSessionAsync("NonExistingSessionId",
+                                                                                CancellationToken.None)
+                                                            .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -453,7 +525,7 @@ public class TaskTableTestBase
       var result = TaskTable.CancelDispatchAsync("SessionId",
                                                  "Dispatch2Id",
                                                  CancellationToken.None);
-      await result;
+      await result.ConfigureAwait(false);
 
       Assert.IsTrue(result.IsCompletedSuccessfully);
     }
@@ -465,11 +537,12 @@ public class TaskTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-      {
-        await TaskTable.CancelDispatchAsync("SessionId",
-                                            "NonExistingDispatchId",
-                                            CancellationToken.None);
-      });
+                                           {
+                                             await TaskTable.CancelDispatchAsync("SessionId",
+                                                                                 "NonExistingDispatchId",
+                                                                                 CancellationToken.None)
+                                                            .ConfigureAwait(false);
+                                           });
     }
   }
 
@@ -479,26 +552,27 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var testFilter = new TaskFilter
-      {
-        Included = new TaskFilter.Types.StatusesRequest
-        {
-          Statuses =
-          {
-            TaskStatus.Completed,
-            TaskStatus.Creating,
-          },
-        },
-        Dispatch = new TaskFilter.Types.IdsRequest
-        {
-          Ids =
-          {
-            "DispatchId",
-          },
-        },
-      };
+                       {
+                         Included = new TaskFilter.Types.StatusesRequest
+                                    {
+                                      Statuses =
+                                      {
+                                        TaskStatus.Completed,
+                                        TaskStatus.Creating,
+                                      },
+                                    },
+                         Dispatch = new TaskFilter.Types.IdsRequest
+                                    {
+                                      Ids =
+                                      {
+                                        "DispatchId",
+                                      },
+                                    },
+                       };
 
       var result = await TaskTable.CountTasksAsync(testFilter,
-                                      CancellationToken.None);
+                                                   CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       foreach (var taskStatusCount in result)
       {
@@ -513,7 +587,8 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var result = await TaskTable.CountAllTasksAsync(TaskStatus.Processing,
-                                                      CancellationToken.None);
+                                                      CancellationToken.None)
+                                  .ConfigureAwait(false);
       Assert.IsTrue(result == 2);
     }
   }
@@ -525,10 +600,11 @@ public class TaskTableTestBase
     {
       var result = TaskTable.SetTaskSuccessAsync("TaskProcessingId",
                                                  CancellationToken.None);
-      await result;
+      await result.ConfigureAwait(false);
 
       var resStatus = await TaskTable.GetTaskStatus("TaskProcessingId",
-                                                      CancellationToken.None);
+                                                    CancellationToken.None)
+                                     .ConfigureAwait(false);
 
       Assert.IsTrue(result.IsCompletedSuccessfully && resStatus == TaskStatus.Completed);
     }
@@ -541,11 +617,12 @@ public class TaskTableTestBase
     {
       var result = TaskTable.SetTaskErrorAsync("TaskProcessingId",
                                                "Testing SetTaskError",
-                                                 CancellationToken.None);
-      await result;
+                                               CancellationToken.None);
+      await result.ConfigureAwait(false);
 
       var resStatus = await TaskTable.GetTaskStatus("TaskProcessingId",
-                                                    CancellationToken.None);
+                                                    CancellationToken.None)
+                                     .ConfigureAwait(false);
 
       Assert.IsTrue(result.IsCompletedSuccessfully && resStatus == TaskStatus.Completed);
     }
@@ -556,11 +633,14 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var expectedOutput = new Output(true,"");
+      var expectedOutput = new Output(true,
+                                      "");
       var result = await TaskTable.GetTaskOutput("TaskCompletedId",
-                                           CancellationToken.None);
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
 
-      Assert.AreEqual(expectedOutput,result);
+      Assert.AreEqual(expectedOutput,
+                      result);
     }
   }
 
@@ -569,9 +649,13 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var expectedOutput = new [] {"happy output"};
+      var expectedOutput = new[]
+                           {
+                             "happy output",
+                           };
       var result = await TaskTable.GetTaskExpectedOutputKeys("TaskCompletedId",
-                                                             CancellationToken.None);
+                                                             CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.AreEqual(expectedOutput,
                       result);

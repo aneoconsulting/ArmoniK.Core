@@ -24,13 +24,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
 
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -40,57 +38,62 @@ public static partial class Program
 {
   public class MetricGenerator
   {
-    private readonly ITaskTable      taskTable_;
     private readonly Options.Metrics options_;
+    private readonly ITaskTable      taskTable_;
 
-    public MetricGenerator(ITaskTable taskTable, Options.Metrics options)
+    public MetricGenerator(ITaskTable      taskTable,
+                           Options.Metrics options)
     {
-      taskTable_    = taskTable;
-      options_      = options;
+      taskTable_ = taskTable;
+      options_   = options;
     }
 
     public async Task<string> GetMetrics()
     {
       var metricList = new MetricList
-      {
-        ApiVersion = options_.ApiVersion,
-        Kind       = "MetricValueList",
-        Metadata = new Dictionary<string, string>
-        {
-          {"selfLink", "/apis/custom.metrics.k8s.io/v1beta1"},
-        },
-        Items = new List<Metric>(),
-      };
+                       {
+                         ApiVersion = options_.ApiVersion,
+                         Kind       = "MetricValueList",
+                         Metadata = new Dictionary<string, string>
+                                    {
+                                      {
+                                        "selfLink", "/apis/custom.metrics.k8s.io/v1beta1"
+                                      },
+                                    },
+                         Items = new List<Metric>(),
+                       };
 
       var metricQueued = new Metric
-      {
-        DescribedObject = new ObjectDescription
-        {
-          ApiVersion          = options_.DescribedObject.ApiVersion,
-          Kind                = "Service",
-          Name                = options_.DescribedObject.Name,
-          KubernetesNamespace = options_.DescribedObject.Namespace,
-        },
-        Timestamp  = DateTime.Now.ToString("s") + "Z",
-        MetricName = "armonik_tasks_queued",
-        Value      = 0,
-      };
+                         {
+                           DescribedObject = new ObjectDescription
+                                             {
+                                               ApiVersion          = options_.DescribedObject.ApiVersion,
+                                               Kind                = "Service",
+                                               Name                = options_.DescribedObject.Name,
+                                               KubernetesNamespace = options_.DescribedObject.Namespace,
+                                             },
+                           Timestamp  = DateTime.Now.ToString("s") + "Z",
+                           MetricName = "armonik_tasks_queued",
+                           Value      = 0,
+                         };
 
-      foreach (var status in (TaskStatus[]) Enum.GetValues(typeof(TaskStatus)))
+      foreach (var status in (TaskStatus[])Enum.GetValues(typeof(TaskStatus)))
       {
         var metric = new Metric
-        {
-          DescribedObject = new ObjectDescription
-          {
-            ApiVersion          = options_.DescribedObject.ApiVersion,
-            Kind                = "Service",
-            Name                = options_.DescribedObject.Name,
-            KubernetesNamespace = options_.DescribedObject.Namespace,
-          },
-          Timestamp = DateTime.Now.ToString("s") + "Z",
-          MetricName = "armonik_tasks_" + status.ToString().ToLower(),
-          Value = await taskTable_.CountAllTasksAsync(status),
-        };
+                     {
+                       DescribedObject = new ObjectDescription
+                                         {
+                                           ApiVersion          = options_.DescribedObject.ApiVersion,
+                                           Kind                = "Service",
+                                           Name                = options_.DescribedObject.Name,
+                                           KubernetesNamespace = options_.DescribedObject.Namespace,
+                                         },
+                       Timestamp = DateTime.Now.ToString("s") + "Z",
+                       MetricName = "armonik_tasks_" + status.ToString()
+                                                             .ToLower(),
+                       Value = await taskTable_.CountAllTasksAsync(status)
+                                               .ConfigureAwait(false),
+                     };
 
         if (status is TaskStatus.Creating or TaskStatus.Dispatched or TaskStatus.Processing or TaskStatus.Submitted)
         {
@@ -149,5 +152,4 @@ public static partial class Program
     [JsonPropertyName("value")]
     public int Value { get; set; }
   }
-
 }

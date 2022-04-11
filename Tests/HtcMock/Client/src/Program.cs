@@ -47,24 +47,27 @@ internal class Program
   {
     var sleepStr = Environment.GetEnvironmentVariable("SLEEP_BEFORE_LAUNCH");
     if (!string.IsNullOrEmpty(sleepStr))
+    {
       Thread.Sleep(int.Parse(sleepStr));
+    }
+
     Console.WriteLine("Hello Mock V3!");
 
     var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                             .AddEnvironmentVariables();
     var configuration = builder.Build();
-    Log.Logger = new LoggerConfiguration()
-                 .ReadFrom.Configuration(configuration)
-                 .Enrich.FromLogContext()
-                 .WriteTo.Console(new CompactJsonFormatter())
-                 .CreateBootstrapLogger();
+    Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration)
+                                          .Enrich.FromLogContext()
+                                          .WriteTo.Console(new CompactJsonFormatter())
+                                          .CreateBootstrapLogger();
 
     var factory = new LoggerFactory().AddSerilog();
 
     var options        = configuration.GetRequiredValue<Options.Grpc>(Options.Grpc.SettingSection);
     var optionsHtcMock = new Options.HtcMock();
-    configuration.GetSection(Options.HtcMock.SettingSection).Bind(optionsHtcMock);
-    var channel        = GrpcChannel.ForAddress(options.Endpoint);
+    configuration.GetSection(Options.HtcMock.SettingSection)
+                 .Bind(optionsHtcMock);
+    var channel = GrpcChannel.ForAddress(options.Endpoint);
 
     var submitterClient = new Submitter.SubmitterClient(channel);
 
@@ -79,6 +82,8 @@ internal class Program
                                                 optionsHtcMock.DataSize,
                                                 optionsHtcMock.MemorySize,
                                                 optionsHtcMock.SubTasksLevels);
-    return client.Start(runConfiguration) ? 0 : 1;
+    return client.Start(runConfiguration)
+             ? 0
+             : 1;
   }
 }

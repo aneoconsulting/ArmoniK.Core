@@ -37,7 +37,7 @@ public interface IDispatchTable : IInitializable
 {
   TimeSpan DispatchTimeToLiveDuration { get; }
   ILogger  Logger                     { get; }
-  TimeSpan DispatchRefreshPeriod { get; }
+  TimeSpan DispatchRefreshPeriod      { get; }
 
   Task<bool> TryAcquireDispatchAsync(string                      sessionId,
                                      string                      taskId,
@@ -45,16 +45,22 @@ public interface IDispatchTable : IInitializable
                                      IDictionary<string, string> metadata,
                                      CancellationToken           cancellationToken = default);
 
-  Task<Dispatch> GetDispatchAsync(string dispatchId, CancellationToken cancellationToken = default);
+  Task<Dispatch> GetDispatchAsync(string            dispatchId,
+                                  CancellationToken cancellationToken = default);
 
-  Task AddStatusToDispatch(string id, TaskStatus status, CancellationToken cancellationToken = default);
+  Task AddStatusToDispatch(string            id,
+                           TaskStatus        status,
+                           CancellationToken cancellationToken = default);
 
-  Task ExtendDispatchTtl(string id, CancellationToken cancellationToken = default);
+  Task ExtendDispatchTtl(string            id,
+                         CancellationToken cancellationToken = default);
 
-  Task DeleteDispatchFromTaskIdAsync(string id, CancellationToken cancellationToken = default);
+  Task DeleteDispatchFromTaskIdAsync(string            id,
+                                     CancellationToken cancellationToken = default);
 
-  Task DeleteDispatch(string id, CancellationToken cancellationToken = default);
+  Task DeleteDispatch(string            id,
+                      CancellationToken cancellationToken = default);
 
-  IAsyncEnumerable<string> ListDispatchAsync(string taskId, CancellationToken cancellationToken = default);
-
+  IAsyncEnumerable<string> ListDispatchAsync(string            taskId,
+                                             CancellationToken cancellationToken = default);
 }

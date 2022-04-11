@@ -78,7 +78,8 @@ public static class RpcExt
     }
   }
 
-  public static bool HandleExceptions(Exception e, StatusCode status)
+  public static bool HandleExceptions(Exception  e,
+                                      StatusCode status)
   {
     switch (e)
     {
@@ -151,22 +152,30 @@ public static class RpcExt
     {
       //await Task.Delay(TimeSpan.FromHours(2));
       if (!HandleExceptions(e,
-                            asyncUnaryCall.GetStatus().StatusCode))
+                            asyncUnaryCall.GetStatus()
+                                          .StatusCode))
+      {
         throw;
+      }
 
       throw new ArmoniKException("An exception occurred during the rpc call but has been handled",
                                  e);
     }
   }
 
-  public static async Task ForceMoveNext<T>(this IAsyncEnumerator<T> stream, string error, ILogger logger, CancellationToken cancellationToken) where T : class
+  public static async Task ForceMoveNext<T>(this IAsyncEnumerator<T> stream,
+                                            string                   error,
+                                            ILogger                  logger,
+                                            CancellationToken        cancellationToken)
+    where T : class
   {
-    if (!await stream.MoveNextAsync(cancellationToken))
+    if (!await stream.MoveNextAsync(cancellationToken)
+                     .ConfigureAwait(false))
     {
-      var exception = new RpcException(new(StatusCode.InvalidArgument,
-                                           error));
+      var exception = new RpcException(new Status(StatusCode.InvalidArgument,
+                                                  error));
       logger.LogError(exception,
-                       "Invalid stream");
+                      "Invalid stream");
       throw exception;
     }
   }

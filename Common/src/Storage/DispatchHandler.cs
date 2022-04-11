@@ -32,23 +32,24 @@ namespace ArmoniK.Core.Common.Storage;
 
 public record DispatchHandler : Dispatch, IAsyncDisposable
 {
-  private          IAsyncDisposable? asyncDisposableImplementation_;
+  private IAsyncDisposable? asyncDisposableImplementation_;
 
-  public DispatchHandler(
-    IDispatchTable    dispatchTable,
-    ITaskTable        taskTable,
-    Dispatch         dispatchImplementation,
-    CancellationToken cancellationToken) : base(dispatchImplementation)
+  public DispatchHandler(IDispatchTable    dispatchTable,
+                         ITaskTable        taskTable,
+                         Dispatch          dispatchImplementation,
+                         CancellationToken cancellationToken)
+    : base(dispatchImplementation)
   {
-    var        dispatchTable1 = dispatchTable;
+    var dispatchTable1 = dispatchTable;
     Heart dispatchRefresher = new(async token =>
                                   {
                                     var ttlTask = dispatchTable1.ExtendDispatchTtl(Id,
                                                                                    token);
 
                                     var status = await taskTable.IsTaskCancelledAsync(TaskId,
-                                                                                      token);
-                                    await ttlTask;
+                                                                                      token)
+                                                                .ConfigureAwait(false);
+                                    await ttlTask.ConfigureAwait(false);
 
                                     return !status && !token.IsCancellationRequested;
                                   },
@@ -57,20 +58,25 @@ public record DispatchHandler : Dispatch, IAsyncDisposable
     dispatchRefresher.Start();
     DispatchCancelled = dispatchRefresher.HeartStopped;
 
-    asyncDisposableImplementation_ = AsyncDisposable.Create(async () => { await dispatchRefresher.Stop(); });
+    asyncDisposableImplementation_ = AsyncDisposable.Create(async () =>
+                                                            {
+                                                              await dispatchRefresher.Stop()
+                                                                                     .ConfigureAwait(false);
+                                                            });
   }
+
+  public CancellationToken DispatchCancelled { get; }
 
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
     if (asyncDisposableImplementation_ is not null)
     {
-      await asyncDisposableImplementation_.DisposeAsync();
+      await asyncDisposableImplementation_.DisposeAsync()
+                                          .ConfigureAwait(false);
       asyncDisposableImplementation_ = null;
     }
 
     GC.SuppressFinalize(this);
   }
-
-  public CancellationToken DispatchCancelled { get; }
 }
