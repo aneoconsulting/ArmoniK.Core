@@ -106,38 +106,36 @@ public static class ServiceCollectionExt
                    };
       config.EndPoints.Add(redisOptions.EndpointUrl);
 
-      
+
 
       if (redisOptions.Timeout > 0)
       {
         config.ConnectTimeout = redisOptions.Timeout;
-
-
-        serviceCollection.AddSingleton<IConnectionMultiplexer>(serviceProvider =>
-                                                               {
-                                                                 const string loggerName = "RedisTrace";
-
-                                                                 var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-
-                                                                 var textWriterLogger = new TextWriterLogger(loggerFactory,
-                                                                                                             loggerName);
-
-                                                                 var multiplexer = ConnectionMultiplexer.Connect(config,
-                                                                                                                 textWriterLogger);
-
-                                                                 multiplexer.IncludeDetailInExceptions              = true;
-                                                                 multiplexer.IncludePerformanceCountersInExceptions = true;
-                                                                 return multiplexer;
-                                                               });
-
-        serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
       }
+
+
+      serviceCollection.AddSingleton<IConnectionMultiplexer>(serviceProvider =>
+                                                             {
+                                                               const string loggerName = "RedisTrace";
+
+                                                               var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+                                                               var textWriterLogger = new TextWriterLogger(loggerFactory,
+                                                                                                           loggerName);
+
+                                                               var multiplexer = ConnectionMultiplexer.Connect(config,
+                                                                                                               textWriterLogger);
+
+                                                               multiplexer.IncludeDetailInExceptions              = true;
+                                                               multiplexer.IncludePerformanceCountersInExceptions = true;
+                                                               return multiplexer;
+                                                             });
+
+      serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
 
       logger.LogDebug("setup connection to Redis at {EndpointUrl} with user {user}",
                       redisOptions.EndpointUrl,
                       redisOptions.User);
-
-      serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
     }
 
     return serviceCollection;
