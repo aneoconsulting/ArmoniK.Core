@@ -68,8 +68,8 @@ public static partial class Program
                                             .Enrich.FromLogContext()
                                             .CreateLogger();
 
-      var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger))
-                                .CreateLogger("root");
+      var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger));
+      var logger        = loggerFactory.CreateLogger("root");
 
       builder.Host.UseSerilog(Log.Logger);
 
@@ -80,6 +80,7 @@ public static partial class Program
                       logger)
              .AddRedis(builder.Configuration,
                        logger)
+             .AddSingleton<ILoggerFactory>(_ => loggerFactory)
              .AddOpenTelemetryMetrics(b =>
                                       {
                                         b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);

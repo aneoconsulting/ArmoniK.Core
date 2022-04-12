@@ -70,8 +70,8 @@ public static class Program
                                             .Enrich.FromLogContext()
                                             .CreateLogger();
 
-      var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger))
-                                .CreateLogger("root");
+      var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger));
+      var logger        = loggerFactory.CreateLogger("root");
 
       builder.Host.UseSerilog(Log.Logger);
 
@@ -85,6 +85,7 @@ public static class Program
              .AddRedis(builder.Configuration,
                        logger)
              .AddHostedService<Worker>()
+             .AddSingleton<ILoggerFactory>(_ => loggerFactory)
              .AddSingleton<Pollster>()
              .AddSingleton<ISubmitter, Submitter>()
              .AddSingleton<PreconditionChecker>()
