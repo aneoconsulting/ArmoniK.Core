@@ -36,12 +36,12 @@ namespace ArmoniK.Core.Adapters.Redis;
 
 public class ObjectStorageFactory : IObjectStorageFactory
 {
-  private readonly ILoggerFactory        loggerFactory_;
-  private readonly ConnectionMultiplexer redis_;
-  private          bool                  isInitialized_;
+  private readonly ILoggerFactory         loggerFactory_;
+  private readonly IConnectionMultiplexer redis_;
+  private          bool                   isInitialized_;
 
-  public ObjectStorageFactory(ConnectionMultiplexer redis,
-                              ILoggerFactory        loggerFactory)
+  public ObjectStorageFactory(IConnectionMultiplexer redis,
+                              ILoggerFactory         loggerFactory)
   {
     redis_         = redis;
     loggerFactory_ = loggerFactory;

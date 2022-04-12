@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Core.Common;
@@ -107,18 +106,29 @@ public static class ServiceCollectionExt
                    };
       config.EndPoints.Add(redisOptions.EndpointUrl);
 
+      
+
       if (redisOptions.Timeout > 0)
       {
         config.ConnectTimeout = redisOptions.Timeout;
 
-        serviceCollection.AddSingleton(_ =>
-                                       {
-                                         var multiplexer = ConnectionMultiplexer.Connect(config,
-                                                                                         TextWriter.Null);
-                                         multiplexer.IncludeDetailInExceptions              = true;
-                                         multiplexer.IncludePerformanceCountersInExceptions = true;
-                                         return multiplexer;
-                                       });
+
+        serviceCollection.AddSingleton<IConnectionMultiplexer>(serviceProvider =>
+                                                               {
+                                                                 const string loggerName = "RedisTrace";
+
+                                                                 var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+                                                                 var textWriterLogger = new TextWriterLogger(loggerFactory,
+                                                                                                             loggerName);
+
+                                                                 var multiplexer = ConnectionMultiplexer.Connect(config,
+                                                                                                                 textWriterLogger);
+
+                                                                 multiplexer.IncludeDetailInExceptions              = true;
+                                                                 multiplexer.IncludePerformanceCountersInExceptions = true;
+                                                                 return multiplexer;
+                                                               });
 
         serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
       }
@@ -127,9 +137,6 @@ public static class ServiceCollectionExt
                       redisOptions.EndpointUrl,
                       redisOptions.User);
 
-      serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
-                                                                                        TextWriter.Null)
-                                                                               .GetDatabase());
       serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
     }
 
