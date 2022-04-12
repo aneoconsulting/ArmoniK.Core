@@ -36,14 +36,12 @@ namespace ArmoniK.Core.Adapters.Redis;
 
 public class ObjectStorageFactory : IObjectStorageFactory
 {
-  private readonly ILoggerFactory loggerFactory_;
-  private readonly IDatabaseAsync redis_;
+  private readonly ILoggerFactory        loggerFactory_;
+  private readonly ConnectionMultiplexer redis_;
+  private          bool                  isInitialized_;
 
-
-  private bool isInitialized_;
-
-  public ObjectStorageFactory(IDatabaseAsync redis,
-                              ILoggerFactory loggerFactory)
+  public ObjectStorageFactory(ConnectionMultiplexer redis,
+                              ILoggerFactory        loggerFactory)
   {
     redis_         = redis;
     loggerFactory_ = loggerFactory;
@@ -54,8 +52,16 @@ public class ObjectStorageFactory : IObjectStorageFactory
   {
     if (!isInitialized_)
     {
-      await redis_.PingAsync()
+      await redis_.GetDatabase()
+                  .PingAsync()
                   .ConfigureAwait(false);
+
+      foreach (var endPoint in redis_.GetEndPoints())
+      {
+        await redis_.GetServer(endPoint)
+                    .PingAsync()
+                    .ConfigureAwait(false);
+      }
     }
 
     isInitialized_ = true;
@@ -66,7 +72,16 @@ public class ObjectStorageFactory : IObjectStorageFactory
     => ValueTask.FromResult(isInitialized_);
 
   public IObjectStorage CreateObjectStorage(string objectStorageName)
-    => new ObjectStorage(redis_,
-                         objectStorageName,
-                         loggerFactory_.CreateLogger<ObjectStorage>());
+  {
+    if (!isInitialized_)
+    {
+      using var cts = new CancellationTokenSource(20000);
+      Init(cts.Token)
+        .Wait(cts.Token);
+    }
+
+    return new ObjectStorage(redis_.GetDatabase(),
+                             objectStorageName,
+                             loggerFactory_.CreateLogger<ObjectStorage>());
+  }
 }

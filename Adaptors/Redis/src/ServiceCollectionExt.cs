@@ -110,6 +110,17 @@ public static class ServiceCollectionExt
       if (redisOptions.Timeout > 0)
       {
         config.ConnectTimeout = redisOptions.Timeout;
+
+        serviceCollection.AddSingleton(_ =>
+                                       {
+                                         var multiplexer = ConnectionMultiplexer.Connect(config,
+                                                                                         TextWriter.Null);
+                                         multiplexer.IncludeDetailInExceptions              = true;
+                                         multiplexer.IncludePerformanceCountersInExceptions = true;
+                                         return multiplexer;
+                                       });
+
+        serviceCollection.AddSingleton<IObjectStorageFactory, ObjectStorageFactory>();
       }
 
       logger.LogDebug("setup connection to Redis at {EndpointUrl} with user {user}",
