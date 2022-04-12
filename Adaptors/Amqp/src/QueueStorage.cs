@@ -184,14 +184,19 @@ public class QueueStorage : IQueueStorage
                      priority % MaxInternalQueuePriority);
 
     var sender = await senders_[priority / MaxInternalQueuePriority];
-    await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
-                                                              {
-                                                                Header = new Header
-                                                                         {
-                                                                           Priority = (byte)(priority % MaxInternalQueuePriority),
-                                                                         },
-                                                                Properties = new Properties(),
-                                                              })))
-              .ConfigureAwait(false);
+
+    foreach (var chunk in messages.Chunk(500))
+    {
+      await Task.WhenAll(chunk.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
+                                                             {
+                                                               Header = new Header
+                                                                        {
+                                                                          Priority = (byte)(priority % MaxInternalQueuePriority),
+                                                                        },
+                                                               Properties = new Properties(),
+                                                             })))
+                .ConfigureAwait(false);
+    }
+
   }
 }
