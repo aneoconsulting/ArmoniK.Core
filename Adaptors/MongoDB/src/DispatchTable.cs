@@ -124,9 +124,10 @@ public class DispatchTable : IDispatchTable
 
     if (dispatchId == res.Id)
     {
-      Logger.LogInformation("Dispatch {dispatchId} acquired for task {taskId}",
+      Logger.LogInformation("Dispatch {dispatchId} acquired for task {taskId} for {duration}",
                             dispatchId,
-                            taskId);
+                            taskId,
+                            DispatchTimeToLiveDuration);
 
       var oldDispatchUpdates = Builders<Dispatch>.Update.Set(model => model.TimeToLive,
                                                              DateTime.MinValue)

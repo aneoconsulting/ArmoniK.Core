@@ -108,7 +108,7 @@ public class PreconditionChecker : IInitializable
     switch (taskData.Status)
     {
       case TaskStatus.Canceling:
-        logger_.LogInformation("Task is being cancelled");
+        logger_.LogDebug("Task is being cancelled");
         messageHandler.Status = QueueMessageStatus.Cancelled;
         await sessionTable_.CancelDispatchAsync(taskData.SessionId,
                                                 taskData.DispatchId,
@@ -124,11 +124,11 @@ public class PreconditionChecker : IInitializable
                         .ConfigureAwait(false);
         return null;
       case TaskStatus.Completed:
-        logger_.LogInformation("Task was already completed");
+        logger_.LogDebug("Task was already completed");
         messageHandler.Status = QueueMessageStatus.Processed;
         return null;
       case TaskStatus.Creating:
-        logger_.LogInformation("Task is still creating");
+        logger_.LogDebug("Task is still creating");
         messageHandler.Status = QueueMessageStatus.Postponed;
         return null;
       case TaskStatus.Submitted:
@@ -136,7 +136,7 @@ public class PreconditionChecker : IInitializable
       case TaskStatus.Dispatched:
         break;
       case TaskStatus.Error:
-        logger_.LogInformation("Task was on error elsewhere ; retrying");
+        logger_.LogDebug("Task was on error elsewhere ; retrying");
         await taskTable_.CancelDispatchAsync(taskData.SessionId,
                                              taskData.DispatchId,
                                              cancellationToken)
@@ -147,17 +147,17 @@ public class PreconditionChecker : IInitializable
                         .ConfigureAwait(false);
         break;
       case TaskStatus.Timeout:
-        logger_.LogInformation("Task was timeout elsewhere ; taking over here");
+        logger_.LogDebug("Task was timeout elsewhere ; taking over here");
         break;
       case TaskStatus.Canceled:
-        logger_.LogInformation("Task has been cancelled");
+        logger_.LogDebug("Task has been cancelled");
         messageHandler.Status = QueueMessageStatus.Cancelled;
         return null;
       case TaskStatus.Processing:
-        logger_.LogInformation("Task is processing elsewhere ; taking over here");
+        logger_.LogDebug("Task is processing elsewhere ; taking over here");
         break;
       case TaskStatus.Failed:
-        logger_.LogInformation("Task is failed");
+        logger_.LogDebug("Task is failed");
         messageHandler.Status = QueueMessageStatus.Poisonous;
         return null;
       case TaskStatus.Unspecified:
