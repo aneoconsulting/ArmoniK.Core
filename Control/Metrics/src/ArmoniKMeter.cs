@@ -56,14 +56,9 @@ public class ArmoniKMeter : Meter, IHostedService
 
     CreateObservableGauge("armonik_tasks_queued",
                           () => new Measurement<int>(taskTable.CountAllTasksAsync(TaskStatus.Dispatched)
-                                                              .Result + taskTable.CountAllTasksAsync(TaskStatus.Creating)
-                                                                                                                       .Result + taskTable
-                                                                                                                                                    .CountAllTasksAsync(TaskStatus
-                                                                                                                                                                          .Submitted)
-                                                                                                                                                    .Result + taskTable
-                                                                                                                                                              .CountAllTasksAsync(TaskStatus
-                                                                                                                                                                                    .Processing)
-                                                                                                                                                              .Result));
+                                                              .Result                                       + taskTable.CountAllTasksAsync(TaskStatus.Submitted)
+                                                                                                    .Result + taskTable.CountAllTasksAsync(TaskStatus.Processing)
+                                                                                                                       .Result));
 
     CreateObservableCounter("test",
                             () => i++);
