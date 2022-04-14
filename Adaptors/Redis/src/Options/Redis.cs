@@ -37,4 +37,5 @@ internal class Redis
   public       bool   Ssl             { get; set; }
   public       string CredentialsPath { get; set; }
   public       string CaPath          { get; set; }
+  public       int    KeepAlive       { get; set; } = 60;
 }

@@ -103,6 +103,7 @@ public static class ServiceCollectionExt
                      SslHost              = redisOptions.SslHost,
                      Password             = redisOptions.Password,
                      User                 = redisOptions.User,
+                     KeepAlive            = redisOptions.KeepAlive,
                    };
       config.EndPoints.Add(redisOptions.EndpointUrl);
 
