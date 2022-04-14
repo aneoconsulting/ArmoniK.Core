@@ -141,10 +141,10 @@ public class PreconditionChecker : IInitializable
                                              taskData.DispatchId,
                                              cancellationToken)
                         .ConfigureAwait(false);
-        await taskTable_.CancelDispatchAsync(taskData.SessionId,
-                                             taskData.DispatchId,
-                                             cancellationToken)
-                        .ConfigureAwait(false);
+        await sessionTable_.CancelDispatchAsync(taskData.SessionId,
+                                                taskData.DispatchId,
+                                                cancellationToken)
+                           .ConfigureAwait(false);
         break;
       case TaskStatus.Timeout:
         logger_.LogDebug("Task was timeout elsewhere ; taking over here");
