@@ -132,7 +132,9 @@ public static class ServiceCollectionExt
 
     if (!string.IsNullOrEmpty(mongoOptions.CredentialsPath))
     {
-      configuration.AddJsonFile(mongoOptions.CredentialsPath);
+      configuration.AddJsonFile(mongoOptions.CredentialsPath,
+                                false,
+                                false);
 
       services.AddOption(configuration,
                          Options.MongoDB.SettingSection,

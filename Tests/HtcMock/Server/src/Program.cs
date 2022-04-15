@@ -55,7 +55,7 @@ public static class Program
       builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
              .AddJsonFile("appsettings.json",
                           true,
-                          true)
+                          false)
              .AddEnvironmentVariables()
              .AddCommandLine(args);
 
