@@ -1545,7 +1545,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html",
-          "hash": "/FNSkl3I3e4hp5V6KJIrW2ecV8FOGShGvhPLhYeulHE="
+          "hash": "y8d6d7M8AgN206g3B6BPDQLjK8+1RJdHTdC7KKI0hsM="
         }
       },
       "is_incremental": false,
@@ -1701,7 +1701,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html",
-          "hash": "ydDDwpPDZvq+AfImsNk1uQE1i1Fg8XAfbTF//Z3XY9E="
+          "hash": "qzrNBswYXu8TXjcpi1VsUpw1gRJSqAjf0hirFcFHXRg="
         }
       },
       "is_incremental": false,

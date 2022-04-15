@@ -9144,19 +9144,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.NegativePriorityShouldFail
   nameWithType: CreateSmallTaskRequestValidatorTest.NegativePriorityShouldFail
-- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid
-  name: OnlyMaxRetryAndPriorityDefinedShouldBeValid()
-  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_OnlyMaxRetryAndPriorityDefinedShouldBeValid
-  commentId: M:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid
-  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid()
-  nameWithType: CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid()
-- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid*
-  name: OnlyMaxRetryAndPriorityDefinedShouldBeValid
-  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_OnlyMaxRetryAndPriorityDefinedShouldBeValid_
-  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
+  name: OnlyMaxRetryAndPriorityDefinedShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_OnlyMaxRetryAndPriorityDefinedShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
+  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail()
+  nameWithType: CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail()
+- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail*
+  name: OnlyMaxRetryAndPriorityDefinedShouldFail
+  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_OnlyMaxRetryAndPriorityDefinedShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid
-  nameWithType: CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
+  nameWithType: CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
 - uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.TooBigPriorityShouldFail
   name: TooBigPriorityShouldFail()
   href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_TooBigPriorityShouldFail
@@ -9170,19 +9170,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.TooBigPriorityShouldFail
   nameWithType: CreateSmallTaskRequestValidatorTest.TooBigPriorityShouldFail
-- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldBeValid
-  name: UndefinedMaxDurationShouldBeValid()
-  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_UndefinedMaxDurationShouldBeValid
-  commentId: M:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldBeValid
-  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldBeValid()
-  nameWithType: CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldBeValid()
-- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldBeValid*
-  name: UndefinedMaxDurationShouldBeValid
-  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_UndefinedMaxDurationShouldBeValid_
-  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldFail
+  name: UndefinedMaxDurationShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_UndefinedMaxDurationShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldFail
+  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldFail()
+  nameWithType: CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldFail()
+- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldFail*
+  name: UndefinedMaxDurationShouldFail
+  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_UndefinedMaxDurationShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldFail
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldBeValid
-  nameWithType: CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldFail
+  nameWithType: CreateSmallTaskRequestValidatorTest.UndefinedMaxDurationShouldFail
 - uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedMaxRetriesShouldFail
   name: UndefinedMaxRetriesShouldFail()
   href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_UndefinedMaxRetriesShouldFail
@@ -10622,19 +10622,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.TooBigPriorityShouldFail
   nameWithType: TaskOptionsValidatorTest.TooBigPriorityShouldFail
-- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldBeValid
-  name: UndefinedMaxDurationShouldBeValid()
-  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_UndefinedMaxDurationShouldBeValid
-  commentId: M:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldBeValid
-  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldBeValid()
-  nameWithType: TaskOptionsValidatorTest.UndefinedMaxDurationShouldBeValid()
-- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldBeValid*
-  name: UndefinedMaxDurationShouldBeValid
-  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_UndefinedMaxDurationShouldBeValid_
-  commentId: Overload:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldFail
+  name: UndefinedMaxDurationShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_UndefinedMaxDurationShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldFail
+  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldFail()
+  nameWithType: TaskOptionsValidatorTest.UndefinedMaxDurationShouldFail()
+- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldFail*
+  name: UndefinedMaxDurationShouldFail
+  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_UndefinedMaxDurationShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldFail
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldBeValid
-  nameWithType: TaskOptionsValidatorTest.UndefinedMaxDurationShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxDurationShouldFail
+  nameWithType: TaskOptionsValidatorTest.UndefinedMaxDurationShouldFail
 - uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.UndefinedMaxRetriesShouldFail
   name: UndefinedMaxRetriesShouldFail()
   href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_UndefinedMaxRetriesShouldFail
