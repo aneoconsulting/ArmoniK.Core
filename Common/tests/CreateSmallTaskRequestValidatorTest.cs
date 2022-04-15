@@ -164,7 +164,7 @@ public class CreateSmallTaskRequestValidatorTest
   }
 
   [Test]
-  public void UndefinedMaxDurationShouldBeValid()
+  public void UndefinedMaxDurationShouldFail()
   {
     var ctr = new CreateSmallTaskRequest
               {
@@ -184,7 +184,7 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsTrue(validator_.Validate(ctr)
+    Assert.IsFalse(validator_.Validate(ctr)
                             .IsValid);
   }
 
@@ -396,7 +396,7 @@ public class CreateSmallTaskRequestValidatorTest
   }
 
   [Test]
-  public void OnlyMaxRetryAndPriorityDefinedShouldBeValid()
+  public void OnlyMaxRetryAndPriorityDefinedShouldFail()
   {
     var ctr = new CreateSmallTaskRequest
               {
@@ -416,7 +416,7 @@ public class CreateSmallTaskRequestValidatorTest
                 },
               };
 
-    Assert.IsTrue(validator_.Validate(ctr)
+    Assert.IsFalse(validator_.Validate(ctr)
                             .IsValid);
   }
 
