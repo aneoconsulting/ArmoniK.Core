@@ -39,7 +39,7 @@ public class TaskOptionsValidatorTest
   private readonly TaskOptionsValidator validator_ = new();
 
   [Test]
-  public void UndefinedMaxDurationShouldBeValid()
+  public void UndefinedMaxDurationShouldFail()
   {
     var to = new TaskOptions
              {
@@ -47,7 +47,7 @@ public class TaskOptionsValidatorTest
                Priority   = 1,
              };
 
-    Assert.IsTrue(validator_.Validate(to)
+    Assert.IsFalse(validator_.Validate(to)
                             .IsValid);
   }
 

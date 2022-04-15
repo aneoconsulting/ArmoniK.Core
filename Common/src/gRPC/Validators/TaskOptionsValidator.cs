@@ -40,5 +40,9 @@ public class TaskOptionsValidator : AbstractValidator<TaskOptions>
       .LessThanOrEqualTo(99)
       .WithMessage("Priority should be included between 1 and 99")
       .WithName(nameof(TaskOptions.Priority));
+    RuleFor(o => o.MaxDuration)
+      .NotNull()
+      .NotEmpty()
+      .WithName(nameof(TaskOptions.MaxDuration));
   }
 }
