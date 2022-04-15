@@ -61,7 +61,9 @@ public static class ServiceCollectionExt
 
       if (!string.IsNullOrEmpty(redisOptions.CredentialsPath))
       {
-        configuration.AddJsonFile(redisOptions.CredentialsPath);
+        configuration.AddJsonFile(redisOptions.CredentialsPath,
+                                  false,
+                                  false);
 
         serviceCollection.AddOption(configuration,
                                     Options.Redis.SettingSection,

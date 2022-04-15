@@ -64,7 +64,9 @@ public static class ServiceCollectionExt
 
       if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
       {
-        configuration.AddJsonFile(amqpOptions.CredentialsPath);
+        configuration.AddJsonFile(amqpOptions.CredentialsPath,
+                                  false,
+                                  false);
         logger.LogTrace("Loaded amqp credentials from file {path}",
                         amqpOptions.CredentialsPath);
 
