@@ -5868,15 +5868,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.LoggerExt.BeginPropertyScope
   nameWithType: LoggerExt.BeginPropertyScope
-- uid: ArmoniK.Core.Common.LoggerExt.LogFunction(ILogger,System.String,LogLevel,System.String,ValueTuple{System.String,System.Object}[])
-  name: LogFunction(ILogger, String, LogLevel, String, ValueTuple<String, Object>[])
-  href: api/ArmoniK.Core.Common.LoggerExt.html#ArmoniK_Core_Common_LoggerExt_LogFunction_ILogger_System_String_LogLevel_System_String_ValueTuple_System_String_System_Object____
-  commentId: M:ArmoniK.Core.Common.LoggerExt.LogFunction(ILogger,System.String,LogLevel,System.String,ValueTuple{System.String,System.Object}[])
-  name.vb: LogFunction(ILogger, String, LogLevel, String, ValueTuple(Of String, Object)())
-  fullName: ArmoniK.Core.Common.LoggerExt.LogFunction(ILogger, System.String, LogLevel, System.String, ValueTuple<System.String, System.Object>[])
-  fullName.vb: ArmoniK.Core.Common.LoggerExt.LogFunction(ILogger, System.String, LogLevel, System.String, ValueTuple(Of System.String, System.Object)())
-  nameWithType: LoggerExt.LogFunction(ILogger, String, LogLevel, String, ValueTuple<String, Object>[])
-  nameWithType.vb: LoggerExt.LogFunction(ILogger, String, LogLevel, String, ValueTuple(Of String, Object)())
+- uid: ArmoniK.Core.Common.LoggerExt.LogFunction(ILogger,System.String,LogLevel,System.String,System.String,System.Int32)
+  name: LogFunction(ILogger, String, LogLevel, String, String, Int32)
+  href: api/ArmoniK.Core.Common.LoggerExt.html#ArmoniK_Core_Common_LoggerExt_LogFunction_ILogger_System_String_LogLevel_System_String_System_String_System_Int32_
+  commentId: M:ArmoniK.Core.Common.LoggerExt.LogFunction(ILogger,System.String,LogLevel,System.String,System.String,System.Int32)
+  fullName: ArmoniK.Core.Common.LoggerExt.LogFunction(ILogger, System.String, LogLevel, System.String, System.String, System.Int32)
+  nameWithType: LoggerExt.LogFunction(ILogger, String, LogLevel, String, String, Int32)
 - uid: ArmoniK.Core.Common.LoggerExt.LogFunction*
   name: LogFunction
   href: api/ArmoniK.Core.Common.LoggerExt.html#ArmoniK_Core_Common_LoggerExt_LogFunction_
