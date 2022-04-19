@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -53,38 +54,44 @@ public static class LoggerExt
     return logger.BeginScope(dictionary);
   }
 
-  public static IDisposable LogFunction(this ILogger                                    logger,
-                                        string                                          id           = "",
-                                        LogLevel                                        level        = LogLevel.Trace,
-                                        [CallerMemberName] string                       functionName = "",
-                                        params             ValueTuple<string, object>[] properties)
+  public static IDisposable LogFunction(this ILogger              logger,
+                                        string                    id            = "",
+                                        LogLevel                  level         = LogLevel.Trace,
+                                        [CallerMemberName] string functionName  = "",
+                                        [CallerFilePath]   string classFilePath = "",
+                                        [CallerLineNumber] int    line          = 0)
   {
-    var methodInfo = new StackTrace().GetFrame(1)
-                                     ?.GetMethod();
-    var className = methodInfo!.ReflectedType!.Name;
-
-    var prop = properties.Append((nameof(className), className))
-                         .Append((nameof(functionName), functionName));
+    if (!logger.IsEnabled(level))
+    {
+      return Disposable.Create(() =>
+                               {
+                               });
+    }
+    var properties = new List<ValueTuple<string, object>>
+                     {
+                       (nameof(functionName), functionName),
+                       (nameof(classFilePath), classFilePath),
+                       (nameof(line), line),
+                     };
     if (!string.IsNullOrEmpty(id))
     {
-      prop = prop.Append(("Id", id));
+      properties.Add(("Id", id));
     }
 
-
-    var scope = logger.BeginNamedScope($"{className}.{functionName}",
-                                       prop.ToArray());
+    var scope = logger.BeginNamedScope($"{classFilePath}.{functionName}",
+                                       properties.ToArray());
 
     logger.Log(level,
-               "Entering {className}.{functionName} - {id}",
-               className,
+               "Entering {classFilePath}.{functionName} - {Id}",
+               classFilePath,
                functionName,
                id);
 
     return Disposable.Create(() =>
                              {
                                logger.Log(level,
-                                          "Leaving {className}.{functionName} - {id}",
-                                          className,
+                                          "Leaving {classFilePath}.{functionName} - {Id}",
+                                          classFilePath,
                                           functionName,
                                           id);
                                scope.Dispose();
