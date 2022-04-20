@@ -137,9 +137,7 @@ public class ComputeRequestStateMachine
 
   public string GenerateMermaidGraph()
   {
-    var graph = new StateGraph(machine_.GetInfo());
-
-    var str = graph.ToGraph(new UmlDot2Mermaid());
+    var str = UmlMermaidGraph.Format(machine_.GetInfo());
 
     // Manually fix the footer; the last
     // 3 lines should be disposed

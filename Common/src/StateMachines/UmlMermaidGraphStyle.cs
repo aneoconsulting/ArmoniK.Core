@@ -30,7 +30,7 @@ using Stateless.Graph;
 
 namespace ArmoniK.Core.Common.StateMachines;
 
-public class UmlDot2Mermaid : GraphStyleBase
+public class UmlMermaidGraphStyle : GraphStyleBase
 {
   /// <inheritdoc />
   public override string GetPrefix()
