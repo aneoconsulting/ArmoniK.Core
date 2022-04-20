@@ -24,6 +24,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 
 using Microsoft.Extensions.Logging;
 
@@ -150,7 +151,12 @@ public class ComputeRequestStateMachine
     str = string.Join(Environment.NewLine,
                       lines.Take(lines.Length - 3));
 
-    return str;
+    // Enclose in markers for markdown
+    var bld = new StringBuilder(str);
+    bld.Insert(0,"```mermaid\n");
+    bld.Append("\n```\n");
+
+    return bld.ToString();
   }
 
   public State GetState()
