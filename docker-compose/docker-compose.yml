@@ -103,6 +103,7 @@ services:
       - 9980:80
     volumes:
       - socket_vol:/cache
+      - ./trace:/trace
     environment:
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
       - MongoDB__Host=database
