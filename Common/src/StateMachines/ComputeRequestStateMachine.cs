@@ -22,6 +22,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Linq;
+
 using Microsoft.Extensions.Logging;
 
 using Stateless;
@@ -130,6 +133,25 @@ public class ComputeRequestStateMachine
 
   public string GenerateGraph()
     => UmlDotGraph.Format(machine_.GetInfo());
+
+  public string GenerateMermaidGraph()
+  {
+    var graph = new StateGraph(machine_.GetInfo());
+
+    var str = graph.ToGraph(new UmlDot2Mermaid());
+
+    // Manually fix the footer; the last
+    // 3 lines should be disposed
+    var lines = str.Split(new[]
+                            {
+                              Environment.NewLine
+                            },
+                            StringSplitOptions.None);
+    str = string.Join(Environment.NewLine,
+                      lines.Take(lines.Length - 3));
+
+    return str;
+  }
 
   public State GetState()
     => machine_.State;
