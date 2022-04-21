@@ -123,7 +123,6 @@ public class ResultTable : IResultTable
                                                    IEnumerable<string> keys,
                                                    CancellationToken   cancellationToken = default)
   {
-    // todo jerome taskid ?
     using var activity = activitySource_.StartActivity($"{nameof(AreResultsAvailableAsync)}");
     activity?.SetTag($"{nameof(AreResultsAvailableAsync)}_sessionId",
                      sessionId);

@@ -651,7 +651,7 @@ public class Submitter : ISubmitter
                                          {
                                            var tdm = new TaskData(session,
                                                                   request.Id,
-                                                                  Dns.GetHostName(),
+                                                                  "",
                                                                   parentTaskIds,
                                                                   request.DataDependencies.ToList(),
                                                                   request.ExpectedOutputKeys.ToList(),

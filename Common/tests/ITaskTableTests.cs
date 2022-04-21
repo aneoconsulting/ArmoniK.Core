@@ -155,6 +155,32 @@ public class TaskTableTestBase
                                            new Output(false,
                                                       "")),
                               new TaskData("SessionId",
+                                           "TaskSubmittedId",
+                                           "",
+                                           new[]
+                                           {
+                                             "parent1",
+                                           },
+                                           new[]
+                                           {
+                                             "dependency1",
+                                           },
+                                           new[]
+                                           {
+                                             "output1",
+                                           },
+                                           Array.Empty<string>(),
+                                           TaskStatus.Submitted,
+                                           "",
+                                           default,
+                                           DateTime.Now,
+                                           DateTime.Now + TimeSpan.FromSeconds(1),
+                                           DateTime.MinValue,
+                                           DateTime.MinValue,
+                                           DateTime.Now,
+                                           new Output(false,
+                                                      "")),
+                              new TaskData("SessionId",
                                            "TaskFailedId",
                                            "OwnerPodId",
                                            new[]
@@ -542,6 +568,34 @@ public class TaskTableTestBase
 
       Assert.AreEqual(parentTaskIds,
                       result.ToArray());
+    }
+  }
+
+  [Test]
+  public async Task AcquireTaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+
+      var result = await TaskTable.AcquireTask("TaskSubmittedId",
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.IsTrue(result);
+    }
+  }
+
+  [Test]
+  public async Task AcquireTaskShouldFail()
+  {
+    if (RunTests)
+    {
+
+      var result = await TaskTable.AcquireTask("TaskFailedId",
+                                               CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.IsFalse(result);
     }
   }
 }

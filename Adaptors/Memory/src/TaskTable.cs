@@ -27,6 +27,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -265,6 +266,29 @@ public class TaskTable : ITaskTable
                                     CancellationToken cancellationToken = default)
     => Task.FromResult(taskId2TaskData_[taskId]
                          .Output);
+
+  public Task<bool> AcquireTask(string            taskId,
+                                CancellationToken cancellationToken = default)
+  {
+    var updated = false;
+    taskId2TaskData_.AddOrUpdate(taskId,
+                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 (_,
+                                  data) =>
+                                 {
+                                   if (data.OwnerPodId != "")
+                                   {
+                                     return data;
+                                   }
+
+                                   updated = true;
+                                   return data with
+                                          {
+                                            OwnerPodId = Dns.GetHostName(),
+                                          };
+                                 });
+    return Task.FromResult(updated);
+  }
 
   /// <inheritdoc />
   public Task<TaskStatus> GetTaskStatus(string            taskId,

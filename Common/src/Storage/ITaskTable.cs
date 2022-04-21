@@ -85,6 +85,9 @@ public interface ITaskTable : IInitializable
   Task<Output> GetTaskOutput(string            taskId,
                              CancellationToken cancellationToken = default);
 
+  Task<bool> AcquireTask(string            taskId,
+                         CancellationToken cancellationToken = default);
+
   Task<TaskStatus> GetTaskStatus(string            taskId,
                                  CancellationToken cancellationToken = default);
 

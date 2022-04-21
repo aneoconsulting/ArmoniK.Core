@@ -79,7 +79,7 @@ public class PreconditionChecker : IInitializable
     }
   }
 
-  public async Task<TaskData> CheckPreconditionsAsync(IQueueMessageHandler messageHandler, CancellationToken    cancellationToken)
+  public async Task<TaskData?> CheckPreconditionsAsync(IQueueMessageHandler messageHandler, CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CheckPreconditionsAsync)}");
 
@@ -194,46 +194,14 @@ public class PreconditionChecker : IInitializable
 
 
     logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
-    // TODO acquire task
-    //var dispatch = await AcquireDispatchHandler($"{taskData.TaskId}-{DateTime.Now.Ticks}",
-    //                                            taskData.TaskId,
-    //                                            taskData.SessionId,
-    //                                            new Dictionary<string, string>(),
-    //                                            cancellationToken)
-    //                 .ConfigureAwait(false);
 
-    //if (dispatch is null)
-    //{
-    //  logger_.LogInformation("Could not acquire dispatch");
-    //  return null;
-    //}
-
-
-    //if (dispatch.Attempt >= taskData.Options.MaxRetries)
-    //{
-    //  logger_.LogInformation("Task has been retried too many times");
-    //  messageHandler.Status = QueueMessageStatus.Poisonous;
-    //  await Task.WhenAll(taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
-    //                                                      TaskStatus.Failed,
-    //                                                      CancellationToken.None),
-    //                     dispatch.DisposeAsync()
-    //                             .AsTask(),
-    //                     taskTable_.CancelDispatchAsync(taskData.SessionId,
-    //                                                    dispatch.Id,
-    //                                                    cancellationToken),
-    //                     dispatchTable_.DeleteDispatch(dispatch.Id,
-    //                                                   cancellationToken))
-    //            .ConfigureAwait(false);
-    //  return null;
-    //}
-
-    logger_.LogDebug("Changing task status to 'Dispatched'");
-    var updateTask = taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                                      TaskStatus.Dispatched,
-                                                      cancellationToken);
+    var acquireTask = await taskTable_.AcquireTask(messageHandler.TaskId,
+                                                   cancellationToken)
+                                      .ConfigureAwait(false);
+    if (!acquireTask)
+      return null;
 
     logger_.LogInformation("Task preconditions are OK");
-    await updateTask.ConfigureAwait(false);
     return taskData;
   }
 }

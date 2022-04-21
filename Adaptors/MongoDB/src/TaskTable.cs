@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,7 +108,7 @@ public class TaskTable : ITaskTable
                                  .SingleAsync(cancellationToken)
                                  .ConfigureAwait(false);
     }
-    catch (InvalidOperationException e)
+    catch (InvalidOperationException)
     {
       throw new ArmoniKException($"Task '{taskId}' not found.");
     }
@@ -297,8 +298,6 @@ public class TaskTable : ITaskTable
                                         CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SetTaskSuccessAsync)}");
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
     var taskCollection = await taskCollectionProvider_.GetAsync()
                                                       .ConfigureAwait(false);
 
@@ -331,8 +330,6 @@ public class TaskTable : ITaskTable
                                       CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SetTaskErrorAsync)}");
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
     var taskCollection = await taskCollectionProvider_.GetAsync()
                                                       .ConfigureAwait(false);
 
@@ -379,6 +376,47 @@ public class TaskTable : ITaskTable
                                .Select(model => model.Output)
                                .SingleAsync(cancellationToken)
                                .ConfigureAwait(false);
+  }
+
+  public async Task<bool> AcquireTask(string            taskId,
+                                CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
+
+    var hostname = Dns.GetHostName();
+
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.OwnerPodId,
+                                                                       hostname)
+                                                                  .Set(tdm => tdm.Status,
+                                                                       TaskStatus.Dispatched);
+
+    Logger.LogDebug("Acquire task {taskId} on {podName}",
+                    taskId,
+                    hostname);
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId && x.OwnerPodId == "",
+                                                   updateDefinition,
+                                                   cancellationToken: cancellationToken)
+                                  .ConfigureAwait(false);
+
+    switch (res.MatchedCount)
+    {
+      case 0:
+        var sessionHandle = await sessionProvider_.GetAsync()
+                                                  .ConfigureAwait(false);
+        var ownerPodId = await taskCollection.AsQueryable(sessionHandle)
+                            .Where(tdm => tdm.TaskId == taskId)
+                            .Select(model => model.OwnerPodId)
+                            .SingleAsync(cancellationToken)
+                            .ConfigureAwait(false);
+        Logger.LogInformation("Task {taskId} already acquired by {OtherOwnerPodId}", taskId, ownerPodId);
+        return false;
+      case 1:
+        return true;
+      default:
+        throw new ArmoniKException($"Error during acquisition of task {taskId}");
+    }
   }
 
   public async Task<TaskStatus> GetTaskStatus(string            taskId,
