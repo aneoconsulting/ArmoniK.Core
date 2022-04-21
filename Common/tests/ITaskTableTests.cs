@@ -526,4 +526,22 @@ public class TaskTableTestBase
                       result.ToArray());
     }
   }
+
+  [Test]
+  public async Task GetParentTaskIdsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var parentTaskIds = new[]
+                           {
+                             "parent1",
+                           };
+      var result = await TaskTable.GetParentTaskIds("TaskCompletedId",
+                                                             CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(parentTaskIds,
+                      result.ToArray());
+    }
+  }
 }

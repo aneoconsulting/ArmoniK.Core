@@ -377,7 +377,7 @@ public class TaskTable : ITaskTable
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.Output)
-                               .FirstAsync(cancellationToken)
+                               .SingleAsync(cancellationToken)
                                .ConfigureAwait(false);
   }
 
@@ -395,7 +395,7 @@ public class TaskTable : ITaskTable
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.Status)
-                               .FirstAsync(cancellationToken)
+                               .SingleAsync(cancellationToken)
                                .ConfigureAwait(false);
   }
 
@@ -413,13 +413,27 @@ public class TaskTable : ITaskTable
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
                                .Select(model => model.ExpectedOutputIds)
-                               .FirstAsync(cancellationToken)
+                               .SingleAsync(cancellationToken)
                                .ConfigureAwait(false);
   }
 
-  public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
+  public async Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
                                                     CancellationToken cancellationToken)
-    => throw new NotImplementedException();
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(GetParentTaskIds)}");
+    activity?.SetTag($"{nameof(GetParentTaskIds)}_TaskId",
+                     taskId);
+    var sessionHandle = await sessionProvider_.GetAsync()
+                                              .ConfigureAwait(false);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
+
+    return await taskCollection.AsQueryable(sessionHandle)
+                               .Where(tdm => tdm.TaskId == taskId)
+                               .Select(model => model.ParentTaskIds)
+                               .SingleAsync(cancellationToken)
+                               .ConfigureAwait(false);
+  }
 
   /// <inheritdoc />
   public ILogger Logger { get; }

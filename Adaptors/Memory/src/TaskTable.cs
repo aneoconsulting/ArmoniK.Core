@@ -281,7 +281,8 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
                                                     CancellationToken cancellationToken)
-    => throw new NotImplementedException();
+    => Task.FromResult(taskId2TaskData_[taskId]
+                         .ParentTaskIds as IEnumerable<string>);
 
   /// <inheritdoc />
   public ILogger Logger { get; set; }
