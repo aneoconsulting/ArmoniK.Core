@@ -49,8 +49,7 @@ public class ResultTableTestBase
                            new Result("SessionId",
                                       "ResultIsAvailable",
                                       "OwnerId",
-                                      "DispatchId",
-                                      true,
+                                      "Completed",
                                       DateTime.Today,
                                       new[]
                                       {
@@ -59,8 +58,7 @@ public class ResultTableTestBase
                            new Result("SessionId",
                                       "ResultIsNotAvailable",
                                       "OwnerId",
-                                      "DispatchId",
-                                      false,
+                                      "Aborted",
                                       DateTime.Today,
                                       new[]
                                       {
@@ -124,60 +122,6 @@ public class ResultTableTestBase
   }
 
   [Test]
-  public async Task ChangeResultDispatchShouldSucceed()
-  {
-    if (RunTests)
-    {
-      await ResultTable.ChangeResultDispatch("SessionId",
-                                             "DispatchId",
-                                             "NewDispatchId",
-                                             CancellationToken.None)
-                       .ConfigureAwait(false);
-      var result = await ResultTable.GetResult("SessionId",
-                                               "ResultIsAvailable",
-                                               CancellationToken.None)
-                                    .ConfigureAwait(false);
-
-      Assert.IsTrue(result.OriginDispatchId == "NewDispatchId");
-    }
-  }
-
-  [Test]
-  public async Task ChangeResultDispatchShouldFail()
-  {
-    if (RunTests)
-    {
-      await ResultTable.ChangeResultDispatch("SessionId",
-                                             "NonExistingDispatchId",
-                                             "NewDispatchId",
-                                             CancellationToken.None)
-                       .ConfigureAwait(false);
-      var result = await ResultTable.GetResult("SessionId",
-                                               "ResultIsAvailable",
-                                               CancellationToken.None)
-                                    .ConfigureAwait(false);
-
-      Assert.IsFalse(result.OriginDispatchId == "NewDispatchId");
-    }
-  }
-
-  [Test]
-  public void ChangeResultDispatchShouldFailOnBadId()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await ResultTable.ChangeResultDispatch("NonExistingSessionId",
-                                                                                    "DispatchId",
-                                                                                    "NewDispatchId",
-                                                                                    CancellationToken.None)
-                                                              .ConfigureAwait(false);
-                                           });
-    }
-  }
-
-  [Test]
   public async Task ChangeResultOwnershipShouldSucceed()
   {
     if (RunTests)
@@ -212,8 +156,7 @@ public class ResultTableTestBase
                                new Result("AnotherSessionId",
                                           "Key",
                                           "OwnerId",
-                                          "DispatchId",
-                                          true,
+                                          "Completed",
                                           DateTime.Today,
                                           new[]
                                           {
@@ -222,12 +165,12 @@ public class ResultTableTestBase
                              })
                      .ConfigureAwait(false);
 
-    var success = await ResultTable.GetResult("AnotherSessionId",
+    var result = await ResultTable.GetResult("AnotherSessionId",
                                               "Key",
                                               CancellationToken.None)
                                    .ConfigureAwait(false);
 
-    Assert.IsTrue(success.IsResultAvailable);
+    Assert.IsTrue(result.Status == "Completed");
   }
 
   [Test]
@@ -245,7 +188,6 @@ public class ResultTableTestBase
                                                                                    "ResultIsAvailable",
                                                                                    "",
                                                                                    "",
-                                                                                   true,
                                                                                    DateTime.Today,
                                                                                    new[]
                                                                                    {
@@ -313,7 +255,7 @@ public class ResultTableTestBase
                                                CancellationToken.None)
                                     .ConfigureAwait(false);
 
-      Assert.IsTrue(result.IsResultAvailable);
+      Assert.IsTrue(result.Name == "ResultIsNotAvailable");
     }
   }
 

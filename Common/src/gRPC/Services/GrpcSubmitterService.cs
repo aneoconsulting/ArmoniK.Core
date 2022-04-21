@@ -78,7 +78,6 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                                                          ServerCallContext      context)
     => submitter_.CreateTasks(request.SessionId,
                               request.SessionId,
-                              request.SessionId,
                               request.TaskOptions,
                               request.TaskRequests.ToAsyncEnumerable()
                                      .Select(taskRequest => new TaskRequest(taskRequest.Id,
@@ -115,7 +114,6 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
 
     return await submitter_.CreateTasks(first.InitRequest.SessionId,
-                                        first.InitRequest.SessionId,
                                         first.InitRequest.SessionId,
                                         first.InitRequest.TaskOptions,
                                         enumerator.BuildRequests(context.CancellationToken),

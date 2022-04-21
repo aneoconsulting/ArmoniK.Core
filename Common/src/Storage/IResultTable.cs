@@ -38,11 +38,6 @@ public interface IResultTable : IInitializable
                                       IEnumerable<string> keys,
                                       CancellationToken   cancellationToken = default);
 
-  Task ChangeResultDispatch(string            sessionId,
-                            string            oldDispatchId,
-                            string            newDispatchId,
-                            CancellationToken cancellationToken);
-
   Task ChangeResultOwnership(string              sessionId,
                              IEnumerable<string> keys,
                              string              oldTaskId,

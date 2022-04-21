@@ -22,21 +22,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Concurrent;
-
 using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
 public record SessionData(string      SessionId,
-                          string      DispatchId,
-                          bool        IsCancelled,
+                          string      Status,
                           TaskOptions Options) : Common.Storage.SessionData(SessionId,
-                                                                            DispatchId,
-                                                                            new ConcurrentBag<string>(),
-                                                                            IsCancelled,
-                                                                            Options)
-{
-  public ConcurrentBag<string> AncestorsDispatchIdRaw
-    => (ConcurrentBag<string>)AncestorsDispatchId;
-}
+                                                                            Status,
+                                                                            Options);

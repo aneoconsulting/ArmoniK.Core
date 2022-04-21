@@ -111,34 +111,38 @@ public class DataPrefetcherTest
 
     const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
-    const string dispatchId   = "DispatchId";
     const string taskId       = "TaskId";
     const string output1      = "Output1";
     const string dependency1  = "Dependency1";
+    const string podId        = "PodId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  parentTaskId,
-                                                                  dispatchId,
                                                                   taskId,
-                                                                  new List<string>
+                                                                  podId,
+                                                                  new[]
+                                                                  {
+                                                                    parentTaskId,
+                                                                  },
+                                                                  new[]
                                                                   {
                                                                     dependency1,
                                                                   },
-                                                                  new List<string>
+                                                                  new[]
                                                                   {
                                                                     output1,
                                                                   },
-                                                                  false,
-                                                                  Array.Empty<byte>(),
-                                                                  TaskStatus.Dispatched,
+                                                                  Array.Empty<string>(),
+                                                                  TaskStatus.Submitted,
+                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(1),
-                                                                                  3,
+                                                                                  TimeSpan.FromSeconds(100),
+                                                                                  5,
                                                                                   1),
-                                                                  new List<string>
-                                                                  {
-                                                                    "AncestorDispatchId",
-                                                                  },
-                                                                  new Output(false,
+                                                                  DateTime.Now,
+                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
+                                                                  DateTime.MinValue,
+                                                                  DateTime.MinValue,
+                                                                  DateTime.Now,
+                                                                  new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
@@ -263,36 +267,40 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId    = "SessionId";
+    const string sessionId = "SessionId";
     const string parentTaskId = "ParentTaskId";
-    const string dispatchId   = "DispatchId";
-    const string taskId       = "TaskId";
-    const string output1      = "Output1";
-    const string dependency1  = "Dependency1";
+    const string taskId = "TaskId";
+    const string output1 = "Output1";
+    const string dependency1 = "Dependency1";
+    const string podId = "PodId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  parentTaskId,
-                                                                  dispatchId,
                                                                   taskId,
-                                                                  new List<string>
+                                                                  podId,
+                                                                  new[]
+                                                                  {
+                                                                    parentTaskId,
+                                                                  },
+                                                                  new[]
                                                                   {
                                                                     dependency1,
                                                                   },
-                                                                  new List<string>
+                                                                  new[]
                                                                   {
                                                                     output1,
                                                                   },
-                                                                  false,
-                                                                  Array.Empty<byte>(),
-                                                                  TaskStatus.Dispatched,
+                                                                  Array.Empty<string>(),
+                                                                  TaskStatus.Submitted,
+                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(1),
-                                                                                  3,
+                                                                                  TimeSpan.FromSeconds(100),
+                                                                                  5,
                                                                                   1),
-                                                                  new List<string>
-                                                                  {
-                                                                    "AncestorDispatchId",
-                                                                  },
-                                                                  new Output(false,
+                                                                  DateTime.Now,
+                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
+                                                                  DateTime.MinValue,
+                                                                  DateTime.MinValue,
+                                                                  DateTime.Now,
+                                                                  new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
@@ -350,36 +358,40 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId    = "SessionId";
+    const string sessionId = "SessionId";
     const string parentTaskId = "ParentTaskId";
-    const string dispatchId   = "DispatchId";
-    const string taskId       = "TaskId";
-    const string output1      = "Output1";
-    const string dependency1  = "Dependency1";
+    const string taskId = "TaskId";
+    const string output1 = "Output1";
+    const string dependency1 = "Dependency1";
+    const string podId = "PodId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  parentTaskId,
-                                                                  dispatchId,
                                                                   taskId,
-                                                                  new List<string>
+                                                                  podId,
+                                                                  new[]
+                                                                  {
+                                                                    parentTaskId,
+                                                                  },
+                                                                  new[]
                                                                   {
                                                                     dependency1,
                                                                   },
-                                                                  new List<string>
+                                                                  new[]
                                                                   {
                                                                     output1,
                                                                   },
-                                                                  false,
-                                                                  Array.Empty<byte>(),
-                                                                  TaskStatus.Dispatched,
+                                                                  Array.Empty<string>(),
+                                                                  TaskStatus.Submitted,
+                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(1),
-                                                                                  3,
+                                                                                  TimeSpan.FromSeconds(100),
+                                                                                  5,
                                                                                   1),
-                                                                  new List<string>
-                                                                  {
-                                                                    "AncestorDispatchId",
-                                                                  },
-                                                                  new Output(false,
+                                                                  DateTime.Now,
+                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
+                                                                  DateTime.MinValue,
+                                                                  DateTime.MinValue,
+                                                                  DateTime.Now,
+                                                                  new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
@@ -437,36 +449,40 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId    = "SessionId";
+    const string sessionId = "SessionId";
     const string parentTaskId = "ParentTaskId";
-    const string dispatchId   = "DispatchId";
-    const string taskId       = "TaskId";
-    const string output1      = "Output1";
-    const string dependency1  = "Dependency1";
+    const string taskId = "TaskId";
+    const string output1 = "Output1";
+    const string dependency1 = "Dependency1";
+    const string podId = "PodId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  parentTaskId,
-                                                                  dispatchId,
                                                                   taskId,
-                                                                  new List<string>
+                                                                  podId,
+                                                                  new[]
+                                                                  {
+                                                                    parentTaskId,
+                                                                  },
+                                                                  new[]
                                                                   {
                                                                     dependency1,
                                                                   },
-                                                                  new List<string>
+                                                                  new[]
                                                                   {
                                                                     output1,
                                                                   },
-                                                                  false,
-                                                                  Array.Empty<byte>(),
-                                                                  TaskStatus.Dispatched,
+                                                                  Array.Empty<string>(),
+                                                                  TaskStatus.Submitted,
+                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(1),
-                                                                                  3,
+                                                                                  TimeSpan.FromSeconds(100),
+                                                                                  5,
                                                                                   1),
-                                                                  new List<string>
-                                                                  {
-                                                                    "AncestorDispatchId",
-                                                                  },
-                                                                  new Output(false,
+                                                                  DateTime.Now,
+                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
+                                                                  DateTime.MinValue,
+                                                                  DateTime.MinValue,
+                                                                  DateTime.Now,
+                                                                  new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
@@ -520,36 +536,40 @@ public class DataPrefetcherTest
 
     const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
-    const string dispatchId   = "DispatchId";
     const string taskId       = "TaskId";
     const string output1      = "Output1";
     const string dependency1  = "Dependency1";
     const string dependency2  = "Dependency2";
+    const string podId        = "PodId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  parentTaskId,
-                                                                  dispatchId,
                                                                   taskId,
-                                                                  new List<string>
+                                                                  podId,
+                                                                  new[]
+                                                                  {
+                                                                    parentTaskId,
+                                                                  },
+                                                                  new[]
                                                                   {
                                                                     dependency1,
                                                                     dependency2,
                                                                   },
-                                                                  new List<string>
+                                                                  new[]
                                                                   {
                                                                     output1,
                                                                   },
-                                                                  false,
-                                                                  Array.Empty<byte>(),
-                                                                  TaskStatus.Dispatched,
+                                                                  Array.Empty<string>(),
+                                                                  TaskStatus.Submitted,
+                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(1),
-                                                                                  3,
+                                                                                  TimeSpan.FromSeconds(100),
+                                                                                  5,
                                                                                   1),
-                                                                  new List<string>
-                                                                  {
-                                                                    "AncestorDispatchId",
-                                                                  },
-                                                                  new Output(false,
+                                                                  DateTime.Now,
+                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
+                                                                  DateTime.MinValue,
+                                                                  DateTime.MinValue,
+                                                                  DateTime.Now,
+                                                                  new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
@@ -601,35 +621,46 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId    = "SessionId";
+    const string sessionId = "SessionId";
     const string parentTaskId = "ParentTaskId";
-    const string dispatchId   = "DispatchId";
-    const string taskId       = "TaskId";
-    const string output1      = "Output1";
+    const string taskId = "TaskId";
+    const string output1 = "Output1";
+    const string dependency1 = "Dependency1";
+    const string dependency2 = "Dependency2";
+    const string podId = "PodId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
-                                                                  parentTaskId,
-                                                                  dispatchId,
                                                                   taskId,
-                                                                  new List<string>(),
-                                                                  new List<string>
+                                                                  podId,
+                                                                  new[]
+                                                                  {
+                                                                    parentTaskId,
+                                                                  },
+                                                                  new[]
+                                                                  {
+                                                                    dependency1,
+                                                                    dependency2,
+                                                                  },
+                                                                  new[]
                                                                   {
                                                                     output1,
                                                                   },
-                                                                  false,
-                                                                  Array.Empty<byte>(),
-                                                                  TaskStatus.Dispatched,
+                                                                  Array.Empty<string>(),
+                                                                  TaskStatus.Submitted,
+                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
-                                                                                  TimeSpan.FromSeconds(1),
-                                                                                  3,
+                                                                                  TimeSpan.FromSeconds(100),
+                                                                                  5,
                                                                                   1),
-                                                                  new List<string>
-                                                                  {
-                                                                    "AncestorDispatchId",
-                                                                  },
-                                                                  new Output(false,
+                                                                  DateTime.Now,
+                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
+                                                                  DateTime.MinValue,
+                                                                  DateTime.MinValue,
+                                                                  DateTime.Now,
+                                                                  new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
+
     Assert.AreNotEqual(0,
                        res.Count);
   }

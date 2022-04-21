@@ -44,20 +44,14 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                  {
                                                    cm.MapIdProperty(nameof(SessionData.SessionId))
                                                      .SetIsRequired(true);
-                                                   cm.MapProperty(nameof(SessionData.DispatchId))
-                                                     .SetIsRequired(true);
-                                                   cm.MapProperty(nameof(SessionData.AncestorsDispatchId))
-                                                     .SetIgnoreIfDefault(true);
-                                                   cm.MapProperty(nameof(SessionData.IsCancelled))
+                                                   cm.MapProperty(nameof(SessionData.Status))
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.Options))
                                                      .SetIsRequired(true)
                                                      .SetSerializer(new BsonProtoSerializer<TaskOptions>());
                                                    cm.SetIgnoreExtraElements(true);
                                                    cm.MapCreator(model => new SessionData(model.SessionId,
-                                                                                          model.DispatchId,
-                                                                                          model.AncestorsDispatchId,
-                                                                                          model.IsCancelled,
+                                                                                          model.Status,
                                                                                           model.Options));
                                                  });
     }
@@ -68,22 +62,9 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
     => nameof(SessionData);
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
+  public Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
                                            IMongoCollection<SessionData> collection)
   {
-    var dispatchIndex = Builders<SessionData>.IndexKeys.Hashed(model => model.DispatchId);
-
-    var indexModels = new CreateIndexModel<SessionData>[]
-                      {
-                        new(dispatchIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(dispatchIndex),
-                            }),
-                      };
-
-    await collection.Indexes.CreateManyAsync(sessionHandle,
-                                             indexModels)
-                    .ConfigureAwait(false);
+    return Task.CompletedTask;
   }
 }

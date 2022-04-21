@@ -41,10 +41,9 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                             {
                                               cm.MapIdProperty(nameof(Result.Id));
                                               cm.MapCreator(model => new Result(model.SessionId,
-                                                                                model.Key,
+                                                                                model.Name,
                                                                                 model.OwnerTaskId,
-                                                                                model.OriginDispatchId,
-                                                                                model.IsResultAvailable,
+                                                                                model.Status,
                                                                                 model.CreationDate,
                                                                                 model.Data));
                                             });
@@ -62,7 +61,6 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
   {
     var sessionIndex        = Builders<Result>.IndexKeys.Hashed(model => model.SessionId);
     var ownerTaskIndex      = Builders<Result>.IndexKeys.Hashed(model => model.OwnerTaskId);
-    var originDispatchIndex = Builders<Result>.IndexKeys.Hashed(model => model.OriginDispatchId);
 
     var indexModels = new CreateIndexModel<Result>[]
                       {
@@ -75,11 +73,6 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                             new CreateIndexOptions
                             {
                               Name = nameof(ownerTaskIndex),
-                            }),
-                        new(originDispatchIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(originDispatchIndex),
                             }),
                       };
 

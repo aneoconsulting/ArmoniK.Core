@@ -29,20 +29,14 @@ namespace ArmoniK.Core.Common.Storage;
 /// <summary>
 /// </summary>
 /// <param name="SessionId">Id of the session that produces and consumes this data</param>
-/// <param name="Key">Key to reference and access this result</param>
+/// <param name="Name">Name to reference and access this result</param>
 /// <param name="OwnerTaskId">Id of the task that is responsible of generating this result.</param>
-/// <param name="OriginDispatchId">Id of the task that is responsible of generating this result.</param>
-/// <param name="IsResultAvailable">
-///   if
-///   <value>true</value>
-///   , the result is available
-/// </param>
+/// <param name="Status">Status of the result (can be Created, Completed or Aborted)</param>
 /// <param name="CreationDate">Date of creation of the current object.</param>
-/// <param name="Data">Data for the current <paramref name="Key" /></param>
+/// <param name="Data">Data for the current <paramref name="Name" /></param>
 public record Result(string   SessionId,
-                     string   Key,
+                     string   Name,
                      string   OwnerTaskId,
-                     string   OriginDispatchId,
-                     bool     IsResultAvailable,
+                     string   Status,
                      DateTime CreationDate,
                      byte[]   Data);

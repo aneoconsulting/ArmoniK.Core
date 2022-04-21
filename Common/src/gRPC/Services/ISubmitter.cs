@@ -28,7 +28,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
@@ -48,10 +47,6 @@ public interface ISubmitter
   Task CancelSession(string            sessionId,
                      CancellationToken cancellationToken);
 
-  Task CancelDispatchSessionAsync(string            rootSessionId,
-                                  string            dispatchId,
-                                  CancellationToken cancellationToken);
-
   Task CancelTasks(TaskFilter        request,
                    CancellationToken cancellationToken);
 
@@ -63,8 +58,7 @@ public interface ISubmitter
                                          CancellationToken cancellationToken);
 
   Task<CreateTaskReply> CreateTasks(string                        sessionId,
-                                    string                        parentId,
-                                    string                        dispatchId,
+                                    string                        parentTaskId,
                                     TaskOptions                   options,
                                     IAsyncEnumerable<TaskRequest> taskRequests,
                                     CancellationToken             cancellationToken);
@@ -82,10 +76,6 @@ public interface ISubmitter
   Task UpdateTaskStatusAsync(string            id,
                              TaskStatus        status,
                              CancellationToken cancellationToken = default);
-
-  Task FinalizeDispatch(string            taskId,
-                        Dispatch          dispatchId,
-                        CancellationToken cancellationToken);
 
   Task CompleteTaskAsync(string            id,
                          Output            output,

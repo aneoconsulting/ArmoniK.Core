@@ -50,13 +50,7 @@ internal class BsonSerializerTest
   public void SerializeSessionDataModel()
   {
     var rdm = new SessionData("SessionId",
-                              "SessionId",
-                              new List<string>
-                              {
-                                "Ancestor1",
-                                "Ancestor2",
-                              },
-                              false,
+                              "Running",
                               new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
@@ -70,8 +64,6 @@ internal class BsonSerializerTest
 
     Assert.AreEqual(rdm.SessionId,
                     deserialized.SessionId);
-    Assert.AreEqual(rdm.DispatchId,
-                    deserialized.DispatchId);
     Assert.IsNotNull(deserialized.Options);
     Assert.AreEqual(rdm.Options.MaxDuration,
                     deserialized.Options.MaxDuration);
@@ -79,9 +71,6 @@ internal class BsonSerializerTest
                     deserialized.Options.MaxRetries);
     Assert.AreEqual(rdm.Options.Priority,
                     deserialized.Options.Priority);
-    Assert.AreEqual(rdm.IsCancelled,
-                    deserialized.IsCancelled);
-    Assert.IsTrue(rdm.AncestorsDispatchId.SequenceEqual(deserialized.AncestorsDispatchId));
   }
 
   [Test]
@@ -89,9 +78,8 @@ internal class BsonSerializerTest
   {
     var rdm = new Result("sessionId",
                          "Key",
-                         "Owner",
-                         "Origin",
-                         true,
+                         "OwnerTaskId",
+                         "Completed",
                          DateTime.Parse("2022-02-15 8:55:05.954")
                                  .ToUniversalTime(),
                          new[]
@@ -107,113 +95,65 @@ internal class BsonSerializerTest
 
     Assert.AreEqual(rdm.Id,
                     deserialized.Id);
-    Assert.AreEqual(rdm.Key,
-                    deserialized.Key);
+    Assert.AreEqual(rdm.SessionId,
+                    deserialized.SessionId);
+    Assert.AreEqual(rdm.Name,
+                    deserialized.Name);
     Assert.AreEqual(rdm.OwnerTaskId,
                     deserialized.OwnerTaskId);
-    Assert.AreEqual(rdm.OriginDispatchId,
-                    deserialized.OriginDispatchId);
-    Assert.AreEqual(rdm.IsResultAvailable,
-                    deserialized.IsResultAvailable);
+    Assert.AreEqual(rdm.Status,
+                    deserialized.Status);
     Assert.AreEqual(rdm.CreationDate,
                     deserialized.CreationDate);
     Assert.IsTrue(rdm.Data.SequenceEqual(deserialized.Data));
   }
 
   [Test]
-  public void SerializeDispatchDataModel()
-  {
-    var rdm = new Dispatch("sessionId",
-                           "task",
-                           "id",
-                           1,
-                           DateTime.Parse("2022-02-22 22:22:22")
-                                   .ToUniversalTime(),
-                           new[]
-                           {
-                             new StatusTime(TaskStatus.Creating,
-                                            DateTime.Parse("2021-02-21 21:21:21")
-                                                    .ToUniversalTime(),
-                                            string.Empty),
-                           },
-                           DateTime.Parse("2020-02-20 20:20:20")
-                                   .ToUniversalTime());
-
-
-    var serialized = rdm.ToBson();
-
-
-    var deserialized = BsonSerializer.Deserialize<Dispatch>(serialized);
-
-
-    Assert.AreEqual(rdm.Id,
-                    deserialized.Id);
-    Assert.AreEqual(rdm.SessionId,
-                    deserialized.SessionId);
-    Assert.AreEqual(rdm.TaskId,
-                    deserialized.TaskId);
-    Assert.AreEqual(rdm.Id,
-                    deserialized.Id);
-    Assert.AreEqual(rdm.TimeToLive,
-                    deserialized.TimeToLive);
-    Assert.AreEqual(rdm.CreationDate,
-                    deserialized.CreationDate);
-  }
-
-
-  [Test]
   public void SerializeTaskDataModel()
   {
-    var tdm = new TaskData(HasPayload: true,
-                           Options: new Core.Common.Storage.TaskOptions(Priority: 2,
-                                                                        Options: new Dictionary<string, string>
-                                                                                 {
-                                                                                   {
-                                                                                     "key1", "Value1"
-                                                                                   },
-                                                                                   {
-                                                                                     "key2", "value2"
-                                                                                   },
-                                                                                 },
-                                                                        MaxDuration: TimeSpan.FromMinutes(42),
-                                                                        MaxRetries: 7),
-                           TaskId: "tid",
-                           Payload: new[]
-                                    {
-                                      (byte)1,
-                                      (byte)2,
-                                      (byte)3,
-                                    },
-                           SessionId: "ses1",
-                           Status: TaskStatus.Creating,
-                           ParentTaskId: "par",
-                           CreationDate: DateTime.Now,
-                           DataDependencies: new List<string>
-                                             {
-                                               "dep1",
-                                               "dep2",
-                                             },
-                           AncestorDispatchIds: new List<string>
-                                                {
-                                                  "ancestor1",
-                                                  "ancestor2",
-                                                },
-                           DispatchId: "dispatchId1",
-                           ExpectedOutput: new List<string>
-                                           {
-                                             "output1",
-                                             "output2",
-                                           },
-                           Output: new Output(false,
-                                              ""));
+    var tdm = new TaskData("SessionId",
+                           "TaskCompletedId",
+                           "OwnerPodId",
+                           new[]
+                           {
+                             "parent1",
+                           },
+                           new[]
+                           {
+                             "dependency1",
+                           },
+                           new[]
+                           {
+                             "output1",
+                           },
+                           Array.Empty<string>(),
+                           TaskStatus.Completed,
+                           "",
+                           new Core.Common.Storage.TaskOptions(new Dictionary<string, string>
+                                                               {
+                                                                 {
+                                                                   "key1", "data1"
+                                                                 },
+                                                                 {
+                                                                   "key2", "data2"
+                                                                 },
+                                                               },
+                                                               TimeSpan.FromSeconds(200),
+                                                               5,
+                                                               1),
+                           DateTime.Now,
+                           DateTime.Now + TimeSpan.FromSeconds(1),
+                           DateTime.Now + TimeSpan.FromSeconds(10),
+                           DateTime.Now + TimeSpan.FromSeconds(20),
+                           DateTime.Now,
+                           new Output(true,
+                                      ""));
 
     var serialized = tdm.ToBson();
 
     var deserialized = BsonSerializer.Deserialize<TaskData>(serialized);
 
     Assert.IsNotNull(deserialized);
-    Assert.AreEqual(tdm.HasPayload,
-                    deserialized.HasPayload);
     Assert.IsNotNull(deserialized.Options);
     Assert.AreEqual(tdm.Options.Priority,
                     deserialized.Options.Priority);
@@ -229,17 +169,15 @@ internal class BsonSerializerTest
                     deserialized.Options.MaxRetries);
     Assert.AreEqual(tdm.TaskId,
                     deserialized.TaskId);
-    Assert.IsTrue(tdm.Payload.SequenceEqual(deserialized.Payload));
     Assert.AreEqual(tdm.Status,
                     deserialized.Status);
-    Assert.AreEqual(tdm.ParentTaskId,
-                    deserialized.ParentTaskId);
     Assert.AreEqual(tdm.SessionId,
                     deserialized.SessionId);
-    Assert.AreEqual(tdm.DispatchId,
-                    deserialized.DispatchId);
-    Assert.IsTrue(tdm.AncestorDispatchIds.SequenceEqual(deserialized.AncestorDispatchIds));
-    Assert.IsTrue(tdm.ExpectedOutput.SequenceEqual(deserialized.ExpectedOutput));
+    Assert.AreEqual(tdm.OwnerPodId,
+                    deserialized.OwnerPodId);
+    Assert.IsTrue(tdm.RetryOfIds.SequenceEqual(deserialized.RetryOfIds));
+    Assert.IsTrue(tdm.ExpectedOutputIds.SequenceEqual(deserialized.ExpectedOutputIds));
+    Assert.IsTrue(tdm.ParentTaskIds.SequenceEqual(deserialized.ParentTaskIds));
   }
 
   [Test]
@@ -249,10 +187,6 @@ internal class BsonSerializerTest
   [Test]
   public void InitializeTaskDataModelMapping()
     => _ = new TaskDataModelMapping();
-
-  [Test]
-  public void InitializeDispatchDataModelMapping()
-    => _ = new DispatchDataModelMapping();
 
   [Test]
   public void InitializeSessionDataModelMapping()

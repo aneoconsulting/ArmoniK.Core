@@ -74,10 +74,10 @@ internal class IndexTest
   public void IndexCreationShouldSucceed()
   {
     var db         = provider_.GetRequiredService<IMongoDatabase>();
-    var collection = db.GetCollection<Dispatch>("Test");
-    var taskIndex  = Builders<Dispatch>.IndexKeys.Hashed(model => model.TaskId);
+    var collection = db.GetCollection<TaskData>("Test");
+    var taskIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
 
-    var indexModels = new CreateIndexModel<Dispatch>[]
+    var indexModels = new CreateIndexModel<TaskData>[]
                       {
                         new(taskIndex,
                             new CreateIndexOptions
@@ -103,11 +103,11 @@ internal class IndexTest
   public void IndexCreation2ShouldSucceed()
   {
     var db         = provider_.GetRequiredService<IMongoDatabase>();
-    var collection = db.GetCollection<Dispatch>("Test");
-    var taskIndex  = Builders<Dispatch>.IndexKeys.Hashed(model => model.TaskId);
-    var ttlIndex   = Builders<Dispatch>.IndexKeys.Text(model => model.TimeToLive);
+    var collection = db.GetCollection<TaskData>("Test");
+    var taskIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
+    var ttlIndex   = Builders<TaskData>.IndexKeys.Text(model => model.PodTtl);
 
-    var indexModels = new CreateIndexModel<Dispatch>[]
+    var indexModels = new CreateIndexModel<TaskData>[]
                       {
                         new(taskIndex,
                             new CreateIndexOptions
@@ -139,23 +139,23 @@ internal class IndexTest
   public void CombinedIndexCreationShouldSucceed()
   {
     var db         = provider_.GetRequiredService<IMongoDatabase>();
-    var collection = db.GetCollection<Dispatch>("Test");
-    var taskIndex  = Builders<Dispatch>.IndexKeys.Hashed(model => model.TaskId);
-    var ttlIndex   = Builders<Dispatch>.IndexKeys.Text(model => model.TimeToLive);
-    var combine = Builders<Dispatch>.IndexKeys.Combine(taskIndex,
-                                                       ttlIndex);
+    var collection = db.GetCollection<TaskData>("Test");
+    var taskIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
+    var sessionIndex   = Builders<TaskData>.IndexKeys.Text(model => model.SessionId);
+    var combine = Builders<TaskData>.IndexKeys.Combine(taskIndex,
+                                                       sessionIndex);
 
-    var indexModels = new CreateIndexModel<Dispatch>[]
+    var indexModels = new CreateIndexModel<TaskData>[]
                       {
                         new(taskIndex,
                             new CreateIndexOptions
                             {
                               Name = nameof(taskIndex),
                             }),
-                        new(ttlIndex,
+                        new(sessionIndex,
                             new CreateIndexOptions
                             {
-                              Name = nameof(ttlIndex),
+                              Name = nameof(sessionIndex),
                             }),
                         new(combine,
                             new CreateIndexOptions

@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -123,25 +124,6 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task CancelDispatchSessionAsync(string            rootSessionId,
-                                               string            dispatchId,
-                                               CancellationToken cancellationToken)
-  {
-    using var _        = logger_.LogFunction(dispatchId);
-    using var activity = activitySource_.StartActivity($"{nameof(CancelDispatchSessionAsync)}");
-    var sessionCancelTask = sessionTable_.CancelDispatchAsync(rootSessionId,
-                                                              dispatchId,
-                                                              cancellationToken);
-
-    await taskTable_.CancelDispatchAsync(rootSessionId,
-                                         dispatchId,
-                                         cancellationToken)
-                    .ConfigureAwait(false);
-
-    await sessionCancelTask.ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
   public async Task CancelTasks(TaskFilter        request,
                                 CancellationToken cancellationToken)
   {
@@ -174,16 +156,14 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task<CreateTaskReply> CreateTasks(string                        sessionId,
                                                  string                        parentId,
-                                                 string                        dispatchId,
                                                  TaskOptions                   options,
                                                  IAsyncEnumerable<TaskRequest> taskRequests,
                                                  CancellationToken             cancellationToken)
   {
-    using var logFunction = logger_.LogFunction(dispatchId);
+    using var logFunction = logger_.LogFunction(parentId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
     using var sessionScope = logger_.BeginPropertyScope(("Session", sessionId),
-                                                        ("TaskId", parentId),
-                                                        ("Dispatch", dispatchId));
+                                                        ("TaskId", parentId));
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
@@ -237,7 +217,6 @@ public class Submitter : ISubmitter
 
     await InitializeTaskCreationAsync(sessionId,
                                       parentId,
-                                      dispatchId,
                                       options,
                                       requests,
                                       cancellationToken)
@@ -573,7 +552,8 @@ public class Submitter : ISubmitter
                        result.OwnerTaskId);
       if (ownerId != result.OwnerTaskId)
       {
-        continueWaiting = !result.IsResultAvailable;
+        // Todo : FIX jerome
+        // continueWaiting = !result.IsResultAvailable;
         if (continueWaiting)
         {
           await Task.Delay(150,
@@ -620,37 +600,6 @@ public class Submitter : ISubmitter
     return idList;
   }
 
-  /// <inheritdoc />
-  public async Task FinalizeDispatch(string            taskId,
-                                     Dispatch          dispatch,
-                                     CancellationToken cancellationToken)
-  {
-    using var activity      = activitySource_.StartActivity($"{nameof(FinalizeDispatch)}");
-    var       oldDispatchId = dispatch.Id;
-    var targetDispatchId = await taskTable_.GetTaskDispatchId(taskId,
-                                                              cancellationToken)
-                                           .ConfigureAwait(false);
-    while (oldDispatchId != targetDispatchId)
-    {
-      await taskTable_.ChangeTaskDispatch(oldDispatchId,
-                                          targetDispatchId,
-                                          cancellationToken)
-                      .ConfigureAwait(false);
-
-      // to be done after awaiting previous call to ensure proper modification sequencing
-      await resultTable_.ChangeResultDispatch(dispatch.SessionId,
-                                              oldDispatchId,
-                                              targetDispatchId,
-                                              cancellationToken)
-                        .ConfigureAwait(false);
-
-      oldDispatchId = targetDispatchId;
-      targetDispatchId = await taskTable_.GetTaskDispatchId(taskId,
-                                                            cancellationToken)
-                                         .ConfigureAwait(false);
-    }
-  }
-
   private IObjectStorage ResultStorage(string session)
     => objectStorageFactory_.CreateResultStorage(session);
 
@@ -672,48 +621,43 @@ public class Submitter : ISubmitter
 
   public async Task InitializeTaskCreationAsync(string                           session,
                                                 string                           parentTaskId,
-                                                string                           dispatchId,
                                                 TaskOptions                      options,
                                                 IEnumerable<Storage.TaskRequest> requests,
                                                 CancellationToken                cancellationToken = default)
   {
-    using var _        = logger_.LogFunction($"{session}.{parentTaskId}.{dispatchId}");
+    using var _        = logger_.LogFunction($"{session}.{parentTaskId}");
     using var activity = activitySource_.StartActivity($"{nameof(InitializeTaskCreationAsync)}");
     activity?.AddTag("sessionId",
                      session);
     activity?.AddTag("parentTaskId",
                      parentTaskId);
-    activity?.AddTag("dispatchId",
-                     dispatchId);
     activity?.AddTag("taskIds",
                      string.Join(",",
                                  requests.Select(request => request.Id)));
 
-    var ancestors = new List<string>();
+    var parentTaskIds = new List<string>();
 
     if (!parentTaskId.Equals(session))
     {
-      var res = await taskTable_.GetTaskAncestorDispatchIds(parentTaskId,
-                                                            cancellationToken)
+      var res = await taskTable_.GetParentTaskIds(parentTaskId,
+                                                  cancellationToken)
                                 .ConfigureAwait(false);
-      ancestors.AddRange(res);
+      parentTaskIds.AddRange(res);
     }
 
-    ancestors.Add(dispatchId);
+    parentTaskIds.Add(parentTaskId);
 
     var taskDataModels = requests.Select(async request =>
                                          {
                                            var tdm = new TaskData(session,
-                                                                  parentTaskId,
-                                                                  dispatchId,
                                                                   request.Id,
+                                                                  Dns.GetHostName(),
+                                                                  parentTaskIds,
                                                                   request.DataDependencies.ToList(),
                                                                   request.ExpectedOutputKeys.ToList(),
-                                                                  request.HasPayload,
-                                                                  request.PayloadChunk.ToArray(),
+                                                                  Array.Empty<string>(),
                                                                   TaskStatus.Creating,
                                                                   options,
-                                                                  ancestors,
                                                                   new Storage.Output(false,
                                                                                      ""));
 
@@ -750,8 +694,7 @@ public class Submitter : ISubmitter
                                                                     .Select(key => new Result(session,
                                                                                               key,
                                                                                               request.Id,
-                                                                                              dispatchId,
-                                                                                              false,
+                                                                                              "Created",
                                                                                               DateTime.UtcNow,
                                                                                               Array.Empty<byte>()));
                                            return (TaskDataModel: tdm, ResultModel: resultModel);

@@ -37,7 +37,6 @@ using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
 
-using KeyNotFoundException = System.Collections.Generic.KeyNotFoundException;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -45,17 +44,14 @@ namespace ArmoniK.Core.Adapters.Memory;
 
 public class TaskTable : ITaskTable
 {
-  private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> dispatch2TaskIds_;
   private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskIds_;
   private readonly ConcurrentDictionary<string, TaskData>                taskId2TaskData_;
 
   public TaskTable(ConcurrentDictionary<string, TaskData>                task2TaskData,
-                   ConcurrentDictionary<string, ConcurrentQueue<string>> dispatch2TaskIds,
                    ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskId,
                    ILogger<TaskTable>                                    logger)
   {
     taskId2TaskData_  = task2TaskData;
-    dispatch2TaskIds_ = dispatch2TaskIds;
     session2TaskIds_  = session2TaskId;
     Logger            = logger;
   }
@@ -75,10 +71,6 @@ public class TaskTable : ITaskTable
         throw new ArmoniKException($"Tasks '{taskData.TaskId}' already exists");
       }
 
-      var dispatch = dispatch2TaskIds_.GetOrAdd(taskData.DispatchId,
-                                                new ConcurrentQueue<string>());
-      dispatch.Enqueue(taskData.TaskId);
-
       var session = session2TaskIds_.GetOrAdd(taskData.SessionId,
                                               new ConcurrentQueue<string>());
       session.Enqueue(taskData.TaskId);
@@ -90,72 +82,10 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public Task<TaskData> ReadTaskAsync(string            taskId,
                                       CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_[taskId]);
-
-  /// <inheritdoc />
-  public Task<string> GetTaskDispatchId(string            taskId,
-                                        CancellationToken cancellationToken = default)
   {
-    try
-    {
-      return Task.FromResult(taskId2TaskData_[taskId]
-                               .DispatchId);
-    }
-    catch (KeyNotFoundException)
-    {
-      throw new ArmoniKException($"key {taskId} not found");
-    }
-  }
-
-  /// <inheritdoc />
-  public Task<IList<string>> GetTaskAncestorDispatchIds(string            taskId,
-                                                        CancellationToken cancellationToken = default)
-  {
-    try
-    {
-      return Task.FromResult(taskId2TaskData_[taskId]
-                               .AncestorDispatchIds);
-    }
-    catch (KeyNotFoundException)
-    {
-      throw new ArmoniKException($"key {taskId} not found");
-    }
-  }
-
-  /// <inheritdoc />
-  public Task ChangeTaskDispatch(string            oldDispatchId,
-                                 string            newDispatchId,
-                                 CancellationToken cancellationToken)
-  {
-    if (!dispatch2TaskIds_.ContainsKey(oldDispatchId))
-    {
-      throw new ArmoniKException($"Key '{oldDispatchId}' not found");
-    }
-
-    while (dispatch2TaskIds_[oldDispatchId]
-           .TryDequeue(out var taskId))
-    {
-      taskId2TaskData_.AddOrUpdate(taskId,
-                                   _ => throw new InvalidOperationException("The task does not exist."),
-                                   (_,
-                                    data) => data.DispatchId == oldDispatchId
-                                               ? data with
-                                                 {
-                                                   DispatchId = newDispatchId,
-                                                   AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId)
-                                                                             .ToList(),
-                                                 }
-                                               : data with
-                                                 {
-                                                   AncestorDispatchIds = data.AncestorDispatchIds.Where(s => s != oldDispatchId)
-                                                                             .ToList(),
-                                                 });
-      var dispatch = dispatch2TaskIds_.GetOrAdd(newDispatchId,
-                                                new ConcurrentQueue<string>());
-      dispatch.Enqueue(taskId);
-    }
-
-    return Task.CompletedTask;
+    if (taskId2TaskData_.ContainsKey(taskId))
+      return Task.FromResult(taskId2TaskData_[taskId]);
+    throw new ArmoniKException($"Key '{taskId}' not found");
   }
 
   /// <inheritdoc />
@@ -214,40 +144,6 @@ public class TaskTable : ITaskTable
                         };
 
     await UpdateAllTaskStatusAsync(sessionFilter,
-                                   TaskStatus.Canceling,
-                                   cancellationToken)
-      .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task CancelDispatchAsync(string            rootSessionId,
-                                        string            dispatchId,
-                                        CancellationToken cancellationToken = default)
-  {
-    if (!dispatch2TaskIds_.ContainsKey(dispatchId))
-    {
-      throw new ArmoniKException($"Key '{dispatchId}' not found");
-    }
-
-    var dispatchFilter = new TaskFilter
-                         {
-                           Session = new TaskFilter.Types.IdsRequest
-                                     {
-                                       Ids =
-                                       {
-                                         rootSessionId,
-                                       },
-                                     },
-                           Dispatch = new TaskFilter.Types.IdsRequest
-                                      {
-                                        Ids =
-                                        {
-                                          dispatchId,
-                                        },
-                                      },
-                         };
-
-    await UpdateAllTaskStatusAsync(dispatchFilter,
                                    TaskStatus.Canceling,
                                    cancellationToken)
       .ConfigureAwait(false);
@@ -319,8 +215,6 @@ public class TaskTable : ITaskTable
                                                                   nameof(filter)),
                                     TaskFilter.IdsOneofCase.Session => filter.Session.Ids.SelectMany(s => session2TaskIds_[s])
                                                                              .ToImmutableList(),
-                                    TaskFilter.IdsOneofCase.Dispatch => filter.Dispatch.Ids.SelectMany(s => dispatch2TaskIds_[s])
-                                                                              .ToImmutableList(),
                                     TaskFilter.IdsOneofCase.Task => filter.Task.Ids,
                                     _                            => throw new ArgumentException("Filter is set to an unknown IdsCase."),
                                   };
@@ -382,7 +276,12 @@ public class TaskTable : ITaskTable
   public Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
                                                              CancellationToken cancellationToken = default)
     => Task.FromResult(taskId2TaskData_[taskId]
-                         .ExpectedOutput as IEnumerable<string>);
+                         .ExpectedOutputIds as IEnumerable<string>);
+
+  /// <inheritdoc />
+  public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
+                                                    CancellationToken cancellationToken)
+    => throw new NotImplementedException();
 
   /// <inheritdoc />
   public ILogger Logger { get; set; }

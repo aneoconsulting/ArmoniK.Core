@@ -100,84 +100,18 @@ public class TaskTable : ITaskTable
     var taskCollection = await taskCollectionProvider_.GetAsync()
                                                       .ConfigureAwait(false);
 
-    return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(tdm => tdm.TaskId == taskId)
-                               .FirstAsync(cancellationToken)
-                               .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task<string> GetTaskDispatchId(string            taskId,
-                                              CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(GetTaskDispatchId)}");
-    activity?.SetTag($"{nameof(GetTaskDispatchId)}_TaskId",
-                     taskId);
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
-    var taskCollection = await taskCollectionProvider_.GetAsync()
-                                                      .ConfigureAwait(false);
-
-    var queryableTaskCollection = taskCollection.AsQueryable(sessionHandle)
-                                                .Where(tdm => tdm.TaskId == taskId);
-
-    if (!queryableTaskCollection.Any())
+    try
     {
-      throw new ArmoniKException($"Key '{taskId}' not found");
+      return await taskCollection.AsQueryable(sessionHandle)
+                                 .Where(tdm => tdm.TaskId == taskId)
+                                 .SingleAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException e)
+    {
+      throw new ArmoniKException($"Task '{taskId}' not found.");
     }
 
-    return await queryableTaskCollection.Select(model => model.DispatchId)
-                                        .FirstAsync(cancellationToken)
-                                        .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task<IList<string>> GetTaskAncestorDispatchIds(string            taskId,
-                                                              CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(GetTaskAncestorDispatchIds)}");
-    activity?.SetTag($"{nameof(GetTaskAncestorDispatchIds)}_TaskId",
-                     taskId);
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
-    var taskCollection = await taskCollectionProvider_.GetAsync()
-                                                      .ConfigureAwait(false);
-
-    var queryableTaskCollection = taskCollection.AsQueryable(sessionHandle)
-                                                .Where(tdm => tdm.TaskId == taskId);
-
-    if (!queryableTaskCollection.Any())
-    {
-      throw new ArmoniKException($"Key '{taskId}' not found");
-    }
-
-    return await queryableTaskCollection.Select(model => model.AncestorDispatchIds)
-                                        .FirstAsync(cancellationToken)
-                                        .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
-  public async Task ChangeTaskDispatch(string            oldDispatchId,
-                                       string            newDispatchId,
-                                       CancellationToken cancellationToken)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(ChangeTaskDispatch)}");
-    activity?.SetTag("oldDispatchId",
-                     oldDispatchId);
-    activity?.SetTag("newDispatchId",
-                     newDispatchId);
-    var taskCollection = await taskCollectionProvider_.GetAsync()
-                                                      .ConfigureAwait(false);
-
-    var result = await taskCollection.UpdateManyAsync(model => model.DispatchId == oldDispatchId,
-                                                      Builders<TaskData>.Update.Set(model => model.DispatchId,
-                                                                                    newDispatchId),
-                                                      cancellationToken: cancellationToken)
-                                     .ConfigureAwait(false);
-    if (result.ModifiedCount == 0)
-    {
-      Logger.LogWarning($"Key '{oldDispatchId}' not found");
-    }
   }
 
   /// <inheritdoc />
@@ -279,31 +213,6 @@ public class TaskTable : ITaskTable
     if (result.MatchedCount == 0)
     {
       throw new ArmoniKException($"Key '{sessionId}' not found");
-    }
-  }
-
-  /// <inheritdoc />
-  public async Task CancelDispatchAsync(string            rootSessionId,
-                                        string            dispatchId,
-                                        CancellationToken cancellationToken = default)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(CancelDispatchAsync)}");
-    activity?.SetTag($"{nameof(CancelSessionAsync)}_sessionId",
-                     rootSessionId);
-    activity?.SetTag($"{nameof(CancelSessionAsync)}_dispatchId",
-                     dispatchId);
-    var taskCollection = await taskCollectionProvider_.GetAsync()
-                                                      .ConfigureAwait(false);
-
-    var result = await taskCollection.UpdateManyAsync(model => model.DispatchId == dispatchId,
-                                                      Builders<TaskData>.Update.Set(model => model.Status,
-                                                                                    TaskStatus.Canceling),
-                                                      cancellationToken: cancellationToken)
-                                     .ConfigureAwait(false);
-
-    if (result.MatchedCount == 0)
-    {
-      throw new ArmoniKException($"Key '{dispatchId}' not found");
     }
   }
 
@@ -503,10 +412,14 @@ public class TaskTable : ITaskTable
 
     return await taskCollection.AsQueryable(sessionHandle)
                                .Where(tdm => tdm.TaskId == taskId)
-                               .Select(model => model.ExpectedOutput)
+                               .Select(model => model.ExpectedOutputIds)
                                .FirstAsync(cancellationToken)
                                .ConfigureAwait(false);
   }
+
+  public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
+                                                    CancellationToken cancellationToken)
+    => throw new NotImplementedException();
 
   /// <inheritdoc />
   public ILogger Logger { get; }

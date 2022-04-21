@@ -36,8 +36,4 @@ public class TableStorage
   public TimeSpan PollingDelayMin { get; set; } = TimeSpan.FromSeconds(1);
 
   public TimeSpan PollingDelayMax { get; set; } = TimeSpan.FromMinutes(5);
-
-  public TimeSpan DispatchTimeToLive { get; set; } = TimeSpan.FromMinutes(2);
-
-  public TimeSpan DispatchRefreshPeriod { get; set; } = TimeSpan.FromMinutes(1);
 }

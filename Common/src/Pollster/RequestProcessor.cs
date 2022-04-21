@@ -96,14 +96,12 @@ public class RequestProcessor : IInitializable
 
   public async Task<List<Task>> ProcessAsync(IQueueMessageHandler                       messageHandler,
                                              TaskData                                   taskData,
-                                             Dispatch                                   dispatch,
                                              Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
                                              CancellationToken                          cancellationToken)
   {
     try
     {
       var result = await ProcessInternalsAsync(taskData,
-                                               dispatch,
                                                computeRequests,
                                                cancellationToken)
                      .ConfigureAwait(false);
@@ -115,10 +113,11 @@ public class RequestProcessor : IInitializable
     {
       logger_.LogError(e,
                        "Error while processing request");
-      await submitter_.CancelDispatchSessionAsync(taskData.SessionId,
-                                                  dispatch.Id,
-                                                  cancellationToken)
-                      .ConfigureAwait(false);
+      // TODO cancel session dispatch, cancel task ?
+      //await submitter_.CancelDispatchSessionAsync(taskData.SessionId,
+      //                                            dispatch.Id,
+      //                                            cancellationToken)
+      //                .ConfigureAwait(false);
 
       if (!await HandleExceptionAsync(e,
                                       taskData,
@@ -232,7 +231,6 @@ public class RequestProcessor : IInitializable
 
 
   public async Task<List<Task>> ProcessInternalsAsync(TaskData                                   taskData,
-                                                      Dispatch                                   dispatch,
                                                       Queue<ProcessRequest.Types.ComputeRequest> computeRequests,
                                                       CancellationToken                          cancellationToken)
   {
@@ -241,8 +239,6 @@ public class RequestProcessor : IInitializable
                          taskData.SessionId);
     activity?.SetBaggage("TaskId",
                          taskData.TaskId);
-    activity?.SetBaggage("DispatchId",
-                         taskData.DispatchId);
 
     var workerClient = await workerClientProvider_.GetAsync()
                                                   .ConfigureAwait(false);
@@ -302,9 +298,6 @@ public class RequestProcessor : IInitializable
           await output.WhenAll()
                       .ConfigureAwait(false);
           output.Clear();
-          output.Add(submitter_.FinalizeDispatch(taskData.TaskId,
-                                                 dispatch,
-                                                 cancellationToken));
           output.Add(submitter_.CompleteTaskAsync(taskData.TaskId,
                                                   first.Output,
                                                   cancellationToken));
@@ -320,7 +313,6 @@ public class RequestProcessor : IInitializable
           break;
         case ProcessReply.TypeOneofCase.CreateSmallTask:
           var replySmallTasksAsync = await SubmitSmallTasksAsync(taskData,
-                                                                 dispatch.Id,
                                                                  first,
                                                                  cancellationToken)
                                        .ConfigureAwait(false);
@@ -336,7 +328,6 @@ public class RequestProcessor : IInitializable
           break;
         case ProcessReply.TypeOneofCase.CreateLargeTask:
           var replyLargeTasksAsync = await SubmitLargeTasksAsync(taskData,
-                                                                 dispatch.Id,
                                                                  first,
                                                                  singleReplyStream,
                                                                  cancellationToken)
@@ -455,15 +446,14 @@ public class RequestProcessor : IInitializable
 
   [PublicAPI]
   public Task<CreateTaskReply> SubmitLargeTasksAsync(TaskData            taskData,
-                                                     string              dispatchId,
                                                      ProcessReply        first,
                                                      IList<ProcessReply> singleReplyStream,
                                                      CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SubmitLargeTasksAsync)}");
+    // TODO jerome parentId ?
     return submitter_.CreateTasks(taskData.SessionId,
                                   taskData.TaskId,
-                                  dispatchId,
                                   first.CreateLargeTask.InitRequest.TaskOptions,
                                   singleReplyStream.Skip(1)
                                                    .ReconstituteTaskRequest(logger_),
@@ -472,14 +462,13 @@ public class RequestProcessor : IInitializable
 
   [PublicAPI]
   public Task<CreateTaskReply> SubmitSmallTasksAsync(TaskData          taskData,
-                                                     string            dispatchId,
                                                      ProcessReply      request,
                                                      CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SubmitSmallTasksAsync)}");
+    // TODO jerome parentId ?
     return submitter_.CreateTasks(taskData.SessionId,
-                                  taskData.ParentTaskId,
-                                  dispatchId,
+                                  taskData.TaskId,
                                   request.CreateSmallTask.TaskOptions,
                                   request.CreateSmallTask.TaskRequests.ToAsyncEnumerable()
                                          .Select(taskRequest => new TaskRequest(taskRequest.Id,

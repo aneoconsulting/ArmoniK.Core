@@ -41,48 +41,57 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
     {
       BsonClassMap.RegisterClassMap<TaskData>(cm =>
                                               {
-                                                cm.MapIdProperty(nameof(TaskData.TaskId))
-                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.SessionId))
                                                   .SetIsRequired(true);
-                                                cm.MapProperty(nameof(TaskData.ParentTaskId))
+                                                cm.MapIdProperty(nameof(TaskData.TaskId))
                                                   .SetIsRequired(true);
-                                                cm.MapProperty(nameof(TaskData.DispatchId))
+                                                cm.MapProperty(nameof(TaskData.OwnerPodId))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.ParentTaskIds))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.DataDependencies))
                                                   .SetIgnoreIfDefault(true)
                                                   .SetDefaultValue(Array.Empty<string>());
+                                                cm.MapProperty(nameof(TaskData.ExpectedOutputIds))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.RetryOfIds))
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.Status))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.StatusMessage))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.Options))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.CreationDate))
                                                   .SetIsRequired(true);
-                                                cm.MapProperty(nameof(TaskData.HasPayload))
+                                                cm.MapProperty(nameof(TaskData.SubmittedDate))
                                                   .SetIsRequired(true);
-                                                cm.MapProperty(nameof(TaskData.Payload))
-                                                  .SetIgnoreIfDefault(true);
-                                                cm.MapProperty(nameof(TaskData.AncestorDispatchIds))
-                                                  .SetIgnoreIfDefault(true)
-                                                  .SetDefaultValue(Array.Empty<string>());
-                                                cm.MapProperty(nameof(TaskData.ExpectedOutput))
+                                                cm.MapProperty(nameof(TaskData.StartDate))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.EndDate))
+                                                  .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.PodTtl))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.Output))
                                                   .SetIsRequired(true);
                                                 cm.SetIgnoreExtraElements(true);
                                                 cm.MapCreator(model => new TaskData(model.SessionId,
-                                                                                    model.ParentTaskId,
-                                                                                    model.DispatchId,
                                                                                     model.TaskId,
+                                                                                    model.OwnerPodId,
+                                                                                    model.ParentTaskIds,
                                                                                     model.DataDependencies,
-                                                                                    model.ExpectedOutput,
-                                                                                    model.HasPayload,
-                                                                                    model.Payload,
+                                                                                    model.ExpectedOutputIds,
+                                                                                    model.RetryOfIds,
                                                                                     model.Status,
+                                                                                    model.StatusMessage,
                                                                                     model.Options,
-                                                                                    model.AncestorDispatchIds,
                                                                                     model.CreationDate,
+                                                                                    model.SubmittedDate,
+                                                                                    model.StartDate,
+                                                                                    model.EndDate,
+                                                                                    model.PodTtl,
                                                                                     model.Output));
+
                                               });
     }
 
@@ -131,7 +140,6 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
   {
     var sessionIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
     var statusIndex   = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
-    var dispatchIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.DispatchId);
 
     var indexModels = new CreateIndexModel<TaskData>[]
                       {
@@ -139,11 +147,6 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                             new CreateIndexOptions
                             {
                               Name = nameof(sessionIndex),
-                            }),
-                        new(dispatchIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(dispatchIndex),
                             }),
                         new(statusIndex,
                             new CreateIndexOptions
