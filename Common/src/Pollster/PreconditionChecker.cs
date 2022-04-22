@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -103,15 +102,6 @@ public class PreconditionChecker : IInitializable
       case TaskStatus.Canceling:
         logger_.LogInformation("Task is being cancelled");
         messageHandler.Status = QueueMessageStatus.Cancelled;
-        //await sessionTable_.CancelDispatchAsync(taskData.SessionId,
-        //                                        taskData.DispatchId,
-        //                                        cancellationToken)
-        //                   .ConfigureAwait(false);
-        //await taskTable_.CancelDispatchAsync(taskData.SessionId,
-        //                                     taskData.DispatchId,
-        //                                     cancellationToken)
-        //                .ConfigureAwait(false);
-        // TODO: cancel dispatch jerome ???
         await taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
                                                TaskStatus.Canceled,
                                                CancellationToken.None)
@@ -130,17 +120,9 @@ public class PreconditionChecker : IInitializable
       case TaskStatus.Dispatched:
         break;
       case TaskStatus.Error:
-        logger_.LogInformation("Task was on error elsewhere ; retrying");
-        //await taskTable_.CancelDispatchAsync(taskData.SessionId,
-        //                                     taskData.DispatchId,
-        //                                     cancellationToken)
-        //                .ConfigureAwait(false);
-        //await taskTable_.CancelDispatchAsync(taskData.SessionId,
-        //                                     taskData.DispatchId,
-        //                                     cancellationToken)
-        //                .ConfigureAwait(false);
-        // TODO: dispatch jerome ???
-        break;
+        logger_.LogInformation("Task was on error elsewhere ; task should have been resubmitted");
+        messageHandler.Status = QueueMessageStatus.Cancelled;
+        return null;
       case TaskStatus.Timeout:
         logger_.LogInformation("Task was timeout elsewhere ; taking over here");
         break;
