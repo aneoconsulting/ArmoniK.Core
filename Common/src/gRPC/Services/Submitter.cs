@@ -159,15 +159,15 @@ public class Submitter : ISubmitter
 
   /// <inheritdoc />
   public async Task<(List<string> TaskIds, TaskOptions Options)> CreateTasks(string                        sessionId,
-                                                                     string                        parentId,
+                                                                     string                        parentTaskId,
                                                                      TaskOptions                   options,
                                                                      IAsyncEnumerable<TaskRequest> taskRequests,
                                                                      CancellationToken             cancellationToken)
   {
-    using var logFunction = logger_.LogFunction(parentId);
+    using var logFunction = logger_.LogFunction(parentTaskId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
     using var sessionScope = logger_.BeginPropertyScope(("Session", sessionId),
-                                                        ("TaskId", parentId));
+                                                        ("TaskId", parentTaskId));
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
@@ -204,7 +204,7 @@ public class Submitter : ISubmitter
     }
 
     await InitializeTaskCreationAsync(sessionId,
-                                      parentId,
+                                      parentTaskId,
                                       options,
                                       requests,
                                       cancellationToken)
@@ -531,8 +531,7 @@ public class Submitter : ISubmitter
                        result.OwnerTaskId);
       if (ownerId != result.OwnerTaskId)
       {
-        // Todo : FIX jerome
-        // continueWaiting = !result.IsResultAvailable;
+        continueWaiting = result.Status != "Completed";
         if (continueWaiting)
         {
           await Task.Delay(150,
