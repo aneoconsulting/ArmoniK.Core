@@ -213,7 +213,7 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateTaskReply> FinalizeTaskCreation(IList<string> taskIds,
+  public async Task FinalizeTaskCreation(IList<string> taskIds,
                                                           TaskOptions options,
                                                           CancellationToken   cancellationToken)
   {
@@ -236,11 +236,6 @@ public class Submitter : ISubmitter
     await taskTable_.FinalizeTaskCreation(finalizationFilter,
                                           cancellationToken)
                     .ConfigureAwait(false);
-
-    return new CreateTaskReply
-           {
-             Successfull = new Empty(),
-           };
   }
 
   /// <inheritdoc />

@@ -41,8 +41,10 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
+using Output = ArmoniK.Api.gRPC.V1.Output;
 using Submitter = ArmoniK.Core.Common.gRPC.Services.Submitter;
 using TaskCanceledException = System.Threading.Tasks.TaskCanceledException;
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 using TimeoutException = System.TimeoutException;
@@ -59,7 +61,8 @@ public class RequestProcessor : IInitializable
   private readonly Submitter                 submitter_;
   private readonly WorkerClientProvider      workerClientProvider_;
 
-  private bool isInitialized_;
+  private bool                                              isInitialized_;
+  private List<(List<string> TaskIds, TaskOptions Options)> taskToFinalize;
 
   public RequestProcessor(WorkerClientProvider      workerClientProvider,
                           IObjectStorageFactory     objectStorageFactory,
@@ -75,6 +78,7 @@ public class RequestProcessor : IInitializable
     resultTable_          = resultTable;
     activitySource_       = activitySource;
     resourcesStorage_     = objectStorageFactory.CreateResourcesStorage();
+    taskToFinalize        = new List<(List<string> TaskIds, TaskOptions Options)>();
   }
 
   /// <inheritdoc />
@@ -101,6 +105,7 @@ public class RequestProcessor : IInitializable
   {
     try
     {
+      taskToFinalize.Clear();
       var result = await ProcessInternalsAsync(taskData,
                                                computeRequests,
                                                cancellationToken)
@@ -298,9 +303,22 @@ public class RequestProcessor : IInitializable
           await output.WhenAll()
                       .ConfigureAwait(false);
           output.Clear();
-          output.Add(submitter_.CompleteTaskAsync(taskData.TaskId,
-                                                  first.Output,
-                                                  cancellationToken));
+
+          if (first.Output.TypeCase == Output.TypeOneofCase.Ok)
+          {
+            foreach (var (taskIds, options) in taskToFinalize)
+            {
+              await submitter_.FinalizeTaskCreation(taskIds,
+                                                    options,
+                                                    cancellationToken)
+                              .ConfigureAwait(false);
+            }
+          }
+
+          await submitter_.CompleteTaskAsync(taskData.TaskId,
+                                             first.Output,
+                                             cancellationToken)
+                          .ConfigureAwait(false);
           isComplete = true;
           break;
         case ProcessReply.TypeOneofCase.Result:
@@ -451,7 +469,6 @@ public class RequestProcessor : IInitializable
                                                      CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SubmitLargeTasksAsync)}");
-    // TODO jerome parentId ?
     var tuple = await submitter_.CreateTasks(taskData.SessionId,
                                                taskData.TaskId,
                                                first.CreateLargeTask.InitRequest.TaskOptions,
@@ -459,10 +476,12 @@ public class RequestProcessor : IInitializable
                                                                 .ReconstituteTaskRequest(logger_),
                                                cancellationToken)
                                   .ConfigureAwait(false);
-    return await submitter_.FinalizeTaskCreation(tuple.TaskIds,
-                                                 tuple.Options,
-                                                 cancellationToken)
-                           .ConfigureAwait(false);
+    taskToFinalize.Add(tuple);
+
+    return new CreateTaskReply
+           {
+             Successfull = new Empty(),
+           };
   }
 
   [PublicAPI]
@@ -471,7 +490,6 @@ public class RequestProcessor : IInitializable
                                                      CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SubmitSmallTasksAsync)}");
-    // TODO jerome parentId ?
     var tuple = await submitter_.CreateTasks(taskData.SessionId,
                                                taskData.TaskId,
                                                request.CreateSmallTask.TaskOptions,
@@ -485,10 +503,12 @@ public class RequestProcessor : IInitializable
                                                                                              }.ToAsyncEnumerable())),
                                                cancellationToken)
                                   .ConfigureAwait(false);
-    return await submitter_.FinalizeTaskCreation(tuple.TaskIds,
-                                                 tuple.Options,
-                                                 cancellationToken)
-                           .ConfigureAwait(false);
+    taskToFinalize.Add(tuple);
+
+    return new CreateTaskReply
+           {
+             Successfull = new Empty(),
+           };
   }
 
   [PublicAPI]

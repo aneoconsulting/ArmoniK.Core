@@ -91,10 +91,15 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                                                context.CancellationToken)
                                   .ConfigureAwait(false);
 
-    return await submitter_.FinalizeTaskCreation(tuple.TaskIds,
-                                                 tuple.Options,
-                                                 context.CancellationToken)
-                           .ConfigureAwait(false);
+    await submitter_.FinalizeTaskCreation(tuple.TaskIds,
+                                          tuple.Options,
+                                          context.CancellationToken)
+                    .ConfigureAwait(false);
+
+    return new CreateTaskReply
+           {
+             Successfull = new Empty(),
+           };
   }
 
 
@@ -128,10 +133,15 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                                         context.CancellationToken)
                            .ConfigureAwait(false);
 
-    return await submitter_.FinalizeTaskCreation(tuple.TaskIds,
-                                                 tuple.Options,
-                                                 context.CancellationToken)
-                           .ConfigureAwait(false);
+    await submitter_.FinalizeTaskCreation(tuple.TaskIds,
+                                          tuple.Options,
+                                          context.CancellationToken)
+                    .ConfigureAwait(false);
+
+    return new CreateTaskReply
+           {
+             Successfull = new Empty(),
+           };
   }
 
   /// <inheritdoc />
