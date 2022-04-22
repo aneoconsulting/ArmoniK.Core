@@ -40,11 +40,4 @@ public static class TaskTableExtensions
                                           TaskStatus.Canceling,
                                           cancellationToken);
 
-
-  public static Task FinalizeTaskCreation(this ITaskTable   taskTable,
-                                          TaskFilter        filter,
-                                          CancellationToken cancellationToken = default)
-    => taskTable.UpdateAllTaskStatusAsync(filter,
-                                          TaskStatus.Submitted,
-                                          cancellationToken);
 }

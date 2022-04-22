@@ -40,6 +40,8 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
+using Google.Protobuf.Collections;
+
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -471,6 +473,25 @@ public class TaskTable : ITaskTable
                                .Select(model => model.ParentTaskIds)
                                .SingleAsync(cancellationToken)
                                .ConfigureAwait(false);
+  }
+
+  public async Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
+                                   CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(FinalizeTaskCreation)}");
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
+
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
+                                                                       TaskStatus.Submitted)
+                                                                  .Set(tdm => tdm.SubmittedDate,
+                                                                       DateTime.UtcNow);
+    Logger.LogInformation("update all tasks to statuses to status {status}", TaskStatus.Submitted);
+    var res = await taskCollection.UpdateManyAsync(tdm => taskIds.Contains(tdm.TaskId) && tdm.Status == TaskStatus.Creating,
+                                                   updateDefinition,
+                                                   cancellationToken: cancellationToken)
+                                  .ConfigureAwait(false);
+    return (int)res.MatchedCount;
   }
 
   /// <inheritdoc />

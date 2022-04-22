@@ -308,6 +308,15 @@ public class TaskTable : ITaskTable
     => Task.FromResult(taskId2TaskData_[taskId]
                          .ParentTaskIds as IEnumerable<string>);
 
+  public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
+                                              CancellationToken   cancellationToken = default)
+  {
+    var result = taskIds.Sum(taskId => UpdateTaskToSubmitted(taskId)
+                                         ? 1
+                                         : 0);
+    return Task.FromResult(result);
+  }
+
   /// <inheritdoc />
   public ILogger Logger { get; set; }
 
@@ -319,7 +328,7 @@ public class TaskTable : ITaskTable
   public ValueTask<bool> Check(HealthCheckTag tag)
     => ValueTask.FromResult(true);
 
-  public bool UpdateAndCheckTaskStatus(string     id,
+  private bool UpdateAndCheckTaskStatus(string     id,
                                        TaskStatus status)
   {
     var updated = false;
@@ -346,4 +355,29 @@ public class TaskTable : ITaskTable
                                  });
     return updated;
   }
+
+  private bool UpdateTaskToSubmitted(string id)
+  {
+    var updated = false;
+    taskId2TaskData_.AddOrUpdate(id,
+                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 (_,
+                                  data) =>
+                                 {
+
+                                   if (data.Status != TaskStatus.Creating)
+                                   {
+                                     return data;
+                                   }
+
+                                   updated = true;
+                                   return data with
+                                          {
+                                            Status = TaskStatus.Submitted,
+                                            SubmittedDate = DateTime.UtcNow,
+                                          };
+                                 });
+    return updated;
+  }
+
 }

@@ -217,23 +217,12 @@ public class Submitter : ISubmitter
                                                           TaskOptions options,
                                                           CancellationToken   cancellationToken)
   {
-    var finalizationFilter = new TaskFilter
-                             {
-                               Task = new TaskFilter.Types.IdsRequest
-                                      {
-                                        Ids =
-                                        {
-                                          taskIds,
-                                        },
-                                      },
-                             };
-
     await lockedQueueStorage_.EnqueueMessagesAsync(taskIds,
                                                    options.Priority,
                                                    cancellationToken)
                              .ConfigureAwait(false);
 
-    await taskTable_.FinalizeTaskCreation(finalizationFilter,
+    await taskTable_.FinalizeTaskCreation(taskIds,
                                           cancellationToken)
                     .ConfigureAwait(false);
   }

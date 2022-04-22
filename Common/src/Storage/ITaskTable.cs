@@ -96,4 +96,7 @@ public interface ITaskTable : IInitializable
 
   Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
                                              CancellationToken cancellationToken);
+
+  Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
+                                 CancellationToken   cancellationToken = default);
 }

@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -596,6 +597,40 @@ public class TaskTableTestBase
                                   .ConfigureAwait(false);
 
       Assert.IsFalse(result);
+    }
+  }
+
+  [Test]
+  public async Task FinalizeTaskCreationShouldSucceed()
+  {
+    if (RunTests)
+    {
+
+      var result = await TaskTable.FinalizeTaskCreation(new List<string>
+                                                        {
+                                                          "TaskCreatingId",
+                                                        },
+                                                        CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(1, result);
+    }
+  }
+
+  [Test]
+  public async Task FinalizeTaskCreationShouldFail()
+  {
+    if (RunTests)
+    {
+      var result = await TaskTable.FinalizeTaskCreation(new List<string>
+                                                        {
+                                                          "TaskFailedId",
+                                                        },
+                                                        CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.AreNotEqual(1,
+                      result);
     }
   }
 }
