@@ -57,11 +57,15 @@ public interface ISubmitter
                                          TaskOptions       defaultTaskOptions,
                                          CancellationToken cancellationToken);
 
-  Task<CreateTaskReply> CreateTasks(string                        sessionId,
-                                    string                        parentTaskId,
-                                    TaskOptions                   options,
-                                    IAsyncEnumerable<TaskRequest> taskRequests,
-                                    CancellationToken             cancellationToken);
+  Task<(List<string> TaskIds, TaskOptions Options)> CreateTasks(string                        sessionId,
+                                                                string                        parentTaskId,
+                                                                TaskOptions                   options,
+                                                                IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                CancellationToken             cancellationToken);
+
+  public Task<CreateTaskReply> FinalizeTaskCreation(IList<string>     taskIds,
+                                                    TaskOptions       options,
+                                                    CancellationToken cancellationToken);
 
   Task<Configuration> GetServiceConfiguration(Empty             request,
                                               CancellationToken cancellationToken);

@@ -153,11 +153,11 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateTaskReply> CreateTasks(string                        sessionId,
-                                                 string                        parentId,
-                                                 TaskOptions                   options,
-                                                 IAsyncEnumerable<TaskRequest> taskRequests,
-                                                 CancellationToken             cancellationToken)
+  public async Task<(List<string> TaskIds, TaskOptions Options)> CreateTasks(string                        sessionId,
+                                                                     string                        parentId,
+                                                                     TaskOptions                   options,
+                                                                     IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                     CancellationToken             cancellationToken)
   {
     using var logFunction = logger_.LogFunction(parentId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
@@ -205,36 +205,43 @@ public class Submitter : ISubmitter
                                       cancellationToken)
       .ConfigureAwait(false);
 
+    await payloadUploadTasks.WhenAll()
+                            .ConfigureAwait(false);
 
+    return (requests.Select(taskRequest => taskRequest.Id)
+                          .ToList(), options);
+  }
+
+  /// <inheritdoc />
+  public async Task<CreateTaskReply> FinalizeTaskCreation(IList<string> taskIds,
+                                                          TaskOptions options,
+                                                          CancellationToken   cancellationToken)
+  {
     var finalizationFilter = new TaskFilter
                              {
                                Task = new TaskFilter.Types.IdsRequest
                                       {
                                         Ids =
                                         {
-                                          requests.Select(taskRequest => taskRequest.Id),
+                                          taskIds,
                                         },
                                       },
                              };
 
-    await payloadUploadTasks.WhenAll()
-                      .ConfigureAwait(false);
-
-    await lockedQueueStorage_.EnqueueMessagesAsync(requests.Select(taskRequest => taskRequest.Id),
+    await lockedQueueStorage_.EnqueueMessagesAsync(taskIds,
                                                    options.Priority,
                                                    cancellationToken)
                              .ConfigureAwait(false);
 
-    await using var finalizer = AsyncDisposable.Create(async () => await taskTable_.FinalizeTaskCreation(finalizationFilter,
-                                                                                                         cancellationToken)
-                                                                                   .ConfigureAwait(false));
+    await taskTable_.FinalizeTaskCreation(finalizationFilter,
+                                          cancellationToken)
+                    .ConfigureAwait(false);
 
     return new CreateTaskReply
            {
              Successfull = new Empty(),
            };
   }
-
 
   /// <inheritdoc />
   public async Task<Count> CountTasks(TaskFilter        request,

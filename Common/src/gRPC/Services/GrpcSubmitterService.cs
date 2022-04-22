@@ -74,20 +74,28 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                                 request.DefaultTaskOption,
                                 context.CancellationToken);
 
-  public override Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request,
-                                                         ServerCallContext      context)
-    => submitter_.CreateTasks(request.SessionId,
-                              request.SessionId,
-                              request.TaskOptions,
-                              request.TaskRequests.ToAsyncEnumerable()
-                                     .Select(taskRequest => new TaskRequest(taskRequest.Id,
-                                                                            taskRequest.ExpectedOutputKeys,
-                                                                            taskRequest.DataDependencies,
-                                                                            new[]
-                                                                            {
-                                                                              taskRequest.Payload.Memory,
-                                                                            }.ToAsyncEnumerable())),
-                              context.CancellationToken);
+  public override async Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request,
+                                                               ServerCallContext      context)
+  {
+    var tuple = await submitter_.CreateTasks(request.SessionId,
+                                               request.SessionId,
+                                               request.TaskOptions,
+                                               request.TaskRequests.ToAsyncEnumerable()
+                                                      .Select(taskRequest => new TaskRequest(taskRequest.Id,
+                                                                                             taskRequest.ExpectedOutputKeys,
+                                                                                             taskRequest.DataDependencies,
+                                                                                             new[]
+                                                                                             {
+                                                                                               taskRequest.Payload.Memory,
+                                                                                             }.ToAsyncEnumerable())),
+                                               context.CancellationToken)
+                                  .ConfigureAwait(false);
+
+    return await submitter_.FinalizeTaskCreation(tuple.TaskIds,
+                                                 tuple.Options,
+                                                 context.CancellationToken)
+                           .ConfigureAwait(false);
+  }
 
 
   /// <inheritdoc />
@@ -113,11 +121,16 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                              "First message in stream must be of type InitRequest");
     }
 
-    return await submitter_.CreateTasks(first.InitRequest.SessionId,
+    var tuple = await submitter_.CreateTasks(first.InitRequest.SessionId,
                                         first.InitRequest.SessionId,
                                         first.InitRequest.TaskOptions,
                                         enumerator.BuildRequests(context.CancellationToken),
                                         context.CancellationToken)
+                           .ConfigureAwait(false);
+
+    return await submitter_.FinalizeTaskCreation(tuple.TaskIds,
+                                                 tuple.Options,
+                                                 context.CancellationToken)
                            .ConfigureAwait(false);
   }
 

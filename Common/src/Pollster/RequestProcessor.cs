@@ -445,40 +445,50 @@ public class RequestProcessor : IInitializable
 
 
   [PublicAPI]
-  public Task<CreateTaskReply> SubmitLargeTasksAsync(TaskData            taskData,
+  public async Task<CreateTaskReply> SubmitLargeTasksAsync(TaskData            taskData,
                                                      ProcessReply        first,
                                                      IList<ProcessReply> singleReplyStream,
                                                      CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SubmitLargeTasksAsync)}");
     // TODO jerome parentId ?
-    return submitter_.CreateTasks(taskData.SessionId,
-                                  taskData.TaskId,
-                                  first.CreateLargeTask.InitRequest.TaskOptions,
-                                  singleReplyStream.Skip(1)
-                                                   .ReconstituteTaskRequest(logger_),
-                                  cancellationToken);
+    var tuple = await submitter_.CreateTasks(taskData.SessionId,
+                                               taskData.TaskId,
+                                               first.CreateLargeTask.InitRequest.TaskOptions,
+                                               singleReplyStream.Skip(1)
+                                                                .ReconstituteTaskRequest(logger_),
+                                               cancellationToken)
+                                  .ConfigureAwait(false);
+    return await submitter_.FinalizeTaskCreation(tuple.TaskIds,
+                                                 tuple.Options,
+                                                 cancellationToken)
+                           .ConfigureAwait(false);
   }
 
   [PublicAPI]
-  public Task<CreateTaskReply> SubmitSmallTasksAsync(TaskData          taskData,
+  public async Task<CreateTaskReply> SubmitSmallTasksAsync(TaskData          taskData,
                                                      ProcessReply      request,
                                                      CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SubmitSmallTasksAsync)}");
     // TODO jerome parentId ?
-    return submitter_.CreateTasks(taskData.SessionId,
-                                  taskData.TaskId,
-                                  request.CreateSmallTask.TaskOptions,
-                                  request.CreateSmallTask.TaskRequests.ToAsyncEnumerable()
-                                         .Select(taskRequest => new TaskRequest(taskRequest.Id,
-                                                                                taskRequest.ExpectedOutputKeys,
-                                                                                taskRequest.DataDependencies,
-                                                                                new[]
-                                                                                {
-                                                                                  taskRequest.Payload.Memory,
-                                                                                }.ToAsyncEnumerable())),
-                                  cancellationToken);
+    var tuple = await submitter_.CreateTasks(taskData.SessionId,
+                                               taskData.TaskId,
+                                               request.CreateSmallTask.TaskOptions,
+                                               request.CreateSmallTask.TaskRequests.ToAsyncEnumerable()
+                                                      .Select(taskRequest => new TaskRequest(taskRequest.Id,
+                                                                                             taskRequest.ExpectedOutputKeys,
+                                                                                             taskRequest.DataDependencies,
+                                                                                             new[]
+                                                                                             {
+                                                                                               taskRequest.Payload.Memory,
+                                                                                             }.ToAsyncEnumerable())),
+                                               cancellationToken)
+                                  .ConfigureAwait(false);
+    return await submitter_.FinalizeTaskCreation(tuple.TaskIds,
+                                                 tuple.Options,
+                                                 cancellationToken)
+                           .ConfigureAwait(false);
   }
 
   [PublicAPI]
