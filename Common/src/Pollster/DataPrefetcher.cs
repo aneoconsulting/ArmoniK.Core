@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -80,12 +79,11 @@ public class DataPrefetcher : IInitializable
 
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
-
-    List<ByteString> payloadChunks = await payloadStorage.GetValuesAsync(taskData.TaskId,
-                                                                         cancellationToken)
-                                                         .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                                         .ToListAsync(cancellationToken)
-                                                         .ConfigureAwait(false);
+    var payloadChunks = await payloadStorage.GetValuesAsync(taskData.TaskId,
+                                                            cancellationToken)
+                                            .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
+                                            .ToListAsync(cancellationToken)
+                                            .ConfigureAwait(false);
 
     var computeRequests = new ComputeRequestQueue(logger_);
     computeRequests.Init(PayloadConfiguration.MaxChunkSize,

@@ -26,7 +26,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -190,29 +189,13 @@ public class Submitter : ISubmitter
     await foreach (var taskRequest in taskRequests.WithCancellation(cancellationToken)
                                                   .ConfigureAwait(false))
     {
-      var payloadChunksList = await taskRequest.PayloadChunks.ToListAsync(cancellationToken)
-                                               .ConfigureAwait(false);
-
-      if (payloadChunksList.Count == 1)
-      {
-        requests.Add(new Storage.TaskRequest(taskRequest.Id,
-                                             taskRequest.ExpectedOutputKeys,
-                                             taskRequest.DataDependencies,
-                                             payloadChunksList.Single(),
-                                             true));
-      }
-      else
-      {
-        requests.Add(new Storage.TaskRequest(taskRequest.Id,
-                                             taskRequest.ExpectedOutputKeys,
-                                             taskRequest.DataDependencies,
-                                             Array.Empty<byte>(),
-                                             false));
-        payloadUploadTasks.Add(PayloadStorage(sessionId)
-                                 .AddOrUpdateAsync(taskRequest.Id,
-                                                   payloadChunksList.ToAsyncEnumerable(),
-                                                   cancellationToken));
-      }
+      requests.Add(new Storage.TaskRequest(taskRequest.Id,
+                                           taskRequest.ExpectedOutputKeys,
+                                           taskRequest.DataDependencies));
+      payloadUploadTasks.Add(PayloadStorage(sessionId)
+                               .AddOrUpdateAsync(taskRequest.Id,
+                                                 taskRequest.PayloadChunks,
+                                                 cancellationToken));
     }
 
     await InitializeTaskCreationAsync(sessionId,
@@ -234,8 +217,8 @@ public class Submitter : ISubmitter
                                       },
                              };
 
-    await Task.WhenAll(payloadUploadTasks)
-              .ConfigureAwait(false);
+    await payloadUploadTasks.WhenAll()
+                      .ConfigureAwait(false);
 
     await lockedQueueStorage_.EnqueueMessagesAsync(requests.Select(taskRequest => taskRequest.Id),
                                                    options.Priority,
