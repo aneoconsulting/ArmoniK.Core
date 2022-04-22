@@ -63,9 +63,12 @@ public interface ISubmitter
                                                                 IAsyncEnumerable<TaskRequest> taskRequests,
                                                                 CancellationToken             cancellationToken);
 
-  public Task FinalizeTaskCreation(IList<string>     taskIds,
-                                   TaskOptions       options,
-                                   CancellationToken cancellationToken);
+  Task FinalizeTaskCreation(IList<string>     taskIds,
+                            TaskOptions       options,
+                            CancellationToken cancellationToken);
+
+  Task StartTask(string            taskId,
+                 CancellationToken cancellationToken = default);
 
   Task<Configuration> GetServiceConfiguration(Empty             request,
                                               CancellationToken cancellationToken);

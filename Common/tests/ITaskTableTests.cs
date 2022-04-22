@@ -633,4 +633,36 @@ public class TaskTableTestBase
                       result);
     }
   }
+
+  [Test]
+  public async Task StartTaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+      await TaskTable.StartTask("TaskSubmittedId",
+                                CancellationToken.None)
+                     .ConfigureAwait(false);
+
+      var taskData = await TaskTable.ReadTaskAsync("TaskSubmittedId",
+                                             CancellationToken.None)
+                              .ConfigureAwait(false);
+
+      Assert.AreEqual(TaskStatus.Processing,
+                      taskData.Status);
+    }
+  }
+
+  [Test]
+  public void StartTaskShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+                                           {
+                                             await TaskTable.StartTask("NonExistingTaskId",
+                                                                       CancellationToken.None)
+                                                            .ConfigureAwait(false);
+                                           });
+    }
+  }
 }

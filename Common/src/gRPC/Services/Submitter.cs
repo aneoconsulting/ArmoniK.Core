@@ -80,6 +80,11 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
+  public Task StartTask(string            taskId,
+                        CancellationToken cancellationToken = default)
+    => taskTable_.StartTask(taskId, cancellationToken);
+
+  /// <inheritdoc />
   public Task<Configuration> GetServiceConfiguration(Empty             request,
                                                      CancellationToken cancellationToken)
     => Task.FromResult(new Configuration

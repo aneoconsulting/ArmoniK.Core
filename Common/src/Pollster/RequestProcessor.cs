@@ -249,9 +249,8 @@ public class RequestProcessor : IInitializable
                                                   .ConfigureAwait(false);
 
     logger_.LogDebug("Set task status to Processing");
-    await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
-                                           TaskStatus.Processing,
-                                           cancellationToken)
+    await submitter_.StartTask(taskData.TaskId,
+                               cancellationToken)
                     .ConfigureAwait(false);
 
     using var stream = workerClient.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,

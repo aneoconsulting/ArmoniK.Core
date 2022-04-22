@@ -60,6 +60,9 @@ public interface ITaskTable : IInitializable
   Task<bool> IsTaskCancelledAsync(string            taskId,
                                   CancellationToken cancellationToken = default);
 
+  Task StartTask(string            taskId,
+                 CancellationToken cancellationToken = default);
+
   Task CancelSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
 

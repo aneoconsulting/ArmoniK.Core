@@ -114,7 +114,6 @@ public class TaskTable : ITaskTable
     {
       throw new ArmoniKException($"Task '{taskId}' not found.");
     }
-
   }
 
   /// <inheritdoc />
@@ -196,6 +195,42 @@ public class TaskTable : ITaskTable
                                .Select(model => model.Status == TaskStatus.Canceled || model.Status == TaskStatus.Canceling)
                                .FirstAsync(cancellationToken)
                                .ConfigureAwait(false);
+  }
+
+  public async Task StartTask(string            taskId,
+                        CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(StartTask)}");
+    activity?.SetTag($"{nameof(StartTask)}_TaskId",
+                     taskId);
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
+
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Status,
+                                                                       TaskStatus.Processing)
+                                                                  .Set(tdm => tdm.StartDate,
+                                                                       DateTime.UtcNow)
+                                                                  .Set(tdm => tdm.PodTtl,
+                                                                       DateTime.UtcNow);
+    Logger.LogInformation("update task {taskId} to status {status}",
+                          taskId,
+                          TaskStatus.Processing);
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Failed &&
+                                                        x.Status != TaskStatus.Canceled,
+                                                   updateDefinition,
+                                                   cancellationToken: cancellationToken)
+                                  .ConfigureAwait(false);
+
+    switch (res.MatchedCount)
+    {
+      case 0:
+        var taskStatus = await GetTaskStatus(taskId,
+                                             cancellationToken)
+                           .ConfigureAwait(false);
+        throw new ArmoniKException($"Task not found or task already in a terminal state - {taskStatus} from {taskStatus} to {TaskStatus.Processing}");
+      case > 1:
+        throw new ArmoniKException("Multiple tasks modified");
+    }
   }
 
   /// <inheritdoc />
@@ -309,7 +344,9 @@ public class TaskTable : ITaskTable
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
                                                                        taskOutput)
                                                                   .Set(tdm => tdm.Status,
-                                                                       TaskStatus.Completed);
+                                                                       TaskStatus.Completed)
+                                                                  .Set(tdm => tdm.EndDate,
+                                                                       DateTime.UtcNow);
     Logger.LogDebug("update task {taskId} to output {output}",
                     taskId,
                     taskOutput);
@@ -343,7 +380,9 @@ public class TaskTable : ITaskTable
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
                                                                        taskOutput)
                                                                   .Set(tdm => tdm.Status,
-                                                                       TaskStatus.Completed);
+                                                                       TaskStatus.Completed)
+                                                                  .Set(tdm => tdm.EndDate,
+                                                                       DateTime.UtcNow);
     Logger.LogDebug("update task {taskId} to output {output}",
                     taskId,
                     taskOutput);
@@ -432,11 +471,19 @@ public class TaskTable : ITaskTable
     var taskCollection = await taskCollectionProvider_.GetAsync()
                                                       .ConfigureAwait(false);
 
-    return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(tdm => tdm.TaskId == taskId)
-                               .Select(model => model.Status)
-                               .SingleAsync(cancellationToken)
-                               .ConfigureAwait(false);
+    try
+    {
+      return await taskCollection.AsQueryable(sessionHandle)
+                                 .Where(tdm => tdm.TaskId == taskId)
+                                 .Select(model => model.Status)
+                                 .SingleAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+
+    }
+    catch (InvalidOperationException)
+    {
+      throw new ArmoniKException($"Task '{taskId}' not found.");
+    }
   }
 
   public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,

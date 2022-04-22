@@ -125,6 +125,27 @@ public class TaskTable : ITaskTable
                          .Status is TaskStatus.Canceling or TaskStatus.Canceled);
 
   /// <inheritdoc />
+  public Task StartTask(string            taskId,
+                        CancellationToken cancellationToken = default)
+  {
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new ArmoniKException($"Key '{taskId}' not found");
+    }
+
+    taskId2TaskData_.AddOrUpdate(taskId,
+                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 (_,
+                                  data) => data with
+                                           {
+                                             Status = TaskStatus.Processing,
+                                             StartDate = DateTime.UtcNow,
+                                             PodTtl = DateTime.UtcNow,
+                                           });
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
   public async Task CancelSessionAsync(string            sessionId,
                                        CancellationToken cancellationToken = default)
   {
