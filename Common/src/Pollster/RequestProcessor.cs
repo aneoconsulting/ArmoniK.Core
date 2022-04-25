@@ -198,6 +198,9 @@ public class RequestProcessor : IInitializable
                                                TaskStatus.Error,
                                                CancellationToken.None)
                         .ConfigureAwait(false);
+        await submitter_.ResubmitTask(taskData,
+                                      cancellationToken)
+                        .ConfigureAwait(false);
         return true;
       }
       case AggregateException ae:
@@ -228,6 +231,9 @@ public class RequestProcessor : IInitializable
         await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
                                                TaskStatus.Error,
                                                CancellationToken.None)
+                        .ConfigureAwait(false);
+        await submitter_.ResubmitTask(taskData,
+                                      cancellationToken)
                         .ConfigureAwait(false);
         return false;
       }

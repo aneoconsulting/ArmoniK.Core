@@ -28,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
@@ -69,6 +70,9 @@ public interface ISubmitter
 
   Task StartTask(string            taskId,
                  CancellationToken cancellationToken = default);
+
+  Task<string?> ResubmitTask(TaskData          taskId,
+                             CancellationToken cancellationToken = default);
 
   Task<Configuration> GetServiceConfiguration(Empty             request,
                                               CancellationToken cancellationToken);

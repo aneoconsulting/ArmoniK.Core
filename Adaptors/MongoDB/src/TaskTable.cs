@@ -40,8 +40,6 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
-using Google.Protobuf.Collections;
-
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -522,8 +520,46 @@ public class TaskTable : ITaskTable
                                .ConfigureAwait(false);
   }
 
+  public async Task<string> RetryTask(TaskData          taskData,
+                           CancellationToken cancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(RetryTask)}");
+
+    var taskCollection = await taskCollectionProvider_.GetAsync()
+                                                      .ConfigureAwait(false);
+
+    var newTaskId = taskData.TaskId + $"###{taskData.RetryOfIds.Count + 1}";
+
+    var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)
+                            {
+                              taskData.TaskId,
+                            };
+    var newTaskData = new TaskData(taskData.SessionId,
+                                   newTaskId,
+                                   "",
+                                   taskData.ParentTaskIds,
+                                   taskData.DataDependencies,
+                                   taskData.ExpectedOutputIds,
+                                   newTaskRetryOfIds,
+                                   TaskStatus.Creating,
+                                   "",
+                                   taskData.Options,
+                                   DateTime.UtcNow,
+                                   DateTime.MinValue,
+                                   DateTime.MinValue,
+                                   DateTime.MinValue,
+                                   DateTime.MinValue,
+                                   new Output(false,
+                                              ""));
+
+    await taskCollection.InsertOneAsync(newTaskData,
+                                        cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+    return newTaskId;
+  }
+
   public async Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
-                                   CancellationToken cancellationToken = default)
+                                              CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(FinalizeTaskCreation)}");
     var taskCollection = await taskCollectionProvider_.GetAsync()

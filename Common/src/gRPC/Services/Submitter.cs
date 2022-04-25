@@ -85,6 +85,35 @@ public class Submitter : ISubmitter
     => taskTable_.StartTask(taskId, cancellationToken);
 
   /// <inheritdoc />
+  public async Task<string?> ResubmitTask(TaskData          taskData,
+                                          CancellationToken cancellationToken = default)
+  {
+    logger_.LogWarning("Resubmit {Task}",
+                       taskData.TaskId);
+    if (taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
+    {
+      var newTaskId = await taskTable_.RetryTask(taskData,
+                                                 cancellationToken)
+                                      .ConfigureAwait(false);
+      await FinalizeTaskCreation(new List<string>
+                                 {
+                                   newTaskId,
+                                 },
+                                 taskData.Options,
+                                 cancellationToken)
+        .ConfigureAwait(false);
+
+      return newTaskId;
+    }
+
+    await UpdateTaskStatusAsync(taskData.TaskId,
+                                TaskStatus.Failed,
+                                cancellationToken)
+      .ConfigureAwait(false);
+    return null;
+  }
+
+  /// <inheritdoc />
   public Task<Configuration> GetServiceConfiguration(Empty             request,
                                                      CancellationToken cancellationToken)
     => Task.FromResult(new Configuration

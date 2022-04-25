@@ -329,8 +329,48 @@ public class TaskTable : ITaskTable
     => Task.FromResult(taskId2TaskData_[taskId]
                          .ParentTaskIds as IEnumerable<string>);
 
+  /// <inheritdoc />
+  public Task<string> RetryTask(TaskData          taskData,
+                           CancellationToken cancellationToken)
+  {
+    var newTaskId = taskData.TaskId + $"###{taskData.RetryOfIds.Count + 1}";
+    var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)
+                            {
+                              taskData.TaskId,
+                            };
+    var newTaskData = new TaskData(taskData.SessionId,
+                                   newTaskId,
+                                   "",
+                                   taskData.ParentTaskIds,
+                                   taskData.DataDependencies,
+                                   taskData.ExpectedOutputIds,
+                                   newTaskRetryOfIds,
+                                   TaskStatus.Creating,
+                                   "",
+                                   taskData.Options,
+                                   DateTime.UtcNow,
+                                   DateTime.MinValue,
+                                   DateTime.MinValue,
+                                   DateTime.MinValue,
+                                   DateTime.MinValue,
+                                   new Output(false,
+                                              ""));
+
+    if (!taskId2TaskData_.TryAdd(newTaskId,
+                                 newTaskData))
+    {
+      throw new ArmoniKException($"Tasks '{newTaskId}' already exists");
+    }
+
+    var session = session2TaskIds_.GetOrAdd(newTaskData.SessionId,
+                                            new ConcurrentQueue<string>());
+    session.Enqueue(newTaskId);
+
+    return Task.FromResult(newTaskId);
+  }
+
   public Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
-                                              CancellationToken   cancellationToken = default)
+                                        CancellationToken   cancellationToken = default)
   {
     var result = taskIds.Sum(taskId => UpdateTaskToSubmitted(taskId)
                                          ? 1
