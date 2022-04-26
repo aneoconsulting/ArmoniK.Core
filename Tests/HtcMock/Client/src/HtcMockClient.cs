@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Diagnostics;
 using System.Text;
 
@@ -32,16 +33,18 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Samples.HtcMock.Client;
 
-public class HtcMockClient
+public class HtcMockClient : IDisposable
 {
   private readonly GridClient               gridClient_;
   private readonly ILogger<Htc.Mock.Client> logger_;
+  private          ISessionClient           sessionClient_;
 
   public HtcMockClient(GridClient               gridClient,
                        ILogger<Htc.Mock.Client> logger)
   {
-    gridClient_ = gridClient;
-    logger_     = logger;
+    gridClient_    = gridClient;
+    logger_        = logger;
+    sessionClient_ = null;
   }
 
   public bool Start(RunConfiguration runConfiguration)
@@ -50,20 +53,20 @@ public class HtcMockClient
                            runConfiguration.ToString());
     var watch = Stopwatch.StartNew();
 
-    var sessionClient = gridClient_.CreateSession();
+    sessionClient_ = gridClient_.CreateSession();
 
     var request = runConfiguration.BuildRequest(out var shape,
                                                 logger_);
 
-    var taskId = sessionClient.SubmitTask(DataAdapter.BuildPayload(runConfiguration,
+    var taskId = sessionClient_.SubmitTask(DataAdapter.BuildPayload(runConfiguration,
                                                                    request));
 
     logger_.LogInformation("Submitted root task {taskId}",
                            taskId);
-    sessionClient.WaitSubtasksCompletion(taskId)
+    sessionClient_.WaitSubtasksCompletion(taskId)
                  .Wait();
 
-    var result = Encoding.Default.GetString(sessionClient.GetResult(taskId));
+    var result = Encoding.Default.GetString(sessionClient_.GetResult(taskId));
 
     logger_.LogWarning("Final result is {result}",
                        result);
@@ -76,5 +79,11 @@ public class HtcMockClient
                        watch.Elapsed.TotalSeconds);
 
     return result.Equals($"1.{string.Join(".", shape)}");
+  }
+
+  public void Dispose()
+  {
+    sessionClient_?.Dispose();
+    GC.SuppressFinalize(this);
   }
 }
