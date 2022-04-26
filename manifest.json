@@ -125,18 +125,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Adapters.Memory.DispatchTable.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Core.Adapters.Memory.DispatchTable.html",
-          "hash": "ODilLJ9Qs47Qvofd0b/Jj64685w6GrAFCKNQ8OiSIl0="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.yml",
       "output": {
         ".html": {
@@ -153,7 +141,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Memory.ResultTable.html",
-          "hash": "70n9GZYweGu+Nwb5c0MqhB15zBruZCp4TEorCHE7LDw="
+          "hash": "hxW3841L0xhlYWdBqsIeY8bRROaWP8ThUgxPfM9zASU="
         }
       },
       "is_incremental": false,
@@ -177,7 +165,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Memory.SessionTable.html",
-          "hash": "PWx1AkhV/AB/nHp1eg1GH5ezmM2begmR5M9NYqc5UVU="
+          "hash": "NI4qcu9xPsiFaSXf1hxgYvlPNrDwhOiWZ31ENhMEzuk="
         }
       },
       "is_incremental": false,
@@ -189,19 +177,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Memory.TaskTable.html",
-          "hash": "xX9WPP8FoEhmzxSZbwtcMDk+FyEWmKYUODn9Xrj+slc="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Adapters.Memory.Tests.DispatchTableTests.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Core.Adapters.Memory.Tests.DispatchTableTests.html",
-          "hash": "Hac0hz8/ncWVoi0B2SGowt53p9M1kWeBw60Z5ZiwEfs="
+          "hash": "rty+vqB29tZ2GkZdYuSwW5x/9fBmwTrBXeybY58/ZIA="
         }
       },
       "is_incremental": false,
@@ -213,7 +189,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Memory.Tests.ResultTableTests.html",
-          "hash": "A8OWGuMnA8C8ZMqfN2bzgDDYqHjVON0DJK6H5qG9CQc="
+          "hash": "qnY7VB3eG82W7+T61Kohd4uiRusSETceV3p5bXh8WWI="
         }
       },
       "is_incremental": false,
@@ -225,7 +201,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Memory.Tests.SessionTableTests.html",
-          "hash": "q9FkYT+Ja9xuE3fOPx+XXNRAMZcMclFr2zG7V1s2IIw="
+          "hash": "/CMy+M8wNAZjWIfnDpyBnCGKf0l3IyefFP5guG7QcDs="
         }
       },
       "is_incremental": false,
@@ -237,7 +213,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Memory.Tests.TaskTableTests.html",
-          "hash": "sWgxz+0DjUfNIvArFh7zCOougVsxA6lNVwetSgr+QUU="
+          "hash": "oy/aRUe/qtwyiinRx3gqCudxVY2h76iOpDKI8mL1rPU="
         }
       },
       "is_incremental": false,
@@ -249,7 +225,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Memory.Tests.html",
-          "hash": "AFwlUdk70u6152wLsBYgAd4lA/JA92Yyjl6yFnAWznw="
+          "hash": "/DmuyKcW2InBBmlfqyeCwMzsKoe9Ch5uVcl60q/ElEw="
         }
       },
       "is_incremental": false,
@@ -261,7 +237,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Memory.html",
-          "hash": "YDwkVCGx6iGENJoMZGOxMJqDhrDVoWH4lW/lEKhhfC8="
+          "hash": "cT+MNnplZhHF2OIm+7STRMiL2PFJsmNa+UIQfaA5DLg="
         }
       },
       "is_incremental": false,
@@ -334,18 +310,6 @@
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Common.html",
           "hash": "d5ZbzK7MbJEOaCstEHxKVjyNBKQZDQhmuWEMxgJF5Hk="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.DispatchTable.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.DispatchTable.html",
-          "hash": "xi9pq4KQqcm2ciIz4eHmdZNnsRgGFyAqEFElkRwOs4w="
         }
       },
       "is_incremental": false,
@@ -453,7 +417,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Options.TableStorage.html",
-          "hash": "tDaM1yi2behRtVsY3TqgPAXCGrktbSfxpWy8lU+6WwY="
+          "hash": "WQT04EvFKTDzuBSy5uYGL4ZPWvUHpfExoL6tztNtc2k="
         }
       },
       "is_incremental": false,
@@ -513,7 +477,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html",
-          "hash": "23j9Q2BDXLYBh6U11G/s+M+1gVB0voO2ikYi8ROTVuQ="
+          "hash": "9KHARuMnu31ETb05gqdDiZtRqqBdeCJLTm+R1LjOMzk="
         }
       },
       "is_incremental": false,
@@ -525,7 +489,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.ServiceCollectionExt.html",
-          "hash": "SAjTzHm6Om48geksRGfXBMq5R0+Up+O5g9ArxXaemLw="
+          "hash": "bI0NuCd2fXciuIzqFhm2LCXkvkLYrjiGx08Zy5ikx2M="
         }
       },
       "is_incremental": false,
@@ -537,7 +501,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html",
-          "hash": "RzswlGndsTHHouJHUAnKjZM+rVGBzpDMzY7i23nWJZY="
+          "hash": "loBmmavtNUYul/OyaAJJmdweOkMp1HleGb0Pl5L553I="
         }
       },
       "is_incremental": false,
@@ -561,7 +525,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.html",
-          "hash": "vp1SuZxOzAgoPNxMa4hQ1zUrm3WA9MtR/2R2EoBusCQ="
+          "hash": "O/A5FjYlXNju3lYjTw1NxE4KDu9FvbXlBNssdOseTPY="
         }
       },
       "is_incremental": false,
@@ -633,19 +597,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html",
-          "hash": "DZ7J4+HHNfqh2RbAJy+HhW0iyLpONRgCy5EVsfu6AH8="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.DispatchTableTests.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.DispatchTableTests.html",
-          "hash": "CxmIdpFcptvoTvNPDPfXvMrMEpVGxODRR6u1lmgcBRo="
+          "hash": "kPXrV9N6Mg+EPEfNQsAtbMZWWt4bMD9iGnrdFTh/zO0="
         }
       },
       "is_incremental": false,
@@ -669,7 +621,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.ResultTableTests.html",
-          "hash": "SRnlUiWtxI8MB1d5JszgmUXwCJ1dT0Cgpj0e2AaBK3c="
+          "hash": "rjiMXeOzS4PiGB5BAvwtpkroX6kcW5XukH4LnTMX/6k="
         }
       },
       "is_incremental": false,
@@ -681,7 +633,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.SessionTableTests.html",
-          "hash": "Pq1mpcPYturq2wNDcXsZ47JqMSKq6eS5Ql1uRn9zLHE="
+          "hash": "g2mNQy2NGJgr/S8CierL+uG4umTqMJaqmoRgLhOAo00="
         }
       },
       "is_incremental": false,
@@ -693,7 +645,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.TaskTableTests.html",
-          "hash": "Nk/dOtZHwcoSJ2M55mtNWUO9bXK3JA7RqVCsnuXJcJg="
+          "hash": "1TClsamyak9h3bGfxOIqgTGPDQmvoxL1Z3rrSGOFPZY="
         }
       },
       "is_incremental": false,
@@ -705,7 +657,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.html",
-          "hash": "80VfFPfkhKebuybQK+ahVOjCV560ytbrG9U/5gMbwkk="
+          "hash": "VSH6L+3H66nD9y423eJa64mfSm2JjCVa56EYwcRb5VI="
         }
       },
       "is_incremental": false,
@@ -717,7 +669,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.html",
-          "hash": "PiUcVrapRJcRfNVI2Mgvk7Th2mGGCGOLLJ5jRi49p0g="
+          "hash": "7C0/SUQFN5HG8FCip50g7VHW0LCUSGO9JvhCttxaOBA="
         }
       },
       "is_incremental": false,
@@ -1089,7 +1041,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.PreconditionChecker.html",
-          "hash": "ULAu9+RfzbgTbtbup/55952CntrHWfz5eVSKFtpGKEE="
+          "hash": "e3Rr/eMWfYvUss2WJZT6BcEJyzH+onbd5atX99rTgJ0="
         }
       },
       "is_incremental": false,
@@ -1101,7 +1053,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.RequestProcessor.html",
-          "hash": "egcEF8wvJjqs4nBrUX1dKSHgWQtGjy/yw8ardSDQNLA="
+          "hash": "bCLjTW+hTRPNzLdP9nYxd7DO/9P1A9Ye9VrxzR6hAuI="
         }
       },
       "is_incremental": false,
@@ -1174,18 +1126,6 @@
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.StateMachines.html",
           "hash": "aPjUN7db+juM1lKmjSQEk9G3ySbcjg9ZA/f9kbLDGXw="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Common.Storage.IDispatchTable.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Core.Common.Storage.IDispatchTable.html",
-          "hash": "s//QxCZJc5wIqtK7Dztltk0vDj6Y4KPQXAq3oAyclng="
         }
       },
       "is_incremental": false,
@@ -1269,7 +1209,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Storage.IResultTable.html",
-          "hash": "++fxl9wroj8V854Zt6NdX06eKWxrX8QVjFgnNLS0xVA="
+          "hash": "74boCb2+V5BmH8bNx9a5Nffi0w3LSn/zGfqAzDrHCbI="
         }
       },
       "is_incremental": false,
@@ -1281,7 +1221,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Storage.ISessionTable.html",
-          "hash": "OHihmd/pd4AgMUe9WCkVf6eyAh2xtVpAgZv1WoMYmwk="
+          "hash": "ZXQGFyDzH9An4lNHZO9iO63B7cStIYE5Q4NeqDYP/IE="
         }
       },
       "is_incremental": false,
@@ -1293,7 +1233,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Storage.ITaskTable.html",
-          "hash": "wfjoT+0oB+YFgK7Spo6SOruZy9oMtwsMs9KcvFpXobo="
+          "hash": "QKNkuW17qseldz1Z0ly3azAi8GI0AhZhc3gz2oPpUqU="
         }
       },
       "is_incremental": false,
@@ -1401,7 +1341,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Storage.SessionTableExtensions.html",
-          "hash": "/1QLDaGj8vLFnoKYC/4w2IgdsKCWjGXm3EuuDis8En0="
+          "hash": "Q5GPhRoBwYSFIuYFjy4yax6qNNpzmhs/vvhwFYq6XGA="
         }
       },
       "is_incremental": false,
@@ -1413,7 +1353,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Storage.TaskTableExtensions.html",
-          "hash": "xgRxNp3pV0JTZnt0eCG4ME3ONe4Yy2FP3xX4FtJ3SfQ="
+          "hash": "TQTiXn4VLjHwwyAXJNhdxAgWntB/8SLLM0JNmm3XkS0="
         }
       },
       "is_incremental": false,
@@ -1425,7 +1365,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Storage.html",
-          "hash": "4DVEFIPZfDyKRUZ3cQFTB84CMzBDA5bB5q170tqYMTQ="
+          "hash": "pgtYwQ/i42rLHYTiSnvKp0mzBB/6OgDBugSKcJWK2XA="
         }
       },
       "is_incremental": false,
@@ -1553,18 +1493,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Common.Tests.DispatchTableTestBase.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Core.Common.Tests.DispatchTableTestBase.html",
-          "hash": "FeGgpDQvQ/F4s9cIsphaa+EpriaxaVUSxjbcKa9Ib4I="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.ObjectStorageTestBase.yml",
       "output": {
         ".html": {
@@ -1581,7 +1509,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.html",
-          "hash": "cqca/dOUrCjPocJHK7d804jRd5Av/nR40VxyuBjQVfs="
+          "hash": "HRyQ2Hv8rEkGrYlORbxeNZTGfRAT3fIiLxPiHpzblpQ="
         }
       },
       "is_incremental": false,
@@ -1605,7 +1533,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html",
-          "hash": "NkFaTJy0CoL1h9dPmHGv9FjKsh/Yft2ed9xDWxIrWFM="
+          "hash": "oMD/5yZZ9Vp8b2PARr1VNqQGxfCRKtXP8fMIP2zGze0="
         }
       },
       "is_incremental": false,
@@ -1629,7 +1557,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html",
-          "hash": "pGRFQtMGgu9cp5TqHlFl0MVNPlOnyONMgnNNPAsGCEM="
+          "hash": "4t/s2aOfPr51C43qHlI3f/fdZJatjaqYB8l1s1sVxuk="
         }
       },
       "is_incremental": false,
@@ -1713,7 +1641,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html",
-          "hash": "KYISraH8WRLqvgp4JKFv8t4FMfNhX59R3XfoqGZxpxI="
+          "hash": "0+03465bEGnjH0rdOPYnftCXtRN1WE1/rDKtjkBl+WY="
         }
       },
       "is_incremental": false,
@@ -1725,7 +1653,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.html",
-          "hash": "2nJJMKPHIKh6nNJoyx6+J1wi1A3zbFW7h/TbOnuhcCE="
+          "hash": "cdW28nxPXKzDNm2OjS8OJ0QAEAPjDwHoeOIHlb0nm4U="
         }
       },
       "is_incremental": false,
@@ -1869,7 +1797,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html",
-          "hash": "uTvAm5gsUWlUlxyjUA+oWbdsOcpMJE7QEWeXdo+IwNQ="
+          "hash": "qGe7l09HnCm3SKMwZqPIMY3TsefqdneiFbbNA4/mpMk="
         }
       },
       "is_incremental": false,
@@ -1881,7 +1809,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.gRPC.Services.Submitter.html",
-          "hash": "yyCEkpZX24uYHJeB845bYj2ixR6qlvV++Hog5ZKTqTE="
+          "hash": "ABQyhVaxLdiyhXYDi2vHwES3+vcqas5BVVxrut77Ok8="
         }
       },
       "is_incremental": false,
@@ -2205,7 +2133,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.html",
-          "hash": "VK+pN3i53F9Y+2ekjo1J86ToB4JDj0vKdkjc+WM/ohI="
+          "hash": "lqWMptD3deAthOlQMtTbyzYoZY2O3sQKjAeAUa1p8mQ="
         }
       },
       "is_incremental": false,
@@ -2565,7 +2493,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "1Wx1Pgr3eOIU7/etSZ0Gorce5eQmC2AD2koBMntViu0="
+          "hash": "4aWFscRXVxGkC6aCnOVX8jYuPYhzFYymY7fHT6Eg4Ns="
         }
       },
       "is_incremental": false,
@@ -2640,7 +2568,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 212,
+          "total_file_count": 206,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
