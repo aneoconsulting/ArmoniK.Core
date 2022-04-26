@@ -57,6 +57,10 @@ public class SessionClient : ISessionClient
 
   public void Dispose()
   {
+    client_.CancelSession(new Session
+                          {
+                            Id = sessionId_,
+                          });
   }
 
   public byte[] GetResult(string id)
