@@ -29,6 +29,4 @@ namespace ArmoniK.Core.Common.Storage;
 
 public record TaskRequest(string               Id,
                           IEnumerable<string>  ExpectedOutputKeys,
-                          IEnumerable<string>  DataDependencies,
-                          ReadOnlyMemory<byte> PayloadChunk,
-                          bool                 HasPayload);
+                          IEnumerable<string>  DataDependencies);

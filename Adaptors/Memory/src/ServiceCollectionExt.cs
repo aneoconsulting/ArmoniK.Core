@@ -49,7 +49,6 @@ public static class ServiceCollectionExt
     {
       services.AddTransient<ITaskTable, TaskTable>()
               .AddTransient<ISessionTable, SessionTable>()
-              .AddTransient<IDispatchTable, DispatchTable>()
               .AddTransient<IResultTable, ResultTable>();
     }
 

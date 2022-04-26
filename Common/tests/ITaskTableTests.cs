@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -51,123 +52,161 @@ public class TaskTableTestBase
       TaskTable.CreateTasks(new[]
                             {
                               new TaskData("SessionId",
-                                           "PTaskId",
-                                           "DispatchId",
                                            "TaskCompletedId",
-                                           default,
+                                           "OwnerPodId",
                                            new[]
                                            {
-                                             "happy output",
+                                             "parent1",
                                            },
-                                           true,
                                            new[]
                                            {
-                                             (byte)1,
-                                             (byte)2,
+                                             "dependency1",
                                            },
+                                           new[]
+                                           {
+                                             "output1",
+                                           },
+                                           Array.Empty<string>(),
                                            TaskStatus.Completed,
+                                           "",
                                            default,
-                                           new[]
-                                           {
-                                             "Ancestor1DispatchId",
-                                             "Ancestor2DispatchId",
-                                           },
+                                           DateTime.Now,
+                                           DateTime.Now + TimeSpan.FromSeconds(1),
+                                           DateTime.Now + TimeSpan.FromSeconds(10),
+                                           DateTime.Now + TimeSpan.FromSeconds(20),
                                            DateTime.Now,
                                            new Output(true,
                                                       "")),
                               new TaskData("SessionId",
-                                           "PTaskId",
-                                           "DispatchId",
                                            "TaskCreatingId",
-                                           default,
+                                           "OwnerPodId",
                                            new[]
                                            {
-                                             "happy output",
+                                             "parent1",
                                            },
-                                           false,
-                                           new List<byte>().ToArray(),
+                                           new[]
+                                           {
+                                             "dependency1",
+                                           },
+                                           new[]
+                                           {
+                                             "output1",
+                                           },
+                                           Array.Empty<string>(),
                                            TaskStatus.Creating,
+                                           "",
                                            default,
-                                           new[]
-                                           {
-                                             "Ancestor3DispatchId",
-                                           },
                                            DateTime.Now,
-                                           default),
-                              new TaskData("SessionId",
-                                           "PTaskId",
-                                           "DispatchId",
-                                           "TaskNoPayloadId",
-                                           default,
-                                           new[]
-                                           {
-                                             "happy output",
-                                           },
-                                           false,
-                                           Array.Empty<byte>(),
-                                           TaskStatus.Submitted,
-                                           default,
-                                           new[]
-                                           {
-                                             "Ancestor3DispatchId",
-                                           },
-                                           DateTime.Now,
-                                           default),
-                              new TaskData("SessionId",
-                                           "PTaskId",
-                                           "Dispatch2Id",
-                                           "TaskProcessingId",
-                                           default,
-                                           new[]
-                                           {
-                                             "happy output",
-                                           },
-                                           false,
-                                           new List<byte>().ToArray(),
-                                           TaskStatus.Processing,
-                                           default,
-                                           new[]
-                                           {
-                                             "Ancestor4DispatchId",
-                                           },
-                                           DateTime.Now,
-                                           default),
-                              new TaskData("SessionId",
-                                           "PTaskId",
-                                           "Dispatch2Id",
-                                           "AnotherTaskProcessingId",
-                                           default,
-                                           new[]
-                                           {
-                                             "happy output",
-                                           },
-                                           false,
-                                           new List<byte>().ToArray(),
-                                           TaskStatus.Processing,
-                                           default,
-                                           new[]
-                                           {
-                                             "Ancestor4DispatchId",
-                                           },
-                                           DateTime.Now,
-                                           default),
-                              new TaskData("SessionId",
-                                           "PTaskId",
-                                           "DispatchId",
-                                           "TaskFailedId",
-                                           default,
-                                           new[]
-                                           {
-                                             "happy output",
-                                           },
-                                           false,
-                                           new List<byte>().ToArray(),
-                                           TaskStatus.Failed,
-                                           default,
-                                           new List<string>(),
+                                           DateTime.MinValue,
+                                           DateTime.MinValue,
+                                           DateTime.MinValue,
                                            DateTime.Now,
                                            new Output(false,
-                                                      "sad output")),
+                                                      "")),
+                              new TaskData("SessionId",
+                                           "TaskProcessingId",
+                                           "OwnerPodId",
+                                           new[]
+                                           {
+                                             "parent1",
+                                           },
+                                           new[]
+                                           {
+                                             "dependency1",
+                                           },
+                                           new[]
+                                           {
+                                             "output1",
+                                           },
+                                           Array.Empty<string>(),
+                                           TaskStatus.Processing,
+                                           "",
+                                           default,
+                                           DateTime.Now,
+                                           DateTime.Now + TimeSpan.FromSeconds(1),
+                                           DateTime.Now + TimeSpan.FromSeconds(10),
+                                           DateTime.MinValue,
+                                           DateTime.Now,
+                                           new Output(false,
+                                                      "")),
+                              new TaskData("SessionId",
+                                           "TaskAnotherProcessingId",
+                                           "OwnerPodId",
+                                           new[]
+                                           {
+                                             "parent1",
+                                           },
+                                           new[]
+                                           {
+                                             "dependency1",
+                                           },
+                                           new[]
+                                           {
+                                             "output1",
+                                           },
+                                           Array.Empty<string>(),
+                                           TaskStatus.Processing,
+                                           "",
+                                           default,
+                                           DateTime.Now,
+                                           DateTime.Now + TimeSpan.FromSeconds(1),
+                                           DateTime.Now + TimeSpan.FromSeconds(10),
+                                           DateTime.MinValue,
+                                           DateTime.Now,
+                                           new Output(false,
+                                                      "")),
+                              new TaskData("SessionId",
+                                           "TaskSubmittedId",
+                                           "",
+                                           new[]
+                                           {
+                                             "parent1",
+                                           },
+                                           new[]
+                                           {
+                                             "dependency1",
+                                           },
+                                           new[]
+                                           {
+                                             "output1",
+                                           },
+                                           Array.Empty<string>(),
+                                           TaskStatus.Submitted,
+                                           "",
+                                           default,
+                                           DateTime.Now,
+                                           DateTime.Now + TimeSpan.FromSeconds(1),
+                                           DateTime.MinValue,
+                                           DateTime.MinValue,
+                                           DateTime.Now,
+                                           new Output(false,
+                                                      "")),
+                              new TaskData("SessionId",
+                                           "TaskFailedId",
+                                           "OwnerPodId",
+                                           new[]
+                                           {
+                                             "parent1",
+                                           },
+                                           new[]
+                                           {
+                                             "dependency1",
+                                           },
+                                           new[]
+                                           {
+                                             "output1",
+                                           },
+                                           Array.Empty<string>(),
+                                           TaskStatus.Failed,
+                                           "",
+                                           default,
+                                           DateTime.Now,
+                                           DateTime.Now + TimeSpan.FromSeconds(1),
+                                           DateTime.Now + TimeSpan.FromSeconds(10),
+                                           DateTime.Now + TimeSpan.FromSeconds(100),
+                                           DateTime.Now,
+                                           new Output(false,
+                                                      "sad task")),
                             })
                .Wait();
     }
@@ -198,145 +237,27 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var payload = new[]
-                    {
-                      (byte)1,
-                      (byte)2,
-                    };
       var result = await TaskTable.ReadTaskAsync("TaskCompletedId",
                                                  CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(payload,
-                      result.Payload);
-    }
-  }
-
-  [Test]
-  public async Task ReadTaskWithoutPayloadAsyncShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var result = await TaskTable.ReadTaskAsync("TaskNoPayloadId",
-                                                 CancellationToken.None)
-                                  .ConfigureAwait(false);
-
-      Assert.AreEqual("TaskNoPayloadId",
+      Assert.AreEqual("TaskCompletedId",
                       result.TaskId);
     }
   }
 
   [Test]
-  public async Task ReadTaskAsyncShouldFail()
+  public void ReadTaskAsyncShouldFail()
   {
     if (RunTests)
     {
-      var payload = new[]
-                    {
-                      (byte)1,
-                      (byte)2,
-                    };
-      var result = await TaskTable.ReadTaskAsync("TaskFailedId",
-                                                 CancellationToken.None)
-                                  .ConfigureAwait(false);
 
-      Assert.AreNotEqual(payload,
-                         result.Payload);
-    }
-  }
-
-  [Test]
-  public async Task GetTaskDispatchIdShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var result = await TaskTable.GetTaskDispatchId("TaskCompletedId",
-                                                     CancellationToken.None)
-                                  .ConfigureAwait(false);
-
-      Assert.IsTrue(result == "DispatchId");
-    }
-  }
-
-  [Test]
-  public void GetTaskDispatchIdShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await TaskTable.GetTaskDispatchId("NonExistingTaskId",
+      Assert.ThrowsAsync<ArmoniKException>(async () => await TaskTable.ReadTaskAsync("TaskDoNotExists",
                                                                                CancellationToken.None)
-                                                            .ConfigureAwait(false);
-                                           });
+                                                                .ConfigureAwait(false));
     }
   }
 
-  [Test]
-  public async Task GetTaskAncestorDispatchIdsShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var ancestors = new[]
-                      {
-                        "Ancestor1DispatchId",
-                        "Ancestor2DispatchId",
-                      };
-      var result = await TaskTable.GetTaskAncestorDispatchIds("TaskCompletedId",
-                                                              CancellationToken.None)
-                                  .ConfigureAwait(false);
-
-      Assert.AreEqual(result,
-                      ancestors);
-    }
-  }
-
-  [Test]
-  public void GetTaskAncestorDispatchIdsShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await TaskTable.GetTaskAncestorDispatchIds("NonExistingTaskId",
-                                                                                        CancellationToken.None)
-                                                            .ConfigureAwait(false);
-                                           });
-    }
-  }
-
-  [Test]
-  public async Task ChangeTaskDispatchShouldSucceed()
-  {
-    if (RunTests)
-    {
-      await TaskTable.ChangeTaskDispatch("DispatchId",
-                                         "NewDispatchId",
-                                         CancellationToken.None)
-                     .ConfigureAwait(false);
-      var result = await TaskTable.GetTaskDispatchId("TaskCompletedId",
-                                                     CancellationToken.None)
-                                  .ConfigureAwait(false);
-
-      Assert.IsTrue(result == "NewDispatchId");
-    }
-  }
-
-
-  // TODO: Reenable this test after issue with the exception is clarified
-  //[Test]
-  //public void ChangeTaskDispatchShouldFail()
-  //{
-  //  if (RunTests)
-  //  {
-  //    Assert.ThrowsAsync<ArmoniKException>(async () =>
-  //    {
-  //      await TaskTable.ChangeTaskDispatch("NonExistingDispatchId",
-  //                                         "NewDispatchId",
-  //                                         CancellationToken.None);
-  //    });
-  //  }
-  //}
 
   [Test]
   public async Task UpdateTaskStatusAsyncShouldSucceed()
@@ -385,12 +306,11 @@ public class TaskTableTestBase
                                         TaskStatus.Processing,
                                       },
                                     },
-                         Dispatch = new TaskFilter.Types.IdsRequest
+                         Session = new TaskFilter.Types.IdsRequest
                                     {
                                       Ids =
                                       {
-                                        "DispatchId",
-                                        "Dispatch2Id", /* Task with TaskStatus.Processing was given this Id,
+                                        "SessionId", /* Task with TaskStatus.Processing was given this Id,
                             * for the Memory interface, adding it here is necessary for the test
                             * to succeed. For the MongoDB interface it may be ignored.
                             * TODO: Check filter definitions */
@@ -459,11 +379,11 @@ public class TaskTableTestBase
                                         TaskStatus.Processing,
                                       },
                                     },
-                         Dispatch = new TaskFilter.Types.IdsRequest
+                         Session = new TaskFilter.Types.IdsRequest
                                     {
                                       Ids =
                                       {
-                                        "DispatchId",
+                                        "SessionId",
                                       },
                                     },
                        };
@@ -518,35 +438,6 @@ public class TaskTableTestBase
   }
 
   [Test]
-  public async Task CancelDispatchAsyncShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var result = TaskTable.CancelDispatchAsync("SessionId",
-                                                 "Dispatch2Id",
-                                                 CancellationToken.None);
-      await result.ConfigureAwait(false);
-
-      Assert.IsTrue(result.IsCompletedSuccessfully);
-    }
-  }
-
-  [Test]
-  public void CancelDispatchAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await TaskTable.CancelDispatchAsync("SessionId",
-                                                                                 "NonExistingDispatchId",
-                                                                                 CancellationToken.None)
-                                                            .ConfigureAwait(false);
-                                           });
-    }
-  }
-
-  [Test]
   public async Task CountTasksAsyncShouldSucceed()
   {
     if (RunTests)
@@ -561,11 +452,11 @@ public class TaskTableTestBase
                                         TaskStatus.Creating,
                                       },
                                     },
-                         Dispatch = new TaskFilter.Types.IdsRequest
+                         Session = new TaskFilter.Types.IdsRequest
                                     {
                                       Ids =
                                       {
-                                        "DispatchId",
+                                        "SessionId",
                                       },
                                     },
                        };
@@ -576,7 +467,8 @@ public class TaskTableTestBase
 
       foreach (var taskStatusCount in result)
       {
-        Assert.IsTrue(taskStatusCount.Count == 1);
+        Console.WriteLine(taskStatusCount);
+        Assert.AreEqual(1, taskStatusCount.Count);
       }
     }
   }
@@ -651,14 +543,126 @@ public class TaskTableTestBase
     {
       var expectedOutput = new[]
                            {
-                             "happy output",
+                             "output1",
                            };
       var result = await TaskTable.GetTaskExpectedOutputKeys("TaskCompletedId",
                                                              CancellationToken.None)
                                   .ConfigureAwait(false);
 
       Assert.AreEqual(expectedOutput,
+                      result.ToArray());
+    }
+  }
+
+  [Test]
+  public async Task GetParentTaskIdsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var parentTaskIds = new[]
+                           {
+                             "parent1",
+                           };
+      var result = await TaskTable.GetParentTaskIds("TaskCompletedId",
+                                                             CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(parentTaskIds,
+                      result.ToArray());
+    }
+  }
+
+  [Test]
+  public async Task AcquireTaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+
+      var result = await TaskTable.AcquireTask("TaskSubmittedId",
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.IsTrue(result);
+    }
+  }
+
+  [Test]
+  public async Task AcquireTaskShouldFail()
+  {
+    if (RunTests)
+    {
+
+      var result = await TaskTable.AcquireTask("TaskFailedId",
+                                               CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.IsFalse(result);
+    }
+  }
+
+  [Test]
+  public async Task FinalizeTaskCreationShouldSucceed()
+  {
+    if (RunTests)
+    {
+
+      var result = await TaskTable.FinalizeTaskCreation(new List<string>
+                                                        {
+                                                          "TaskCreatingId",
+                                                        },
+                                                        CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(1, result);
+    }
+  }
+
+  [Test]
+  public async Task FinalizeTaskCreationShouldFail()
+  {
+    if (RunTests)
+    {
+      var result = await TaskTable.FinalizeTaskCreation(new List<string>
+                                                        {
+                                                          "TaskFailedId",
+                                                        },
+                                                        CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.AreNotEqual(1,
                       result);
+    }
+  }
+
+  [Test]
+  public async Task StartTaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+      await TaskTable.StartTask("TaskSubmittedId",
+                                CancellationToken.None)
+                     .ConfigureAwait(false);
+
+      var taskData = await TaskTable.ReadTaskAsync("TaskSubmittedId",
+                                             CancellationToken.None)
+                              .ConfigureAwait(false);
+
+      Assert.AreEqual(TaskStatus.Processing,
+                      taskData.Status);
+    }
+  }
+
+  [Test]
+  public void StartTaskShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ArmoniKException>(async () =>
+                                           {
+                                             await TaskTable.StartTask("NonExistingTaskId",
+                                                                       CancellationToken.None)
+                                                            .ConfigureAwait(false);
+                                           });
     }
   }
 }

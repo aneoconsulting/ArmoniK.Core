@@ -132,7 +132,7 @@ public class ResultTable : IResultTable
                                                           .ConfigureAwait(false);
 
     return !await resultCollection.AsQueryable(sessionHandle)
-                                  .AnyAsync(model => !model.IsResultAvailable && model.SessionId == sessionId && keys.Contains(model.Key),
+                                  .AnyAsync(model => model.Status != "Completed" && model.SessionId == sessionId && keys.Contains(model.Name),
                                             cancellationToken)
                                   .ConfigureAwait(false);
   }
@@ -155,9 +155,9 @@ public class ResultTable : IResultTable
                                                           .ConfigureAwait(false);
 
     var res = await resultCollection
-                    .UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Key == key && model.OwnerTaskId == ownerTaskId && model.SessionId == sessionId),
-                                    Builders<Result>.Update.Set(model => model.IsResultAvailable,
-                                                                true)
+                    .UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Name == key && model.OwnerTaskId == ownerTaskId && model.SessionId == sessionId),
+                                    Builders<Result>.Update.Set(model => model.Status,
+                                                                "Completed")
                                                     .Set(model => model.Data,
                                                          smallPayload),
                                     cancellationToken: cancellationToken)
@@ -185,9 +185,9 @@ public class ResultTable : IResultTable
     var resultCollection = await resultCollectionProvider_.GetAsync()
                                                           .ConfigureAwait(false);
 
-    var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Key == key && model.OwnerTaskId == ownerTaskId),
-                                                    Builders<Result>.Update.Set(model => model.IsResultAvailable,
-                                                                                true),
+    var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Name == key && model.OwnerTaskId == ownerTaskId),
+                                                    Builders<Result>.Update.Set(model => model.Status,
+                                                                                "Completed"),
                                                     cancellationToken: cancellationToken)
                                     .ConfigureAwait(false);
     if (res.ModifiedCount == 0)
@@ -195,43 +195,6 @@ public class ResultTable : IResultTable
       throw new ArmoniKException($"Key '{key}' not found");
     }
   }
-
-  /// <inheritdoc />
-  public async Task ChangeResultDispatch(string            sessionId,
-                                         string            oldDispatchId,
-                                         string            newDispatchId,
-                                         CancellationToken cancellationToken)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(ChangeResultDispatch)}");
-    activity?.SetTag($"{nameof(SetResult)}_sessionId",
-                     sessionId);
-    activity?.SetTag($"{nameof(SetResult)}_oldDispatchId",
-                     oldDispatchId);
-    activity?.SetTag($"{nameof(SetResult)}_newDispatchId",
-                     newDispatchId);
-
-    var resultCollection = await resultCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
-
-    var sessionIsValid = await resultCollection.FindAsync(model => model.SessionId == sessionId,
-                                                          null,
-                                                          cancellationToken)
-                                               .ConfigureAwait(false);
-    if (await sessionIsValid.FirstOrDefaultAsync(cancellationToken)
-                            .ConfigureAwait(false) == default)
-    {
-      await Task.FromException<ArmoniKException>(new ArmoniKException($"Key '{sessionId}' not found"))
-                .ConfigureAwait(false);
-      return;
-    }
-
-    await resultCollection.UpdateManyAsync(model => model.OriginDispatchId == oldDispatchId,
-                                           Builders<Result>.Update.Set(model => model.OriginDispatchId,
-                                                                       newDispatchId),
-                                           cancellationToken: cancellationToken)
-                          .ConfigureAwait(false);
-  }
-
 
   /// <inheritdoc />
   public async Task ChangeResultOwnership(string              sessionId,
@@ -254,7 +217,7 @@ public class ResultTable : IResultTable
       var resultCollection = await resultCollectionProvider_.GetAsync()
                                                             .ConfigureAwait(false);
 
-      var result = await resultCollection.UpdateManyAsync(model => model.OwnerTaskId == oldTaskId && keys.Contains(model.Key) && model.SessionId == sessionId,
+      var result = await resultCollection.UpdateManyAsync(model => model.OwnerTaskId == oldTaskId && keys.Contains(model.Name) && model.SessionId == sessionId,
                                                           Builders<Result>.Update.Set(model => model.OwnerTaskId,
                                                                                       newTaskId),
                                                           cancellationToken: cancellationToken)
@@ -280,7 +243,7 @@ public class ResultTable : IResultTable
     var resultCollection = await resultCollectionProvider_.GetAsync()
                                                           .ConfigureAwait(false);
 
-    await resultCollection.DeleteOneAsync(model => model.Key == key && model.SessionId == session,
+    await resultCollection.DeleteOneAsync(model => model.Name == key && model.SessionId == session,
                                           cancellationToken)
                           .ConfigureAwait(false);
   }

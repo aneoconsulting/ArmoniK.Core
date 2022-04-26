@@ -73,7 +73,6 @@ public static class ServiceCollectionExt
                                        TableStorage.SettingSection)
               .AddTransient<ITaskTable, TaskTable>()
               .AddTransient<ISessionTable, SessionTable>()
-              .AddTransient<IDispatchTable, DispatchTable>()
               .AddTransient<IResultTable, ResultTable>();
     }
 

@@ -48,19 +48,6 @@ public static class TaskFilterExt
 
     switch (filter.IdsCase)
     {
-      case TaskFilter.IdsOneofCase.Dispatch:
-      {
-        if (filter.Dispatch.Ids is not null)
-        {
-          output = Expression.And(output,
-                                  ExpressionsBuilders.FieldFilterInternal(model => model.AncestorDispatchIds,
-                                                                          filter.Dispatch.Ids,
-                                                                          true,
-                                                                          x));
-        }
-
-        break;
-      }
       case TaskFilter.IdsOneofCase.Session:
       {
         if (filter.Session.Ids is not null)
@@ -88,9 +75,10 @@ public static class TaskFilterExt
         break;
       }
 
+      case TaskFilter.IdsOneofCase.Dispatch:
       case TaskFilter.IdsOneofCase.None:
       default:
-        throw new ArgumentException("IdsCase must be either Dispatch, Task or Session",
+        throw new ArgumentException("IdsCase must be either Task or Session",
                                     nameof(filter));
     }
 
@@ -100,7 +88,7 @@ public static class TaskFilterExt
       {
         if (filter.Included.Statuses is not null)
         {
-          output = Expression.Or(output,
+          output = Expression.And(output,
                                  ExpressionsBuilders.FieldFilterInternal(model => model.Status,
                                                                          filter.Included.Statuses,
                                                                          true,
@@ -113,7 +101,7 @@ public static class TaskFilterExt
       {
         if (filter.Excluded.Statuses is not null)
         {
-          output = Expression.Or(output,
+          output = Expression.And(output,
                                  ExpressionsBuilders.FieldFilterInternal(model => model.Status,
                                                                          filter.Excluded.Statuses,
                                                                          false,
@@ -129,7 +117,6 @@ public static class TaskFilterExt
           ArgumentException($"{nameof(TaskFilter.StatusesCase)} must be either {nameof(TaskFilter.StatusesOneofCase.Included)} or {nameof(TaskFilter.StatusesOneofCase.Excluded)}",
                             nameof(filter));
     }
-
 
     return (Expression<Func<TaskData, bool>>)Expression.Lambda(output,
                                                                x);

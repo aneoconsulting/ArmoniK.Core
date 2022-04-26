@@ -55,34 +55,7 @@ public class ResultTable : IResultTable
                                              IEnumerable<string> keys,
                                              CancellationToken   cancellationToken = default)
     => Task.FromResult(keys.All(key => results_[sessionId][key]
-                                  .IsResultAvailable));
-
-  /// <inheritdoc />
-  public Task ChangeResultDispatch(string            sessionId,
-                                   string            oldDispatchId,
-                                   string            newDispatchId,
-                                   CancellationToken cancellationToken)
-  {
-    if (!results_.ContainsKey(sessionId))
-    {
-      return Task.FromException<ArmoniKException>(new ArmoniKException($"Key '{sessionId}' not found"));
-    }
-
-    foreach (var result in results_[sessionId]
-                           .Values.ToImmutableList()
-                           .Where(result => result.OriginDispatchId == oldDispatchId))
-    {
-      results_[result.SessionId]
-        .TryUpdate(result.Key,
-                   result with
-                   {
-                     OriginDispatchId = newDispatchId,
-                   },
-                   result);
-    }
-
-    return Task.CompletedTask;
-  }
+                                  .Status == "Completed"));
 
   /// <inheritdoc />
   public Task ChangeResultOwnership(string              sessionId,
@@ -96,7 +69,7 @@ public class ResultTable : IResultTable
                            .Where(result => result.OwnerTaskId == oldTaskId))
     {
       results_[result.SessionId]
-        .TryUpdate(result.Key,
+        .TryUpdate(result.Name,
                    result with
                    {
                      OwnerTaskId = newTaskId,
@@ -115,10 +88,10 @@ public class ResultTable : IResultTable
     {
       var sessionResults = results_.GetOrAdd(result.SessionId,
                                              new ConcurrentDictionary<string, Result>());
-      if (!sessionResults.TryAdd(result.Key,
+      if (!sessionResults.TryAdd(result.Name,
                                  result))
       {
-        throw new ArmoniKException($"Key {result.Key} already exists");
+        throw new ArmoniKException($"Key {result.Name} already exists");
       }
     }
 
@@ -174,11 +147,11 @@ public class ResultTable : IResultTable
     var result = results_[sessionId][key];
 
     results_[result.SessionId]
-      .TryUpdate(result.Key,
+      .TryUpdate(result.Name,
                  result with
                  {
                    Data = smallPayload,
-                   IsResultAvailable = true,
+                   Status = "Completed",
                  },
                  result);
     return Task.CompletedTask;
@@ -193,10 +166,10 @@ public class ResultTable : IResultTable
     var result = results_[sessionId][key];
 
     results_[result.SessionId]
-      .TryUpdate(result.Key,
+      .TryUpdate(result.Name,
                  result with
                  {
-                   IsResultAvailable = true,
+                   Status = "Completed",
                  },
                  result);
     return Task.CompletedTask;

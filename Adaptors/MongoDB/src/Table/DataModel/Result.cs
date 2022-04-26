@@ -27,25 +27,22 @@ using System;
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 public record Result(string   SessionId,
-                     string   Key,
+                     string   Name,
                      string   OwnerTaskId,
-                     string   OriginDispatchId,
-                     bool     IsResultAvailable,
+                     string   Status,
                      DateTime CreationDate,
                      byte[]   Data) : Core.Common.Storage.Result(SessionId,
-                                                                 Key,
+                                                                 Name,
                                                                  OwnerTaskId,
-                                                                 OriginDispatchId,
-                                                                 IsResultAvailable,
+                                                                 Status,
                                                                  CreationDate,
                                                                  Data)
 {
   public Result(Core.Common.Storage.Result original)
     : this(original.SessionId,
-           original.Key,
+           original.Name,
            original.OwnerTaskId,
-           original.OriginDispatchId,
-           original.IsResultAvailable,
+           original.Status,
            original.CreationDate,
            original.Data)
   {
@@ -56,9 +53,9 @@ public record Result(string   SessionId,
   /// </summary>
   public string Id
     => GenerateId(SessionId,
-                  Key);
+                  Name);
 
-  public static string GenerateId(string SessionId,
-                                  string Key)
-    => $"{SessionId}.{Key}";
+  public static string GenerateId(string sessionId,
+                                  string key)
+    => $"{sessionId}.{key}";
 }

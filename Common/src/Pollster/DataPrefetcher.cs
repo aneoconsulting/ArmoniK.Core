@@ -77,25 +77,13 @@ public class DataPrefetcher : IInitializable
     var resultStorage  = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
     var payloadStorage = objectStorageFactory_.CreatePayloadStorage(taskData.SessionId);
 
-    List<ByteString> payloadChunks;
-
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
-    if (taskData.HasPayload)
-    {
-      payloadChunks = new List<ByteString>
-                      {
-                        UnsafeByteOperations.UnsafeWrap(taskData.Payload),
-                      };
-    }
-    else
-    {
-      payloadChunks = await payloadStorage.GetValuesAsync(taskData.TaskId,
-                                                          cancellationToken)
-                                          .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
-                                          .ToListAsync(cancellationToken)
-                                          .ConfigureAwait(false);
-    }
+    var payloadChunks = await payloadStorage.GetValuesAsync(taskData.TaskId,
+                                                            cancellationToken)
+                                            .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
+                                            .ToListAsync(cancellationToken)
+                                            .ConfigureAwait(false);
 
     var computeRequests = new ComputeRequestQueue(logger_);
     computeRequests.Init(PayloadConfiguration.MaxChunkSize,
@@ -103,7 +91,7 @@ public class DataPrefetcher : IInitializable
                          taskData.TaskId,
                          taskData.Options.Options,
                          payloadChunks.FirstOrDefault(),
-                         taskData.ExpectedOutput);
+                         taskData.ExpectedOutputIds);
 
     for (var i = 1; i < payloadChunks.Count; i++)
     {

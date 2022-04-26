@@ -36,19 +36,11 @@ public interface ISessionTable : IInitializable
 
   Task CreateSessionDataAsync(string                  rootSessionId,
                               string                  parentTaskId,
-                              string                  dispatchId,
                               Api.gRPC.V1.TaskOptions defaultOptions,
                               CancellationToken       cancellationToken = default);
 
-  Task<SessionData> GetSessionAsync(string            dispatchId,
-                                    CancellationToken cancellationToken = default);
-
   Task<bool> IsSessionCancelledAsync(string            sessionId,
                                      CancellationToken cancellationToken = default);
-
-  Task<bool> IsDispatchCancelledAsync(string            rootSessionId,
-                                      string            dispatchId,
-                                      CancellationToken cancellationToken = default);
 
   Task<Api.gRPC.V1.TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
                                                           CancellationToken cancellationToken = default);
@@ -56,19 +48,8 @@ public interface ISessionTable : IInitializable
   Task CancelSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
 
-  Task CancelDispatchAsync(string            rootSessionId,
-                           string            dispatchId,
-                           CancellationToken cancellationToken = default);
-
   Task DeleteSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
 
-  Task DeleteDispatchAsync(string            rootSessionId,
-                           string            dispatchId,
-                           CancellationToken cancellationToken = default);
-
   IAsyncEnumerable<string> ListSessionsAsync(CancellationToken cancellationToken = default);
-
-  IAsyncEnumerable<string> ListDispatchesAsync(string            rootSessionId,
-                                               CancellationToken cancellationToken = default);
 }

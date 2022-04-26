@@ -129,9 +129,7 @@ public class Pollster
 
             if (precondition is not null)
             {
-              var taskData = precondition.Value.TaskData;
-
-              await using var dispatch = precondition.Value.Dispatch;
+              var taskData = precondition;
 
               logger_.LogDebug("Start prefetch data");
               var computeRequestStream = await dataPrefetcher_.PrefetchDataAsync(taskData,
@@ -142,7 +140,6 @@ public class Pollster
               logger_.LogDebug("Start a new Task to process the messageHandler");
               var processResult = await requestProcessor_.ProcessAsync(message,
                                                                        taskData,
-                                                                       dispatch,
                                                                        computeRequestStream,
                                                                        cancellationToken)
                                                          .ConfigureAwait(false);

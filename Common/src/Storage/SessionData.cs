@@ -22,17 +22,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-
 namespace ArmoniK.Core.Common.Storage;
 
-public record Dispatch(string                  SessionId,
-                       string                  TaskId,
-                       string                  Id,
-                       int                     Attempt,
-                       DateTime                TimeToLive,
-                       IEnumerable<StatusTime> Statuses,
-                       DateTime                CreationDate)
-{
-}
+public record SessionData(string                  SessionId,
+                          string                  Status,
+                          Api.gRPC.V1.TaskOptions Options);

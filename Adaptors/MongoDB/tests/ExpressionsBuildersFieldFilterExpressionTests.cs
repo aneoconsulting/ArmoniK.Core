@@ -22,11 +22,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
+
+using Output = ArmoniK.Core.Common.Storage.Output;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
@@ -44,18 +48,31 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                   .Compile();
 
     var model = new TaskData("Session",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -71,18 +88,31 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                   .Compile();
 
     var model = new TaskData("OtherSession",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -99,18 +129,31 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                   .Compile();
 
     var model = new TaskData("Session",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -127,242 +170,31 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                   .Compile();
 
     var model = new TaskData("OtherSession",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
-
-    Assert.IsTrue(func(model));
-  }
-
-  [Test]
-  public void ShouldRecognizeSubSession()
-  {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[]
-                                                         {
-                                                           "SubSession",
-                                                         })
-                                  .Compile();
-
-    var model = new TaskData(default,
-                             "SubSession",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
-
-    Assert.IsTrue(func(model));
-  }
-
-  [Test]
-  public void ShouldExcludeSubSession()
-  {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[]
-                                                         {
-                                                           "SubSession",
-                                                         },
-                                                         false)
-                                  .Compile();
-
-    var model = new TaskData(default,
-                             "SubSession",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
-
-    Assert.IsFalse(func(model));
-  }
-
-  [Test]
-  public void ShouldRecognizeMultipleSubSession()
-  {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[]
-                                                         {
-                                                           "SubSession",
-                                                           "SubSession2",
-                                                         })
-                                  .Compile();
-
-    var model = new TaskData(default,
-                             "SubSession",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
-
-    Assert.IsTrue(func(model));
-  }
-
-  [Test]
-  public void ShouldExcludeMultipleSubSession()
-  {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[]
-                                                         {
-                                                           "SubSession",
-                                                           "SubSession2",
-                                                         },
-                                                         false)
-                                  .Compile();
-
-    var model = new TaskData(default,
-                             "SubSession",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
-
-    Assert.IsFalse(func(model));
-  }
-
-  [Test]
-  public void ShouldRejectOtherSubSession()
-  {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[]
-                                                         {
-                                                           "SubSession",
-                                                         })
-                                  .Compile();
-
-    var model = new TaskData(default,
-                             "OtherSubSession",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
-
-    Assert.IsFalse(func(model));
-  }
-
-  [Test]
-  public void ShouldIncludeOtherSubSession()
-  {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[]
-                                                         {
-                                                           "SubSession",
-                                                         },
-                                                         false)
-                                  .Compile(true);
-
-    var model = new TaskData(default,
-                             "OtherSubSession",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
-
-    Assert.IsTrue(func(model));
-  }
-
-  [Test]
-  public void ShouldRejectOtherMultipleSubSession()
-  {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[]
-                                                         {
-                                                           "SubSession",
-                                                           "SubSession2",
-                                                         })
-                                  .Compile();
-
-    var model = new TaskData(default,
-                             "OtherSubSession",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
-
-    Assert.IsFalse(func(model));
-  }
-
-  [Test]
-  public void ShouldIncludeOtherMultipleSubSession()
-  {
-    var func = ExpressionsBuilders.FieldFilterExpression(model => model.ParentTaskId,
-                                                         new[]
-                                                         {
-                                                           "SubSession",
-                                                           "SubSession2",
-                                                         },
-                                                         false)
-                                  .Compile();
-
-    var model = new TaskData(default,
-                             "OtherSubSession",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
+                             default,
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -378,19 +210,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                   .Compile();
 
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Completed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -406,19 +251,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Completed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -434,19 +292,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          })
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Completed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -463,19 +334,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Completed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -490,19 +374,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          })
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -518,19 +415,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile(true);
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -546,19 +456,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          })
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -575,19 +498,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -602,19 +538,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          })
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
                              "Task",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -630,19 +579,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
                              "Task",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -658,19 +620,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          })
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
                              "Task",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -687,19 +662,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
                              "Task",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -714,19 +702,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          })
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
                              "OtherTask",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -742,19 +743,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile(true);
 
-    var model = new TaskData(default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
                              "OtherTask",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -770,19 +784,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          })
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
                              "OtherTask",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -799,19 +826,32 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                          false)
                                   .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
+    var model = new TaskData("OtherSession",
                              "OtherTask",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Canceled,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }

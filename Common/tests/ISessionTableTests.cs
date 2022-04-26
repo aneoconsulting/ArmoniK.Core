@@ -46,7 +46,6 @@ public class SessionTableTestBase
     {
       SessionTable.CreateSessionDataAsync(RootSessionId,
                                           "TaskId",
-                                          "DispatchId",
                                           new TaskOptions(),
                                           CancellationToken.None)
                   .Wait();
@@ -64,36 +63,10 @@ public class SessionTableTestBase
 
   protected bool RunTests;
 
-  private const string RootSessionId = "DispatchId";
+  private const string RootSessionId = "SessionId";
 
   public virtual void GetSessionTableInstance()
   {
-  }
-
-  [Test]
-  public async Task GetSessionAsyncShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var res = await SessionTable.GetSessionAsync("DispatchId",
-                                                   CancellationToken.None)
-                                  .ConfigureAwait(false);
-      Assert.IsNotNull(res);
-    }
-  }
-
-  [Test]
-  public void GetSessionAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await SessionTable.GetSessionAsync("BadDispatchId",
-                                                                                CancellationToken.None)
-                                                               .ConfigureAwait(false);
-                                           });
-    }
   }
 
   [Test]
@@ -102,7 +75,7 @@ public class SessionTableTestBase
     if (RunTests)
     {
       // Inconsistent signature: the contract asks for session Id
-      var res = await SessionTable.IsSessionCancelledAsync("DispatchId",
+      var res = await SessionTable.IsSessionCancelledAsync("SessionId",
                                                            CancellationToken.None)
                                   .ConfigureAwait(false);
       Assert.IsFalse(res);
@@ -116,36 +89,8 @@ public class SessionTableTestBase
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
                                            {
-                                             await SessionTable.IsSessionCancelledAsync("BadDispatchId",
+                                             await SessionTable.IsSessionCancelledAsync("BadSessionId",
                                                                                         CancellationToken.None)
-                                                               .ConfigureAwait(false);
-                                           });
-    }
-  }
-
-  [Test]
-  public async Task IsDispatchCancelledAsyncShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var res = await SessionTable.IsDispatchCancelledAsync(RootSessionId,
-                                                            "DispatchId",
-                                                            CancellationToken.None)
-                                  .ConfigureAwait(false);
-      Assert.IsFalse(res);
-    }
-  }
-
-  [Test]
-  public void IsDispatchCancelledAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await SessionTable.IsDispatchCancelledAsync(RootSessionId,
-                                                                                         "BadDispatchId",
-                                                                                         CancellationToken.None)
                                                                .ConfigureAwait(false);
                                            });
     }
@@ -157,7 +102,7 @@ public class SessionTableTestBase
     if (RunTests)
     {
       // Inconsistent signature: the contract asks for sessionId
-      var res = await SessionTable.GetDefaultTaskOptionAsync("DispatchId",
+      var res = await SessionTable.GetDefaultTaskOptionAsync("SessionId",
                                                              CancellationToken.None)
                                   .ConfigureAwait(false);
       Assert.NotNull(res);
@@ -170,7 +115,7 @@ public class SessionTableTestBase
     if (RunTests)
     {
       // Inconsistent signature: the contract asks for sessionId
-      await SessionTable.CancelSessionAsync("DispatchId",
+      await SessionTable.CancelSessionAsync("SessionId",
                                             CancellationToken.None)
                         .ConfigureAwait(false);
       var wasSessionCanceled = await SessionTable.IsSessionCancelledAsync(RootSessionId,
@@ -187,46 +132,13 @@ public class SessionTableTestBase
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
                                            {
-                                             await SessionTable.CancelSessionAsync("BadDispatchId",
+                                             await SessionTable.CancelSessionAsync("BadSessionId",
                                                                                    CancellationToken.None)
                                                                .ConfigureAwait(false);
                                            });
     }
   }
 
-  [Test]
-  public async Task CancelDispatchAsyncShouldSucceed()
-  {
-    if (RunTests)
-    {
-      await SessionTable.CancelDispatchAsync(RootSessionId,
-                                             "DispatchId",
-                                             CancellationToken.None)
-                        .ConfigureAwait(false);
-
-      var wasDispatchCanceled = await SessionTable.IsDispatchCancelledAsync(RootSessionId,
-                                                                            "DispatchId",
-                                                                            CancellationToken.None)
-                                                  .ConfigureAwait(false);
-
-      Assert.IsTrue(wasDispatchCanceled);
-    }
-  }
-
-  [Test]
-  public void CancelDispatchAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await SessionTable.CancelDispatchAsync(RootSessionId,
-                                                                                    "BadDispatchId",
-                                                                                    CancellationToken.None)
-                                                               .ConfigureAwait(false);
-                                           });
-    }
-  }
 
   [Test]
   public async Task DeleteSessionAsyncShouldSucceed()
@@ -254,34 +166,4 @@ public class SessionTableTestBase
                                            });
     }
   }
-
-  [Test]
-  public async Task DeleteDispatchAsyncShouldSucceed()
-  {
-    if (RunTests)
-    {
-      // This deletes the ancestor dispatches, renaming necessary?
-      var res = SessionTable.DeleteDispatchAsync(RootSessionId,
-                                                 "DispatchId",
-                                                 CancellationToken.None);
-      await res.ConfigureAwait(false);
-
-      Assert.IsTrue(res.IsCompletedSuccessfully);
-    }
-  }
-
-  //  Test to reenable after naming convention is clarified 
-  //[Test]
-  //public void DeleteDispatchAsyncShouldFail()
-  //{
-  //  if (RunTests)
-  //  {
-  //    Assert.ThrowsAsync<ArmoniKException>(async () =>
-  //    {
-  //      await SessionTable.DeleteDispatchAsync(RootSessionId,
-  //                                             "BadDispatchId",
-  //                                             CancellationToken.None);
-  //    });
-  //  }
-  //}
 }

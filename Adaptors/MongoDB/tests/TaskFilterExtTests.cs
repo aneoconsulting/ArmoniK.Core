@@ -23,13 +23,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
+
+using Output = ArmoniK.Core.Common.Storage.Output;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
@@ -52,17 +53,31 @@ internal class TaskFilterExtTests
                 .Compile();
 
     var model = new TaskData("Session",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -83,17 +98,31 @@ internal class TaskFilterExtTests
                 .Compile();
 
     var model = new TaskData("OtherSession",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -110,29 +139,43 @@ internal class TaskFilterExtTests
                                 TaskStatus.Completed,
                               },
                             },
-                 Dispatch = new TaskFilter.Types.IdsRequest
-                            {
-                              Ids =
-                              {
-                                "DispatchId",
-                              },
-                            },
+                 Session = new TaskFilter.Types.IdsRequest
+                           {
+                             Ids =
+                             {
+                               "SessionId",
+                             },
+                           },
                }.ToFilterExpression()
                 .Compile(true);
 
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("SessionId",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Completed,
+                             "",
                              default,
-                             new List<string>(),
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -149,28 +192,42 @@ internal class TaskFilterExtTests
                                 TaskStatus.Completed,
                               },
                             },
-                 Dispatch = new TaskFilter.Types.IdsRequest
-                            {
-                              Ids =
-                              {
-                                "DispatchId",
-                              },
-                            },
+                 Session = new TaskFilter.Types.IdsRequest
+                           {
+                             Ids =
+                             {
+                               "SessionId",
+                             },
+                           },
                }.ToFilterExpression()
                 .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("SessionId",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Completed,
+                             "",
                              default,
-                             new List<string>(),
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -188,28 +245,42 @@ internal class TaskFilterExtTests
                                 TaskStatus.Canceled,
                               },
                             },
-                 Dispatch = new TaskFilter.Types.IdsRequest
-                            {
-                              Ids =
-                              {
-                                "DispatchId",
-                              },
-                            },
+                 Session = new TaskFilter.Types.IdsRequest
+                           {
+                             Ids =
+                             {
+                               "SessionId",
+                             },
+                           },
                }.ToFilterExpression()
                 .Compile();
 
-    var model = new TaskData(default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
+    var model = new TaskData("SessionId",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
                              TaskStatus.Completed,
+                             "",
                              default,
-                             new List<string>(),
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -227,36 +298,42 @@ internal class TaskFilterExtTests
                                 TaskStatus.Canceled,
                               },
                             },
-                 Dispatch = new TaskFilter.Types.IdsRequest
-                            {
-                              Ids =
-                              {
-                                "DispatchId",
-                              },
-                            },
+                 Session = new TaskFilter.Types.IdsRequest
+                           {
+                             Ids =
+                             {
+                               "SessionId",
+                             },
+                           },
                }.ToFilterExpression()
                 .Compile();
 
     var model = new TaskData("SessionId",
-                             "ParentTaskId",
-                             "DispatchId",
-                             "TaskId",
-                             new List<string>(),
-                             new List<string>
-                             {
-                               "output",
-                             },
-                             true,
+                             "TaskCompletedId",
+                             "OwnerPodId",
                              new[]
                              {
-                               (byte)1,
-                               (byte)2,
+                               "parent1",
                              },
-                             TaskStatus.Canceled,
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Completed,
+                             "",
                              default,
-                             new List<string>(),
                              DateTime.Now,
-                             default);
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -273,36 +350,42 @@ internal class TaskFilterExtTests
                                 TaskStatus.Completed,
                               },
                             },
-                 Dispatch = new TaskFilter.Types.IdsRequest
-                            {
-                              Ids =
-                              {
-                                "DispatchId",
-                              },
-                            },
+                 Session = new TaskFilter.Types.IdsRequest
+                           {
+                             Ids =
+                             {
+                               "SessionId",
+                             },
+                           },
                }.ToFilterExpression()
                 .Compile();
 
     var model = new TaskData("SessionId",
-                             "ParentTaskId",
-                             "DispatchId",
-                             "TaskId",
-                             new List<string>(),
-                             new List<string>
-                             {
-                               "output",
-                             },
-                             true,
+                             "Task",
+                             "OwnerPodId",
                              new[]
                              {
-                               (byte)1,
-                               (byte)2,
+                               "parent1",
                              },
-                             TaskStatus.Canceled,
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             new List<string>(),
                              DateTime.Now,
-                             default);
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -319,28 +402,42 @@ internal class TaskFilterExtTests
                                 TaskStatus.Completed,
                               },
                             },
-                 Dispatch = new TaskFilter.Types.IdsRequest
-                            {
-                              Ids =
-                              {
-                                "DispatchId",
-                              },
-                            },
+                 Session = new TaskFilter.Types.IdsRequest
+                           {
+                             Ids =
+                             {
+                               "SessionId",
+                             },
+                           },
                }.ToFilterExpression()
                 .Compile();
 
-    var model = new TaskData(default,
+    var model = new TaskData("SessionId",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             TaskStatus.Canceled,
-                             default,
-                             new List<string>(),
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -358,28 +455,42 @@ internal class TaskFilterExtTests
                                 TaskStatus.Canceling,
                               },
                             },
-                 Dispatch = new TaskFilter.Types.IdsRequest
-                            {
-                              Ids =
-                              {
-                                "DispatchId",
-                              },
-                            },
+                 Session = new TaskFilter.Types.IdsRequest
+                           {
+                             Ids =
+                             {
+                               "SessionId",
+                             },
+                           },
                }.ToFilterExpression()
                 .Compile();
 
-    var model = new TaskData(default,
+    var model = new TaskData("SessionId",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             TaskStatus.Canceled,
-                             default,
-                             new List<string>(),
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -397,28 +508,42 @@ internal class TaskFilterExtTests
                                 TaskStatus.Canceling,
                               },
                             },
-                 Dispatch = new TaskFilter.Types.IdsRequest
-                            {
-                              Ids =
-                              {
-                                "DispatchId",
-                              },
-                            },
+                 Session = new TaskFilter.Types.IdsRequest
+                           {
+                             Ids =
+                             {
+                               "SessionId",
+                             },
+                           },
                }.ToFilterExpression()
                 .Compile();
 
-    var model = new TaskData(default,
+    var model = new TaskData("SessionId",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             TaskStatus.Canceled,
-                             default,
-                             new List<string>(),
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -439,18 +564,32 @@ internal class TaskFilterExtTests
                 .Compile();
 
 
-    var model = new TaskData(default,
-                             default,
-                             default,
+    var model = new TaskData("SessionId",
                              "Task",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -472,18 +611,32 @@ internal class TaskFilterExtTests
                 .Compile();
 
 
-    var model = new TaskData(default,
-                             default,
-                             default,
+    var model = new TaskData("SessionId",
                              "Task",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsTrue(func(model));
   }
@@ -504,18 +657,32 @@ internal class TaskFilterExtTests
                 .Compile();
 
 
-    var model = new TaskData(default,
+    var model = new TaskData("SessionId",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             "OtherTask",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }
@@ -537,18 +704,32 @@ internal class TaskFilterExtTests
                 .Compile();
 
 
-    var model = new TaskData(default,
+    var model = new TaskData("SessionId",
+                             "TaskCompletedId",
+                             "OwnerPodId",
+                             new[]
+                             {
+                               "parent1",
+                             },
+                             new[]
+                             {
+                               "dependency1",
+                             },
+                             new[]
+                             {
+                               "output1",
+                             },
+                             Array.Empty<string>(),
+                             TaskStatus.Failed,
+                             "",
                              default,
-                             default,
-                             "OtherTask",
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default,
-                             default);
+                             DateTime.Now,
+                             DateTime.Now + TimeSpan.FromSeconds(1),
+                             DateTime.Now + TimeSpan.FromSeconds(10),
+                             DateTime.Now + TimeSpan.FromSeconds(20),
+                             DateTime.Now,
+                             new Output(true,
+                                        ""));
 
     Assert.IsFalse(func(model));
   }

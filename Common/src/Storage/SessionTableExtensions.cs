@@ -38,29 +38,7 @@ public static class SessionTableExtensions
 
     await sessionTable.CreateSessionDataAsync(id,
                                               id,
-                                              id,
                                               defaultOptions,
-                                              cancellationToken)
-                      .ConfigureAwait(false);
-  }
-
-
-  public static async Task CreateDispatchedSessionAsync(this ISessionTable sessionTable,
-                                                        string             rootSessionId,
-                                                        string             parentTaskId,
-                                                        string             dispatchId,
-                                                        CancellationToken  cancellationToken = default)
-  {
-    using var _ = sessionTable.Logger.LogFunction(dispatchId);
-
-    var taskOptions = await sessionTable.GetDefaultTaskOptionAsync(rootSessionId,
-                                                                   cancellationToken)
-                                        .ConfigureAwait(false);
-
-    await sessionTable.CreateSessionDataAsync(rootSessionId,
-                                              parentTaskId,
-                                              dispatchId,
-                                              taskOptions,
                                               cancellationToken)
                       .ConfigureAwait(false);
   }
