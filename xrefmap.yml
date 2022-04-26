@@ -11318,6 +11318,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Samples.HtcMock.Client.HtcMockClient.HtcMockClient
   nameWithType: HtcMockClient.HtcMockClient
+- uid: ArmoniK.Samples.HtcMock.Client.HtcMockClient.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Samples.HtcMock.Client.HtcMockClient.html#ArmoniK_Samples_HtcMock_Client_HtcMockClient_Dispose
+  commentId: M:ArmoniK.Samples.HtcMock.Client.HtcMockClient.Dispose
+  fullName: ArmoniK.Samples.HtcMock.Client.HtcMockClient.Dispose()
+  nameWithType: HtcMockClient.Dispose()
+- uid: ArmoniK.Samples.HtcMock.Client.HtcMockClient.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Samples.HtcMock.Client.HtcMockClient.html#ArmoniK_Samples_HtcMock_Client_HtcMockClient_Dispose_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Client.HtcMockClient.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Samples.HtcMock.Client.HtcMockClient.Dispose
+  nameWithType: HtcMockClient.Dispose
 - uid: ArmoniK.Samples.HtcMock.Client.HtcMockClient.Start(RunConfiguration)
   name: Start(RunConfiguration)
   href: api/ArmoniK.Samples.HtcMock.Client.HtcMockClient.html#ArmoniK_Samples_HtcMock_Client_HtcMockClient_Start_RunConfiguration_
