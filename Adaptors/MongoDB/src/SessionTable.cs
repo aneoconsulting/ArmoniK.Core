@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -105,17 +106,19 @@ public class SessionTable : ISessionTable
                                                             .ConfigureAwait(false);
 
 
-    var queryableSessionCollection = sessionCollection.AsQueryable(sessionHandle)
-                                                      .Where(model => model.SessionId == sessionId);
-
-    if (!queryableSessionCollection.Any())
+    try
     {
-      throw new ArmoniKException($"SessionId '{sessionId}' not found");
+      return await sessionCollection.AsQueryable(sessionHandle)
+                                    .Where(sdm => sdm.SessionId == sessionId)
+                                    .Select(sdm => sdm.Status == "Cancelled")
+                                    .SingleAsync(cancellationToken)
+                                    .ConfigureAwait(false);
     }
-
-    return await queryableSessionCollection.Select(model => model.Status == "Cancelled")
-                                           .FirstAsync(cancellationToken)
-                                           .ConfigureAwait(false);
+    catch (InvalidOperationException e)
+    {
+      throw new SessionNotFoundException($"Key '{sessionId}' not found",
+                                           e);
+    }
   }
 
   /// <inheritdoc />
@@ -130,11 +133,19 @@ public class SessionTable : ISessionTable
     var sessionCollection = await sessionCollectionProvider_.GetAsync()
                                                             .ConfigureAwait(false);
 
-    return await sessionCollection.AsQueryable(sessionHandle)
-                                  .Where(sdm => sdm.SessionId == sessionId)
-                                  .Select(sdm => sdm.Options)
-                                  .FirstAsync(cancellationToken)
-                                  .ConfigureAwait(false);
+    try
+    {
+      return await sessionCollection.AsQueryable(sessionHandle)
+                                    .Where(sdm => sdm.SessionId == sessionId)
+                                    .Select(sdm => sdm.Options)
+                                    .SingleAsync(cancellationToken)
+                                    .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException e)
+    {
+      throw new SessionNotFoundException($"Key '{sessionId}' not found",
+                                           e);
+    }
   }
 
   /// <inheritdoc />
@@ -157,6 +168,11 @@ public class SessionTable : ISessionTable
 
     if ((await resSession.ConfigureAwait(false)).MatchedCount < 1)
     {
+      throw new SessionNotFoundException($"Key '{sessionId}' not found");
+    }
+
+    if ((await resSession.ConfigureAwait(false)).ModifiedCount < 1)
+    {
       throw new ArmoniKException("No open session found. Was the session closed?");
     }
   }
@@ -178,7 +194,7 @@ public class SessionTable : ISessionTable
 
     if (res.DeletedCount == 0)
     {
-      throw new ArmoniKException($"Key '{sessionId}' not found");
+      throw new SessionNotFoundException($"Key '{sessionId}' not found");
     }
   }
 

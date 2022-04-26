@@ -74,7 +74,6 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      // Inconsistent signature: the contract asks for session Id
       var res = await SessionTable.IsSessionCancelledAsync("SessionId",
                                                            CancellationToken.None)
                                   .ConfigureAwait(false);
@@ -87,12 +86,12 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await SessionTable.IsSessionCancelledAsync("BadSessionId",
-                                                                                        CancellationToken.None)
-                                                               .ConfigureAwait(false);
-                                           });
+      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
+                                               {
+                                                 await SessionTable.IsSessionCancelledAsync("BadSessionId",
+                                                                                            CancellationToken.None)
+                                                                   .ConfigureAwait(false);
+                                               });
     }
   }
 
@@ -101,7 +100,6 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      // Inconsistent signature: the contract asks for sessionId
       var res = await SessionTable.GetDefaultTaskOptionAsync("SessionId",
                                                              CancellationToken.None)
                                   .ConfigureAwait(false);
@@ -110,11 +108,24 @@ public class SessionTableTestBase
   }
 
   [Test]
+  public void GetDefaultTaskOptionAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
+                                                     {
+                                                       await SessionTable.GetDefaultTaskOptionAsync("BadSessionId",
+                                                                                                    CancellationToken.None)
+                                                                         .ConfigureAwait(false);
+                                                     });
+    }
+  }
+
+  [Test]
   public async Task CancelSessionAsyncShouldSucceed()
   {
     if (RunTests)
     {
-      // Inconsistent signature: the contract asks for sessionId
       await SessionTable.CancelSessionAsync("SessionId",
                                             CancellationToken.None)
                         .ConfigureAwait(false);
@@ -130,12 +141,30 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
+      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
+                                                     {
+                                                       await SessionTable.CancelSessionAsync("BadSessionId",
+                                                                                             CancellationToken.None)
+                                                                         .ConfigureAwait(false);
+                                                     });
+    }
+  }
+
+  [Test]
+  public async Task CancelCancelledSessionAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      await SessionTable.CancelSessionAsync("SessionId",
+                                            CancellationToken.None)
+                        .ConfigureAwait(false);
+
       Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await SessionTable.CancelSessionAsync("BadSessionId",
-                                                                                   CancellationToken.None)
-                                                               .ConfigureAwait(false);
-                                           });
+                                                     {
+                                                       await SessionTable.CancelSessionAsync("SessionId",
+                                                                                             CancellationToken.None)
+                                                                         .ConfigureAwait(false);
+                                                     });
     }
   }
 
@@ -158,7 +187,7 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
+      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                            {
                                              await SessionTable.DeleteSessionAsync("BadSessionId",
                                                                                    CancellationToken.None)

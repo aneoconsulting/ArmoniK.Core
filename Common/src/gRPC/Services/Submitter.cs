@@ -42,7 +42,6 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-using KeyNotFoundException = ArmoniK.Core.Common.Exceptions.KeyNotFoundException;
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -144,7 +143,7 @@ public class Submitter : ISubmitter
 
       await sessionCancelTask.ConfigureAwait(false);
     }
-    catch (KeyNotFoundException e)
+    catch (TaskNotFoundException e)
     {
       throw new RpcException(new Status(StatusCode.FailedPrecondition,
                                         e.Message));
@@ -174,7 +173,7 @@ public class Submitter : ISubmitter
                                    cancellationToken)
                       .ConfigureAwait(false);
     }
-    catch (KeyNotFoundException e)
+    catch (TaskNotFoundException e)
     {
       throw new RpcException(new Status(StatusCode.FailedPrecondition,
                                         e.Message));

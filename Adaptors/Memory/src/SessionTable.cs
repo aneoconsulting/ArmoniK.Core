@@ -77,7 +77,7 @@ public class SessionTable : ISessionTable
   {
     if (!storage_.ContainsKey(sessionId))
     {
-      throw new ArmoniKException($"Key '{sessionId}' not found");
+      throw new SessionNotFoundException($"Key '{sessionId}' not found");
     }
 
     return Task.FromResult(storage_[sessionId]
@@ -90,7 +90,7 @@ public class SessionTable : ISessionTable
   {
     if (!storage_.ContainsKey(sessionId))
     {
-      throw new ArmoniKException($"Key '{sessionId}' not found");
+      throw new SessionNotFoundException($"Key '{sessionId}' not found");
     }
 
     return Task.FromResult(storage_[sessionId]
@@ -102,12 +102,19 @@ public class SessionTable : ISessionTable
                                        CancellationToken cancellationToken = default)
   {
     storage_.AddOrUpdate(sessionId,
-                         _ => throw new ArmoniKException($"Key '{sessionId}' not found"),
+                         _ => throw new SessionNotFoundException($"Key '{sessionId}' not found"),
                          (_,
-                          data) => data with
-                                   {
-                                     Status = "Cancelled",
-                                   });
+                          data) =>
+                         {
+                           if (data.Status == "Cancelled")
+                           {
+                             throw new ArmoniKException("Session already cancelled");
+                           }
+                           return data with
+                                  {
+                                    Status = "Cancelled",
+                                  };
+                         });
     return Task.CompletedTask;
   }
 
@@ -118,7 +125,7 @@ public class SessionTable : ISessionTable
   {
     if (!storage_.ContainsKey(sessionId))
     {
-      throw new ArmoniKException($"No session with id '{sessionId}' found");
+      throw new SessionNotFoundException($"No session with id '{sessionId}' found");
     }
 
     storage_.Remove(sessionId, out _);
