@@ -84,5 +84,6 @@ public class HtcMockClient : IDisposable
   public void Dispose()
   {
     sessionClient_?.Dispose();
+    GC.SuppressFinalize(this);
   }
 }
