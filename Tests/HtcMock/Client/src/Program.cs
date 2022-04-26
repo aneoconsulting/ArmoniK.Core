@@ -74,8 +74,8 @@ internal class Program
     var gridClient = new GridClient(submitterClient,
                                     factory);
 
-    var client = new HtcMockClient(gridClient,
-                                   factory.CreateLogger<Htc.Mock.Client>());
+    using var client = new HtcMockClient(gridClient,
+                                         factory.CreateLogger<Htc.Mock.Client>());
 
     Console.CancelKeyPress += (sender,
                                args) =>
