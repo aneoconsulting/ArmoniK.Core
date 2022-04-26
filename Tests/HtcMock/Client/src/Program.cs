@@ -74,8 +74,16 @@ internal class Program
     var gridClient = new GridClient(submitterClient,
                                     factory);
 
-    var client = new HtcMockClient(gridClient,
-                                   factory.CreateLogger<Htc.Mock.Client>());
+    using var client = new HtcMockClient(gridClient,
+                                         factory.CreateLogger<Htc.Mock.Client>());
+
+    Console.CancelKeyPress += (sender,
+                               args) =>
+                              {
+                                args.Cancel = true;
+                                client.Dispose();
+                                Environment.Exit(0);
+                              };
 
     var runConfiguration = new RunConfiguration(optionsHtcMock.TotalCalculationTime,
                                                 optionsHtcMock.NTasks,
