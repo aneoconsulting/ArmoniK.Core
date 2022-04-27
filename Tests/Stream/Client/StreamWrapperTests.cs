@@ -24,12 +24,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Stream.Client;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 
 using Google.Protobuf;
@@ -1002,5 +1004,142 @@ internal class StreamWrapperTests
     Console.WriteLine(taskId + " - " + taskOutput);
 
     Assert.IsTrue(taskOutput.TypeCase == Output.TypeOneofCase.Error);
+  }
+
+  [Test]
+  public async Task PriorityShouldHaveAnEffect([Values(10, 50, 100)]
+                                  int n)
+  {
+    var sessionId = Guid.NewGuid() + "-" + nameof(PriorityShouldHaveAnEffect);
+    var taskOptions = new TaskOptions
+    {
+      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+      MaxRetries = 3,
+      Priority = 1,
+    };
+
+    Console.WriteLine($"Creating Session {sessionId}");
+    var session = client_.CreateSession(new CreateSessionRequest
+    {
+      DefaultTaskOption = taskOptions,
+      Id = sessionId,
+    });
+    switch (session.ResultCase)
+    {
+      case CreateSessionReply.ResultOneofCase.Error:
+        throw new Exception("Error while creating session : " + session.Error);
+      case CreateSessionReply.ResultOneofCase.None:
+        throw new Exception("Issue with Server !");
+      case CreateSessionReply.ResultOneofCase.Ok:
+        break;
+      default:
+        throw new ArgumentOutOfRangeException();
+    }
+
+    Console.WriteLine("Session Created");
+
+    var tasks = Enumerable.Range(1,
+                                 9).Select(i => Task.Run(() => RunForPriority(sessionId,
+                                                                              i,
+                                                                              n))).ToList();
+
+    await tasks.WhenAll()
+               .ConfigureAwait(false);
+  }
+
+  private async Task<long> RunForPriority(string sessionId, int priority, int n)
+  {
+    Console.WriteLine("Launch taks with priority " + priority);
+    var sw = Stopwatch.StartNew();
+    var taskOptions = new TaskOptions
+    {
+      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+      MaxRetries = 3,
+      Priority = priority,
+    };
+    var taskRequestList = new List<TaskRequest>();
+
+    for (var i = 0; i < n; i++)
+    {
+      var taskId = nameof(LargePayloads) + "-" + i + "-" + Guid.NewGuid();
+
+      var payload = new TestPayload
+      {
+        Type = TestPayload.TaskType.Compute,
+        DataBytes = BitConverter.GetBytes(1),
+        ResultKey = taskId,
+      };
+
+      var req = new TaskRequest
+      {
+        Id = taskId,
+        Payload = ByteString.CopyFrom(payload.Serialize()),
+        ExpectedOutputKeys =
+        {
+          taskId,
+        },
+      };
+
+      taskRequestList.Add(req);
+    }
+
+    var createTaskReply = await client_.CreateTasksAsync(sessionId,
+                                                         taskOptions,
+                                                         taskRequestList)
+                                       .ConfigureAwait(false);
+    switch (createTaskReply.DataCase)
+    {
+      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
+        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
+      case CreateTaskReply.DataOneofCase.None:
+        throw new Exception("Issue with Server !");
+      case CreateTaskReply.DataOneofCase.Successfull:
+        break;
+      default:
+        throw new ArgumentOutOfRangeException();
+    }
+
+    var resultAvailability = taskRequestList.Select(request =>
+    {
+      var resultRequest = new ResultRequest
+      {
+        Key = request.Id,
+        Session = sessionId,
+      };
+      var availabilityReply = client_.WaitForAvailability(resultRequest);
+      return availabilityReply.TypeCase;
+    });
+
+    if (resultAvailability.Any(c => c != AvailabilityReply.TypeOneofCase.Ok))
+      return -1;
+
+    var resultTypeOneofCases = taskRequestList.Select(request =>
+    {
+      var resultRequest = new ResultRequest
+      {
+        Key = request.Id,
+        Session = sessionId,
+      };
+      var taskOutput = client_.TryGetTaskOutput(resultRequest);
+      return taskOutput.TypeCase;
+    });
+
+    if (resultTypeOneofCases.Any(c => c != Output.TypeOneofCase.Ok))
+      return -2;
+
+    var resultList = taskRequestList.Select(async request =>
+    {
+      var resultRequest = new ResultRequest
+      {
+        Key = request.Id,
+        Session = sessionId,
+      };
+
+      var resultPayload = TestPayload.Deserialize(await client_.GetResultAsync(resultRequest)
+                                                               .ConfigureAwait(false));
+      return resultPayload.Type == TestPayload.TaskType.Result;
+    });
+    Console.WriteLine("Executed taks with priority " + priority + " in " + sw.ElapsedMilliseconds);
+    return resultList.All(task => task.Result) ? sw.ElapsedMilliseconds : 0;
   }
 }
