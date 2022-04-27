@@ -60,8 +60,7 @@ public class ObjectStorageFactory : IObjectStorageFactory
   {
     if (!isInitialized_)
     {
-      await sessionProvider_.GetAsync()
-                            .ConfigureAwait(false);
+      sessionProvider_.Get();
     }
 
     isInitialized_ = true;

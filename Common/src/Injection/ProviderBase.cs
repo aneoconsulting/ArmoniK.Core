@@ -35,26 +35,27 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
   protected ProviderBase(Func<Task<T>> builder)
     => builder_ = builder;
 
-  /// <inheritdoc />
-  public virtual ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(object_ is not null);
-
-  public async ValueTask<T> GetAsync()
+  public T Get()
   {
-    // TODO : mettre des traces
-    if (object_ is null)
+    // Double null check to avoid the lock once initialization is finished
+    if (object_ is not null)
     {
-      Task<T> task;
-      lock (this)
-      {
-        task = object_ is null
-                 ? builder_()
-                 : Task.FromResult(object_);
-      }
+      return object_;
+    }
 
-      object_ = await task.ConfigureAwait(false);
+    lock (this)
+    {
+      // can be simplified with Resharper :)
+      object_ = object_ is null
+                  ? builder_()
+                    .Result
+                  : object_;
     }
 
     return object_;
   }
+
+  /// <inheritdoc />
+  public virtual ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(object_ is not null);
 }

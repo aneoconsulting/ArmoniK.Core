@@ -111,15 +111,14 @@ public static class ServiceCollectionExt
       serviceCollection.AddSingleton<IQueueStorage, QueueStorage>();
 
       serviceCollection.AddHealthChecks()
-                       .AddAsyncCheck("AmqpHealthCheck",
-                                      async () =>
-                                      {
-                                        var t = await sessionProvider.GetAsync()
-                                                                     .ConfigureAwait(false);
-                                        return t.SessionState == SessionState.Opened
-                                                 ? HealthCheckResult.Healthy()
-                                                 : HealthCheckResult.Unhealthy();
-                                      });
+                       .AddCheck("AmqpHealthCheck",
+                                 () =>
+                                 {
+                                   var t = sessionProvider.Get();
+                                   return t.SessionState == SessionState.Opened
+                                            ? HealthCheckResult.Healthy()
+                                            : HealthCheckResult.Unhealthy();
+                                 });
 
       logger.LogInformation("Amqp configuration complete");
     }

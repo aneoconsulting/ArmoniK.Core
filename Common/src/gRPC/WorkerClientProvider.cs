@@ -50,15 +50,14 @@ public class WorkerClientProvider : ProviderBase<Worker.WorkerClient>
   {
   }
 
-  private static async Task<Worker.WorkerClient> BuildWorkerClient(GrpcChannelProvider channelProvider,
-                                                                   ILogger             logger)
+  private static Task<Worker.WorkerClient> BuildWorkerClient(GrpcChannelProvider channelProvider,
+                                                             ILogger             logger)
   {
     using var   _ = logger.LogFunction();
     ChannelBase channel;
     try
     {
-      channel = await channelProvider.GetAsync()
-                                     .ConfigureAwait(false);
+      channel = channelProvider.Get();
     }
     catch (Exception e)
     {
@@ -67,14 +66,13 @@ public class WorkerClientProvider : ProviderBase<Worker.WorkerClient>
       throw;
     }
 
-    return new Worker.WorkerClient(channel);
+    return Task.FromResult(new Worker.WorkerClient(channel));
   }
 
   /// <inheritdoc />
   public override ValueTask<bool> Check(HealthCheckTag tag)
     => ValueTask.FromResult(isInitialized_);
 
-  /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)

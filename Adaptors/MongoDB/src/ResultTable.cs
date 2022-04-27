@@ -70,8 +70,7 @@ public class ResultTable : IResultTable
   {
     using var activity = activitySource_.StartActivity($"{nameof(Create)}");
 
-    var resultCollection = await resultCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var resultCollection = resultCollectionProvider_.Get();
 
     try
     {
@@ -99,10 +98,8 @@ public class ResultTable : IResultTable
                      sessionId);
     activity?.SetTag($"{nameof(GetResult)}_key",
                      key);
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
-    var resultCollection = await resultCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var sessionHandle = sessionProvider_.Get();
+    var resultCollection = resultCollectionProvider_.Get();
 
     try
     {
@@ -126,10 +123,8 @@ public class ResultTable : IResultTable
     using var activity = activitySource_.StartActivity($"{nameof(AreResultsAvailableAsync)}");
     activity?.SetTag($"{nameof(AreResultsAvailableAsync)}_sessionId",
                      sessionId);
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
-    var resultCollection = await resultCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var sessionHandle = sessionProvider_.Get();
+    var resultCollection = resultCollectionProvider_.Get();
 
     return !await resultCollection.AsQueryable(sessionHandle)
                                   .AnyAsync(model => model.Status != "Completed" && model.SessionId == sessionId && keys.Contains(model.Name),
@@ -151,8 +146,7 @@ public class ResultTable : IResultTable
                      ownerTaskId);
     activity?.SetTag($"{nameof(SetResult)}_key",
                      key);
-    var resultCollection = await resultCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var resultCollection = resultCollectionProvider_.Get();
 
     var res = await resultCollection
                     .UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Name == key && model.OwnerTaskId == ownerTaskId && model.SessionId == sessionId),
@@ -182,8 +176,7 @@ public class ResultTable : IResultTable
     activity?.SetTag($"{nameof(SetResult)}_key",
                      key);
 
-    var resultCollection = await resultCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var resultCollection = resultCollectionProvider_.Get();
 
     var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Name == key && model.OwnerTaskId == ownerTaskId),
                                                     Builders<Result>.Update.Set(model => model.Status,
@@ -214,8 +207,7 @@ public class ResultTable : IResultTable
                      keys);
     if (keys.Any())
     {
-      var resultCollection = await resultCollectionProvider_.GetAsync()
-                                                            .ConfigureAwait(false);
+      var resultCollection = resultCollectionProvider_.Get();
 
       var result = await resultCollection.UpdateManyAsync(model => model.OwnerTaskId == oldTaskId && keys.Contains(model.Name) && model.SessionId == sessionId,
                                                           Builders<Result>.Update.Set(model => model.OwnerTaskId,
@@ -240,8 +232,7 @@ public class ResultTable : IResultTable
                      session);
     activity?.SetTag($"{nameof(DeleteResult)}_key",
                      key);
-    var resultCollection = await resultCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var resultCollection = resultCollectionProvider_.Get();
 
     await resultCollection.DeleteOneAsync(model => model.Name == key && model.SessionId == session,
                                           cancellationToken)
@@ -255,10 +246,8 @@ public class ResultTable : IResultTable
     using var activity = activitySource_.StartActivity($"{nameof(ListResultsAsync)}");
     activity?.SetTag($"{nameof(ListResultsAsync)}_sessionId",
                      sessionId);
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
-    var resultCollection = await resultCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var sessionHandle = sessionProvider_.Get();
+    var resultCollection = resultCollectionProvider_.Get();
 
     await foreach (var result in resultCollection.AsQueryable(sessionHandle)
                                                  .Where(model => model.SessionId == sessionId)
@@ -278,8 +267,7 @@ public class ResultTable : IResultTable
     using var activity = activitySource_.StartActivity($"{nameof(DeleteResults)}");
     activity?.SetTag($"{nameof(DeleteResults)}_sessionId",
                      sessionId);
-    var resultCollection = await resultCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var resultCollection = resultCollectionProvider_.Get();
 
     await resultCollection.DeleteManyAsync(model => model.SessionId == sessionId,
                                            cancellationToken)
@@ -291,10 +279,8 @@ public class ResultTable : IResultTable
   {
     if (!isInitialized_)
     {
-      var session          = sessionProvider_.GetAsync();
-      var resultCollection = resultCollectionProvider_.GetAsync();
-      await session.ConfigureAwait(false);
-      await resultCollection.ConfigureAwait(false);
+      var session          = sessionProvider_.Get();
+      var resultCollection = resultCollectionProvider_.Get();
       isInitialized_ = true;
     }
   }

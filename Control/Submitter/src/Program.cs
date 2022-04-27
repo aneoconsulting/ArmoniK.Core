@@ -155,8 +155,7 @@ public static class Program
       }
 
       var sessionProvider = app.Services.GetRequiredService<SessionProvider>();
-      await sessionProvider.GetAsync()
-                           .ConfigureAwait(false);
+      sessionProvider.Get();
 
       await app.RunAsync()
                .ConfigureAwait(false);
