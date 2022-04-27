@@ -109,12 +109,12 @@ public class ResultTable : IResultTable
       return await resultCollection.AsQueryable(sessionHandle)
                                    .Where(model => model.Id == Result.GenerateId(sessionId,
                                                                                  key))
-                                   .FirstAsync(cancellationToken)
+                                   .SingleAsync(cancellationToken)
                                    .ConfigureAwait(false);
     }
     catch (InvalidOperationException)
     {
-      throw new ArmoniKException($"Key '{key}' not found");
+      throw new ResultNotFoundException($"Key '{key}' not found");
     }
   }
 
@@ -164,7 +164,7 @@ public class ResultTable : IResultTable
                     .ConfigureAwait(false);
     if (res.ModifiedCount == 0)
     {
-      throw new ArmoniKException($"Key '{key}' not found");
+      throw new ResultNotFoundException($"Key '{key}' not found");
     }
   }
 
@@ -192,7 +192,7 @@ public class ResultTable : IResultTable
                                     .ConfigureAwait(false);
     if (res.ModifiedCount == 0)
     {
-      throw new ArmoniKException($"Key '{key}' not found");
+      throw new ResultNotFoundException($"Key '{key}' not found");
     }
   }
 
@@ -224,7 +224,7 @@ public class ResultTable : IResultTable
                                          .ConfigureAwait(false);
       if (result.ModifiedCount != keys.Count())
       {
-        throw new Exception("The number of modified values should correspond to the number of keys provided");
+        throw new ArmoniKException("The number of modified values should correspond to the number of keys provided");
       }
     }
   }
@@ -243,9 +243,19 @@ public class ResultTable : IResultTable
     var resultCollection = await resultCollectionProvider_.GetAsync()
                                                           .ConfigureAwait(false);
 
-    await resultCollection.DeleteOneAsync(model => model.Name == key && model.SessionId == session,
-                                          cancellationToken)
-                          .ConfigureAwait(false);
+    var result = await resultCollection.DeleteOneAsync(model => model.Name == key && model.SessionId == session,
+                                                       cancellationToken)
+                                       .ConfigureAwait(false);
+
+    if (result.DeletedCount == 0)
+    {
+      throw new ResultNotFoundException($"Result '{key}' not found.");
+    }
+
+    if (result.DeletedCount > 1)
+    {
+      throw new ArmoniKException("Multiple tasks deleted");
+    }
   }
 
   /// <inheritdoc />
