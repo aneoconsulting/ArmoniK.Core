@@ -252,9 +252,9 @@ public class TaskTableTestBase
     if (RunTests)
     {
 
-      Assert.ThrowsAsync<ArmoniKException>(async () => await TaskTable.ReadTaskAsync("TaskDoNotExists",
-                                                                               CancellationToken.None)
-                                                                .ConfigureAwait(false));
+      Assert.ThrowsAsync<TaskNotFoundException>(async () => await TaskTable.ReadTaskAsync("TaskDoNotExists",
+                                                                                          CancellationToken.None)
+                                                                           .ConfigureAwait(false));
     }
   }
 
@@ -411,6 +411,20 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public void IsTaskCanceledShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
+                                                {
+                                                  await TaskTable.IsTaskCancelledAsync("TaskDoesNotExist",
+                                                                                       CancellationToken.None)
+                                                                 .ConfigureAwait(false);
+                                                });
+    }
+  }
+
+  [Test]
   public async Task CancelSessionAsyncShouldSucceed()
   {
     if (RunTests)
@@ -428,12 +442,12 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await TaskTable.CancelSessionAsync("NonExistingSessionId",
-                                                                                CancellationToken.None)
-                                                            .ConfigureAwait(false);
-                                           });
+      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
+                                                   {
+                                                     await TaskTable.CancelSessionAsync("NonExistingSessionId",
+                                                                                        CancellationToken.None)
+                                                                    .ConfigureAwait(false);
+                                                   });
     }
   }
 
@@ -537,6 +551,20 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public void GetTaskOutputShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
+                                                {
+                                                  await TaskTable.GetTaskOutput("NonExistingTaskId",
+                                                                                CancellationToken.None)
+                                                                 .ConfigureAwait(false);
+                                                });
+    }
+  }
+
+  [Test]
   public async Task GetTaskExpectedOutputKeysShouldSucceed()
   {
     if (RunTests)
@@ -555,6 +583,20 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public void GetTaskExpectedOutputKeysShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
+                                                {
+                                                  await TaskTable.GetTaskExpectedOutputKeys("NonExistingTaskId",
+                                                                                            CancellationToken.None)
+                                                                 .ConfigureAwait(false);
+                                                });
+    }
+  }
+
+  [Test]
   public async Task GetParentTaskIdsShouldSucceed()
   {
     if (RunTests)
@@ -569,6 +611,20 @@ public class TaskTableTestBase
 
       Assert.AreEqual(parentTaskIds,
                       result.ToArray());
+    }
+  }
+
+  [Test]
+  public void GetParentTaskIdsShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
+                                                {
+                                                  await TaskTable.GetParentTaskIds("NonExistingTaskId",
+                                                                                   CancellationToken.None)
+                                                                 .ConfigureAwait(false);
+                                                });
     }
   }
 
@@ -657,12 +713,44 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await TaskTable.StartTask("NonExistingTaskId",
-                                                                       CancellationToken.None)
-                                                            .ConfigureAwait(false);
-                                           });
+      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
+                                                {
+                                                  await TaskTable.StartTask("NonExistingTaskId",
+                                                                            CancellationToken.None)
+                                                                 .ConfigureAwait(false);
+                                                });
+    }
+  }
+
+  [Test]
+  public void DeleteTaskShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
+                                                {
+                                                  await TaskTable.DeleteTaskAsync("NonExistingTaskId",
+                                                                                  CancellationToken.None)
+                                                                 .ConfigureAwait(false);
+                                                });
+    }
+  }
+
+  [Test]
+  public async Task DeleteTaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+      await TaskTable.DeleteTaskAsync("TaskSubmittedId",
+                                      CancellationToken.None)
+                     .ConfigureAwait(false);
+
+      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
+                                                {
+                                                  await TaskTable.StartTask("TaskSubmittedId",
+                                                                            CancellationToken.None)
+                                                                 .ConfigureAwait(false);
+                                                });
     }
   }
 }
