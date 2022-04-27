@@ -56,7 +56,7 @@ public class ObjectStorageFactory : IObjectStorageFactory
   }
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
@@ -64,6 +64,7 @@ public class ObjectStorageFactory : IObjectStorageFactory
     }
 
     isInitialized_ = true;
+    return Task.CompletedTask;
   }
 
   /// <inheritdoc />

@@ -199,7 +199,7 @@ public class SessionTable : ISessionTable
 
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
@@ -208,6 +208,7 @@ public class SessionTable : ISessionTable
     }
 
     isInitialized_ = true;
+    return Task.CompletedTask;
   }
 
   /// <inheritdoc />

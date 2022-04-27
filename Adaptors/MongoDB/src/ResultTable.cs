@@ -275,14 +275,15 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
-      var session          = sessionProvider_.Get();
-      var resultCollection = resultCollectionProvider_.Get();
+      sessionProvider_.Get();
+      resultCollectionProvider_.Get();
       isInitialized_ = true;
     }
+    return Task.CompletedTask;
   }
 
   /// <inheritdoc />
