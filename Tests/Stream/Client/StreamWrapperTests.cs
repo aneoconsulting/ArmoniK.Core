@@ -1007,7 +1007,7 @@ internal class StreamWrapperTests
   }
 
   [Test]
-  public async Task PriorityShouldHaveAnEffect([Values(10, 50, 100)]
+  public async Task PriorityShouldHaveAnEffect([Values(10, 50)]
                                   int n)
   {
     var sessionId = Guid.NewGuid() + "-" + nameof(PriorityShouldHaveAnEffect);
