@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 
 namespace ArmoniK.Core.Common.Exceptions;
 
+[Serializable]
 public class TaskNotFoundException : Exception
 {
   public TaskNotFoundException()
