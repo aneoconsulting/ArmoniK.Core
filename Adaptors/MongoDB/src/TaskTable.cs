@@ -266,7 +266,7 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<int> CountAllTasksAsync(TaskStatus        status,
+  public Task<int> CountAllTasksAsync(TaskStatus        status,
                                             CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CountAllTasksAsync)}");
@@ -277,7 +277,7 @@ public class TaskTable : ITaskTable
     var res = taskCollection.AsQueryable(sessionHandle)
                             .Count(model => model.Status == status);
 
-    return res;
+    return Task.FromResult(res);
   }
 
   /// <inheritdoc />
@@ -555,7 +555,7 @@ public class TaskTable : ITaskTable
     => ValueTask.FromResult(isInitialized_);
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
@@ -563,5 +563,6 @@ public class TaskTable : ITaskTable
       taskCollectionProvider_.Get();
       isInitialized_ = true;
     }
+    return Task.CompletedTask;
   }
 }

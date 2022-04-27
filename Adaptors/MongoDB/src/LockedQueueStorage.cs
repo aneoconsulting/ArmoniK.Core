@@ -96,7 +96,7 @@ public class LockedQueueStorage : ILockedQueueStorage
     => true;
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
@@ -104,6 +104,7 @@ public class LockedQueueStorage : ILockedQueueStorage
     }
 
     isInitialized_ = true;
+    return Task.CompletedTask;
   }
 
   /// <inheritdoc />
