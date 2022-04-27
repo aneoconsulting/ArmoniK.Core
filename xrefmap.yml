@@ -5140,23 +5140,23 @@ references:
   fullName.vb: ArmoniK.Core.Common.Injection.ProviderBase(Of T).Check
   nameWithType: ProviderBase<T>.Check
   nameWithType.vb: ProviderBase(Of T).Check
-- uid: ArmoniK.Core.Common.Injection.ProviderBase`1.GetAsync
-  name: GetAsync()
-  href: api/ArmoniK.Core.Common.Injection.ProviderBase-1.html#ArmoniK_Core_Common_Injection_ProviderBase_1_GetAsync
-  commentId: M:ArmoniK.Core.Common.Injection.ProviderBase`1.GetAsync
-  fullName: ArmoniK.Core.Common.Injection.ProviderBase<T>.GetAsync()
-  fullName.vb: ArmoniK.Core.Common.Injection.ProviderBase(Of T).GetAsync()
-  nameWithType: ProviderBase<T>.GetAsync()
-  nameWithType.vb: ProviderBase(Of T).GetAsync()
-- uid: ArmoniK.Core.Common.Injection.ProviderBase`1.GetAsync*
-  name: GetAsync
-  href: api/ArmoniK.Core.Common.Injection.ProviderBase-1.html#ArmoniK_Core_Common_Injection_ProviderBase_1_GetAsync_
-  commentId: Overload:ArmoniK.Core.Common.Injection.ProviderBase`1.GetAsync
+- uid: ArmoniK.Core.Common.Injection.ProviderBase`1.Get
+  name: Get()
+  href: api/ArmoniK.Core.Common.Injection.ProviderBase-1.html#ArmoniK_Core_Common_Injection_ProviderBase_1_Get
+  commentId: M:ArmoniK.Core.Common.Injection.ProviderBase`1.Get
+  fullName: ArmoniK.Core.Common.Injection.ProviderBase<T>.Get()
+  fullName.vb: ArmoniK.Core.Common.Injection.ProviderBase(Of T).Get()
+  nameWithType: ProviderBase<T>.Get()
+  nameWithType.vb: ProviderBase(Of T).Get()
+- uid: ArmoniK.Core.Common.Injection.ProviderBase`1.Get*
+  name: Get
+  href: api/ArmoniK.Core.Common.Injection.ProviderBase-1.html#ArmoniK_Core_Common_Injection_ProviderBase_1_Get_
+  commentId: Overload:ArmoniK.Core.Common.Injection.ProviderBase`1.Get
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Injection.ProviderBase<T>.GetAsync
-  fullName.vb: ArmoniK.Core.Common.Injection.ProviderBase(Of T).GetAsync
-  nameWithType: ProviderBase<T>.GetAsync
-  nameWithType.vb: ProviderBase(Of T).GetAsync
+  fullName: ArmoniK.Core.Common.Injection.ProviderBase<T>.Get
+  fullName.vb: ArmoniK.Core.Common.Injection.ProviderBase(Of T).Get
+  nameWithType: ProviderBase<T>.Get
+  nameWithType.vb: ProviderBase(Of T).Get
 - uid: ArmoniK.Core.Common.Injection.ServiceCollectionExt
   name: ServiceCollectionExt
   href: api/ArmoniK.Core.Common.Injection.ServiceCollectionExt.html
