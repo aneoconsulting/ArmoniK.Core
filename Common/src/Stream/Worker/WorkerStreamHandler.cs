@@ -50,18 +50,17 @@ public class WorkerStreamHandler : IWorkerStreamHandler
                              ILogger<WorkerStreamHandler> logger)
   {
     logger_       = logger;
-    workerClient_ = BuildWorkerClient(channelProvider, logger).Result;
+    workerClient_ = BuildWorkerClient(channelProvider, logger);
   }
 
-  private static async Task<WorkerClient> BuildWorkerClient(GrpcChannelProvider channelProvider,
+  private static WorkerClient BuildWorkerClient(GrpcChannelProvider channelProvider,
                                                             ILogger             logger)
   {
     using var   _ = logger.LogFunction();
     ChannelBase channel;
     try
     {
-      channel = await channelProvider.GetAsync()
-                                     .ConfigureAwait(false);
+      channel = channelProvider.Get();
     }
     catch (Exception e)
     {

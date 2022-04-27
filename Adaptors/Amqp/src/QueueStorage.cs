@@ -93,18 +93,16 @@ public class QueueStorage : IQueueStorage
 
     senders_ = Enumerable.Range(0,
                                 nbLinks)
-                         .Select(i => new AsyncLazy<ISenderLink>(async () => new SenderLink(await sessionProvider.GetAsync()
-                                                                                                                 .ConfigureAwait(false),
-                                                                                            $"SenderLink{i}",
-                                                                                            $"q{i}")))
+                         .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(sessionProvider.Get(),
+                                                                                      $"SenderLink{i}",
+                                                                                      $"q{i}")))
                          .ToArray();
 
     receivers_ = Enumerable.Range(0,
                                   nbLinks)
-                           .Select(i => new AsyncLazy<IReceiverLink>(async () => new ReceiverLink(await sessionProvider.GetAsync()
-                                                                                                                       .ConfigureAwait(false),
-                                                                                                  $"ReceiverLink{i}",
-                                                                                                  $"q{i}")))
+                           .Select(i => new AsyncLazy<IReceiverLink>(() => new ReceiverLink(sessionProvider.Get(),
+                                                                                            $"ReceiverLink{i}",
+                                                                                            $"q{i}")))
                            .ToArray();
   }
 

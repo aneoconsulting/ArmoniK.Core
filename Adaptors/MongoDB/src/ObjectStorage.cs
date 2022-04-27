@@ -81,8 +81,7 @@ public class ObjectStorage : IObjectStorage
                                      CancellationToken        cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var objectCollection = await objectCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var objectCollection = objectCollectionProvider_.Get();
 
     var taskList = new List<Task>();
 
@@ -115,8 +114,7 @@ public class ObjectStorage : IObjectStorage
                                      CancellationToken                      cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var objectCollection = await objectCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var objectCollection = objectCollectionProvider_.Get();
 
     var taskList = new List<Task>();
 
@@ -148,10 +146,8 @@ public class ObjectStorage : IObjectStorage
                                                                [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
-    var objectCollection = await objectCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var sessionHandle = sessionProvider_.Get();
+    var objectCollection = objectCollectionProvider_.Get();
 
     var throwException = true;
     await foreach (var chunk in objectCollection.AsQueryable(sessionHandle)
@@ -177,8 +173,7 @@ public class ObjectStorage : IObjectStorage
                                          CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var objectCollection = await objectCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var objectCollection = objectCollectionProvider_.Get();
 
     var res = await objectCollection.DeleteManyAsync(odm => odm.Key == objectStorageName_ + key,
                                                      cancellationToken)
@@ -190,10 +185,8 @@ public class ObjectStorage : IObjectStorage
   public async IAsyncEnumerable<string> ListKeysAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction();
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
-    var objectCollection = await objectCollectionProvider_.GetAsync()
-                                                          .ConfigureAwait(false);
+    var sessionHandle = sessionProvider_.Get();
+    var objectCollection = objectCollectionProvider_.Get();
 
     await foreach (var key in objectCollection.AsQueryable(sessionHandle)
                                               .Where(odm => odm.ChunkIdx == 0)
