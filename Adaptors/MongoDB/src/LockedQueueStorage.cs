@@ -96,15 +96,15 @@ public class LockedQueueStorage : ILockedQueueStorage
     => true;
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
-      await queueCollectionProvider_.GetAsync()
-                                    .ConfigureAwait(false);
+      queueCollectionProvider_.Get();
     }
 
     isInitialized_ = true;
+    return Task.CompletedTask;
   }
 
   /// <inheritdoc />
@@ -120,8 +120,7 @@ public class LockedQueueStorage : ILockedQueueStorage
                                                                 [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction();
-    var queueCollection = await queueCollectionProvider_.GetAsync()
-                                                        .ConfigureAwait(false);
+    var queueCollection = queueCollectionProvider_.Get();
 
     var nbPulledMessage = 0;
 
@@ -174,8 +173,7 @@ public class LockedQueueStorage : ILockedQueueStorage
                                           CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(id);
-    var queueCollection = await queueCollectionProvider_.GetAsync()
-                                                        .ConfigureAwait(false);
+    var queueCollection = queueCollectionProvider_.Get();
 
     await queueCollection.FindOneAndDeleteAsync(qmm => qmm.MessageId == id && qmm.OwnerId == ownerId_,
                                                 cancellationToken: cancellationToken)
@@ -187,8 +185,7 @@ public class LockedQueueStorage : ILockedQueueStorage
                                              CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(id);
-    var queueCollection = await queueCollectionProvider_.GetAsync()
-                                                        .ConfigureAwait(false);
+    var queueCollection = queueCollectionProvider_.Get();
 
     var updateDefinition = Builders<QueueMessageModelMapping>.Update.Set(qmdm => qmdm.OwnedUntil,
                                                                          DateTime.UtcNow + LockRefreshExtension);
@@ -211,8 +208,7 @@ public class LockedQueueStorage : ILockedQueueStorage
                                          CancellationToken   cancellationToken = default)
   {
     using var _ = logger_.LogFunction();
-    var queueCollection = await queueCollectionProvider_.GetAsync()
-                                                        .ConfigureAwait(false);
+    var queueCollection = queueCollectionProvider_.Get();
 
     var qmms = messages.Select(message => new QueueMessageModelMapping
                                           {
@@ -231,8 +227,7 @@ public class LockedQueueStorage : ILockedQueueStorage
                                         CancellationToken cancellationToken = default)
   {
     using var _ = logger_.LogFunction(id);
-    var queueCollection = await queueCollectionProvider_.GetAsync()
-                                                        .ConfigureAwait(false);
+    var queueCollection = queueCollectionProvider_.Get();
 
     var updateDefinition = Builders<QueueMessageModelMapping>.Update.Unset(qmm => qmm.OwnerId)
                                                              .Unset(qmdm => qmdm.OwnedUntil)
@@ -250,8 +245,7 @@ public class LockedQueueStorage : ILockedQueueStorage
                                          CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction(id);
-    var queueCollection = await queueCollectionProvider_.GetAsync()
-                                                        .ConfigureAwait(false);
+    var queueCollection = queueCollectionProvider_.Get();
 
     await queueCollection.FindOneAndDeleteAsync(qmm => qmm.MessageId == id,
                                                 cancellationToken: cancellationToken)
@@ -263,8 +257,7 @@ public class LockedQueueStorage : ILockedQueueStorage
                                         CancellationToken cancellationToken)
   {
     using var _ = logger_.LogFunction(id);
-    var queueCollection = await queueCollectionProvider_.GetAsync()
-                                                        .ConfigureAwait(false);
+    var queueCollection = queueCollectionProvider_.Get();
 
     var updateDefinition = Builders<QueueMessageModelMapping>.Update.Unset(qmdm => qmdm.OwnedUntil);
 

@@ -251,8 +251,7 @@ public class RequestProcessor : IInitializable
     activity?.SetBaggage("TaskId",
                          taskData.TaskId);
 
-    var workerClient = await workerClientProvider_.GetAsync()
-                                                  .ConfigureAwait(false);
+    var workerClient = workerClientProvider_.Get();
 
     logger_.LogDebug("Set task status to Processing");
     await submitter_.StartTask(taskData.TaskId,

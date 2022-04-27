@@ -56,15 +56,15 @@ public class ObjectStorageFactory : IObjectStorageFactory
   }
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
-      await sessionProvider_.GetAsync()
-                            .ConfigureAwait(false);
+      sessionProvider_.Get();
     }
 
     isInitialized_ = true;
+    return Task.CompletedTask;
   }
 
   /// <inheritdoc />

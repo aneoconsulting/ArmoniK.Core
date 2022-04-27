@@ -59,8 +59,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : ProviderBase<IMongo
              }
 
              var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
-             var session = await sessionProvider.GetAsync()
-                                                .ConfigureAwait(false);
+             var session = sessionProvider.Get();
              try
              {
                await model.InitializeIndexesAsync(session,

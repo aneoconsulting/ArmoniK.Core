@@ -78,8 +78,7 @@ public class SessionTable : ISessionTable
                      rootSessionId);
     activity?.SetTag($"{nameof(CreateSessionDataAsync)}_parentTaskId",
                      parentTaskId);
-    var sessionCollection = await sessionCollectionProvider_.GetAsync()
-                                                            .ConfigureAwait(false);
+    var sessionCollection = sessionCollectionProvider_.Get();
 
     SessionData data = new(Options: defaultOptions,
                            SessionId: rootSessionId,
@@ -99,10 +98,8 @@ public class SessionTable : ISessionTable
     using var activity = activitySource_.StartActivity($"{nameof(IsSessionCancelledAsync)}");
     activity?.SetTag($"{nameof(IsSessionCancelledAsync)}_sessionId",
                      sessionId);
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
-    var sessionCollection = await sessionCollectionProvider_.GetAsync()
-                                                            .ConfigureAwait(false);
+    var sessionHandle = sessionProvider_.Get();
+    var sessionCollection = sessionCollectionProvider_.Get();
 
 
     var queryableSessionCollection = sessionCollection.AsQueryable(sessionHandle)
@@ -125,10 +122,8 @@ public class SessionTable : ISessionTable
     using var activity = activitySource_.StartActivity($"{nameof(GetDefaultTaskOptionAsync)}");
     activity?.SetTag($"{nameof(GetDefaultTaskOptionAsync)}_sessionId",
                      sessionId);
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
-    var sessionCollection = await sessionCollectionProvider_.GetAsync()
-                                                            .ConfigureAwait(false);
+    var sessionHandle = sessionProvider_.Get();
+    var sessionCollection = sessionCollectionProvider_.Get();
 
     return await sessionCollection.AsQueryable(sessionHandle)
                                   .Where(sdm => sdm.SessionId == sessionId)
@@ -146,8 +141,7 @@ public class SessionTable : ISessionTable
     activity?.SetTag($"{nameof(CancelSessionAsync)}_sessionId",
                      sessionId);
 
-    var sessionCollection = await sessionCollectionProvider_.GetAsync()
-                                                            .ConfigureAwait(false);
+    var sessionCollection = sessionCollectionProvider_.Get();
 
 
     var resSession = sessionCollection.UpdateOneAsync(model => model.SessionId == sessionId,
@@ -169,8 +163,7 @@ public class SessionTable : ISessionTable
     activity?.SetTag($"{nameof(DeleteSessionAsync)}_sessionId",
                      sessionId);
 
-    var sessionCollection = await sessionCollectionProvider_.GetAsync()
-                                                            .ConfigureAwait(false);
+    var sessionCollection = sessionCollectionProvider_.Get();
 
     var res = await sessionCollection.DeleteManyAsync(model => model.SessionId == sessionId,
                                                       cancellationToken)
@@ -187,10 +180,8 @@ public class SessionTable : ISessionTable
   {
     using var _        = Logger.LogFunction();
     using var activity = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
-    var sessionHandle = await sessionProvider_.GetAsync()
-                                              .ConfigureAwait(false);
-    var sessionCollection = await sessionCollectionProvider_.GetAsync()
-                                                            .ConfigureAwait(false);
+    var sessionHandle = sessionProvider_.Get();
+    var sessionCollection = sessionCollectionProvider_.Get();
 
     await foreach (var session in sessionCollection.AsQueryable(sessionHandle)
                                                    .Select(model => model.SessionId)
@@ -208,17 +199,16 @@ public class SessionTable : ISessionTable
 
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
-      await sessionCollectionProvider_.GetAsync()
-                                      .ConfigureAwait(false);
-      await sessionProvider_.GetAsync()
-                            .ConfigureAwait(false);
+      sessionCollectionProvider_.Get();
+      sessionProvider_.Get();
     }
 
     isInitialized_ = true;
+    return Task.CompletedTask;
   }
 
   /// <inheritdoc />
