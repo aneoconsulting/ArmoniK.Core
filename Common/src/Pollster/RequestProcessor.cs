@@ -61,7 +61,7 @@ public class RequestProcessor : IInitializable
   private readonly IObjectStorageFactory     objectStorageFactory_;
   private readonly IObjectStorage            resourcesStorage_;
   private readonly IResultTable              resultTable_;
-  private readonly Submitter                submitter_;
+  private readonly ISubmitter                submitter_;
   private readonly IWorkerStreamHandler      workerStreamHandler_;
 
   private bool                                              isInitialized_;
@@ -70,7 +70,7 @@ public class RequestProcessor : IInitializable
   public RequestProcessor(IWorkerStreamHandler      workerStreamHandler,
                           IObjectStorageFactory     objectStorageFactory,
                           ILogger<RequestProcessor> logger,
-                          Submitter                submitter,
+                          ISubmitter                submitter,
                           IResultTable              resultTable,
                           ActivitySource            activitySource)
   {

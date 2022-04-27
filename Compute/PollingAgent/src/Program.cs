@@ -89,7 +89,6 @@ public static class Program
              .AddSingleton<ISubmitter, Submitter>()
              .AddSingleton<PreconditionChecker>()
              .AddSingleton<RequestProcessor>()
-             .AddSingleton<Submitter>()
              .AddSingleton<DataPrefetcher>();
 
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
