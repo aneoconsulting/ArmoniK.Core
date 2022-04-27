@@ -28,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
@@ -42,9 +43,10 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
-  private readonly WorkerClient                 workerClient_;
-  private readonly ILogger<WorkerStreamHandler> logger_;
-  private          bool                         isInitialized_;
+  private readonly WorkerClient                                            workerClient_;
+  private readonly ILogger<WorkerStreamHandler>                            logger_;
+  private          bool                                                    isInitialized_;
+  public           AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream;
 
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
                              ILogger<WorkerStreamHandler> logger)
@@ -77,22 +79,21 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     return new Queue<ComputeRequest>();
   }
 
-  public IAsyncStreamReader<ProcessReply> WorkerResponseStream(TaskData          taskData,
-                                                            CancellationToken cancellationToken)
+  public void StartTaskProcessing(TaskData taskData, CancellationToken cancellationToken)
   {
-    logger_.LogInformation("Query response stream");
-    return workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
-                                 cancellationToken: cancellationToken)
-                        .ResponseStream;
+    Stream = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
+                                   cancellationToken: cancellationToken);
+    WorkerRequestStream = Stream is not null ?
+                            Stream.RequestStream
+                            : throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
+    WorkerResponseStream = Stream is not null ?
+                             Stream.ResponseStream :
+                             throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
   }
 
-  public IClientStreamWriter<ProcessRequest> WorkerRequestStream(TaskData          taskData,
-                                                          CancellationToken cancellationToken)
-  {
-    logger_.LogInformation("Query request stream");
-    return workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
-                                 cancellationToken: cancellationToken).RequestStream;
-  }
+  public IAsyncStreamReader<ProcessReply> WorkerResponseStream { get; set; }
+
+  public IClientStreamWriter<ProcessRequest> WorkerRequestStream { get; set; }
 
   public Task Init(CancellationToken cancellationToken)
   {
@@ -106,4 +107,10 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public ValueTask<bool> Check(HealthCheckTag tag)
     => ValueTask.FromResult(isInitialized_);
+
+  public void Dispose()
+  {
+    Stream?.Dispose();
+    GC.SuppressFinalize(this);
+  }
 }

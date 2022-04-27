@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -37,13 +38,13 @@ using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
 namespace ArmoniK.Core.Common.Stream.Worker;
 
 [PublicAPI]
-public interface IWorkerStreamHandler : IInitializable
+public interface IWorkerStreamHandler : IInitializable, IDisposable
 {
   public Queue<ComputeRequest> WorkerReturn();
 
-  public IAsyncStreamReader<ProcessReply> WorkerResponseStream(TaskData          taskData,
-                                                            CancellationToken cancellationToken);
+  public void StartTaskProcessing(TaskData          taskData,
+                                  CancellationToken cancellationToken);
+  public IAsyncStreamReader<ProcessReply> WorkerResponseStream { get; }
 
-  public IClientStreamWriter<ProcessRequest> WorkerRequestStream(TaskData          taskData,
-                                                                 CancellationToken cancellationToken);
+  public IClientStreamWriter<ProcessRequest> WorkerRequestStream { get; }
 }
