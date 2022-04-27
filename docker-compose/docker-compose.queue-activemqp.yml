@@ -6,8 +6,12 @@ services:
     networks:
       - armonik-backend
     ports:
-      - 127.0.0.1:5672:5672
-      - 127.0.0.1:8161:8161
+      - 5672:5672
+      - 8161:8161
+    volumes:
+      - ./activemq/jetty.xml:/opt/activemq/conf/jetty.xml
+      - ./activemq/activemq.xml:/opt/activemq/conf/activemq.xml
+
 
   armonik.control.submitter:
     environment:
