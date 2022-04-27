@@ -5936,6 +5936,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.GenerateGraph
   nameWithType: ComputeRequestStateMachine.GenerateGraph
+- uid: ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.GenerateMermaidGraph
+  name: GenerateMermaidGraph()
+  href: api/ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.html#ArmoniK_Core_Common_StateMachines_ComputeRequestStateMachine_GenerateMermaidGraph
+  commentId: M:ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.GenerateMermaidGraph
+  fullName: ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.GenerateMermaidGraph()
+  nameWithType: ComputeRequestStateMachine.GenerateMermaidGraph()
+- uid: ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.GenerateMermaidGraph*
+  name: GenerateMermaidGraph
+  href: api/ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.html#ArmoniK_Core_Common_StateMachines_ComputeRequestStateMachine_GenerateMermaidGraph_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.GenerateMermaidGraph
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.GenerateMermaidGraph
+  nameWithType: ComputeRequestStateMachine.GenerateMermaidGraph
 - uid: ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.GetState
   name: GetState()
   href: api/ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.html#ArmoniK_Core_Common_StateMachines_ComputeRequestStateMachine_GetState
@@ -6077,6 +6090,99 @@ references:
   commentId: F:ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.Triggers.InitRequest
   fullName: ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.Triggers.InitRequest
   nameWithType: ComputeRequestStateMachine.Triggers.InitRequest
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraph
+  name: UmlMermaidGraph
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.html
+  commentId: T:ArmoniK.Core.Common.StateMachines.UmlMermaidGraph
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraph
+  nameWithType: UmlMermaidGraph
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.Format(StateMachineInfo)
+  name: Format(StateMachineInfo)
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraph_Format_StateMachineInfo_
+  commentId: M:ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.Format(StateMachineInfo)
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.Format(StateMachineInfo)
+  nameWithType: UmlMermaidGraph.Format(StateMachineInfo)
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.Format*
+  name: Format
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraph_Format_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.Format
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.Format
+  nameWithType: UmlMermaidGraph.Format
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle
+  name: UmlMermaidGraphStyle
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html
+  commentId: T:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle
+  nameWithType: UmlMermaidGraphStyle
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneCluster(SuperState)
+  name: FormatOneCluster(SuperState)
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraphStyle_FormatOneCluster_SuperState_
+  commentId: M:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneCluster(SuperState)
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneCluster(SuperState)
+  nameWithType: UmlMermaidGraphStyle.FormatOneCluster(SuperState)
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneCluster*
+  name: FormatOneCluster
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraphStyle_FormatOneCluster_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneCluster
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneCluster
+  nameWithType: UmlMermaidGraphStyle.FormatOneCluster
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneDecisionNode(System.String,System.String)
+  name: FormatOneDecisionNode(String, String)
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraphStyle_FormatOneDecisionNode_System_String_System_String_
+  commentId: M:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneDecisionNode(System.String,System.String)
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneDecisionNode(System.String, System.String)
+  nameWithType: UmlMermaidGraphStyle.FormatOneDecisionNode(String, String)
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneDecisionNode*
+  name: FormatOneDecisionNode
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraphStyle_FormatOneDecisionNode_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneDecisionNode
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneDecisionNode
+  nameWithType: UmlMermaidGraphStyle.FormatOneDecisionNode
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneState(State)
+  name: FormatOneState(State)
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraphStyle_FormatOneState_State_
+  commentId: M:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneState(State)
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneState(State)
+  nameWithType: UmlMermaidGraphStyle.FormatOneState(State)
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneState*
+  name: FormatOneState
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraphStyle_FormatOneState_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneState
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneState
+  nameWithType: UmlMermaidGraphStyle.FormatOneState
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneTransition(System.String,System.String,IEnumerable{System.String},System.String,IEnumerable{System.String})
+  name: FormatOneTransition(String, String, IEnumerable<String>, String, IEnumerable<String>)
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraphStyle_FormatOneTransition_System_String_System_String_IEnumerable_System_String__System_String_IEnumerable_System_String__
+  commentId: M:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneTransition(System.String,System.String,IEnumerable{System.String},System.String,IEnumerable{System.String})
+  name.vb: FormatOneTransition(String, String, IEnumerable(Of String), String, IEnumerable(Of String))
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneTransition(System.String, System.String, IEnumerable<System.String>, System.String, IEnumerable<System.String>)
+  fullName.vb: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneTransition(System.String, System.String, IEnumerable(Of System.String), System.String, IEnumerable(Of System.String))
+  nameWithType: UmlMermaidGraphStyle.FormatOneTransition(String, String, IEnumerable<String>, String, IEnumerable<String>)
+  nameWithType.vb: UmlMermaidGraphStyle.FormatOneTransition(String, String, IEnumerable(Of String), String, IEnumerable(Of String))
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneTransition*
+  name: FormatOneTransition
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraphStyle_FormatOneTransition_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneTransition
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.FormatOneTransition
+  nameWithType: UmlMermaidGraphStyle.FormatOneTransition
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.GetPrefix
+  name: GetPrefix()
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraphStyle_GetPrefix
+  commentId: M:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.GetPrefix
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.GetPrefix()
+  nameWithType: UmlMermaidGraphStyle.GetPrefix()
+- uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.GetPrefix*
+  name: GetPrefix
+  href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html#ArmoniK_Core_Common_StateMachines_UmlMermaidGraphStyle_GetPrefix_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.GetPrefix
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.GetPrefix
+  nameWithType: UmlMermaidGraphStyle.GetPrefix
 - uid: ArmoniK.Core.Common.Storage
   name: ArmoniK.Core.Common.Storage
   href: api/ArmoniK.Core.Common.Storage.html
@@ -9192,6 +9298,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.GenerateGraphShouldSucceed
   nameWithType: ComputeRequestStateMachineTest.GenerateGraphShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.GenerateMermaidGraphShouldSucceed
+  name: GenerateMermaidGraphShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ComputeRequestStateMachineTest_GenerateMermaidGraphShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.GenerateMermaidGraphShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.GenerateMermaidGraphShouldSucceed()
+  nameWithType: ComputeRequestStateMachineTest.GenerateMermaidGraphShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.GenerateMermaidGraphShouldSucceed*
+  name: GenerateMermaidGraphShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ComputeRequestStateMachineTest_GenerateMermaidGraphShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.GenerateMermaidGraphShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.GenerateMermaidGraphShouldSucceed
+  nameWithType: ComputeRequestStateMachineTest.GenerateMermaidGraphShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.GetQueueWithoutPayloadCompleteShouldFail
   name: GetQueueWithoutPayloadCompleteShouldFail()
   href: api/ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ComputeRequestStateMachineTest_GetQueueWithoutPayloadCompleteShouldFail

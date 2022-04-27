@@ -1089,7 +1089,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.State.html",
-          "hash": "k0elnALO5Abvf5kW+T5rCBp/MVGQMHcP8JVWKjOJHA8="
+          "hash": "uNTGBAJ314i2NVMzBfg9wbiD6KzcDiuu4GDJl+dAeuA="
         }
       },
       "is_incremental": false,
@@ -1101,7 +1101,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.Triggers.html",
-          "hash": "UrpTV7EsZ/LSoZExTqG2RfLWmrVZ6ja/1O3rX9HLd/o="
+          "hash": "2Pc1x5cA1+PEMHJfzXwpI7Asr3tzSLPWgCJxVWK0jCM="
         }
       },
       "is_incremental": false,
@@ -1113,7 +1113,31 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.html",
-          "hash": "5sVMf+uAXy/o3XPpeUYaMFta+bD6fgP8Bp/dsdfgrIM="
+          "hash": "MXMm8FIF5hV6PxtxHdUxP3oWSU14e9EF79d7cXutYHg="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.html",
+          "hash": "HvFWRHzFD8lZhhag0/trmC0BOjzPuhr1TyaXXdyIsA0="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraphStyle.html",
+          "hash": "ShA8cgxY5uwywd/8Q8UBXuUPvX1IiGaprSwdkHY8PZU="
         }
       },
       "is_incremental": false,
@@ -1125,7 +1149,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.StateMachines.html",
-          "hash": "aPjUN7db+juM1lKmjSQEk9G3ySbcjg9ZA/f9kbLDGXw="
+          "hash": "ExT4wnyGlW/Ncw0lAoimS84JV+9onRUCohuWpon+rGQ="
         }
       },
       "is_incremental": false,
@@ -1569,7 +1593,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.html",
-          "hash": "tFTTAcdShBQrvLLsqai1Y+uJgT4pLpB/zy7I4gZ69Us="
+          "hash": "B6nMOao03J22LBkt97cRZ40bJpvPmn0lLMp+8dTvWM4="
         }
       },
       "is_incremental": false,
@@ -2493,7 +2517,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "4aWFscRXVxGkC6aCnOVX8jYuPYhzFYymY7fHT6Eg4Ns="
+          "hash": "bPjdmoimiO4MQzZuUkQHq0nSlkcVaLEA+0MumtvHwC4="
         }
       },
       "is_incremental": false,
@@ -2568,7 +2592,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 206,
+          "total_file_count": 208,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
