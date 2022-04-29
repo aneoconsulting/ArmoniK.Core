@@ -38,6 +38,8 @@ using Google.Protobuf;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Moq;
 
 using NUnit.Framework;
@@ -69,7 +71,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => Task.CompletedTask);
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -97,7 +100,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -132,7 +136,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new TaskNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -167,7 +172,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new ResultNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -202,7 +208,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -237,7 +244,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -271,7 +279,8 @@ public class GrpcSubmitterServiceTests
                                                                      CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -302,7 +311,8 @@ public class GrpcSubmitterServiceTests
                                                                      CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -336,7 +346,8 @@ public class GrpcSubmitterServiceTests
                                                   Ok = new Empty(),
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -367,7 +378,8 @@ public class GrpcSubmitterServiceTests
                                                           },
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -391,7 +403,8 @@ public class GrpcSubmitterServiceTests
                                                                        CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -421,7 +434,8 @@ public class GrpcSubmitterServiceTests
                                                   DataChunkMaxSize = 32,
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -429,8 +443,8 @@ public class GrpcSubmitterServiceTests
                                                          TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(response.DataChunkMaxSize,
-                    32);
+    Assert.AreEqual(32,
+                    response.DataChunkMaxSize);
   }
 
   [Test]
@@ -441,7 +455,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => Task.CompletedTask);
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -464,7 +479,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -494,7 +510,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -524,7 +541,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => throw new SessionNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -555,7 +573,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => Task.CompletedTask);
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -584,7 +603,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -620,7 +640,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => throw new InvalidAsynchronousStateException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -660,7 +681,8 @@ public class GrpcSubmitterServiceTests
                                                   Ok = new Empty(),
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -685,7 +707,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -717,7 +740,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -751,7 +775,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => Task.FromResult((new List<string>(), new TaskOptions())));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -794,7 +819,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -844,7 +870,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -894,7 +921,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => Task.FromResult((new List<string>(), new TaskOptions())));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     var list = new List<CreateLargeTaskRequest>
                {
@@ -930,7 +958,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => Task.FromResult((new List<string>(), new TaskOptions())));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     var helper = new TestHelperAsyncStreamReader<CreateLargeTaskRequest>(new List<CreateLargeTaskRequest>());
 
@@ -963,7 +992,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     var list = new List<CreateLargeTaskRequest>
                {
@@ -1007,7 +1037,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     var list = new List<CreateLargeTaskRequest>
                {
@@ -1058,7 +1089,8 @@ public class GrpcSubmitterServiceTests
                                                   },
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1091,7 +1123,8 @@ public class GrpcSubmitterServiceTests
                                                           CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1127,7 +1160,8 @@ public class GrpcSubmitterServiceTests
                                                           CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1173,7 +1207,8 @@ public class GrpcSubmitterServiceTests
                                                   },
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1209,7 +1244,8 @@ public class GrpcSubmitterServiceTests
                                                                  CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1248,7 +1284,8 @@ public class GrpcSubmitterServiceTests
                                                                  CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1290,7 +1327,8 @@ public class GrpcSubmitterServiceTests
                                                   Ok = new Empty(),
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1313,7 +1351,8 @@ public class GrpcSubmitterServiceTests
                                                                         CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1343,7 +1382,8 @@ public class GrpcSubmitterServiceTests
                                                                         CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1373,7 +1413,8 @@ public class GrpcSubmitterServiceTests
                                                                         CancellationToken.None))
                  .Returns(() => throw new TaskNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1403,7 +1444,8 @@ public class GrpcSubmitterServiceTests
                                                                         CancellationToken.None))
                  .Returns(() => throw new ResultNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1436,7 +1478,8 @@ public class GrpcSubmitterServiceTests
                                                   Status = TaskStatus.Completed,
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1459,7 +1502,8 @@ public class GrpcSubmitterServiceTests
                                                               CancellationToken.None))
                  .Returns(() => throw new TaskNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1489,7 +1533,8 @@ public class GrpcSubmitterServiceTests
                                                               CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1519,7 +1564,8 @@ public class GrpcSubmitterServiceTests
                                                               CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1555,7 +1601,8 @@ public class GrpcSubmitterServiceTests
                                                   },
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1587,7 +1634,8 @@ public class GrpcSubmitterServiceTests
                                                               CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1623,7 +1671,8 @@ public class GrpcSubmitterServiceTests
                                                               CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
@@ -1659,7 +1708,8 @@ public class GrpcSubmitterServiceTests
                                                               CancellationToken.None))
                  .Returns(() => throw new TaskNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object);
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
 
