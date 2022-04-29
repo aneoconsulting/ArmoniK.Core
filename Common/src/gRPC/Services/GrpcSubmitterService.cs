@@ -29,13 +29,10 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC.Services;
 
 using Grpc.Core;
 
-using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
-
-namespace ArmoniK.Core.Control.Submitter.Services;
+namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
 {
@@ -48,38 +45,97 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   /// <inheritdoc />
   public override Task<Configuration> GetServiceConfiguration(Empty             request,
                                                               ServerCallContext context)
-    => submitter_.GetServiceConfiguration(request,
-                                          context.CancellationToken);
+  {
+    try
+    {
+      return submitter_.GetServiceConfiguration(request,
+                                                context.CancellationToken);
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
 
   public override async Task<Empty> CancelSession(Session           request,
                                                   ServerCallContext context)
   {
-    await submitter_.CancelSession(request.Id,
-                                   context.CancellationToken)
-                    .ConfigureAwait(false);
-    return new Empty();
+    try
+    {
+
+      await submitter_.CancelSession(request.Id,
+                                     context.CancellationToken)
+                      .ConfigureAwait(false);
+      return new Empty();
+    }
+    catch (SessionNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Session not found"));
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
   }
 
   public override async Task<Empty> CancelTasks(TaskFilter        request,
                                                 ServerCallContext context)
   {
-    await submitter_.CancelTasks(request,
-                                 context.CancellationToken)
-                    .ConfigureAwait(false);
-    return new Empty();
+    try
+    {
+      await submitter_.CancelTasks(request,
+                                   context.CancellationToken)
+                      .ConfigureAwait(false);
+      return new Empty();
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
   }
 
   /// <inheritdoc />
   public override Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
                                                          ServerCallContext    context)
-    => submitter_.CreateSession(request.Id,
-                                request.DefaultTaskOption,
-                                context.CancellationToken);
+  {
+    try
+    {
+      return submitter_.CreateSession(request.Id,
+                                      request.DefaultTaskOption,
+                                      context.CancellationToken);
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
 
   public override async Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request,
                                                                ServerCallContext      context)
   {
-    var tuple = await submitter_.CreateTasks(request.SessionId,
+    try
+    {
+      var tuple = await submitter_.CreateTasks(request.SessionId,
                                                request.SessionId,
                                                request.TaskOptions,
                                                request.TaskRequests.ToAsyncEnumerable()
@@ -93,15 +149,26 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                                                context.CancellationToken)
                                   .ConfigureAwait(false);
 
-    await submitter_.FinalizeTaskCreation(tuple.TaskIds,
-                                          tuple.Options,
-                                          context.CancellationToken)
-                    .ConfigureAwait(false);
+      await submitter_.FinalizeTaskCreation(tuple.TaskIds,
+                                            tuple.Options,
+                                            context.CancellationToken)
+                      .ConfigureAwait(false);
 
-    return new CreateTaskReply
-           {
-             Successfull = new Empty(),
-           };
+      return new CreateTaskReply
+             {
+               Successfull = new Empty(),
+             };
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
   }
 
 
@@ -109,48 +176,80 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream,
                                                                ServerCallContext                          context)
   {
-    var enumerator = requestStream.ReadAllAsync(context.CancellationToken)
-                                  .GetAsyncEnumerator(context.CancellationToken);
-
-    if (!await enumerator.MoveNextAsync(context.CancellationToken)
-                         .ConfigureAwait(false))
+    try
     {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "stream contained no message"));
+      var enumerator = requestStream.ReadAllAsync(context.CancellationToken)
+                                    .GetAsyncEnumerator(context.CancellationToken);
+
+      if (!await enumerator.MoveNextAsync(context.CancellationToken)
+                           .ConfigureAwait(false))
+      {
+        throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                          "stream contained no message"));
+      }
+
+      var first = enumerator.Current;
+
+      if (first.TypeCase != CreateLargeTaskRequest.TypeOneofCase.InitRequest)
+      {
+        throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                          "First message in stream must be of type InitRequest"),
+                               "First message in stream must be of type InitRequest");
+      }
+
+      var tuple = await submitter_.CreateTasks(first.InitRequest.SessionId,
+                                               first.InitRequest.SessionId,
+                                               first.InitRequest.TaskOptions,
+                                               enumerator.BuildRequests(context.CancellationToken),
+                                               context.CancellationToken)
+                                  .ConfigureAwait(false);
+
+      await submitter_.FinalizeTaskCreation(tuple.TaskIds,
+                                            tuple.Options,
+                                            context.CancellationToken)
+                      .ConfigureAwait(false);
+
+      return new CreateTaskReply
+             {
+               Successfull = new Empty(),
+             };
     }
-
-    var first = enumerator.Current;
-
-    if (first.TypeCase != CreateLargeTaskRequest.TypeOneofCase.InitRequest)
+    catch (ArmoniKException)
     {
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "First message in stream must be of type InitRequest"),
-                             "First message in stream must be of type InitRequest");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
     }
-
-    var tuple = await submitter_.CreateTasks(first.InitRequest.SessionId,
-                                        first.InitRequest.SessionId,
-                                        first.InitRequest.TaskOptions,
-                                        enumerator.BuildRequests(context.CancellationToken),
-                                        context.CancellationToken)
-                           .ConfigureAwait(false);
-
-    await submitter_.FinalizeTaskCreation(tuple.TaskIds,
-                                          tuple.Options,
-                                          context.CancellationToken)
-                    .ConfigureAwait(false);
-
-    return new CreateTaskReply
-           {
-             Successfull = new Empty(),
-           };
+    catch (RpcException)
+    {
+      throw;
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
   }
 
   /// <inheritdoc />
   public override Task<Count> CountTasks(TaskFilter        request,
                                          ServerCallContext context)
-    => submitter_.CountTasks(request,
-                             context.CancellationToken);
+  {
+    try
+    {
+      return submitter_.CountTasks(request,
+                                   context.CancellationToken);
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
 
   /// <inheritdoc />
   public override Task TryGetResultStream(ResultRequest                    request,
@@ -185,28 +284,140 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
   }
 
+  /// <inheritdoc />
   public override Task<Count> WaitForCompletion(WaitRequest       request,
                                                 ServerCallContext context)
-    => submitter_.WaitForCompletion(request,
-                                    context.CancellationToken);
+  {
+    try
+    {
+      return submitter_.WaitForCompletion(request,
+                                          context.CancellationToken);
+    }
+    catch (TaskNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Task not found"));
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
 
   public override Task<Output> TryGetTaskOutput(ResultRequest     request,
                                                 ServerCallContext context)
-    => submitter_.TryGetTaskOutputAsync(request,
-                                        context.CancellationToken);
+  {
+    try
+    {
+
+      return submitter_.TryGetTaskOutputAsync(request,
+                                              context.CancellationToken);
+    }
+    catch (TaskNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Task not found"));
+    }
+    catch (ResultNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result not found"));
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
 
   public override Task<AvailabilityReply> WaitForAvailability(ResultRequest     request,
                                                               ServerCallContext context)
-    => submitter_.WaitForAvailabilityAsync(request,
-                                           context.CancellationToken);
+  {
+    try
+    {
+      return submitter_.WaitForAvailabilityAsync(request,
+                                                 context.CancellationToken);
+    }
+    catch (TaskNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Task not found"));
+    }
+    catch (ResultNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result not found"));
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
 
   public override Task<GetStatusReply> GetStatus(GetStatusrequest  request,
                                                  ServerCallContext context)
-    => submitter_.GetStatusAsync(request,
-                                 context.CancellationToken);
+  {
+    try
+    {
+      return submitter_.GetStatusAsync(request,
+                                       context.CancellationToken);
+    }
+    catch (TaskNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Task not found"));
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
 
   public override Task<TaskIdList> ListTasks(TaskFilter        request,
                                              ServerCallContext context)
-    => submitter_.ListTasksAsync(request,
-                                 context.CancellationToken);
+  {
+    try
+    {
+      return submitter_.ListTasksAsync(request,
+                                       context.CancellationToken);
+    }
+    catch (TaskNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Task not found"));
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
 }
