@@ -83,7 +83,7 @@ public class GrpcSubmitterServiceTests
   }
 
   [Test]
-  public void TryGetResultStreamArmoniKExceptionShouldThrowRpcException()
+  public async Task TryGetResultStreamArmoniKExceptionShouldThrowRpcException()
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.TryGetResult(It.IsAny<ResultRequest>(),
@@ -98,19 +98,62 @@ public class GrpcSubmitterServiceTests
 
     var helperServerStreamWriter = new TestHelperServerStreamWriter<ResultReply>();
 
-    Assert.ThrowsAsync<RpcException>(async () => await service.TryGetResultStream(new ResultRequest
-                                                                                  {
-                                                                                    Key     = "Key",
-                                                                                    Session = "Session",
-                                                                                  },
-                                                                                  helperServerStreamWriter,
-                                                                                  TestServerCallContext.Create())
-                                                              .ConfigureAwait(false));
-
+    try
+    {
+      await service.TryGetResultStream(new ResultRequest
+                                       {
+                                         Key     = "Key",
+                                         Session = "Session",
+                                       },
+                                       helperServerStreamWriter,
+                                       TestServerCallContext.Create())
+                   .ConfigureAwait(false);
+    }
+    catch (RpcException e)
+    {
+      Console.WriteLine(e);
+      Assert.AreEqual(StatusCode.Internal,
+                      e.StatusCode);
+    }
   }
 
   [Test]
-  public void TryGetResultStreamResultNotFoundExceptionShouldThrowRpcException()
+  public async Task TryGetResultStreamTaskNotFoundExceptionShouldThrowRpcException()
+  {
+    var mockSubmitter = new Mock<ISubmitter>();
+    mockSubmitter.Setup(submitter => submitter.TryGetResult(It.IsAny<ResultRequest>(),
+                                                            It.IsAny<IServerStreamWriter<ResultReply>>(),
+                                                            CancellationToken.None))
+                 .Returns(() => throw new TaskNotFoundException());
+
+
+    var service = new GrpcSubmitterService(mockSubmitter.Object);
+
+    mockSubmitter.Verify();
+
+    var helperServerStreamWriter = new TestHelperServerStreamWriter<ResultReply>();
+
+    try
+    {
+      await service.TryGetResultStream(new ResultRequest
+                                       {
+                                         Key     = "Key",
+                                         Session = "Session",
+                                       },
+                                       helperServerStreamWriter,
+                                       TestServerCallContext.Create())
+                   .ConfigureAwait(false);
+    }
+    catch (RpcException e)
+    {
+      Console.WriteLine(e);
+      Assert.AreEqual(StatusCode.NotFound,
+                      e.StatusCode);
+    }
+  }
+
+  [Test]
+  public async Task TryGetResultStreamResultNotFoundExceptionShouldThrowRpcException()
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.TryGetResult(It.IsAny<ResultRequest>(),
@@ -125,13 +168,92 @@ public class GrpcSubmitterServiceTests
 
     var helperServerStreamWriter = new TestHelperServerStreamWriter<ResultReply>();
 
-    Assert.ThrowsAsync<RpcException>(async () => await service.TryGetResultStream(new ResultRequest
-                                                                                  {
-                                                                                    Key     = "Key",
-                                                                                    Session = "Session",
-                                                                                  },
-                                                                                  helperServerStreamWriter,
-                                                                                  TestServerCallContext.Create())
-                                                              .ConfigureAwait(false));
+    try
+    {
+      await service.TryGetResultStream(new ResultRequest
+                                       {
+                                         Key     = "Key",
+                                         Session = "Session",
+                                       },
+                                       helperServerStreamWriter,
+                                       TestServerCallContext.Create())
+                   .ConfigureAwait(false);
+    }
+    catch (RpcException e)
+    {
+      Console.WriteLine(e);
+      Assert.AreEqual(StatusCode.NotFound,
+                      e.StatusCode);
+    }
+  }
+
+  [Test]
+  public async Task TryGetResultStreamExceptionShouldThrowRpcException()
+  {
+    var mockSubmitter = new Mock<ISubmitter>();
+    mockSubmitter.Setup(submitter => submitter.TryGetResult(It.IsAny<ResultRequest>(),
+                                                            It.IsAny<IServerStreamWriter<ResultReply>>(),
+                                                            CancellationToken.None))
+                 .Returns(() => throw new Exception());
+
+
+    var service = new GrpcSubmitterService(mockSubmitter.Object);
+
+    mockSubmitter.Verify();
+
+    var helperServerStreamWriter = new TestHelperServerStreamWriter<ResultReply>();
+
+    try
+    {
+      await service.TryGetResultStream(new ResultRequest
+                                       {
+                                         Key     = "Key",
+                                         Session = "Session",
+                                       },
+                                       helperServerStreamWriter,
+                                       TestServerCallContext.Create())
+                   .ConfigureAwait(false);
+    }
+    catch (RpcException e)
+    {
+      Console.WriteLine(e);
+      Assert.AreEqual(StatusCode.Unknown,
+                      e.StatusCode);
+    }
+  }
+
+  [Test]
+  public async Task TryGetResultStreamInvalidOperationExceptionShouldThrowRpcException()
+  {
+    var mockSubmitter = new Mock<ISubmitter>();
+    mockSubmitter.Setup(submitter => submitter.TryGetResult(It.IsAny<ResultRequest>(),
+                                                            It.IsAny<IServerStreamWriter<ResultReply>>(),
+                                                            CancellationToken.None))
+                 .Returns(() => throw new InvalidOperationException());
+
+
+    var service = new GrpcSubmitterService(mockSubmitter.Object);
+
+    mockSubmitter.Verify();
+
+    var helperServerStreamWriter = new TestHelperServerStreamWriter<ResultReply>();
+
+    try
+    {
+      await service.TryGetResultStream(new ResultRequest
+                                       {
+                                         Key     = "Key",
+                                         Session = "Session",
+                                       },
+                                       helperServerStreamWriter,
+                                       TestServerCallContext.Create())
+                   .ConfigureAwait(false);
+    }
+    catch (RpcException e)
+    {
+      Console.WriteLine(e);
+      Assert.AreEqual(StatusCode.Unknown,
+                      e.StatusCode);
+    }
   }
 }
