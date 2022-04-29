@@ -31,7 +31,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
@@ -44,7 +43,6 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 using Output = ArmoniK.Api.gRPC.V1.Output;
-using Submitter = ArmoniK.Core.Common.gRPC.Services.Submitter;
 using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
 using TaskCanceledException = System.Threading.Tasks.TaskCanceledException;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
@@ -54,25 +52,23 @@ using TimeoutException = System.TimeoutException;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-public class RequestProcessor : IInitializable
+public class RequestProcessor : IDisposable
 {
-  private readonly ActivitySource            activitySource_;
-  private readonly ILogger<RequestProcessor> logger_;
-  private readonly IObjectStorageFactory     objectStorageFactory_;
-  private readonly IObjectStorage            resourcesStorage_;
-  private readonly IResultTable              resultTable_;
-  private readonly ISubmitter                submitter_;
-  private readonly IWorkerStreamHandler      workerStreamHandler_;
+  private readonly ActivitySource                                    activitySource_;
+  private readonly ILogger<Pollster>                                 logger_;
+  private readonly IObjectStorageFactory                             objectStorageFactory_;
+  private readonly IObjectStorage                                    resourcesStorage_;
+  private readonly IResultTable                                      resultTable_;
+  private readonly ISubmitter                                        submitter_;
+  private readonly IWorkerStreamHandler                              workerStreamHandler_;
+  private readonly List<(List<string> TaskIds, TaskOptions Options)> taskToFinalize_;
 
-  private bool                                              isInitialized_;
-  private List<(List<string> TaskIds, TaskOptions Options)> taskToFinalize;
-
-  public RequestProcessor(IWorkerStreamHandler      workerStreamHandler,
-                          IObjectStorageFactory     objectStorageFactory,
-                          ILogger<RequestProcessor> logger,
-                          ISubmitter                submitter,
-                          IResultTable              resultTable,
-                          ActivitySource            activitySource)
+  public RequestProcessor(IWorkerStreamHandler  workerStreamHandler,
+                          IObjectStorageFactory objectStorageFactory,
+                          ILogger<Pollster>     logger,
+                          ISubmitter            submitter,
+                          IResultTable          resultTable,
+                          ActivitySource        activitySource)
   {
     workerStreamHandler_  = workerStreamHandler;
     objectStorageFactory_ = objectStorageFactory;
@@ -81,24 +77,7 @@ public class RequestProcessor : IInitializable
     resultTable_          = resultTable;
     activitySource_       = activitySource;
     resourcesStorage_     = objectStorageFactory.CreateResourcesStorage();
-    taskToFinalize        = new List<(List<string> TaskIds, TaskOptions Options)>();
-  }
-
-  /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
-
-  /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
-    {
-      var resultTable         = resultTable_.Init(cancellationToken);
-      var workerStreamHandler = workerStreamHandler_.Init(cancellationToken);
-      await resultTable.ConfigureAwait(false);
-      await workerStreamHandler.ConfigureAwait(false);
-      isInitialized_ = true;
-    }
+    taskToFinalize_        = new List<(List<string> TaskIds, TaskOptions Options)>();
   }
 
   public async Task<List<Task>> ProcessAsync(IQueueMessageHandler  messageHandler,
@@ -108,7 +87,7 @@ public class RequestProcessor : IInitializable
   {
     try
     {
-      taskToFinalize.Clear();
+      taskToFinalize_.Clear();
       var result = await ProcessInternalsAsync(taskData, computeRequests,
                                                cancellationToken)
                      .ConfigureAwait(false);
@@ -310,7 +289,7 @@ public class RequestProcessor : IInitializable
 
           if (first.Output.TypeCase == Output.TypeOneofCase.Ok)
           {
-            foreach (var (taskIds, options) in taskToFinalize)
+            foreach (var (taskIds, options) in taskToFinalize_)
             {
               await submitter_.FinalizeTaskCreation(taskIds,
                                                     options,
@@ -480,7 +459,7 @@ public class RequestProcessor : IInitializable
                                                                 .ReconstituteTaskRequest(logger_),
                                                cancellationToken)
                                   .ConfigureAwait(false);
-    taskToFinalize.Add(tuple);
+    taskToFinalize_.Add(tuple);
 
     return new CreateTaskReply
            {
@@ -507,7 +486,7 @@ public class RequestProcessor : IInitializable
                                                                                              }.ToAsyncEnumerable())),
                                                cancellationToken)
                                   .ConfigureAwait(false);
-    taskToFinalize.Add(tuple);
+    taskToFinalize_.Add(tuple);
 
     return new CreateTaskReply
            {
@@ -535,5 +514,10 @@ public class RequestProcessor : IInitializable
                                  first.Result.Init.Key,
                                  cancellationToken)
                       .ConfigureAwait(false);
+  }
+
+  public void Dispose()
+  {
+    GC.SuppressFinalize(this);
   }
 }
