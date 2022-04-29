@@ -34,8 +34,6 @@ using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
-using Microsoft.Extensions.Logging;
-
 using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
 using WorkerClient = ArmoniK.Api.gRPC.V1.Worker.WorkerClient;
 
@@ -44,31 +42,24 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
   private readonly WorkerClient                                            workerClient_;
-  private readonly ILogger<WorkerStreamHandler>                            logger_;
   private          bool                                                    isInitialized_;
   public           AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream;
 
-  public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
-                             ILogger<WorkerStreamHandler> logger)
+  public WorkerStreamHandler(GrpcChannelProvider          channelProvider)
   {
-    logger_       = logger;
-    workerClient_ = BuildWorkerClient(channelProvider, logger);
+    workerClient_ = BuildWorkerClient(channelProvider);
   }
 
-  private static WorkerClient BuildWorkerClient(GrpcChannelProvider channelProvider,
-                                                            ILogger             logger)
+  private static WorkerClient BuildWorkerClient(GrpcChannelProvider channelProvider)
   {
-    using var   _ = logger.LogFunction();
     ChannelBase channel;
     try
     {
       channel = channelProvider.Get();
     }
-    catch (Exception e)
+    catch
     {
-      logger.LogError(e,
-                      "Could not create grpc channel");
-      throw;
+      throw new ArmoniKException("Could not get grpc channel");
     }
 
     return new WorkerClient(channel);
