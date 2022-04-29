@@ -44,7 +44,7 @@ public interface IWorkerStreamHandler : IInitializable, IDisposable
 
   public void StartTaskProcessing(TaskData          taskData,
                                   CancellationToken cancellationToken);
-  public IAsyncStreamReader<ProcessReply> WorkerResponseStream { get; }
+  public IAsyncStreamReader<ProcessReply>? WorkerResponseStream { get; }
 
-  public IClientStreamWriter<ProcessRequest> WorkerRequestStream { get; }
+  public IClientStreamWriter<ProcessRequest>? WorkerRequestStream { get; }
 }

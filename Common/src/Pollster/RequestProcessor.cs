@@ -241,8 +241,7 @@ public class RequestProcessor : IDisposable
 
     var resultStorage = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
 
-    workerStreamHandler_.WorkerRequestStream.WriteOptions = new WriteOptions(WriteFlags.NoCompress);
-
+    workerStreamHandler_.WorkerRequestStream!.WriteOptions = new WriteOptions(WriteFlags.NoCompress);
     {
       using var activity2 = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.SendComputeRequests");
       // send the compute requests
@@ -265,7 +264,7 @@ public class RequestProcessor : IDisposable
     activity?.AddEvent(new ActivityEvent("Processing ResponseStream"));
     // process incoming messages
     // TODO : To reduce memory consumption, do not generate subStream. Implement a state machine instead.
-    await foreach (var singleReplyStream in workerStreamHandler_.WorkerResponseStream.Separate(logger_,
+    await foreach (var singleReplyStream in workerStreamHandler_.WorkerResponseStream!.Separate(logger_,
                                                                                                cancellationToken)
                                                                 .ConfigureAwait(false))
     {
@@ -371,7 +370,7 @@ public class RequestProcessor : IDisposable
     {
       await workerStreamHandler_.WorkerRequestStream.CompleteAsync()
                                 .ConfigureAwait(false);
-      await workerStreamHandler_.WorkerResponseStream.MoveNext()
+      await workerStreamHandler_.WorkerResponseStream!.MoveNext()
                                 .ConfigureAwait(false);
     }
 
