@@ -22,11 +22,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 
 using Grpc.Core;
@@ -154,9 +156,34 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   public override Task TryGetResultStream(ResultRequest                    request,
                                           IServerStreamWriter<ResultReply> responseStream,
                                           ServerCallContext                context)
-    => submitter_.TryGetResult(request,
-                               responseStream,
-                               context.CancellationToken);
+  {
+    try
+    {
+      return submitter_.TryGetResult(request,
+                                     responseStream,
+                                     context.CancellationToken);
+    }
+    catch (TaskNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Task not found"));
+    }
+    catch (ResultNotFoundException)
+    {
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result not found"));
+    }
+    catch (ArmoniKException)
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception)
+    {
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
 
   public override Task<Count> WaitForCompletion(WaitRequest       request,
                                                 ServerCallContext context)
