@@ -27,8 +27,10 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Stream.Worker;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -44,16 +46,24 @@ public class Pollster
   private readonly int                      messageBatchSize_;
   private readonly PreconditionChecker      preconditionChecker_;
   private readonly IQueueStorage            queueStorage_;
-  private readonly RequestProcessor         requestProcessor_;
+  private readonly IObjectStorageFactory    objectStorageFactory_;
+  private readonly IResultTable             resultTable_;
+  private readonly ISubmitter               submitter_;
+  private readonly IWorkerStreamHandler     workerStreamHandler_;
+
 
   public Pollster(IQueueStorage            queueStorage,
                   PreconditionChecker      preconditionChecker,
                   DataPrefetcher           dataPrefetcher,
-                  RequestProcessor         requestProcessor,
                   ComputePlan              options,
                   IHostApplicationLifetime lifeTime,
                   ActivitySource           activitySource,
-                  ILogger<Pollster>        logger)
+                  ILogger<Pollster>        logger,
+                  IObjectStorageFactory    objectStorageFactory,
+                  IResultTable             resultTable,
+                  ISubmitter               submitter,
+                  IWorkerStreamHandler     workerStreamHandler
+                  )
   {
     if (options.MessageBatchSize < 1)
     {
@@ -61,14 +71,17 @@ public class Pollster
                                             $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
     }
 
-    logger_              = logger;
-    activitySource_      = activitySource;
-    queueStorage_        = queueStorage;
-    lifeTime_            = lifeTime;
-    preconditionChecker_ = preconditionChecker;
-    dataPrefetcher_      = dataPrefetcher;
-    requestProcessor_    = requestProcessor;
-    messageBatchSize_    = options.MessageBatchSize;
+    logger_               = logger;
+    activitySource_       = activitySource;
+    queueStorage_         = queueStorage;
+    lifeTime_             = lifeTime;
+    preconditionChecker_  = preconditionChecker;
+    dataPrefetcher_       = dataPrefetcher;
+    messageBatchSize_     = options.MessageBatchSize;
+    objectStorageFactory_ = objectStorageFactory;
+    resultTable_          = resultTable;
+    submitter_            = submitter;
+    workerStreamHandler_  = workerStreamHandler;
   }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -79,8 +92,6 @@ public class Pollster
                          .ConfigureAwait(false);
     await preconditionChecker_.Init(cancellationToken)
                               .ConfigureAwait(false);
-    await requestProcessor_.Init(cancellationToken)
-                           .ConfigureAwait(false);
   }
 
   public async Task MainLoop(CancellationToken cancellationToken)
@@ -136,13 +147,19 @@ public class Pollster
                                                                                  cancellationToken)
                                                               .ConfigureAwait(false);
 
-
               logger_.LogDebug("Start a new Task to process the messageHandler");
-              var processResult = await requestProcessor_.ProcessAsync(message,
-                                                                       taskData,
-                                                                       computeRequestStream,
-                                                                       cancellationToken)
-                                                         .ConfigureAwait(false);
+              using var requestProcessor = new RequestProcessor(workerStreamHandler_,
+                                                                objectStorageFactory_,
+                                                                logger_,
+                                                                submitter_,
+                                                                resultTable_,
+                                                                activitySource_);
+
+              var processResult = await requestProcessor.ProcessAsync(message,
+                                                                      taskData,
+                                                                      computeRequestStream,
+                                                                      cancellationToken)
+                                                        .ConfigureAwait(false);
 
               logger_.LogDebug("Finish task processing");
 

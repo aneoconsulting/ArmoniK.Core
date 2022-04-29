@@ -88,7 +88,6 @@ public static class Program
              .AddSingleton<Pollster>()
              .AddSingleton<ISubmitter, Submitter>()
              .AddSingleton<PreconditionChecker>()
-             .AddSingleton<RequestProcessor>()
              .AddSingleton<DataPrefetcher>();
 
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
