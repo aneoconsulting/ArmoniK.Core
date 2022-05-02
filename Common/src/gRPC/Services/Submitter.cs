@@ -323,30 +323,79 @@ public class Submitter : ISubmitter
   {
     using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
     var       storage  = ResultStorage(request.Session);
-    await foreach (var chunk in storage.GetValuesAsync(request.Key,
-                                                       cancellationToken)
-                                       .ConfigureAwait(false))
+
+    try
     {
+      var result = await resultTable_.GetResult(request.Session,
+                                                request.Key,
+                                                cancellationToken)
+                                     .ConfigureAwait(false);
+
+      await foreach (var chunk in storage.GetValuesAsync(request.Key,
+                                                         cancellationToken)
+                                         .ConfigureAwait(false))
+      {
+        await responseStream.WriteAsync(new ResultReply
+                                        {
+                                          Result = new DataChunk
+                                                   {
+                                                     Data = UnsafeByteOperations.UnsafeWrap(new ReadOnlyMemory<byte>(chunk)),
+                                                   },
+                                        },
+                                        CancellationToken.None)
+                            .ConfigureAwait(false);
+      }
+
       await responseStream.WriteAsync(new ResultReply
                                       {
                                         Result = new DataChunk
                                                  {
-                                                   Data = UnsafeByteOperations.UnsafeWrap(new ReadOnlyMemory<byte>(chunk)),
+                                                   DataComplete = true,
                                                  },
                                       },
                                       CancellationToken.None)
                           .ConfigureAwait(false);
     }
-
-    await responseStream.WriteAsync(new ResultReply
-                                    {
-                                      Result = new DataChunk
-                                               {
-                                                 DataComplete = true,
-                                               },
-                                    },
-                                    CancellationToken.None)
-                        .ConfigureAwait(false);
+    catch (ResultDataNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting result data.");
+      await responseStream.WriteAsync(new ResultReply
+                                      {
+                                        Error = new TaskError
+                                                {
+                                                  Error =
+                                                  {
+                                                    new Error
+                                                    {
+                                                      Detail = "ResultDataNotFound : " + request.Key,
+                                                    },
+                                                  },
+                                                },
+                                      },
+                                      CancellationToken.None)
+                          .ConfigureAwait(false);
+    }
+    catch (ResultNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting result.");
+      await responseStream.WriteAsync(new ResultReply
+                                      {
+                                        Error = new TaskError
+                                                {
+                                                  Error =
+                                                  {
+                                                    new Error
+                                                    {
+                                                      Detail = "ResultNotFound : " + request.Key,
+                                                    },
+                                                  },
+                                                },
+                                      },
+                                      CancellationToken.None)
+                          .ConfigureAwait(false);
+    }
   }
 
   public async Task<Count> WaitForCompletion(WaitRequest       request,

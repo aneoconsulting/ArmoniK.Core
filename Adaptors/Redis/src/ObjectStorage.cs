@@ -123,7 +123,7 @@ public class ObjectStorage : IObjectStorage
 
     if (!value.HasValue)
     {
-      throw new ArmoniKException($"Key {key} not found");
+      throw new ResultDataNotFoundException($"Result {key} not found");
     }
 
     var valuesCount = int.Parse(value);
@@ -133,12 +133,12 @@ public class ObjectStorage : IObjectStorage
       yield break;
     }
 
-    foreach (var chunckTask in Enumerable.Range(0,
+    foreach (var chunkTask in Enumerable.Range(0,
                                                 valuesCount)
                                          .Select(index => redis_.StringGetAsync(objectStorageName_ + key + "_" + index))
                                          .ToList())
     {
-      yield return await chunckTask.ConfigureAwait(false);
+      yield return await chunkTask.ConfigureAwait(false);
     }
   }
 
