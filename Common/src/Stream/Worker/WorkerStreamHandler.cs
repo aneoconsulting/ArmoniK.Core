@@ -43,7 +43,6 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 {
   private readonly WorkerClient                                            workerClient_;
   private          bool                                                    isInitialized_;
-  public           AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream;
 
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider)
   {
@@ -82,9 +81,11 @@ public class WorkerStreamHandler : IWorkerStreamHandler
                              throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
   }
 
-  public IAsyncStreamReader<ProcessReply>? WorkerResponseStream { get; set; }
+  public AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream { get; private set; }
 
-  public IClientStreamWriter<ProcessRequest>? WorkerRequestStream { get; set; }
+  public IAsyncStreamReader<ProcessReply>? WorkerResponseStream { get; private set; }
+
+  public IClientStreamWriter<ProcessRequest>? WorkerRequestStream { get; private set; }
 
   public Task Init(CancellationToken cancellationToken)
   {
