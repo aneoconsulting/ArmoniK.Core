@@ -356,6 +356,7 @@ public class Submitter : ISubmitter
                                       CancellationToken.None)
                           .ConfigureAwait(false);
     }
+    // TODO : rework this part to match API
     catch (ResultDataNotFoundException e)
     {
       logger_.LogWarning(e,
