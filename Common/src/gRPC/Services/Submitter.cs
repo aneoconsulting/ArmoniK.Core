@@ -321,82 +321,41 @@ public class Submitter : ISubmitter
                                  IServerStreamWriter<ResultReply> responseStream,
                                  CancellationToken                cancellationToken)
   {
+
+    // TODO make it match API
     using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
     var       storage  = ResultStorage(request.Session);
 
-    try
+    var result = await resultTable_.GetResult(request.Session,
+                                              request.Key,
+                                              cancellationToken)
+                                   .ConfigureAwait(false);
+
+    await foreach (var chunk in storage.GetValuesAsync(request.Key,
+                                                       cancellationToken)
+                                       .ConfigureAwait(false))
     {
-      var result = await resultTable_.GetResult(request.Session,
-                                                request.Key,
-                                                cancellationToken)
-                                     .ConfigureAwait(false);
-
-      await foreach (var chunk in storage.GetValuesAsync(request.Key,
-                                                         cancellationToken)
-                                         .ConfigureAwait(false))
-      {
-        await responseStream.WriteAsync(new ResultReply
-                                        {
-                                          Result = new DataChunk
-                                                   {
-                                                     Data = UnsafeByteOperations.UnsafeWrap(new ReadOnlyMemory<byte>(chunk)),
-                                                   },
-                                        },
-                                        CancellationToken.None)
-                            .ConfigureAwait(false);
-      }
-
       await responseStream.WriteAsync(new ResultReply
                                       {
                                         Result = new DataChunk
                                                  {
-                                                   DataComplete = true,
+                                                   Data = UnsafeByteOperations.UnsafeWrap(new ReadOnlyMemory<byte>(chunk)),
                                                  },
                                       },
                                       CancellationToken.None)
                           .ConfigureAwait(false);
     }
-    // TODO : rework this part to match API
-    catch (ResultDataNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting result data.");
-      await responseStream.WriteAsync(new ResultReply
-                                      {
-                                        Error = new TaskError
-                                                {
-                                                  Error =
-                                                  {
-                                                    new Error
-                                                    {
-                                                      Detail = "ResultDataNotFound : " + request.Key,
-                                                    },
-                                                  },
-                                                },
-                                      },
-                                      CancellationToken.None)
-                          .ConfigureAwait(false);
-    }
-    catch (ResultNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting result.");
-      await responseStream.WriteAsync(new ResultReply
-                                      {
-                                        Error = new TaskError
-                                                {
-                                                  Error =
-                                                  {
-                                                    new Error
-                                                    {
-                                                      Detail = "ResultNotFound : " + request.Key,
-                                                    },
-                                                  },
-                                                },
-                                      },
-                                      CancellationToken.None)
-                          .ConfigureAwait(false);
-    }
+
+    await responseStream.WriteAsync(new ResultReply
+                                    {
+                                      Result = new DataChunk
+                                               {
+                                                 DataComplete = true,
+                                               },
+                                    },
+                                    CancellationToken.None)
+                        .ConfigureAwait(false);
+
   }
 
   public async Task<Count> WaitForCompletion(WaitRequest       request,
