@@ -26,15 +26,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Pollster;
 
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+
+using Google.Protobuf;
 
 using Grpc.Core;
 
@@ -110,9 +115,9 @@ public class RequestProcessorTest
   private const string                      SessionId      = "SessionId";
   private const string                      ParentTaskId   = "ParentTaskId";
   private const string                      TaskId         = "TaskId";
-  private const string                      Output1        = "Output1";
+  private const string                      Output1        = "Out1";
   private const string                      TaskCreatingId = "TaskCreatingId";
-  private const string                      Output2        = "Output2";
+  private const string                      Output2        = "Out2";
   private const string                      Dependency1    = "Dependency1";
   private const string                      Dependency2    = "Dependency2";
   private const string                      PodId          = "PodId";
@@ -270,16 +275,16 @@ public class RequestProcessorTest
     resultTable_.Create(new[]
                        {
                          new Result(SessionId,
-                                    "ResultIsAvailable",
+                                    Output1,
                                     TaskId,
-                                    "Completed",
+                                    "Created",
                                     DateTime.Today,
                                     new[]
                                     {
                                       (byte) 1,
                                     }),
                          new Result(SessionId,
-                                    "ResultIsNotAvailable",
+                                    Output2,
                                     TaskCreatingId,
                                     "Created",
                                     DateTime.Today,
@@ -319,8 +324,85 @@ public class RequestProcessorTest
     client_ = null;
   }
 
-  [Test]
-  public async Task TestProcessInternalsAsync()
+  private static List<ProcessReply>[] _repliesToTest =
+  {
+    // Test an Output reply
+    new()
+    {
+      new ProcessReply
+      {
+        Output = new Api.gRPC.V1.Output
+                 {
+                   Ok     = new Empty(),
+                   Status = TaskStatus.Completed,
+                 },
+      },
+    },
+    // Test another Output reply
+    new()
+    {
+      new ProcessReply
+      {
+        Output = new Api.gRPC.V1.Output
+                 {
+                   Error = new Api.gRPC.V1.Output.Types.Error
+                           {
+                             Details = "Detail", KillSubTasks = false,
+                           },
+                 },
+      },
+    },
+    // Test a Result reply
+    new()
+    {
+      new ProcessReply
+      {
+       Result = new ProcessReply.Types.Result
+               {
+                 Init =  new InitKeyedDataStream
+                         {
+                           Key = Output2,
+                         }
+               },
+      },
+      new ProcessReply
+      {
+        Result = new ProcessReply.Types.Result
+                 {
+
+                   Data = new DataChunk
+                          {
+                            Data = ByteString.FromBase64("1111"),
+                          },
+                 },
+      },
+      new ProcessReply
+      {
+        Result = new ProcessReply.Types.Result
+                 {
+                   Data = new DataChunk{DataComplete = true},
+                 },
+      },
+      new ProcessReply
+      {
+        Result = new ProcessReply.Types.Result
+                 {
+                   Init = new InitKeyedDataStream{LastResult = true},
+                 },
+      },
+      new ProcessReply
+      {
+        Output = new Api.gRPC.V1.Output
+                 {
+                   Ok     = new Empty(),
+                   Status = TaskStatus.Completed,
+                 },
+      },
+    },
+  };
+
+  [TestCaseSource(nameof(_repliesToTest))]
+  public async Task TestProcessInternalsAsyncShouldSucceed( List<ProcessReply> computeReplies)
   {
     var taskData = await taskTable_.ReadTaskAsync(TaskCreatingId,
                                                   CancellationToken.None)
@@ -340,35 +422,6 @@ public class RequestProcessorTest
       Console.WriteLine(cr.ToString());
     }
 
-    var computeReplies = new List<ProcessReply>
-                         {
-                           new ProcessReply
-                           {
-                             Output = new Api.gRPC.V1.Output
-                                      {
-                                        Ok     = new Empty(),
-                                        Status = TaskStatus.Completed,
-                                      },
-                           },
-                           new ProcessReply
-                           {
-                             Result = new ProcessReply.Types.Result
-                                      {
-                                        Data = new DataChunk(),
-                                      },
-                           },
-                           new ProcessReply
-                           {
-                             CreateSmallTask = new ProcessReply.Types.CreateSmallTaskRequest
-                                               {
-                                                 TaskOptions = new TaskOptions(new Dictionary<string, string>(),
-                                                                               TimeSpan.FromSeconds(100),
-                                                                               5,
-                                                                               1),
-                                               },
-                           },
-                         };
-
     Console.WriteLine("Replies:");
     foreach (var reps in computeReplies)
     {
@@ -381,8 +434,26 @@ public class RequestProcessorTest
     mockWorkerStreamHandler_.Setup(s => s.WorkerRequestStream)
                             .Returns(() => new MyClientStreamWriter<ProcessRequest>());
 
-    await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                  requests,
-                                                  CancellationToken.None).ConfigureAwait(false);
+    var processResult = await requestProcessor_.ProcessInternalsAsync(taskData,
+                                                                      requests,
+                                                                      CancellationToken.None)
+                                               .ConfigureAwait(false);
+    await Task.WhenAll(processResult)
+              .ConfigureAwait(false);
+
+
+    switch (computeReplies[0]
+              .TypeCase)
+    {
+      case ProcessReply.TypeOneofCase.Output:
+        Assert.IsEmpty(processResult);
+        break;
+      case ProcessReply.TypeOneofCase.Result:
+
+        break;
+      case ProcessReply.TypeOneofCase.CreateSmallTask:
+        break;
+    }
   }
+
 }
