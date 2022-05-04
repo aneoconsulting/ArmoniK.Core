@@ -31,30 +31,20 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Pollster;
 
 using ArmoniK.Core.Common.Storage;
-
-using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Stream.Worker;
-
-using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using Mongo2Go;
-
 using MongoDB.Driver;
-
 using Moq;
 
 using NUnit.Framework;
@@ -62,7 +52,6 @@ using NUnit.Framework;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 using Output = ArmoniK.Core.Common.Storage.Output;
-using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
@@ -117,13 +106,17 @@ public class RequestProcessorTest
   private       IResultTable                resultTable_;
   private       ISessionTable               sessionTable_;
   private       ITaskTable                  taskTable_;
-  private const string                      DatabaseName = "ArmoniK_TestDB";
-  private const string                      SessionId    = "SessionId";
-  private const string                      ParentTaskId = "ParentTaskId";
-  private const string                      TaskId       = "TaskId";
-  private const string                      Output1      = "Output1";
-  private const string                      Dependency1  = "Dependency1";
-  private const string                      PodId        = "PodId";
+  private const string                      DatabaseName   = "ArmoniK_TestDB";
+  private const string                      SessionId      = "SessionId";
+  private const string                      ParentTaskId   = "ParentTaskId";
+  private const string                      TaskId         = "TaskId";
+  private const string                      Output1        = "Output1";
+  private const string                      TaskCreatingId = "TaskCreatingId";
+  private const string                      Output2        = "Output2";
+  private const string                      Dependency1    = "Dependency1";
+  private const string                      Dependency2    = "Dependency2";
+  private const string                      PodId          = "PodId";
+
 
   [SetUp]
   public void SetUp()
@@ -243,22 +236,51 @@ public class RequestProcessorTest
                                           DateTime.Now,
                                           new Output(true,
                                                      "")),
+                             new TaskData(SessionId,
+                                          TaskCreatingId,
+                                          PodId,
+                                          new[]
+                                          {
+                                            ParentTaskId
+                                          },
+                                          new[]
+                                          {
+                                            Dependency2,
+                                          },
+                                          new[]
+                                          {
+                                            Output2,
+                                          },
+                                          Array.Empty<string>(),
+                                          TaskStatus.Creating,
+                                          "",
+                                          new TaskOptions(new Dictionary<string, string>(),
+                                                          TimeSpan.FromSeconds(100),
+                                                          5,
+                                                          1),
+                                          DateTime.Now,
+                                          DateTime.MinValue,
+                                          DateTime.MinValue,
+                                          DateTime.MinValue,
+                                          DateTime.Now,
+                                          new Output(false,
+                                                     "")),
                            });
 
     resultTable_.Create(new[]
                        {
-                         new Result("sessionId",
+                         new Result(SessionId,
                                     "ResultIsAvailable",
-                                    "OwnerId",
+                                    TaskId,
                                     "Completed",
                                     DateTime.Today,
                                     new[]
                                     {
                                       (byte) 1,
                                     }),
-                         new Result("sessionId",
+                         new Result(SessionId,
                                     "ResultIsNotAvailable",
-                                    "OwnerId",
+                                    TaskCreatingId,
                                     "Created",
                                     DateTime.Today,
                                     new[]
@@ -268,8 +290,8 @@ public class RequestProcessorTest
                        })
                .Wait();
 
-    sessionTable_.CreateSessionDataAsync("sessionId",
-                                        "taskId",
+    sessionTable_.CreateSessionDataAsync(SessionId,
+                                        TaskId,
                                         new Api.gRPC.V1.TaskOptions(),
                                         CancellationToken.None).Wait();
 
@@ -298,44 +320,11 @@ public class RequestProcessorTest
   }
 
   [Test]
-  public void SetUpCreatesRequiredObjects()
-  {
-    // Just check that the SetUp function does not crash
-    Assert.IsTrue(true);
-  }
-
-  [Test]
   public async Task TestProcessInternalsAsync()
   {
-    var taskData = new TaskData(SessionId,
-                                TaskId,
-                                PodId,
-                                new[]
-                                {
-                                  ParentTaskId,
-                                },
-                                new[]
-                                {
-                                  Dependency1,
-                                },
-                                new[]
-                                {
-                                  Output1,
-                                },
-                                Array.Empty<string>(),
-                                TaskStatus.Submitted,
-                                "",
-                                new TaskOptions(new Dictionary<string, string>(),
-                                                TimeSpan.FromSeconds(100),
-                                                5,
-                                                1),
-                                DateTime.Now,
-                                DateTime.Now + TimeSpan.FromSeconds(1),
-                                DateTime.MinValue,
-                                DateTime.MinValue,
-                                DateTime.Now,
-                                new Output(true,
-                                           ""));
+    var taskData = await taskTable_.ReadTaskAsync(TaskCreatingId,
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
 
     var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory_.Object,
                                             activitySource_,
@@ -345,29 +334,45 @@ public class RequestProcessorTest
                                                           CancellationToken.None)
                                        .ConfigureAwait(false);
 
-
     Console.WriteLine("Requests:");
     foreach (var cr in requests)
     {
       Console.WriteLine(cr.ToString());
     }
 
-    var computeReplies = new List<ProcessReply>();
-
-    computeReplies.Add(
-                       new ProcessReply
-                       {
-                         Output = new Api.gRPC.V1.Output
-                                  {
-                                    Ok = new Empty(), 
-                                    Status = TaskStatus.Completed,
-                                  },
-                       });
+    var computeReplies = new List<ProcessReply>
+                         {
+                           new ProcessReply
+                           {
+                             Output = new Api.gRPC.V1.Output
+                                      {
+                                        Ok     = new Empty(),
+                                        Status = TaskStatus.Completed,
+                                      },
+                           },
+                           new ProcessReply
+                           {
+                             Result = new ProcessReply.Types.Result
+                                      {
+                                        Data = new DataChunk(),
+                                      },
+                           },
+                           new ProcessReply
+                           {
+                             CreateSmallTask = new ProcessReply.Types.CreateSmallTaskRequest
+                                               {
+                                                 TaskOptions = new TaskOptions(new Dictionary<string, string>(),
+                                                                               TimeSpan.FromSeconds(100),
+                                                                               5,
+                                                                               1),
+                                               },
+                           },
+                         };
 
     Console.WriteLine("Replies:");
-    foreach (var cr in computeReplies)
+    foreach (var reps in computeReplies)
     {
-      Console.WriteLine(cr.ToString());
+      Console.WriteLine(reps.ToString());
     }
 
     mockWorkerStreamHandler_.Setup(s => s.WorkerResponseStream)
