@@ -28,7 +28,7 @@ using System.Runtime.Serialization;
 namespace ArmoniK.Core.Common.Exceptions;
 
 [Serializable]
-public class SessionNotFoundException : Exception
+public class SessionNotFoundException : ArmoniKException
 {
   public SessionNotFoundException()
   {

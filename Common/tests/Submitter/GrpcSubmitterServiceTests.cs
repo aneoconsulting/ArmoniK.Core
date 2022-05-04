@@ -200,6 +200,42 @@ public class GrpcSubmitterServiceTests
   }
 
   [Test]
+  public async Task TryGetResultStreamResultDataNotFoundExceptionShouldThrowRpcException()
+  {
+    var mockSubmitter = new Mock<ISubmitter>();
+    mockSubmitter.Setup(submitter => submitter.TryGetResult(It.IsAny<ResultRequest>(),
+                                                            It.IsAny<IServerStreamWriter<ResultReply>>(),
+                                                            CancellationToken.None))
+                 .Returns(() => throw new ResultDataNotFoundException());
+
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
+
+    mockSubmitter.Verify();
+
+    var helperServerStreamWriter = new TestHelperServerStreamWriter<ResultReply>();
+
+    try
+    {
+      await service.TryGetResultStream(new ResultRequest
+                                       {
+                                         Key     = "Key",
+                                         Session = "Session",
+                                       },
+                                       helperServerStreamWriter,
+                                       TestServerCallContext.Create())
+                   .ConfigureAwait(false);
+      Assert.Fail();
+    }
+    catch (RpcException e)
+    {
+      Console.WriteLine(e);
+      Assert.AreEqual(StatusCode.NotFound,
+                      e.StatusCode);
+    }
+  }
+
+  [Test]
   public async Task TryGetResultStreamExceptionShouldThrowRpcException()
   {
     var mockSubmitter = new Mock<ISubmitter>();

@@ -28,7 +28,7 @@ using System.Runtime.Serialization;
 namespace ArmoniK.Core.Common.Exceptions;
 
 [Serializable]
-public class ResultNotFoundException : Exception
+public class ResultNotFoundException : ArmoniKException
 {
   public ResultNotFoundException()
   {

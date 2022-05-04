@@ -50,13 +50,13 @@ public class GrpcSubmitterServiceHelper : IDisposable
   {
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ForwardingLoggerProvider((logLevel,
-                                                            category,
-                                                            _,
-                                                            message,
-                                                            exception) =>
-                                                           {
-                                                             Console.WriteLine(logLevel + " => " + category + "\n" + message + "\n" + exception);
-                                                           }));
+                                                             category,
+                                                             _,
+                                                             message,
+                                                             exception) =>
+                                                            {
+                                                              Console.WriteLine(logLevel + " => " + category + "\n" + message + "\n" + exception);
+                                                            }));
 
     var builder = WebApplication.CreateBuilder();
 
@@ -69,12 +69,13 @@ public class GrpcSubmitterServiceHelper : IDisposable
     builder.WebHost.UseTestServer();
 
     app_ = builder.Build();
-  }
-
-  public async Task StartServer()
-  {    
     app_.UseRouting();
     app_.MapGrpcService<GrpcSubmitterService>();
+  }
+
+  public async Task<GrpcChannel> CreateChannel()
+  {    
+
     
     await app_.StartAsync()
              .ConfigureAwait(false);
@@ -88,6 +89,8 @@ public class GrpcSubmitterServiceHelper : IDisposable
                                            LoggerFactory = loggerFactory_,
                                            HttpHandler   = handler_,
                                          });
+
+    return channel_;
   }
 
   public async Task StopServer()
@@ -95,9 +98,6 @@ public class GrpcSubmitterServiceHelper : IDisposable
     await app_.StopAsync()
               .ConfigureAwait(false);
   }
-
-  public GrpcChannel Channel
-    => channel_;
 
   public void Dispose()
   {

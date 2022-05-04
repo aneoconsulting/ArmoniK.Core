@@ -50,13 +50,21 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
 
 
   /// <inheritdoc />
-  public override Task<Configuration> GetServiceConfiguration(Empty             request,
+  public override async Task<Configuration> GetServiceConfiguration(Empty             request,
                                                               ServerCallContext context)
   {
     try
     {
-      return submitter_.GetServiceConfiguration(request,
-                                                context.CancellationToken);
+      return await submitter_.GetServiceConfiguration(request,
+                                                      context.CancellationToken)
+                             .ConfigureAwait(false);
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogError(e,
+                       "Error while getting service configuration");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
@@ -289,15 +297,16 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   }
 
   /// <inheritdoc />
-  public override Task TryGetResultStream(ResultRequest                    request,
+  public override async Task TryGetResultStream(ResultRequest                    request,
                                           IServerStreamWriter<ResultReply> responseStream,
                                           ServerCallContext                context)
   {
     try
     {
-      return submitter_.TryGetResult(request,
-                                     responseStream,
-                                     context.CancellationToken);
+      await submitter_.TryGetResult(request,
+                                    responseStream,
+                                    context.CancellationToken)
+                      .ConfigureAwait(false);
     }
     catch (TaskNotFoundException e)
     {
@@ -312,6 +321,13 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                        "Error while getting results");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result not found"));
+    }
+    catch (ResultDataNotFoundException e)
+    {
+      logger_.LogError(e,
+                       "Error while getting results");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result data not found"));
     }
     catch (ArmoniKException e)
     {
