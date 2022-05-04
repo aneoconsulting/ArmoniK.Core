@@ -61,14 +61,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting service configuration");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting service configuration");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -88,21 +88,21 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (SessionNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while canceling session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while canceling session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while canceling session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -121,14 +121,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while canceling tasks");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while canceling tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -147,14 +147,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while creating session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while creating session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -192,14 +192,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while creating tasks");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while creating tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -251,20 +251,20 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while creating tasks");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (RpcException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while creating tasks");
       throw;
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while creating tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -282,14 +282,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while counting tasks");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while counting tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -310,35 +310,35 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (TaskNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting results");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ResultNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting results");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result not found"));
     }
     catch (ResultDataNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting results");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result data not found"));
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting results");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting results");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -356,21 +356,21 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (TaskNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while waiting for completion");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while waiting for completion");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while waiting for completion");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -388,28 +388,28 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (TaskNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting output");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ResultNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting output");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result not found"));
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting output");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting output");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -426,28 +426,28 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (TaskNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while waiting for availability");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ResultNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while waiting for availability");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result not found"));
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while waiting for availability");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while waiting for availability");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -464,21 +464,21 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (TaskNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting status");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting status");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while getting status");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
@@ -495,21 +495,21 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
     catch (TaskNotFoundException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while listing tasks");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ArmoniKException e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while listing tasks");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
-      logger_.LogError(e,
+      logger_.LogWarning(e,
                        "Error while listing tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
