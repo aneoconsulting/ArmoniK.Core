@@ -27,6 +27,7 @@ using System;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Stream.Worker;
 
 using Calzolari.Grpc.AspNetCore.Validation;
 
@@ -86,7 +87,7 @@ public static class ServiceCollectionExt
               .AddOption<Components>(configuration,
                                      Components.SettingSection)
               .AddSingletonWithHealthCheck<GrpcChannelProvider>(nameof(GrpcChannelProvider))
-              .AddSingletonWithHealthCheck<WorkerClientProvider>(nameof(WorkerClientProvider));
+              .AddSingletonWithHealthCheck<IWorkerStreamHandler, WorkerStreamHandler>(nameof(WorkerStreamHandler));
     }
 
     return services;
