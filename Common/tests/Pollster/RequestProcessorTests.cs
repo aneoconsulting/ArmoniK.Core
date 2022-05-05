@@ -36,6 +36,7 @@ using ArmoniK.Core.Common.Pollster;
 
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
 
@@ -59,41 +60,6 @@ using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using TaskRequest = ArmoniK.Api.gRPC.V1.TaskRequest;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
-
-internal class MyAsyncStreamReader<T> : IAsyncStreamReader<T>
-{
-  private readonly IEnumerator<T> enumerator_;
-
-  public MyAsyncStreamReader(IEnumerable<T> results)
-    => enumerator_ = results.GetEnumerator();
-
-  public T Current
-    => enumerator_.Current;
-
-  public Task<bool> MoveNext(CancellationToken cancellationToken)
-    => Task.Run(() => enumerator_.MoveNext(),
-                cancellationToken);
-}
-
-internal class MyClientStreamWriter<T> : IClientStreamWriter<T>
-{
-  private readonly List<T> messages_ = new();
-
-  public IList<T> Messages
-    => messages_;
-
-  public Task WriteAsync(T message)
-  {
-    messages_.Add(message);
-    return Task.CompletedTask;
-  }
-  public Task CompleteAsync()
-  {
-    return Task.CompletedTask;
-  }
-
-  public WriteOptions WriteOptions { get; set; }
-}
 
 [TestFixture]
 public class RequestProcessorTest
@@ -423,10 +389,10 @@ public class RequestProcessorTest
     }
 
     mockWorkerStreamHandler_.Setup(s => s.WorkerResponseStream)
-                            .Returns(() => new MyAsyncStreamReader<ProcessReply>(computeReplies));
+                            .Returns(() => new TestHelperAsyncStreamReader<ProcessReply>(computeReplies));
 
     mockWorkerStreamHandler_.Setup(s => s.WorkerRequestStream)
-                            .Returns(() => new MyClientStreamWriter<ProcessRequest>());
+                            .Returns(() => new TestHelperClientStreamWriter<ProcessRequest>());
 
     var processResult = await requestProcessor_.ProcessInternalsAsync(taskData,
                                                                       requests,
