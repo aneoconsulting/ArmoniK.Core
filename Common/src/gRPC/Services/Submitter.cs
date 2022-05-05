@@ -42,7 +42,6 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-using KeyNotFoundException = ArmoniK.Core.Common.Exceptions.KeyNotFoundException;
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -144,7 +143,7 @@ public class Submitter : ISubmitter
 
       await sessionCancelTask.ConfigureAwait(false);
     }
-    catch (KeyNotFoundException e)
+    catch (TaskNotFoundException e)
     {
       throw new RpcException(new Status(StatusCode.FailedPrecondition,
                                         e.Message));
@@ -174,7 +173,7 @@ public class Submitter : ISubmitter
                                    cancellationToken)
                       .ConfigureAwait(false);
     }
-    catch (KeyNotFoundException e)
+    catch (TaskNotFoundException e)
     {
       throw new RpcException(new Status(StatusCode.FailedPrecondition,
                                         e.Message));
@@ -322,8 +321,16 @@ public class Submitter : ISubmitter
                                  IServerStreamWriter<ResultReply> responseStream,
                                  CancellationToken                cancellationToken)
   {
+
+    // TODO make it match API
     using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
     var       storage  = ResultStorage(request.Session);
+
+    var result = await resultTable_.GetResult(request.Session,
+                                              request.Key,
+                                              cancellationToken)
+                                   .ConfigureAwait(false);
+
     await foreach (var chunk in storage.GetValuesAsync(request.Key,
                                                        cancellationToken)
                                        .ConfigureAwait(false))
@@ -348,6 +355,7 @@ public class Submitter : ISubmitter
                                     },
                                     CancellationToken.None)
                         .ConfigureAwait(false);
+
   }
 
   public async Task<Count> WaitForCompletion(WaitRequest       request,

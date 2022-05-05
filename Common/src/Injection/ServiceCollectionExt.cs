@@ -282,6 +282,5 @@ public static class ServiceCollectionExt
                .AddValidator<CreateSessionRequestValidator>()
                .AddValidator<TaskOptionsValidator>()
                .AddValidator<TaskFilterValidator>()
-               .AddGrpcReflection()
                .AddGrpcValidation();
 }
