@@ -68,10 +68,10 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService">
+            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService">
   
   
-  <h1 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService" class="text-break">Class GrpcSubmitterService
+  <h1 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService" class="text-break">Class GrpcSubmitterService
   </h1>
   <div class="markdown level0 summary"></div>
   <div class="markdown level0 conceptual"></div>
@@ -80,9 +80,9 @@
     <div class="level0"><span class="xref">System.Object</span></div>
     <div class="level1"><span class="xref">GrpcSubmitterService</span></div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Control.Submitter.Services.html">ArmoniK.Core.Control.Submitter.Services</a></h6>
+  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.gRPC.Services.html">ArmoniK.Core.Common.gRPC.Services</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
-  <h5 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_syntax">Syntax</h5>
+  <h5 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_syntax">Syntax</h5>
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public class GrpcSubmitterService : Submitter.SubmitterBase</code></pre>
   </div>
@@ -90,18 +90,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService__ctor_ArmoniK_Core_Common_gRPC_Services_ISubmitter_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.%23ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService__ctor_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ILogger_ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService__.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.%23ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter%2CILogger%7BArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L42">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L44">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService__ctor_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService__ctor_ArmoniK_Core_Common_gRPC_Services_ISubmitter_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter)">GrpcSubmitterService(ISubmitter)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService__ctor_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.#ctor*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService__ctor_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ILogger_ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService__" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService})">GrpcSubmitterService(ISubmitter, ILogger&lt;GrpcSubmitterService&gt;)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public GrpcSubmitterService(ISubmitter submitter)</code></pre>
+    <pre><code class="lang-csharp hljs">public GrpcSubmitterService(ISubmitter submitter, ILogger&lt;GrpcSubmitterService&gt; logger)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -118,19 +118,24 @@
         <td><span class="parametername">submitter</span></td>
         <td></td>
       </tr>
+      <tr>
+        <td><span class="xref">ILogger</span>&lt;<a class="xref" href="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html">GrpcSubmitterService</a>&gt;</td>
+        <td><span class="parametername">logger</span></td>
+        <td></td>
+      </tr>
     </tbody>
   </table>
   <h3 id="methods">Methods
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CancelSession_Session_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CancelSession(Session%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CancelSession_Session_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CancelSession(Session%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L52">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L78">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CancelSession_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CancelSession*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CancelSession_Session_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CancelSession(Session,ServerCallContext)">CancelSession(Session, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CancelSession_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CancelSession*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CancelSession_Session_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CancelSession(Session,ServerCallContext)">CancelSession(Session, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -176,13 +181,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CancelTasks_TaskFilter_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CancelTasks(TaskFilter%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CancelTasks_TaskFilter_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CancelTasks(TaskFilter%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L61">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L112">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CancelTasks_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CancelTasks*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CancelTasks_TaskFilter_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CancelTasks(TaskFilter,ServerCallContext)">CancelTasks(TaskFilter, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CancelTasks_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CancelTasks*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CancelTasks_TaskFilter_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CancelTasks(TaskFilter,ServerCallContext)">CancelTasks(TaskFilter, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -228,13 +233,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CountTasks_TaskFilter_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CountTasks(TaskFilter%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CountTasks_TaskFilter_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CountTasks(TaskFilter%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L148">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L275">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CountTasks_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CountTasks*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CountTasks_TaskFilter_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CountTasks(TaskFilter,ServerCallContext)">CountTasks(TaskFilter, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CountTasks_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CountTasks*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CountTasks_TaskFilter_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CountTasks(TaskFilter,ServerCallContext)">CountTasks(TaskFilter, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -280,13 +285,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CreateLargeTasks_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest__ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader%7BArmoniK.Api.gRPC.V1.CreateLargeTaskRequest%7D%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateLargeTasks_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest__ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader%7BArmoniK.Api.gRPC.V1.CreateLargeTaskRequest%7D%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L107">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L211">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CreateLargeTasks_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CreateLargeTasks*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CreateLargeTasks_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest__ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest},ServerCallContext)">CreateLargeTasks(IAsyncStreamReader&lt;CreateLargeTaskRequest&gt;, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateLargeTasks_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateLargeTasks_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest__ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest},ServerCallContext)">CreateLargeTasks(IAsyncStreamReader&lt;CreateLargeTaskRequest&gt;, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -332,13 +337,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CreateSession_CreateSessionRequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CreateSession(CreateSessionRequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateSession_CreateSessionRequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateSession(CreateSessionRequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L71">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L139">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CreateSession_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CreateSession*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CreateSession_CreateSessionRequest_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CreateSession(CreateSessionRequest,ServerCallContext)">CreateSession(CreateSessionRequest, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateSession_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateSession*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateSession_CreateSessionRequest_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateSession(CreateSessionRequest,ServerCallContext)">CreateSession(CreateSessionRequest, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -384,13 +389,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CreateSmallTasks_CreateSmallTaskRequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CreateSmallTasks(CreateSmallTaskRequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateSmallTasks_CreateSmallTaskRequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateSmallTasks(CreateSmallTaskRequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L77">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L164">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CreateSmallTasks_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CreateSmallTasks*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_CreateSmallTasks_CreateSmallTaskRequest_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.CreateSmallTasks(CreateSmallTaskRequest,ServerCallContext)">CreateSmallTasks(CreateSmallTaskRequest, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateSmallTasks_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateSmallTasks*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateSmallTasks_CreateSmallTaskRequest_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateSmallTasks(CreateSmallTaskRequest,ServerCallContext)">CreateSmallTasks(CreateSmallTaskRequest, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -436,18 +441,18 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_GetServiceConfiguration_Empty_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.GetServiceConfiguration(Empty%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetServiceConfiguration_Empty_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetServiceConfiguration(Empty%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L47">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L53">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_GetServiceConfiguration_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.GetServiceConfiguration*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_GetServiceConfiguration_Empty_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.GetServiceConfiguration(Empty,ServerCallContext)">GetServiceConfiguration(Empty, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetServiceConfiguration_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetServiceConfiguration*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetServiceConfiguration_Empty_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetServiceConfiguration(Empty,ServerCallContext)">GetServiceConfiguration(Empty, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override Task&lt;Configuration&gt; GetServiceConfiguration(Empty request, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">public override async Task&lt;Configuration&gt; GetServiceConfiguration(Empty request, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -488,13 +493,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_GetStatus_GetStatusrequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.GetStatus(GetStatusrequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetStatus_GetStatusrequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetStatus(GetStatusrequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L176">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L457">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_GetStatus_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.GetStatus*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_GetStatus_GetStatusrequest_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.GetStatus(GetStatusrequest,ServerCallContext)">GetStatus(GetStatusrequest, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetStatus_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetStatus*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetStatus_GetStatusrequest_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetStatus(GetStatusrequest,ServerCallContext)">GetStatus(GetStatusrequest, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -540,13 +545,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_ListTasks_TaskFilter_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.ListTasks(TaskFilter%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_ListTasks_TaskFilter_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListTasks(TaskFilter%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L181">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L488">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_ListTasks_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.ListTasks*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_ListTasks_TaskFilter_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.ListTasks(TaskFilter,ServerCallContext)">ListTasks(TaskFilter, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_ListTasks_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListTasks*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_ListTasks_TaskFilter_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListTasks(TaskFilter,ServerCallContext)">ListTasks(TaskFilter, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -592,18 +597,18 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_TryGetResultStream_ResultRequest_IServerStreamWriter_ResultReply__ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.TryGetResultStream(ResultRequest%2CIServerStreamWriter%7BResultReply%7D%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_TryGetResultStream_ResultRequest_IServerStreamWriter_ResultReply__ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetResultStream(ResultRequest%2CIServerStreamWriter%7BResultReply%7D%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L154">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L300">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_TryGetResultStream_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.TryGetResultStream*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_TryGetResultStream_ResultRequest_IServerStreamWriter_ResultReply__ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.TryGetResultStream(ResultRequest,IServerStreamWriter{ResultReply},ServerCallContext)">TryGetResultStream(ResultRequest, IServerStreamWriter&lt;ResultReply&gt;, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_TryGetResultStream_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetResultStream*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_TryGetResultStream_ResultRequest_IServerStreamWriter_ResultReply__ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetResultStream(ResultRequest,IServerStreamWriter{ResultReply},ServerCallContext)">TryGetResultStream(ResultRequest, IServerStreamWriter&lt;ResultReply&gt;, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public override Task TryGetResultStream(ResultRequest request, IServerStreamWriter&lt;ResultReply&gt; responseStream, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">public override async Task TryGetResultStream(ResultRequest request, IServerStreamWriter&lt;ResultReply&gt; responseStream, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -649,13 +654,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_TryGetTaskOutput_ResultRequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.TryGetTaskOutput(ResultRequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_TryGetTaskOutput_ResultRequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetTaskOutput(ResultRequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L166">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L380">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_TryGetTaskOutput_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.TryGetTaskOutput*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_TryGetTaskOutput_ResultRequest_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.TryGetTaskOutput(ResultRequest,ServerCallContext)">TryGetTaskOutput(ResultRequest, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_TryGetTaskOutput_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetTaskOutput*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_TryGetTaskOutput_ResultRequest_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetTaskOutput(ResultRequest,ServerCallContext)">TryGetTaskOutput(ResultRequest, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -701,13 +706,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_WaitForAvailability_ResultRequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.WaitForAvailability(ResultRequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_WaitForAvailability_ResultRequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.WaitForAvailability(ResultRequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L171">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L419">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_WaitForAvailability_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.WaitForAvailability*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_WaitForAvailability_ResultRequest_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.WaitForAvailability(ResultRequest,ServerCallContext)">WaitForAvailability(ResultRequest, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_WaitForAvailability_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.WaitForAvailability*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_WaitForAvailability_ResultRequest_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.WaitForAvailability(ResultRequest,ServerCallContext)">WaitForAvailability(ResultRequest, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -753,13 +758,13 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_WaitForCompletion_WaitRequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.WaitForCompletion(WaitRequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_WaitForCompletion_WaitRequest_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.WaitForCompletion(WaitRequest%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L161">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L349">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_WaitForCompletion_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.WaitForCompletion*"></a>
-  <h4 id="ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService_WaitForCompletion_WaitRequest_ServerCallContext_" data-uid="ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService.WaitForCompletion(WaitRequest,ServerCallContext)">WaitForCompletion(WaitRequest, ServerCallContext)</h4>
+  <a id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_WaitForCompletion_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.WaitForCompletion*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_WaitForCompletion_WaitRequest_ServerCallContext_" data-uid="ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.WaitForCompletion(WaitRequest,ServerCallContext)">WaitForCompletion(WaitRequest, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -811,10 +816,10 @@
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Control_Submitter_Services_GrpcSubmitterService.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Control.Submitter.Services.GrpcSubmitterService%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L38" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/GrpcSubmitterService.cs/#L39" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>
