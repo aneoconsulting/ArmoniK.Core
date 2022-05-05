@@ -76,7 +76,7 @@ internal class IntegrationGrpcSubmitterServiceTest
   public async Task TearDown()
   {
     await helper_.StopServer()
-                .ConfigureAwait(false);
+                 .ConfigureAwait(false);
     helper_.Dispose();
   }
 
@@ -93,7 +93,7 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object);
     var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                       .ConfigureAwait(false));
+                                                                        .ConfigureAwait(false));
 
     var response = client.GetServiceConfiguration(new Empty());
 
@@ -108,7 +108,7 @@ internal class IntegrationGrpcSubmitterServiceTest
     mockSubmitter.Setup(submitter => submitter.TryGetResult(It.IsAny<ResultRequest>(),
                                                             It.IsAny<IServerStreamWriter<ResultReply>>(),
                                                             It.IsAny<CancellationToken>()))
-                 .Returns(async (ResultRequest                    request,
+                 .Returns(async (ResultRequest                    _,
                                  IServerStreamWriter<ResultReply> replyStreamWriter,
                                  CancellationToken                _) =>
                           {
@@ -118,14 +118,15 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                           {
                                                                             DataComplete = true,
                                                                           },
-                                                               })
+                                                               },
+                                                               CancellationToken.None)
                                                    .ConfigureAwait(false);
                             return Task.CompletedTask;
                           });
 
     helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object);
     var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                       .ConfigureAwait(false));
+                                                                        .ConfigureAwait(false));
 
     var response = client.TryGetResultStream(new ResultRequest
                                              {
@@ -133,9 +134,9 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                Session = "Session",
                                              });
 
-    var result = response.ResponseStream.ReadAllAsync()
-                         .SingleAsync()
-                         .Result;
+    var result = await response.ResponseStream.ReadAllAsync()
+                               .SingleAsync()
+                               .ConfigureAwait(false);
 
     Console.WriteLine(result);
 
@@ -261,20 +262,20 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                              SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsException(exception,
-                                                                           output));
+                                                                            output));
     var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                       .ConfigureAwait(false));
+                                                                        .ConfigureAwait(false));
 
     try
     {
-      _ = client.TryGetResultStream(new ResultRequest
-                                    {
-                                      Key     = "Key",
-                                      Session = "Session",
-                                    })
-                .ResponseStream.ReadAllAsync()
-                .SingleAsync()
-                .Result;
+      _ = await client.TryGetResultStream(new ResultRequest
+                                          {
+                                            Key     = "Key",
+                                            Session = "Session",
+                                          })
+                      .ResponseStream.ReadAllAsync()
+                      .SingleAsync()
+                      .ConfigureAwait(false);
       Assert.Fail("TryGetResult should throw an exception");
     }
     catch (RpcException e)
@@ -298,9 +299,9 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                               SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsException(exception,
-                                                                           output));
+                                                                            output));
     var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                       .ConfigureAwait(false));
+                                                                        .ConfigureAwait(false));
 
     try
     {
@@ -327,7 +328,7 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
     var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                       .ConfigureAwait(false));
+                                                                        .ConfigureAwait(false));
 
     try
     {
@@ -350,9 +351,10 @@ internal class IntegrationGrpcSubmitterServiceTest
   public async Task<StatusCode?> CancelTasksThrowsException(Exception           exception,
                                                             SubmitterMockOutput output)
   {
-    helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsException(exception, output));
+    helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsException(exception,
+                                                                            output));
     var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                       .ConfigureAwait(false));
+                                                                        .ConfigureAwait(false));
 
     try
     {
@@ -471,15 +473,15 @@ internal class IntegrationGrpcSubmitterServiceTest
                                     {
                                       new Api.gRPC.V1.TaskRequest
                                       {
-                                        Id = "Id",
+                                        Id      = "Id",
                                         Payload = ByteString.CopyFromUtf8("Payload"),
                                       },
                                     },
                                     TaskOptions = new TaskOptions
                                                   {
                                                     MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                    MaxRetries = 2,
-                                                    Priority = 2,
+                                                    MaxRetries  = 2,
+                                                    Priority    = 2,
                                                   },
                                   });
       Assert.Fail("Function should throw an exception");
@@ -519,17 +521,19 @@ internal class IntegrationGrpcSubmitterServiceTest
                          .ConfigureAwait(false);
       await streamingCall.RequestStream.WriteAsync(new CreateLargeTaskRequest
                                                    {
-                                                    InitTask = new InitTaskRequest
-                                                               {
-                                                                 Header = new TaskRequestHeader
-                                                                          {
-                                                                            Id = "Id",
-                                                                          },
-                                                               },
+                                                     InitTask = new InitTaskRequest
+                                                                {
+                                                                  Header = new TaskRequestHeader
+                                                                           {
+                                                                             Id = "Id",
+                                                                           },
+                                                                },
                                                    })
                          .ConfigureAwait(false);
-      await streamingCall.ResponseAsync.WaitAsync(CancellationToken.None).ConfigureAwait(false);
-      await streamingCall.RequestStream.CompleteAsync().ConfigureAwait(false);
+      await streamingCall.ResponseAsync.WaitAsync(CancellationToken.None)
+                         .ConfigureAwait(false);
+      await streamingCall.RequestStream.CompleteAsync()
+                         .ConfigureAwait(false);
       Assert.Fail("Function should throw an exception");
     }
     catch (RpcException e)
@@ -542,11 +546,11 @@ internal class IntegrationGrpcSubmitterServiceTest
 
   [Test]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                nameof(TestCasesOutput))]
+                  nameof(TestCasesOutput))]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                nameof(TestCasesOutputResultDataNotFoundInternal))]
+                  nameof(TestCasesOutputResultDataNotFoundInternal))]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
-                nameof(TestCasesOutputTaskNotFound))]
+                  nameof(TestCasesOutputTaskNotFound))]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
                   nameof(TestCasesOutputSessionNotFoundInternal))]
   public async Task<StatusCode?> WaitForCompletionThrowsException(Exception           exception,
