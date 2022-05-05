@@ -27,7 +27,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Tests.Submitter;
+using ArmoniK.Core.Common.Injection;
 
 using Grpc.Net.Client;
 
@@ -60,10 +60,11 @@ public class GrpcSubmitterServiceHelper : IDisposable
 
     var builder = WebApplication.CreateBuilder();
 
-    builder.Services.AddSingleton<ILoggerFactory>(loggerFactory_)
+    builder.Services.AddSingleton(loggerFactory_)
            .AddSingleton(submitter)
            .AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
            .AddLogging()
+           .ValidateGrpcRequests()
            .AddGrpc();
 
     builder.WebHost.UseTestServer();

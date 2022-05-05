@@ -36,12 +36,17 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
+using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
+
 using Grpc.Core;
 
 using Moq;
 
 using NUnit.Framework;
 
+using Empty = ArmoniK.Api.gRPC.V1.Empty;
+using Enum = System.Enum;
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
@@ -426,6 +431,12 @@ internal class IntegrationGrpcSubmitterServiceTest
       _ = client.CreateSession(new CreateSessionRequest
                                {
                                  Id = "Id",
+                                 DefaultTaskOption = new TaskOptions
+                                                     {
+                                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                       MaxRetries  = 2,
+                                                       Priority    = 2,
+                                                     },
                                });
       Assert.Fail("Function should throw an exception");
     }
@@ -453,7 +464,24 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     try
     {
-      _ = client.CreateSmallTasks(new CreateSmallTaskRequest());
+      _ = client.CreateSmallTasks(new CreateSmallTaskRequest
+                                  {
+                                    SessionId = "Session",
+                                    TaskRequests =
+                                    {
+                                      new Api.gRPC.V1.TaskRequest
+                                      {
+                                        Id = "Id",
+                                        Payload = ByteString.CopyFromUtf8("Payload"),
+                                      },
+                                    },
+                                    TaskOptions = new TaskOptions
+                                                  {
+                                                    MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                    MaxRetries = 2,
+                                                    Priority = 2,
+                                                  },
+                                  });
       Assert.Fail("Function should throw an exception");
     }
     catch (RpcException e)
@@ -495,9 +523,9 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                {
                                                                  Header = new TaskRequestHeader
                                                                           {
-                                                                            Id = "Id"
-                                                                          }
-                                                               }
+                                                                            Id = "Id",
+                                                                          },
+                                                               },
                                                    })
                          .ConfigureAwait(false);
       await streamingCall.ResponseAsync.WaitAsync(CancellationToken.None).ConfigureAwait(false);
@@ -655,7 +683,16 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     try
     {
-      _ = client.ListTasks(new TaskFilter());
+      _ = client.ListTasks(new TaskFilter
+                           {
+                             Task = new TaskFilter.Types.IdsRequest
+                                    {
+                                      Ids =
+                                      {
+                                        "Task",
+                                      },
+                                    },
+                           });
       Assert.Fail("Function should throw an exception");
     }
     catch (RpcException e)
