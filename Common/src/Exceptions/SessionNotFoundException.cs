@@ -28,26 +28,26 @@ using System.Runtime.Serialization;
 namespace ArmoniK.Core.Common.Exceptions;
 
 [Serializable]
-public class ArmoniKException : Exception
+public class SessionNotFoundException : ArmoniKException
 {
-  public ArmoniKException()
+  public SessionNotFoundException()
   {
   }
 
-  public ArmoniKException(string message)
+  public SessionNotFoundException(string message)
     : base(message)
   {
   }
 
-  public ArmoniKException(string    message,
-                          Exception innerException)
+  public SessionNotFoundException(string    message,
+                                    Exception innerException)
     : base(message,
            innerException)
   {
   }
 
-  protected ArmoniKException(SerializationInfo info,
-                             StreamingContext  context)
+  protected SessionNotFoundException(SerializationInfo info,
+                                       StreamingContext  context)
     : base(info,
            context)
   {

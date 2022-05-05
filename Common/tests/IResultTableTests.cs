@@ -229,13 +229,28 @@ public class ResultTableTestBase
                                      CancellationToken.None)
                        .ConfigureAwait(false);
 
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await ResultTable.GetResult("SessionId",
-                                                                         "ResultIsAvailable",
-                                                                         CancellationToken.None)
-                                                              .ConfigureAwait(false);
-                                           });
+      Assert.ThrowsAsync<ResultNotFoundException>(async () =>
+                                                  {
+                                                    await ResultTable.GetResult("SessionId",
+                                                                                "ResultIsAvailable",
+                                                                                CancellationToken.None)
+                                                                     .ConfigureAwait(false);
+                                                  });
+    }
+  }
+
+  [Test]
+  public void DeleteUnknownResultShouldFail()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ResultNotFoundException>(async () =>
+                                                {
+                                                  await ResultTable.DeleteResult("SessionId",
+                                                                                 "unknown",
+                                                                                 CancellationToken.None)
+                                                                   .ConfigureAwait(false);
+                                                });
     }
   }
 

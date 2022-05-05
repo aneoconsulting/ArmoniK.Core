@@ -102,14 +102,29 @@ public class ResultTable : IResultTable
   public Task DeleteResult(string            session,
                            string            key,
                            CancellationToken cancellationToken = default)
-    => Task.FromResult(results_[session]
-                         .Remove(key,
-                                 out _));
+  {
+    if (!results_.ContainsKey(session))
+    {
+      throw new SessionNotFoundException($"Session '{session}' not found");
+    }
+
+    if (!results_[session].ContainsKey(key))
+    {
+      throw new ResultNotFoundException($"Key '{key}' not found");
+    }
+    return Task.FromResult(results_[session]
+                             .Remove(key,
+                                     out _));
+  }
 
   /// <inheritdoc />
   public Task DeleteResults(string            sessionId,
                             CancellationToken cancellationToken = default)
   {
+    if (!results_.ContainsKey(sessionId))
+    {
+      throw new SessionNotFoundException($"Session '{sessionId}' not found");
+    }
     results_[sessionId]
       .Clear();
     return Task.CompletedTask;
@@ -126,7 +141,7 @@ public class ResultTable : IResultTable
     }
     catch (KeyNotFoundException)
     {
-      throw new ArmoniKException($"Key '{key}' not found");
+      throw new ResultNotFoundException($"Key '{key}' not found");
     }
   }
 

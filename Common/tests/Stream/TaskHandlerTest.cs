@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
 
@@ -40,37 +41,6 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests.Stream;
-
-internal class MyAsyncStreamReader<T> : IAsyncStreamReader<T>
-{
-  private readonly IEnumerator<T> enumerator_;
-
-  public MyAsyncStreamReader(IEnumerable<T> results)
-    => enumerator_ = results.GetEnumerator();
-
-  public T Current
-    => enumerator_.Current;
-
-  public Task<bool> MoveNext(CancellationToken cancellationToken)
-    => Task.Run(() => enumerator_.MoveNext(),
-                cancellationToken);
-}
-
-internal class MyServerStreamWriter<T> : IServerStreamWriter<T>
-{
-  private readonly List<T> messages_ = new();
-
-  public IList<T> Messages
-    => messages_;
-
-  public Task WriteAsync(T message)
-  {
-    messages_.Add(message);
-    return Task.CompletedTask;
-  }
-
-  public WriteOptions WriteOptions { get; set; }
-}
 
 [TestFixture]
 public class TaskHandlerTest
@@ -166,8 +136,8 @@ public class TaskHandlerTest
                                     },
                         });
 
-    IAsyncStreamReader<ProcessRequest> requestStream  = new MyAsyncStreamReader<ProcessRequest>(computeRequests);
-    var                                responseStream = new MyServerStreamWriter<ProcessReply>();
+    IAsyncStreamReader<ProcessRequest> requestStream  = new TestHelperAsyncStreamReader<ProcessRequest>(computeRequests);
+    var                                responseStream = new TestHelperServerStreamWriter<ProcessReply>();
     var taskHandler = await TaskHandler.Create(requestStream,
                                                responseStream,
                                                new Configuration

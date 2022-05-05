@@ -45,6 +45,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+using InvalidOperationException = System.InvalidOperationException;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -107,7 +108,7 @@ public class TaskTable : ITaskTable
     }
     catch (InvalidOperationException)
     {
-      throw new ArmoniKException($"Task '{taskId}' not found.");
+      throw new TaskNotFoundException($"Task '{taskId}' not found.");
     }
   }
 
@@ -181,11 +182,18 @@ public class TaskTable : ITaskTable
     var sessionHandle = sessionProvider_.Get();
     var taskCollection = taskCollectionProvider_.Get();
 
-    return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(model => model.TaskId == taskId)
-                               .Select(model => model.Status == TaskStatus.Canceled || model.Status == TaskStatus.Canceling)
-                               .FirstAsync(cancellationToken)
-                               .ConfigureAwait(false);
+    try
+    {
+      return await taskCollection.AsQueryable(sessionHandle)
+                                 .Where(model => model.TaskId == taskId)
+                                 .Select(model => model.Status == TaskStatus.Canceled || model.Status == TaskStatus.Canceling)
+                                 .SingleAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException e)
+    {
+      throw new TaskNotFoundException($"Task '{taskId}' not found.", e);
+    }
   }
 
   public async Task StartTask(string            taskId,
@@ -217,7 +225,7 @@ public class TaskTable : ITaskTable
         var taskStatus = await GetTaskStatus(taskId,
                                              cancellationToken)
                            .ConfigureAwait(false);
-        throw new ArmoniKException($"Task not found or task already in a terminal state - {taskStatus} from {taskStatus} to {TaskStatus.Processing}");
+        throw new TaskNotFoundException($"Task not found or task already in a terminal state - {taskStatus} from {taskStatus} to {TaskStatus.Processing}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }
@@ -232,6 +240,7 @@ public class TaskTable : ITaskTable
                      sessionId);
     var taskCollection = taskCollectionProvider_.Get();
 
+    // method is final for taskStatus
     var result = await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId,
                                                       Builders<TaskData>.Update.Set(model => model.Status,
                                                                                     TaskStatus.Canceling),
@@ -239,7 +248,7 @@ public class TaskTable : ITaskTable
                                      .ConfigureAwait(false);
     if (result.MatchedCount == 0)
     {
-      throw new ArmoniKException($"Key '{sessionId}' not found");
+      throw new SessionNotFoundException($"Key '{sessionId}' not found");
     }
   }
 
@@ -289,9 +298,19 @@ public class TaskTable : ITaskTable
                      id);
     var taskCollection = taskCollectionProvider_.Get();
 
-    await taskCollection.DeleteOneAsync(tdm => tdm.TaskId == id,
+    var result = await taskCollection.DeleteOneAsync(tdm => tdm.TaskId == id,
                                         cancellationToken)
                         .ConfigureAwait(false);
+
+    if (result.DeletedCount == 0)
+    {
+      throw new TaskNotFoundException($"Task '{id}' not found.");
+    }
+
+    if (result.DeletedCount > 1)
+    {
+      throw new ArmoniKException("Multiple tasks deleted");
+    }
   }
 
   /// <inheritdoc />
@@ -339,7 +358,7 @@ public class TaskTable : ITaskTable
     switch (res.MatchedCount)
     {
       case 0:
-        throw new ArmoniKException($"Task not found {taskId}");
+        throw new TaskNotFoundException($"Task not found {taskId}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }
@@ -374,7 +393,7 @@ public class TaskTable : ITaskTable
     switch (res.MatchedCount)
     {
       case 0:
-        throw new ArmoniKException($"Task not found {taskId}");
+        throw new TaskNotFoundException($"Task not found {taskId}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }
@@ -390,11 +409,18 @@ public class TaskTable : ITaskTable
     var sessionHandle = sessionProvider_.Get();
     var taskCollection = taskCollectionProvider_.Get();
 
-    return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(tdm => tdm.TaskId == taskId)
-                               .Select(model => model.Output)
-                               .SingleAsync(cancellationToken)
-                               .ConfigureAwait(false);
+    try
+    {
+      return await taskCollection.AsQueryable(sessionHandle)
+                                 .Where(tdm => tdm.TaskId == taskId)
+                                 .Select(model => model.Output)
+                                 .SingleAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException e)
+    {
+      throw new TaskNotFoundException($"Task not found {taskId}", e);
+    }
   }
 
   public async Task<bool> AcquireTask(string            taskId,
@@ -456,7 +482,7 @@ public class TaskTable : ITaskTable
     }
     catch (InvalidOperationException)
     {
-      throw new ArmoniKException($"Task '{taskId}' not found.");
+      throw new TaskNotFoundException($"Task '{taskId}' not found.");
     }
   }
 
@@ -469,11 +495,18 @@ public class TaskTable : ITaskTable
     var sessionHandle = sessionProvider_.Get();
     var taskCollection = taskCollectionProvider_.Get();
 
-    return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(tdm => tdm.TaskId == taskId)
-                               .Select(model => model.ExpectedOutputIds)
-                               .SingleAsync(cancellationToken)
-                               .ConfigureAwait(false);
+    try
+    {
+      return await taskCollection.AsQueryable(sessionHandle)
+                                 .Where(tdm => tdm.TaskId == taskId)
+                                 .Select(model => model.ExpectedOutputIds)
+                                 .SingleAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException)
+    {
+      throw new TaskNotFoundException($"Task '{taskId}' not found.");
+    }
   }
 
   public async Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
@@ -485,11 +518,18 @@ public class TaskTable : ITaskTable
     var sessionHandle = sessionProvider_.Get();
     var taskCollection = taskCollectionProvider_.Get();
 
-    return await taskCollection.AsQueryable(sessionHandle)
-                               .Where(tdm => tdm.TaskId == taskId)
-                               .Select(model => model.ParentTaskIds)
-                               .SingleAsync(cancellationToken)
-                               .ConfigureAwait(false);
+    try
+    {
+      return await taskCollection.AsQueryable(sessionHandle)
+                                 .Where(tdm => tdm.TaskId == taskId)
+                                 .Select(model => model.ParentTaskIds)
+                                 .SingleAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException)
+    {
+      throw new TaskNotFoundException($"Task '{taskId}' not found.");
+    }
   }
 
   public async Task<string> RetryTask(TaskData          taskData,

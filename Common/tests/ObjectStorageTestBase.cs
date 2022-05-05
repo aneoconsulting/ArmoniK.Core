@@ -119,8 +119,8 @@ public class ObjectStorageTestBase
     if (RunTests)
     {
       var res = ObjectStorage.GetValuesAsync("dataKeyNotExist");
-      Assert.ThrowsAsync<ArmoniKException>(async () => await res.FirstAsync()
-                                                                .ConfigureAwait(false));
+      Assert.ThrowsAsync<ResultDataNotFoundException>(async () => await res.FirstAsync()
+                                                                           .ConfigureAwait(false));
     }
   }
 

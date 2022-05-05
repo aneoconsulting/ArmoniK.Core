@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,34 +22,25 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Runtime.Serialization;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Exceptions;
+using Grpc.Core;
 
-[Serializable]
-public class ArmoniKException : Exception
+namespace ArmoniK.Core.Common.Tests.Helpers;
+
+internal class TestHelperServerStreamWriter<T> : IServerStreamWriter<T>
 {
-  public ArmoniKException()
+  private readonly List<T> messages_ = new();
+
+  public IList<T> Messages
+    => messages_;
+
+  public Task WriteAsync(T message)
   {
+    messages_.Add(message);
+    return Task.CompletedTask;
   }
 
-  public ArmoniKException(string message)
-    : base(message)
-  {
-  }
-
-  public ArmoniKException(string    message,
-                          Exception innerException)
-    : base(message,
-           innerException)
-  {
-  }
-
-  protected ArmoniKException(SerializationInfo info,
-                             StreamingContext  context)
-    : base(info,
-           context)
-  {
-  }
+  public WriteOptions WriteOptions { get; set; }
 }

@@ -164,7 +164,7 @@ public class ObjectStorage : IObjectStorage
 
     if (throwException)
     {
-      throw new ArmoniKException($"Key {key} not found");
+      throw new ResultDataNotFoundException($"Result {key} not found");
     }
   }
 

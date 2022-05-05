@@ -86,7 +86,7 @@ public class TaskTable : ITaskTable
   {
     if (taskId2TaskData_.ContainsKey(taskId))
       return Task.FromResult(taskId2TaskData_[taskId]);
-    throw new ArmoniKException($"Key '{taskId}' not found");
+    throw new TaskNotFoundException($"Key '{taskId}' not found");
   }
 
   /// <inheritdoc />
@@ -121,8 +121,15 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public Task<bool> IsTaskCancelledAsync(string            taskId,
                                          CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_[taskId]
-                         .Status is TaskStatus.Canceling or TaskStatus.Canceled);
+  {
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    return Task.FromResult(taskId2TaskData_[taskId]
+                             .Status is TaskStatus.Canceling or TaskStatus.Canceled);
+  }
 
   /// <inheritdoc />
   public Task StartTask(string            taskId,
@@ -130,7 +137,7 @@ public class TaskTable : ITaskTable
   {
     if (!taskId2TaskData_.ContainsKey(taskId))
     {
-      throw new ArmoniKException($"Key '{taskId}' not found");
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
     }
 
     taskId2TaskData_.AddOrUpdate(taskId,
@@ -151,7 +158,7 @@ public class TaskTable : ITaskTable
   {
     if (!session2TaskIds_.ContainsKey(sessionId))
     {
-      throw new ArmoniKException($"Key '{sessionId}' not found");
+      throw new SessionNotFoundException($"Key '{sessionId}' not found");
     }
 
     var sessionFilter = new TaskFilter
@@ -223,8 +230,15 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public Task DeleteTaskAsync(string            id,
                               CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.Remove(id,
-                                               out _));
+  {
+    if (!taskId2TaskData_.ContainsKey(id))
+    {
+      throw new TaskNotFoundException($"Key '{id}' not found");
+    }
+
+    return Task.FromResult(taskId2TaskData_.Remove(id,
+                                                   out _));
+  }
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
@@ -285,8 +299,15 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public Task<Output> GetTaskOutput(string            taskId,
                                     CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_[taskId]
-                         .Output);
+  {
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    return Task.FromResult(taskId2TaskData_[taskId]
+                             .Output);
+  }
 
   public Task<bool> AcquireTask(string            taskId,
                                 CancellationToken cancellationToken = default)
@@ -314,20 +335,41 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public Task<TaskStatus> GetTaskStatus(string            taskId,
                                         CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_[taskId]
-                         .Status);
+  {
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    return Task.FromResult(taskId2TaskData_[taskId]
+                             .Status);
+  }
 
   /// <inheritdoc />
   public Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
                                                              CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_[taskId]
-                         .ExpectedOutputIds as IEnumerable<string>);
+  {
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    return Task.FromResult(taskId2TaskData_[taskId]
+                             .ExpectedOutputIds as IEnumerable<string>);
+  }
 
   /// <inheritdoc />
   public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
                                                     CancellationToken cancellationToken)
-    => Task.FromResult(taskId2TaskData_[taskId]
-                         .ParentTaskIds as IEnumerable<string>);
+  {
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    return Task.FromResult(taskId2TaskData_[taskId]
+                             .ParentTaskIds as IEnumerable<string>);
+  }
 
   /// <inheritdoc />
   public Task<string> RetryTask(TaskData          taskData,
@@ -392,6 +434,11 @@ public class TaskTable : ITaskTable
   private bool UpdateAndCheckTaskStatus(string     id,
                                        TaskStatus status)
   {
+    if (!taskId2TaskData_.ContainsKey(id))
+    {
+      throw new TaskNotFoundException($"Key '{id}' not found");
+    }
+
     var updated = false;
     taskId2TaskData_.AddOrUpdate(id,
                                  _ => throw new InvalidOperationException("The task does not exist."),

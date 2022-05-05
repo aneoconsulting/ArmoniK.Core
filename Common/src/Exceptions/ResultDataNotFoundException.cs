@@ -28,26 +28,26 @@ using System.Runtime.Serialization;
 namespace ArmoniK.Core.Common.Exceptions;
 
 [Serializable]
-public class ArmoniKException : Exception
+public class ResultDataNotFoundException : ArmoniKException
 {
-  public ArmoniKException()
+  public ResultDataNotFoundException()
   {
   }
 
-  public ArmoniKException(string message)
+  public ResultDataNotFoundException(string message)
     : base(message)
   {
   }
 
-  public ArmoniKException(string    message,
-                          Exception innerException)
+  public ResultDataNotFoundException(string    message,
+                                  Exception innerException)
     : base(message,
            innerException)
   {
   }
 
-  protected ArmoniKException(SerializationInfo info,
-                             StreamingContext  context)
+  protected ResultDataNotFoundException(SerializationInfo info,
+                                     StreamingContext  context)
     : base(info,
            context)
   {

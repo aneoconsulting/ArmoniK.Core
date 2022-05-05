@@ -28,26 +28,26 @@ using System.Runtime.Serialization;
 namespace ArmoniK.Core.Common.Exceptions;
 
 [Serializable]
-public class ArmoniKException : Exception
+public class TaskNotFoundException : ArmoniKException
 {
-  public ArmoniKException()
+  public TaskNotFoundException()
   {
   }
 
-  public ArmoniKException(string message)
+  public TaskNotFoundException(string message)
     : base(message)
   {
   }
 
-  public ArmoniKException(string    message,
-                          Exception innerException)
+  public TaskNotFoundException(string    message,
+                              Exception innerException)
     : base(message,
            innerException)
   {
   }
 
-  protected ArmoniKException(SerializationInfo info,
-                             StreamingContext  context)
+  protected TaskNotFoundException(SerializationInfo info,
+                                 StreamingContext  context)
     : base(info,
            context)
   {
