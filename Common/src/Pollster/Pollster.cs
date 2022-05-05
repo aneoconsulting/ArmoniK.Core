@@ -92,6 +92,8 @@ public class Pollster
                          .ConfigureAwait(false);
     await preconditionChecker_.Init(cancellationToken)
                               .ConfigureAwait(false);
+    await workerStreamHandler_.Init(cancellationToken)
+                              .ConfigureAwait(false);
   }
 
   public async Task MainLoop(CancellationToken cancellationToken)
