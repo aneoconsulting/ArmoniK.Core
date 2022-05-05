@@ -23,17 +23,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Pollster;
 
 using ArmoniK.Core.Common.Storage;
@@ -58,6 +56,7 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
+using TaskRequest = ArmoniK.Api.gRPC.V1.TaskRequest;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
 
@@ -111,16 +110,16 @@ public class RequestProcessorTest
   private       IResultTable                resultTable_;
   private       ISessionTable               sessionTable_;
   private       ITaskTable                  taskTable_;
-  private const string                      DatabaseName   = "ArmoniK_TestDB";
-  private const string                      SessionId      = "SessionId";
-  private const string                      ParentTaskId   = "ParentTaskId";
-  private const string                      TaskId         = "TaskId";
-  private const string                      Output1        = "Out1";
-  private const string                      TaskCreatingId = "TaskCreatingId";
-  private const string                      Output2        = "Out2";
-  private const string                      Dependency1    = "Dependency1";
-  private const string                      Dependency2    = "Dependency2";
-  private const string                      PodId          = "PodId";
+  private const string                      DatabaseName = "ArmoniK_TestDB";
+  private const string                      SessionId    = "SessionId";
+  private const string                      ParentTaskId = "ParentTaskId";
+  private const string                      Task1        = "Task1Id";
+  private const string                      Output1      = "Out1";
+  private const string                      Task2        = "Task2Id";
+  private const string                      Output2      = "Out2";
+  private const string                      Dependency1  = "Dependency1";
+  private const string                      Dependency2  = "Dependency2";
+  private const string                      PodId        = "PodId";
 
 
   [SetUp]
@@ -213,7 +212,7 @@ public class RequestProcessorTest
     taskTable_.CreateTasks(new[]
                            {
                              new TaskData(SessionId,
-                                          TaskId,
+                                          Task1,
                                           PodId,
                                           new[]
                                           {
@@ -242,7 +241,7 @@ public class RequestProcessorTest
                                           new Output(true,
                                                      "")),
                              new TaskData(SessionId,
-                                          TaskCreatingId,
+                                          Task2,
                                           PodId,
                                           new[]
                                           {
@@ -276,7 +275,7 @@ public class RequestProcessorTest
                        {
                          new Result(SessionId,
                                     Output1,
-                                    TaskId,
+                                    Task1,
                                     "Created",
                                     DateTime.Today,
                                     new[]
@@ -285,7 +284,7 @@ public class RequestProcessorTest
                                     }),
                          new Result(SessionId,
                                     Output2,
-                                    TaskCreatingId,
+                                    Task2,
                                     "Created",
                                     DateTime.Today,
                                     new[]
@@ -296,7 +295,7 @@ public class RequestProcessorTest
                .Wait();
 
     sessionTable_.CreateSessionDataAsync(SessionId,
-                                        TaskId,
+                                        Task1,
                                         new Api.gRPC.V1.TaskOptions(),
                                         CancellationToken.None).Wait();
 
@@ -324,87 +323,82 @@ public class RequestProcessorTest
     client_ = null;
   }
 
-  private static List<ProcessReply>[] _repliesToTest =
-  {
-    // Test an Output reply
-    new()
-    {
-      new ProcessReply
-      {
-        Output = new Api.gRPC.V1.Output
-                 {
-                   Ok     = new Empty(),
-                   Status = TaskStatus.Completed,
-                 },
-      },
-    },
-    // Test another Output reply
-    new()
-    {
-      new ProcessReply
-      {
-        Output = new Api.gRPC.V1.Output
-                 {
-                   Error = new Api.gRPC.V1.Output.Types.Error
-                           {
-                             Details = "Detail", KillSubTasks = false,
-                           },
-                 },
-      },
-    },
-    // Test a Result reply
-    new()
-    {
-      new ProcessReply
-      {
-       Result = new ProcessReply.Types.Result
-               {
-                 Init =  new InitKeyedDataStream
-                         {
-                           Key = Output2,
-                         }
-               },
-      },
-      new ProcessReply
-      {
-        Result = new ProcessReply.Types.Result
-                 {
 
-                   Data = new DataChunk
-                          {
-                            Data = ByteString.FromBase64("1111"),
-                          },
-                 },
-      },
-      new ProcessReply
-      {
-        Result = new ProcessReply.Types.Result
-                 {
-                   Data = new DataChunk{DataComplete = true},
-                 },
-      },
-      new ProcessReply
-      {
-        Result = new ProcessReply.Types.Result
-                 {
-                   Init = new InitKeyedDataStream{LastResult = true},
-                 },
-      },
-      new ProcessReply
-      {
-        Output = new Api.gRPC.V1.Output
-                 {
-                   Ok     = new Empty(),
-                   Status = TaskStatus.Completed,
-                 },
-      },
-    },
-  };
-
-  [TestCaseSource(nameof(_repliesToTest))]
-  public async Task TestProcessInternalsAsyncShouldSucceed( List<ProcessReply> computeReplies)
+  private static IEnumerable ReplyTestData()
   {
-    var taskData = await taskTable_.ReadTaskAsync(TaskCreatingId,
+    var outputReplyData = new TestCaseData(new List<ProcessReply>
+                                           {
+                                             new()
+                                             {
+                                               Output = new Api.gRPC.V1.Output
+                                                        {
+                                                          Ok     = new Empty(),
+                                                          Status = TaskStatus.Completed,
+                                                        },
+                                             },
+                                           });
+    outputReplyData.SetArgDisplayNames("OutputReply");
+    yield return outputReplyData;
+
+    var resultReplyData = new TestCaseData(new List<ProcessReply>
+                                           {
+                                             new()
+                                             {
+                                               Result = new ProcessReply.Types.Result
+                                                        {
+                                                          Init = new InitKeyedDataStream
+                                                                 {
+                                                                   Key = Output1,
+                                                                 }
+                                                        },
+                                             },
+                                             new()
+                                             {
+                                               Result = new ProcessReply.Types.Result
+                                                        {
+                                                          Data = new DataChunk
+                                                                 {
+                                                                   Data = ByteString.FromBase64("1111"),
+                                                                 },
+                                                        },
+                                             },
+                                             new()
+                                             {
+                                               Result = new ProcessReply.Types.Result
+                                                        {
+                                                          Data = new DataChunk
+                                                                 {
+                                                                   DataComplete = true,
+                                                                 },
+                                                        },
+                                             },
+                                             new()
+                                             {
+                                               Result = new ProcessReply.Types.Result
+                                                        {
+                                                          Init = new InitKeyedDataStream
+                                                                 {
+                                                                   LastResult = true,
+                                                                 },
+                                                        },
+                                             },
+                                             new()
+                                             {
+                                               Output = new Api.gRPC.V1.Output
+                                                        {
+                                                          Ok     = new Empty(),
+                                                          Status = TaskStatus.Completed,
+                                                        },
+                                             },
+                                           });
+    resultReplyData.SetArgDisplayNames("ResultReply");
+    yield return resultReplyData;
+  }
+
+  [TestCaseSource(nameof(ReplyTestData))]
+  public async Task ProcessInternalsAsyncShouldSucceed(List<ProcessReply> computeReplies)
+  {
+    var taskData = await taskTable_.ReadTaskAsync(Task1,
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -449,7 +443,11 @@ public class RequestProcessorTest
         Assert.IsEmpty(processResult);
         break;
       case ProcessReply.TypeOneofCase.Result:
-
+        var res = await resultTable_.GetResult(SessionId,
+                                               Output1,
+                                               CancellationToken.None)
+                                    .ConfigureAwait(false);
+        Assert.AreEqual("Completed",res.Status);
         break;
       case ProcessReply.TypeOneofCase.CreateSmallTask:
         break;
