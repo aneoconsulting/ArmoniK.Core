@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Pollster;
 
 using ArmoniK.Core.Common.Storage;
@@ -39,8 +40,6 @@ using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
-
-using Grpc.Core;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,9 +52,9 @@ using Moq;
 
 using NUnit.Framework;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 using Output = ArmoniK.Core.Common.Storage.Output;
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using TaskRequest = ArmoniK.Api.gRPC.V1.TaskRequest;
 
@@ -152,12 +151,17 @@ public class RequestProcessorTest
                       .Returns((string key,
                                 CancellationToken token) => new List<byte[]>
                                                             {
-                                                              Convert.FromBase64String("1234"),
+                                                              Convert.FromBase64String("aaaa"),
+                                                              Convert.FromBase64String("bbbb"),
+                                                              Convert.FromBase64String("cccc"),
                                                             }.ToAsyncEnumerable());
     mockObjectStorage_.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                    It.IsAny<CancellationToken>()))
                       .Returns((string key,
-                                CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
+                                CancellationToken token) => new List<byte[]>
+                                                            {
+                                                              Convert.FromBase64String("1111"),
+                                                            }.ToAsyncEnumerable());
 
     mockObjectStorageFactory_.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
                              .Returns((string objectName) =>
@@ -359,6 +363,126 @@ public class RequestProcessorTest
                                            });
     resultReplyData.SetArgDisplayNames("ResultReply");
     yield return resultReplyData;
+
+    var smallRequestData = new TestCaseData(new List<ProcessReply>
+                                            {
+                                              new()
+                                              {
+                                                CreateSmallTask = new ProcessReply.Types.CreateSmallTaskRequest
+                                                                  {
+                                                                    TaskOptions = new TaskOptions(new Dictionary<string, string>(),
+                                                                                                  TimeSpan.FromSeconds(100),
+                                                                                                  5,
+                                                                                                  -1),
+                                                                    TaskRequests =
+                                                                    {
+                                                                      new TaskRequest
+                                                                      {
+                                                                        Id      = "smallTaskId",
+                                                                        Payload = ByteString.Empty,
+                                                                        ExpectedOutputKeys =
+                                                                        {
+                                                                          "Out",
+                                                                        },
+                                                                        DataDependencies =
+                                                                        {
+                                                                          "smallTaskDependency",
+                                                                        },
+                                                                      },
+                                                                    },
+                                                                  },
+
+                                              },
+                                              new()
+                                              {
+                                                Output = new Api.gRPC.V1.Output
+                                                         {
+                                                           Ok     = new Empty(),
+                                                           Status = TaskStatus.Completed,
+                                                         },
+                                              },
+                                            });
+    smallRequestData.SetArgDisplayNames("CreateSmallTaskRequest");
+    yield return smallRequestData;
+
+    var largeRequestData = new TestCaseData(new List<ProcessReply>
+                                            {
+                                              new()
+                                              {
+                                                CreateLargeTask = new ProcessReply.Types.CreateLargeTaskRequest
+                                                                  {
+                                                                    InitRequest = new ProcessReply.Types.CreateLargeTaskRequest.Types.InitRequest
+                                                                                  {
+                                                                                    TaskOptions = new TaskOptions(new Dictionary<string, string>(),
+                                                                                                                  TimeSpan.FromSeconds(100),
+                                                                                                                  5,
+                                                                                                                  -1),
+                                                                                  },
+                                                                  },
+                                              },
+                                              new()
+                                              {
+                                                CreateLargeTask = new ProcessReply.Types.CreateLargeTaskRequest
+                                                                  {
+                                                                    InitTask = new InitTaskRequest
+                                                                               {
+                                                                                 Header = new TaskRequestHeader
+                                                                                          {
+                                                                                            Id = "largeTaskId",
+                                                                                            ExpectedOutputKeys =
+                                                                                            {
+                                                                                              "lTOut",
+                                                                                            },
+                                                                                            DataDependencies =
+                                                                                            {
+                                                                                              "largeTaskDependency",
+                                                                                            },
+                                                                                          },
+                                                                               },
+                                                                  },
+                                              },
+                                              new()
+                                              {
+                                                CreateLargeTask = new ProcessReply.Types.CreateLargeTaskRequest
+                                                                  {
+                                                                    TaskPayload = new DataChunk
+                                                                                  {
+                                                                                    Data = ByteString.Empty,
+                                                                                  },
+                                                                  },
+                                              },
+                                              new()
+                                              {
+                                                CreateLargeTask = new ProcessReply.Types.CreateLargeTaskRequest
+                                                                  {
+                                                                    TaskPayload = new DataChunk
+                                                                                  {
+                                                                                    DataComplete = true,
+                                                                                  },
+                                                                  },
+                                              },
+                                              new()
+                                              {
+                                                CreateLargeTask = new ProcessReply.Types.CreateLargeTaskRequest
+                                                                  {
+                                                                    InitTask = new InitTaskRequest
+                                                                               {
+                                                                                 LastTask = true,
+                                                                               },
+                                                                  },
+                                              },
+                                              new()
+                                              {
+                                                Output = new Api.gRPC.V1.Output
+                                                         {
+                                                           Ok     = new Empty(),
+                                                           Status = TaskStatus.Completed,
+                                                         },
+                                              },
+                                            });
+
+    largeRequestData.SetArgDisplayNames("CreateLargeTaskRequest");
+    yield return largeRequestData;
   }
 
   [TestCaseSource(nameof(ReplyTestData))]
@@ -416,8 +540,168 @@ public class RequestProcessorTest
         Assert.AreEqual("Completed",res.Status);
         break;
       case ProcessReply.TypeOneofCase.CreateSmallTask:
+        Assert.IsEmpty(processResult);
+        break;
+      case ProcessReply.TypeOneofCase.CreateLargeTask:
+        Assert.IsEmpty(processResult);
         break;
     }
   }
 
+
+  private static IEnumerable NonImplementedReplies()
+  {
+    var resourceRequestData = new TestCaseData(new List<ProcessReply>
+                                               {
+                                                 new()
+                                                 {
+                                                   Resource = new ProcessReply.Types.DataRequest
+                                                              {
+                                                                Key = "ResourceKey",
+                                                              },
+                                                 },
+                                               });
+    resourceRequestData.SetArgDisplayNames("ResourceData");
+    yield return resourceRequestData;
+
+    var commonRequestData = new TestCaseData(new List<ProcessReply>
+                                               {
+                                                 new()
+                                                 {
+                                                   CommonData = new ProcessReply.Types.DataRequest
+                                                                {
+                                                                  Key = "CommonDataKey",
+                                                                },
+                                                 },
+                                               });
+    commonRequestData.SetArgDisplayNames("CommonData");
+    yield return commonRequestData;
+
+    var directRequestData = new TestCaseData(new List<ProcessReply>
+                                               {
+                                                 new()
+                                                 {
+                                                   DirectData = new ProcessReply.Types.DataRequest
+                                                              {
+                                                                Key = "DirectDataKey",
+                                                              },
+                                                 },
+                                               });
+    directRequestData.SetArgDisplayNames("DirectData");
+    yield return directRequestData;
+  }
+
+  [TestCaseSource(nameof(NonImplementedReplies))]
+  public async Task IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply> computeReplies)
+  {
+    var taskData = await taskTable_.ReadTaskAsync(Task1,
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory_.Object,
+                                            activitySource_,
+                                            loggerFactory_.CreateLogger<DataPrefetcher>());
+
+    var requests = await dataPrefetcher.PrefetchDataAsync(taskData,
+                                                          CancellationToken.None)
+                                       .ConfigureAwait(false);
+
+    Console.WriteLine("Requests:");
+    foreach (var cr in requests)
+    {
+      Console.WriteLine(cr.ToString());
+    }
+
+    Console.WriteLine("Replies:");
+    foreach (var reps in computeReplies)
+    {
+      Console.WriteLine(reps.ToString());
+    }
+
+    mockWorkerStreamHandler_.Setup(s => s.WorkerResponseStream)
+                            .Returns(() => new TestHelperAsyncStreamReader<ProcessReply>(computeReplies));
+
+    mockWorkerStreamHandler_.Setup(s => s.WorkerRequestStream)
+                            .Returns(() => new TestHelperClientStreamWriter<ProcessRequest>());
+
+    Assert.ThrowsAsync<NotImplementedException>(async () =>
+                                                  {
+                                                    await requestProcessor_.ProcessInternalsAsync(taskData,
+                                                                                                  requests,
+                                                                                                  CancellationToken.None)
+                                                                           .ConfigureAwait(false);
+                                                  });
+  }
+
+  [Test]
+  public async Task IntegrationProcessInternalsAsyncThrowsOnBadStream()
+  {
+    var taskData = await taskTable_.ReadTaskAsync(Task1,
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory_.Object,
+                                            activitySource_,
+                                            loggerFactory_.CreateLogger<DataPrefetcher>());
+
+    var requests = await dataPrefetcher.PrefetchDataAsync(taskData,
+                                                          CancellationToken.None)
+                                       .ConfigureAwait(false);
+
+
+    mockWorkerStreamHandler_.Setup(s => s.WorkerResponseStream)
+                            .Throws(() => new ArmoniKException());
+
+    mockWorkerStreamHandler_.Setup(s => s.WorkerRequestStream)
+                            .Returns(() => new TestHelperClientStreamWriter<ProcessRequest>());
+
+    Assert.ThrowsAsync<ArmoniKException>(async () =>
+    {
+      await requestProcessor_.ProcessInternalsAsync(taskData,
+                                                    requests,
+                                                    CancellationToken.None)
+                             .ConfigureAwait(false);
+    });
+  }
+
+  [Test]
+  public async Task IntegrationProcessInternalsAsyncThrowsOnBadStream2()
+  {
+    var taskData = await taskTable_.ReadTaskAsync(Task1,
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory_.Object,
+                                            activitySource_,
+                                            loggerFactory_.CreateLogger<DataPrefetcher>());
+
+    var requests = await dataPrefetcher.PrefetchDataAsync(taskData,
+                                                          CancellationToken.None)
+                                       .ConfigureAwait(false);
+
+    var computeReplies = new List<ProcessReply>
+                         {
+                           new ()
+                           {
+                             Result = new ProcessReply.Types.Result
+                                      {
+                                        Data = new DataChunk(),
+                                      },
+                           },
+                         };
+
+    mockWorkerStreamHandler_.Setup(s => s.WorkerResponseStream)
+                            .Returns(() => new TestHelperAsyncStreamReader<ProcessReply>(computeReplies));
+
+    mockWorkerStreamHandler_.Setup(s => s.WorkerRequestStream)
+                            .Throws(() => new ArmoniKException());
+
+    Assert.ThrowsAsync<ArmoniKException>(async () =>
+                                         {
+                                           await requestProcessor_.ProcessInternalsAsync(taskData,
+                                                                                         requests,
+                                                                                         CancellationToken.None)
+                                                                  .ConfigureAwait(false);
+                                         });
+  }
 }
