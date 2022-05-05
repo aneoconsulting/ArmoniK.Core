@@ -396,7 +396,7 @@ public class RequestProcessorTest
   }
 
   [TestCaseSource(nameof(ReplyTestData))]
-  public async Task ProcessInternalsAsyncShouldSucceed(List<ProcessReply> computeReplies)
+  public async Task IntegrationProcessInternalsAsyncTest(List<ProcessReply> computeReplies)
   {
     var taskData = await taskTable_.ReadTaskAsync(Task1,
                                                   CancellationToken.None)
