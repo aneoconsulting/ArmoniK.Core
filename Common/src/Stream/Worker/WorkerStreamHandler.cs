@@ -44,12 +44,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   private readonly WorkerClient                                            workerClient_;
   private          bool                                                    isInitialized_;
 
-  public WorkerStreamHandler(GrpcChannelProvider          channelProvider)
-  {
-    workerClient_ = BuildWorkerClient(channelProvider);
-  }
-
-  private static WorkerClient BuildWorkerClient(GrpcChannelProvider channelProvider)
+  public WorkerStreamHandler(GrpcChannelProvider channelProvider)
   {
     ChannelBase channel;
     try
@@ -61,7 +56,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       throw new ArmoniKException("Could not get grpc channel");
     }
 
-    return new WorkerClient(channel);
+    workerClient_ = new WorkerClient(channel);
   }
 
   public Queue<ComputeRequest> WorkerReturn() 
