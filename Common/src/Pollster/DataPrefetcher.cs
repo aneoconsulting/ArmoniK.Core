@@ -79,7 +79,11 @@ public class DataPrefetcher : IInitializable
 
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
-    var payloadChunks = await payloadStorage.GetValuesAsync(taskData.TaskId,
+    var taskId = taskData.RetryOfIds.Count > 0
+                   ? taskData.RetryOfIds.First()
+                   : taskData.TaskId;
+
+    var payloadChunks = await payloadStorage.GetValuesAsync(taskId,
                                                             cancellationToken)
                                             .Select(bytes => UnsafeByteOperations.UnsafeWrap(bytes))
                                             .ToListAsync(cancellationToken)
