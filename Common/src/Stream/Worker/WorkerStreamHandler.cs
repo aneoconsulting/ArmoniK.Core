@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 
@@ -70,8 +71,11 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public void StartTaskProcessing(TaskData taskData, CancellationToken cancellationToken)
   {
-    Stream = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
-                                   cancellationToken: cancellationToken);
+    var taskValidator = new TaskOptionsValidator();
+
+    if (taskValidator.Validate(taskData.Options).IsValid)
+      Stream = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
+                                     cancellationToken: cancellationToken);
     WorkerRequestStream = Stream is not null ?
                             Stream.RequestStream
                             : throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
