@@ -144,11 +144,6 @@ public class Pollster
             {
               var taskData = precondition;
 
-              logger_.LogDebug("Start prefetch data");
-              var computeRequestStream = await dataPrefetcher_.PrefetchDataAsync(taskData,
-                                                                                 cancellationToken)
-                                                              .ConfigureAwait(false);
-
               logger_.LogDebug("Start a new Task to process the messageHandler");
               using var requestProcessor = new RequestProcessor(workerStreamHandler_,
                                                                 objectStorageFactory_,
@@ -159,7 +154,6 @@ public class Pollster
 
               var processResult = await requestProcessor.ProcessAsync(message,
                                                                       taskData,
-                                                                      computeRequestStream,
                                                                       cancellationToken)
                                                         .ConfigureAwait(false);
 

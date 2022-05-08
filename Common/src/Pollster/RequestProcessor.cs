@@ -82,11 +82,13 @@ public class RequestProcessor : IDisposable
 
   public async Task<List<Task>> ProcessAsync(IQueueMessageHandler  messageHandler,
                                              TaskData              taskData,
-                                             Queue<ComputeRequest> computeRequests,
                                              CancellationToken     cancellationToken)
   {
     try
     {
+      var computeRequests = await workerStreamHandler_.StartTaskPrefetching(taskData,
+                                                       cancellationToken).ConfigureAwait(false);
+
       taskToFinalize_.Clear();
       var result = await ProcessInternalsAsync(taskData, computeRequests,
                                                cancellationToken)

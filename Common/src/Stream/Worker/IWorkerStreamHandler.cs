@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Storage;
@@ -40,7 +41,8 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 [PublicAPI]
 public interface IWorkerStreamHandler : IInitializable, IDisposable
 {
-  public Queue<ComputeRequest> WorkerReturn();
+  public Task<Queue<ComputeRequest>> StartTaskPrefetching(TaskData          taskData,
+                                                          CancellationToken cancellationToken);
 
   public void StartTaskProcessing(TaskData          taskData,
                                   CancellationToken cancellationToken);

@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -41,10 +42,11 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
-  private readonly WorkerClient                                            workerClient_;
-  private          bool                                                    isInitialized_;
+  private readonly WorkerClient   workerClient_;
+  private readonly DataPrefetcher dataPrefetcher_;
+  private          bool           isInitialized_;
 
-  public WorkerStreamHandler(GrpcChannelProvider channelProvider)
+  public WorkerStreamHandler(IGrpcChannelProvider channelProvider, DataPrefetcher dataPrefetcher)
   {
     ChannelBase channel;
     try
@@ -59,9 +61,11 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     workerClient_ = new WorkerClient(channel);
   }
 
-  public Queue<ComputeRequest> WorkerReturn() 
+  public async Task<Queue<ComputeRequest>> StartTaskPrefetching(TaskData          taskData,
+                                                                CancellationToken cancellationToken)
   { 
-    return new Queue<ComputeRequest>();
+    return await dataPrefetcher_.PrefetchDataAsync(taskData,
+                                                   cancellationToken).ConfigureAwait(false);
   }
 
   public void StartTaskProcessing(TaskData taskData, CancellationToken cancellationToken)
@@ -82,14 +86,14 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public IClientStreamWriter<ProcessRequest>? WorkerRequestStream { get; private set; }
 
-  public Task Init(CancellationToken cancellationToken)
+  public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
+      await dataPrefetcher_.Init(cancellationToken)
+                           .ConfigureAwait(false);
       isInitialized_ = true;
     }
-
-    return Task.CompletedTask;
   }
 
   public ValueTask<bool> Check(HealthCheckTag tag)
