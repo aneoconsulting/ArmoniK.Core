@@ -492,19 +492,7 @@ public class RequestProcessorTest
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory_.Object,
-                                            activitySource_,
-                                            loggerFactory_.CreateLogger<DataPrefetcher>());
-
-    var requests = await dataPrefetcher.PrefetchDataAsync(taskData,
-                                                          CancellationToken.None)
-                                       .ConfigureAwait(false);
-
-    Console.WriteLine("Requests:");
-    foreach (var cr in requests)
-    {
-      Console.WriteLine(cr.ToString());
-    }
+    var requests = new Queue<ProcessRequest.Types.ComputeRequest>();
 
     Console.WriteLine("Replies:");
     foreach (var reps in computeReplies)
@@ -598,19 +586,7 @@ public class RequestProcessorTest
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory_.Object,
-                                            activitySource_,
-                                            loggerFactory_.CreateLogger<DataPrefetcher>());
-
-    var requests = await dataPrefetcher.PrefetchDataAsync(taskData,
-                                                          CancellationToken.None)
-                                       .ConfigureAwait(false);
-
-    Console.WriteLine("Requests:");
-    foreach (var cr in requests)
-    {
-      Console.WriteLine(cr.ToString());
-    }
+    var requests = new Queue<ProcessRequest.Types.ComputeRequest>();
 
     Console.WriteLine("Replies:");
     foreach (var reps in computeReplies)
@@ -640,14 +616,7 @@ public class RequestProcessorTest
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory_.Object,
-                                            activitySource_,
-                                            loggerFactory_.CreateLogger<DataPrefetcher>());
-
-    var requests = await dataPrefetcher.PrefetchDataAsync(taskData,
-                                                          CancellationToken.None)
-                                       .ConfigureAwait(false);
-
+    var requests = new Queue<ProcessRequest.Types.ComputeRequest>();
 
     mockWorkerStreamHandler_.Setup(s => s.WorkerResponseStream)
                             .Throws(() => new ArmoniKException());
@@ -671,13 +640,7 @@ public class RequestProcessorTest
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorageFactory_.Object,
-                                            activitySource_,
-                                            loggerFactory_.CreateLogger<DataPrefetcher>());
-
-    var requests = await dataPrefetcher.PrefetchDataAsync(taskData,
-                                                          CancellationToken.None)
-                                       .ConfigureAwait(false);
+    var requests = new Queue<ProcessRequest.Types.ComputeRequest>();
 
     var computeReplies = new List<ProcessReply>
                          {
