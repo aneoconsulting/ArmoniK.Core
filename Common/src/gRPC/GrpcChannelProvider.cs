@@ -42,7 +42,7 @@ using GrpcChannel = ArmoniK.Core.Common.Injection.Options.GrpcChannel;
 namespace ArmoniK.Core.Common.gRPC;
 
 [UsedImplicitly]
-public class GrpcChannelProvider : ProviderBase<ChannelBase>
+public class GrpcChannelProvider : ProviderBase<ChannelBase>, IGrpcChannelProvider
 {
   private readonly bool isInitialized_;
 

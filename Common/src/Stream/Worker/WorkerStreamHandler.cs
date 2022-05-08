@@ -49,7 +49,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public WorkerStreamHandler(IGrpcChannelProvider channelProvider, DataPrefetcher dataPrefetcher)
   {
-    ChannelBase channel;
+    ChannelBase? channel;
     try
     {
       channel = channelProvider.Get();
@@ -58,8 +58,12 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     {
       throw new ArmoniKException("Could not get grpc channel");
     }
-
-    workerClient_ = new WorkerClient(channel);
+    if (channel is null)
+    {
+      throw new NullReferenceException();
+    }
+    workerClient_   = new WorkerClient(channel);
+    dataPrefetcher_ = dataPrefetcher;
   }
 
   public async Task<Queue<ComputeRequest>> StartTaskPrefetching(TaskData          taskData,
