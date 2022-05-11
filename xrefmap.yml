@@ -9596,6 +9596,22 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest
   fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest
   nameWithType: RequestProcessorTest
+- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List{ProcessReply})
+  name: IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncNonImplemented_List_ProcessReply__
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List{ProcessReply})
+  name.vb: IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply))
+  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply))
+  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>)
+  nameWithType.vb: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply))
+- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented*
+  name: IntegrationProcessInternalsAsyncNonImplemented
+  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncNonImplemented_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented
+  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented
 - uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List{ProcessReply})
   name: IntegrationProcessInternalsAsyncTest(List<ProcessReply>)
   href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncTest_List_ProcessReply__
@@ -9612,6 +9628,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest
   nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncTest
+- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream
+  name: IntegrationProcessInternalsAsyncThrowsOnBadStream()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncThrowsOnBadStream
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream
+  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream()
+  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream()
+- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream*
+  name: IntegrationProcessInternalsAsyncThrowsOnBadStream
+  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncThrowsOnBadStream_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream
+  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream
+- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2
+  name: IntegrationProcessInternalsAsyncThrowsOnBadStream2()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncThrowsOnBadStream2
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2
+  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2()
+  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2()
+- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2*
+  name: IntegrationProcessInternalsAsyncThrowsOnBadStream2
+  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncThrowsOnBadStream2_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2
+  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2
 - uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.SetUp
   name: SetUp()
   href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_SetUp
