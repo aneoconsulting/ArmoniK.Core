@@ -304,14 +304,11 @@ public class RequestProcessor : IDisposable
           isComplete = true;
           break;
         case ProcessReply.TypeOneofCase.Result:
-          var taskId = taskData.RetryOfIds.Count > 0
-                         ? taskData.RetryOfIds.First()
-                         : taskData.TaskId;
           output.Add(StoreResultAsync(resultStorage,
                                       first,
                                       singleReplyStream,
                                       taskData.SessionId,
-                                      taskId,
+                                      taskData.RetryOfIds.FirstOrDefault(taskData.TaskId),
                                       cancellationToken));
           break;
         case ProcessReply.TypeOneofCase.CreateSmallTask:
