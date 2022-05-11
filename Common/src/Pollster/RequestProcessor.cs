@@ -308,7 +308,7 @@ public class RequestProcessor : IDisposable
                                       first,
                                       singleReplyStream,
                                       taskData.SessionId,
-                                      taskData.TaskId,
+                                      taskData.RetryOfIds.FirstOrDefault(taskData.TaskId),
                                       cancellationToken));
           break;
         case ProcessReply.TypeOneofCase.CreateSmallTask:

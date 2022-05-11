@@ -183,7 +183,7 @@ public class ResultTable : IResultTable
                                                                                 "Completed"),
                                                     cancellationToken: cancellationToken)
                                     .ConfigureAwait(false);
-    if (res.ModifiedCount == 0)
+    if (res.MatchedCount == 0)
     {
       throw new ResultNotFoundException($"Key '{key}' not found");
     }
