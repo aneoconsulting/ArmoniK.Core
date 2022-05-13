@@ -31,6 +31,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
@@ -68,19 +69,21 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   {
     Stream = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
                                    cancellationToken: cancellationToken);
-    WorkerRequestStream = Stream is not null ?
-                            Stream.RequestStream
-                            : throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
-    WorkerResponseStream = Stream is not null ?
-                             Stream.ResponseStream :
-                             throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
+    if (Stream is null)
+    {
+      throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
+    }
+
+    pipe_ = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(Stream.ResponseStream,
+                                                            Stream.RequestStream);
   }
 
   public AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream { get; private set; }
 
-  public IAsyncStreamReader<ProcessReply>? WorkerResponseStream { get; private set; }
+  private GrpcAsyncPipe<ProcessReply, ProcessRequest> pipe_;
 
-  public IClientStreamWriter<ProcessRequest>? WorkerRequestStream { get; private set; }
+  public IAsyncPipe<ProcessReply, ProcessRequest> Pipe
+    => pipe_;
 
   public Task Init(CancellationToken cancellationToken)
   {

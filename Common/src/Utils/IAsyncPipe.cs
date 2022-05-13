@@ -1,4 +1,4 @@
-// This file is part of the ArmoniK project
+﻿// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,31 +22,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
+namespace ArmoniK.Core.Common.Utils;
 
-using Grpc.Core;
-
-using JetBrains.Annotations;
-
-using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
-
-namespace ArmoniK.Core.Common.Stream.Worker;
-
-[PublicAPI]
-public interface IWorkerStreamHandler : IInitializable, IDisposable
+public interface IAsyncPipe<out TReadMessage, in TWriteMessage>
 {
-  public Queue<ComputeRequest> WorkerReturn();
+  IAsyncEnumerable<TReadMessage> Reader { get; }
 
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken);
+  Task WriteAsync(TWriteMessage message);
 
-  public AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream { get; }
+  Task WriteAsync(IEnumerable<TWriteMessage> message);
 
-  public IAsyncPipe<ProcessReply, ProcessRequest> Pipe { get; }
+  Task CompleteAsync();
 }

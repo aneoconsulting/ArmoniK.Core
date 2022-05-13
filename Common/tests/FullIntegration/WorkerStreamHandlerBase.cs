@@ -1,4 +1,4 @@
-// This file is part of the ArmoniK project
+﻿// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -25,28 +25,48 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
-using JetBrains.Annotations;
+namespace ArmoniK.Core.Common.Tests.FullIntegration;
 
-using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
-
-namespace ArmoniK.Core.Common.Stream.Worker;
-
-[PublicAPI]
-public interface IWorkerStreamHandler : IInitializable, IDisposable
+public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
 {
-  public Queue<ComputeRequest> WorkerReturn();
+  protected readonly List<Task> taskList_;
 
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken);
+  protected WorkerStreamHandlerBase()
+  {
+    Stream     = null;
+    taskList_  = new List<Task>();
+  }
 
-  public AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream { get; }
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => new(true);
 
-  public IAsyncPipe<ProcessReply, ProcessRequest> Pipe { get; }
+  public Task Init(CancellationToken cancellationToken)
+    => Task.CompletedTask;
+
+  public void Dispose()
+  {
+    taskList_.ForEach(task => task.Dispose());
+  }
+
+  public Queue<ProcessRequest.Types.ComputeRequest> WorkerReturn()
+    => throw new NotImplementedException();
+
+  public abstract void StartTaskProcessing(TaskData          taskData,
+                                           CancellationToken cancellationToken);
+
+  public             AsyncDuplexStreamingCall<ProcessRequest, ProcessReply> Stream { get; }
+  protected readonly ChannelAsyncPipe<ProcessReply, ProcessRequest>         pipe_ = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
+
+  public IAsyncPipe<ProcessReply, ProcessRequest> Pipe
+    => pipe_;
 }
