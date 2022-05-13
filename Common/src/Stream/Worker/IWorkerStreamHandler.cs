@@ -46,7 +46,5 @@ public interface IWorkerStreamHandler : IInitializable, IDisposable
   public void StartTaskProcessing(TaskData          taskData,
                                   CancellationToken cancellationToken);
 
-  public AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream { get; }
-
   public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
 }

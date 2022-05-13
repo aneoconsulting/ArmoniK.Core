@@ -67,18 +67,18 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public void StartTaskProcessing(TaskData taskData, CancellationToken cancellationToken)
   {
-    Stream = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
+    stream_ = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
                                    cancellationToken: cancellationToken);
-    if (Stream is null)
+    if (stream_ is null)
     {
       throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
     }
 
-    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(Stream.ResponseStream,
-                                                           Stream.RequestStream);
+    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream_.ResponseStream,
+                                                           stream_.RequestStream);
   }
 
-  public AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream { get; private set; }
+  private AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? stream_;
 
   public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
@@ -97,7 +97,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public void Dispose()
   {
-    Stream?.Dispose();
+    stream_?.Dispose();
     GC.SuppressFinalize(this);
   }
 }

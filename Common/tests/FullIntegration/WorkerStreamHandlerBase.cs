@@ -33,8 +33,6 @@ using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 
-using Grpc.Core;
-
 namespace ArmoniK.Core.Common.Tests.FullIntegration;
 
 public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
@@ -43,8 +41,8 @@ public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
 
   protected WorkerStreamHandlerBase()
   {
-    Stream     = null;
-    TaskList  = new List<Task>();
+    TaskList         = new List<Task>();
+    ChannelAsyncPipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
   }
 
   public ValueTask<bool> Check(HealthCheckTag tag)
@@ -64,8 +62,7 @@ public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
   public abstract void StartTaskProcessing(TaskData          taskData,
                                            CancellationToken cancellationToken);
 
-  public             AsyncDuplexStreamingCall<ProcessRequest, ProcessReply> Stream { get; }
-  protected readonly ChannelAsyncPipe<ProcessReply, ProcessRequest>         ChannelAsyncPipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
+  protected readonly ChannelAsyncPipe<ProcessReply, ProcessRequest> ChannelAsyncPipe;
 
   public IAsyncPipe<ProcessReply, ProcessRequest> Pipe
     => ChannelAsyncPipe;
