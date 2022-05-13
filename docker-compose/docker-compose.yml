@@ -130,6 +130,8 @@ services:
     # build:
     #   context: ..
     #   dockerfile: Tests/Stream/Server/Dockerfile
+    cap_add:
+      - NET_ADMIN
     networks:
       - armonik-net
       - armonik-monitoring
