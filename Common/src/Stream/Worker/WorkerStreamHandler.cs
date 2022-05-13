@@ -74,16 +74,13 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
     }
 
-    pipe_ = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(Stream.ResponseStream,
-                                                            Stream.RequestStream);
+    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(Stream.ResponseStream,
+                                                           Stream.RequestStream);
   }
 
   public AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream { get; private set; }
 
-  private GrpcAsyncPipe<ProcessReply, ProcessRequest> pipe_;
-
-  public IAsyncPipe<ProcessReply, ProcessRequest> Pipe
-    => pipe_;
+  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
   public Task Init(CancellationToken cancellationToken)
   {

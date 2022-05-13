@@ -54,11 +54,11 @@ class WorkerStreamHandlerErrorRetryTest : WorkerStreamHandlerBase
 
     var task = new Task(async () =>
                         {
-                          var request = await pipe_.Reverse.Reader.FirstAsync(cancellationToken: cancellationToken)
+                          var request = await ChannelAsyncPipe.Reverse.Reader.FirstAsync(cancellationToken: cancellationToken)
                                                    .ConfigureAwait(false);
 
 
-                          await pipe_.Reverse.WriteAsync(new ProcessReply
+                          await ChannelAsyncPipe.Reverse.WriteAsync(new ProcessReply
                                                          {
                                                            Output = new Output
                                                                     {
@@ -70,7 +70,7 @@ class WorkerStreamHandlerErrorRetryTest : WorkerStreamHandlerBase
 
 
                         });
-    taskList_.Add(task);
+    TaskList.Add(task);
     task.Start();
   }
 }

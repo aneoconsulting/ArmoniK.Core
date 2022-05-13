@@ -50,9 +50,9 @@ public class WorkerStreamHandlerFullTest : WorkerStreamHandlerBase
                           //  Console.WriteLine(requests.Current);
                           //}
 
-                          Console.WriteLine(await pipe_.Reverse.Reader.FirstAsync());
+                          Console.WriteLine(await ChannelAsyncPipe.Reverse.Reader.FirstAsync());
 
-                          await pipe_.Reverse.WriteAsync(new ProcessReply
+                          await ChannelAsyncPipe.Reverse.WriteAsync(new ProcessReply
                                                          {
                                                            Output = new Output
                                                                     {
@@ -62,7 +62,7 @@ public class WorkerStreamHandlerFullTest : WorkerStreamHandlerBase
                                                          })
                                      .ConfigureAwait(false);
                         });
-    taskList_.Add(task);
+    TaskList.Add(task);
     task.Start();
   }
 

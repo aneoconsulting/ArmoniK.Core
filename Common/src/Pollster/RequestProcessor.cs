@@ -238,6 +238,10 @@ public class RequestProcessor : IDisposable
 
     workerStreamHandler_.StartTaskProcessing(taskData,
                                              cancellationToken);
+    if (workerStreamHandler_.Pipe is null)
+    {
+      throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
+    }
 
     var resultStorage = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
 
@@ -263,8 +267,8 @@ public class RequestProcessor : IDisposable
     // process incoming messages
     // TODO : To reduce memory consumption, do not generate subStream. Implement a state machine instead.
     await foreach (var singleReplyStream in workerStreamHandler_.Pipe.Reader.Separate(logger_,
-                                                                                               cancellationToken)
-                                                                .ConfigureAwait(false))
+                                                                                       cancellationToken)
+                                                                             .ConfigureAwait(false))
     {
       var       first     = singleReplyStream.First();
       using var activity2 = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.ProcessReply");

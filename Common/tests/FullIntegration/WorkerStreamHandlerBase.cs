@@ -39,12 +39,12 @@ namespace ArmoniK.Core.Common.Tests.FullIntegration;
 
 public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
 {
-  protected readonly List<Task> taskList_;
+  protected readonly List<Task> TaskList;
 
   protected WorkerStreamHandlerBase()
   {
     Stream     = null;
-    taskList_  = new List<Task>();
+    TaskList  = new List<Task>();
   }
 
   public ValueTask<bool> Check(HealthCheckTag tag)
@@ -55,7 +55,7 @@ public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
 
   public void Dispose()
   {
-    taskList_.ForEach(task => task.Dispose());
+    TaskList.ForEach(task => task.Dispose());
   }
 
   public Queue<ProcessRequest.Types.ComputeRequest> WorkerReturn()
@@ -65,8 +65,8 @@ public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
                                            CancellationToken cancellationToken);
 
   public             AsyncDuplexStreamingCall<ProcessRequest, ProcessReply> Stream { get; }
-  protected readonly ChannelAsyncPipe<ProcessReply, ProcessRequest>         pipe_ = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
+  protected readonly ChannelAsyncPipe<ProcessReply, ProcessRequest>         ChannelAsyncPipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
 
   public IAsyncPipe<ProcessReply, ProcessRequest> Pipe
-    => pipe_;
+    => ChannelAsyncPipe;
 }

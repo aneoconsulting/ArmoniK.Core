@@ -48,5 +48,5 @@ public interface IWorkerStreamHandler : IInitializable, IDisposable
 
   public AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream { get; }
 
-  public IAsyncPipe<ProcessReply, ProcessRequest> Pipe { get; }
+  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
 }
