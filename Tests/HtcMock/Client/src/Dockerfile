@@ -5,6 +5,8 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
+RUN groupadd --gid 5000 runuser && useradd --home-dir /home/runuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null runuser
+USER runuser
 COPY ["Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj", "Tests/HtcMock/Client/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 RUN dotnet restore "Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj"
