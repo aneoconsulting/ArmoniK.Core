@@ -54,6 +54,7 @@ public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
   public void Dispose()
   {
     TaskList.ForEach(task => task.Dispose());
+    GC.SuppressFinalize(this);
   }
 
   public Queue<ProcessRequest.Types.ComputeRequest> WorkerReturn()

@@ -147,5 +147,6 @@ public class TestPollingAgentProvider : IDisposable
     ((IDisposable)app)?.Dispose();
     loggerFactory_?.Dispose();
     runner_?.Dispose();
+    GC.SuppressFinalize(this);
   }
 }
