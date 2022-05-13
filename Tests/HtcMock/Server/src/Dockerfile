@@ -7,8 +7,6 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-RUN groupadd --gid 5000 runuser && useradd --home-dir /home/runuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null runuser
-USER runuser
 COPY ["Tests/HtcMock/Server/src/ArmoniK.Samples.HtcMock.Server.csproj", "Tests/HtcMock/Server/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 RUN dotnet restore "Tests/HtcMock/Server/src/ArmoniK.Samples.HtcMock.Server.csproj"
@@ -22,4 +20,7 @@ RUN dotnet publish "ArmoniK.Samples.HtcMock.Server.csproj" -c Release -o /app/pu
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
+RUN chgrp armonikuser ArmoniK.Samples.HtcMock.Server.dll && chmod 750 ArmoniK.Samples.HtcMock.Server.dll
+USER armonikuser
 ENTRYPOINT ["dotnet", "ArmoniK.Samples.HtcMock.Server.dll"]
