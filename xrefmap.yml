@@ -601,6 +601,80 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RequeueMessageAsync
   nameWithType: LockedQueueStorage.RequeueMessageAsync
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage
+  name: QueueStorage
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html
+  commentId: T:ArmoniK.Core.Adapters.Memory.QueueStorage
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage
+  nameWithType: QueueStorage
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Adapters.Memory.QueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: QueueStorage.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.QueueStorage.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.Check
+  nameWithType: QueueStorage.Check
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
+  name: EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_EnqueueMessagesAsync_IEnumerable_System_String__System_Int32_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
+  name.vb: EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync(IEnumerable<System.String>, System.Int32, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync(IEnumerable(Of System.String), System.Int32, CancellationToken)
+  nameWithType: QueueStorage.EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
+  nameWithType.vb: QueueStorage.EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync*
+  name: EnqueueMessagesAsync
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_EnqueueMessagesAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync
+  nameWithType: QueueStorage.EnqueueMessagesAsync
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.QueueStorage.Init(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.Init(CancellationToken)
+  nameWithType: QueueStorage.Init(CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.Init*
+  name: Init
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_Init_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.QueueStorage.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.Init
+  nameWithType: QueueStorage.Init
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.MaxPriority
+  name: MaxPriority
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_MaxPriority
+  commentId: P:ArmoniK.Core.Adapters.Memory.QueueStorage.MaxPriority
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.MaxPriority
+  nameWithType: QueueStorage.MaxPriority
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.MaxPriority*
+  name: MaxPriority
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_MaxPriority_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.QueueStorage.MaxPriority
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.MaxPriority
+  nameWithType: QueueStorage.MaxPriority
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync(System.Int32,CancellationToken)
+  name: PullAsync(Int32, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_PullAsync_System_Int32_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync(System.Int32,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync(System.Int32, CancellationToken)
+  nameWithType: QueueStorage.PullAsync(Int32, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync*
+  name: PullAsync
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_PullAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync
+  nameWithType: QueueStorage.PullAsync
 - uid: ArmoniK.Core.Adapters.Memory.ResultTable
   name: ResultTable
   href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html
@@ -5977,15 +6051,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync
   nameWithType: RequestProcessor.ProcessInternalsAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(IAsyncStreamWriter{ProcessRequest},ProcessReply)
-  name: ProvideCommonDataAsync(IAsyncStreamWriter<ProcessRequest>, ProcessReply)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProvideCommonDataAsync_IAsyncStreamWriter_ProcessRequest__ProcessReply_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(IAsyncStreamWriter{ProcessRequest},ProcessReply)
-  name.vb: ProvideCommonDataAsync(IAsyncStreamWriter(Of ProcessRequest), ProcessReply)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(IAsyncStreamWriter<ProcessRequest>, ProcessReply)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(IAsyncStreamWriter(Of ProcessRequest), ProcessReply)
-  nameWithType: RequestProcessor.ProvideCommonDataAsync(IAsyncStreamWriter<ProcessRequest>, ProcessReply)
-  nameWithType.vb: RequestProcessor.ProvideCommonDataAsync(IAsyncStreamWriter(Of ProcessRequest), ProcessReply)
+- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ProcessReply)
+  name: ProvideCommonDataAsync(IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
+  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProvideCommonDataAsync_ArmoniK_Core_Common_Utils_IAsyncPipe_ProcessReply_ProcessRequest__ProcessReply_
+  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ProcessReply)
+  name.vb: ProvideCommonDataAsync(IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
+  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
+  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
+  nameWithType: RequestProcessor.ProvideCommonDataAsync(IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
+  nameWithType.vb: RequestProcessor.ProvideCommonDataAsync(IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
 - uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync*
   name: ProvideCommonDataAsync
   href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProvideCommonDataAsync_
@@ -5993,15 +6067,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync
   nameWithType: RequestProcessor.ProvideCommonDataAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(IAsyncStreamWriter{ProcessRequest},ProcessReply)
-  name: ProvideDirectDataAsync(IAsyncStreamWriter<ProcessRequest>, ProcessReply)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProvideDirectDataAsync_IAsyncStreamWriter_ProcessRequest__ProcessReply_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(IAsyncStreamWriter{ProcessRequest},ProcessReply)
-  name.vb: ProvideDirectDataAsync(IAsyncStreamWriter(Of ProcessRequest), ProcessReply)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(IAsyncStreamWriter<ProcessRequest>, ProcessReply)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(IAsyncStreamWriter(Of ProcessRequest), ProcessReply)
-  nameWithType: RequestProcessor.ProvideDirectDataAsync(IAsyncStreamWriter<ProcessRequest>, ProcessReply)
-  nameWithType.vb: RequestProcessor.ProvideDirectDataAsync(IAsyncStreamWriter(Of ProcessRequest), ProcessReply)
+- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ProcessReply)
+  name: ProvideDirectDataAsync(IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
+  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProvideDirectDataAsync_ArmoniK_Core_Common_Utils_IAsyncPipe_ProcessReply_ProcessRequest__ProcessReply_
+  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ProcessReply)
+  name.vb: ProvideDirectDataAsync(IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
+  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
+  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
+  nameWithType: RequestProcessor.ProvideDirectDataAsync(IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
+  nameWithType.vb: RequestProcessor.ProvideDirectDataAsync(IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
 - uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync*
   name: ProvideDirectDataAsync
   href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProvideDirectDataAsync_
@@ -6085,15 +6159,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest
   nameWithType: WorkerClientExtensions.ReconstituteTaskRequest
-- uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncStreamReader{ProcessReply},ILogger,CancellationToken)
-  name: Separate(IAsyncStreamReader<ProcessReply>, ILogger, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html#ArmoniK_Core_Common_Pollster_WorkerClientExtensions_Separate_IAsyncStreamReader_ProcessReply__ILogger_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncStreamReader{ProcessReply},ILogger,CancellationToken)
-  name.vb: Separate(IAsyncStreamReader(Of ProcessReply), ILogger, CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncStreamReader<ProcessReply>, ILogger, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncStreamReader(Of ProcessReply), ILogger, CancellationToken)
-  nameWithType: WorkerClientExtensions.Separate(IAsyncStreamReader<ProcessReply>, ILogger, CancellationToken)
-  nameWithType.vb: WorkerClientExtensions.Separate(IAsyncStreamReader(Of ProcessReply), ILogger, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncEnumerable{ProcessReply},ILogger,CancellationToken)
+  name: Separate(IAsyncEnumerable<ProcessReply>, ILogger, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html#ArmoniK_Core_Common_Pollster_WorkerClientExtensions_Separate_IAsyncEnumerable_ProcessReply__ILogger_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncEnumerable{ProcessReply},ILogger,CancellationToken)
+  name.vb: Separate(IAsyncEnumerable(Of ProcessReply), ILogger, CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncEnumerable<ProcessReply>, ILogger, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncEnumerable(Of ProcessReply), ILogger, CancellationToken)
+  nameWithType: WorkerClientExtensions.Separate(IAsyncEnumerable<ProcessReply>, ILogger, CancellationToken)
+  nameWithType.vb: WorkerClientExtensions.Separate(IAsyncEnumerable(Of ProcessReply), ILogger, CancellationToken)
 - uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate*
   name: Separate
   href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html#ArmoniK_Core_Common_Pollster_WorkerClientExtensions_Separate_
@@ -8181,6 +8255,19 @@ references:
   commentId: T:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler
   fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler
   nameWithType: IWorkerStreamHandler
+- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Pipe
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_Pipe
+  commentId: P:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Pipe
+  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Pipe
+  nameWithType: IWorkerStreamHandler.Pipe
+- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Pipe*
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_Pipe_
+  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Pipe
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Pipe
+  nameWithType: IWorkerStreamHandler.Pipe
 - uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing(TaskData,CancellationToken)
   name: StartTaskProcessing(TaskData, CancellationToken)
   href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_StartTaskProcessing_TaskData_CancellationToken_
@@ -8194,45 +8281,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing
   nameWithType: IWorkerStreamHandler.StartTaskProcessing
-- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Stream
-  name: Stream
-  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_Stream
-  commentId: P:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Stream
-  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Stream
-  nameWithType: IWorkerStreamHandler.Stream
-- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Stream*
-  name: Stream
-  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_Stream_
-  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Stream
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Stream
-  nameWithType: IWorkerStreamHandler.Stream
-- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerRequestStream
-  name: WorkerRequestStream
-  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerRequestStream
-  commentId: P:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerRequestStream
-  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerRequestStream
-  nameWithType: IWorkerStreamHandler.WorkerRequestStream
-- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerRequestStream*
-  name: WorkerRequestStream
-  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerRequestStream_
-  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerRequestStream
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerRequestStream
-  nameWithType: IWorkerStreamHandler.WorkerRequestStream
-- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerResponseStream
-  name: WorkerResponseStream
-  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerResponseStream
-  commentId: P:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerResponseStream
-  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerResponseStream
-  nameWithType: IWorkerStreamHandler.WorkerResponseStream
-- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerResponseStream*
-  name: WorkerResponseStream
-  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerResponseStream_
-  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerResponseStream
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerResponseStream
-  nameWithType: IWorkerStreamHandler.WorkerResponseStream
 - uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerReturn
   name: WorkerReturn()
   href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerReturn
@@ -8529,6 +8577,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Init
   nameWithType: WorkerStreamHandler.Init
+- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Pipe
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Pipe
+  commentId: P:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Pipe
+  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Pipe
+  nameWithType: WorkerStreamHandler.Pipe
+- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Pipe*
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Pipe_
+  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Pipe
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Pipe
+  nameWithType: WorkerStreamHandler.Pipe
 - uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.StartTaskProcessing(TaskData,CancellationToken)
   name: StartTaskProcessing(TaskData, CancellationToken)
   href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_StartTaskProcessing_TaskData_CancellationToken_
@@ -8542,45 +8603,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.StartTaskProcessing
   nameWithType: WorkerStreamHandler.StartTaskProcessing
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Stream
-  name: Stream
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Stream
-  commentId: P:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Stream
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Stream
-  nameWithType: WorkerStreamHandler.Stream
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Stream*
-  name: Stream
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Stream_
-  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Stream
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Stream
-  nameWithType: WorkerStreamHandler.Stream
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerRequestStream
-  name: WorkerRequestStream
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_WorkerRequestStream
-  commentId: P:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerRequestStream
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerRequestStream
-  nameWithType: WorkerStreamHandler.WorkerRequestStream
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerRequestStream*
-  name: WorkerRequestStream
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_WorkerRequestStream_
-  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerRequestStream
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerRequestStream
-  nameWithType: WorkerStreamHandler.WorkerRequestStream
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerResponseStream
-  name: WorkerResponseStream
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_WorkerResponseStream
-  commentId: P:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerResponseStream
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerResponseStream
-  nameWithType: WorkerStreamHandler.WorkerResponseStream
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerResponseStream*
-  name: WorkerResponseStream
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_WorkerResponseStream_
-  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerResponseStream
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerResponseStream
-  nameWithType: WorkerStreamHandler.WorkerResponseStream
 - uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerReturn
   name: WorkerReturn()
   href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_WorkerReturn
@@ -9068,12 +9090,320 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.ZeroPriorityShouldFail
   nameWithType: CreateSmallTaskRequestValidatorTest.ZeroPriorityShouldFail
+- uid: ArmoniK.Core.Common.Tests.FullIntegration
+  name: ArmoniK.Core.Common.Tests.FullIntegration
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.html
+  commentId: N:ArmoniK.Core.Common.Tests.FullIntegration
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration
+  nameWithType: ArmoniK.Core.Common.Tests.FullIntegration
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest
+  name: FullyIntegratedTest
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest
+  nameWithType: FullyIntegratedTest
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.FullRunShouldSucceed
+  name: FullRunShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html#ArmoniK_Core_Common_Tests_FullIntegration_FullyIntegratedTest_FullRunShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.FullRunShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.FullRunShouldSucceed()
+  nameWithType: FullyIntegratedTest.FullRunShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.FullRunShouldSucceed*
+  name: FullRunShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html#ArmoniK_Core_Common_Tests_FullIntegration_FullyIntegratedTest_FullRunShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.FullRunShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.FullRunShouldSucceed
+  nameWithType: FullyIntegratedTest.FullRunShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.GetServiceConfigurationShouldSucceed
+  name: GetServiceConfigurationShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html#ArmoniK_Core_Common_Tests_FullIntegration_FullyIntegratedTest_GetServiceConfigurationShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.GetServiceConfigurationShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.GetServiceConfigurationShouldSucceed()
+  nameWithType: FullyIntegratedTest.GetServiceConfigurationShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.GetServiceConfigurationShouldSucceed*
+  name: GetServiceConfigurationShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html#ArmoniK_Core_Common_Tests_FullIntegration_FullyIntegratedTest_GetServiceConfigurationShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.GetServiceConfigurationShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.GetServiceConfigurationShouldSucceed
+  nameWithType: FullyIntegratedTest.GetServiceConfigurationShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.Setup
+  name: Setup()
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html#ArmoniK_Core_Common_Tests_FullIntegration_FullyIntegratedTest_Setup
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.Setup
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.Setup()
+  nameWithType: FullyIntegratedTest.Setup()
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.Setup*
+  name: Setup
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html#ArmoniK_Core_Common_Tests_FullIntegration_FullyIntegratedTest_Setup_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.Setup
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.Setup
+  nameWithType: FullyIntegratedTest.Setup
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TaskRetryShouldSucceed
+  name: TaskRetryShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html#ArmoniK_Core_Common_Tests_FullIntegration_FullyIntegratedTest_TaskRetryShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TaskRetryShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TaskRetryShouldSucceed()
+  nameWithType: FullyIntegratedTest.TaskRetryShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TaskRetryShouldSucceed*
+  name: TaskRetryShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html#ArmoniK_Core_Common_Tests_FullIntegration_FullyIntegratedTest_TaskRetryShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TaskRetryShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TaskRetryShouldSucceed
+  nameWithType: FullyIntegratedTest.TaskRetryShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html#ArmoniK_Core_Common_Tests_FullIntegration_FullyIntegratedTest_TearDown
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TearDown
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TearDown()
+  nameWithType: FullyIntegratedTest.TearDown()
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html#ArmoniK_Core_Common_Tests_FullIntegration_FullyIntegratedTest_TearDown_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.TearDown
+  nameWithType: FullyIntegratedTest.TearDown
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase
+  name: WorkerStreamHandlerBase
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html
+  commentId: T:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase
+  nameWithType: WorkerStreamHandlerBase
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.#ctor
+  name: WorkerStreamHandlerBase()
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase__ctor
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.#ctor
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.WorkerStreamHandlerBase()
+  nameWithType: WorkerStreamHandlerBase.WorkerStreamHandlerBase()
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.#ctor*
+  name: WorkerStreamHandlerBase
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.WorkerStreamHandlerBase
+  nameWithType: WorkerStreamHandlerBase.WorkerStreamHandlerBase
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.ChannelAsyncPipe
+  name: ChannelAsyncPipe
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_ChannelAsyncPipe
+  commentId: F:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.ChannelAsyncPipe
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.ChannelAsyncPipe
+  nameWithType: WorkerStreamHandlerBase.ChannelAsyncPipe
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: WorkerStreamHandlerBase.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Check
+  nameWithType: WorkerStreamHandlerBase.Check
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_Dispose
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Dispose
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Dispose()
+  nameWithType: WorkerStreamHandlerBase.Dispose()
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Dispose
+  nameWithType: WorkerStreamHandlerBase.Dispose
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Init(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Init(CancellationToken)
+  nameWithType: WorkerStreamHandlerBase.Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Init
+  nameWithType: WorkerStreamHandlerBase.Init
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Pipe
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_Pipe
+  commentId: P:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Pipe
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Pipe
+  nameWithType: WorkerStreamHandlerBase.Pipe
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Pipe*
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_Pipe_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Pipe
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Pipe
+  nameWithType: WorkerStreamHandlerBase.Pipe
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing(TaskData,CancellationToken)
+  name: StartTaskProcessing(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_StartTaskProcessing_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing(TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing(TaskData, CancellationToken)
+  nameWithType: WorkerStreamHandlerBase.StartTaskProcessing(TaskData, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing*
+  name: StartTaskProcessing
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_StartTaskProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing
+  nameWithType: WorkerStreamHandlerBase.StartTaskProcessing
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.TaskList
+  name: TaskList
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_TaskList
+  commentId: F:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.TaskList
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.TaskList
+  nameWithType: WorkerStreamHandlerBase.TaskList
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.WorkerReturn
+  name: WorkerReturn()
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_WorkerReturn
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.WorkerReturn
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.WorkerReturn()
+  nameWithType: WorkerStreamHandlerBase.WorkerReturn()
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.WorkerReturn*
+  name: WorkerReturn
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_WorkerReturn_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.WorkerReturn
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.WorkerReturn
+  nameWithType: WorkerStreamHandlerBase.WorkerReturn
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest
+  name: WorkerStreamHandlerFullTest
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest
+  nameWithType: WorkerStreamHandlerFullTest
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing(TaskData,CancellationToken)
+  name: StartTaskProcessing(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerFullTest_StartTaskProcessing_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing(TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing(TaskData, CancellationToken)
+  nameWithType: WorkerStreamHandlerFullTest.StartTaskProcessing(TaskData, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing*
+  name: StartTaskProcessing
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerFullTest_StartTaskProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing
+  nameWithType: WorkerStreamHandlerFullTest.StartTaskProcessing
 - uid: ArmoniK.Core.Common.Tests.Helpers
   name: ArmoniK.Core.Common.Tests.Helpers
   href: api/ArmoniK.Core.Common.Tests.Helpers.html
   commentId: N:ArmoniK.Core.Common.Tests.Helpers
   fullName: ArmoniK.Core.Common.Tests.Helpers
   nameWithType: ArmoniK.Core.Common.Tests.Helpers
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2
+  name: ChannelAsyncPipe<TReadMessage, TWriteMessage>
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2
+  name.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage)
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.#ctor
+  name: ChannelAsyncPipe()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2__ctor
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.#ctor
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.ChannelAsyncPipe()
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ChannelAsyncPipe()
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.ChannelAsyncPipe()
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ChannelAsyncPipe()
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.#ctor*
+  name: ChannelAsyncPipe
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.ChannelAsyncPipe
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ChannelAsyncPipe
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.ChannelAsyncPipe
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ChannelAsyncPipe
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.CompleteAsync
+  name: CompleteAsync()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_CompleteAsync
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.CompleteAsync
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.CompleteAsync()
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync()
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.CompleteAsync()
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync()
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.CompleteAsync*
+  name: CompleteAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_CompleteAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.CompleteAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.CompleteAsync
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.CompleteAsync
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reader
+  name: Reader
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_Reader
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reader
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reader
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reader
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reader
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reader
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reader*
+  name: Reader
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_Reader_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reader
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reader
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reader
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reader
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reader
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reverse
+  name: Reverse
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_Reverse
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reverse
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reverse
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reverse
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reverse
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reverse
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reverse*
+  name: Reverse
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_Reverse_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reverse
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reverse
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reverse
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reverse
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reverse
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.WriteAsync(`1)
+  name: WriteAsync(TWriteMessage)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_WriteAsync__1_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.WriteAsync(`1)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync(TWriteMessage)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync(TWriteMessage)
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync(TWriteMessage)
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync(TWriteMessage)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.WriteAsync(IEnumerable{`1})
+  name: WriteAsync(IEnumerable<TWriteMessage>)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_WriteAsync_IEnumerable__1__
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.WriteAsync(IEnumerable{`1})
+  name.vb: WriteAsync(IEnumerable(Of TWriteMessage))
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync(IEnumerable<TWriteMessage>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync(IEnumerable(Of TWriteMessage))
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync(IEnumerable<TWriteMessage>)
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync(IEnumerable(Of TWriteMessage))
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.WriteAsync*
+  name: WriteAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_WriteAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.WriteAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync
 - uid: ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper
   name: GrpcSubmitterServiceHelper
   href: api/ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.html
@@ -9138,6 +9468,44 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.Helpers.LogMessage
   fullName: ArmoniK.Core.Common.Tests.Helpers.LogMessage
   nameWithType: LogMessage
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider
+  name: TestPollingAgentProvider
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider
+  nameWithType: TestPollingAgentProvider
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  name: TestPollingAgentProvider(IWorkerStreamHandler)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollingAgentProvider__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.TestPollingAgentProvider(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  nameWithType: TestPollingAgentProvider.TestPollingAgentProvider(IWorkerStreamHandler)
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.#ctor*
+  name: TestPollingAgentProvider
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollingAgentProvider__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.TestPollingAgentProvider
+  nameWithType: TestPollingAgentProvider.TestPollingAgentProvider
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollingAgentProvider_Dispose
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Dispose
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Dispose()
+  nameWithType: TestPollingAgentProvider.Dispose()
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollingAgentProvider_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Dispose
+  nameWithType: TestPollingAgentProvider.Dispose
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Submitter
+  name: Submitter
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestPollingAgentProvider_Submitter
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Submitter
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.Submitter
+  nameWithType: TestPollingAgentProvider.Submitter
 - uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext
   name: TestServerCallContext
   href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html
@@ -11839,6 +12207,75 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Utils.Heart.Stop
   nameWithType: Heart.Stop
+- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2
+  name: IAsyncPipe<TReadMessage, TWriteMessage>
+  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html
+  commentId: T:ArmoniK.Core.Common.Utils.IAsyncPipe`2
+  name.vb: IAsyncPipe(Of TReadMessage, TWriteMessage)
+  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>
+  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage)
+  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>
+  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage)
+- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.CompleteAsync
+  name: CompleteAsync()
+  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_CompleteAsync
+  commentId: M:ArmoniK.Core.Common.Utils.IAsyncPipe`2.CompleteAsync
+  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.CompleteAsync()
+  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync()
+  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.CompleteAsync()
+  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync()
+- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.CompleteAsync*
+  name: CompleteAsync
+  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_CompleteAsync_
+  commentId: Overload:ArmoniK.Core.Common.Utils.IAsyncPipe`2.CompleteAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.CompleteAsync
+  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync
+  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.CompleteAsync
+  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync
+- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.Reader
+  name: Reader
+  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_Reader
+  commentId: P:ArmoniK.Core.Common.Utils.IAsyncPipe`2.Reader
+  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.Reader
+  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).Reader
+  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.Reader
+  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).Reader
+- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.Reader*
+  name: Reader
+  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_Reader_
+  commentId: Overload:ArmoniK.Core.Common.Utils.IAsyncPipe`2.Reader
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.Reader
+  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).Reader
+  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.Reader
+  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).Reader
+- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.WriteAsync(`1)
+  name: WriteAsync(TWriteMessage)
+  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_WriteAsync__1_
+  commentId: M:ArmoniK.Core.Common.Utils.IAsyncPipe`2.WriteAsync(`1)
+  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync(TWriteMessage)
+  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync(TWriteMessage)
+  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync(TWriteMessage)
+  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync(TWriteMessage)
+- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.WriteAsync(IEnumerable{`1})
+  name: WriteAsync(IEnumerable<TWriteMessage>)
+  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_WriteAsync_IEnumerable__1__
+  commentId: M:ArmoniK.Core.Common.Utils.IAsyncPipe`2.WriteAsync(IEnumerable{`1})
+  name.vb: WriteAsync(IEnumerable(Of TWriteMessage))
+  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync(IEnumerable<TWriteMessage>)
+  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync(IEnumerable(Of TWriteMessage))
+  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync(IEnumerable<TWriteMessage>)
+  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync(IEnumerable(Of TWriteMessage))
+- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.WriteAsync*
+  name: WriteAsync
+  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_WriteAsync_
+  commentId: Overload:ArmoniK.Core.Common.Utils.IAsyncPipe`2.WriteAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync
+  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync
+  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync
+  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync
 - uid: ArmoniK.Core.Common.Utils.TaskExt
   name: TaskExt
   href: api/ArmoniK.Core.Common.Utils.TaskExt.html

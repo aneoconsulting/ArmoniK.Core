@@ -94,18 +94,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_Stream.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Stream%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_Pipe.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Pipe%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/IWorkerStreamHandler.cs/#L48">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/IWorkerStreamHandler.cs/#L49">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_Stream_" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Stream*"></a>
-  <h4 id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_Stream" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Stream">Stream</h4>
+  <a id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_Pipe_" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Pipe*"></a>
+  <h4 id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_Pipe" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Pipe">Pipe</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">AsyncDuplexStreamingCall&lt;ProcessRequest, ProcessReply&gt;? Stream { get; }</code></pre>
+    <pre><code class="lang-csharp hljs">IAsyncPipe&lt;ProcessReply, ProcessRequest&gt; Pipe { get; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -117,67 +117,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">AsyncDuplexStreamingCall</span>&lt;<span class="xref">ProcessRequest</span>, <span class="xref">ProcessReply</span>&gt;&gt;</td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  <span class="small pull-right mobile-hide">
-    <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerRequestStream.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerRequestStream%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
-  </span>
-  <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/IWorkerStreamHandler.cs/#L52">View Source</a>
-  </span>
-  <a id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerRequestStream_" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerRequestStream*"></a>
-  <h4 id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerRequestStream" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerRequestStream">WorkerRequestStream</h4>
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">IClientStreamWriter&lt;ProcessRequest&gt;? WorkerRequestStream { get; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">IClientStreamWriter</span>&lt;<span class="xref">ProcessRequest</span>&gt;&gt;</td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  <span class="small pull-right mobile-hide">
-    <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerResponseStream.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerResponseStream%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
-  </span>
-  <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/IWorkerStreamHandler.cs/#L50">View Source</a>
-  </span>
-  <a id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerResponseStream_" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerResponseStream*"></a>
-  <h4 id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerResponseStream" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerResponseStream">WorkerResponseStream</h4>
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">IAsyncStreamReader&lt;ProcessReply&gt;? WorkerResponseStream { get; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">IAsyncStreamReader</span>&lt;<span class="xref">ProcessReply</span>&gt;&gt;</td>
+        <td><a class="xref" href="ArmoniK.Core.Common.Utils.IAsyncPipe-2.html">IAsyncPipe</a>&lt;<span class="xref">ProcessReply</span>, <span class="xref">ProcessRequest</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -189,7 +129,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_StartTaskProcessing_TaskData_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing(TaskData%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/IWorkerStreamHandler.cs/#L45">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/IWorkerStreamHandler.cs/#L46">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_StartTaskProcessing_" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing*"></a>
   <h4 id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_StartTaskProcessing_TaskData_CancellationToken_" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing(TaskData,CancellationToken)">StartTaskProcessing(TaskData, CancellationToken)</h4>
@@ -226,7 +166,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerReturn.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerReturn%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/IWorkerStreamHandler.cs/#L43">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/IWorkerStreamHandler.cs/#L44">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerReturn_" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerReturn*"></a>
   <h4 id="ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerReturn" data-uid="ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerReturn">WorkerReturn()</h4>
@@ -262,7 +202,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/IWorkerStreamHandler.cs/#L40" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/IWorkerStreamHandler.cs/#L41" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>
