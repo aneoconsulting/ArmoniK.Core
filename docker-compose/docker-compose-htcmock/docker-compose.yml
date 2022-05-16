@@ -167,6 +167,8 @@ services:
 
   armonik.samples.htcmock.server:
     image: ${DOCKER_REGISTRY-}armoniksampleshtcmockserver
+    ports:
+      - 1080:1080
     build:
       context: ../..
       dockerfile: Tests/HtcMock/Server/src/Dockerfile
@@ -193,7 +195,7 @@ services:
       context: ../..
       dockerfile: Tests/HtcMock/Client/src/Dockerfile
     environment:
-      - Grpc__Endpoint=http://armonik.core.control.submitter:80
+      - Grpc__Endpoint=http://armonik.core.control.submitter:5001
       - SLEEP_BEFORE_LAUNCH=10000
     depends_on:
       - database

@@ -46,6 +46,7 @@ services:
       - Amqp__MaxPriority=10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
+      - ASPNETCORE_URLS=https://+:5443;http://+:5001
     logging:
       driver: fluentd
       options:
@@ -83,6 +84,7 @@ services:
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
+      - ASPNETCORE_URLS=https://+:5443;http://+:5002
     logging:
       driver: fluentd
       options:
@@ -120,6 +122,7 @@ services:
       - Amqp__MaxPriority=10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
+      - ASPNETCORE_URLS=https://+:5443;http://+:9980
     logging:
       driver: fluentd
       options:
@@ -130,8 +133,6 @@ services:
     # build:
     #   context: ..
     #   dockerfile: Tests/Stream/Server/Dockerfile
-    cap_add:
-      - NET_ADMIN
     networks:
       - armonik-net
       - armonik-monitoring
@@ -142,6 +143,9 @@ services:
     environment:
       - Serilog__Properties__Application=ArmoniK.Compute.Worker
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
+      - ASPNETCORE_URLS=https://+:5443;http://+:1080
+    ports:
+      - 1080:1080
     logging:
       driver: fluentd
       options:
