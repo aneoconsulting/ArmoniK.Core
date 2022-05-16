@@ -30,6 +30,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Stream.Client;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
@@ -62,12 +63,11 @@ internal class StreamWrapperTests
 
     var builder = new ConfigurationBuilder().AddInMemoryCollection(baseConfig)
                                             .AddEnvironmentVariables();
-    var configuration        = builder.Build();
-    var configurationSection = configuration.GetSection(Options.Grpc.SettingSection);
-    var endpoint             = configurationSection.GetValue<string>("Endpoint");
+    var configuration = builder.Build();
+    var options       = configuration.GetRequiredValue<ArmoniK.Core.Common.Options.GrpcClient>(Core.Common.Options.GrpcClient.SettingSection);
 
-    Console.WriteLine($"endpoint : {endpoint}");
-    var channel = GrpcChannel.ForAddress(endpoint);
+    Console.WriteLine($"endpoint : {options.Endpoint}");
+    var channel = GrpcChannelFactory.CreateChannel(options);
     client_ = new Submitter.SubmitterClient(channel);
     Console.WriteLine("Client created");
   }

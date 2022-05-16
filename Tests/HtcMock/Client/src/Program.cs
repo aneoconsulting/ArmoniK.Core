@@ -28,6 +28,7 @@ using System.Threading;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Utils;
 
 using Grpc.Net.Client;
 
@@ -63,11 +64,11 @@ internal class Program
 
     var factory = new LoggerFactory().AddSerilog();
 
-    var options        = configuration.GetRequiredValue<Options.Grpc>(Options.Grpc.SettingSection);
+    var options        = configuration.GetRequiredValue<ArmoniK.Core.Common.Options.GrpcClient>(Core.Common.Options.GrpcClient.SettingSection);
     var optionsHtcMock = new Options.HtcMock();
     configuration.GetSection(Options.HtcMock.SettingSection)
                  .Bind(optionsHtcMock);
-    var channel = GrpcChannel.ForAddress(options.Endpoint);
+    var channel = GrpcChannelFactory.CreateChannel(options);
 
     var submitterClient = new Submitter.SubmitterClient(channel);
 
