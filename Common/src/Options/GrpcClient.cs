@@ -24,11 +24,14 @@
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options;
+namespace ArmoniK.Core.Common.Options;
 
 [PublicAPI]
-public class Grpc
+public class GrpcClient
 {
-  public const string SettingSection = nameof(Grpc);
-  public       string Endpoint { get; set; }
+  public const string SettingSection = nameof(GrpcClient);
+  public string Endpoint { get; set; }
+  public bool SslValidation { get; set; }
+  public string CertPem { get; set; }
+  public string KeyPem { get; set; }
 }
