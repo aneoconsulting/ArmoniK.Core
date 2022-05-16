@@ -30,6 +30,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
@@ -127,7 +128,7 @@ public class ResultTable : IResultTable
     var resultCollection = resultCollectionProvider_.Get();
 
     return !await resultCollection.AsQueryable(sessionHandle)
-                                  .AnyAsync(model => model.Status != "Completed" && model.SessionId == sessionId && keys.Contains(model.Name),
+                                  .AnyAsync(model => model.Status != ResultStatus.Completed && model.SessionId == sessionId && keys.Contains(model.Name),
                                             cancellationToken)
                                   .ConfigureAwait(false);
   }
@@ -151,7 +152,7 @@ public class ResultTable : IResultTable
     var res = await resultCollection
                     .UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Name == key && model.OwnerTaskId == ownerTaskId && model.SessionId == sessionId),
                                     Builders<Result>.Update.Set(model => model.Status,
-                                                                "Completed")
+                                                                ResultStatus.Completed)
                                                     .Set(model => model.Data,
                                                          smallPayload),
                                     cancellationToken: cancellationToken)
@@ -180,7 +181,7 @@ public class ResultTable : IResultTable
 
     var res = await resultCollection.UpdateOneAsync(Builders<Result>.Filter.Where(model => model.Name == key && model.OwnerTaskId == ownerTaskId),
                                                     Builders<Result>.Update.Set(model => model.Status,
-                                                                                "Completed"),
+                                                                                ResultStatus.Completed),
                                                     cancellationToken: cancellationToken)
                                     .ConfigureAwait(false);
     if (res.MatchedCount == 0)

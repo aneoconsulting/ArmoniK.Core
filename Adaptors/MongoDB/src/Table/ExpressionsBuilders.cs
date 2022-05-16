@@ -28,31 +28,29 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-using ArmoniK.Core.Common.Storage;
-
 namespace ArmoniK.Core.Adapters.MongoDB.Table;
 
 public static class ExpressionsBuilders
 {
-  public static Expression<Func<TaskData, bool>> FieldFilterExpression<TField>(Expression<Func<TaskData, TField>> expression,
-                                                                               IList<TField>                      values,
-                                                                               bool                               include = true)
+  public static Expression<Func<TData, bool>> FieldFilterExpression<TData, TField>(Expression<Func<TData, TField>> expression,
+                                                                                 IList<TField>                   values,
+                                                                                 bool                            include = true)
   {
-    var x = Expression.Parameter(typeof(TaskData),
+    var x = Expression.Parameter(typeof(TData),
                                  "model");
 
-    return (Expression<Func<TaskData, bool>>)Expression.Lambda(FieldFilterInternal(expression,
-                                                                                   values,
-                                                                                   include,
-                                                                                   x),
-                                                               x);
+    return (Expression<Func<TData, bool>>)Expression.Lambda(FieldFilterInternal(expression,
+                                                                                values,
+                                                                                include,
+                                                                                x),
+                                                            x);
   }
 
 
-  public static Expression FieldFilterInternal<TField>(Expression<Func<TaskData, TField>> expression,
-                                                       IList<TField>                      values,
-                                                       bool                               include,
-                                                       Expression                         x)
+  public static Expression FieldFilterInternal<TData, TField>(Expression<Func<TData, TField>> expression,
+                                                       IList<TField>                          values,
+                                                       bool                                   include,
+                                                       Expression                             x)
   {
     if (!values.Any())
     {
@@ -62,7 +60,7 @@ public static class ExpressionsBuilders
     var fieldName = ((MemberExpression)expression.Body).Member.Name;
 
     var property = Expression.Property(x,
-                                       typeof(TaskData),
+                                       typeof(TData),
                                        fieldName);
 
     if (values.Count == 1)
@@ -92,10 +90,10 @@ public static class ExpressionsBuilders
              : Expression.Not(body);
   }
 
-  public static Expression FieldFilterInternal<TField>(Expression<Func<TaskData, IEnumerable<TField>>> expression,
-                                                       IList<TField>                                   values,
-                                                       bool                                            include,
-                                                       Expression                                      x)
+  public static Expression FieldFilterInternal<TData, TField>(Expression<Func<TData, IEnumerable<TField>>> expression,
+                                                       IList<TField>                                       values,
+                                                       bool                                                include,
+                                                       Expression                                          x)
   {
     if (!values.Any())
     {
@@ -105,7 +103,7 @@ public static class ExpressionsBuilders
     var fieldName = ((MemberExpression)expression.Body).Member.Name;
 
     var property = Expression.Property(x,
-                                       typeof(TaskData),
+                                       typeof(TData),
                                        fieldName);
 
     var containsMethodInfo = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)

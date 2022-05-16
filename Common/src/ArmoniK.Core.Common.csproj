@@ -53,6 +53,12 @@
     <Protobuf Include="..\..\Protos\V1\task_status.proto" GrpcServices="Message">
       <Link>gRPC\Protos\V1\task_status.proto</Link>
     </Protobuf>
+    <Protobuf Include="..\..\Protos\V1\session_status.proto" GrpcServices="Message">
+      <Link>gRPC\Protos\V1\session_status.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\Protos\V1\result_status.proto" GrpcServices="Message">
+      <Link>gRPC\Protos\V1\result_status.proto</Link>
+    </Protobuf>
   </ItemGroup>
 
 </Project>

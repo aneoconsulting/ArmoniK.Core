@@ -50,7 +50,7 @@ internal class BsonSerializerTest
   public void SerializeSessionDataModel()
   {
     var rdm = new SessionData("SessionId",
-                              "Running",
+                              SessionStatus.Running,
                               new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
@@ -79,7 +79,7 @@ internal class BsonSerializerTest
     var rdm = new Result("sessionId",
                          "Key",
                          "OwnerTaskId",
-                         "Completed",
+                         ResultStatus.Completed,
                          DateTime.Parse("2022-02-15 8:55:05.954")
                                  .ToUniversalTime(),
                          new[]

@@ -753,4 +753,34 @@ public class TaskTableTestBase
                                                 });
     }
   }
+
+  [Test]
+  public async Task ListTaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var taskList = await TaskTable.ListTasksAsync(new TaskFilter
+                                                    {
+                                                      Included = new TaskFilter.Types.StatusesRequest
+                                                                 {
+                                                                   Statuses =
+                                                                   {
+                                                                     TaskStatus.Completed,
+                                                                   },
+                                                                 },
+                                                      Session = new TaskFilter.Types.IdsRequest
+                                                                {
+                                                                  Ids =
+                                                                  {
+                                                                    "SessionId",
+                                                                  },
+                                                                },
+                                                    },
+                                                    CancellationToken.None)
+                                    .ToListAsync()
+                                    .ConfigureAwait(false);
+
+      Assert.AreEqual(1, taskList.Count);
+    }
+  }
 }

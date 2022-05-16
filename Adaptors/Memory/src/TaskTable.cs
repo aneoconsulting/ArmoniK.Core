@@ -247,7 +247,7 @@ public class TaskTable : ITaskTable
     IEnumerable<string> rawList = filter.IdsCase switch
                                   {
                                     TaskFilter.IdsOneofCase.None =>
-                                      throw new ArgumentException("Filter is not properly initialized. Either the session, the dispatch or the tasks are required",
+                                      throw new ArgumentException("Filter is not properly initialized. Either the session or the tasks are required",
                                                                   nameof(filter)),
                                     TaskFilter.IdsOneofCase.Session => filter.Session.Ids.SelectMany(s => session2TaskIds_[s])
                                                                              .ToImmutableList(),

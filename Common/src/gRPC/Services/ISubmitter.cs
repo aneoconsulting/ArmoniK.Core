@@ -103,4 +103,7 @@ public interface ISubmitter
 
   Task<TaskIdList> ListTasksAsync(TaskFilter        request,
                                   CancellationToken contextCancellationToken);
+
+  Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
+                                        CancellationToken contextCancellationToken);
 }

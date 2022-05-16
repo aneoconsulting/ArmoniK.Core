@@ -568,7 +568,7 @@ public class Submitter : ISubmitter
                        result.OwnerTaskId);
       if (ownerId != result.OwnerTaskId)
       {
-        continueWaiting = result.Status != "Completed";
+        continueWaiting = result.Status != ResultStatus.Completed;
         if (continueWaiting)
         {
           await Task.Delay(150,
@@ -612,6 +612,19 @@ public class Submitter : ISubmitter
                                                             contextCancellationToken)
                                             .ToListAsync(contextCancellationToken)
                                             .ConfigureAwait(false));
+    return idList;
+  }
+
+  /// <inheritdoc />
+  public async Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
+                                               CancellationToken contextCancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
+    var       idList   = new SessionIdList();
+    idList.SessionIds.AddRange(await sessionTable_.ListSessionsAsync(request,
+                                                                     contextCancellationToken)
+                                                  .ToListAsync(contextCancellationToken)
+                                                  .ConfigureAwait(false));
     return idList;
   }
 
@@ -709,7 +722,7 @@ public class Submitter : ISubmitter
                                                                     .Select(key => new Result(session,
                                                                                               key,
                                                                                               request.Id,
-                                                                                              "Created",
+                                                                                              ResultStatus.Created,
                                                                                               DateTime.UtcNow,
                                                                                               Array.Empty<byte>()));
                                            return (TaskDataModel: tdm, ResultModel: resultModel);

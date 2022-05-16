@@ -246,7 +246,7 @@ public class RequestProcessorTest
                          new Result(SessionId,
                                     Output1,
                                     Task1,
-                                    "Created",
+                                    ResultStatus.Created,
                                     DateTime.Today,
                                     new[]
                                     {
@@ -255,7 +255,7 @@ public class RequestProcessorTest
                          new Result(SessionId,
                                     Output2,
                                     Task2,
-                                    "Created",
+                                    ResultStatus.Created,
                                     DateTime.Today,
                                     new[]
                                     {
@@ -540,7 +540,7 @@ public class RequestProcessorTest
                                                Output1,
                                                CancellationToken.None)
                                     .ConfigureAwait(false);
-        Assert.AreEqual("Completed",res.Status);
+        Assert.AreEqual(ResultStatus.Completed,res.Status);
         break;
       case ProcessReply.TypeOneofCase.CreateSmallTask:
         Assert.IsEmpty(processResult);

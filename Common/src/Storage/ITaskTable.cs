@@ -105,4 +105,5 @@ public interface ITaskTable : IInitializable
 
   Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
                                  CancellationToken   cancellationToken = default);
+
 }

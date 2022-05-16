@@ -51,5 +51,6 @@ public interface ISessionTable : IInitializable
   Task DeleteSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
 
-  IAsyncEnumerable<string> ListSessionsAsync(CancellationToken cancellationToken = default);
+  IAsyncEnumerable<string> ListSessionsAsync(Api.gRPC.V1.SessionFilter request,
+                                             CancellationToken         cancellationToken = default);
 }

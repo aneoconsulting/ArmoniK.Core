@@ -27,6 +27,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -49,7 +50,7 @@ public class ResultTableTestBase
                            new Result("SessionId",
                                       "ResultIsAvailable",
                                       "OwnerId",
-                                      "Completed",
+                                      ResultStatus.Completed,
                                       DateTime.Today,
                                       new[]
                                       {
@@ -58,7 +59,7 @@ public class ResultTableTestBase
                            new Result("SessionId",
                                       "ResultIsNotAvailable",
                                       "OwnerId",
-                                      "Aborted",
+                                      ResultStatus.Aborted,
                                       DateTime.Today,
                                       new[]
                                       {
@@ -156,7 +157,7 @@ public class ResultTableTestBase
                                new Result("AnotherSessionId",
                                           "Key",
                                           "OwnerId",
-                                          "Completed",
+                                          ResultStatus.Completed,
                                           DateTime.Today,
                                           new[]
                                           {
@@ -170,7 +171,7 @@ public class ResultTableTestBase
                                               CancellationToken.None)
                                    .ConfigureAwait(false);
 
-    Assert.IsTrue(result.Status == "Completed");
+    Assert.IsTrue(result.Status == ResultStatus.Completed);
   }
 
   [Test]
@@ -187,7 +188,7 @@ public class ResultTableTestBase
                                                                         new Result("SessionId",
                                                                                    "ResultIsAvailable",
                                                                                    "",
-                                                                                   "",
+                                                                                   ResultStatus.Unspecified,
                                                                                    DateTime.Today,
                                                                                    new[]
                                                                                    {
