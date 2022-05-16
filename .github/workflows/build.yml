@@ -325,7 +325,7 @@ jobs:
         timeout-minutes: 10
         run: |
           cd ./Tests/Stream/Client/
-          export GrpcClient__Endpoint=http://localhost:80
+          export GrpcClient__Endpoint=http://localhost:5001
           dotnet test --logger "trx;LogFileName=test-results.trx"
 
       - name: Test Report
