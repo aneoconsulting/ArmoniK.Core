@@ -386,7 +386,7 @@ jobs:
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
             -e HtcMock__SubTasksLevels=4 \
-            -e Grpc__Endpoint=http://armonik.control.submitter:80 \
+            -e Grpc__Endpoint=http://armonik.control.submitter:5001 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
           ls -la docker-compose/logs/*.json
 
