@@ -36,6 +36,10 @@ public static class GrpcChannelFactory
 {
   public static GrpcChannel CreateChannel(Options.GrpcClient optionsGrpcClient)
   {
+    if (string.IsNullOrEmpty(optionsGrpcClient.Endpoint))
+    {
+      throw new InvalidOperationException($"{nameof(optionsGrpcClient.Endpoint)} should not be null or empty");
+    }
     var uri = new Uri(optionsGrpcClient.Endpoint);
 
     var credentials = uri.Scheme == Uri.UriSchemeHttps
