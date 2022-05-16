@@ -5695,6 +5695,76 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.LoggerExt.LogFunction
   nameWithType: LoggerExt.LogFunction
+- uid: ArmoniK.Core.Common.Options
+  name: ArmoniK.Core.Common.Options
+  href: api/ArmoniK.Core.Common.Options.html
+  commentId: N:ArmoniK.Core.Common.Options
+  fullName: ArmoniK.Core.Common.Options
+  nameWithType: ArmoniK.Core.Common.Options
+- uid: ArmoniK.Core.Common.Options.GrpcClient
+  name: GrpcClient
+  href: api/ArmoniK.Core.Common.Options.GrpcClient.html
+  commentId: T:ArmoniK.Core.Common.Options.GrpcClient
+  fullName: ArmoniK.Core.Common.Options.GrpcClient
+  nameWithType: GrpcClient
+- uid: ArmoniK.Core.Common.Options.GrpcClient.CertPem
+  name: CertPem
+  href: api/ArmoniK.Core.Common.Options.GrpcClient.html#ArmoniK_Core_Common_Options_GrpcClient_CertPem
+  commentId: P:ArmoniK.Core.Common.Options.GrpcClient.CertPem
+  fullName: ArmoniK.Core.Common.Options.GrpcClient.CertPem
+  nameWithType: GrpcClient.CertPem
+- uid: ArmoniK.Core.Common.Options.GrpcClient.CertPem*
+  name: CertPem
+  href: api/ArmoniK.Core.Common.Options.GrpcClient.html#ArmoniK_Core_Common_Options_GrpcClient_CertPem_
+  commentId: Overload:ArmoniK.Core.Common.Options.GrpcClient.CertPem
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Options.GrpcClient.CertPem
+  nameWithType: GrpcClient.CertPem
+- uid: ArmoniK.Core.Common.Options.GrpcClient.Endpoint
+  name: Endpoint
+  href: api/ArmoniK.Core.Common.Options.GrpcClient.html#ArmoniK_Core_Common_Options_GrpcClient_Endpoint
+  commentId: P:ArmoniK.Core.Common.Options.GrpcClient.Endpoint
+  fullName: ArmoniK.Core.Common.Options.GrpcClient.Endpoint
+  nameWithType: GrpcClient.Endpoint
+- uid: ArmoniK.Core.Common.Options.GrpcClient.Endpoint*
+  name: Endpoint
+  href: api/ArmoniK.Core.Common.Options.GrpcClient.html#ArmoniK_Core_Common_Options_GrpcClient_Endpoint_
+  commentId: Overload:ArmoniK.Core.Common.Options.GrpcClient.Endpoint
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Options.GrpcClient.Endpoint
+  nameWithType: GrpcClient.Endpoint
+- uid: ArmoniK.Core.Common.Options.GrpcClient.KeyPem
+  name: KeyPem
+  href: api/ArmoniK.Core.Common.Options.GrpcClient.html#ArmoniK_Core_Common_Options_GrpcClient_KeyPem
+  commentId: P:ArmoniK.Core.Common.Options.GrpcClient.KeyPem
+  fullName: ArmoniK.Core.Common.Options.GrpcClient.KeyPem
+  nameWithType: GrpcClient.KeyPem
+- uid: ArmoniK.Core.Common.Options.GrpcClient.KeyPem*
+  name: KeyPem
+  href: api/ArmoniK.Core.Common.Options.GrpcClient.html#ArmoniK_Core_Common_Options_GrpcClient_KeyPem_
+  commentId: Overload:ArmoniK.Core.Common.Options.GrpcClient.KeyPem
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Options.GrpcClient.KeyPem
+  nameWithType: GrpcClient.KeyPem
+- uid: ArmoniK.Core.Common.Options.GrpcClient.SettingSection
+  name: SettingSection
+  href: api/ArmoniK.Core.Common.Options.GrpcClient.html#ArmoniK_Core_Common_Options_GrpcClient_SettingSection
+  commentId: F:ArmoniK.Core.Common.Options.GrpcClient.SettingSection
+  fullName: ArmoniK.Core.Common.Options.GrpcClient.SettingSection
+  nameWithType: GrpcClient.SettingSection
+- uid: ArmoniK.Core.Common.Options.GrpcClient.SslValidation
+  name: SslValidation
+  href: api/ArmoniK.Core.Common.Options.GrpcClient.html#ArmoniK_Core_Common_Options_GrpcClient_SslValidation
+  commentId: P:ArmoniK.Core.Common.Options.GrpcClient.SslValidation
+  fullName: ArmoniK.Core.Common.Options.GrpcClient.SslValidation
+  nameWithType: GrpcClient.SslValidation
+- uid: ArmoniK.Core.Common.Options.GrpcClient.SslValidation*
+  name: SslValidation
+  href: api/ArmoniK.Core.Common.Options.GrpcClient.html#ArmoniK_Core_Common_Options_GrpcClient_SslValidation_
+  commentId: Overload:ArmoniK.Core.Common.Options.GrpcClient.SslValidation
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Options.GrpcClient.SslValidation
+  nameWithType: GrpcClient.SslValidation
 - uid: ArmoniK.Core.Common.Pollster
   name: ArmoniK.Core.Common.Pollster
   href: api/ArmoniK.Core.Common.Pollster.html
@@ -12137,6 +12207,25 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Utils.DisposableExt.Merge
   nameWithType: DisposableExt.Merge
+- uid: ArmoniK.Core.Common.Utils.GrpcChannelFactory
+  name: GrpcChannelFactory
+  href: api/ArmoniK.Core.Common.Utils.GrpcChannelFactory.html
+  commentId: T:ArmoniK.Core.Common.Utils.GrpcChannelFactory
+  fullName: ArmoniK.Core.Common.Utils.GrpcChannelFactory
+  nameWithType: GrpcChannelFactory
+- uid: ArmoniK.Core.Common.Utils.GrpcChannelFactory.CreateChannel(ArmoniK.Core.Common.Options.GrpcClient)
+  name: CreateChannel(GrpcClient)
+  href: api/ArmoniK.Core.Common.Utils.GrpcChannelFactory.html#ArmoniK_Core_Common_Utils_GrpcChannelFactory_CreateChannel_ArmoniK_Core_Common_Options_GrpcClient_
+  commentId: M:ArmoniK.Core.Common.Utils.GrpcChannelFactory.CreateChannel(ArmoniK.Core.Common.Options.GrpcClient)
+  fullName: ArmoniK.Core.Common.Utils.GrpcChannelFactory.CreateChannel(ArmoniK.Core.Common.Options.GrpcClient)
+  nameWithType: GrpcChannelFactory.CreateChannel(GrpcClient)
+- uid: ArmoniK.Core.Common.Utils.GrpcChannelFactory.CreateChannel*
+  name: CreateChannel
+  href: api/ArmoniK.Core.Common.Utils.GrpcChannelFactory.html#ArmoniK_Core_Common_Utils_GrpcChannelFactory_CreateChannel_
+  commentId: Overload:ArmoniK.Core.Common.Utils.GrpcChannelFactory.CreateChannel
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.GrpcChannelFactory.CreateChannel
+  nameWithType: GrpcChannelFactory.CreateChannel
 - uid: ArmoniK.Core.Common.Utils.Heart
   name: Heart
   href: api/ArmoniK.Core.Common.Utils.Heart.html
@@ -12973,37 +13062,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync
   nameWithType: OpenTelemetryDataModelMapping.InitializeIndexesAsync
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options
-  name: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.html
-  commentId: N:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options
-  nameWithType: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc
-  name: Grpc
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.html
-  commentId: T:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc
-  nameWithType: Grpc
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.Endpoint
-  name: Endpoint
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_Options_Grpc_Endpoint
-  commentId: P:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.Endpoint
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.Endpoint
-  nameWithType: Grpc.Endpoint
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.Endpoint*
-  name: Endpoint
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_Options_Grpc_Endpoint_
-  commentId: Overload:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.Endpoint
-  isSpec: "True"
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.Endpoint
-  nameWithType: Grpc.Endpoint
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.SettingSection
-  name: SettingSection
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_Options_Grpc_SettingSection
-  commentId: F:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.SettingSection
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.SettingSection
-  nameWithType: Grpc.SettingSection
 - uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
   name: ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
   href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.html
@@ -13337,31 +13395,6 @@ references:
   commentId: N:ArmoniK.Samples.HtcMock.Client.Options
   fullName: ArmoniK.Samples.HtcMock.Client.Options
   nameWithType: ArmoniK.Samples.HtcMock.Client.Options
-- uid: ArmoniK.Samples.HtcMock.Client.Options.Grpc
-  name: Grpc
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.Grpc.html
-  commentId: T:ArmoniK.Samples.HtcMock.Client.Options.Grpc
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.Grpc
-  nameWithType: Grpc
-- uid: ArmoniK.Samples.HtcMock.Client.Options.Grpc.Endpoint
-  name: Endpoint
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.Grpc.html#ArmoniK_Samples_HtcMock_Client_Options_Grpc_Endpoint
-  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.Grpc.Endpoint
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.Grpc.Endpoint
-  nameWithType: Grpc.Endpoint
-- uid: ArmoniK.Samples.HtcMock.Client.Options.Grpc.Endpoint*
-  name: Endpoint
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.Grpc.html#ArmoniK_Samples_HtcMock_Client_Options_Grpc_Endpoint_
-  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.Grpc.Endpoint
-  isSpec: "True"
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.Grpc.Endpoint
-  nameWithType: Grpc.Endpoint
-- uid: ArmoniK.Samples.HtcMock.Client.Options.Grpc.SettingSection
-  name: SettingSection
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.Grpc.html#ArmoniK_Samples_HtcMock_Client_Options_Grpc_SettingSection
-  commentId: F:ArmoniK.Samples.HtcMock.Client.Options.Grpc.SettingSection
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.Grpc.SettingSection
-  nameWithType: Grpc.SettingSection
 - uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock
   name: HtcMock
   href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html

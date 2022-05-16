@@ -1061,6 +1061,30 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Options.GrpcClient.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Options.GrpcClient.html",
+          "hash": "fPJc7YhXZyql8r0r+2DeHvxY1WwaUmYJjtlJTuvkiLE="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Options.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Options.html",
+          "hash": "FNnIZBou/5xmlQYP7w9C6QURhWHqkVIZq3cfKWd1sg4="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Pollster.ComputeRequestQueue.yml",
       "output": {
         ".html": {
@@ -1973,6 +1997,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Utils.GrpcChannelFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Utils.GrpcChannelFactory.html",
+          "hash": "Sds/4QefXIzPg45K1VDEe72B6Lf7S8QR1vGht4/azeU="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Utils.Heart.yml",
       "output": {
         ".html": {
@@ -2013,7 +2049,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Utils.html",
-          "hash": "gZL/hlpnueArj3GvsEKcI4Zj55yOLl6z/uI5g0vMIUM="
+          "hash": "45dw+k+hF5NJBJKaYW3voTN7o6+xP0/FW+gJ/hoou/g="
         }
       },
       "is_incremental": false,
@@ -2477,30 +2513,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.Grpc.html",
-          "hash": "8E8+IQHHJE6H17WPfm7PFkwYbgtGoTEjVqabbjY4X1U="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options.html",
-          "hash": "bKHeTnFyJ/RAbQeINSd1ftaKbIa0O1UoOhWglL5cxko="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.TestPayload.TaskType.yml",
       "output": {
         ".html": {
@@ -2609,18 +2621,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Samples.HtcMock.Client.Options.Grpc.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Samples.HtcMock.Client.Options.Grpc.html",
-          "hash": "EVEG/jh8v3lGEf7G5gyT+RIeQ9svCEA64XOFXe42/uI="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.yml",
       "output": {
         ".html": {
@@ -2637,7 +2637,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Samples.HtcMock.Client.Options.html",
-          "hash": "pdoqbWFLCPLtc3+SI5jTgwpFibVVa+KrqvRIXStzi8s="
+          "hash": "qFxU5Ffj9KQ3wwHu8Qry5S3N2Wr2B3OGt7gNvrO4uRA="
         }
       },
       "is_incremental": false,
@@ -2745,7 +2745,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "VYamltRi7pQq2J5D8IbcNoyRzsDo+Q0Gab7lV+9nW0E="
+          "hash": "qIJOJjFki4zWi91bW/qx3z1GNumHt1UKLnOpgxoW4Cs="
         }
       },
       "is_incremental": false,
