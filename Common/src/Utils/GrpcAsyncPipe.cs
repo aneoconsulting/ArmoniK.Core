@@ -1,4 +1,4 @@
-// This file is part of the ArmoniK project
+﻿// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,29 +22,44 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
+using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
-using JetBrains.Annotations;
+namespace ArmoniK.Core.Common.Utils;
 
-using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
-
-namespace ArmoniK.Core.Common.Stream.Worker;
-
-[PublicAPI]
-public interface IWorkerStreamHandler : IInitializable, IDisposable
+class GrpcAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMessage, TWriteMessage>
 {
-  public Queue<ComputeRequest> WorkerReturn();
+  private readonly IAsyncStreamReader<TReadMessage>  reader_;
+  private readonly IClientStreamWriter<TWriteMessage> writer_;
 
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken);
+  public GrpcAsyncPipe(IAsyncStreamReader<TReadMessage>  reader,
+                       IClientStreamWriter<TWriteMessage> writer)
+  {
+    reader_ = reader;
+    writer_ = writer;
+    writer_.WriteOptions = new WriteOptions(WriteFlags.NoCompress);
+  }
 
-  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
+  public IAsyncEnumerable<TReadMessage> Reader
+    => reader_.ReadAllAsync();
+
+  public Task WriteAsync(TWriteMessage message)
+    => writer_.WriteAsync(message);
+
+  public async Task WriteAsync(IEnumerable<TWriteMessage> message)
+  {
+    foreach (var writeMessage in message)
+    {
+      await writer_.WriteAsync(writeMessage)
+                   .ConfigureAwait(false);
+    }
+  }
+
+  public Task CompleteAsync()
+    => writer_.CompleteAsync();
 }

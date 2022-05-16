@@ -1,4 +1,4 @@
-// This file is part of the ArmoniK project
+﻿// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -23,28 +23,30 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Threading;
 
-using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
+using Microsoft.Extensions.Logging;
 
-using Grpc.Core;
+namespace ArmoniK.Core.Common.Tests.Helpers;
 
-using JetBrains.Annotations;
-
-using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
-
-namespace ArmoniK.Core.Common.Stream.Worker;
-
-[PublicAPI]
-public interface IWorkerStreamHandler : IInitializable, IDisposable
+internal class ConsoleForwardingLoggerProvider : ILoggerProvider
 {
-  public Queue<ComputeRequest> WorkerReturn();
+  private readonly ForwardingLoggerProvider provider_;
 
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken);
+  public ConsoleForwardingLoggerProvider()
+  {
+    provider_ = new ForwardingLoggerProvider((logLevel,
+                                              category,
+                                              _,
+                                              message,
+                                              exception) =>
+                                             {
+                                               Console.WriteLine(logLevel + " => " + category + "\n" + message + "\n" + exception);
+                                             });
+  }
 
-  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
+  public void Dispose()
+    => provider_.Dispose();
+
+  public ILogger CreateLogger(string categoryName)
+    => provider_.CreateLogger(categoryName);
 }

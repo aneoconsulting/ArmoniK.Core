@@ -31,6 +31,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
@@ -66,21 +67,20 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public void StartTaskProcessing(TaskData taskData, CancellationToken cancellationToken)
   {
-    Stream = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
+    stream_ = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
                                    cancellationToken: cancellationToken);
-    WorkerRequestStream = Stream is not null ?
-                            Stream.RequestStream
-                            : throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
-    WorkerResponseStream = Stream is not null ?
-                             Stream.ResponseStream :
-                             throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
+    if (stream_ is null)
+    {
+      throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
+    }
+
+    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream_.ResponseStream,
+                                                           stream_.RequestStream);
   }
 
-  public AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream { get; private set; }
+  private AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? stream_;
 
-  public IAsyncStreamReader<ProcessReply>? WorkerResponseStream { get; private set; }
-
-  public IClientStreamWriter<ProcessRequest>? WorkerRequestStream { get; private set; }
+  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
   public Task Init(CancellationToken cancellationToken)
   {
@@ -97,7 +97,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public void Dispose()
   {
-    Stream?.Dispose();
+    stream_?.Dispose();
     GC.SuppressFinalize(this);
   }
 }
