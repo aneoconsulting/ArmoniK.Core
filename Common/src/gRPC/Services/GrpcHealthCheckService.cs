@@ -26,17 +26,17 @@ using ArmoniK.Core.Common.gRPC;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace ArmoniK.Core.Control.Submitter;
+namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class GrpcHealthCheckService : GrpcHealthCheckServiceBase
 {
-  /// <inheritdoc />
-  public GrpcHealthCheckService(HealthCheckService healthCheckService)
-    : base(healthCheckService,
-           new[]
-           {
+    /// <inheritdoc />
+    public GrpcHealthCheckService(HealthCheckService healthCheckService)
+      : base(healthCheckService,
+             new[]
+             {
              "ArmoniK.Core.gRPC.V1.Submitter",
-           })
-  {
-  }
+             })
+    {
+    }
 }

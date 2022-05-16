@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Protos.V1;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 

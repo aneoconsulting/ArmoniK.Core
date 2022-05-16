@@ -25,6 +25,7 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.gRPC.Protos.V1;
 using ArmoniK.Core.Common.gRPC.Validators;
 
 using Google.Protobuf;

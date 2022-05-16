@@ -24,9 +24,9 @@
 
 // ReSharper disable once CheckNamespace
 
-namespace ArmoniK.Api.gRPC.V1;
+namespace ArmoniK.Core.Common.gRPC.Protos.V1;
 
 public static class PayloadConfiguration
 {
-  public const int MaxChunkSize = 84000;
+    public const int MaxChunkSize = 84000;
 }
