@@ -241,7 +241,8 @@ public class TaskTable : ITaskTable
     var taskCollection = taskCollectionProvider_.Get();
 
     // method is final for taskStatus
-    var result = await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId,
+    var result = await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId         && model.Status != TaskStatus.Completed &&
+                                                               model.Status    != TaskStatus.Failed && model.Status != TaskStatus.Canceled,
                                                       Builders<TaskData>.Update.Set(model => model.Status,
                                                                                     TaskStatus.Canceling),
                                                       cancellationToken: cancellationToken)
