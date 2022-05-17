@@ -26,6 +26,6 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public record SessionData(string        SessionId,
-                          SessionStatus Status,
-                          TaskOptions   Options);
+public record SessionData(string                  SessionId,
+                          SessionStatus           Status,
+                          Api.gRPC.V1.TaskOptions Options);
