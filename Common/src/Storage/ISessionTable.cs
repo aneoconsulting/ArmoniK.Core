@@ -26,6 +26,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -34,10 +36,10 @@ public interface ISessionTable : IInitializable
 {
   ILogger Logger { get; }
 
-  Task CreateSessionDataAsync(string                  rootSessionId,
-                              string                  parentTaskId,
-                              Api.gRPC.V1.TaskOptions defaultOptions,
-                              CancellationToken       cancellationToken = default);
+  Task CreateSessionDataAsync(string            rootSessionId,
+                              string            parentTaskId,
+                              TaskOptions       defaultOptions,
+                              CancellationToken cancellationToken = default);
 
   Task<bool> IsSessionCancelledAsync(string            sessionId,
                                      CancellationToken cancellationToken = default);
@@ -51,6 +53,6 @@ public interface ISessionTable : IInitializable
   Task DeleteSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
 
-  IAsyncEnumerable<string> ListSessionsAsync(Api.gRPC.V1.SessionFilter request,
-                                             CancellationToken         cancellationToken = default);
+  IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     request,
+                                             CancellationToken cancellationToken = default);
 }

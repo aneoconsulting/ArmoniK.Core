@@ -206,6 +206,7 @@ public class SessionTable : ISessionTable
                                                   .FilterQuery(sessionFilter)
                                                   .Select(model => model.SessionId)
                                                   .ToAsyncEnumerable()
+                                                  .WithCancellation(cancellationToken)
                                                   .ConfigureAwait(false))
     {
       yield return sessionId;
