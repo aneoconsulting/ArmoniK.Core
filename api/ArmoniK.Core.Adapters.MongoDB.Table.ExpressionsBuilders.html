@@ -90,18 +90,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterExpression__1_Expression_Func_TaskData___0___IList___0__System_Boolean_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression%60%601(Expression%7BFunc%7BTaskData%2C%60%600%7D%7D%2CIList%7B%60%600%7D%2CSystem.Boolean)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterExpression__2_Expression_Func___0___1___IList___1__System_Boolean_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression%60%602(Expression%7BFunc%7B%60%600%2C%60%601%7D%7D%2CIList%7B%60%601%7D%2CSystem.Boolean)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/Table/ExpressionsBuilders.cs/#L37">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/Table/ExpressionsBuilders.cs/#L35">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterExpression_" data-uid="ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression*"></a>
-  <h4 id="ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterExpression__1_Expression_Func_TaskData___0___IList___0__System_Boolean_" data-uid="ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression``1(Expression{Func{TaskData,``0}},IList{``0},System.Boolean)">FieldFilterExpression&lt;TField&gt;(Expression&lt;Func&lt;TaskData, TField&gt;&gt;, IList&lt;TField&gt;, Boolean)</h4>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterExpression__2_Expression_Func___0___1___IList___1__System_Boolean_" data-uid="ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression``2(Expression{Func{``0,``1}},IList{``1},System.Boolean)">FieldFilterExpression&lt;TData, TField&gt;(Expression&lt;Func&lt;TData, TField&gt;&gt;, IList&lt;TField&gt;, Boolean)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static Expression&lt;Func&lt;TaskData, bool&gt;&gt; FieldFilterExpression&lt;TField&gt;(Expression&lt;Func&lt;TaskData, TField&gt;&gt; expression, IList&lt;TField&gt; values, bool include = true)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Expression&lt;Func&lt;TData, bool&gt;&gt; FieldFilterExpression&lt;TData, TField&gt;(Expression&lt;Func&lt;TData, TField&gt;&gt; expression, IList&lt;TField&gt; values, bool include = true)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -114,7 +114,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Expression</span>&lt;<span class="xref">Func</span>&lt;<span class="xref">TaskData</span>, TField&gt;&gt;</td>
+        <td><span class="xref">Expression</span>&lt;<span class="xref">Func</span>&lt;TData, TField&gt;&gt;</td>
         <td><span class="parametername">expression</span></td>
         <td></td>
       </tr>
@@ -140,7 +140,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Expression</span>&lt;<span class="xref">Func</span>&lt;<span class="xref">TaskData</span>, <span class="xref">System.Boolean</span>&gt;&gt;</td>
+        <td><span class="xref">Expression</span>&lt;<span class="xref">Func</span>&lt;TData, <span class="xref">System.Boolean</span>&gt;&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -155,6 +155,10 @@
     </thead>
     <tbody>
       <tr>
+        <td><span class="parametername">TData</span></td>
+        <td></td>
+      </tr>
+      <tr>
         <td><span class="parametername">TField</span></td>
         <td></td>
       </tr>
@@ -162,18 +166,18 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__1_Expression_Func_TaskData___0___IList___0__System_Boolean_Expression_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal%60%601(Expression%7BFunc%7BTaskData%2C%60%600%7D%7D%2CIList%7B%60%600%7D%2CSystem.Boolean%2CExpression)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__2_Expression_Func___0___1___IList___1__System_Boolean_Expression_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal%60%602(Expression%7BFunc%7B%60%600%2C%60%601%7D%7D%2CIList%7B%60%601%7D%2CSystem.Boolean%2CExpression)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/Table/ExpressionsBuilders.cs/#L52">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/Table/ExpressionsBuilders.cs/#L50">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal_" data-uid="ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal*"></a>
-  <h4 id="ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__1_Expression_Func_TaskData___0___IList___0__System_Boolean_Expression_" data-uid="ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``1(Expression{Func{TaskData,``0}},IList{``0},System.Boolean,Expression)">FieldFilterInternal&lt;TField&gt;(Expression&lt;Func&lt;TaskData, TField&gt;&gt;, IList&lt;TField&gt;, Boolean, Expression)</h4>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__2_Expression_Func___0___1___IList___1__System_Boolean_Expression_" data-uid="ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``2(Expression{Func{``0,``1}},IList{``1},System.Boolean,Expression)">FieldFilterInternal&lt;TData, TField&gt;(Expression&lt;Func&lt;TData, TField&gt;&gt;, IList&lt;TField&gt;, Boolean, Expression)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static Expression FieldFilterInternal&lt;TField&gt;(Expression&lt;Func&lt;TaskData, TField&gt;&gt; expression, IList&lt;TField&gt; values, bool include, Expression x)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Expression FieldFilterInternal&lt;TData, TField&gt;(Expression&lt;Func&lt;TData, TField&gt;&gt; expression, IList&lt;TField&gt; values, bool include, Expression x)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -186,7 +190,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Expression</span>&lt;<span class="xref">Func</span>&lt;<span class="xref">TaskData</span>, TField&gt;&gt;</td>
+        <td><span class="xref">Expression</span>&lt;<span class="xref">Func</span>&lt;TData, TField&gt;&gt;</td>
         <td><span class="parametername">expression</span></td>
         <td></td>
       </tr>
@@ -232,6 +236,10 @@
     </thead>
     <tbody>
       <tr>
+        <td><span class="parametername">TData</span></td>
+        <td></td>
+      </tr>
+      <tr>
         <td><span class="parametername">TField</span></td>
         <td></td>
       </tr>
@@ -239,18 +247,18 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__1_Expression_Func_TaskData_IEnumerable___0____IList___0__System_Boolean_Expression_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal%60%601(Expression%7BFunc%7BTaskData%2CIEnumerable%7B%60%600%7D%7D%7D%2CIList%7B%60%600%7D%2CSystem.Boolean%2CExpression)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__2_Expression_Func___0_IEnumerable___1____IList___1__System_Boolean_Expression_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal%60%602(Expression%7BFunc%7B%60%600%2CIEnumerable%7B%60%601%7D%7D%7D%2CIList%7B%60%601%7D%2CSystem.Boolean%2CExpression)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/Table/ExpressionsBuilders.cs/#L95">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/Table/ExpressionsBuilders.cs/#L93">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal_" data-uid="ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal*"></a>
-  <h4 id="ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__1_Expression_Func_TaskData_IEnumerable___0____IList___0__System_Boolean_Expression_" data-uid="ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``1(Expression{Func{TaskData,IEnumerable{``0}}},IList{``0},System.Boolean,Expression)">FieldFilterInternal&lt;TField&gt;(Expression&lt;Func&lt;TaskData, IEnumerable&lt;TField&gt;&gt;&gt;, IList&lt;TField&gt;, Boolean, Expression)</h4>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__2_Expression_Func___0_IEnumerable___1____IList___1__System_Boolean_Expression_" data-uid="ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``2(Expression{Func{``0,IEnumerable{``1}}},IList{``1},System.Boolean,Expression)">FieldFilterInternal&lt;TData, TField&gt;(Expression&lt;Func&lt;TData, IEnumerable&lt;TField&gt;&gt;&gt;, IList&lt;TField&gt;, Boolean, Expression)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static Expression FieldFilterInternal&lt;TField&gt;(Expression&lt;Func&lt;TaskData, IEnumerable&lt;TField&gt;&gt;&gt; expression, IList&lt;TField&gt; values, bool include, Expression x)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Expression FieldFilterInternal&lt;TData, TField&gt;(Expression&lt;Func&lt;TData, IEnumerable&lt;TField&gt;&gt;&gt; expression, IList&lt;TField&gt; values, bool include, Expression x)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -263,7 +271,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Expression</span>&lt;<span class="xref">Func</span>&lt;<span class="xref">TaskData</span>, <span class="xref">IEnumerable</span>&lt;TField&gt;&gt;&gt;</td>
+        <td><span class="xref">Expression</span>&lt;<span class="xref">Func</span>&lt;TData, <span class="xref">IEnumerable</span>&lt;TField&gt;&gt;&gt;</td>
         <td><span class="parametername">expression</span></td>
         <td></td>
       </tr>
@@ -308,6 +316,10 @@
       </tr>
     </thead>
     <tbody>
+      <tr>
+        <td><span class="parametername">TData</span></td>
+        <td></td>
+      </tr>
       <tr>
         <td><span class="parametername">TField</span></td>
         <td></td>
@@ -325,7 +337,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/Table/ExpressionsBuilders.cs/#L35" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/Table/ExpressionsBuilders.cs/#L33" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

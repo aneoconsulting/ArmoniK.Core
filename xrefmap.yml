@@ -990,12 +990,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.SessionTable.IsSessionCancelledAsync
   nameWithType: SessionTable.IsSessionCancelledAsync
-- uid: ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync(CancellationToken)
-  name: ListSessionsAsync(CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_ListSessionsAsync_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync(CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync(CancellationToken)
-  nameWithType: SessionTable.ListSessionsAsync(CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
+  name: ListSessionsAsync(SessionFilter, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_ListSessionsAsync_SessionFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync(SessionFilter, CancellationToken)
+  nameWithType: SessionTable.ListSessionsAsync(SessionFilter, CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync*
   name: ListSessionsAsync
   href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_ListSessionsAsync_
@@ -1512,28 +1512,6 @@ references:
   commentId: N:ArmoniK.Core.Adapters.MongoDB.Common
   fullName: ArmoniK.Core.Adapters.MongoDB.Common
   nameWithType: ArmoniK.Core.Adapters.MongoDB.Common
-- uid: ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt
-  name: AsyncCursorSourceExt
-  href: api/ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt.html
-  commentId: T:ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt
-  fullName: ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt
-  nameWithType: AsyncCursorSourceExt
-- uid: ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt.AsAsyncEnumerable*
-  name: AsAsyncEnumerable
-  href: api/ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt.html#ArmoniK_Core_Adapters_MongoDB_Common_AsyncCursorSourceExt_AsAsyncEnumerable_
-  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt.AsAsyncEnumerable
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt.AsAsyncEnumerable
-  nameWithType: AsyncCursorSourceExt.AsAsyncEnumerable
-- uid: ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt.AsAsyncEnumerable``1(IAsyncCursorSource{``0})
-  name: AsAsyncEnumerable<T>(IAsyncCursorSource<T>)
-  href: api/ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt.html#ArmoniK_Core_Adapters_MongoDB_Common_AsyncCursorSourceExt_AsAsyncEnumerable__1_IAsyncCursorSource___0__
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt.AsAsyncEnumerable``1(IAsyncCursorSource{``0})
-  name.vb: AsAsyncEnumerable(Of T)(IAsyncCursorSource(Of T))
-  fullName: ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt.AsAsyncEnumerable<T>(IAsyncCursorSource<T>)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Common.AsyncCursorSourceExt.AsAsyncEnumerable(Of T)(IAsyncCursorSource(Of T))
-  nameWithType: AsyncCursorSourceExt.AsAsyncEnumerable<T>(IAsyncCursorSource<T>)
-  nameWithType.vb: AsyncCursorSourceExt.AsAsyncEnumerable(Of T)(IAsyncCursorSource(Of T))
 - uid: ArmoniK.Core.Adapters.MongoDB.Common.IMongoDataModelMapping`1
   name: IMongoDataModelMapping<T>
   href: api/ArmoniK.Core.Adapters.MongoDB.Common.IMongoDataModelMapping-1.html
@@ -2907,12 +2885,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.IsSessionCancelledAsync
   nameWithType: SessionTable.IsSessionCancelledAsync
-- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync(CancellationToken)
-  name: ListSessionsAsync(CancellationToken)
-  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_ListSessionsAsync_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync(CancellationToken)
-  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync(CancellationToken)
-  nameWithType: SessionTable.ListSessionsAsync(CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
+  name: ListSessionsAsync(SessionFilter, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_ListSessionsAsync_SessionFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync(SessionFilter, CancellationToken)
+  nameWithType: SessionTable.ListSessionsAsync(SessionFilter, CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync*
   name: ListSessionsAsync
   href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_ListSessionsAsync_
@@ -3012,15 +2990,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression
   nameWithType: ExpressionsBuilders.FieldFilterExpression
-- uid: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression``1(Expression{Func{TaskData,``0}},IList{``0},System.Boolean)
-  name: FieldFilterExpression<TField>(Expression<Func<TaskData, TField>>, IList<TField>, Boolean)
-  href: api/ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.html#ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterExpression__1_Expression_Func_TaskData___0___IList___0__System_Boolean_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression``1(Expression{Func{TaskData,``0}},IList{``0},System.Boolean)
-  name.vb: FieldFilterExpression(Of TField)(Expression(Of Func(Of TaskData, TField)), IList(Of TField), Boolean)
-  fullName: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression<TField>(Expression<Func<TaskData, TField>>, IList<TField>, System.Boolean)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression(Of TField)(Expression(Of Func(Of TaskData, TField)), IList(Of TField), System.Boolean)
-  nameWithType: ExpressionsBuilders.FieldFilterExpression<TField>(Expression<Func<TaskData, TField>>, IList<TField>, Boolean)
-  nameWithType.vb: ExpressionsBuilders.FieldFilterExpression(Of TField)(Expression(Of Func(Of TaskData, TField)), IList(Of TField), Boolean)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression``2(Expression{Func{``0,``1}},IList{``1},System.Boolean)
+  name: FieldFilterExpression<TData, TField>(Expression<Func<TData, TField>>, IList<TField>, Boolean)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.html#ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterExpression__2_Expression_Func___0___1___IList___1__System_Boolean_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression``2(Expression{Func{``0,``1}},IList{``1},System.Boolean)
+  name.vb: FieldFilterExpression(Of TData, TField)(Expression(Of Func(Of TData, TField)), IList(Of TField), Boolean)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression<TData, TField>(Expression<Func<TData, TField>>, IList<TField>, System.Boolean)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterExpression(Of TData, TField)(Expression(Of Func(Of TData, TField)), IList(Of TField), System.Boolean)
+  nameWithType: ExpressionsBuilders.FieldFilterExpression<TData, TField>(Expression<Func<TData, TField>>, IList<TField>, Boolean)
+  nameWithType.vb: ExpressionsBuilders.FieldFilterExpression(Of TData, TField)(Expression(Of Func(Of TData, TField)), IList(Of TField), Boolean)
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal*
   name: FieldFilterInternal
   href: api/ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.html#ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal_
@@ -3028,24 +3006,24 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal
   nameWithType: ExpressionsBuilders.FieldFilterInternal
-- uid: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``1(Expression{Func{TaskData,``0}},IList{``0},System.Boolean,Expression)
-  name: FieldFilterInternal<TField>(Expression<Func<TaskData, TField>>, IList<TField>, Boolean, Expression)
-  href: api/ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.html#ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__1_Expression_Func_TaskData___0___IList___0__System_Boolean_Expression_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``1(Expression{Func{TaskData,``0}},IList{``0},System.Boolean,Expression)
-  name.vb: FieldFilterInternal(Of TField)(Expression(Of Func(Of TaskData, TField)), IList(Of TField), Boolean, Expression)
-  fullName: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal<TField>(Expression<Func<TaskData, TField>>, IList<TField>, System.Boolean, Expression)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal(Of TField)(Expression(Of Func(Of TaskData, TField)), IList(Of TField), System.Boolean, Expression)
-  nameWithType: ExpressionsBuilders.FieldFilterInternal<TField>(Expression<Func<TaskData, TField>>, IList<TField>, Boolean, Expression)
-  nameWithType.vb: ExpressionsBuilders.FieldFilterInternal(Of TField)(Expression(Of Func(Of TaskData, TField)), IList(Of TField), Boolean, Expression)
-- uid: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``1(Expression{Func{TaskData,IEnumerable{``0}}},IList{``0},System.Boolean,Expression)
-  name: FieldFilterInternal<TField>(Expression<Func<TaskData, IEnumerable<TField>>>, IList<TField>, Boolean, Expression)
-  href: api/ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.html#ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__1_Expression_Func_TaskData_IEnumerable___0____IList___0__System_Boolean_Expression_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``1(Expression{Func{TaskData,IEnumerable{``0}}},IList{``0},System.Boolean,Expression)
-  name.vb: FieldFilterInternal(Of TField)(Expression(Of Func(Of TaskData, IEnumerable(Of TField))), IList(Of TField), Boolean, Expression)
-  fullName: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal<TField>(Expression<Func<TaskData, IEnumerable<TField>>>, IList<TField>, System.Boolean, Expression)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal(Of TField)(Expression(Of Func(Of TaskData, IEnumerable(Of TField))), IList(Of TField), System.Boolean, Expression)
-  nameWithType: ExpressionsBuilders.FieldFilterInternal<TField>(Expression<Func<TaskData, IEnumerable<TField>>>, IList<TField>, Boolean, Expression)
-  nameWithType.vb: ExpressionsBuilders.FieldFilterInternal(Of TField)(Expression(Of Func(Of TaskData, IEnumerable(Of TField))), IList(Of TField), Boolean, Expression)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``2(Expression{Func{``0,``1}},IList{``1},System.Boolean,Expression)
+  name: FieldFilterInternal<TData, TField>(Expression<Func<TData, TField>>, IList<TField>, Boolean, Expression)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.html#ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__2_Expression_Func___0___1___IList___1__System_Boolean_Expression_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``2(Expression{Func{``0,``1}},IList{``1},System.Boolean,Expression)
+  name.vb: FieldFilterInternal(Of TData, TField)(Expression(Of Func(Of TData, TField)), IList(Of TField), Boolean, Expression)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal<TData, TField>(Expression<Func<TData, TField>>, IList<TField>, System.Boolean, Expression)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal(Of TData, TField)(Expression(Of Func(Of TData, TField)), IList(Of TField), System.Boolean, Expression)
+  nameWithType: ExpressionsBuilders.FieldFilterInternal<TData, TField>(Expression<Func<TData, TField>>, IList<TField>, Boolean, Expression)
+  nameWithType.vb: ExpressionsBuilders.FieldFilterInternal(Of TData, TField)(Expression(Of Func(Of TData, TField)), IList(Of TField), Boolean, Expression)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``2(Expression{Func{``0,IEnumerable{``1}}},IList{``1},System.Boolean,Expression)
+  name: FieldFilterInternal<TData, TField>(Expression<Func<TData, IEnumerable<TField>>>, IList<TField>, Boolean, Expression)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.html#ArmoniK_Core_Adapters_MongoDB_Table_ExpressionsBuilders_FieldFilterInternal__2_Expression_Func___0_IEnumerable___1____IList___1__System_Boolean_Expression_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal``2(Expression{Func{``0,IEnumerable{``1}}},IList{``1},System.Boolean,Expression)
+  name.vb: FieldFilterInternal(Of TData, TField)(Expression(Of Func(Of TData, IEnumerable(Of TField))), IList(Of TField), Boolean, Expression)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal<TData, TField>(Expression<Func<TData, IEnumerable<TField>>>, IList<TField>, System.Boolean, Expression)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.ExpressionsBuilders.FieldFilterInternal(Of TData, TField)(Expression(Of Func(Of TData, IEnumerable(Of TField))), IList(Of TField), System.Boolean, Expression)
+  nameWithType: ExpressionsBuilders.FieldFilterInternal<TData, TField>(Expression<Func<TData, IEnumerable<TField>>>, IList<TField>, Boolean, Expression)
+  nameWithType.vb: ExpressionsBuilders.FieldFilterInternal(Of TData, TField)(Expression(Of Func(Of TData, IEnumerable(Of TField))), IList(Of TField), Boolean, Expression)
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt
   name: MongoQueryableExt
   href: api/ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.html
@@ -3068,6 +3046,41 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.FilterQuery
   nameWithType: MongoQueryableExt.FilterQuery
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt
+  name: SessionFilterExt
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt
+  nameWithType: SessionFilterExt
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable{SessionData},SessionFilter)
+  name: FilterQuery(IQueryable<SessionData>, SessionFilter)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.html#ArmoniK_Core_Adapters_MongoDB_Table_SessionFilterExt_FilterQuery_IQueryable_SessionData__SessionFilter_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable{SessionData},SessionFilter)
+  name.vb: FilterQuery(IQueryable(Of SessionData), SessionFilter)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable<SessionData>, SessionFilter)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable(Of SessionData), SessionFilter)
+  nameWithType: SessionFilterExt.FilterQuery(IQueryable<SessionData>, SessionFilter)
+  nameWithType.vb: SessionFilterExt.FilterQuery(IQueryable(Of SessionData), SessionFilter)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery*
+  name: FilterQuery
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.html#ArmoniK_Core_Adapters_MongoDB_Table_SessionFilterExt_FilterQuery_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery
+  nameWithType: SessionFilterExt.FilterQuery
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.ToFilterExpression(SessionFilter)
+  name: ToFilterExpression(SessionFilter)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.html#ArmoniK_Core_Adapters_MongoDB_Table_SessionFilterExt_ToFilterExpression_SessionFilter_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.ToFilterExpression(SessionFilter)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.ToFilterExpression(SessionFilter)
+  nameWithType: SessionFilterExt.ToFilterExpression(SessionFilter)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.ToFilterExpression*
+  name: ToFilterExpression
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.html#ArmoniK_Core_Adapters_MongoDB_Table_SessionFilterExt_ToFilterExpression_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.ToFilterExpression
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.ToFilterExpression
+  nameWithType: SessionFilterExt.ToFilterExpression
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt
   name: TaskFilterExt
   href: api/ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.html
@@ -4489,6 +4502,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetStatus
   nameWithType: GrpcSubmitterService.GetStatus
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListSessions(SessionFilter,ServerCallContext)
+  name: ListSessions(SessionFilter, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_ListSessions_SessionFilter_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListSessions(SessionFilter,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListSessions(SessionFilter, ServerCallContext)
+  nameWithType: GrpcSubmitterService.ListSessions(SessionFilter, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListSessions*
+  name: ListSessions
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_ListSessions_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListSessions
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListSessions
+  nameWithType: GrpcSubmitterService.ListSessions
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListTasks(TaskFilter,ServerCallContext)
   name: ListTasks(TaskFilter, ServerCallContext)
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_ListTasks_TaskFilter_ServerCallContext_
@@ -4686,6 +4712,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetStatusAsync
   nameWithType: ISubmitter.GetStatusAsync
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListSessionsAsync(SessionFilter,CancellationToken)
+  name: ListSessionsAsync(SessionFilter, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_ListSessionsAsync_SessionFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListSessionsAsync(SessionFilter,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListSessionsAsync(SessionFilter, CancellationToken)
+  nameWithType: ISubmitter.ListSessionsAsync(SessionFilter, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListSessionsAsync*
+  name: ListSessionsAsync
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_ListSessionsAsync_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListSessionsAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListSessionsAsync
+  nameWithType: ISubmitter.ListSessionsAsync
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListTasksAsync(TaskFilter,CancellationToken)
   name: ListTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_ListTasksAsync_TaskFilter_CancellationToken_
@@ -4954,6 +4993,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.InitializeTaskCreationAsync
   nameWithType: Submitter.InitializeTaskCreationAsync
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.ListSessionsAsync(SessionFilter,CancellationToken)
+  name: ListSessionsAsync(SessionFilter, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_ListSessionsAsync_SessionFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.ListSessionsAsync(SessionFilter,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.ListSessionsAsync(SessionFilter, CancellationToken)
+  nameWithType: Submitter.ListSessionsAsync(SessionFilter, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.ListSessionsAsync*
+  name: ListSessionsAsync
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_ListSessionsAsync_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Submitter.ListSessionsAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.ListSessionsAsync
+  nameWithType: Submitter.ListSessionsAsync
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.ListTasksAsync(TaskFilter,CancellationToken)
   name: ListTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_ListTasksAsync_TaskFilter_CancellationToken_
@@ -7140,12 +7192,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ISessionTable.IsSessionCancelledAsync
   nameWithType: ISessionTable.IsSessionCancelledAsync
-- uid: ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync(CancellationToken)
-  name: ListSessionsAsync(CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_ListSessionsAsync_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync(CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync(CancellationToken)
-  nameWithType: ISessionTable.ListSessionsAsync(CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
+  name: ListSessionsAsync(SessionFilter, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_ListSessionsAsync_SessionFilter_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync(SessionFilter, CancellationToken)
+  nameWithType: ISessionTable.ListSessionsAsync(SessionFilter, CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync*
   name: ListSessionsAsync
   href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_ListSessionsAsync_
@@ -10525,6 +10577,45 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.IsSessionCancelledAsyncShouldSucceed
   nameWithType: SessionTableTestBase.IsSessionCancelledAsyncShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldFail
+  name: ListSessionAsyncShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldFail
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldFail()
+  nameWithType: SessionTableTestBase.ListSessionAsyncShouldFail()
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldFail*
+  name: ListSessionAsyncShouldFail
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldFail
+  nameWithType: SessionTableTestBase.ListSessionAsyncShouldFail
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed
+  name: ListSessionAsyncShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed()
+  nameWithType: SessionTableTestBase.ListSessionAsyncShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed*
+  name: ListSessionAsyncShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed
+  nameWithType: SessionTableTestBase.ListSessionAsyncShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed2
+  name: ListSessionAsyncShouldSucceed2()
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncShouldSucceed2
+  commentId: M:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed2
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed2()
+  nameWithType: SessionTableTestBase.ListSessionAsyncShouldSucceed2()
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed2*
+  name: ListSessionAsyncShouldSucceed2
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncShouldSucceed2_
+  commentId: Overload:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed2
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldSucceed2
+  nameWithType: SessionTableTestBase.ListSessionAsyncShouldSucceed2
 - uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.RunTests
   name: RunTests
   href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_RunTests
@@ -11904,6 +11995,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.IsTaskCanceledShouldSucceed
   nameWithType: TaskTableTestBase.IsTaskCanceledShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskShouldSucceed
+  name: ListTaskShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskShouldSucceed()
+  nameWithType: TaskTableTestBase.ListTaskShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskShouldSucceed*
+  name: ListTaskShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskShouldSucceed
+  nameWithType: TaskTableTestBase.ListTaskShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ReadTaskAsyncShouldFail
   name: ReadTaskAsyncShouldFail()
   href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ReadTaskAsyncShouldFail
