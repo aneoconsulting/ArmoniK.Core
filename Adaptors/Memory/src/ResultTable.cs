@@ -29,6 +29,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -55,7 +56,7 @@ public class ResultTable : IResultTable
                                              IEnumerable<string> keys,
                                              CancellationToken   cancellationToken = default)
     => Task.FromResult(keys.All(key => results_[sessionId][key]
-                                  .Status == "Completed"));
+                                  .Status == ResultStatus.Completed));
 
   /// <inheritdoc />
   public Task ChangeResultOwnership(string              sessionId,
@@ -166,7 +167,7 @@ public class ResultTable : IResultTable
                  result with
                  {
                    Data = smallPayload,
-                   Status = "Completed",
+                   Status = ResultStatus.Completed,
                  },
                  result);
     return Task.CompletedTask;
@@ -184,7 +185,7 @@ public class ResultTable : IResultTable
       .TryUpdate(result.Name,
                  result with
                  {
-                   Status = "Completed",
+                   Status = ResultStatus.Completed,
                  },
                  result);
     return Task.CompletedTask;

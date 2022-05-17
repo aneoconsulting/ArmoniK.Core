@@ -324,7 +324,7 @@ public class TaskTable : ITaskTable
     await foreach (var taskId in taskCollection.AsQueryable(sessionHandle)
                                                .FilterQuery(filter)
                                                .Select(model => model.TaskId)
-                                               .AsAsyncEnumerable()
+                                               .ToAsyncEnumerable()
                                                .WithCancellation(cancellationToken)
                                                .ConfigureAwait(false))
     {

@@ -26,8 +26,8 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
-public record SessionData(string      SessionId,
-                          string      Status,
-                          TaskOptions Options) : Common.Storage.SessionData(SessionId,
-                                                                            Status,
-                                                                            Options);
+public record SessionData(string        SessionId,
+                          SessionStatus Status,
+                          TaskOptions   Options) : Common.Storage.SessionData(SessionId,
+                                                                              Status,
+                                                                              Options);

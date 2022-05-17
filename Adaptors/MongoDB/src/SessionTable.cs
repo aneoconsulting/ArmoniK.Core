@@ -30,7 +30,9 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
@@ -83,7 +85,7 @@ public class SessionTable : ISessionTable
 
     SessionData data = new(Options: defaultOptions,
                            SessionId: rootSessionId,
-                           Status: "Running"
+                           Status: SessionStatus.Running
                           );
 
     await sessionCollection.InsertOneAsync(data,
@@ -107,7 +109,7 @@ public class SessionTable : ISessionTable
     {
       return await sessionCollection.AsQueryable(sessionHandle)
                                     .Where(sdm => sdm.SessionId == sessionId)
-                                    .Select(sdm => sdm.Status == "Cancelled")
+                                    .Select(sdm => sdm.Status == SessionStatus.Cancelled)
                                     .SingleAsync(cancellationToken)
                                     .ConfigureAwait(false);
     }
@@ -157,7 +159,7 @@ public class SessionTable : ISessionTable
 
     var resSession = sessionCollection.UpdateOneAsync(model => model.SessionId == sessionId,
                                                       Builders<SessionData>.Update.Set(model => model.Status,
-                                                                                       "Cancelled"),
+                                                                                       SessionStatus.Cancelled),
                                                       cancellationToken: cancellationToken);
 
     if ((await resSession.ConfigureAwait(false)).MatchedCount < 1)
@@ -192,21 +194,22 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<string> ListSessionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<string> ListSessionsAsync(SessionFilter                              sessionFilter,
+                                                          [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _        = Logger.LogFunction();
-    using var activity = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
-    var sessionHandle = sessionProvider_.Get();
-    var sessionCollection = sessionCollectionProvider_.Get();
+    using var _                 = Logger.LogFunction();
+    using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
+    var       sessionHandle     = sessionProvider_.Get();
+    var       sessionCollection = sessionCollectionProvider_.Get();
 
-    await foreach (var session in sessionCollection.AsQueryable(sessionHandle)
-                                                   .Select(model => model.SessionId)
-                                                   .Distinct()
-                                                   .ToAsyncEnumerable()
-                                                   .WithCancellation(cancellationToken)
-                                                   .ConfigureAwait(false))
+    await foreach (var sessionId in sessionCollection.AsQueryable(sessionHandle)
+                                                  .FilterQuery(sessionFilter)
+                                                  .Select(model => model.SessionId)
+                                                  .ToAsyncEnumerable()
+                                                  .WithCancellation(cancellationToken)
+                                                  .ConfigureAwait(false))
     {
-      yield return session;
+      yield return sessionId;
     }
   }
 

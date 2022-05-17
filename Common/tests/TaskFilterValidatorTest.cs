@@ -47,13 +47,13 @@ public class TaskFilterValidatorTest
                               TaskStatus.Canceled,
                             },
                           },
-               Dispatch = new TaskFilter.Types.IdsRequest
-                          {
-                            Ids =
-                            {
-                              "DispatchId",
-                            },
-                          },
+               Session = new TaskFilter.Types.IdsRequest
+                         {
+                           Ids =
+                           {
+                             "SessionId",
+                           },
+                         },
              };
 
     Assert.IsTrue(validator_.Validate(tf)
@@ -73,13 +73,13 @@ public class TaskFilterValidatorTest
                               TaskStatus.Canceled,
                             },
                           },
-               Dispatch = new TaskFilter.Types.IdsRequest
-                          {
-                            Ids =
-                            {
-                              "DispatchId",
-                            },
-                          },
+               Session = new TaskFilter.Types.IdsRequest
+                         {
+                           Ids =
+                           {
+                             "SessionId",
+                           },
+                         },
              };
 
     Assert.IsTrue(validator_.Validate(tf)

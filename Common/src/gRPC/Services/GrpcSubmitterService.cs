@@ -515,4 +515,35 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                                         "Unknown Exception, see Submitter logs"));
     }
   }
+
+  public override Task<SessionIdList> ListSessions(SessionFilter     request,
+                                                 ServerCallContext context)
+  {
+    try
+    {
+      return submitter_.ListSessionsAsync(request,
+                                          context.CancellationToken);
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while listing sessions");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Session not found"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while listing sessions");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while listing sessions");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
 }

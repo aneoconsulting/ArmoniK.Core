@@ -22,9 +22,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -193,6 +196,67 @@ public class SessionTableTestBase
                                                                                    CancellationToken.None)
                                                                .ConfigureAwait(false);
                                            });
+    }
+  }
+
+  [Test]
+  public async Task ListSessionAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var res = await SessionTable.ListSessionsAsync(new SessionFilter
+                                                     {
+                                                       Included = new SessionFilter.Types.StatusesRequest
+                                                                  {
+                                                                    Statuses =
+                                                                    {
+                                                                      SessionStatus.Running
+                                                                    }
+                                                                  }
+                                                     },
+                                                     CancellationToken.None)
+                                  .ToListAsync()
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(1, res.Count);
+    }
+  }
+
+  [Test]
+  public async Task ListSessionAsyncShouldSucceed2()
+  {
+    if (RunTests)
+    {
+      var res = await SessionTable.ListSessionsAsync(new SessionFilter
+                                                     {
+                                                       Sessions = { "SessionId" }
+                                                     },
+                                                     CancellationToken.None)
+                                  .ToListAsync()
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(1, res.Count);
+    }
+  }
+
+  [Test]
+  public async Task ListSessionAsyncShouldFail()
+  {
+    if (RunTests)
+    {
+      var res = await SessionTable.ListSessionsAsync(new SessionFilter
+                                                     {
+                                                       Sessions =
+                                                       {
+                                                         "SessionIdDoesNotExist"
+                                                       }
+                                                     },
+                                                     CancellationToken.None)
+                                  .ToListAsync()
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual(0,
+                      res.Count);
     }
   }
 }

@@ -29,6 +29,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -66,7 +67,7 @@ public class SessionTable : ISessionTable
   {
     storage_.TryAdd(rootSessionId,
                     new SessionData(rootSessionId,
-                                    "Running",
+                                    SessionStatus.Running,
                                     defaultOptions));
     return Task.CompletedTask;
   }
@@ -81,7 +82,7 @@ public class SessionTable : ISessionTable
     }
 
     return Task.FromResult(storage_[sessionId]
-                             .Status == "Cancelled");
+                             .Status == SessionStatus.Cancelled);
   }
 
   /// <inheritdoc />
@@ -106,13 +107,13 @@ public class SessionTable : ISessionTable
                          (_,
                           data) =>
                          {
-                           if (data.Status == "Cancelled")
+                           if (data.Status == SessionStatus.Cancelled)
                            {
                              throw new ArmoniKException("Session already cancelled");
                            }
                            return data with
                                   {
-                                    Status = "Cancelled",
+                                    Status = SessionStatus.Cancelled,
                                   };
                          });
     return Task.CompletedTask;
@@ -134,8 +135,27 @@ public class SessionTable : ISessionTable
 
 
   /// <inheritdoc />
-  public IAsyncEnumerable<string> ListSessionsAsync(CancellationToken cancellationToken = default)
-    => storage_.Keys.ToAsyncEnumerable();
+  public IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     sessionFilter,
+                                                    CancellationToken cancellationToken = default)
+  {
+    var rawList = storage_.Keys.ToAsyncEnumerable();
+
+    if (sessionFilter.Sessions.Any())
+    {
+      rawList = storage_.Keys.Intersect(sessionFilter.Sessions)
+                        .ToAsyncEnumerable();
+    }
+
+    return rawList.Where(sessionId => sessionFilter.StatusesCase switch
+                                      {
+                                        SessionFilter.StatusesOneofCase.None => true,
+                                        SessionFilter.StatusesOneofCase.Included => sessionFilter.Included.Statuses.Contains(storage_[sessionId]
+                                                                                                                               .Status),
+                                        SessionFilter.StatusesOneofCase.Excluded => !sessionFilter.Excluded.Statuses.Contains(storage_[sessionId]
+                                                                                                                                .Status),
+                                        _ => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
+                                      });
+  }
 
   /// <inheritdoc />
   public ILogger Logger { get; }
