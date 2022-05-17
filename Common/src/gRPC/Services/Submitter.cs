@@ -132,27 +132,15 @@ public class Submitter : ISubmitter
       cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    try
-    {
-      var sessionCancelTask = sessionTable_.CancelSessionAsync(sessionId,
-                                                               cancellationToken);
+    var sessionCancelTask = sessionTable_.CancelSessionAsync(sessionId,
+                                                             cancellationToken);
 
-      await taskTable_.CancelSessionAsync(sessionId,
-                                          cancellationToken)
-                      .ConfigureAwait(false);
+    await taskTable_.CancelSessionAsync(sessionId,
+                                        cancellationToken)
+                    .ConfigureAwait(false);
 
-      await sessionCancelTask.ConfigureAwait(false);
-    }
-    catch (TaskNotFoundException e)
-    {
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        e.Message));
-    }
-    catch (Exception e)
-    {
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        e.Message));
-    }
+    await sessionCancelTask.ConfigureAwait(false);
+
   }
 
   /// <inheritdoc />
@@ -167,22 +155,9 @@ public class Submitter : ISubmitter
       cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    try
-    {
-      await taskTable_.CancelTasks(request,
-                                   cancellationToken)
-                      .ConfigureAwait(false);
-    }
-    catch (TaskNotFoundException e)
-    {
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        e.Message));
-    }
-    catch (Exception e)
-    {
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        e.Message));
-    }
+    await taskTable_.CancelTasks(request,
+                                 cancellationToken)
+                    .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
