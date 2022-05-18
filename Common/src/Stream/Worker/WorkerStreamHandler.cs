@@ -85,11 +85,11 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
-  public Task Init(CancellationToken cancellationToken)
+  public async Task Init(CancellationToken cancellationToken)
   {
     if (isInitialized_)
     {
-      return Task.CompletedTask;
+      return;
     }
 
     for (var retry = 0; retry < 10; ++retry)
@@ -97,20 +97,21 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       try
       {
         var channel = channelProvider_.Get();
-
-        workerClient_  = new WorkerClient(channel);
+        workerClient_ = new WorkerClient(channel);
+        workerClient_.HealthCheck(new Empty());
         isInitialized_ = true;
         logger_.LogInformation("Channel was initialized");
-        return Task.CompletedTask;
+        return;
       }
-      catch
+      catch (Exception ex)
       {
-        // ignored
+        logger_.LogDebug(ex,
+                         "Channel was not created, retry in {seconds}s",
+                         retry * retry);
+        await Task.Delay(1000 * retry * retry,
+                         cancellationToken)
+                  .ConfigureAwait(false);
       }
-
-      logger_.LogDebug("Channel was not created, retry in {seconds}s",
-                       retry * retry);
-      Thread.Sleep(1000 * retry * retry);
     }
 
     var e = new ArmoniKException("Could not get grpc channel");
