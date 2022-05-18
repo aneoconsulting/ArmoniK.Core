@@ -35,6 +35,8 @@ using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.Logging;
+
 using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
 using WorkerClient = ArmoniK.Api.gRPC.V1.Worker.WorkerClient;
 
@@ -42,21 +44,25 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
-  private readonly GrpcChannelProvider channelProvider_;
-  private          WorkerClient?       workerClient_;
-  private          bool                isInitialized_;
+  private readonly GrpcChannelProvider          channelProvider_;
+  private readonly ILogger<WorkerStreamHandler> logger_;
+  private          WorkerClient?                workerClient_;
+  private          bool                         isInitialized_;
 
-  public WorkerStreamHandler(GrpcChannelProvider channelProvider)
+  public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
+                             ILogger<WorkerStreamHandler> logger)
   {
     channelProvider_ = channelProvider;
+    logger_          = logger;
   }
 
-  public Queue<ComputeRequest> WorkerReturn() 
-  { 
+  public Queue<ComputeRequest> WorkerReturn()
+  {
     return new Queue<ComputeRequest>();
   }
 
-  public void StartTaskProcessing(TaskData taskData, CancellationToken cancellationToken)
+  public void StartTaskProcessing(TaskData          taskData,
+                                  CancellationToken cancellationToken)
   {
     if (workerClient_ == null)
     {
@@ -86,31 +92,31 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       return Task.CompletedTask;
     }
 
-    ChannelBase channel;
-
-    var retries = 1;
-    while (true)
+    for (var retry = 0; retry < 10; ++retry)
     {
       try
       {
-        channel = channelProvider_.Get();
-        break;
+        var channel = channelProvider_.Get();
+
+        workerClient_  = new WorkerClient(channel);
+        isInitialized_ = true;
+        logger_.LogInformation("Channel was initialized");
+        return Task.CompletedTask;
       }
       catch
       {
-        if (++retries == 10)
-        {
-          throw new ArmoniKException("Could not get grpc channel");
-        }
-
-        Thread.Sleep(1000 * retries * retries);
+        // ignored
       }
+
+      logger_.LogDebug("Channel was not created, retry in {seconds}s",
+                       retry * retry);
+      Thread.Sleep(1000 * retry * retry);
     }
 
-    workerClient_  = new WorkerClient(channel);
-    isInitialized_ = true;
-
-    return Task.CompletedTask;
+    var e = new ArmoniKException("Could not get grpc channel");
+    logger_.LogError(e,
+                     string.Empty);
+    throw e;
   }
 
   public ValueTask<bool> Check(HealthCheckTag tag)
