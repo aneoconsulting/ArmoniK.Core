@@ -98,7 +98,8 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       {
         var channel = channelProvider_.Get();
         workerClient_ = new WorkerClient(channel);
-        workerClient_.HealthCheck(new Empty());
+        workerClient_.HealthCheck(new Empty(),
+                                  cancellationToken: cancellationToken);
         isInitialized_ = true;
         logger_.LogInformation("Channel was initialized");
         return;
