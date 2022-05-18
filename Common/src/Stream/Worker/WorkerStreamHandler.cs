@@ -42,22 +42,13 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
-  private readonly WorkerClient                                            workerClient_;
-  private          bool                                                    isInitialized_;
+  private readonly GrpcChannelProvider channelProvider_;
+  private          WorkerClient?       workerClient_;
+  private          bool                isInitialized_;
 
   public WorkerStreamHandler(GrpcChannelProvider channelProvider)
   {
-    ChannelBase channel;
-    try
-    {
-      channel = channelProvider.Get();
-    }
-    catch
-    {
-      throw new ArmoniKException("Could not get grpc channel");
-    }
-
-    workerClient_ = new WorkerClient(channel);
+    channelProvider_ = channelProvider;
   }
 
   public Queue<ComputeRequest> WorkerReturn() 
@@ -67,8 +58,14 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public void StartTaskProcessing(TaskData taskData, CancellationToken cancellationToken)
   {
+    if (workerClient_ == null)
+    {
+      throw new InvalidOperationException();
+    }
+
     stream_ = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
-                                   cancellationToken: cancellationToken);
+                                    cancellationToken: cancellationToken);
+
     if (stream_ is null)
     {
       throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
@@ -84,10 +81,34 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public Task Init(CancellationToken cancellationToken)
   {
-    if (!isInitialized_)
+    if (isInitialized_)
     {
-      isInitialized_ = true;
+      return Task.CompletedTask;
     }
+
+    ChannelBase channel;
+
+    var retries = 1;
+    while (true)
+    {
+      try
+      {
+        channel = channelProvider_.Get();
+        break;
+      }
+      catch
+      {
+        if (++retries == 10)
+        {
+          throw new ArmoniKException("Could not get grpc channel");
+        }
+
+        Thread.Sleep(1000 * retries * retries);
+      }
+    }
+
+    workerClient_  = new WorkerClient(channel);
+    isInitialized_ = true;
 
     return Task.CompletedTask;
   }
