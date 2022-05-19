@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -45,15 +46,18 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
   private readonly GrpcChannelProvider          channelProvider_;
+  private readonly InitWorker                   optionsInitWorker_;
   private readonly ILogger<WorkerStreamHandler> logger_;
   private          WorkerClient?                workerClient_;
   private          bool                         isInitialized_;
 
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
+                             InitWorker                   optionsInitWorker,
                              ILogger<WorkerStreamHandler> logger)
   {
-    channelProvider_ = channelProvider;
-    logger_          = logger;
+    channelProvider_   = channelProvider;
+    optionsInitWorker_ = optionsInitWorker;
+    logger_            = logger;
   }
 
   public Queue<ComputeRequest> WorkerReturn()
@@ -66,7 +70,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   {
     if (workerClient_ == null)
     {
-      throw new InvalidOperationException();
+      throw new ArmoniKException("Worker client should be initialized");
     }
 
     stream_ = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
@@ -92,7 +96,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       return;
     }
 
-    for (var retry = 0; retry < 10; ++retry)
+    for (var retry = 1; retry < optionsInitWorker_.WorkerCheckRetries; ++retry)
     {
       try
       {
@@ -104,6 +108,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
         {
           throw new ArmoniKException("Worker Health Check was not successful");
         }
+
         isInitialized_ = true;
         logger_.LogInformation("Channel was initialized");
         return;
@@ -111,9 +116,9 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       catch (Exception ex)
       {
         logger_.LogDebug(ex,
-                         "Channel was not created, retry in {seconds}s",
-                         retry * retry);
-        await Task.Delay(1000 * retry * retry,
+                         "Channel was not created, retry in {seconds}",
+                         optionsInitWorker_.WorkerCheckDelay * retry);
+        await Task.Delay(optionsInitWorker_.WorkerCheckDelay * retry,
                          cancellationToken)
                   .ConfigureAwait(false);
       }
