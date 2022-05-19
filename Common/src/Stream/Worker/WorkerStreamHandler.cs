@@ -98,8 +98,12 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       {
         var channel = channelProvider_.Get();
         workerClient_ = new WorkerClient(channel);
-        workerClient_.HealthCheck(new Empty(),
-                                  cancellationToken: cancellationToken);
+        var reply = workerClient_.HealthCheck(new Empty(),
+                                              cancellationToken: cancellationToken);
+        if (reply.Status != HealthCheckReply.Types.ServingStatus.Serving)
+        {
+          throw new ArmoniKException("Worker Health Check was not successful");
+        }
         isInitialized_ = true;
         logger_.LogInformation("Channel was initialized");
         return;
