@@ -82,7 +82,10 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.WorkerBase
     => throw new RpcException(new Status(StatusCode.Unimplemented,
                                          ""));
 
-  public override Task<Empty> HealthCheck(Empty             request,
-                                          ServerCallContext context)
-    => Task.FromResult(new Empty());
+  public override Task<HealthCheckReply> HealthCheck(Empty             request,
+                                                     ServerCallContext context)
+    => Task.FromResult(new HealthCheckReply
+                       {
+                         Status = HealthCheckReply.Types.ServingStatus.Serving,
+                       });
 }
