@@ -1001,11 +1001,23 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Injection.Options.InitWorker.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Injection.Options.InitWorker.html",
+          "hash": "/BOod4lQBNBGx2lSyUSI2+W7ghdKSqpPbKEJa+62Pxg="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Injection.Options.yml",
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Injection.Options.html",
-          "hash": "sprdBn82ws+n1Sms+pTjbfoXPBMAlSy+pe6B0OKIsRw="
+          "hash": "1vftySBLz7PYfdq7LBaWX6wvzbnjnkdR0OWJqojL9Jg="
         }
       },
       "is_incremental": false,
@@ -1017,7 +1029,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Injection.ProviderBase-1.html",
-          "hash": "9UEmArUpYaStDgS0ZjGx0kJxRA0Hi1uKO/kcgTqBkmE="
+          "hash": "V6YWUgsHudJ3pI9QrgeTDZ9MKgYSYtQ6efSrbbVet7E="
         }
       },
       "is_incremental": false,
@@ -1029,7 +1041,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Injection.ServiceCollectionExt.html",
-          "hash": "Jl6q7DpfpfJTmDQQ7LrCc06vG3myo1/czc1ke6QgMPE="
+          "hash": "/Nm2Pbf/CtAGzZuy6E/X9aEJZzOTTCvUsxwzm/4i9O8="
         }
       },
       "is_incremental": false,
@@ -1113,7 +1125,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.Pollster.html",
-          "hash": "uEL2JSoh6Hr4h9+3YZcfhVoIhQoKgpoRkePrMsZ7GEY="
+          "hash": "GJQmRO+pJApH62JXvtELSc0fZNIrbLoqK22kAVNQiQ8="
         }
       },
       "is_incremental": false,
@@ -1557,7 +1569,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html",
-          "hash": "TTCXMGe0yPr4LWOYhFWy/cDFMUnj1ZO52BXocTIQxE4="
+          "hash": "sKDw1YsjX1t1JMWR7mJdrALeK4k9XEFhri64E3AfWqk="
         }
       },
       "is_incremental": false,
@@ -1569,7 +1581,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html",
-          "hash": "8mLFB6VmhG790Ls/1CxBJPNU5T7JJjEhQ4eo1OTdVGk="
+          "hash": "w3BBwlRRm99ArpGIJXuq7n25aX2PC5nJJ3ftpJRPQjk="
         }
       },
       "is_incremental": false,
@@ -2061,7 +2073,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.gRPC.GrpcChannelProvider.html",
-          "hash": "ELqvBZEBC5psngAF2eKFGWlNoCWWI9LdIEn0zQGHMnY="
+          "hash": "e0r80+yoqdhy/W11GKZPkCtxFMHnOphdpM/j6QfDPGY="
         }
       },
       "is_incremental": false,
@@ -2541,7 +2553,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.html",
-          "hash": "a16duwSsPivfekMsRsD2d+QMg1qo3EcyjiwzLoMnfYQ="
+          "hash": "HUWbVeG2R8P72WjaC1XgOvF2pTeDItBWge4SEQbFWZs="
         }
       },
       "is_incremental": false,
@@ -2685,7 +2697,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.html",
-          "hash": "dbuAc/VHZaHjSu7oObm58euXrxxFGCQaMUb2UTHyMEE="
+          "hash": "CoqTZPln1/ZeuzaMAr89l9mQZ2RPVGmnTDfNT2Z872A="
         }
       },
       "is_incremental": false,
@@ -2745,7 +2757,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "zqZr72saAMeZ9F7UQ6dE335NWia5XTXl0R/+XAzGtWc="
+          "hash": "YrBRHN8LOrHLeCVxrg5FuBRz9vLOza/ApXk3HIlKdr8="
         }
       },
       "is_incremental": false,
@@ -2820,7 +2832,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 227,
+          "total_file_count": 228,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {

@@ -97,18 +97,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__ctor_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.%23ctor(ArmoniK.Core.Common.gRPC.GrpcChannelProvider)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__ctor_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_ArmoniK_Core_Common_Injection_Options_InitWorker_ILogger_ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.%23ctor(ArmoniK.Core.Common.gRPC.GrpcChannelProvider%2CArmoniK.Core.Common.Injection.Options.InitWorker%2CILogger%7BArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L48">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L54">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__ctor_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__ctor_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.#ctor(ArmoniK.Core.Common.gRPC.GrpcChannelProvider)">WorkerStreamHandler(GrpcChannelProvider)</h4>
+  <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__ctor_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_ArmoniK_Core_Common_Injection_Options_InitWorker_ILogger_ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.#ctor(ArmoniK.Core.Common.gRPC.GrpcChannelProvider,ArmoniK.Core.Common.Injection.Options.InitWorker,ILogger{ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler})">WorkerStreamHandler(GrpcChannelProvider, InitWorker, ILogger&lt;WorkerStreamHandler&gt;)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public WorkerStreamHandler(GrpcChannelProvider channelProvider)</code></pre>
+    <pre><code class="lang-csharp hljs">public WorkerStreamHandler(GrpcChannelProvider channelProvider, InitWorker optionsInitWorker, ILogger&lt;WorkerStreamHandler&gt; logger)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -125,6 +125,16 @@
         <td><span class="parametername">channelProvider</span></td>
         <td></td>
       </tr>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.Injection.Options.InitWorker.html">InitWorker</a></td>
+        <td><span class="parametername">optionsInitWorker</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">ILogger</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html">WorkerStreamHandler</a>&gt;</td>
+        <td><span class="parametername">logger</span></td>
+        <td></td>
+      </tr>
     </tbody>
   </table>
   <h3 id="properties">Properties
@@ -134,7 +144,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Pipe.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Pipe%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L83">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L90">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Pipe_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Pipe*"></a>
   <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Pipe" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Pipe">Pipe</h4>
@@ -166,7 +176,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Check_ArmoniK_Core_Common_HealthCheckTag_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Check(ArmoniK.Core.Common.HealthCheckTag)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L95">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L133">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Check_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Check*"></a>
   <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Check_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Check(ArmoniK.Core.Common.HealthCheckTag)">Check(HealthCheckTag)</h4>
@@ -213,7 +223,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Dispose.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Dispose%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L98">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L136">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Dispose_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Dispose*"></a>
   <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Dispose" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Dispose">Dispose()</h4>
@@ -228,7 +238,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Init_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Init(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L85">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L92">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Init_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Init*"></a>
   <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_Init_CancellationToken_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Init(CancellationToken)">Init(CancellationToken)</h4>
@@ -236,7 +246,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task Init(CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public async Task Init(CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -361,7 +371,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L43" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamHandler.cs/#L46" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

@@ -4220,19 +4220,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.GrpcChannelProvider
   nameWithType: GrpcChannelProvider.GrpcChannelProvider
-- uid: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Check(ArmoniK.Core.Common.HealthCheckTag)
-  name: Check(HealthCheckTag)
-  href: api/ArmoniK.Core.Common.gRPC.GrpcChannelProvider.html#ArmoniK_Core_Common_gRPC_GrpcChannelProvider_Check_ArmoniK_Core_Common_HealthCheckTag_
-  commentId: M:ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Check(ArmoniK.Core.Common.HealthCheckTag)
-  fullName: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Check(ArmoniK.Core.Common.HealthCheckTag)
-  nameWithType: GrpcChannelProvider.Check(HealthCheckTag)
-- uid: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Check*
-  name: Check
-  href: api/ArmoniK.Core.Common.gRPC.GrpcChannelProvider.html#ArmoniK_Core_Common_gRPC_GrpcChannelProvider_Check_
-  commentId: Overload:ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Check
+- uid: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Get
+  name: Get()
+  href: api/ArmoniK.Core.Common.gRPC.GrpcChannelProvider.html#ArmoniK_Core_Common_gRPC_GrpcChannelProvider_Get
+  commentId: M:ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Get
+  fullName: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Get()
+  nameWithType: GrpcChannelProvider.Get()
+- uid: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Get*
+  name: Get
+  href: api/ArmoniK.Core.Common.gRPC.GrpcChannelProvider.html#ArmoniK_Core_Common_gRPC_GrpcChannelProvider_Get_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Get
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Check
-  nameWithType: GrpcChannelProvider.Check
+  fullName: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Get
+  nameWithType: GrpcChannelProvider.Get
 - uid: ArmoniK.Core.Common.gRPC.GrpcHealthCheckServiceBase
   name: GrpcHealthCheckServiceBase
   href: api/ArmoniK.Core.Common.gRPC.GrpcHealthCheckServiceBase.html
@@ -5519,6 +5519,44 @@ references:
   commentId: F:ArmoniK.Core.Common.Injection.Options.GrpcSocketType.Web
   fullName: ArmoniK.Core.Common.Injection.Options.GrpcSocketType.Web
   nameWithType: GrpcSocketType.Web
+- uid: ArmoniK.Core.Common.Injection.Options.InitWorker
+  name: InitWorker
+  href: api/ArmoniK.Core.Common.Injection.Options.InitWorker.html
+  commentId: T:ArmoniK.Core.Common.Injection.Options.InitWorker
+  fullName: ArmoniK.Core.Common.Injection.Options.InitWorker
+  nameWithType: InitWorker
+- uid: ArmoniK.Core.Common.Injection.Options.InitWorker.SettingSection
+  name: SettingSection
+  href: api/ArmoniK.Core.Common.Injection.Options.InitWorker.html#ArmoniK_Core_Common_Injection_Options_InitWorker_SettingSection
+  commentId: F:ArmoniK.Core.Common.Injection.Options.InitWorker.SettingSection
+  fullName: ArmoniK.Core.Common.Injection.Options.InitWorker.SettingSection
+  nameWithType: InitWorker.SettingSection
+- uid: ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckDelay
+  name: WorkerCheckDelay
+  href: api/ArmoniK.Core.Common.Injection.Options.InitWorker.html#ArmoniK_Core_Common_Injection_Options_InitWorker_WorkerCheckDelay
+  commentId: P:ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckDelay
+  fullName: ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckDelay
+  nameWithType: InitWorker.WorkerCheckDelay
+- uid: ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckDelay*
+  name: WorkerCheckDelay
+  href: api/ArmoniK.Core.Common.Injection.Options.InitWorker.html#ArmoniK_Core_Common_Injection_Options_InitWorker_WorkerCheckDelay_
+  commentId: Overload:ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckDelay
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckDelay
+  nameWithType: InitWorker.WorkerCheckDelay
+- uid: ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckRetries
+  name: WorkerCheckRetries
+  href: api/ArmoniK.Core.Common.Injection.Options.InitWorker.html#ArmoniK_Core_Common_Injection_Options_InitWorker_WorkerCheckRetries
+  commentId: P:ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckRetries
+  fullName: ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckRetries
+  nameWithType: InitWorker.WorkerCheckRetries
+- uid: ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckRetries*
+  name: WorkerCheckRetries
+  href: api/ArmoniK.Core.Common.Injection.Options.InitWorker.html#ArmoniK_Core_Common_Injection_Options_InitWorker_WorkerCheckRetries_
+  commentId: Overload:ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckRetries
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckRetries
+  nameWithType: InitWorker.WorkerCheckRetries
 - uid: ArmoniK.Core.Common.Injection.ProviderBase`1
   name: ProviderBase<T>
   href: api/ArmoniK.Core.Common.Injection.ProviderBase-1.html
@@ -8647,12 +8685,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler
   fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler
   nameWithType: WorkerStreamHandler
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.#ctor(ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
-  name: WorkerStreamHandler(GrpcChannelProvider)
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__ctor_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.#ctor(ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerStreamHandler(ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
-  nameWithType: WorkerStreamHandler.WorkerStreamHandler(GrpcChannelProvider)
+- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.#ctor(ArmoniK.Core.Common.gRPC.GrpcChannelProvider,ArmoniK.Core.Common.Injection.Options.InitWorker,ILogger{ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler})
+  name: WorkerStreamHandler(GrpcChannelProvider, InitWorker, ILogger<WorkerStreamHandler>)
+  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__ctor_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_ArmoniK_Core_Common_Injection_Options_InitWorker_ILogger_ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.#ctor(ArmoniK.Core.Common.gRPC.GrpcChannelProvider,ArmoniK.Core.Common.Injection.Options.InitWorker,ILogger{ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler})
+  name.vb: WorkerStreamHandler(GrpcChannelProvider, InitWorker, ILogger(Of WorkerStreamHandler))
+  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerStreamHandler(ArmoniK.Core.Common.gRPC.GrpcChannelProvider, ArmoniK.Core.Common.Injection.Options.InitWorker, ILogger<ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler>)
+  fullName.vb: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerStreamHandler(ArmoniK.Core.Common.gRPC.GrpcChannelProvider, ArmoniK.Core.Common.Injection.Options.InitWorker, ILogger(Of ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler))
+  nameWithType: WorkerStreamHandler.WorkerStreamHandler(GrpcChannelProvider, InitWorker, ILogger<WorkerStreamHandler>)
+  nameWithType.vb: WorkerStreamHandler.WorkerStreamHandler(GrpcChannelProvider, InitWorker, ILogger(Of WorkerStreamHandler))
 - uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.#ctor*
   name: WorkerStreamHandler
   href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler__ctor_
@@ -8757,6 +8798,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.WorkerStreamWrapper
   nameWithType: WorkerStreamWrapper.WorkerStreamWrapper
+- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.HealthCheck(Empty,ServerCallContext)
+  name: HealthCheck(Empty, ServerCallContext)
+  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_HealthCheck_Empty_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.HealthCheck(Empty,ServerCallContext)
+  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.HealthCheck(Empty, ServerCallContext)
+  nameWithType: WorkerStreamWrapper.HealthCheck(Empty, ServerCallContext)
+- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.HealthCheck*
+  name: HealthCheck
+  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_HealthCheck_
+  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.HealthCheck
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.HealthCheck
+  nameWithType: WorkerStreamWrapper.HealthCheck
 - uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.logger_
   name: logger_
   href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_logger_
