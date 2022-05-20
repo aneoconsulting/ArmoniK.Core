@@ -86,7 +86,9 @@ public static class ServiceCollectionExt
               .AddSingleton(computePlanOptions.GrpcChannel)
               .AddOption<Components>(configuration,
                                      Components.SettingSection)
-              .AddSingletonWithHealthCheck<GrpcChannelProvider>(nameof(GrpcChannelProvider))
+              .AddOption<InitWorker>(configuration,
+                                     InitWorker.SettingSection)
+              .AddSingleton<GrpcChannelProvider>()
               .AddSingleton<IWorkerStreamHandler, WorkerStreamHandler>();
     }
 
