@@ -82,7 +82,7 @@ public class SessionTable : ISessionTable
     }
 
     return Task.FromResult(storage_[sessionId]
-                             .Status == SessionStatus.Cancelled);
+                             .Status == SessionStatus.Canceled);
   }
 
   /// <inheritdoc />
@@ -107,13 +107,13 @@ public class SessionTable : ISessionTable
                          (_,
                           data) =>
                          {
-                           if (data.Status == SessionStatus.Cancelled)
+                           if (data.Status == SessionStatus.Canceled)
                            {
                              throw new ArmoniKException("Session already cancelled");
                            }
                            return data with
                                   {
-                                    Status = SessionStatus.Cancelled,
+                                    Status = SessionStatus.Canceled,
                                   };
                          });
     return Task.CompletedTask;

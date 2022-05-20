@@ -41,22 +41,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\..\Protos\V1\worker_service.proto" GrpcServices="Both">
+	  <Protobuf Include="..\..\Api\Protos\V1\worker_service.proto" GrpcServices="Both">
       <Link>gRPC\Protos\V1\worker_service.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\Protos\V1\submitter_service.proto" GrpcServices="Both">
+    <Protobuf Include="..\..\Api\Protos\V1\submitter_service.proto" GrpcServices="Both">
       <Link>gRPC\Protos\V1\submitter_service.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\Protos\V1\objects.proto" GrpcServices="Message">
+    <Protobuf Include="..\..\Api\Protos\V1\objects.proto" GrpcServices="Message">
       <Link>gRPC\Protos\V1\objects.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\Protos\V1\task_status.proto" GrpcServices="Message">
+    <Protobuf Include="..\..\Api\Protos\V1\task_status.proto" GrpcServices="Message">
       <Link>gRPC\Protos\V1\task_status.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\Protos\V1\session_status.proto" GrpcServices="Message">
+    <Protobuf Include="..\..\Api\Protos\V1\session_status.proto" GrpcServices="Message">
       <Link>gRPC\Protos\V1\session_status.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\..\Protos\V1\result_status.proto" GrpcServices="Message">
+    <Protobuf Include="..\..\Api\Protos\V1\result_status.proto" GrpcServices="Message">
       <Link>gRPC\Protos\V1\result_status.proto</Link>
     </Protobuf>
   </ItemGroup>

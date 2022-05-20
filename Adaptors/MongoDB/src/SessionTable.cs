@@ -109,7 +109,7 @@ public class SessionTable : ISessionTable
     {
       return await sessionCollection.AsQueryable(sessionHandle)
                                     .Where(sdm => sdm.SessionId == sessionId)
-                                    .Select(sdm => sdm.Status == SessionStatus.Cancelled)
+                                    .Select(sdm => sdm.Status == SessionStatus.Canceled)
                                     .SingleAsync(cancellationToken)
                                     .ConfigureAwait(false);
     }
@@ -159,7 +159,7 @@ public class SessionTable : ISessionTable
 
     var resSession = sessionCollection.UpdateOneAsync(model => model.SessionId == sessionId,
                                                       Builders<SessionData>.Update.Set(model => model.Status,
-                                                                                       SessionStatus.Cancelled),
+                                                                                       SessionStatus.Canceled),
                                                       cancellationToken: cancellationToken);
 
     if ((await resSession.ConfigureAwait(false)).MatchedCount < 1)
