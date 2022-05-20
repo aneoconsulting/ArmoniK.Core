@@ -10,6 +10,6 @@ COPY . .
 WORKDIR "/src/Tests/Stream/Client"
 RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -c Release -o /app/build
 RUN groupadd --gid 5000 runuser && useradd --home-dir /home/runuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null runuser
-RUN chmod -R 777 /cache
+
 USER runuser
 ENTRYPOINT ["dotnet", "test"]
