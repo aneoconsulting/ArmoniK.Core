@@ -74,8 +74,8 @@ public class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
-    logger_.LogFunction(MessageId,
-                        functionName: $"{nameof(QueueStorage)}.{nameof(DisposeAsync)}");
+    using var _ = logger_.LogFunction(MessageId,
+                                      functionName: $"{nameof(QueueStorage)}.{nameof(DisposeAsync)}");
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
