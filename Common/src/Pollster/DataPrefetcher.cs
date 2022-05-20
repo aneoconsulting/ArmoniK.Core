@@ -29,7 +29,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.gRPC.Protos.V1;
 using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf;

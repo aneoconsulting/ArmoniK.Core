@@ -36,8 +36,6 @@ using ArmoniK.Core.Common.Pollster;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -119,6 +117,7 @@ public static class Program
       }
 
       builder.Services.AddHealthChecks();
+
       var app = builder.Build();
 
       app.UseRouting();

@@ -23,7 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.gRPC.Protos.V1;
+
 using FluentValidation;
 
 namespace ArmoniK.Core.Common.gRPC.Validators;
