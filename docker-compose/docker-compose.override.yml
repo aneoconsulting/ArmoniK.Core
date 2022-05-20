@@ -4,27 +4,15 @@ services:
   armonik.control.submitter:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:5443;http://+:5001
-    ports:
-      - "5001"
 
   armonik.control.metrics:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:5443;http://+:5002
-    ports:
-      - "5002"
 
   armonik.compute.pollingagent:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:5443;http://+:9980
-    ports:
-      - "9980"
 
   armonik.compute.worker:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:5443;http://+:1080
-    ports:
-      - "1080"

@@ -26,9 +26,6 @@ services:
       - Amqp__Password=admin
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
-      - ASPNETCORE_URLS=https://+:5443;http://+:9980
-    ports:
-      - "9980"
     depends_on:
       - database
       - object
@@ -64,9 +61,6 @@ services:
       - Amqp__Password=admin
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
-      - ASPNETCORE_URLS=https://+:5443;http://+:5001
-    ports:
-      - "5001"
     depends_on:
       - fluentbit
       - database
@@ -106,9 +100,6 @@ services:
       - Amqp__User=admin
       - Amqp__Password=admin
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
-      - ASPNETCORE_URLS=https://+:5443;http://+:5002
-    ports:
-      - "5002"
     depends_on:
       - database
       - object
@@ -186,7 +177,6 @@ services:
     environment:
       - Serilog__Properties__Application=ArmoniK.Compute.Worker
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
-      - ASPNETCORE_URLS=https://+:5443;http://+:1080
     depends_on:
       - database
       - object
@@ -205,7 +195,7 @@ services:
       context: ../..
       dockerfile: Tests/HtcMock/Client/src/Dockerfile
     environment:
-      - Grpc__Endpoint=http://armonik.core.control.submitter:5001
+      - Grpc__Endpoint=http://armonik.core.control.submitter:1080
       - SLEEP_BEFORE_LAUNCH=10000
     depends_on:
       - database

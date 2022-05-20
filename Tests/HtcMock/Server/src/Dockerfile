@@ -2,7 +2,6 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
-EXPOSE 1080
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
@@ -20,6 +19,6 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
-RUN chmod -R 777 /cache
 USER armonikuser
+EXPOSE 1080
 ENTRYPOINT ["dotnet", "ArmoniK.Samples.HtcMock.Server.dll"]

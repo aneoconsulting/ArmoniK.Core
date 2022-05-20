@@ -119,8 +119,6 @@ public static class Program
       }
 
       builder.Services.AddHealthChecks();
-      builder.WebHost.UseKestrel(options => options.ListenAnyIP(9980,
-                                                                listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
       var app = builder.Build();
 
       app.UseRouting();
