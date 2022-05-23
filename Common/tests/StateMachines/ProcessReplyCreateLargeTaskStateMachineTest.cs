@@ -41,76 +41,99 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
 
   private ProcessReplyCreateLargeTaskStateMachine sm_;
 
-  //[Test]
-  //public void DataChunkFirstShouldFail()
-  //  => Assert.Throws<InvalidOperationException>(() => sm_.AddDataChunk());
+  [Test]
+  public void DataChunkFirstShouldFail()
+    => Assert.Throws<InvalidOperationException>(() => sm_.AddDataChunk());
 
-  //[Test]
-  //public void CompleteDataFirstShouldFail()
-  //  => Assert.Throws<InvalidOperationException>(() => sm_.CompleteData());
+  [Test]
+  public void CompleteDataFirstShouldFail()
+    => Assert.Throws<InvalidOperationException>(() => sm_.CompleteData());
 
-  //[Test]
-  //public void CompleteRequestFirstShouldFail()
-  //  => Assert.Throws<InvalidOperationException>(() => sm_.CompleteRequest());
+  [Test]
+  public void CompleteRequestFirstShouldFail()
+    => Assert.Throws<InvalidOperationException>(() => sm_.CompleteRequest());
 
-  //[Test]
-  //public void TwoInitRequestsShouldFail()
-  //{
-  //  sm_.InitKey();
-  //  Assert.Throws<InvalidOperationException>(() => sm_.InitKey());
-  //}
+  [Test]
+  public void TwoInitRequestsShouldFail()
+  {
+    sm_.InitRequest();
+    Assert.Throws<InvalidOperationException>(() => sm_.InitRequest());
+  }
 
-  //[Test]
-  //public void DoubleCompleteRequestWithoutPayloadCompleteShouldFail()
-  //{
-  //  sm_.InitKey();
-  //  sm_.AddDataChunk();
-  //  sm_.AddDataChunk();
-  //  sm_.AddDataChunk();
-  //  sm_.CompleteData();
+  [Test]
+  public void DoubleCompleteRequestWithoutDataCompleteShouldFail()
+  {
+    sm_.InitRequest();
+    sm_.AddHeader();
+    sm_.AddDataChunk();
+    sm_.AddDataChunk();
+    sm_.AddDataChunk();
+    sm_.CompleteData();
 
-  //  sm_.CompleteRequest();
-  //  Assert.Throws<InvalidOperationException>(() => sm_.CompleteRequest());
-  //}
+    sm_.CompleteRequest();
+    Assert.Throws<InvalidOperationException>(() => sm_.CompleteRequest());
+  }
 
-  //[Test]
-  //public void CompleteRequestWithoutPayloadCompleteShouldFail()
-  //{
-  //  sm_.InitKey();
-  //  sm_.AddDataChunk();
-  //  sm_.AddDataChunk();
-  //  sm_.AddDataChunk();
+  [Test]
+  public void CompleteRequestWithoutDataCompleteShouldFail()
+  {
+    sm_.InitRequest();
+    sm_.AddHeader();
+    sm_.AddDataChunk();
+    sm_.AddDataChunk();
+    sm_.AddDataChunk();
 
-  //  Assert.Throws<InvalidOperationException>(() => sm_.CompleteRequest());
-  //}
+    Assert.Throws<InvalidOperationException>(() => sm_.CompleteRequest());
+  }
 
-  //[Test]
-  //public void CompleteRequestWithPayloadCompleteShouldSucceed()
-  //{
-  //  sm_.InitKey();
-  //  sm_.AddDataChunk();
-  //  sm_.AddDataChunk();
-  //  sm_.AddDataChunk();
-  //  sm_.CompleteData();
+  [Test]
+  public void CompleteRequestWithDataCompleteShouldSucceed()
+  {
+    sm_.InitRequest();
+    sm_.AddHeader();
+    sm_.AddDataChunk();
+    sm_.AddDataChunk();
+    sm_.AddDataChunk();
+    sm_.CompleteData();
 
-  //  sm_.CompleteRequest();
+    sm_.CompleteRequest();
 
-  //  Assert.AreEqual(ProcessReplyResultStateMachine.State.InitKeyedDataLast,
-  //                  sm_.GetState());
-  //}
+    Assert.AreEqual(ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast,
+                    sm_.GetState());
+  }
 
-  //[Test]
-  //public void HappyPathSmallShouldSucceed()
-  //{
-  //  sm_.InitKey();
-  //  sm_.AddDataChunk();
+  [Test]
+  public void HappyPathSmallShouldSucceed()
+  {
+    sm_.InitRequest();
+    sm_.AddHeader();
+    sm_.AddDataChunk();
 
-  //  sm_.CompleteData();
-  //  sm_.CompleteRequest();
+    sm_.CompleteData();
+    sm_.CompleteRequest();
 
-  //  Assert.AreEqual(ProcessReplyResultStateMachine.State.InitKeyedDataLast,
-  //                  sm_.GetState());
-  //}
+    Assert.AreEqual(ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast,
+                    sm_.GetState());
+  }
+
+  [Test]
+  public void HappyPathSmall2ShouldSucceed()
+  {
+    sm_.InitRequest();
+
+    sm_.AddHeader();
+    sm_.AddDataChunk();
+    sm_.CompleteData();
+
+    sm_.AddHeader();
+    sm_.AddDataChunk();
+    sm_.CompleteData();
+
+    sm_.CompleteRequest();
+
+    Assert.AreEqual(ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast,
+                    sm_.GetState());
+  }
 
   [Test]
   public void GenerateGraphShouldSucceed()
