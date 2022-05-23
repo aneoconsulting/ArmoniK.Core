@@ -171,10 +171,12 @@ public class TaskHandler : ITaskHandler
   {
     try
     {
+      var fsm = new ProcessReplyResultStateMachine(logger_);
       await semaphore_.WaitAsync(cancellationToken_)
                       .ConfigureAwait(false);
       var requestId = $"R#{messageCounter_++}";
 
+      fsm.InitKey();
       var reply = new ProcessReply
                   {
                     Result = new ProcessReply.Types.Result
@@ -196,6 +198,7 @@ public class TaskHandler : ITaskHandler
         var chunkSize = Math.Min(Configuration.DataChunkMaxSize,
                                  data.Length - start);
 
+        fsm.AddDataChunk();
         reply = new ProcessReply
                 {
                   Result = new ProcessReply.Types.Result
@@ -216,6 +219,7 @@ public class TaskHandler : ITaskHandler
         start += chunkSize;
       }
 
+      fsm.CompleteData();
       reply = new ProcessReply
               {
                 Result = new ProcessReply.Types.Result
@@ -231,6 +235,7 @@ public class TaskHandler : ITaskHandler
       await responseStream_.WriteAsync(reply)
                            .ConfigureAwait(false);
 
+      fsm.CompleteRequest();
       reply = new ProcessReply
               {
                 Result = new ProcessReply.Types.Result

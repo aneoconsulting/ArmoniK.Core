@@ -26,10 +26,13 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.StateMachines;
 
 using Google.Protobuf;
 
 using JetBrains.Annotations;
+
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
 
@@ -40,6 +43,8 @@ public static class TaskRequestExtensions
                                                                                        TaskOptions?                  taskOptions,
                                                                                        int                           chunkMaxSize)
   {
+    var fsm = new ProcessReplyCreateLargeTaskStateMachine(NullLogger.Instance);
+    fsm.InitRequest();
     if (taskOptions is not null)
     {
       yield return new ProcessReply.Types.CreateLargeTaskRequest
@@ -70,7 +75,8 @@ public static class TaskRequestExtensions
     while (taskRequestEnumerator.MoveNext())
     {
       foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(false,
-                                                                            chunkMaxSize))
+                                                                            chunkMaxSize,
+                                                                            fsm))
       {
         yield return createLargeTaskRequest;
       }
@@ -80,16 +86,19 @@ public static class TaskRequestExtensions
     }
 
     foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(true,
-                                                                          chunkMaxSize))
+                                                                          chunkMaxSize,
+                                                                          fsm))
     {
       yield return createLargeTaskRequest;
     }
   }
 
-  public static IEnumerable<ProcessReply.Types.CreateLargeTaskRequest> ToRequestStream(this TaskRequest taskRequest,
-                                                                                       bool             isLast,
-                                                                                       int              chunkMaxSize)
+  public static IEnumerable<ProcessReply.Types.CreateLargeTaskRequest> ToRequestStream(this TaskRequest                        taskRequest,
+                                                                                       bool                                    isLast,
+                                                                                       int                                     chunkMaxSize,
+                                                                                       ProcessReplyCreateLargeTaskStateMachine processReplyCreateLargeTaskStateMachine)
   {
+    processReplyCreateLargeTaskStateMachine.AddHeader();
     yield return new ProcessReply.Types.CreateLargeTaskRequest
                  {
                    InitTask = new InitTaskRequest
@@ -116,6 +125,7 @@ public static class TaskRequestExtensions
       var chunkSize = Math.Min(chunkMaxSize,
                                taskRequest.Payload.Length - start);
 
+      processReplyCreateLargeTaskStateMachine.AddDataChunk();
       yield return new ProcessReply.Types.CreateLargeTaskRequest
                    {
                      TaskPayload = new DataChunk
@@ -128,6 +138,7 @@ public static class TaskRequestExtensions
       start += chunkSize;
     }
 
+    processReplyCreateLargeTaskStateMachine.CompleteData();
     yield return new ProcessReply.Types.CreateLargeTaskRequest
                  {
                    TaskPayload = new DataChunk
@@ -138,6 +149,7 @@ public static class TaskRequestExtensions
 
     if (isLast)
     {
+      processReplyCreateLargeTaskStateMachine.CompleteRequest();
       yield return new ProcessReply.Types.CreateLargeTaskRequest
                    {
                      InitTask = new InitTaskRequest
