@@ -5195,6 +5195,25 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Validators.CreateSmallTaskRequestValidator.TaskRequestValidator.TaskRequestValidator
   nameWithType: CreateSmallTaskRequestValidator.TaskRequestValidator.TaskRequestValidator
+- uid: ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator
+  name: SessionFilterValidator
+  href: api/ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator
+  fullName: ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator
+  nameWithType: SessionFilterValidator
+- uid: ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.#ctor
+  name: SessionFilterValidator()
+  href: api/ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.html#ArmoniK_Core_Common_gRPC_Validators_SessionFilterValidator__ctor
+  commentId: M:ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.#ctor
+  fullName: ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.SessionFilterValidator()
+  nameWithType: SessionFilterValidator.SessionFilterValidator()
+- uid: ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.#ctor*
+  name: SessionFilterValidator
+  href: api/ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.html#ArmoniK_Core_Common_gRPC_Validators_SessionFilterValidator__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.SessionFilterValidator
+  nameWithType: SessionFilterValidator.SessionFilterValidator
 - uid: ArmoniK.Core.Common.gRPC.Validators.TaskFilterValidator
   name: TaskFilterValidator
   href: api/ArmoniK.Core.Common.gRPC.Validators.TaskFilterValidator.html
@@ -10495,6 +10514,38 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.RpcExtTests.ThrowTimeoutExceptionWhenCallReachedDeadlineAggregated
   nameWithType: RpcExtTests.ThrowTimeoutExceptionWhenCallReachedDeadlineAggregated
+- uid: ArmoniK.Core.Common.Tests.SessionFilterValidatorTest
+  name: SessionFilterValidatorTest
+  href: api/ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.SessionFilterValidatorTest
+  fullName: ArmoniK.Core.Common.Tests.SessionFilterValidatorTest
+  nameWithType: SessionFilterValidatorTest
+- uid: ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleExcludedStatusesShouldBeValid
+  name: MultipleExcludedStatusesShouldBeValid()
+  href: api/ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.html#ArmoniK_Core_Common_Tests_SessionFilterValidatorTest_MultipleExcludedStatusesShouldBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleExcludedStatusesShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleExcludedStatusesShouldBeValid()
+  nameWithType: SessionFilterValidatorTest.MultipleExcludedStatusesShouldBeValid()
+- uid: ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleExcludedStatusesShouldBeValid*
+  name: MultipleExcludedStatusesShouldBeValid
+  href: api/ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.html#ArmoniK_Core_Common_Tests_SessionFilterValidatorTest_MultipleExcludedStatusesShouldBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleExcludedStatusesShouldBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleExcludedStatusesShouldBeValid
+  nameWithType: SessionFilterValidatorTest.MultipleExcludedStatusesShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleIncludedStatusesShouldBeValid
+  name: MultipleIncludedStatusesShouldBeValid()
+  href: api/ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.html#ArmoniK_Core_Common_Tests_SessionFilterValidatorTest_MultipleIncludedStatusesShouldBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleIncludedStatusesShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleIncludedStatusesShouldBeValid()
+  nameWithType: SessionFilterValidatorTest.MultipleIncludedStatusesShouldBeValid()
+- uid: ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleIncludedStatusesShouldBeValid*
+  name: MultipleIncludedStatusesShouldBeValid
+  href: api/ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.html#ArmoniK_Core_Common_Tests_SessionFilterValidatorTest_MultipleIncludedStatusesShouldBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleIncludedStatusesShouldBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.SessionFilterValidatorTest.MultipleIncludedStatusesShouldBeValid
+  nameWithType: SessionFilterValidatorTest.MultipleIncludedStatusesShouldBeValid
 - uid: ArmoniK.Core.Common.Tests.SessionTableTestBase
   name: SessionTableTestBase
   href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html
