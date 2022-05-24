@@ -100,6 +100,9 @@ public class ProcessReplyResultStateMachine
   public void CompleteRequest()
     => machine_.Fire(Triggers.CompleteRequest);
 
+  public bool IsComplete()
+    => machine_.State == State.InitKeyedDataLast;
+
   public string GenerateGraph()
     => UmlDotGraph.Format(machine_.GetInfo());
 

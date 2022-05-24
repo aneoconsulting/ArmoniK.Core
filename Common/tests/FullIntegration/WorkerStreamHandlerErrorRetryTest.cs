@@ -57,7 +57,6 @@ class WorkerStreamHandlerErrorRetryTest : WorkerStreamHandlerBase
                           var request = await ChannelAsyncPipe.Reverse.Reader.FirstAsync(cancellationToken: cancellationToken)
                                                    .ConfigureAwait(false);
 
-
                           await ChannelAsyncPipe.Reverse.WriteAsync(new ProcessReply
                                                          {
                                                            Output = new Output

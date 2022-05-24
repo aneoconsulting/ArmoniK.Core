@@ -167,11 +167,10 @@ public class Pollster
                                                                       cancellationToken)
                                                         .ConfigureAwait(false);
 
-              logger_.LogDebug("Finish task processing");
+              logger_.LogDebug("CompleteProcessing task processing");
 
 
-              await Task.WhenAll(processResult)
-                        .ConfigureAwait(false);
+              await processResult.ConfigureAwait(false);
 
               logger_.LogDebug("Task returned");
             }
