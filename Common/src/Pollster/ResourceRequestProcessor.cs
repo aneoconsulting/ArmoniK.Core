@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,6 +32,8 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
+
+using Google.Protobuf;
 
 using Microsoft.Extensions.Logging;
 
@@ -43,8 +46,8 @@ public class ResourceRequestProcessor : IProcessReplyProcessor
   private readonly ILogger                                  logger_;
 
   public ResourceRequestProcessor(IObjectStorage                           resourcesStorage,
-                           IAsyncPipe<ProcessReply, ProcessRequest> pipe,
-                           ILogger                                  logger)
+                                  IAsyncPipe<ProcessReply, ProcessRequest> pipe,
+                                  ILogger                                  logger)
   {
     resourcesStorage_ = resourcesStorage;
     pipe_             = pipe;
@@ -78,11 +81,12 @@ public class ResourceRequestProcessor : IProcessReplyProcessor
       return;
     }
 
-    await foreach (var dataReply in bytes.ToDataReply(processReply.RequestId,
-                                                      processReply.Resource.Key,
-                                                      cancellationToken)
-                                         .WithCancellation(cancellationToken)
-                                         .ConfigureAwait(false))
+    await foreach (var dataReply in ToDataReply(bytes,
+                                                processReply.RequestId,
+                                                processReply.Resource.Key,
+                                                cancellationToken)
+                                    .WithCancellation(cancellationToken)
+                                    .ConfigureAwait(false))
     {
       await pipe_.WriteAsync(new ProcessRequest
                              {
@@ -103,4 +107,53 @@ public class ResourceRequestProcessor : IProcessReplyProcessor
 
   public Task CompleteProcessing(CancellationToken cancellationToken)
     => Task.CompletedTask;
+
+
+  private static async IAsyncEnumerable<ProcessRequest.Types.DataReply> ToDataReply(IAsyncEnumerable<byte[]>                   bytes,
+                                                                             string                                     replyId,
+                                                                             string                                     key,
+                                                                             [EnumeratorCancellation] CancellationToken cancellationToken)
+  {
+    var enumerator = bytes.GetAsyncEnumerator(cancellationToken);
+    if (!await enumerator.MoveNextAsync(cancellationToken)
+                         .ConfigureAwait(false))
+    {
+      throw new InvalidOperationException("No data were retrieved.");
+    }
+
+    yield return new ProcessRequest.Types.DataReply
+                 {
+                   ReplyId = replyId,
+                   Init = new ProcessRequest.Types.DataReply.Types.Init
+                          {
+                            Key = key,
+                            Data = new DataChunk
+                                   {
+                                     Data = UnsafeByteOperations.UnsafeWrap(enumerator.Current),
+                                   },
+                          },
+                 };
+
+    while (await enumerator.MoveNextAsync()
+                           .ConfigureAwait(false))
+    {
+      yield return new ProcessRequest.Types.DataReply
+                   {
+                     ReplyId = replyId,
+                     Data = new DataChunk
+                            {
+                              Data = UnsafeByteOperations.UnsafeWrap(enumerator.Current),
+                            },
+                   };
+    }
+
+    yield return new ProcessRequest.Types.DataReply
+                 {
+                   ReplyId = replyId,
+                   Data = new DataChunk
+                          {
+                            DataComplete = true,
+                          },
+                 };
+  }
 }
