@@ -29,16 +29,53 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+/// Interface for Processors that are used to process requests from workers
+/// </summary>
 public interface IProcessReplyProcessor
 {
+  /// <summary>
+  /// Insert <c>ProcessReply</c> into the Processor
+  /// </summary>
+  /// <param name="processReply">Worker request that will be inserted and processed by the processor</param>
+  /// <param name="cancellationToken">Cancellation token passed to cancel task</param>
+  /// <returns>
+  /// Async <c>Task</c> representing the execution of the method
+  /// </returns>
   Task AddProcessReply(ProcessReply      processReply,
                        CancellationToken cancellationToken);
 
+  /// <summary>
+  /// Check if the Processor received all the replies
+  /// </summary>
+  /// <returns>
+  /// <c>bool</c> that represents if the Processor received all the replies
+  /// </returns>
   bool IsComplete();
 
+  /// <summary>
+  /// Wait for the completion of the processing of the inserted replies
+  /// </summary>
+  /// <param name="cancellationToken">Cancellation token passed to cancel task</param>
+  /// <returns>
+  /// Async <c>Task</c> representing the execution of the method
+  /// </returns>
   Task WaitForResponseCompletion(CancellationToken cancellationToken);
 
+  /// <summary>
+  /// Cancel the on going operations and remove the objects inserted by the processor
+  /// </summary>
+  /// <returns>
+  /// Async <c>Task</c> representing the execution of the method
+  /// </returns>
   Task Cancel();
 
+  /// <summary>
+  /// Trigger the post operations in the Processors
+  /// </summary>
+  /// <param name="cancellationToken">Cancellation token passed to cancel task</param>
+  /// <returns>
+  /// Async <c>Task</c> representing the execution of the method
+  /// </returns>
   Task CompleteProcessing(CancellationToken cancellationToken);
 }

@@ -40,6 +40,7 @@ using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <inheritdoc />
 internal class CreateLargeTaskProcessor : IProcessReplyProcessor
 {
   private readonly ISubmitter                               submitter_;

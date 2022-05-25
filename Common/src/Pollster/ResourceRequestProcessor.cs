@@ -39,6 +39,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <inheritdoc />
 public class ResourceRequestProcessor : IProcessReplyProcessor
 {
   private readonly IObjectStorage                           resourcesStorage_;

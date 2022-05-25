@@ -34,6 +34,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <inheritdoc />
 public class CommonDataRequestProcessor : IProcessReplyProcessor
 {
   private readonly IObjectStorage                           resourcesStorage_;

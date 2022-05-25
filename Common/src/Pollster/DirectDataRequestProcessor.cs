@@ -34,6 +34,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <inheritdoc />
 public class DirectDataRequestProcessor : IProcessReplyProcessor
 {
   private readonly IObjectStorage                           resourcesStorage_;

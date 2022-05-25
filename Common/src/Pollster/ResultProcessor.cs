@@ -35,6 +35,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <inheritdoc />
 internal class ResultProcessor : IProcessReplyProcessor
 {
   private readonly ProcessReplyResultStateMachine fsm_;
