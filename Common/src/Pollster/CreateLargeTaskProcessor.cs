@@ -40,7 +40,9 @@ using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-/// <inheritdoc />
+/// <summary>
+/// Processor for <see cref="ProcessReply.TypeOneofCase.CreateLargeTask"/>
+/// </summary>
 internal class CreateLargeTaskProcessor : IProcessReplyProcessor
 {
   private readonly ISubmitter                               submitter_;
@@ -71,6 +73,7 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
     fsm_             = new ProcessReplyCreateLargeTaskStateMachine(logger);
   }
 
+  /// <inheritdoc />
   public async Task AddProcessReply(ProcessReply      processReply,
                               CancellationToken cancellationToken)
   {
@@ -171,16 +174,20 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
     }
   }
 
+  /// <inheritdoc />
   public bool IsComplete()
     => completionTask_ != null && fsm_.IsComplete() && completionTask_.IsCompleted;
 
+  /// <inheritdoc />
   public async Task WaitForResponseCompletion(CancellationToken cancellationToken)
     => await completionTask_!.WaitAsync(cancellationToken)
                             .ConfigureAwait(false);
 
+  /// <inheritdoc />
   public Task Cancel()
     => throw new NotImplementedException();
 
+  /// <inheritdoc />
   public async Task CompleteProcessing(CancellationToken cancellationToken)
     => await submitter_.FinalizeTaskCreation(taskIds_!,
                                              options_!,

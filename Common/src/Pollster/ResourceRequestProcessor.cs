@@ -39,7 +39,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-/// <inheritdoc />
+/// <summary>
+/// Processor for <see cref="ProcessReply.TypeOneofCase.Resource"/>
+/// </summary>
 public class ResourceRequestProcessor : IProcessReplyProcessor
 {
   private readonly IObjectStorage                           resourcesStorage_;
@@ -55,6 +57,7 @@ public class ResourceRequestProcessor : IProcessReplyProcessor
     logger_           = logger;
   }
 
+  /// <inheritdoc />
   public async Task AddProcessReply(ProcessReply      processReply,
                                     CancellationToken cancellationToken)
   {
@@ -97,15 +100,19 @@ public class ResourceRequestProcessor : IProcessReplyProcessor
     }
   }
 
+  /// <inheritdoc />
   public bool IsComplete()
     => true;
 
+  /// <inheritdoc />
   public Task WaitForResponseCompletion(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
+  /// <inheritdoc />
   public Task Cancel()
     => throw new NotImplementedException();
 
+  /// <inheritdoc />
   public Task CompleteProcessing(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
