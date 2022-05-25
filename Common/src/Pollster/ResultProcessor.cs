@@ -107,6 +107,7 @@ internal class ResultProcessor : IProcessReplyProcessor
             break;
           case DataChunk.TypeOneofCase.DataComplete:
             fsm_.CompleteData();
+            chunksChannel_.Writer.Complete();
             break;
           case DataChunk.TypeOneofCase.None:
           default:
