@@ -26,6 +26,8 @@ using System;
 using System.Linq;
 using System.Text;
 
+using ArmoniK.Api.gRPC.V1;
+
 using Microsoft.Extensions.Logging;
 
 using Stateless;
@@ -33,8 +35,14 @@ using Stateless.Graph;
 
 namespace ArmoniK.Core.Common.StateMachines;
 
+/// <summary>
+/// Utility class for the Final State Machine from <see cref="ProcessRequest.Types.ComputeRequest"/>
+/// </summary>
 public class ComputeRequestStateMachine
 {
+  /// <summary>
+  /// States for the Final State Machine
+  /// </summary>
   public enum State
   {
     Init,
@@ -47,14 +55,44 @@ public class ComputeRequestStateMachine
     DataLast,
   }
 
+  /// <summary>
+  /// Transitions for the Final State Machine
+  /// </summary>
   public enum Triggers
   {
+    /// <summary>
+    /// Correspond to receive last request <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData"/>
+    /// </summary>
     CompleteRequest,
+
+    /// <summary>
+    /// Correspond to receive request <see cref="DataChunk.TypeOneofCase.DataComplete"/> as <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data"/>
+    /// </summary>
     CompleteDataDependency,
+
+    /// <summary>
+    /// Correspond to receive request <see cref="DataChunk.TypeOneofCase.Data"/> as <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data"/>
+    /// </summary>
     AddDataDependencyChunk,
+
+    /// <summary>
+    /// Correspond to receive request <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData"/>
+    /// </summary>
     InitDataDependency,
+
+    /// <summary>
+    /// Correspond to receive request <see cref="DataChunk.TypeOneofCase.DataComplete"/> as <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload"/>
+    /// </summary>
     CompletePayload,
+
+    /// <summary>
+    /// Correspond to receive request <see cref="DataChunk.TypeOneofCase.Data"/> as <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload"/>
+    /// </summary>
     AddPayloadChunk,
+
+    /// <summary>
+    /// Correspond to receive request <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitRequest"/>
+    /// </summary>
     InitRequest,
   }
 
@@ -62,6 +100,10 @@ public class ComputeRequestStateMachine
 
   private readonly StateMachine<State, Triggers> machine_;
 
+  /// <summary>
+  /// Constructor that initializes the Final State Machine
+  /// </summary>
+  /// <param name="logger">Logger used to produce logs for this class</param>
   public ComputeRequestStateMachine(ILogger logger)
   {
     logger_  = logger;
@@ -111,30 +153,63 @@ public class ComputeRequestStateMachine
     }
   }
 
+  /// <summary>
+  /// Function used when using <see cref="Triggers.InitRequest"/> transition
+  /// </summary>
   public void InitRequest()
     => machine_.Fire(Triggers.InitRequest);
 
+  /// <summary>
+  /// Function used when using <see cref="Triggers.AddPayloadChunk"/> transition
+  /// </summary>
   public void AddPayloadChunk()
     => machine_.Fire(Triggers.AddPayloadChunk);
 
+  /// <summary>
+  /// Function used when using <see cref="Triggers.CompletePayload"/> transition
+  /// </summary>
   public void CompletePayload()
     => machine_.Fire(Triggers.CompletePayload);
 
+  /// <summary>
+  /// Function used when using <see cref="Triggers.InitDataDependency"/> transition
+  /// </summary>
   public void InitDataDependency()
     => machine_.Fire(Triggers.InitDataDependency);
 
+  /// <summary>
+  /// Function used when using <see cref="Triggers.AddDataDependencyChunk"/> transition
+  /// </summary>
   public void AddDataDependencyChunk()
     => machine_.Fire(Triggers.AddDataDependencyChunk);
 
+  /// <summary>
+  /// Function used when using <see cref="Triggers.CompleteDataDependency"/> transition
+  /// </summary>
   public void CompleteDataDependency()
     => machine_.Fire(Triggers.CompleteDataDependency);
 
+  /// <summary>
+  /// Function used when using <see cref="Triggers.CompleteRequest"/> transition
+  /// </summary>
   public void CompleteRequest()
     => machine_.Fire(Triggers.CompleteRequest);
 
+  /// <summary>
+  /// Generate a dot graph representing the Final State Machine
+  /// </summary>
+  /// <returns>
+  /// A string containing the graph in dot format
+  /// </returns>
   public string GenerateGraph()
     => UmlDotGraph.Format(machine_.GetInfo());
 
+  /// <summary>
+  /// Generate a Mermaid graph representing the Final State Machine
+  /// </summary>
+  /// <returns>
+  /// A string containing the graph in Mermaid format
+  /// </returns>
   public string GenerateMermaidGraph()
   {
     var str = UmlMermaidGraph.Format(machine_.GetInfo());
@@ -157,6 +232,12 @@ public class ComputeRequestStateMachine
     return bld.ToString();
   }
 
+  /// <summary>
+  /// Get the current state of the Final State Machine
+  /// </summary>
+  /// <returns>
+  /// The current state of the Final State Machine
+  /// </returns>
   public State GetState()
     => machine_.State;
 }
