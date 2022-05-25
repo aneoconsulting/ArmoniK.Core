@@ -156,42 +156,49 @@ public class ComputeRequestStateMachine
   /// <summary>
   /// Function used when using <see cref="Triggers.InitRequest"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void InitRequest()
     => machine_.Fire(Triggers.InitRequest);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.AddPayloadChunk"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void AddPayloadChunk()
     => machine_.Fire(Triggers.AddPayloadChunk);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.CompletePayload"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void CompletePayload()
     => machine_.Fire(Triggers.CompletePayload);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.InitDataDependency"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void InitDataDependency()
     => machine_.Fire(Triggers.InitDataDependency);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.AddDataDependencyChunk"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void AddDataDependencyChunk()
     => machine_.Fire(Triggers.AddDataDependencyChunk);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.CompleteDataDependency"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void CompleteDataDependency()
     => machine_.Fire(Triggers.CompleteDataDependency);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.CompleteRequest"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void CompleteRequest()
     => machine_.Fire(Triggers.CompleteRequest);
 

@@ -140,24 +140,28 @@ public class ProcessReplyResultStateMachine
   /// <summary>
   /// Function used when using <see cref="Triggers.InitKeyedData"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void InitKey()
     => machine_.Fire(Triggers.InitKeyedData);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.AddDataChunk"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void AddDataChunk()
     => machine_.Fire(Triggers.AddDataChunk);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.CompleteData"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void CompleteData()
     => machine_.Fire(Triggers.CompleteData);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.CompleteRequest"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void CompleteRequest()
     => machine_.Fire(Triggers.CompleteRequest);
 

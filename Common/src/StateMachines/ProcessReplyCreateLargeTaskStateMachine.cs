@@ -154,30 +154,35 @@ public class ProcessReplyCreateLargeTaskStateMachine
   /// <summary>
   /// Function used when using <see cref="Triggers.InitRequest"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void InitRequest()
     => machine_.Fire(Triggers.InitRequest);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.AddHeader"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void AddHeader()
     => machine_.Fire(Triggers.AddHeader);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.AddDataChunk"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void AddDataChunk()
     => machine_.Fire(Triggers.AddDataChunk);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.CompleteData"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void CompleteData()
     => machine_.Fire(Triggers.CompleteData);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.CompleteRequest"/> transition
   /// </summary>
+  /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void CompleteRequest()
     => machine_.Fire(Triggers.CompleteRequest);
 
