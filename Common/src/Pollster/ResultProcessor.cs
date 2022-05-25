@@ -23,9 +23,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -41,10 +40,10 @@ internal class ResultProcessor : IProcessReplyProcessor
   private readonly ProcessReplyResultStateMachine fsm_;
   private readonly IObjectStorage                 resultStorage_;
   private readonly IResultTable                   resultTable_;
-  private          string?                        resultKey_;
   private readonly string                         sessionId_;
   private readonly string                         ownerTaskId_;
-  private readonly IList<ReadOnlyMemory<byte>>    chunks_;
+  private          Task?                          completionTask_;
+  private readonly Channel<ReadOnlyMemory<byte>>  chunksChannel_;
 
   public ResultProcessor(IObjectStorage resultStorage,
                          IResultTable   resultTable,
@@ -57,11 +56,15 @@ internal class ResultProcessor : IProcessReplyProcessor
     sessionId_     = sessionId;
     ownerTaskId_   = ownerTaskId;
     fsm_           = new ProcessReplyResultStateMachine(logger);
-    chunks_        = new List<ReadOnlyMemory<byte>>();
+    chunksChannel_ = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
+                                                                   {
+                                                                     SingleWriter = true,
+                                                                     SingleReader = true,
+                                                                   });
   }
 
-  public Task AddProcessReply(ProcessReply      processReply,
-                              CancellationToken cancellationToken)
+  public async Task AddProcessReply(ProcessReply      processReply,
+                                    CancellationToken cancellationToken)
   {
     switch (processReply.Result.TypeCase)
     {
@@ -70,9 +73,19 @@ internal class ResultProcessor : IProcessReplyProcessor
         {
           case InitKeyedDataStream.TypeOneofCase.Key:
             fsm_.InitKey();
-
-            resultKey_ = processReply.Result.Init.Key;
-
+            completionTask_ = Task.Run(async () =>
+                                       {
+                                         await resultStorage_.AddOrUpdateAsync(processReply.Result.Init.Key,
+                                                                               chunksChannel_.Reader.ReadAllAsync(cancellationToken),
+                                                                               cancellationToken)
+                                                             .ConfigureAwait(false);
+                                         await resultTable_.SetResult(sessionId_,
+                                                                      ownerTaskId_,
+                                                                      processReply.Result.Init.Key,
+                                                                      cancellationToken)
+                                                           .ConfigureAwait(false);
+                                       },
+                                       cancellationToken);
             break;
           case InitKeyedDataStream.TypeOneofCase.LastResult:
             fsm_.CompleteRequest();
@@ -81,13 +94,16 @@ internal class ResultProcessor : IProcessReplyProcessor
           default:
             throw new ArgumentOutOfRangeException();
         }
+
         break;
       case ProcessReply.Types.Result.TypeOneofCase.Data:
         switch (processReply.Result.Data.TypeCase)
         {
           case DataChunk.TypeOneofCase.Data:
             fsm_.AddDataChunk();
-            chunks_.Add(processReply.Result.Data.Data.Memory);
+            await chunksChannel_.Writer.WriteAsync(processReply.Result.Data.Data.Memory,
+                                                   cancellationToken)
+                                .ConfigureAwait(false);
             break;
           case DataChunk.TypeOneofCase.DataComplete:
             fsm_.CompleteData();
@@ -96,39 +112,20 @@ internal class ResultProcessor : IProcessReplyProcessor
           default:
             throw new ArgumentOutOfRangeException();
         }
+
         break;
       case ProcessReply.Types.Result.TypeOneofCase.None:
       default:
         throw new ArgumentOutOfRangeException();
     }
-    return Task.CompletedTask;
   }
 
   public bool IsComplete()
-    => fsm_.IsComplete();
+    => completionTask_ != null && fsm_.IsComplete() && completionTask_.IsCompleted;
 
   public async Task WaitForResponseCompletion(CancellationToken cancellationToken)
-  {
-    if (!IsComplete())
-    {
-      throw new InvalidOperationException("Result should be complete");
-    }
-
-    if (resultKey_ == null)
-    {
-      throw new InvalidOperationException();
-    }
-
-    await resultStorage_.AddOrUpdateAsync(resultKey_,
-                                          chunks_.ToAsyncEnumerable(),
-                                          cancellationToken)
-                        .ConfigureAwait(false);
-    await resultTable_.SetResult(sessionId_,
-                                 ownerTaskId_,
-                                 resultKey_,
-                                 cancellationToken)
-                      .ConfigureAwait(false);
-  }
+    => await completionTask_!.WaitAsync(cancellationToken)
+                             .ConfigureAwait(false);
 
   public Task Cancel()
     => throw new NotImplementedException();

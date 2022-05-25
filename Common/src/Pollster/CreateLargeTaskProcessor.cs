@@ -24,7 +24,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -54,8 +53,7 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
   private readonly ProcessReplyCreateLargeTaskStateMachine  fsm_;
   private readonly Channel<TaskRequest>                     taskRequestsChannel_ = Channel.CreateBounded<TaskRequest>(10);
   private          Channel<ReadOnlyMemory<byte>>?           payloadsChannel_;
-
-  private Task completionTask_;
+  private          Task?                                    completionTask_;
 
   public CreateLargeTaskProcessor(ISubmitter                               submitter,
                                   IAsyncPipe<ProcessReply, ProcessRequest> asyncPipe,
@@ -70,7 +68,6 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
     parentTaskId_    = parentTaskId;
     requestId_       = null;
     fsm_             = new ProcessReplyCreateLargeTaskStateMachine(logger);
-
   }
 
   public async Task AddProcessReply(ProcessReply      processReply,
@@ -174,10 +171,10 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
   }
 
   public bool IsComplete()
-    => fsm_.IsComplete() && completionTask_.IsCompleted;
+    => completionTask_ != null && fsm_.IsComplete() && completionTask_.IsCompleted;
 
   public async Task WaitForResponseCompletion(CancellationToken cancellationToken)
-    => await completionTask_.WaitAsync(cancellationToken)
+    => await completionTask_!.WaitAsync(cancellationToken)
                             .ConfigureAwait(false);
 
   public Task Cancel()
