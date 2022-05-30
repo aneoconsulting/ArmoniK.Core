@@ -348,7 +348,7 @@ jobs:
       - name: Show logs
         if: always()
         run: |
-          aws s3 cp docker-compose/logs/armonik-logs.json s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.log-level }}.json
+          aws s3 cp docker-compose/logs/armonik-logs.json s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json
 
   testHtcMockDC:
     needs:
