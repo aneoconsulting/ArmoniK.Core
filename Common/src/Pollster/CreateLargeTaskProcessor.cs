@@ -50,7 +50,6 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
   private readonly ILogger                                  logger_;
   private          IList<string>?                           taskIds_;
   private          TaskOptions?                             options_;
-  private          string?                                  requestId_;
   private readonly string                                   sessionId_;
   private readonly string                                   parentTaskId_;
   private readonly ProcessReplyCreateLargeTaskStateMachine  fsm_;
@@ -64,56 +63,44 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                   string                                   parentTaskId,
                                   ILogger                                  logger)
   {
-    submitter_       = submitter;
-    asyncPipe_       = asyncPipe;
-    logger_          = logger;
-    sessionId_       = sessionId;
-    parentTaskId_    = parentTaskId;
-    requestId_       = null;
-    fsm_             = new ProcessReplyCreateLargeTaskStateMachine(logger);
+    submitter_    = submitter;
+    asyncPipe_    = asyncPipe;
+    logger_       = logger;
+    sessionId_    = sessionId;
+    parentTaskId_ = parentTaskId;
+    fsm_          = new ProcessReplyCreateLargeTaskStateMachine(logger);
   }
 
   /// <inheritdoc />
   public async Task AddProcessReply(ProcessReply      processReply,
-                              CancellationToken cancellationToken)
+                                    CancellationToken cancellationToken)
   {
-    if (requestId_ == null)
-    {
-      requestId_ = processReply.RequestId;
-    }
-    else
-    {
-      if (processReply.RequestId != requestId_)
-      {
-        throw new InvalidOperationException("Request Id should be the same");
-      }
-    }
-
     switch (processReply.CreateLargeTask.TypeCase)
     {
       case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitRequest:
         fsm_.InitRequest();
 
-        completionTask_ = Task.Run(async ()=>
+        completionTask_ = Task.Run(async () =>
                                    {
                                      (taskIds_, options_) = await submitter_.CreateTasks(sessionId_,
                                                                                          parentTaskId_,
                                                                                          processReply.CreateLargeTask.InitRequest.TaskOptions,
                                                                                          taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
-                                                                                         cancellationToken).ConfigureAwait(false);
+                                                                                         cancellationToken)
+                                                                            .ConfigureAwait(false);
 
-                                      await asyncPipe_.WriteAsync(new ProcessRequest
-                                                                  {
-                                                                    CreateTask = new ProcessRequest.Types.CreateTask
-                                                                                 {
-                                                                                   Reply = new CreateTaskReply
-                                                                                           {
-                                                                                             Successfull = new Empty(),
-                                                                                           },
-                                                                                   ReplyId = requestId_,
-                                                                                 },
-                                                                  })
-                                                      .ConfigureAwait(false);
+                                     await asyncPipe_.WriteAsync(new ProcessRequest
+                                                                 {
+                                                                   CreateTask = new ProcessRequest.Types.CreateTask
+                                                                                {
+                                                                                  Reply = new CreateTaskReply
+                                                                                          {
+                                                                                            Successfull = new Empty(),
+                                                                                          },
+                                                                                  ReplyId = processReply.RequestId,
+                                                                                },
+                                                                 })
+                                                     .ConfigureAwait(false);
                                    },
                                    cancellationToken);
         break;
@@ -135,7 +122,7 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                                                          payloadsChannel_.Reader.ReadAllAsync(cancellationToken)),
                                                          cancellationToken)
                                       .ConfigureAwait(false);
-            
+
 
             break;
           case InitTaskRequest.TypeOneofCase.LastTask:
@@ -181,7 +168,7 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
   /// <inheritdoc />
   public async Task WaitForResponseCompletion(CancellationToken cancellationToken)
     => await completionTask_!.WaitAsync(cancellationToken)
-                            .ConfigureAwait(false);
+                             .ConfigureAwait(false);
 
   /// <inheritdoc />
   public Task Cancel()
