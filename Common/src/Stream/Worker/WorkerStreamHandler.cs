@@ -116,7 +116,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       catch (RpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
       {
         isInitialized_ = true;
-        logger_.LogInformation("Channel was initialized");
+        logger_.LogInformation("Channel was initialized but Worker health check is not implemented");
         return;
       }
       catch (Exception ex)
