@@ -57,6 +57,14 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
   private          Channel<ReadOnlyMemory<byte>>?           payloadsChannel_;
   private          Task?                                    completionTask_;
 
+  /// <summary>
+  /// Initializes the class with its required objects
+  /// </summary>
+  /// <param name="submitter">Interface class to manage tasks</param>
+  /// <param name="asyncPipe">Interface class to exchange requests</param>
+  /// <param name="sessionId">Session Id</param>
+  /// <param name="parentTaskId">Parent task Id</param>
+  /// <param name="logger">Logger used to produce logs for this class</param>
   public CreateLargeTaskProcessor(ISubmitter                               submitter,
                                   IAsyncPipe<ProcessReply, ProcessRequest> asyncPipe,
                                   string                                   sessionId,

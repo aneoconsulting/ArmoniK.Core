@@ -43,9 +43,15 @@ public class CommonDataRequestProcessor : IProcessReplyProcessor
   private readonly IAsyncPipe<ProcessReply, ProcessRequest> pipe_;
   private readonly ILogger                                  logger_;
 
+  /// <summary>
+  /// Initializes the class with its required objects
+  /// </summary>
+  /// <param name="resourcesStorage">Interface class to interact with object storage</param>
+  /// <param name="pipe">Interface class to exchange requests</param>
+  /// <param name="logger">Logger used to produce logs for this class</param>
   public CommonDataRequestProcessor(IObjectStorage                           resourcesStorage,
-                       IAsyncPipe<ProcessReply, ProcessRequest> pipe,
-                       ILogger                                  logger)
+                                    IAsyncPipe<ProcessReply, ProcessRequest> pipe,
+                                    ILogger                                  logger)
   {
     resourcesStorage_ = resourcesStorage;
     pipe_             = pipe;

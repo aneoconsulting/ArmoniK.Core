@@ -48,6 +48,14 @@ internal class ResultProcessor : IProcessReplyProcessor
   private          Task?                          completionTask_;
   private readonly Channel<ReadOnlyMemory<byte>>  chunksChannel_;
 
+  /// <summary>
+  /// Initializes the class with its required objects
+  /// </summary>
+  /// <param name="resultStorage">Interface class to interact with object storage</param>
+  /// <param name="resultTable">Interface class to interact with the database table for results</param>
+  /// <param name="sessionId">Session Id of the task that owns the result</param>
+  /// <param name="ownerTaskId">Task Id of the task that owns the result</param>
+  /// <param name="logger">Logger used to produce logs for this class</param>
   public ResultProcessor(IObjectStorage resultStorage,
                          IResultTable   resultTable,
                          string         sessionId,
