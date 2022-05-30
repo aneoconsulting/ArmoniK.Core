@@ -681,13 +681,13 @@ references:
   commentId: T:ArmoniK.Core.Adapters.Memory.ResultTable
   fullName: ArmoniK.Core.Adapters.Memory.ResultTable
   nameWithType: ResultTable
-- uid: ArmoniK.Core.Adapters.Memory.ResultTable.#ctor(ConcurrentDictionary{System.String,ConcurrentDictionary{System.String,Result}},ILogger{ArmoniK.Core.Adapters.Memory.ResultTable})
+- uid: ArmoniK.Core.Adapters.Memory.ResultTable.#ctor(ConcurrentDictionary{System.String,ConcurrentDictionary{System.String,ArmoniK.Core.Common.Storage.Result}},ILogger{ArmoniK.Core.Adapters.Memory.ResultTable})
   name: ResultTable(ConcurrentDictionary<String, ConcurrentDictionary<String, Result>>, ILogger<ResultTable>)
-  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable__ctor_ConcurrentDictionary_System_String_ConcurrentDictionary_System_String_Result___ILogger_ArmoniK_Core_Adapters_Memory_ResultTable__
-  commentId: M:ArmoniK.Core.Adapters.Memory.ResultTable.#ctor(ConcurrentDictionary{System.String,ConcurrentDictionary{System.String,Result}},ILogger{ArmoniK.Core.Adapters.Memory.ResultTable})
+  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable__ctor_ConcurrentDictionary_System_String_ConcurrentDictionary_System_String_ArmoniK_Core_Common_Storage_Result___ILogger_ArmoniK_Core_Adapters_Memory_ResultTable__
+  commentId: M:ArmoniK.Core.Adapters.Memory.ResultTable.#ctor(ConcurrentDictionary{System.String,ConcurrentDictionary{System.String,ArmoniK.Core.Common.Storage.Result}},ILogger{ArmoniK.Core.Adapters.Memory.ResultTable})
   name.vb: ResultTable(ConcurrentDictionary(Of String, ConcurrentDictionary(Of String, Result)), ILogger(Of ResultTable))
-  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.ResultTable(ConcurrentDictionary<System.String, ConcurrentDictionary<System.String, Result>>, ILogger<ArmoniK.Core.Adapters.Memory.ResultTable>)
-  fullName.vb: ArmoniK.Core.Adapters.Memory.ResultTable.ResultTable(ConcurrentDictionary(Of System.String, ConcurrentDictionary(Of System.String, Result)), ILogger(Of ArmoniK.Core.Adapters.Memory.ResultTable))
+  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.ResultTable(ConcurrentDictionary<System.String, ConcurrentDictionary<System.String, ArmoniK.Core.Common.Storage.Result>>, ILogger<ArmoniK.Core.Adapters.Memory.ResultTable>)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.ResultTable.ResultTable(ConcurrentDictionary(Of System.String, ConcurrentDictionary(Of System.String, ArmoniK.Core.Common.Storage.Result)), ILogger(Of ArmoniK.Core.Adapters.Memory.ResultTable))
   nameWithType: ResultTable.ResultTable(ConcurrentDictionary<String, ConcurrentDictionary<String, Result>>, ILogger<ResultTable>)
   nameWithType.vb: ResultTable.ResultTable(ConcurrentDictionary(Of String, ConcurrentDictionary(Of String, Result)), ILogger(Of ResultTable))
 - uid: ArmoniK.Core.Adapters.Memory.ResultTable.#ctor*
@@ -742,13 +742,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.ResultTable.Check
   nameWithType: ResultTable.Check
-- uid: ArmoniK.Core.Adapters.Memory.ResultTable.Create(IEnumerable{Result},CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.ResultTable.Create(IEnumerable{ArmoniK.Core.Common.Storage.Result},CancellationToken)
   name: Create(IEnumerable<Result>, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_Create_IEnumerable_Result__CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.ResultTable.Create(IEnumerable{Result},CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_Create_IEnumerable_ArmoniK_Core_Common_Storage_Result__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.ResultTable.Create(IEnumerable{ArmoniK.Core.Common.Storage.Result},CancellationToken)
   name.vb: Create(IEnumerable(Of Result), CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.Create(IEnumerable<Result>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Adapters.Memory.ResultTable.Create(IEnumerable(Of Result), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.Create(IEnumerable<ArmoniK.Core.Common.Storage.Result>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.ResultTable.Create(IEnumerable(Of ArmoniK.Core.Common.Storage.Result), CancellationToken)
   nameWithType: ResultTable.Create(IEnumerable<Result>, CancellationToken)
   nameWithType.vb: ResultTable.Create(IEnumerable(Of Result), CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.ResultTable.Create*
@@ -877,19 +877,38 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.ServiceCollectionExt.AddMongoComponents
   nameWithType: ServiceCollectionExt.AddMongoComponents
+- uid: ArmoniK.Core.Adapters.Memory.SessionData
+  name: SessionData
+  href: api/ArmoniK.Core.Adapters.Memory.SessionData.html
+  commentId: T:ArmoniK.Core.Adapters.Memory.SessionData
+  fullName: ArmoniK.Core.Adapters.Memory.SessionData
+  nameWithType: SessionData
+- uid: ArmoniK.Core.Adapters.Memory.SessionData.#ctor(System.String,SessionStatus,TaskOptions)
+  name: SessionData(String, SessionStatus, TaskOptions)
+  href: api/ArmoniK.Core.Adapters.Memory.SessionData.html#ArmoniK_Core_Adapters_Memory_SessionData__ctor_System_String_SessionStatus_TaskOptions_
+  commentId: M:ArmoniK.Core.Adapters.Memory.SessionData.#ctor(System.String,SessionStatus,TaskOptions)
+  fullName: ArmoniK.Core.Adapters.Memory.SessionData.SessionData(System.String, SessionStatus, TaskOptions)
+  nameWithType: SessionData.SessionData(String, SessionStatus, TaskOptions)
+- uid: ArmoniK.Core.Adapters.Memory.SessionData.#ctor*
+  name: SessionData
+  href: api/ArmoniK.Core.Adapters.Memory.SessionData.html#ArmoniK_Core_Adapters_Memory_SessionData__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.SessionData.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.SessionData.SessionData
+  nameWithType: SessionData.SessionData
 - uid: ArmoniK.Core.Adapters.Memory.SessionTable
   name: SessionTable
   href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html
   commentId: T:ArmoniK.Core.Adapters.Memory.SessionTable
   fullName: ArmoniK.Core.Adapters.Memory.SessionTable
   nameWithType: SessionTable
-- uid: ArmoniK.Core.Adapters.Memory.SessionTable.#ctor(ConcurrentDictionary{System.String,SessionData},ILogger{ArmoniK.Core.Adapters.Memory.SessionTable})
+- uid: ArmoniK.Core.Adapters.Memory.SessionTable.#ctor(ConcurrentDictionary{System.String,ArmoniK.Core.Adapters.Memory.SessionData},ILogger{ArmoniK.Core.Adapters.Memory.SessionTable})
   name: SessionTable(ConcurrentDictionary<String, SessionData>, ILogger<SessionTable>)
-  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable__ctor_ConcurrentDictionary_System_String_SessionData__ILogger_ArmoniK_Core_Adapters_Memory_SessionTable__
-  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.#ctor(ConcurrentDictionary{System.String,SessionData},ILogger{ArmoniK.Core.Adapters.Memory.SessionTable})
+  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable__ctor_ConcurrentDictionary_System_String_ArmoniK_Core_Adapters_Memory_SessionData__ILogger_ArmoniK_Core_Adapters_Memory_SessionTable__
+  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.#ctor(ConcurrentDictionary{System.String,ArmoniK.Core.Adapters.Memory.SessionData},ILogger{ArmoniK.Core.Adapters.Memory.SessionTable})
   name.vb: SessionTable(ConcurrentDictionary(Of String, SessionData), ILogger(Of SessionTable))
-  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.SessionTable(ConcurrentDictionary<System.String, SessionData>, ILogger<ArmoniK.Core.Adapters.Memory.SessionTable>)
-  fullName.vb: ArmoniK.Core.Adapters.Memory.SessionTable.SessionTable(ConcurrentDictionary(Of System.String, SessionData), ILogger(Of ArmoniK.Core.Adapters.Memory.SessionTable))
+  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.SessionTable(ConcurrentDictionary<System.String, ArmoniK.Core.Adapters.Memory.SessionData>, ILogger<ArmoniK.Core.Adapters.Memory.SessionTable>)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.SessionTable.SessionTable(ConcurrentDictionary(Of System.String, ArmoniK.Core.Adapters.Memory.SessionData), ILogger(Of ArmoniK.Core.Adapters.Memory.SessionTable))
   nameWithType: SessionTable.SessionTable(ConcurrentDictionary<String, SessionData>, ILogger<SessionTable>)
   nameWithType.vb: SessionTable.SessionTable(ConcurrentDictionary(Of String, SessionData), ILogger(Of SessionTable))
 - uid: ArmoniK.Core.Adapters.Memory.SessionTable.#ctor*
@@ -1022,13 +1041,13 @@ references:
   commentId: T:ArmoniK.Core.Adapters.Memory.TaskTable
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable
   nameWithType: TaskTable
-- uid: ArmoniK.Core.Adapters.Memory.TaskTable.#ctor(ConcurrentDictionary{System.String,TaskData},ConcurrentDictionary{System.String,ConcurrentQueue{System.String}},ILogger{ArmoniK.Core.Adapters.Memory.TaskTable})
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.#ctor(ConcurrentDictionary{System.String,ArmoniK.Core.Common.Storage.TaskData},ConcurrentDictionary{System.String,ConcurrentQueue{System.String}},ILogger{ArmoniK.Core.Adapters.Memory.TaskTable})
   name: TaskTable(ConcurrentDictionary<String, TaskData>, ConcurrentDictionary<String, ConcurrentQueue<String>>, ILogger<TaskTable>)
-  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable__ctor_ConcurrentDictionary_System_String_TaskData__ConcurrentDictionary_System_String_ConcurrentQueue_System_String___ILogger_ArmoniK_Core_Adapters_Memory_TaskTable__
-  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.#ctor(ConcurrentDictionary{System.String,TaskData},ConcurrentDictionary{System.String,ConcurrentQueue{System.String}},ILogger{ArmoniK.Core.Adapters.Memory.TaskTable})
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable__ctor_ConcurrentDictionary_System_String_ArmoniK_Core_Common_Storage_TaskData__ConcurrentDictionary_System_String_ConcurrentQueue_System_String___ILogger_ArmoniK_Core_Adapters_Memory_TaskTable__
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.#ctor(ConcurrentDictionary{System.String,ArmoniK.Core.Common.Storage.TaskData},ConcurrentDictionary{System.String,ConcurrentQueue{System.String}},ILogger{ArmoniK.Core.Adapters.Memory.TaskTable})
   name.vb: TaskTable(ConcurrentDictionary(Of String, TaskData), ConcurrentDictionary(Of String, ConcurrentQueue(Of String)), ILogger(Of TaskTable))
-  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.TaskTable(ConcurrentDictionary<System.String, TaskData>, ConcurrentDictionary<System.String, ConcurrentQueue<System.String>>, ILogger<ArmoniK.Core.Adapters.Memory.TaskTable>)
-  fullName.vb: ArmoniK.Core.Adapters.Memory.TaskTable.TaskTable(ConcurrentDictionary(Of System.String, TaskData), ConcurrentDictionary(Of System.String, ConcurrentQueue(Of System.String)), ILogger(Of ArmoniK.Core.Adapters.Memory.TaskTable))
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.TaskTable(ConcurrentDictionary<System.String, ArmoniK.Core.Common.Storage.TaskData>, ConcurrentDictionary<System.String, ConcurrentQueue<System.String>>, ILogger<ArmoniK.Core.Adapters.Memory.TaskTable>)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.TaskTable.TaskTable(ConcurrentDictionary(Of System.String, ArmoniK.Core.Common.Storage.TaskData), ConcurrentDictionary(Of System.String, ConcurrentQueue(Of System.String)), ILogger(Of ArmoniK.Core.Adapters.Memory.TaskTable))
   nameWithType: TaskTable.TaskTable(ConcurrentDictionary<String, TaskData>, ConcurrentDictionary<String, ConcurrentQueue<String>>, ILogger<TaskTable>)
   nameWithType.vb: TaskTable.TaskTable(ConcurrentDictionary(Of String, TaskData), ConcurrentDictionary(Of String, ConcurrentQueue(Of String)), ILogger(Of TaskTable))
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.#ctor*
@@ -1103,13 +1122,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.CountTasksAsync
   nameWithType: TaskTable.CountTasksAsync
-- uid: ArmoniK.Core.Adapters.Memory.TaskTable.CreateTasks(IEnumerable{TaskData},CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.CreateTasks(IEnumerable{ArmoniK.Core.Common.Storage.TaskData},CancellationToken)
   name: CreateTasks(IEnumerable<TaskData>, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_CreateTasks_IEnumerable_TaskData__CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.CreateTasks(IEnumerable{TaskData},CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_CreateTasks_IEnumerable_ArmoniK_Core_Common_Storage_TaskData__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.CreateTasks(IEnumerable{ArmoniK.Core.Common.Storage.TaskData},CancellationToken)
   name.vb: CreateTasks(IEnumerable(Of TaskData), CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.CreateTasks(IEnumerable<TaskData>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Adapters.Memory.TaskTable.CreateTasks(IEnumerable(Of TaskData), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.CreateTasks(IEnumerable<ArmoniK.Core.Common.Storage.TaskData>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.TaskTable.CreateTasks(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskData), CancellationToken)
   nameWithType: TaskTable.CreateTasks(IEnumerable<TaskData>, CancellationToken)
   nameWithType.vb: TaskTable.CreateTasks(IEnumerable(Of TaskData), CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.CreateTasks*
@@ -1291,11 +1310,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.ReadTaskAsync
   nameWithType: TaskTable.ReadTaskAsync
-- uid: ArmoniK.Core.Adapters.Memory.TaskTable.RetryTask(TaskData,CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: RetryTask(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_RetryTask_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.RetryTask(TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.RetryTask(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
   nameWithType: TaskTable.RetryTask(TaskData, CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.RetryTask*
   name: RetryTask
@@ -2550,13 +2569,13 @@ references:
   commentId: T:ArmoniK.Core.Adapters.MongoDB.ResultTable
   fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable
   nameWithType: ResultTable
-- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result,ResultDataModelMapping},ActivitySource,ILogger{ArmoniK.Core.Adapters.MongoDB.ResultTable})
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping},ActivitySource,ILogger{ArmoniK.Core.Adapters.MongoDB.ResultTable})
   name: ResultTable(SessionProvider, MongoCollectionProvider<Result, ResultDataModelMapping>, ActivitySource, ILogger<ResultTable>)
-  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Result_ResultDataModelMapping__ActivitySource_ILogger_ArmoniK_Core_Adapters_MongoDB_ResultTable__
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result,ResultDataModelMapping},ActivitySource,ILogger{ArmoniK.Core.Adapters.MongoDB.ResultTable})
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Result_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_ResultDataModelMapping__ActivitySource_ILogger_ArmoniK_Core_Adapters_MongoDB_ResultTable__
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping},ActivitySource,ILogger{ArmoniK.Core.Adapters.MongoDB.ResultTable})
   name.vb: ResultTable(SessionProvider, MongoCollectionProvider(Of Result, ResultDataModelMapping), ActivitySource, ILogger(Of ResultTable))
-  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.ResultTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider<ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result, ResultDataModelMapping>, ActivitySource, ILogger<ArmoniK.Core.Adapters.MongoDB.ResultTable>)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.ResultTable.ResultTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider(Of ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result, ResultDataModelMapping), ActivitySource, ILogger(Of ArmoniK.Core.Adapters.MongoDB.ResultTable))
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.ResultTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider<ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping>, ActivitySource, ILogger<ArmoniK.Core.Adapters.MongoDB.ResultTable>)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.ResultTable.ResultTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider(Of ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping), ActivitySource, ILogger(Of ArmoniK.Core.Adapters.MongoDB.ResultTable))
   nameWithType: ResultTable.ResultTable(SessionProvider, MongoCollectionProvider<Result, ResultDataModelMapping>, ActivitySource, ILogger<ResultTable>)
   nameWithType.vb: ResultTable.ResultTable(SessionProvider, MongoCollectionProvider(Of Result, ResultDataModelMapping), ActivitySource, ILogger(Of ResultTable))
 - uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.#ctor*
@@ -2778,13 +2797,13 @@ references:
   commentId: T:ArmoniK.Core.Adapters.MongoDB.SessionTable
   fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable
   nameWithType: SessionTable
-- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{SessionData,SessionDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.SessionTable},ActivitySource)
+- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Storage.SessionData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.SessionTable},ActivitySource)
   name: SessionTable(SessionProvider, MongoCollectionProvider<SessionData, SessionDataModelMapping>, ILogger<SessionTable>, ActivitySource)
-  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_SessionData_SessionDataModelMapping__ILogger_ArmoniK_Core_Adapters_MongoDB_SessionTable__ActivitySource_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{SessionData,SessionDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.SessionTable},ActivitySource)
+  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Storage_SessionData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_SessionDataModelMapping__ILogger_ArmoniK_Core_Adapters_MongoDB_SessionTable__ActivitySource_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Storage.SessionData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.SessionTable},ActivitySource)
   name.vb: SessionTable(SessionProvider, MongoCollectionProvider(Of SessionData, SessionDataModelMapping), ILogger(Of SessionTable), ActivitySource)
-  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.SessionTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider<SessionData, SessionDataModelMapping>, ILogger<ArmoniK.Core.Adapters.MongoDB.SessionTable>, ActivitySource)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.SessionTable.SessionTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider(Of SessionData, SessionDataModelMapping), ILogger(Of ArmoniK.Core.Adapters.MongoDB.SessionTable), ActivitySource)
+  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.SessionTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider<ArmoniK.Core.Common.Storage.SessionData, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping>, ILogger<ArmoniK.Core.Adapters.MongoDB.SessionTable>, ActivitySource)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.SessionTable.SessionTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider(Of ArmoniK.Core.Common.Storage.SessionData, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping), ILogger(Of ArmoniK.Core.Adapters.MongoDB.SessionTable), ActivitySource)
   nameWithType: SessionTable.SessionTable(SessionProvider, MongoCollectionProvider<SessionData, SessionDataModelMapping>, ILogger<SessionTable>, ActivitySource)
   nameWithType.vb: SessionTable.SessionTable(SessionProvider, MongoCollectionProvider(Of SessionData, SessionDataModelMapping), ILogger(Of SessionTable), ActivitySource)
 - uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.#ctor*
@@ -2923,6 +2942,108 @@ references:
   commentId: N:ArmoniK.Core.Adapters.MongoDB.Table.DataModel
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel
   nameWithType: ArmoniK.Core.Adapters.MongoDB.Table.DataModel
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result
+  name: Result
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result
+  nameWithType: Result
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.#ctor(ArmoniK.Core.Common.Storage.Result)
+  name: Result(Result)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Result__ctor_ArmoniK_Core_Common_Storage_Result_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.#ctor(ArmoniK.Core.Common.Storage.Result)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.Result(ArmoniK.Core.Common.Storage.Result)
+  nameWithType: Result.Result(Result)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.#ctor(System.String,System.String,System.String,ResultStatus,DateTime,System.Byte[])
+  name: Result(String, String, String, ResultStatus, DateTime, Byte[])
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Result__ctor_System_String_System_String_System_String_ResultStatus_DateTime_System_Byte___
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.#ctor(System.String,System.String,System.String,ResultStatus,DateTime,System.Byte[])
+  name.vb: Result(String, String, String, ResultStatus, DateTime, Byte())
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.Result(System.String, System.String, System.String, ResultStatus, DateTime, System.Byte[])
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.Result(System.String, System.String, System.String, ResultStatus, DateTime, System.Byte())
+  nameWithType: Result.Result(String, String, String, ResultStatus, DateTime, Byte[])
+  nameWithType.vb: Result.Result(String, String, String, ResultStatus, DateTime, Byte())
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.#ctor*
+  name: Result
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Result__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.Result
+  nameWithType: Result.Result
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.GenerateId(System.String,System.String)
+  name: GenerateId(String, String)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Result_GenerateId_System_String_System_String_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.GenerateId(System.String,System.String)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.GenerateId(System.String, System.String)
+  nameWithType: Result.GenerateId(String, String)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.GenerateId*
+  name: GenerateId
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Result_GenerateId_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.GenerateId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.GenerateId
+  nameWithType: Result.GenerateId
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.Id
+  name: Id
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Result_Id
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.Id
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.Id
+  nameWithType: Result.Id
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.Id*
+  name: Id
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Result_Id_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.Id
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.Id
+  nameWithType: Result.Id
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping
+  name: ResultDataModelMapping
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping
+  nameWithType: ResultDataModelMapping
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.#ctor
+  name: ResultDataModelMapping()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_ResultDataModelMapping__ctor
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.#ctor
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.ResultDataModelMapping()
+  nameWithType: ResultDataModelMapping.ResultDataModelMapping()
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.#ctor*
+  name: ResultDataModelMapping
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_ResultDataModelMapping__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.ResultDataModelMapping
+  nameWithType: ResultDataModelMapping.ResultDataModelMapping
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.CollectionName
+  name: CollectionName
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_ResultDataModelMapping_CollectionName
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.CollectionName
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.CollectionName
+  nameWithType: ResultDataModelMapping.CollectionName
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.CollectionName*
+  name: CollectionName
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_ResultDataModelMapping_CollectionName_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.CollectionName
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.CollectionName
+  nameWithType: ResultDataModelMapping.CollectionName
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result})
+  name: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<Result>)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_ResultDataModelMapping_InitializeIndexesAsync_IClientSessionHandle_IMongoCollection_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Result__
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result})
+  name.vb: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of Result))
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result>)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result))
+  nameWithType: ResultDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<Result>)
+  nameWithType.vb: ResultDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of Result))
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.InitializeIndexesAsync*
+  name: InitializeIndexesAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_ResultDataModelMapping_InitializeIndexesAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.InitializeIndexesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultDataModelMapping.InitializeIndexesAsync
+  nameWithType: ResultDataModelMapping.InitializeIndexesAsync
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultExtensions
   name: ResultExtensions
   href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultExtensions.html
@@ -2942,6 +3063,41 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.ResultExtensions.ToResultDataModel
   nameWithType: ResultExtensions.ToResultDataModel
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping
+  name: SessionDataModelMapping
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping
+  nameWithType: SessionDataModelMapping
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.CollectionName
+  name: CollectionName
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_SessionDataModelMapping_CollectionName
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.CollectionName
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.CollectionName
+  nameWithType: SessionDataModelMapping.CollectionName
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.CollectionName*
+  name: CollectionName
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_SessionDataModelMapping_CollectionName_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.CollectionName
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.CollectionName
+  nameWithType: SessionDataModelMapping.CollectionName
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{ArmoniK.Core.Common.Storage.SessionData})
+  name: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<SessionData>)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_SessionDataModelMapping_InitializeIndexesAsync_IClientSessionHandle_IMongoCollection_ArmoniK_Core_Common_Storage_SessionData__
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{ArmoniK.Core.Common.Storage.SessionData})
+  name.vb: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of SessionData))
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<ArmoniK.Core.Common.Storage.SessionData>)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of ArmoniK.Core.Common.Storage.SessionData))
+  nameWithType: SessionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<SessionData>)
+  nameWithType.vb: SessionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of SessionData))
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.InitializeIndexesAsync*
+  name: InitializeIndexesAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_SessionDataModelMapping_InitializeIndexesAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.InitializeIndexesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.SessionDataModelMapping.InitializeIndexesAsync
+  nameWithType: SessionDataModelMapping.InitializeIndexesAsync
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping
   name: TaskDataModelMapping
   href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.html
@@ -2961,13 +3117,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.CollectionName
   nameWithType: TaskDataModelMapping.CollectionName
-- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{TaskData})
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{ArmoniK.Core.Common.Storage.TaskData})
   name: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<TaskData>)
-  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_TaskDataModelMapping_InitializeIndexesAsync_IClientSessionHandle_IMongoCollection_TaskData__
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{TaskData})
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_TaskDataModelMapping_InitializeIndexesAsync_IClientSessionHandle_IMongoCollection_ArmoniK_Core_Common_Storage_TaskData__
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{ArmoniK.Core.Common.Storage.TaskData})
   name.vb: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of TaskData))
-  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<TaskData>)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of TaskData))
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<ArmoniK.Core.Common.Storage.TaskData>)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of ArmoniK.Core.Common.Storage.TaskData))
   nameWithType: TaskDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<TaskData>)
   nameWithType.vb: TaskDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of TaskData))
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping.InitializeIndexesAsync*
@@ -3030,13 +3186,13 @@ references:
   commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt
   nameWithType: MongoQueryableExt
-- uid: ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.FilterQuery(IMongoQueryable{TaskData},TaskFilter)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.FilterQuery(IMongoQueryable{ArmoniK.Core.Common.Storage.TaskData},TaskFilter)
   name: FilterQuery(IMongoQueryable<TaskData>, TaskFilter)
-  href: api/ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.html#ArmoniK_Core_Adapters_MongoDB_Table_MongoQueryableExt_FilterQuery_IMongoQueryable_TaskData__TaskFilter_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.FilterQuery(IMongoQueryable{TaskData},TaskFilter)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.html#ArmoniK_Core_Adapters_MongoDB_Table_MongoQueryableExt_FilterQuery_IMongoQueryable_ArmoniK_Core_Common_Storage_TaskData__TaskFilter_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.FilterQuery(IMongoQueryable{ArmoniK.Core.Common.Storage.TaskData},TaskFilter)
   name.vb: FilterQuery(IMongoQueryable(Of TaskData), TaskFilter)
-  fullName: ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.FilterQuery(IMongoQueryable<TaskData>, TaskFilter)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.FilterQuery(IMongoQueryable(Of TaskData), TaskFilter)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.FilterQuery(IMongoQueryable<ArmoniK.Core.Common.Storage.TaskData>, TaskFilter)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.FilterQuery(IMongoQueryable(Of ArmoniK.Core.Common.Storage.TaskData), TaskFilter)
   nameWithType: MongoQueryableExt.FilterQuery(IMongoQueryable<TaskData>, TaskFilter)
   nameWithType.vb: MongoQueryableExt.FilterQuery(IMongoQueryable(Of TaskData), TaskFilter)
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.MongoQueryableExt.FilterQuery*
@@ -3052,13 +3208,13 @@ references:
   commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt
   nameWithType: SessionFilterExt
-- uid: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable{SessionData},SessionFilter)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable{ArmoniK.Core.Common.Storage.SessionData},SessionFilter)
   name: FilterQuery(IQueryable<SessionData>, SessionFilter)
-  href: api/ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.html#ArmoniK_Core_Adapters_MongoDB_Table_SessionFilterExt_FilterQuery_IQueryable_SessionData__SessionFilter_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable{SessionData},SessionFilter)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.html#ArmoniK_Core_Adapters_MongoDB_Table_SessionFilterExt_FilterQuery_IQueryable_ArmoniK_Core_Common_Storage_SessionData__SessionFilter_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable{ArmoniK.Core.Common.Storage.SessionData},SessionFilter)
   name.vb: FilterQuery(IQueryable(Of SessionData), SessionFilter)
-  fullName: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable<SessionData>, SessionFilter)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable(Of SessionData), SessionFilter)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable<ArmoniK.Core.Common.Storage.SessionData>, SessionFilter)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery(IQueryable(Of ArmoniK.Core.Common.Storage.SessionData), SessionFilter)
   nameWithType: SessionFilterExt.FilterQuery(IQueryable<SessionData>, SessionFilter)
   nameWithType.vb: SessionFilterExt.FilterQuery(IQueryable(Of SessionData), SessionFilter)
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.SessionFilterExt.FilterQuery*
@@ -3087,13 +3243,13 @@ references:
   commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt
   nameWithType: TaskFilterExt
-- uid: ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.FilterQuery(IQueryable{TaskData},TaskFilter)
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.FilterQuery(IQueryable{ArmoniK.Core.Common.Storage.TaskData},TaskFilter)
   name: FilterQuery(IQueryable<TaskData>, TaskFilter)
-  href: api/ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.html#ArmoniK_Core_Adapters_MongoDB_Table_TaskFilterExt_FilterQuery_IQueryable_TaskData__TaskFilter_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.FilterQuery(IQueryable{TaskData},TaskFilter)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.html#ArmoniK_Core_Adapters_MongoDB_Table_TaskFilterExt_FilterQuery_IQueryable_ArmoniK_Core_Common_Storage_TaskData__TaskFilter_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.FilterQuery(IQueryable{ArmoniK.Core.Common.Storage.TaskData},TaskFilter)
   name.vb: FilterQuery(IQueryable(Of TaskData), TaskFilter)
-  fullName: ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.FilterQuery(IQueryable<TaskData>, TaskFilter)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.FilterQuery(IQueryable(Of TaskData), TaskFilter)
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.FilterQuery(IQueryable<ArmoniK.Core.Common.Storage.TaskData>, TaskFilter)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.FilterQuery(IQueryable(Of ArmoniK.Core.Common.Storage.TaskData), TaskFilter)
   nameWithType: TaskFilterExt.FilterQuery(IQueryable<TaskData>, TaskFilter)
   nameWithType.vb: TaskFilterExt.FilterQuery(IQueryable(Of TaskData), TaskFilter)
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.TaskFilterExt.FilterQuery*
@@ -3122,13 +3278,13 @@ references:
   commentId: T:ArmoniK.Core.Adapters.MongoDB.TaskTable
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable
   nameWithType: TaskTable
-- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{TaskData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.TaskTable},ActivitySource,ArmoniK.Core.Adapters.MongoDB.Options.TableStorage)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Storage.TaskData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.TaskTable},ActivitySource,ArmoniK.Core.Adapters.MongoDB.Options.TableStorage)
   name: TaskTable(SessionProvider, MongoCollectionProvider<TaskData, TaskDataModelMapping>, ILogger<TaskTable>, ActivitySource, TableStorage)
-  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_TaskData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_TaskDataModelMapping__ILogger_ArmoniK_Core_Adapters_MongoDB_TaskTable__ActivitySource_ArmoniK_Core_Adapters_MongoDB_Options_TableStorage_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{TaskData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.TaskTable},ActivitySource,ArmoniK.Core.Adapters.MongoDB.Options.TableStorage)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Storage_TaskData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_TaskDataModelMapping__ILogger_ArmoniK_Core_Adapters_MongoDB_TaskTable__ActivitySource_ArmoniK_Core_Adapters_MongoDB_Options_TableStorage_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Storage.TaskData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.TaskTable},ActivitySource,ArmoniK.Core.Adapters.MongoDB.Options.TableStorage)
   name.vb: TaskTable(SessionProvider, MongoCollectionProvider(Of TaskData, TaskDataModelMapping), ILogger(Of TaskTable), ActivitySource, TableStorage)
-  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.TaskTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider<TaskData, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping>, ILogger<ArmoniK.Core.Adapters.MongoDB.TaskTable>, ActivitySource, ArmoniK.Core.Adapters.MongoDB.Options.TableStorage)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.TaskTable.TaskTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider(Of TaskData, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping), ILogger(Of ArmoniK.Core.Adapters.MongoDB.TaskTable), ActivitySource, ArmoniK.Core.Adapters.MongoDB.Options.TableStorage)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.TaskTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider<ArmoniK.Core.Common.Storage.TaskData, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping>, ILogger<ArmoniK.Core.Adapters.MongoDB.TaskTable>, ActivitySource, ArmoniK.Core.Adapters.MongoDB.Options.TableStorage)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.TaskTable.TaskTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider(Of ArmoniK.Core.Common.Storage.TaskData, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.TaskDataModelMapping), ILogger(Of ArmoniK.Core.Adapters.MongoDB.TaskTable), ActivitySource, ArmoniK.Core.Adapters.MongoDB.Options.TableStorage)
   nameWithType: TaskTable.TaskTable(SessionProvider, MongoCollectionProvider<TaskData, TaskDataModelMapping>, ILogger<TaskTable>, ActivitySource, TableStorage)
   nameWithType.vb: TaskTable.TaskTable(SessionProvider, MongoCollectionProvider(Of TaskData, TaskDataModelMapping), ILogger(Of TaskTable), ActivitySource, TableStorage)
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.#ctor*
@@ -3203,13 +3359,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountTasksAsync
   nameWithType: TaskTable.CountTasksAsync
-- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.CreateTasks(IEnumerable{TaskData},CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.CreateTasks(IEnumerable{ArmoniK.Core.Common.Storage.TaskData},CancellationToken)
   name: CreateTasks(IEnumerable<TaskData>, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_CreateTasks_IEnumerable_TaskData__CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.CreateTasks(IEnumerable{TaskData},CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_CreateTasks_IEnumerable_ArmoniK_Core_Common_Storage_TaskData__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.CreateTasks(IEnumerable{ArmoniK.Core.Common.Storage.TaskData},CancellationToken)
   name.vb: CreateTasks(IEnumerable(Of TaskData), CancellationToken)
-  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.CreateTasks(IEnumerable<TaskData>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.TaskTable.CreateTasks(IEnumerable(Of TaskData), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.CreateTasks(IEnumerable<ArmoniK.Core.Common.Storage.TaskData>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.TaskTable.CreateTasks(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskData), CancellationToken)
   nameWithType: TaskTable.CreateTasks(IEnumerable<TaskData>, CancellationToken)
   nameWithType.vb: TaskTable.CreateTasks(IEnumerable(Of TaskData), CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.CreateTasks*
@@ -3391,11 +3547,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.ReadTaskAsync
   nameWithType: TaskTable.ReadTaskAsync
-- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask(TaskData,CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: RetryTask(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_RetryTask_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask(TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
   nameWithType: TaskTable.RetryTask(TaskData, CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask*
   name: RetryTask
@@ -4654,13 +4810,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession
   nameWithType: ISubmitter.CreateSession
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{TaskRequest},CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
   name: CreateTasks(String, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_TaskRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{TaskRequest},CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
   name.vb: CreateTasks(String, String, TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable<ArmoniK.Core.Common.gRPC.Services.TaskRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable(Of ArmoniK.Core.Common.gRPC.Services.TaskRequest), CancellationToken)
   nameWithType: ISubmitter.CreateTasks(String, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
   nameWithType.vb: ISubmitter.CreateTasks(String, String, TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks*
@@ -4738,11 +4894,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListTasksAsync
   nameWithType: ISubmitter.ListTasksAsync
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask(TaskData,CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: ResubmitTask(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_ResubmitTask_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask(TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_ResubmitTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
   nameWithType: ISubmitter.ResubmitTask(TaskData, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask*
   name: ResubmitTask
@@ -4919,13 +5075,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession
   nameWithType: Submitter.CreateSession
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{TaskRequest},CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
   name: CreateTasks(String, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_TaskRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{TaskRequest},CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
   name.vb: CreateTasks(String, String, TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable<ArmoniK.Core.Common.gRPC.Services.TaskRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable(Of ArmoniK.Core.Common.gRPC.Services.TaskRequest), CancellationToken)
   nameWithType: Submitter.CreateTasks(String, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
   nameWithType.vb: Submitter.CreateTasks(String, String, TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks*
@@ -5019,11 +5175,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.ListTasksAsync
   nameWithType: Submitter.ListTasksAsync
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask(TaskData,CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: ResubmitTask(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_ResubmitTask_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask(TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_ResubmitTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
   nameWithType: Submitter.ResubmitTask(TaskData, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask*
   name: ResubmitTask
@@ -5113,6 +5269,80 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.WaitForCompletion
   nameWithType: Submitter.WaitForCompletion
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest
+  name: TaskRequest
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Services.TaskRequest
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest
+  nameWithType: TaskRequest
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.#ctor(System.String,IEnumerable{System.String},IEnumerable{System.String},IAsyncEnumerable{ReadOnlyMemory{System.Byte}})
+  name: TaskRequest(String, IEnumerable<String>, IEnumerable<String>, IAsyncEnumerable<ReadOnlyMemory<Byte>>)
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest__ctor_System_String_IEnumerable_System_String__IEnumerable_System_String__IAsyncEnumerable_ReadOnlyMemory_System_Byte___
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.TaskRequest.#ctor(System.String,IEnumerable{System.String},IEnumerable{System.String},IAsyncEnumerable{ReadOnlyMemory{System.Byte}})
+  name.vb: TaskRequest(String, IEnumerable(Of String), IEnumerable(Of String), IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)))
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.TaskRequest(System.String, IEnumerable<System.String>, IEnumerable<System.String>, IAsyncEnumerable<ReadOnlyMemory<System.Byte>>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.TaskRequest.TaskRequest(System.String, IEnumerable(Of System.String), IEnumerable(Of System.String), IAsyncEnumerable(Of ReadOnlyMemory(Of System.Byte)))
+  nameWithType: TaskRequest.TaskRequest(String, IEnumerable<String>, IEnumerable<String>, IAsyncEnumerable<ReadOnlyMemory<Byte>>)
+  nameWithType.vb: TaskRequest.TaskRequest(String, IEnumerable(Of String), IEnumerable(Of String), IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)))
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.#ctor*
+  name: TaskRequest
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.TaskRequest.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.TaskRequest
+  nameWithType: TaskRequest.TaskRequest
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.DataDependencies
+  name: DataDependencies
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_DataDependencies
+  commentId: P:ArmoniK.Core.Common.gRPC.Services.TaskRequest.DataDependencies
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.DataDependencies
+  nameWithType: TaskRequest.DataDependencies
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.DataDependencies*
+  name: DataDependencies
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_DataDependencies_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.TaskRequest.DataDependencies
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.DataDependencies
+  nameWithType: TaskRequest.DataDependencies
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.ExpectedOutputKeys
+  name: ExpectedOutputKeys
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_ExpectedOutputKeys
+  commentId: P:ArmoniK.Core.Common.gRPC.Services.TaskRequest.ExpectedOutputKeys
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.ExpectedOutputKeys
+  nameWithType: TaskRequest.ExpectedOutputKeys
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.ExpectedOutputKeys*
+  name: ExpectedOutputKeys
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_ExpectedOutputKeys_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.TaskRequest.ExpectedOutputKeys
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.ExpectedOutputKeys
+  nameWithType: TaskRequest.ExpectedOutputKeys
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id
+  name: Id
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_Id
+  commentId: P:ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id
+  nameWithType: TaskRequest.Id
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id*
+  name: Id
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_Id_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id
+  nameWithType: TaskRequest.Id
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.PayloadChunks
+  name: PayloadChunks
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_PayloadChunks
+  commentId: P:ArmoniK.Core.Common.gRPC.Services.TaskRequest.PayloadChunks
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.PayloadChunks
+  nameWithType: TaskRequest.PayloadChunks
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.PayloadChunks*
+  name: PayloadChunks
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_PayloadChunks_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.TaskRequest.PayloadChunks
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.PayloadChunks
+  nameWithType: TaskRequest.PayloadChunks
 - uid: ArmoniK.Core.Common.gRPC.Validators
   name: ArmoniK.Core.Common.gRPC.Validators
   href: api/ArmoniK.Core.Common.gRPC.Validators.html
@@ -6041,11 +6271,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.DataPrefetcher.Init
   nameWithType: DataPrefetcher.Init
-- uid: ArmoniK.Core.Common.Pollster.DataPrefetcher.PrefetchDataAsync(TaskData,CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.DataPrefetcher.PrefetchDataAsync(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: PrefetchDataAsync(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.DataPrefetcher.html#ArmoniK_Core_Common_Pollster_DataPrefetcher_PrefetchDataAsync_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.DataPrefetcher.PrefetchDataAsync(TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.DataPrefetcher.PrefetchDataAsync(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.DataPrefetcher.html#ArmoniK_Core_Common_Pollster_DataPrefetcher_PrefetchDataAsync_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.DataPrefetcher.PrefetchDataAsync(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.DataPrefetcher.PrefetchDataAsync(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
   nameWithType: DataPrefetcher.PrefetchDataAsync(TaskData, CancellationToken)
 - uid: ArmoniK.Core.Common.Pollster.DataPrefetcher.PrefetchDataAsync*
   name: PrefetchDataAsync
@@ -6198,13 +6428,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.Dispose
   nameWithType: RequestProcessor.Dispose
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler,TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Storage.TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
   name: ProcessAsync(IQueueMessageHandler, TaskData, Queue<ProcessRequest.Types.ComputeRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProcessAsync_ArmoniK_Core_Common_Storage_IQueueMessageHandler_TaskData_Queue_ArmoniK_Api_gRPC_V1_ProcessRequest_Types_ComputeRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler,TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProcessAsync_ArmoniK_Core_Common_Storage_IQueueMessageHandler_ArmoniK_Core_Common_Storage_TaskData_Queue_ArmoniK_Api_gRPC_V1_ProcessRequest_Types_ComputeRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Storage.TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
   name.vb: ProcessAsync(IQueueMessageHandler, TaskData, Queue(Of ProcessRequest.Types.ComputeRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler, TaskData, Queue<ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler, TaskData, Queue(Of ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler, ArmoniK.Core.Common.Storage.TaskData, Queue<ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler, ArmoniK.Core.Common.Storage.TaskData, Queue(Of ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest), CancellationToken)
   nameWithType: RequestProcessor.ProcessAsync(IQueueMessageHandler, TaskData, Queue<ProcessRequest.Types.ComputeRequest>, CancellationToken)
   nameWithType.vb: RequestProcessor.ProcessAsync(IQueueMessageHandler, TaskData, Queue(Of ProcessRequest.Types.ComputeRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync*
@@ -6214,13 +6444,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync
   nameWithType: RequestProcessor.ProcessAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(ArmoniK.Core.Common.Storage.TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
   name: ProcessInternalsAsync(TaskData, Queue<ProcessRequest.Types.ComputeRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProcessInternalsAsync_TaskData_Queue_ArmoniK_Api_gRPC_V1_ProcessRequest_Types_ComputeRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProcessInternalsAsync_ArmoniK_Core_Common_Storage_TaskData_Queue_ArmoniK_Api_gRPC_V1_ProcessRequest_Types_ComputeRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(ArmoniK.Core.Common.Storage.TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
   name.vb: ProcessInternalsAsync(TaskData, Queue(Of ProcessRequest.Types.ComputeRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(TaskData, Queue<ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(TaskData, Queue(Of ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(ArmoniK.Core.Common.Storage.TaskData, Queue<ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(ArmoniK.Core.Common.Storage.TaskData, Queue(Of ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest), CancellationToken)
   nameWithType: RequestProcessor.ProcessInternalsAsync(TaskData, Queue<ProcessRequest.Types.ComputeRequest>, CancellationToken)
   nameWithType.vb: RequestProcessor.ProcessInternalsAsync(TaskData, Queue(Of ProcessRequest.Types.ComputeRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync*
@@ -6278,13 +6508,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.StoreResultAsync
   nameWithType: RequestProcessor.StoreResultAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(TaskData,ProcessReply,IList{ProcessReply},CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(ArmoniK.Core.Common.Storage.TaskData,ProcessReply,IList{ProcessReply},CancellationToken)
   name: SubmitLargeTasksAsync(TaskData, ProcessReply, IList<ProcessReply>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_SubmitLargeTasksAsync_TaskData_ProcessReply_IList_ProcessReply__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(TaskData,ProcessReply,IList{ProcessReply},CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_SubmitLargeTasksAsync_ArmoniK_Core_Common_Storage_TaskData_ProcessReply_IList_ProcessReply__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(ArmoniK.Core.Common.Storage.TaskData,ProcessReply,IList{ProcessReply},CancellationToken)
   name.vb: SubmitLargeTasksAsync(TaskData, ProcessReply, IList(Of ProcessReply), CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(TaskData, ProcessReply, IList<ProcessReply>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(TaskData, ProcessReply, IList(Of ProcessReply), CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(ArmoniK.Core.Common.Storage.TaskData, ProcessReply, IList<ProcessReply>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(ArmoniK.Core.Common.Storage.TaskData, ProcessReply, IList(Of ProcessReply), CancellationToken)
   nameWithType: RequestProcessor.SubmitLargeTasksAsync(TaskData, ProcessReply, IList<ProcessReply>, CancellationToken)
   nameWithType.vb: RequestProcessor.SubmitLargeTasksAsync(TaskData, ProcessReply, IList(Of ProcessReply), CancellationToken)
 - uid: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync*
@@ -6294,11 +6524,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync
   nameWithType: RequestProcessor.SubmitLargeTasksAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync(TaskData,ProcessReply,CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync(ArmoniK.Core.Common.Storage.TaskData,ProcessReply,CancellationToken)
   name: SubmitSmallTasksAsync(TaskData, ProcessReply, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_SubmitSmallTasksAsync_TaskData_ProcessReply_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync(TaskData,ProcessReply,CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync(TaskData, ProcessReply, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_SubmitSmallTasksAsync_ArmoniK_Core_Common_Storage_TaskData_ProcessReply_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync(ArmoniK.Core.Common.Storage.TaskData,ProcessReply,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync(ArmoniK.Core.Common.Storage.TaskData, ProcessReply, CancellationToken)
   nameWithType: RequestProcessor.SubmitSmallTasksAsync(TaskData, ProcessReply, CancellationToken)
 - uid: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync*
   name: SubmitSmallTasksAsync
@@ -7075,13 +7305,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership
   nameWithType: IResultTable.ChangeResultOwnership
-- uid: ArmoniK.Core.Common.Storage.IResultTable.Create(IEnumerable{Result},CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IResultTable.Create(IEnumerable{ArmoniK.Core.Common.Storage.Result},CancellationToken)
   name: Create(IEnumerable<Result>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_Create_IEnumerable_Result__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.IResultTable.Create(IEnumerable{Result},CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_Create_IEnumerable_ArmoniK_Core_Common_Storage_Result__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IResultTable.Create(IEnumerable{ArmoniK.Core.Common.Storage.Result},CancellationToken)
   name.vb: Create(IEnumerable(Of Result), CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.IResultTable.Create(IEnumerable<Result>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Storage.IResultTable.Create(IEnumerable(Of Result), CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.Create(IEnumerable<ArmoniK.Core.Common.Storage.Result>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.IResultTable.Create(IEnumerable(Of ArmoniK.Core.Common.Storage.Result), CancellationToken)
   nameWithType: IResultTable.Create(IEnumerable<Result>, CancellationToken)
   nameWithType.vb: IResultTable.Create(IEnumerable(Of Result), CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.IResultTable.Create*
@@ -7333,13 +7563,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ITaskTable.CountTasksAsync
   nameWithType: ITaskTable.CountTasksAsync
-- uid: ArmoniK.Core.Common.Storage.ITaskTable.CreateTasks(IEnumerable{TaskData},CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.CreateTasks(IEnumerable{ArmoniK.Core.Common.Storage.TaskData},CancellationToken)
   name: CreateTasks(IEnumerable<TaskData>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_CreateTasks_IEnumerable_TaskData__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.CreateTasks(IEnumerable{TaskData},CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_CreateTasks_IEnumerable_ArmoniK_Core_Common_Storage_TaskData__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.CreateTasks(IEnumerable{ArmoniK.Core.Common.Storage.TaskData},CancellationToken)
   name.vb: CreateTasks(IEnumerable(Of TaskData), CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ITaskTable.CreateTasks(IEnumerable<TaskData>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Storage.ITaskTable.CreateTasks(IEnumerable(Of TaskData), CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.CreateTasks(IEnumerable<ArmoniK.Core.Common.Storage.TaskData>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.ITaskTable.CreateTasks(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskData), CancellationToken)
   nameWithType: ITaskTable.CreateTasks(IEnumerable<TaskData>, CancellationToken)
   nameWithType.vb: ITaskTable.CreateTasks(IEnumerable(Of TaskData), CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.ITaskTable.CreateTasks*
@@ -7508,11 +7738,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ITaskTable.ReadTaskAsync
   nameWithType: ITaskTable.ReadTaskAsync
-- uid: ArmoniK.Core.Common.Storage.ITaskTable.RetryTask(TaskData,CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: RetryTask(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_RetryTask_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.RetryTask(TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ITaskTable.RetryTask(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
   nameWithType: ITaskTable.RetryTask(TaskData, CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.ITaskTable.RetryTask*
   name: RetryTask
@@ -8018,6 +8248,79 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ObjectStorageFactoryExt.CreateResultStorage
   nameWithType: ObjectStorageFactoryExt.CreateResultStorage
+- uid: ArmoniK.Core.Common.Storage.Output
+  name: Output
+  href: api/ArmoniK.Core.Common.Storage.Output.html
+  commentId: T:ArmoniK.Core.Common.Storage.Output
+  fullName: ArmoniK.Core.Common.Storage.Output
+  nameWithType: Output
+- uid: ArmoniK.Core.Common.Storage.Output.#ctor(System.Boolean,System.String)
+  name: Output(Boolean, String)
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output__ctor_System_Boolean_System_String_
+  commentId: M:ArmoniK.Core.Common.Storage.Output.#ctor(System.Boolean,System.String)
+  fullName: ArmoniK.Core.Common.Storage.Output.Output(System.Boolean, System.String)
+  nameWithType: Output.Output(Boolean, String)
+- uid: ArmoniK.Core.Common.Storage.Output.#ctor*
+  name: Output
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Output.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Output.Output
+  nameWithType: Output.Output
+- uid: ArmoniK.Core.Common.Storage.Output.Error
+  name: Error
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output_Error
+  commentId: P:ArmoniK.Core.Common.Storage.Output.Error
+  fullName: ArmoniK.Core.Common.Storage.Output.Error
+  nameWithType: Output.Error
+- uid: ArmoniK.Core.Common.Storage.Output.Error*
+  name: Error
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output_Error_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Output.Error
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Output.Error
+  nameWithType: Output.Error
+- uid: ArmoniK.Core.Common.Storage.Output.op_Implicit(ArmoniK.Api.gRPC.V1.Output)~ArmoniK.Core.Common.Storage.Output
+  name: Implicit(Output to Output)
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output_op_Implicit_ArmoniK_Api_gRPC_V1_Output__ArmoniK_Core_Common_Storage_Output
+  commentId: M:ArmoniK.Core.Common.Storage.Output.op_Implicit(ArmoniK.Api.gRPC.V1.Output)~ArmoniK.Core.Common.Storage.Output
+  name.vb: Widening(Output to Output)
+  fullName: ArmoniK.Core.Common.Storage.Output.Implicit(ArmoniK.Api.gRPC.V1.Output to ArmoniK.Core.Common.Storage.Output)
+  fullName.vb: ArmoniK.Core.Common.Storage.Output.Widening(ArmoniK.Api.gRPC.V1.Output to ArmoniK.Core.Common.Storage.Output)
+  nameWithType: Output.Implicit(Output to Output)
+  nameWithType.vb: Output.Widening(Output to Output)
+- uid: ArmoniK.Core.Common.Storage.Output.op_Implicit(ArmoniK.Core.Common.Storage.Output)~ArmoniK.Api.gRPC.V1.Output
+  name: Implicit(Output to Output)
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output_op_Implicit_ArmoniK_Core_Common_Storage_Output__ArmoniK_Api_gRPC_V1_Output
+  commentId: M:ArmoniK.Core.Common.Storage.Output.op_Implicit(ArmoniK.Core.Common.Storage.Output)~ArmoniK.Api.gRPC.V1.Output
+  name.vb: Widening(Output to Output)
+  fullName: ArmoniK.Core.Common.Storage.Output.Implicit(ArmoniK.Core.Common.Storage.Output to ArmoniK.Api.gRPC.V1.Output)
+  fullName.vb: ArmoniK.Core.Common.Storage.Output.Widening(ArmoniK.Core.Common.Storage.Output to ArmoniK.Api.gRPC.V1.Output)
+  nameWithType: Output.Implicit(Output to Output)
+  nameWithType.vb: Output.Widening(Output to Output)
+- uid: ArmoniK.Core.Common.Storage.Output.op_Implicit*
+  name: Implicit
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output_op_Implicit_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Output.op_Implicit
+  isSpec: "True"
+  name.vb: Widening
+  fullName: ArmoniK.Core.Common.Storage.Output.Implicit
+  fullName.vb: ArmoniK.Core.Common.Storage.Output.Widening
+  nameWithType: Output.Implicit
+  nameWithType.vb: Output.Widening
+- uid: ArmoniK.Core.Common.Storage.Output.Success
+  name: Success
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output_Success
+  commentId: P:ArmoniK.Core.Common.Storage.Output.Success
+  fullName: ArmoniK.Core.Common.Storage.Output.Success
+  nameWithType: Output.Success
+- uid: ArmoniK.Core.Common.Storage.Output.Success*
+  name: Success
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output_Success_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Output.Success
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Output.Success
+  nameWithType: Output.Success
 - uid: ArmoniK.Core.Common.Storage.QueueMessageHandler
   name: QueueMessageHandler
   href: api/ArmoniK.Core.Common.Storage.QueueMessageHandler.html
@@ -8153,6 +8456,164 @@ references:
   commentId: F:ArmoniK.Core.Common.Storage.QueueMessageStatus.Waiting
   fullName: ArmoniK.Core.Common.Storage.QueueMessageStatus.Waiting
   nameWithType: QueueMessageStatus.Waiting
+- uid: ArmoniK.Core.Common.Storage.Result
+  name: Result
+  href: api/ArmoniK.Core.Common.Storage.Result.html
+  commentId: T:ArmoniK.Core.Common.Storage.Result
+  fullName: ArmoniK.Core.Common.Storage.Result
+  nameWithType: Result
+- uid: ArmoniK.Core.Common.Storage.Result.#ctor(System.String,System.String,System.String,ResultStatus,DateTime,System.Byte[])
+  name: Result(String, String, String, ResultStatus, DateTime, Byte[])
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result__ctor_System_String_System_String_System_String_ResultStatus_DateTime_System_Byte___
+  commentId: M:ArmoniK.Core.Common.Storage.Result.#ctor(System.String,System.String,System.String,ResultStatus,DateTime,System.Byte[])
+  name.vb: Result(String, String, String, ResultStatus, DateTime, Byte())
+  fullName: ArmoniK.Core.Common.Storage.Result.Result(System.String, System.String, System.String, ResultStatus, DateTime, System.Byte[])
+  fullName.vb: ArmoniK.Core.Common.Storage.Result.Result(System.String, System.String, System.String, ResultStatus, DateTime, System.Byte())
+  nameWithType: Result.Result(String, String, String, ResultStatus, DateTime, Byte[])
+  nameWithType.vb: Result.Result(String, String, String, ResultStatus, DateTime, Byte())
+- uid: ArmoniK.Core.Common.Storage.Result.#ctor*
+  name: Result
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Result.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Result.Result
+  nameWithType: Result.Result
+- uid: ArmoniK.Core.Common.Storage.Result.CreationDate
+  name: CreationDate
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_CreationDate
+  commentId: P:ArmoniK.Core.Common.Storage.Result.CreationDate
+  fullName: ArmoniK.Core.Common.Storage.Result.CreationDate
+  nameWithType: Result.CreationDate
+- uid: ArmoniK.Core.Common.Storage.Result.CreationDate*
+  name: CreationDate
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_CreationDate_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Result.CreationDate
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Result.CreationDate
+  nameWithType: Result.CreationDate
+- uid: ArmoniK.Core.Common.Storage.Result.Data
+  name: Data
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_Data
+  commentId: P:ArmoniK.Core.Common.Storage.Result.Data
+  fullName: ArmoniK.Core.Common.Storage.Result.Data
+  nameWithType: Result.Data
+- uid: ArmoniK.Core.Common.Storage.Result.Data*
+  name: Data
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_Data_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Result.Data
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Result.Data
+  nameWithType: Result.Data
+- uid: ArmoniK.Core.Common.Storage.Result.Name
+  name: Name
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_Name
+  commentId: P:ArmoniK.Core.Common.Storage.Result.Name
+  fullName: ArmoniK.Core.Common.Storage.Result.Name
+  nameWithType: Result.Name
+- uid: ArmoniK.Core.Common.Storage.Result.Name*
+  name: Name
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_Name_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Result.Name
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Result.Name
+  nameWithType: Result.Name
+- uid: ArmoniK.Core.Common.Storage.Result.OwnerTaskId
+  name: OwnerTaskId
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_OwnerTaskId
+  commentId: P:ArmoniK.Core.Common.Storage.Result.OwnerTaskId
+  fullName: ArmoniK.Core.Common.Storage.Result.OwnerTaskId
+  nameWithType: Result.OwnerTaskId
+- uid: ArmoniK.Core.Common.Storage.Result.OwnerTaskId*
+  name: OwnerTaskId
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_OwnerTaskId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Result.OwnerTaskId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Result.OwnerTaskId
+  nameWithType: Result.OwnerTaskId
+- uid: ArmoniK.Core.Common.Storage.Result.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_SessionId
+  commentId: P:ArmoniK.Core.Common.Storage.Result.SessionId
+  fullName: ArmoniK.Core.Common.Storage.Result.SessionId
+  nameWithType: Result.SessionId
+- uid: ArmoniK.Core.Common.Storage.Result.SessionId*
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_SessionId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Result.SessionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Result.SessionId
+  nameWithType: Result.SessionId
+- uid: ArmoniK.Core.Common.Storage.Result.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_Status
+  commentId: P:ArmoniK.Core.Common.Storage.Result.Status
+  fullName: ArmoniK.Core.Common.Storage.Result.Status
+  nameWithType: Result.Status
+- uid: ArmoniK.Core.Common.Storage.Result.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.Result.html#ArmoniK_Core_Common_Storage_Result_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.Result.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.Result.Status
+  nameWithType: Result.Status
+- uid: ArmoniK.Core.Common.Storage.SessionData
+  name: SessionData
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html
+  commentId: T:ArmoniK.Core.Common.Storage.SessionData
+  fullName: ArmoniK.Core.Common.Storage.SessionData
+  nameWithType: SessionData
+- uid: ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,ArmoniK.Api.gRPC.V1.TaskOptions)
+  name: SessionData(String, SessionStatus, TaskOptions)
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData__ctor_System_String_SessionStatus_ArmoniK_Api_gRPC_V1_TaskOptions_
+  commentId: M:ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,ArmoniK.Api.gRPC.V1.TaskOptions)
+  fullName: ArmoniK.Core.Common.Storage.SessionData.SessionData(System.String, SessionStatus, ArmoniK.Api.gRPC.V1.TaskOptions)
+  nameWithType: SessionData.SessionData(String, SessionStatus, TaskOptions)
+- uid: ArmoniK.Core.Common.Storage.SessionData.#ctor*
+  name: SessionData
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.SessionData.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.SessionData.SessionData
+  nameWithType: SessionData.SessionData
+- uid: ArmoniK.Core.Common.Storage.SessionData.Options
+  name: Options
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_Options
+  commentId: P:ArmoniK.Core.Common.Storage.SessionData.Options
+  fullName: ArmoniK.Core.Common.Storage.SessionData.Options
+  nameWithType: SessionData.Options
+- uid: ArmoniK.Core.Common.Storage.SessionData.Options*
+  name: Options
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_Options_
+  commentId: Overload:ArmoniK.Core.Common.Storage.SessionData.Options
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.SessionData.Options
+  nameWithType: SessionData.Options
+- uid: ArmoniK.Core.Common.Storage.SessionData.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_SessionId
+  commentId: P:ArmoniK.Core.Common.Storage.SessionData.SessionId
+  fullName: ArmoniK.Core.Common.Storage.SessionData.SessionId
+  nameWithType: SessionData.SessionId
+- uid: ArmoniK.Core.Common.Storage.SessionData.SessionId*
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_SessionId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.SessionData.SessionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.SessionData.SessionId
+  nameWithType: SessionData.SessionId
+- uid: ArmoniK.Core.Common.Storage.SessionData.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_Status
+  commentId: P:ArmoniK.Core.Common.Storage.SessionData.Status
+  fullName: ArmoniK.Core.Common.Storage.SessionData.Status
+  nameWithType: SessionData.Status
+- uid: ArmoniK.Core.Common.Storage.SessionData.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.SessionData.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.SessionData.Status
+  nameWithType: SessionData.Status
 - uid: ArmoniK.Core.Common.Storage.SessionTableExtensions
   name: SessionTableExtensions
   href: api/ArmoniK.Core.Common.Storage.SessionTableExtensions.html
@@ -8172,6 +8633,511 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.SessionTableExtensions.CreateSessionAsync
   nameWithType: SessionTableExtensions.CreateSessionAsync
+- uid: ArmoniK.Core.Common.Storage.StatusTime
+  name: StatusTime
+  href: api/ArmoniK.Core.Common.Storage.StatusTime.html
+  commentId: T:ArmoniK.Core.Common.Storage.StatusTime
+  fullName: ArmoniK.Core.Common.Storage.StatusTime
+  nameWithType: StatusTime
+- uid: ArmoniK.Core.Common.Storage.StatusTime.#ctor(TaskStatus,DateTime,System.String)
+  name: StatusTime(TaskStatus, DateTime, String)
+  href: api/ArmoniK.Core.Common.Storage.StatusTime.html#ArmoniK_Core_Common_Storage_StatusTime__ctor_TaskStatus_DateTime_System_String_
+  commentId: M:ArmoniK.Core.Common.Storage.StatusTime.#ctor(TaskStatus,DateTime,System.String)
+  fullName: ArmoniK.Core.Common.Storage.StatusTime.StatusTime(TaskStatus, DateTime, System.String)
+  nameWithType: StatusTime.StatusTime(TaskStatus, DateTime, String)
+- uid: ArmoniK.Core.Common.Storage.StatusTime.#ctor*
+  name: StatusTime
+  href: api/ArmoniK.Core.Common.Storage.StatusTime.html#ArmoniK_Core_Common_Storage_StatusTime__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.StatusTime.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.StatusTime.StatusTime
+  nameWithType: StatusTime.StatusTime
+- uid: ArmoniK.Core.Common.Storage.StatusTime.Date
+  name: Date
+  href: api/ArmoniK.Core.Common.Storage.StatusTime.html#ArmoniK_Core_Common_Storage_StatusTime_Date
+  commentId: P:ArmoniK.Core.Common.Storage.StatusTime.Date
+  fullName: ArmoniK.Core.Common.Storage.StatusTime.Date
+  nameWithType: StatusTime.Date
+- uid: ArmoniK.Core.Common.Storage.StatusTime.Date*
+  name: Date
+  href: api/ArmoniK.Core.Common.Storage.StatusTime.html#ArmoniK_Core_Common_Storage_StatusTime_Date_
+  commentId: Overload:ArmoniK.Core.Common.Storage.StatusTime.Date
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.StatusTime.Date
+  nameWithType: StatusTime.Date
+- uid: ArmoniK.Core.Common.Storage.StatusTime.Details
+  name: Details
+  href: api/ArmoniK.Core.Common.Storage.StatusTime.html#ArmoniK_Core_Common_Storage_StatusTime_Details
+  commentId: P:ArmoniK.Core.Common.Storage.StatusTime.Details
+  fullName: ArmoniK.Core.Common.Storage.StatusTime.Details
+  nameWithType: StatusTime.Details
+- uid: ArmoniK.Core.Common.Storage.StatusTime.Details*
+  name: Details
+  href: api/ArmoniK.Core.Common.Storage.StatusTime.html#ArmoniK_Core_Common_Storage_StatusTime_Details_
+  commentId: Overload:ArmoniK.Core.Common.Storage.StatusTime.Details
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.StatusTime.Details
+  nameWithType: StatusTime.Details
+- uid: ArmoniK.Core.Common.Storage.StatusTime.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.StatusTime.html#ArmoniK_Core_Common_Storage_StatusTime_Status
+  commentId: P:ArmoniK.Core.Common.Storage.StatusTime.Status
+  fullName: ArmoniK.Core.Common.Storage.StatusTime.Status
+  nameWithType: StatusTime.Status
+- uid: ArmoniK.Core.Common.Storage.StatusTime.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.StatusTime.html#ArmoniK_Core_Common_Storage_StatusTime_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.StatusTime.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.StatusTime.Status
+  nameWithType: StatusTime.Status
+- uid: ArmoniK.Core.Common.Storage.TaskData
+  name: TaskData
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html
+  commentId: T:ArmoniK.Core.Common.Storage.TaskData
+  fullName: ArmoniK.Core.Common.Storage.TaskData
+  nameWithType: TaskData
+- uid: ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,ArmoniK.Core.Common.Storage.TaskOptions,ArmoniK.Core.Common.Storage.Output)
+  name: TaskData(String, String, String, IList<String>, IList<String>, IList<String>, IList<String>, TaskStatus, TaskOptions, Output)
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__IList_System_String__TaskStatus_ArmoniK_Core_Common_Storage_TaskOptions_ArmoniK_Core_Common_Storage_Output_
+  commentId: M:ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,ArmoniK.Core.Common.Storage.TaskOptions,ArmoniK.Core.Common.Storage.Output)
+  name.vb: TaskData(String, String, String, IList(Of String), IList(Of String), IList(Of String), IList(Of String), TaskStatus, TaskOptions, Output)
+  fullName: ArmoniK.Core.Common.Storage.TaskData.TaskData(System.String, System.String, System.String, IList<System.String>, IList<System.String>, IList<System.String>, IList<System.String>, TaskStatus, ArmoniK.Core.Common.Storage.TaskOptions, ArmoniK.Core.Common.Storage.Output)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskData.TaskData(System.String, System.String, System.String, IList(Of System.String), IList(Of System.String), IList(Of System.String), IList(Of System.String), TaskStatus, ArmoniK.Core.Common.Storage.TaskOptions, ArmoniK.Core.Common.Storage.Output)
+  nameWithType: TaskData.TaskData(String, String, String, IList<String>, IList<String>, IList<String>, IList<String>, TaskStatus, TaskOptions, Output)
+  nameWithType.vb: TaskData.TaskData(String, String, String, IList(Of String), IList(Of String), IList(Of String), IList(Of String), TaskStatus, TaskOptions, Output)
+- uid: ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,System.String,ArmoniK.Core.Common.Storage.TaskOptions,DateTime,DateTime,DateTime,DateTime,DateTime,ArmoniK.Core.Common.Storage.Output)
+  name: TaskData(String, String, String, IList<String>, IList<String>, IList<String>, IList<String>, TaskStatus, String, TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, Output)
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__IList_System_String__TaskStatus_System_String_ArmoniK_Core_Common_Storage_TaskOptions_DateTime_DateTime_DateTime_DateTime_DateTime_ArmoniK_Core_Common_Storage_Output_
+  commentId: M:ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,System.String,ArmoniK.Core.Common.Storage.TaskOptions,DateTime,DateTime,DateTime,DateTime,DateTime,ArmoniK.Core.Common.Storage.Output)
+  name.vb: TaskData(String, String, String, IList(Of String), IList(Of String), IList(Of String), IList(Of String), TaskStatus, String, TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, Output)
+  fullName: ArmoniK.Core.Common.Storage.TaskData.TaskData(System.String, System.String, System.String, IList<System.String>, IList<System.String>, IList<System.String>, IList<System.String>, TaskStatus, System.String, ArmoniK.Core.Common.Storage.TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, ArmoniK.Core.Common.Storage.Output)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskData.TaskData(System.String, System.String, System.String, IList(Of System.String), IList(Of System.String), IList(Of System.String), IList(Of System.String), TaskStatus, System.String, ArmoniK.Core.Common.Storage.TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, ArmoniK.Core.Common.Storage.Output)
+  nameWithType: TaskData.TaskData(String, String, String, IList<String>, IList<String>, IList<String>, IList<String>, TaskStatus, String, TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, Output)
+  nameWithType.vb: TaskData.TaskData(String, String, String, IList(Of String), IList(Of String), IList(Of String), IList(Of String), TaskStatus, String, TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, Output)
+- uid: ArmoniK.Core.Common.Storage.TaskData.#ctor*
+  name: TaskData
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.TaskData
+  nameWithType: TaskData.TaskData
+- uid: ArmoniK.Core.Common.Storage.TaskData.CreationDate
+  name: CreationDate
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_CreationDate
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.CreationDate
+  fullName: ArmoniK.Core.Common.Storage.TaskData.CreationDate
+  nameWithType: TaskData.CreationDate
+- uid: ArmoniK.Core.Common.Storage.TaskData.CreationDate*
+  name: CreationDate
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_CreationDate_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.CreationDate
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.CreationDate
+  nameWithType: TaskData.CreationDate
+- uid: ArmoniK.Core.Common.Storage.TaskData.DataDependencies
+  name: DataDependencies
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_DataDependencies
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.DataDependencies
+  fullName: ArmoniK.Core.Common.Storage.TaskData.DataDependencies
+  nameWithType: TaskData.DataDependencies
+- uid: ArmoniK.Core.Common.Storage.TaskData.DataDependencies*
+  name: DataDependencies
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_DataDependencies_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.DataDependencies
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.DataDependencies
+  nameWithType: TaskData.DataDependencies
+- uid: ArmoniK.Core.Common.Storage.TaskData.EndDate
+  name: EndDate
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_EndDate
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.EndDate
+  fullName: ArmoniK.Core.Common.Storage.TaskData.EndDate
+  nameWithType: TaskData.EndDate
+- uid: ArmoniK.Core.Common.Storage.TaskData.EndDate*
+  name: EndDate
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_EndDate_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.EndDate
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.EndDate
+  nameWithType: TaskData.EndDate
+- uid: ArmoniK.Core.Common.Storage.TaskData.ExpectedOutputIds
+  name: ExpectedOutputIds
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_ExpectedOutputIds
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.ExpectedOutputIds
+  fullName: ArmoniK.Core.Common.Storage.TaskData.ExpectedOutputIds
+  nameWithType: TaskData.ExpectedOutputIds
+- uid: ArmoniK.Core.Common.Storage.TaskData.ExpectedOutputIds*
+  name: ExpectedOutputIds
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_ExpectedOutputIds_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.ExpectedOutputIds
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.ExpectedOutputIds
+  nameWithType: TaskData.ExpectedOutputIds
+- uid: ArmoniK.Core.Common.Storage.TaskData.Options
+  name: Options
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_Options
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.Options
+  fullName: ArmoniK.Core.Common.Storage.TaskData.Options
+  nameWithType: TaskData.Options
+- uid: ArmoniK.Core.Common.Storage.TaskData.Options*
+  name: Options
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_Options_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.Options
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.Options
+  nameWithType: TaskData.Options
+- uid: ArmoniK.Core.Common.Storage.TaskData.Output
+  name: Output
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_Output
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.Output
+  fullName: ArmoniK.Core.Common.Storage.TaskData.Output
+  nameWithType: TaskData.Output
+- uid: ArmoniK.Core.Common.Storage.TaskData.Output*
+  name: Output
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_Output_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.Output
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.Output
+  nameWithType: TaskData.Output
+- uid: ArmoniK.Core.Common.Storage.TaskData.OwnerPodId
+  name: OwnerPodId
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_OwnerPodId
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.OwnerPodId
+  fullName: ArmoniK.Core.Common.Storage.TaskData.OwnerPodId
+  nameWithType: TaskData.OwnerPodId
+- uid: ArmoniK.Core.Common.Storage.TaskData.OwnerPodId*
+  name: OwnerPodId
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_OwnerPodId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.OwnerPodId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.OwnerPodId
+  nameWithType: TaskData.OwnerPodId
+- uid: ArmoniK.Core.Common.Storage.TaskData.ParentTaskIds
+  name: ParentTaskIds
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_ParentTaskIds
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.ParentTaskIds
+  fullName: ArmoniK.Core.Common.Storage.TaskData.ParentTaskIds
+  nameWithType: TaskData.ParentTaskIds
+- uid: ArmoniK.Core.Common.Storage.TaskData.ParentTaskIds*
+  name: ParentTaskIds
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_ParentTaskIds_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.ParentTaskIds
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.ParentTaskIds
+  nameWithType: TaskData.ParentTaskIds
+- uid: ArmoniK.Core.Common.Storage.TaskData.PodTtl
+  name: PodTtl
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_PodTtl
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.PodTtl
+  fullName: ArmoniK.Core.Common.Storage.TaskData.PodTtl
+  nameWithType: TaskData.PodTtl
+- uid: ArmoniK.Core.Common.Storage.TaskData.PodTtl*
+  name: PodTtl
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_PodTtl_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.PodTtl
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.PodTtl
+  nameWithType: TaskData.PodTtl
+- uid: ArmoniK.Core.Common.Storage.TaskData.RetryOfIds
+  name: RetryOfIds
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_RetryOfIds
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.RetryOfIds
+  fullName: ArmoniK.Core.Common.Storage.TaskData.RetryOfIds
+  nameWithType: TaskData.RetryOfIds
+- uid: ArmoniK.Core.Common.Storage.TaskData.RetryOfIds*
+  name: RetryOfIds
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_RetryOfIds_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.RetryOfIds
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.RetryOfIds
+  nameWithType: TaskData.RetryOfIds
+- uid: ArmoniK.Core.Common.Storage.TaskData.SessionId
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_SessionId
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.SessionId
+  fullName: ArmoniK.Core.Common.Storage.TaskData.SessionId
+  nameWithType: TaskData.SessionId
+- uid: ArmoniK.Core.Common.Storage.TaskData.SessionId*
+  name: SessionId
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_SessionId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.SessionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.SessionId
+  nameWithType: TaskData.SessionId
+- uid: ArmoniK.Core.Common.Storage.TaskData.StartDate
+  name: StartDate
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_StartDate
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.StartDate
+  fullName: ArmoniK.Core.Common.Storage.TaskData.StartDate
+  nameWithType: TaskData.StartDate
+- uid: ArmoniK.Core.Common.Storage.TaskData.StartDate*
+  name: StartDate
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_StartDate_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.StartDate
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.StartDate
+  nameWithType: TaskData.StartDate
+- uid: ArmoniK.Core.Common.Storage.TaskData.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_Status
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.Status
+  fullName: ArmoniK.Core.Common.Storage.TaskData.Status
+  nameWithType: TaskData.Status
+- uid: ArmoniK.Core.Common.Storage.TaskData.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.Status
+  nameWithType: TaskData.Status
+- uid: ArmoniK.Core.Common.Storage.TaskData.StatusMessage
+  name: StatusMessage
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_StatusMessage
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.StatusMessage
+  fullName: ArmoniK.Core.Common.Storage.TaskData.StatusMessage
+  nameWithType: TaskData.StatusMessage
+- uid: ArmoniK.Core.Common.Storage.TaskData.StatusMessage*
+  name: StatusMessage
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_StatusMessage_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.StatusMessage
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.StatusMessage
+  nameWithType: TaskData.StatusMessage
+- uid: ArmoniK.Core.Common.Storage.TaskData.SubmittedDate
+  name: SubmittedDate
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_SubmittedDate
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.SubmittedDate
+  fullName: ArmoniK.Core.Common.Storage.TaskData.SubmittedDate
+  nameWithType: TaskData.SubmittedDate
+- uid: ArmoniK.Core.Common.Storage.TaskData.SubmittedDate*
+  name: SubmittedDate
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_SubmittedDate_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.SubmittedDate
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.SubmittedDate
+  nameWithType: TaskData.SubmittedDate
+- uid: ArmoniK.Core.Common.Storage.TaskData.TaskId
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_TaskId
+  commentId: P:ArmoniK.Core.Common.Storage.TaskData.TaskId
+  fullName: ArmoniK.Core.Common.Storage.TaskData.TaskId
+  nameWithType: TaskData.TaskId
+- uid: ArmoniK.Core.Common.Storage.TaskData.TaskId*
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_TaskId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.TaskId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskData.TaskId
+  nameWithType: TaskData.TaskId
+- uid: ArmoniK.Core.Common.Storage.TaskOptions
+  name: TaskOptions
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html
+  commentId: T:ArmoniK.Core.Common.Storage.TaskOptions
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions
+  nameWithType: TaskOptions
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32)
+  name: TaskOptions(IDictionary<String, String>, TimeSpan, Int32, Int32)
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions__ctor_IDictionary_System_String_System_String__TimeSpan_System_Int32_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32)
+  name.vb: TaskOptions(IDictionary(Of String, String), TimeSpan, Int32, Int32)
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions(IDictionary<System.String, System.String>, TimeSpan, System.Int32, System.Int32)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions(IDictionary(Of System.String, System.String), TimeSpan, System.Int32, System.Int32)
+  nameWithType: TaskOptions.TaskOptions(IDictionary<String, String>, TimeSpan, Int32, Int32)
+  nameWithType.vb: TaskOptions.TaskOptions(IDictionary(Of String, String), TimeSpan, Int32, Int32)
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.#ctor*
+  name: TaskOptions
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions
+  nameWithType: TaskOptions.TaskOptions
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.MaxDuration
+  name: MaxDuration
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_MaxDuration
+  commentId: P:ArmoniK.Core.Common.Storage.TaskOptions.MaxDuration
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.MaxDuration
+  nameWithType: TaskOptions.MaxDuration
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.MaxDuration*
+  name: MaxDuration
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_MaxDuration_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.MaxDuration
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.MaxDuration
+  nameWithType: TaskOptions.MaxDuration
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.MaxRetries
+  name: MaxRetries
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_MaxRetries
+  commentId: P:ArmoniK.Core.Common.Storage.TaskOptions.MaxRetries
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.MaxRetries
+  nameWithType: TaskOptions.MaxRetries
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.MaxRetries*
+  name: MaxRetries
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_MaxRetries_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.MaxRetries
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.MaxRetries
+  nameWithType: TaskOptions.MaxRetries
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit(ArmoniK.Api.gRPC.V1.TaskOptions)~ArmoniK.Core.Common.Storage.TaskOptions
+  name: Implicit(TaskOptions to TaskOptions)
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_op_Implicit_ArmoniK_Api_gRPC_V1_TaskOptions__ArmoniK_Core_Common_Storage_TaskOptions
+  commentId: M:ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit(ArmoniK.Api.gRPC.V1.TaskOptions)~ArmoniK.Core.Common.Storage.TaskOptions
+  name.vb: Widening(TaskOptions to TaskOptions)
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.Implicit(ArmoniK.Api.gRPC.V1.TaskOptions to ArmoniK.Core.Common.Storage.TaskOptions)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskOptions.Widening(ArmoniK.Api.gRPC.V1.TaskOptions to ArmoniK.Core.Common.Storage.TaskOptions)
+  nameWithType: TaskOptions.Implicit(TaskOptions to TaskOptions)
+  nameWithType.vb: TaskOptions.Widening(TaskOptions to TaskOptions)
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit(ArmoniK.Core.Common.Storage.TaskOptions)~ArmoniK.Api.gRPC.V1.TaskOptions
+  name: Implicit(TaskOptions to TaskOptions)
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_op_Implicit_ArmoniK_Core_Common_Storage_TaskOptions__ArmoniK_Api_gRPC_V1_TaskOptions
+  commentId: M:ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit(ArmoniK.Core.Common.Storage.TaskOptions)~ArmoniK.Api.gRPC.V1.TaskOptions
+  name.vb: Widening(TaskOptions to TaskOptions)
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.Implicit(ArmoniK.Core.Common.Storage.TaskOptions to ArmoniK.Api.gRPC.V1.TaskOptions)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskOptions.Widening(ArmoniK.Core.Common.Storage.TaskOptions to ArmoniK.Api.gRPC.V1.TaskOptions)
+  nameWithType: TaskOptions.Implicit(TaskOptions to TaskOptions)
+  nameWithType.vb: TaskOptions.Widening(TaskOptions to TaskOptions)
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit*
+  name: Implicit
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_op_Implicit_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit
+  isSpec: "True"
+  name.vb: Widening
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.Implicit
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskOptions.Widening
+  nameWithType: TaskOptions.Implicit
+  nameWithType.vb: TaskOptions.Widening
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.Options
+  name: Options
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_Options
+  commentId: P:ArmoniK.Core.Common.Storage.TaskOptions.Options
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.Options
+  nameWithType: TaskOptions.Options
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.Options*
+  name: Options
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_Options_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.Options
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.Options
+  nameWithType: TaskOptions.Options
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.Priority
+  name: Priority
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_Priority
+  commentId: P:ArmoniK.Core.Common.Storage.TaskOptions.Priority
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.Priority
+  nameWithType: TaskOptions.Priority
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.Priority*
+  name: Priority
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_Priority_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.Priority
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.Priority
+  nameWithType: TaskOptions.Priority
+- uid: ArmoniK.Core.Common.Storage.TaskRequest
+  name: TaskRequest
+  href: api/ArmoniK.Core.Common.Storage.TaskRequest.html
+  commentId: T:ArmoniK.Core.Common.Storage.TaskRequest
+  fullName: ArmoniK.Core.Common.Storage.TaskRequest
+  nameWithType: TaskRequest
+- uid: ArmoniK.Core.Common.Storage.TaskRequest.#ctor(System.String,IEnumerable{System.String},IEnumerable{System.String})
+  name: TaskRequest(String, IEnumerable<String>, IEnumerable<String>)
+  href: api/ArmoniK.Core.Common.Storage.TaskRequest.html#ArmoniK_Core_Common_Storage_TaskRequest__ctor_System_String_IEnumerable_System_String__IEnumerable_System_String__
+  commentId: M:ArmoniK.Core.Common.Storage.TaskRequest.#ctor(System.String,IEnumerable{System.String},IEnumerable{System.String})
+  name.vb: TaskRequest(String, IEnumerable(Of String), IEnumerable(Of String))
+  fullName: ArmoniK.Core.Common.Storage.TaskRequest.TaskRequest(System.String, IEnumerable<System.String>, IEnumerable<System.String>)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskRequest.TaskRequest(System.String, IEnumerable(Of System.String), IEnumerable(Of System.String))
+  nameWithType: TaskRequest.TaskRequest(String, IEnumerable<String>, IEnumerable<String>)
+  nameWithType.vb: TaskRequest.TaskRequest(String, IEnumerable(Of String), IEnumerable(Of String))
+- uid: ArmoniK.Core.Common.Storage.TaskRequest.#ctor*
+  name: TaskRequest
+  href: api/ArmoniK.Core.Common.Storage.TaskRequest.html#ArmoniK_Core_Common_Storage_TaskRequest__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskRequest.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskRequest.TaskRequest
+  nameWithType: TaskRequest.TaskRequest
+- uid: ArmoniK.Core.Common.Storage.TaskRequest.DataDependencies
+  name: DataDependencies
+  href: api/ArmoniK.Core.Common.Storage.TaskRequest.html#ArmoniK_Core_Common_Storage_TaskRequest_DataDependencies
+  commentId: P:ArmoniK.Core.Common.Storage.TaskRequest.DataDependencies
+  fullName: ArmoniK.Core.Common.Storage.TaskRequest.DataDependencies
+  nameWithType: TaskRequest.DataDependencies
+- uid: ArmoniK.Core.Common.Storage.TaskRequest.DataDependencies*
+  name: DataDependencies
+  href: api/ArmoniK.Core.Common.Storage.TaskRequest.html#ArmoniK_Core_Common_Storage_TaskRequest_DataDependencies_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskRequest.DataDependencies
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskRequest.DataDependencies
+  nameWithType: TaskRequest.DataDependencies
+- uid: ArmoniK.Core.Common.Storage.TaskRequest.ExpectedOutputKeys
+  name: ExpectedOutputKeys
+  href: api/ArmoniK.Core.Common.Storage.TaskRequest.html#ArmoniK_Core_Common_Storage_TaskRequest_ExpectedOutputKeys
+  commentId: P:ArmoniK.Core.Common.Storage.TaskRequest.ExpectedOutputKeys
+  fullName: ArmoniK.Core.Common.Storage.TaskRequest.ExpectedOutputKeys
+  nameWithType: TaskRequest.ExpectedOutputKeys
+- uid: ArmoniK.Core.Common.Storage.TaskRequest.ExpectedOutputKeys*
+  name: ExpectedOutputKeys
+  href: api/ArmoniK.Core.Common.Storage.TaskRequest.html#ArmoniK_Core_Common_Storage_TaskRequest_ExpectedOutputKeys_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskRequest.ExpectedOutputKeys
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskRequest.ExpectedOutputKeys
+  nameWithType: TaskRequest.ExpectedOutputKeys
+- uid: ArmoniK.Core.Common.Storage.TaskRequest.Id
+  name: Id
+  href: api/ArmoniK.Core.Common.Storage.TaskRequest.html#ArmoniK_Core_Common_Storage_TaskRequest_Id
+  commentId: P:ArmoniK.Core.Common.Storage.TaskRequest.Id
+  fullName: ArmoniK.Core.Common.Storage.TaskRequest.Id
+  nameWithType: TaskRequest.Id
+- uid: ArmoniK.Core.Common.Storage.TaskRequest.Id*
+  name: Id
+  href: api/ArmoniK.Core.Common.Storage.TaskRequest.html#ArmoniK_Core_Common_Storage_TaskRequest_Id_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskRequest.Id
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskRequest.Id
+  nameWithType: TaskRequest.Id
+- uid: ArmoniK.Core.Common.Storage.TaskStatusCount
+  name: TaskStatusCount
+  href: api/ArmoniK.Core.Common.Storage.TaskStatusCount.html
+  commentId: T:ArmoniK.Core.Common.Storage.TaskStatusCount
+  fullName: ArmoniK.Core.Common.Storage.TaskStatusCount
+  nameWithType: TaskStatusCount
+- uid: ArmoniK.Core.Common.Storage.TaskStatusCount.#ctor(TaskStatus,System.Int32)
+  name: TaskStatusCount(TaskStatus, Int32)
+  href: api/ArmoniK.Core.Common.Storage.TaskStatusCount.html#ArmoniK_Core_Common_Storage_TaskStatusCount__ctor_TaskStatus_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Storage.TaskStatusCount.#ctor(TaskStatus,System.Int32)
+  fullName: ArmoniK.Core.Common.Storage.TaskStatusCount.TaskStatusCount(TaskStatus, System.Int32)
+  nameWithType: TaskStatusCount.TaskStatusCount(TaskStatus, Int32)
+- uid: ArmoniK.Core.Common.Storage.TaskStatusCount.#ctor*
+  name: TaskStatusCount
+  href: api/ArmoniK.Core.Common.Storage.TaskStatusCount.html#ArmoniK_Core_Common_Storage_TaskStatusCount__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskStatusCount.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskStatusCount.TaskStatusCount
+  nameWithType: TaskStatusCount.TaskStatusCount
+- uid: ArmoniK.Core.Common.Storage.TaskStatusCount.Count
+  name: Count
+  href: api/ArmoniK.Core.Common.Storage.TaskStatusCount.html#ArmoniK_Core_Common_Storage_TaskStatusCount_Count
+  commentId: P:ArmoniK.Core.Common.Storage.TaskStatusCount.Count
+  fullName: ArmoniK.Core.Common.Storage.TaskStatusCount.Count
+  nameWithType: TaskStatusCount.Count
+- uid: ArmoniK.Core.Common.Storage.TaskStatusCount.Count*
+  name: Count
+  href: api/ArmoniK.Core.Common.Storage.TaskStatusCount.html#ArmoniK_Core_Common_Storage_TaskStatusCount_Count_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskStatusCount.Count
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskStatusCount.Count
+  nameWithType: TaskStatusCount.Count
+- uid: ArmoniK.Core.Common.Storage.TaskStatusCount.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.TaskStatusCount.html#ArmoniK_Core_Common_Storage_TaskStatusCount_Status
+  commentId: P:ArmoniK.Core.Common.Storage.TaskStatusCount.Status
+  fullName: ArmoniK.Core.Common.Storage.TaskStatusCount.Status
+  nameWithType: TaskStatusCount.Status
+- uid: ArmoniK.Core.Common.Storage.TaskStatusCount.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.TaskStatusCount.html#ArmoniK_Core_Common_Storage_TaskStatusCount_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskStatusCount.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskStatusCount.Status
+  nameWithType: TaskStatusCount.Status
 - uid: ArmoniK.Core.Common.Storage.TaskTableExtensions
   name: TaskTableExtensions
   href: api/ArmoniK.Core.Common.Storage.TaskTableExtensions.html
@@ -8447,11 +9413,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.Pipe
   nameWithType: IWorkerStreamHandler.Pipe
-- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing(TaskData,CancellationToken)
+- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: StartTaskProcessing(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_StartTaskProcessing_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing(TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_StartTaskProcessing_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
   nameWithType: IWorkerStreamHandler.StartTaskProcessing(TaskData, CancellationToken)
 - uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing*
   name: StartTaskProcessing
@@ -8772,11 +9738,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.Pipe
   nameWithType: WorkerStreamHandler.Pipe
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.StartTaskProcessing(TaskData,CancellationToken)
+- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: StartTaskProcessing(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_StartTaskProcessing_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.StartTaskProcessing(TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.StartTaskProcessing(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_StartTaskProcessing_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
   nameWithType: WorkerStreamHandler.StartTaskProcessing(TaskData, CancellationToken)
 - uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.StartTaskProcessing*
   name: StartTaskProcessing
@@ -9439,11 +10405,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.Pipe
   nameWithType: WorkerStreamHandlerBase.Pipe
-- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing(TaskData,CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: StartTaskProcessing(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_StartTaskProcessing_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing(TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerBase_StartTaskProcessing_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
   nameWithType: WorkerStreamHandlerBase.StartTaskProcessing(TaskData, CancellationToken)
 - uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerBase.StartTaskProcessing*
   name: StartTaskProcessing
@@ -9477,11 +10443,11 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest
   fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest
   nameWithType: WorkerStreamHandlerFullTest
-- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing(TaskData,CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: StartTaskProcessing(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerFullTest_StartTaskProcessing_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing(TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.html#ArmoniK_Core_Common_Tests_FullIntegration_WorkerStreamHandlerFullTest_StartTaskProcessing_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
   nameWithType: WorkerStreamHandlerFullTest.StartTaskProcessing(TaskData, CancellationToken)
 - uid: ArmoniK.Core.Common.Tests.FullIntegration.WorkerStreamHandlerFullTest.StartTaskProcessing*
   name: StartTaskProcessing
@@ -13236,6 +14202,184 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions.Logger
   nameWithType: MongoExporterOptions.Logger
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData
+  name: OpenTelemetryData
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html
+  commentId: T:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData
+  nameWithType: OpenTelemetryData
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.#ctor(System.String,IEnumerable{KeyValuePair{System.String,System.String}},TimeSpan,IEnumerable{KeyValuePair{System.String,System.String}},System.String,System.String,System.String,System.String,System.String,System.String,System.String,DateTime)
+  name: OpenTelemetryData(String, IEnumerable<KeyValuePair<String, String>>, TimeSpan, IEnumerable<KeyValuePair<String, String>>, String, String, String, String, String, String, String, DateTime)
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData__ctor_System_String_IEnumerable_KeyValuePair_System_String_System_String___TimeSpan_IEnumerable_KeyValuePair_System_String_System_String___System_String_System_String_System_String_System_String_System_String_System_String_System_String_DateTime_
+  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.#ctor(System.String,IEnumerable{KeyValuePair{System.String,System.String}},TimeSpan,IEnumerable{KeyValuePair{System.String,System.String}},System.String,System.String,System.String,System.String,System.String,System.String,System.String,DateTime)
+  name.vb: OpenTelemetryData(String, IEnumerable(Of KeyValuePair(Of String, String)), TimeSpan, IEnumerable(Of KeyValuePair(Of String, String)), String, String, String, String, String, String, String, DateTime)
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.OpenTelemetryData(System.String, IEnumerable<KeyValuePair<System.String, System.String>>, TimeSpan, IEnumerable<KeyValuePair<System.String, System.String>>, System.String, System.String, System.String, System.String, System.String, System.String, System.String, DateTime)
+  fullName.vb: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.OpenTelemetryData(System.String, IEnumerable(Of KeyValuePair(Of System.String, System.String)), TimeSpan, IEnumerable(Of KeyValuePair(Of System.String, System.String)), System.String, System.String, System.String, System.String, System.String, System.String, System.String, DateTime)
+  nameWithType: OpenTelemetryData.OpenTelemetryData(String, IEnumerable<KeyValuePair<String, String>>, TimeSpan, IEnumerable<KeyValuePair<String, String>>, String, String, String, String, String, String, String, DateTime)
+  nameWithType.vb: OpenTelemetryData.OpenTelemetryData(String, IEnumerable(Of KeyValuePair(Of String, String)), TimeSpan, IEnumerable(Of KeyValuePair(Of String, String)), String, String, String, String, String, String, String, DateTime)
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.#ctor*
+  name: OpenTelemetryData
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData__ctor_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.OpenTelemetryData
+  nameWithType: OpenTelemetryData.OpenTelemetryData
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ActivityId
+  name: ActivityId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_ActivityId
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ActivityId
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ActivityId
+  nameWithType: OpenTelemetryData.ActivityId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ActivityId*
+  name: ActivityId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_ActivityId_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ActivityId
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ActivityId
+  nameWithType: OpenTelemetryData.ActivityId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Baggage
+  name: Baggage
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_Baggage
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Baggage
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Baggage
+  nameWithType: OpenTelemetryData.Baggage
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Baggage*
+  name: Baggage
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_Baggage_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Baggage
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Baggage
+  nameWithType: OpenTelemetryData.Baggage
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.DisplayName
+  name: DisplayName
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_DisplayName
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.DisplayName
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.DisplayName
+  nameWithType: OpenTelemetryData.DisplayName
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.DisplayName*
+  name: DisplayName
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_DisplayName_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.DisplayName
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.DisplayName
+  nameWithType: OpenTelemetryData.DisplayName
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Duration
+  name: Duration
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_Duration
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Duration
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Duration
+  nameWithType: OpenTelemetryData.Duration
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Duration*
+  name: Duration
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_Duration_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Duration
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Duration
+  nameWithType: OpenTelemetryData.Duration
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentId
+  name: ParentId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_ParentId
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentId
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentId
+  nameWithType: OpenTelemetryData.ParentId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentId*
+  name: ParentId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_ParentId_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentId
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentId
+  nameWithType: OpenTelemetryData.ParentId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentSpanId
+  name: ParentSpanId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_ParentSpanId
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentSpanId
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentSpanId
+  nameWithType: OpenTelemetryData.ParentSpanId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentSpanId*
+  name: ParentSpanId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_ParentSpanId_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentSpanId
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.ParentSpanId
+  nameWithType: OpenTelemetryData.ParentSpanId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.RootId
+  name: RootId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_RootId
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.RootId
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.RootId
+  nameWithType: OpenTelemetryData.RootId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.RootId*
+  name: RootId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_RootId_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.RootId
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.RootId
+  nameWithType: OpenTelemetryData.RootId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SourceName
+  name: SourceName
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_SourceName
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SourceName
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SourceName
+  nameWithType: OpenTelemetryData.SourceName
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SourceName*
+  name: SourceName
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_SourceName_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SourceName
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SourceName
+  nameWithType: OpenTelemetryData.SourceName
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SpanId
+  name: SpanId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_SpanId
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SpanId
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SpanId
+  nameWithType: OpenTelemetryData.SpanId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SpanId*
+  name: SpanId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_SpanId_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SpanId
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.SpanId
+  nameWithType: OpenTelemetryData.SpanId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.StartTime
+  name: StartTime
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_StartTime
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.StartTime
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.StartTime
+  nameWithType: OpenTelemetryData.StartTime
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.StartTime*
+  name: StartTime
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_StartTime_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.StartTime
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.StartTime
+  nameWithType: OpenTelemetryData.StartTime
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Tags
+  name: Tags
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_Tags
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Tags
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Tags
+  nameWithType: OpenTelemetryData.Tags
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Tags*
+  name: Tags
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_Tags_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Tags
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.Tags
+  nameWithType: OpenTelemetryData.Tags
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.TraceId
+  name: TraceId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_TraceId
+  commentId: P:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.TraceId
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.TraceId
+  nameWithType: OpenTelemetryData.TraceId
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.TraceId*
+  name: TraceId
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData_TraceId_
+  commentId: Overload:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.TraceId
+  isSpec: "True"
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.TraceId
+  nameWithType: OpenTelemetryData.TraceId
 - uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping
   name: OpenTelemetryDataModelMapping
   href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.html
@@ -13255,13 +14399,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.CollectionName
   nameWithType: OpenTelemetryDataModelMapping.CollectionName
-- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{OpenTelemetryData})
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData})
   name: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<OpenTelemetryData>)
-  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryDataModelMapping_InitializeIndexesAsync_IClientSessionHandle_IMongoCollection_OpenTelemetryData__
-  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{OpenTelemetryData})
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryDataModelMapping_InitializeIndexesAsync_IClientSessionHandle_IMongoCollection_ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData__
+  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData})
   name.vb: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of OpenTelemetryData))
-  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<OpenTelemetryData>)
-  fullName.vb: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of OpenTelemetryData))
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData>)
+  fullName.vb: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData))
   nameWithType: OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<OpenTelemetryData>)
   nameWithType.vb: OpenTelemetryDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of OpenTelemetryData))
 - uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync*
