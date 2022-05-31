@@ -298,9 +298,9 @@ public class RequestProcessor : IDisposable
       var rp = requestProcessors.GetOrAdd(reply.RequestId,
                                           _ =>
                                           {
-                                            logger_.LogDebug("Received new Reply of type {ReplyType} with Id {RequestId}",
-                                                             reply.TypeCase,
-                                                             reply.RequestId);
+                                            logger_.LogInformation("Received new Reply of type {ReplyType} with Id {RequestId}",
+                                                                   reply.TypeCase,
+                                                                   reply.RequestId);
                                             return reply.TypeCase switch
                                                    {
                                                      ProcessReply.TypeOneofCase.Result => new
