@@ -225,7 +225,7 @@ public class RequestProcessorTest
                                           PodId,
                                           new[]
                                           {
-                                            ParentTaskId
+                                            ParentTaskId,
                                           },
                                           new[]
                                           {
@@ -316,6 +316,16 @@ public class RequestProcessorTest
                                                           Status = TaskStatus.Completed,
                                                         },
                                              },
+                                           },
+                                           new ProcessRequest
+                                           {
+                                             Compute = new ProcessRequest.Types.ComputeRequest
+                                                       {
+                                                         InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
+                                                                    {
+                                                                      LastData = true,
+                                                                    },
+                                                       },
                                            });
     outputReplyData.SetArgDisplayNames("OutputReply");
     yield return outputReplyData;
@@ -329,7 +339,7 @@ public class RequestProcessorTest
                                                           Init = new InitKeyedDataStream
                                                                  {
                                                                    Key = Output1,
-                                                                 }
+                                                                 },
                                                         },
                                              },
                                              new()
@@ -370,6 +380,16 @@ public class RequestProcessorTest
                                                           Status = TaskStatus.Completed,
                                                         },
                                              },
+                                           },
+                                           new ProcessRequest
+                                           {
+                                             Compute = new ProcessRequest.Types.ComputeRequest
+                                                       {
+                                                         InitData = new ProcessRequest.Types.ComputeRequest.Types.InitData
+                                                                    {
+                                                                      LastData = true,
+                                                                    },
+                                                       },
                                            });
     resultReplyData.SetArgDisplayNames("ResultReply");
     yield return resultReplyData;
@@ -448,6 +468,16 @@ public class RequestProcessorTest
                                                            Status = TaskStatus.Completed,
                                                          },
                                               },
+                                            },
+                                            new ProcessRequest
+                                            {
+                                              CreateTask = new ProcessRequest.Types.CreateTask
+                                                           {
+                                                             Reply = new CreateTaskReply
+                                                                     {
+                                                                       Successfull = new Empty(),
+                                                                     },
+                                                           },
                                             });
 
     largeRequestData.SetArgDisplayNames("CreateLargeTaskRequest");
@@ -455,8 +485,11 @@ public class RequestProcessorTest
   }
 
   [TestCaseSource(nameof(ReplyTestData))]
-  public async Task IntegrationProcessInternalsAsyncTest(List<ProcessReply> computeReplies)
+  public async Task IntegrationProcessInternalsAsyncTest(List<ProcessReply> computeReplies,
+                                                         ProcessRequest request)
   {
+    var tokenSource = new CancellationTokenSource(10000);
+
     var taskData = await taskTable_.ReadTaskAsync(Task1,
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
@@ -466,7 +499,7 @@ public class RequestProcessorTest
                                             loggerFactory_.CreateLogger<DataPrefetcher>());
 
     var requests = await dataPrefetcher.PrefetchDataAsync(taskData,
-                                                          CancellationToken.None)
+                                                          tokenSource.Token)
                                        .ConfigureAwait(false);
 
     Console.WriteLine("Requests:");
@@ -481,13 +514,12 @@ public class RequestProcessorTest
       Console.WriteLine(reps.ToString());
     }
 
+    var cap = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
     mockWorkerStreamHandler_.Setup(s => s.Pipe)
                             .Returns(() =>
                                      {
-                                       var cap = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
                                        cap.Reverse.WriteAsync(computeReplies)
-                                          .Wait();
-                                       cap.Reverse.CompleteAsync();
+                                          .Wait(tokenSource.Token);
                                        return cap;
                                      });
 
@@ -498,27 +530,9 @@ public class RequestProcessorTest
     await Task.WhenAll(processResult)
               .ConfigureAwait(false);
 
-
-    //switch (computeReplies[0]
-    //          .TypeCase)
-    //{
-    //  case ProcessReply.TypeOneofCase.Output:
-    //    Assert.IsEmpty(processResult);
-    //    break;
-    //  case ProcessReply.TypeOneofCase.Result:
-    //    var res = await resultTable_.GetResult(SessionId,
-    //                                           Output1,
-    //                                           CancellationToken.None)
-    //                                .ConfigureAwait(false);
-    //    Assert.AreEqual(ResultStatus.Completed,res.Status);
-    //    break;
-    //  case ProcessReply.TypeOneofCase.CreateSmallTask:
-    //    Assert.IsEmpty(processResult);
-    //    break;
-    //  case ProcessReply.TypeOneofCase.CreateLargeTask:
-    //    Assert.IsEmpty(processResult);
-    //    break;
-    //}
+    Assert.AreEqual(request,
+                    await cap.Reverse.Reader.LastAsync(cancellationToken: tokenSource.Token)
+                             .ConfigureAwait(false));
   }
 
 
