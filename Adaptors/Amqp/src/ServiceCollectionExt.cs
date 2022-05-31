@@ -115,9 +115,7 @@ public static class ServiceCollectionExt
                                  () =>
                                  {
                                    var t = sessionProvider.Get();
-                                   return t.SessionState == SessionState.Opened
-                                            ? HealthCheckResult.Healthy()
-                                            : HealthCheckResult.Unhealthy();
+                                   return t.Check();
                                  });
 
       logger.LogInformation("Amqp configuration complete");
