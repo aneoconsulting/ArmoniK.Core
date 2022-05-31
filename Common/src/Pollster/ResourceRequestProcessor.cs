@@ -47,6 +47,7 @@ public class ResourceRequestProcessor : IProcessReplyProcessor
   private readonly IObjectStorage                           resourcesStorage_;
   private readonly IAsyncPipe<ProcessReply, ProcessRequest> pipe_;
   private readonly ILogger                                  logger_;
+  private          bool                                     isComplete_;
 
   /// <summary>
   /// Initializes the class with its required objects
@@ -61,6 +62,7 @@ public class ResourceRequestProcessor : IProcessReplyProcessor
     resourcesStorage_ = resourcesStorage;
     pipe_             = pipe;
     logger_           = logger;
+    isComplete_       = false;
   }
 
   /// <inheritdoc />
@@ -88,6 +90,7 @@ public class ResourceRequestProcessor : IProcessReplyProcessor
                                           },
                              })
                  .ConfigureAwait(false);
+      isComplete_ = true;
       return;
     }
 
@@ -104,11 +107,13 @@ public class ResourceRequestProcessor : IProcessReplyProcessor
                              })
                  .ConfigureAwait(false);
     }
+
+    isComplete_ = true;
   }
 
   /// <inheritdoc />
   public bool IsComplete()
-    => true;
+    => isComplete_;
 
   /// <inheritdoc />
   public Task WaitForResponseCompletion(CancellationToken cancellationToken)

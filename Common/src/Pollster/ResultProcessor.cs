@@ -135,7 +135,7 @@ internal class ResultProcessor : IProcessReplyProcessor
 
   /// <inheritdoc />
   public bool IsComplete()
-    => completionTask_ != null && fsm_.IsComplete() && completionTask_.IsCompleted;
+    => fsm_.IsComplete();
 
   /// <inheritdoc />
   public async Task WaitForResponseCompletion(CancellationToken cancellationToken)

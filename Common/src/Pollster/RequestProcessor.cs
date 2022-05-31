@@ -271,6 +271,11 @@ public class RequestProcessor : IDisposable
                                  .WhenAll()
                                  .ConfigureAwait(false);
 
+          if (requestProcessors.Values.Any(processor => !processor.IsComplete()))
+          {
+            throw new ArmoniKException("All processors should be complete here");
+          }
+
           await workerStreamHandler_.Pipe.CompleteAsync()
                                     .ConfigureAwait(false);
 
