@@ -263,7 +263,7 @@ public class RequestProcessor : IDisposable
     {
       if (reply.TypeCase == ProcessReply.TypeOneofCase.Output)
       {
-        logger_.LogDebug("Received Task Output");
+        logger_.LogInformation("Received Task Output");
 
         async Task Epilog()
         {
@@ -276,7 +276,7 @@ public class RequestProcessor : IDisposable
 
           if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
           {
-            logger_.LogDebug("Submit subtasks");
+            logger_.LogInformation("Complete processing of the request");
             await requestProcessors.Values.Select(processor => processor.CompleteProcessing(cancellationToken))
                                    .WhenAll()
                                    .ConfigureAwait(false);
@@ -287,10 +287,10 @@ public class RequestProcessor : IDisposable
                                              cancellationToken)
                           .ConfigureAwait(false);
 
-          logger_.LogDebug("End Task Epilog");
+          logger_.LogInformation("End Task Epilog");
         }
 
-        logger_.LogDebug("Start Task Epilog");
+        logger_.LogInformation("Start Task Epilog");
         // no await here because we want the epilog awaited outside of this function to pipeline task processing
         return Epilog();
       }
