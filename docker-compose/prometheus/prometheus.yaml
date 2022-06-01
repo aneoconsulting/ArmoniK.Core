@@ -11,4 +11,4 @@ scrape_configs:
       - targets: [ 'tempo:3200' ]
   - job_name: 'armonik.control.metrics'
     static_configs:
-      - targets: [ 'armonik.control.metrics:80' ]
+      - targets: [ 'armonik.control.metrics:1080' ]

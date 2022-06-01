@@ -57,7 +57,7 @@ internal class StreamWrapperTests
     Dictionary<string, string> baseConfig = new()
                                             {
                                               {
-                                                "Grpc:Endpoint", "http://localhost:5001"
+                                                "GrpcClient:Endpoint", "http://localhost:5001"
                                               },
                                             };
 
