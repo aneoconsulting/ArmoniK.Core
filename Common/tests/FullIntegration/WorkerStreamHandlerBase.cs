@@ -1,4 +1,4 @@
-// This file is part of the ArmoniK project
+﻿// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -25,26 +25,46 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 
-using Grpc.Core;
+namespace ArmoniK.Core.Common.Tests.FullIntegration;
 
-using JetBrains.Annotations;
-
-using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
-
-namespace ArmoniK.Core.Common.Stream.Worker;
-
-[PublicAPI]
-public interface IWorkerStreamHandler : IInitializable, IDisposable
+public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
 {
-  public Queue<ComputeRequest> WorkerReturn();
+  protected readonly List<Task> TaskList;
 
-  public void StartTaskProcessing(TaskData          taskData,
-                                  CancellationToken cancellationToken);
+  protected WorkerStreamHandlerBase()
+  {
+    TaskList         = new List<Task>();
+    ChannelAsyncPipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
+  }
 
-  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => new(true);
+
+  public Task Init(CancellationToken cancellationToken)
+    => Task.CompletedTask;
+
+  public void Dispose()
+  {
+    TaskList.ForEach(task => task.Dispose());
+    GC.SuppressFinalize(this);
+  }
+
+  public Queue<ProcessRequest.Types.ComputeRequest> WorkerReturn()
+    => throw new NotImplementedException();
+
+  public abstract void StartTaskProcessing(TaskData          taskData,
+                                           CancellationToken cancellationToken);
+
+  protected readonly ChannelAsyncPipe<ProcessReply, ProcessRequest> ChannelAsyncPipe;
+
+  public IAsyncPipe<ProcessReply, ProcessRequest> Pipe
+    => ChannelAsyncPipe;
 }

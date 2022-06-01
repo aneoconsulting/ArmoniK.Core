@@ -238,21 +238,23 @@ public class RequestProcessor : IDisposable
 
     workerStreamHandler_.StartTaskProcessing(taskData,
                                              cancellationToken);
+    if (workerStreamHandler_.Pipe is null)
+    {
+      throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
+    }
 
     var resultStorage = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
 
-    workerStreamHandler_.WorkerRequestStream!.WriteOptions = new WriteOptions(WriteFlags.NoCompress);
     {
       using var activity2 = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.SendComputeRequests");
       // send the compute requests
       while (computeRequests.TryDequeue(out var computeRequest))
       {
         activity?.AddEvent(new ActivityEvent(computeRequest.TypeCase.ToString()));
-        await workerStreamHandler_.WorkerRequestStream.WriteAsync(new ProcessRequest
-                                                                  {
-                                                                    Compute = computeRequest,
-                                                                  },
-                                                                  CancellationToken.None)
+        await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                   {
+                                                     Compute = computeRequest,
+                                                   })
                                   .ConfigureAwait(false);
       }
     }
@@ -264,9 +266,9 @@ public class RequestProcessor : IDisposable
     activity?.AddEvent(new ActivityEvent("Processing ResponseStream"));
     // process incoming messages
     // TODO : To reduce memory consumption, do not generate subStream. Implement a state machine instead.
-    await foreach (var singleReplyStream in workerStreamHandler_.WorkerResponseStream!.Separate(logger_,
-                                                                                               cancellationToken)
-                                                                .ConfigureAwait(false))
+    await foreach (var singleReplyStream in workerStreamHandler_.Pipe.Reader.Separate(logger_,
+                                                                                       cancellationToken)
+                                                                             .ConfigureAwait(false))
     {
       var       first     = singleReplyStream.First();
       using var activity2 = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.ProcessReply");
@@ -316,15 +318,14 @@ public class RequestProcessor : IDisposable
                                                                  first,
                                                                  cancellationToken)
                                        .ConfigureAwait(false);
-          await workerStreamHandler_.WorkerRequestStream.WriteAsync(new ProcessRequest
+          await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
                                                                     {
                                                                       CreateTask = new ProcessRequest.Types.CreateTask
                                                                                    {
                                                                                      Reply   = replySmallTasksAsync,
                                                                                      ReplyId = first.RequestId,
                                                                                    },
-                                                                    },
-                                                                    CancellationToken.None)
+                                                                    })
                                     .ConfigureAwait(false);
           break;
         case ProcessReply.TypeOneofCase.CreateLargeTask:
@@ -333,30 +334,29 @@ public class RequestProcessor : IDisposable
                                                                  singleReplyStream,
                                                                  cancellationToken)
                                        .ConfigureAwait(false);
-          await workerStreamHandler_.WorkerRequestStream.WriteAsync(new ProcessRequest
+          await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                     {
+                                                       CreateTask = new ProcessRequest.Types.CreateTask
                                                                     {
-                                                                      CreateTask = new ProcessRequest.Types.CreateTask
-                                                                                   {
-                                                                                     Reply   = replyLargeTasksAsync,
-                                                                                     ReplyId = first.RequestId,
-                                                                                   },
+                                                                      Reply   = replyLargeTasksAsync,
+                                                                      ReplyId = first.RequestId,
                                                                     },
-                                                                    CancellationToken.None)
+                                                     })
                                     .ConfigureAwait(false);
           break;
         case ProcessReply.TypeOneofCase.Resource:
-          await ProvideResourcesAsync(workerStreamHandler_.WorkerRequestStream,
+          await ProvideResourcesAsync(workerStreamHandler_.Pipe,
                                       first,
                                       cancellationToken)
             .ConfigureAwait(false);
           break;
         case ProcessReply.TypeOneofCase.CommonData:
-          await ProvideCommonDataAsync(workerStreamHandler_.WorkerRequestStream,
+          await ProvideCommonDataAsync(workerStreamHandler_.Pipe,
                                        first)
             .ConfigureAwait(false);
           break;
         case ProcessReply.TypeOneofCase.DirectData:
-          await ProvideDirectDataAsync(workerStreamHandler_.WorkerRequestStream,
+          await ProvideDirectDataAsync(workerStreamHandler_.Pipe,
                                        first)
             .ConfigureAwait(false);
           break;
@@ -368,10 +368,10 @@ public class RequestProcessor : IDisposable
 
     using (var _ = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.CloseStreams"))
     {
-      await workerStreamHandler_.WorkerRequestStream.CompleteAsync()
+      await workerStreamHandler_.Pipe.CompleteAsync()
                                 .ConfigureAwait(false);
-      await workerStreamHandler_.WorkerResponseStream!.MoveNext()
-                                .ConfigureAwait(false);
+      //await workerStreamHandler_.Pipe!.MoveNext()
+      //                          .ConfigureAwait(false);
     }
 
     if (!isComplete)
@@ -383,9 +383,9 @@ public class RequestProcessor : IDisposable
   }
 
 
-  private async Task ProvideResourcesAsync(IAsyncStreamWriter<ProcessRequest> requestStream,
-                                           ProcessReply                       processReply,
-                                           CancellationToken                  cancellationToken)
+  private async Task ProvideResourcesAsync(IAsyncPipe<ProcessReply, ProcessRequest> requestStream,
+                                           ProcessReply                             processReply,
+                                           CancellationToken                        cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ProvideResourcesAsync)}");
     var bytes = resourcesStorage_.GetValuesAsync(processReply.Resource.Key,
@@ -400,14 +400,14 @@ public class RequestProcessor : IDisposable
       await requestStream.WriteAsync(new ProcessRequest
                                      {
                                        Resource = dataReply,
-                                     }, CancellationToken.None)
+                                     })
                          .ConfigureAwait(false);
     }
   }
 
   [PublicAPI]
-  public Task ProvideDirectDataAsync(IAsyncStreamWriter<ProcessRequest> streamRequestStream,
-                                     ProcessReply                       reply)
+  public Task ProvideDirectDataAsync(IAsyncPipe<ProcessReply, ProcessRequest> streamRequestStream,
+                                     ProcessReply                             reply)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ProvideDirectDataAsync)}");
     return streamRequestStream.WriteAsync(new ProcessRequest
@@ -425,8 +425,8 @@ public class RequestProcessor : IDisposable
   }
 
   [PublicAPI]
-  public Task ProvideCommonDataAsync(IAsyncStreamWriter<ProcessRequest> streamRequestStream,
-                                     ProcessReply                       reply)
+  public Task ProvideCommonDataAsync(IAsyncPipe<ProcessReply, ProcessRequest> streamRequestStream,
+                                     ProcessReply                             reply)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ProvideCommonDataAsync)}");
     return streamRequestStream.WriteAsync(new ProcessRequest

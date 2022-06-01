@@ -122,7 +122,7 @@ public static class WorkerClientExtensions
   }
 
 
-  public static async IAsyncEnumerable<IList<ProcessReply>> Separate(this IAsyncStreamReader<ProcessReply>      stream,
+  public static async IAsyncEnumerable<IList<ProcessReply>> Separate(this IAsyncEnumerable<ProcessReply>      stream,
                                                                      ILogger                                    logger,
                                                                      [EnumeratorCancellation] CancellationToken cancellationToken)
   {
@@ -134,9 +134,7 @@ public static class WorkerClientExtensions
     var isLargeTaskPayloadFinished = true;
 
 
-    await foreach (var reply in stream.ReadAllAsync(cancellationToken)
-                                      .WithCancellation(cancellationToken)
-                                      .ConfigureAwait(false))
+    await foreach (var reply in stream.WithCancellation(cancellationToken).ConfigureAwait(false))
     {
       void InitNewStream(bool singleStream)
       {

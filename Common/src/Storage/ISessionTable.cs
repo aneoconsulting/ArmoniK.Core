@@ -26,6 +26,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -51,5 +53,6 @@ public interface ISessionTable : IInitializable
   Task DeleteSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
 
-  IAsyncEnumerable<string> ListSessionsAsync(CancellationToken cancellationToken = default);
+  IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     request,
+                                             CancellationToken cancellationToken = default);
 }

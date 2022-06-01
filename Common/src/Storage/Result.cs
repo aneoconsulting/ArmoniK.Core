@@ -24,6 +24,8 @@
 
 using System;
 
+using ArmoniK.Api.gRPC.V1;
+
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
@@ -34,9 +36,9 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="Status">Status of the result (can be Created, Completed or Aborted)</param>
 /// <param name="CreationDate">Date of creation of the current object.</param>
 /// <param name="Data">Data for the current <paramref name="Name" /></param>
-public record Result(string   SessionId,
-                     string   Name,
-                     string   OwnerTaskId,
-                     string   Status,
-                     DateTime CreationDate,
-                     byte[]   Data);
+public record Result(string       SessionId,
+                     string       Name,
+                     string       OwnerTaskId,
+                     ResultStatus Status,
+                     DateTime     CreationDate,
+                     byte[]       Data);

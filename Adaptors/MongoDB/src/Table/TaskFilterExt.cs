@@ -53,10 +53,10 @@ public static class TaskFilterExt
         if (filter.Session.Ids is not null)
         {
           output = Expression.And(output,
-                                  ExpressionsBuilders.FieldFilterInternal(model => model.SessionId,
-                                                                          filter.Session.Ids,
-                                                                          true,
-                                                                          x));
+                                  ExpressionsBuilders.FieldFilterInternal<TaskData, string>(model => model.SessionId,
+                                                                                            filter.Session.Ids,
+                                                                                            true,
+                                                                                            x));
         }
 
         break;
@@ -66,16 +66,15 @@ public static class TaskFilterExt
         if (filter.Task.Ids is not null)
         {
           output = Expression.And(output,
-                                  ExpressionsBuilders.FieldFilterInternal(model => model.TaskId,
-                                                                          filter.Task.Ids,
-                                                                          true,
-                                                                          x));
+                                  ExpressionsBuilders.FieldFilterInternal<TaskData, string>(model => model.TaskId,
+                                                                                                filter.Task.Ids,
+                                                                                                true,
+                                                                                                x));
         }
 
         break;
       }
 
-      case TaskFilter.IdsOneofCase.Dispatch:
       case TaskFilter.IdsOneofCase.None:
       default:
         throw new ArgumentException("IdsCase must be either Task or Session",
@@ -89,10 +88,10 @@ public static class TaskFilterExt
         if (filter.Included.Statuses is not null)
         {
           output = Expression.And(output,
-                                 ExpressionsBuilders.FieldFilterInternal(model => model.Status,
-                                                                         filter.Included.Statuses,
-                                                                         true,
-                                                                         x));
+                                 ExpressionsBuilders.FieldFilterInternal<TaskData, TaskStatus>(model => model.Status,
+                                                                                               filter.Included.Statuses,
+                                                                                               true,
+                                                                                               x));
         }
 
         break;
@@ -102,7 +101,7 @@ public static class TaskFilterExt
         if (filter.Excluded.Statuses is not null)
         {
           output = Expression.And(output,
-                                 ExpressionsBuilders.FieldFilterInternal(model => model.Status,
+                                 ExpressionsBuilders.FieldFilterInternal<TaskData, TaskStatus>(model => model.Status,
                                                                          filter.Excluded.Statuses,
                                                                          false,
                                                                          x));

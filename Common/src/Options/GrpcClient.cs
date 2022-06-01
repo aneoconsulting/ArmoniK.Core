@@ -22,12 +22,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
+using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Adapters.Memory;
+namespace ArmoniK.Core.Common.Options;
 
-public record SessionData(string        SessionId,
-                          SessionStatus Status,
-                          TaskOptions   Options) : Common.Storage.SessionData(SessionId,
-                                                                              Status,
-                                                                              Options);
+[PublicAPI]
+public class GrpcClient
+{
+  public const string SettingSection = nameof(GrpcClient);
+  public       string?  Endpoint      { get; set; }
+  public       bool    SslValidation { get; set; }
+  public       string? CertPem       { get; set; }
+  public       string? KeyPem { get; set; }
+}

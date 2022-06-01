@@ -132,27 +132,15 @@ public class Submitter : ISubmitter
       cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    try
-    {
-      var sessionCancelTask = sessionTable_.CancelSessionAsync(sessionId,
-                                                               cancellationToken);
+    var sessionCancelTask = sessionTable_.CancelSessionAsync(sessionId,
+                                                             cancellationToken);
 
-      await taskTable_.CancelSessionAsync(sessionId,
-                                          cancellationToken)
-                      .ConfigureAwait(false);
+    await taskTable_.CancelSessionAsync(sessionId,
+                                        cancellationToken)
+                    .ConfigureAwait(false);
 
-      await sessionCancelTask.ConfigureAwait(false);
-    }
-    catch (TaskNotFoundException e)
-    {
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        e.Message));
-    }
-    catch (Exception e)
-    {
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        e.Message));
-    }
+    await sessionCancelTask.ConfigureAwait(false);
+
   }
 
   /// <inheritdoc />
@@ -167,22 +155,9 @@ public class Submitter : ISubmitter
       cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    try
-    {
-      await taskTable_.CancelTasks(request,
-                                   cancellationToken)
-                      .ConfigureAwait(false);
-    }
-    catch (TaskNotFoundException e)
-    {
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        e.Message));
-    }
-    catch (Exception e)
-    {
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        e.Message));
-    }
+    await taskTable_.CancelTasks(request,
+                                 cancellationToken)
+                    .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -568,7 +543,7 @@ public class Submitter : ISubmitter
                        result.OwnerTaskId);
       if (ownerId != result.OwnerTaskId)
       {
-        continueWaiting = result.Status != "Completed";
+        continueWaiting = result.Status != ResultStatus.Completed;
         if (continueWaiting)
         {
           await Task.Delay(150,
@@ -612,6 +587,19 @@ public class Submitter : ISubmitter
                                                             contextCancellationToken)
                                             .ToListAsync(contextCancellationToken)
                                             .ConfigureAwait(false));
+    return idList;
+  }
+
+  /// <inheritdoc />
+  public async Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
+                                               CancellationToken contextCancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
+    var       idList   = new SessionIdList();
+    idList.SessionIds.AddRange(await sessionTable_.ListSessionsAsync(request,
+                                                                     contextCancellationToken)
+                                                  .ToListAsync(contextCancellationToken)
+                                                  .ConfigureAwait(false));
     return idList;
   }
 
@@ -709,7 +697,7 @@ public class Submitter : ISubmitter
                                                                     .Select(key => new Result(session,
                                                                                               key,
                                                                                               request.Id,
-                                                                                              "Created",
+                                                                                              ResultStatus.Created,
                                                                                               DateTime.UtcNow,
                                                                                               Array.Empty<byte>()));
                                            return (TaskDataModel: tdm, ResultModel: resultModel);

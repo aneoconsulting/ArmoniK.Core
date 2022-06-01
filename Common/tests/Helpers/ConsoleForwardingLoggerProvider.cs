@@ -22,13 +22,31 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using System;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.Options;
+using Microsoft.Extensions.Logging;
 
-[PublicAPI]
-public class Grpc
+namespace ArmoniK.Core.Common.Tests.Helpers;
+
+internal class ConsoleForwardingLoggerProvider : ILoggerProvider
 {
-  public const string SettingSection = nameof(Grpc);
-  public       string Endpoint { get; set; }
+  private readonly ForwardingLoggerProvider provider_;
+
+  public ConsoleForwardingLoggerProvider()
+  {
+    provider_ = new ForwardingLoggerProvider((logLevel,
+                                              category,
+                                              _,
+                                              message,
+                                              exception) =>
+                                             {
+                                               Console.WriteLine(logLevel + " => " + category + "\n" + message + "\n" + exception);
+                                             });
+  }
+
+  public void Dispose()
+    => provider_.Dispose();
+
+  public ILogger CreateLogger(string categoryName)
+    => provider_.CreateLogger(categoryName);
 }

@@ -246,7 +246,7 @@ public class RequestProcessorTest
                          new Result(SessionId,
                                     Output1,
                                     Task1,
-                                    "Created",
+                                    ResultStatus.Created,
                                     DateTime.Today,
                                     new[]
                                     {
@@ -255,7 +255,7 @@ public class RequestProcessorTest
                          new Result(SessionId,
                                     Output2,
                                     Task2,
-                                    "Created",
+                                    ResultStatus.Created,
                                     DateTime.Today,
                                     new[]
                                     {
@@ -512,11 +512,14 @@ public class RequestProcessorTest
       Console.WriteLine(reps.ToString());
     }
 
-    mockWorkerStreamHandler_.Setup(s => s.WorkerResponseStream)
-                            .Returns(() => new TestHelperAsyncStreamReader<ProcessReply>(computeReplies));
-
-    mockWorkerStreamHandler_.Setup(s => s.WorkerRequestStream)
-                            .Returns(() => new TestHelperClientStreamWriter<ProcessRequest>());
+    mockWorkerStreamHandler_.Setup(s => s.Pipe)
+                            .Returns(() =>
+                                     {
+                                       var cap = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
+                                       cap.Reverse.WriteAsync(computeReplies)
+                                          .Wait();
+                                       return cap;
+                                     });
 
     var processResult = await requestProcessor_.ProcessInternalsAsync(taskData,
                                                                       requests,
@@ -537,7 +540,7 @@ public class RequestProcessorTest
                                                Output1,
                                                CancellationToken.None)
                                     .ConfigureAwait(false);
-        Assert.AreEqual("Completed",res.Status);
+        Assert.AreEqual(ResultStatus.Completed,res.Status);
         break;
       case ProcessReply.TypeOneofCase.CreateSmallTask:
         Assert.IsEmpty(processResult);
@@ -618,11 +621,14 @@ public class RequestProcessorTest
       Console.WriteLine(reps.ToString());
     }
 
-    mockWorkerStreamHandler_.Setup(s => s.WorkerResponseStream)
-                            .Returns(() => new TestHelperAsyncStreamReader<ProcessReply>(computeReplies));
-
-    mockWorkerStreamHandler_.Setup(s => s.WorkerRequestStream)
-                            .Returns(() => new TestHelperClientStreamWriter<ProcessRequest>());
+    mockWorkerStreamHandler_.Setup(s => s.Pipe)
+                            .Returns(() =>
+                                     {
+                                       var cap = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
+                                       cap.Reverse.WriteAsync(computeReplies)
+                                          .Wait();
+                                       return cap;
+                                     });
 
     Assert.ThrowsAsync<NotImplementedException>(async () =>
                                                   {
@@ -649,11 +655,8 @@ public class RequestProcessorTest
                                        .ConfigureAwait(false);
 
 
-    mockWorkerStreamHandler_.Setup(s => s.WorkerResponseStream)
+    mockWorkerStreamHandler_.Setup(s => s.Pipe)
                             .Throws(() => new ArmoniKException());
-
-    mockWorkerStreamHandler_.Setup(s => s.WorkerRequestStream)
-                            .Returns(() => new TestHelperClientStreamWriter<ProcessRequest>());
 
     Assert.ThrowsAsync<ArmoniKException>(async () =>
     {
@@ -690,18 +693,21 @@ public class RequestProcessorTest
                            },
                          };
 
-    mockWorkerStreamHandler_.Setup(s => s.WorkerResponseStream)
-                            .Returns(() => new TestHelperAsyncStreamReader<ProcessReply>(computeReplies));
+    mockWorkerStreamHandler_.Setup(s => s.Pipe)
+                            .Returns(() =>
+                                     {
+                                       var cap = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
+                                       cap.Reverse.WriteAsync(computeReplies)
+                                          .Wait();
+                                       return cap;
+                                     });
 
-    mockWorkerStreamHandler_.Setup(s => s.WorkerRequestStream)
-                            .Throws(() => new ArmoniKException());
-
-    Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                         {
-                                           await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                                                         requests,
-                                                                                         CancellationToken.None)
-                                                                  .ConfigureAwait(false);
-                                         });
+    Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                                                  {
+                                                    await requestProcessor_.ProcessInternalsAsync(taskData,
+                                                                                                  requests,
+                                                                                                  CancellationToken.None)
+                                                                           .ConfigureAwait(false);
+                                                  });
   }
 }

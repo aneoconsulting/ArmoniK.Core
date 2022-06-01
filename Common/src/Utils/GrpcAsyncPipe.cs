@@ -22,12 +22,44 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 using ArmoniK.Api.gRPC.V1;
 
-namespace ArmoniK.Core.Adapters.Memory;
+using Grpc.Core;
 
-public record SessionData(string        SessionId,
-                          SessionStatus Status,
-                          TaskOptions   Options) : Common.Storage.SessionData(SessionId,
-                                                                              Status,
-                                                                              Options);
+namespace ArmoniK.Core.Common.Utils;
+
+class GrpcAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMessage, TWriteMessage>
+{
+  private readonly IAsyncStreamReader<TReadMessage>  reader_;
+  private readonly IClientStreamWriter<TWriteMessage> writer_;
+
+  public GrpcAsyncPipe(IAsyncStreamReader<TReadMessage>  reader,
+                       IClientStreamWriter<TWriteMessage> writer)
+  {
+    reader_ = reader;
+    writer_ = writer;
+    writer_.WriteOptions = new WriteOptions(WriteFlags.NoCompress);
+  }
+
+  public IAsyncEnumerable<TReadMessage> Reader
+    => reader_.ReadAllAsync();
+
+  public Task WriteAsync(TWriteMessage message)
+    => writer_.WriteAsync(message);
+
+  public async Task WriteAsync(IEnumerable<TWriteMessage> message)
+  {
+    foreach (var writeMessage in message)
+    {
+      await writer_.WriteAsync(writeMessage)
+                   .ConfigureAwait(false);
+    }
+  }
+
+  public Task CompleteAsync()
+    => writer_.CompleteAsync();
+}

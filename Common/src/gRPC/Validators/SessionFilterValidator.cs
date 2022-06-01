@@ -24,10 +24,33 @@
 
 using ArmoniK.Api.gRPC.V1;
 
-namespace ArmoniK.Core.Adapters.Memory;
+using FluentValidation;
 
-public record SessionData(string        SessionId,
-                          SessionStatus Status,
-                          TaskOptions   Options) : Common.Storage.SessionData(SessionId,
-                                                                              Status,
-                                                                              Options);
+using JetBrains.Annotations;
+
+namespace ArmoniK.Core.Common.gRPC.Validators;
+
+[UsedImplicitly]
+public class SessionFilterValidator : AbstractValidator<SessionFilter>
+{
+  public SessionFilterValidator()
+  {
+    RuleFor(filter => filter.Included)
+      .NotNull()
+      .NotEmpty()
+      .When(filter => filter.StatusesCase == SessionFilter.StatusesOneofCase.Included);
+    RuleFor(filter => filter.Excluded)
+      .Null()
+      .Empty()
+      .When(filter => filter.StatusesCase == SessionFilter.StatusesOneofCase.Included);
+
+    RuleFor(filter => filter.Excluded)
+      .NotNull()
+      .NotEmpty()
+      .When(filter => filter.StatusesCase == SessionFilter.StatusesOneofCase.Excluded);
+    RuleFor(filter => filter.Included)
+      .Null()
+      .Empty()
+      .When(filter => filter.StatusesCase == SessionFilter.StatusesOneofCase.Excluded);
+  }
+}

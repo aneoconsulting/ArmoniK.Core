@@ -25,9 +25,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 
 using Grpc.Core;
@@ -42,19 +40,20 @@ using GrpcChannel = ArmoniK.Core.Common.Injection.Options.GrpcChannel;
 namespace ArmoniK.Core.Common.gRPC;
 
 [UsedImplicitly]
-public class GrpcChannelProvider : ProviderBase<ChannelBase>
+public class GrpcChannelProvider
 {
-  private readonly bool isInitialized_;
+  private readonly GrpcChannel                  options_;
+  private readonly ILogger<GrpcChannelProvider> logger_;
+  private readonly string                       address_;
 
   // ReSharper disable once SuggestBaseTypeForParameterInConstructor
   public GrpcChannelProvider(GrpcChannel                  options,
                              ILogger<GrpcChannelProvider> logger)
-    : base(options.SocketType == GrpcSocketType.Web
-             ? () => Task.FromResult(BuildWebGrpcChannel(options.Address ?? throw new InvalidOperationException(),
-                                                         logger))
-             : () => Task.FromResult(BuildUnixSocketGrpcChannel(options.Address ?? throw new InvalidOperationException(),
-                                                                logger)))
-    => isInitialized_ = true;
+  {
+    options_       = options;
+    logger_        = logger;
+    address_       = options_.Address ?? throw new InvalidOperationException();
+  }
 
   private static ChannelBase BuildWebGrpcChannel(string  address,
                                                  ILogger logger)
@@ -72,7 +71,7 @@ public class GrpcChannelProvider : ProviderBase<ChannelBase>
 
     var socketsHttpHandler = new SocketsHttpHandler
                              {
-                               ConnectCallback = async (unknown,
+                               ConnectCallback = async (_,
                                                         cancellationToken) =>
                                                  {
                                                    var socket = new Socket(AddressFamily.Unix,
@@ -102,6 +101,18 @@ public class GrpcChannelProvider : ProviderBase<ChannelBase>
                                                   });
   }
 
-  public override ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+  public ChannelBase Get()
+  {
+    switch (options_.SocketType)
+    {
+      case GrpcSocketType.Web:
+        return BuildWebGrpcChannel(address_,
+                                   logger_);
+      case GrpcSocketType.UnixSocket:
+        return BuildUnixSocketGrpcChannel(address_,
+                                          logger_);
+      default:
+        throw new InvalidOperationException();
+    }
+  }
 }

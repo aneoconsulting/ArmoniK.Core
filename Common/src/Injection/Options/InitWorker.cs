@@ -22,12 +22,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
+using System;
 
-namespace ArmoniK.Core.Adapters.Memory;
+namespace ArmoniK.Core.Common.Injection.Options;
 
-public record SessionData(string        SessionId,
-                          SessionStatus Status,
-                          TaskOptions   Options) : Common.Storage.SessionData(SessionId,
-                                                                              Status,
-                                                                              Options);
+public class InitWorker
+{
+  public const string SettingSection = nameof(InitWorker);
+
+  public int      WorkerCheckRetries { get; set; } = 10;
+  public TimeSpan WorkerCheckDelay   { get; set; } = TimeSpan.FromSeconds(30);
+}

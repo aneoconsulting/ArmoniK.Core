@@ -94,6 +94,10 @@ public class Pollster
                               .ConfigureAwait(false);
     await workerStreamHandler_.Init(cancellationToken)
                               .ConfigureAwait(false);
+    await objectStorageFactory_.Init(cancellationToken)
+                               .ConfigureAwait(false);
+    await resultTable_.Init(cancellationToken)
+                      .ConfigureAwait(false);
   }
 
   public async Task MainLoop(CancellationToken cancellationToken)

@@ -27,9 +27,9 @@
 
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="6.0.2" />
-    <PackageReference Include="MongoDB.Driver" Version="2.15.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.15.1" />
     <PackageReference Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" Version="1.1.0" />
-    <PackageReference Include="OpenTelemetry" Version="1.2.0-rc4" />
+    <PackageReference Include="OpenTelemetry" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -29,60 +29,46 @@ using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests;
 
-[TestFixture(TestOf = typeof(TaskFilterValidator))]
-public class TaskFilterValidatorTest
+[TestFixture(TestOf = typeof(SessionFilterValidator))]
+public class SessionFilterValidatorTest
 {
-  private readonly TaskFilterValidator validator_ = new();
+  private readonly SessionFilterValidator validator_ = new();
 
   [Test]
   public void MultipleExcludedStatusesShouldBeValid()
   {
-    var tf = new TaskFilter
+    var sf = new SessionFilter
              {
-               Excluded = new TaskFilter.Types.StatusesRequest
+               Excluded = new SessionFilter.Types.StatusesRequest
                           {
                             Statuses =
                             {
-                              TaskStatus.Completed,
-                              TaskStatus.Canceled,
+                              SessionStatus.Canceled,
+                              SessionStatus.Running,
                             },
                           },
-               Session = new TaskFilter.Types.IdsRequest
-                         {
-                           Ids =
-                           {
-                             "SessionId",
-                           },
-                         },
              };
 
-    Assert.IsTrue(validator_.Validate(tf)
+    Assert.IsTrue(validator_.Validate(sf)
                             .IsValid);
   }
 
   [Test]
   public void MultipleIncludedStatusesShouldBeValid()
   {
-    var tf = new TaskFilter
+    var sf = new SessionFilter
              {
-               Included = new TaskFilter.Types.StatusesRequest
+               Included = new SessionFilter.Types.StatusesRequest
                           {
                             Statuses =
                             {
-                              TaskStatus.Completed,
-                              TaskStatus.Canceled,
+                              SessionStatus.Canceled,
+                              SessionStatus.Running,
                             },
                           },
-               Session = new TaskFilter.Types.IdsRequest
-                         {
-                           Ids =
-                           {
-                             "SessionId",
-                           },
-                         },
              };
 
-    Assert.IsTrue(validator_.Validate(tf)
+    Assert.IsTrue(validator_.Validate(sf)
                             .IsValid);
   }
 }

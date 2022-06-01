@@ -22,13 +22,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace ArmoniK.Samples.HtcMock.Client.Options;
+namespace ArmoniK.Core.Common.Utils;
 
-[PublicAPI]
-public class Grpc
+public interface IAsyncPipe<out TReadMessage, in TWriteMessage>
 {
-  public const string SettingSection = nameof(Grpc);
-  public       string Endpoint { get; set; }
+  IAsyncEnumerable<TReadMessage> Reader { get; }
+
+  Task WriteAsync(TWriteMessage message);
+
+  Task WriteAsync(IEnumerable<TWriteMessage> message);
+
+  Task CompleteAsync();
 }

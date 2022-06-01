@@ -49,14 +49,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
   public GrpcSubmitterServiceHelper(ISubmitter submitter)
   {
     loggerFactory_ = new LoggerFactory();
-    loggerFactory_.AddProvider(new ForwardingLoggerProvider((logLevel,
-                                                             category,
-                                                             _,
-                                                             message,
-                                                             exception) =>
-                                                            {
-                                                              Console.WriteLine(logLevel + " => " + category + "\n" + message + "\n" + exception);
-                                                            }));
+    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
 
     var builder = WebApplication.CreateBuilder();
 

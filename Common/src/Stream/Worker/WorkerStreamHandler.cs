@@ -30,9 +30,13 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
+
+using Microsoft.Extensions.Logging;
 
 using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
 using WorkerClient = ArmoniK.Api.gRPC.V1.Worker.WorkerClient;
@@ -41,55 +45,95 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
-  private readonly WorkerClient                                            workerClient_;
-  private          bool                                                    isInitialized_;
+  private readonly GrpcChannelProvider          channelProvider_;
+  private readonly InitWorker                   optionsInitWorker_;
+  private readonly ILogger<WorkerStreamHandler> logger_;
+  private          WorkerClient?                workerClient_;
+  private          bool                         isInitialized_;
 
-  public WorkerStreamHandler(GrpcChannelProvider channelProvider)
+  public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
+                             InitWorker                   optionsInitWorker,
+                             ILogger<WorkerStreamHandler> logger)
   {
-    ChannelBase channel;
-    try
-    {
-      channel = channelProvider.Get();
-    }
-    catch
-    {
-      throw new ArmoniKException("Could not get grpc channel");
-    }
-
-    workerClient_ = new WorkerClient(channel);
+    channelProvider_   = channelProvider;
+    optionsInitWorker_ = optionsInitWorker;
+    logger_            = logger;
   }
 
-  public Queue<ComputeRequest> WorkerReturn() 
-  { 
+  public Queue<ComputeRequest> WorkerReturn()
+  {
     return new Queue<ComputeRequest>();
   }
 
-  public void StartTaskProcessing(TaskData taskData, CancellationToken cancellationToken)
+  public void StartTaskProcessing(TaskData          taskData,
+                                  CancellationToken cancellationToken)
   {
-    Stream = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
-                                   cancellationToken: cancellationToken);
-    WorkerRequestStream = Stream is not null ?
-                            Stream.RequestStream
-                            : throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
-    WorkerResponseStream = Stream is not null ?
-                             Stream.ResponseStream :
-                             throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
-  }
-
-  public AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? Stream { get; private set; }
-
-  public IAsyncStreamReader<ProcessReply>? WorkerResponseStream { get; private set; }
-
-  public IClientStreamWriter<ProcessRequest>? WorkerRequestStream { get; private set; }
-
-  public Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
+    if (workerClient_ == null)
     {
-      isInitialized_ = true;
+      throw new ArmoniKException("Worker client should be initialized");
     }
 
-    return Task.CompletedTask;
+    stream_ = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
+                                    cancellationToken: cancellationToken);
+
+    if (stream_ is null)
+    {
+      throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
+    }
+
+    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream_.ResponseStream,
+                                                           stream_.RequestStream);
+  }
+
+  private AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? stream_;
+
+  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
+
+  public async Task Init(CancellationToken cancellationToken)
+  {
+    if (isInitialized_)
+    {
+      return;
+    }
+
+    for (var retry = 1; retry < optionsInitWorker_.WorkerCheckRetries; ++retry)
+    {
+      try
+      {
+        var channel = channelProvider_.Get();
+        workerClient_ = new WorkerClient(channel);
+        var reply = workerClient_.HealthCheck(new Empty(),
+                                              cancellationToken: cancellationToken);
+        if (reply.Status != HealthCheckReply.Types.ServingStatus.Serving)
+        {
+          throw new ArmoniKException("Worker Health Check was not successful");
+        }
+
+        isInitialized_ = true;
+        logger_.LogInformation("Channel was initialized");
+        return;
+      }
+      catch (RpcException ex) when (ex.StatusCode == StatusCode.Unimplemented)
+      {
+        isInitialized_ = true;
+        logger_.LogInformation("Channel was initialized but Worker health check is not implemented");
+        return;
+      }
+      catch (Exception ex)
+      {
+        logger_.LogDebug(ex,
+                         "Channel was not created, retry in {seconds}",
+                         optionsInitWorker_.WorkerCheckDelay * retry);
+        await Task.Delay(optionsInitWorker_.WorkerCheckDelay * retry,
+                         cancellationToken)
+                  .ConfigureAwait(false);
+      }
+    }
+
+    var e = new ArmoniKException("Could not get grpc channel");
+    logger_.LogError(e,
+                     string.Empty);
+    throw e;
   }
 
   public ValueTask<bool> Check(HealthCheckTag tag)
@@ -97,7 +141,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public void Dispose()
   {
-    Stream?.Dispose();
+    stream_?.Dispose();
     GC.SuppressFinalize(this);
   }
 }

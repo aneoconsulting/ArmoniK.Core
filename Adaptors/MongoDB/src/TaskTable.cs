@@ -240,16 +240,31 @@ public class TaskTable : ITaskTable
                      sessionId);
     var taskCollection = taskCollectionProvider_.Get();
 
-    // method is final for taskStatus
-    var result = await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId,
-                                                      Builders<TaskData>.Update.Set(model => model.Status,
-                                                                                    TaskStatus.Canceling),
-                                                      cancellationToken: cancellationToken)
-                                     .ConfigureAwait(false);
-    if (result.MatchedCount == 0)
+    var taskCount = await CountTasksAsync(new TaskFilter
+                                          {
+                                            Session = new TaskFilter.Types.IdsRequest
+                                                      {
+                                                        Ids =
+                                                        {
+                                                          sessionId,
+                                                        },
+                                                      },
+                                          },
+                                          cancellationToken)
+                      .ConfigureAwait(false);
+
+    if (!taskCount.Any())
     {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
+      throw new SessionNotFoundException($"Session '{sessionId}' not found");
     }
+
+    await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId && model.Status != TaskStatus.Completed && model.Status != TaskStatus.Failed &&
+                                                  model.Status    != TaskStatus.Canceled,
+                                         Builders<TaskData>.Update.Set(model => model.Status,
+                                                                       TaskStatus.Canceling),
+                                         cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+
   }
 
   /// <inheritdoc />
@@ -324,7 +339,7 @@ public class TaskTable : ITaskTable
     await foreach (var taskId in taskCollection.AsQueryable(sessionHandle)
                                                .FilterQuery(filter)
                                                .Select(model => model.TaskId)
-                                               .AsAsyncEnumerable()
+                                               .ToAsyncEnumerable()
                                                .WithCancellation(cancellationToken)
                                                .ConfigureAwait(false))
     {

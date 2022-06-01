@@ -24,19 +24,21 @@
 
 using System;
 
+using ArmoniK.Api.gRPC.V1;
+
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public record Result(string   SessionId,
-                     string   Name,
-                     string   OwnerTaskId,
-                     string   Status,
-                     DateTime CreationDate,
-                     byte[]   Data) : Core.Common.Storage.Result(SessionId,
-                                                                 Name,
-                                                                 OwnerTaskId,
-                                                                 Status,
-                                                                 CreationDate,
-                                                                 Data)
+public record Result(string       SessionId,
+                     string       Name,
+                     string       OwnerTaskId,
+                     ResultStatus Status,
+                     DateTime     CreationDate,
+                     byte[]       Data) : Core.Common.Storage.Result(SessionId,
+                                                                     Name,
+                                                                     OwnerTaskId,
+                                                                     Status,
+                                                                     CreationDate,
+                                                                     Data)
 {
   public Result(Core.Common.Storage.Result original)
     : this(original.SessionId,
