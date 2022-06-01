@@ -5,6 +5,7 @@ import io
 import argparse
 import boto3
 import os
+import gzip
 
 # How to run seq in docker
 # docker rm -f seqlogpipe
@@ -31,7 +32,7 @@ os.makedirs(tmp_dir + dir_name, exist_ok=True)
 s3 = boto3.client('s3')
 s3.download_file(args.bucket_name, obj_name, file_name)
 
-def process_log_file(url, content):
+def process_json_log(url, file_name):
     batch = 0
     ctr = 0
     tosend = ""
@@ -49,5 +50,25 @@ def process_log_file(url, content):
         if tosend != "":
             requests.post(url, data=tosend)
 
+def process_jsongz_log(url, file_name):
+    batch = 0
+    ctr = 0
+    tosend = ""
+    with gzip.open(file_name, "r") as file:
+        for line in file.read().decode("utf-8").split("\n"):
+            if line.startswith("{"):
+                tosend += line + "\n"
+            if batch > 100:
+                requests.post(url, data=tosend)
+                tosend = ""
+                batch = 0
+            batch = batch + 1
+            ctr = ctr + 1
+        print("sent :", ctr)
+        if tosend != "":
+            requests.post(url, data=tosend)
 
-process_log_file(args.url, file_name)
+if file_name.endswith(".json.tar.gz"):
+    process_jsongz_log(args.url, file_name)
+elif file_name.endswith(".json"):
+    process_json_log(args.url, file_name)
