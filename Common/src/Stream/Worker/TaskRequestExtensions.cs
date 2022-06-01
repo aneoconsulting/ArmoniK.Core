@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.StateMachines;
 
 using Google.Protobuf;
@@ -90,6 +91,11 @@ public static class TaskRequestExtensions
                                                                           fsm))
     {
       yield return createLargeTaskRequest;
+    }
+
+    if (!fsm.IsComplete())
+    {
+      throw new ArmoniKException("Create task request should be complete at this point");
     }
   }
 
