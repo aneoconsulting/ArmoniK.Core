@@ -29,6 +29,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Utils;
@@ -88,17 +89,25 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
       case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitRequest:
         fsm_.InitRequest();
 
+
+
         completionTask_ = Task.Factory.StartNew(async () =>
                                                 {
                                                   try
                                                   {
 
                                                     (taskIds_, options_) = await submitter_.CreateTasks(sessionId_,
-                                                                                                        parentTaskId_,
-                                                                                                        processReply.CreateLargeTask.InitRequest.TaskOptions,
-                                                                                                        taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
-                                                                                                        cancellationToken)
-                                                                                           .ConfigureAwait(false);
+                                                                                                            parentTaskId_,
+                                                                                                            processReply.CreateLargeTask.InitRequest.TaskOptions,
+                                                                                                            taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
+                                                                                                            cancellationToken)
+                                                                                               .ConfigureAwait(false);
+                                                    if (taskIds_ is null)
+                                                      throw new NullReferenceException();
+                                                    if (options_ is null)
+                                                      throw new NullReferenceException();
+
+                                                    Interlocked.MemoryBarrierProcessWide();
                                                   }
                                                   catch (Exception e)
                                                   {
@@ -142,7 +151,9 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                                 },
                                                 cancellationToken,
                                                 TaskCreationOptions.LongRunning,
-                                                TaskScheduler.Current);
+                                                TaskScheduler.Current)
+                              .Unwrap();
+
         break;
       case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitTask:
 
@@ -216,8 +227,13 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
 
   /// <inheritdoc />
   public async Task CompleteProcessing(CancellationToken cancellationToken)
-    => await submitter_.FinalizeTaskCreation(taskIds_!,
-                                             options_!,
-                                             cancellationToken)
-                       .ConfigureAwait(false);
+  {
+    if(!completionTask_!.IsCompleted)
+      throw new ArmoniKException($"Should call {nameof(WaitForResponseCompletion)} before");
+
+    await submitter_.FinalizeTaskCreation(taskIds_!,
+                                          options_!,
+                                          cancellationToken)
+                    .ConfigureAwait(false);
+  }
 }
