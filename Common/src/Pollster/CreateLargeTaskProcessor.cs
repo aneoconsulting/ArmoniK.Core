@@ -103,13 +103,15 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                      catch (Exception e)
                                      {
                                        logger_.LogError(e,
-                                                        "Error in {classname}.{funName}",
+                                                        "Error in {ClassName}.{FunName} for {RequestId}",
                                                         nameof(CreateLargeTaskProcessor),
-                                                        nameof(AddProcessReply));
+                                                        nameof(AddProcessReply),
+                                                        processReply.RequestId);
                                        throw;
                                      }
 
-                                     logger_.LogInformation("Send Task creation reply");
+                                     logger_.LogInformation("Send Task creation reply for {RequestId}",
+                                                            processReply.RequestId);
                                      await asyncPipe_.WriteAsync(new ProcessRequest
                                                                  {
                                                                    CreateTask = new ProcessRequest.Types.CreateTask
@@ -122,7 +124,8 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                                                                 },
                                                                  })
                                                      .ConfigureAwait(false);
-                                     logger_.LogInformation("Task creation reply sent");
+                                     logger_.LogInformation("Task creation reply sent for {RequestId}",
+                                                            processReply.RequestId);
                                    },
                                    cancellationToken);
         break;
