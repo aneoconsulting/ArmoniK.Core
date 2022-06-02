@@ -109,7 +109,7 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                        throw;
                                      }
 
-                                     logger_.LogTrace("Send Task creation reply");
+                                     logger_.LogInformation("Send Task creation reply");
                                      await asyncPipe_.WriteAsync(new ProcessRequest
                                                                  {
                                                                    CreateTask = new ProcessRequest.Types.CreateTask
@@ -122,7 +122,7 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                                                                 },
                                                                  })
                                                      .ConfigureAwait(false);
-                                     logger_.LogTrace("Task creation reply sent");
+                                     logger_.LogInformation("Task creation reply sent");
                                    },
                                    cancellationToken);
         break;
