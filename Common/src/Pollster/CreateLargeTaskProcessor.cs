@@ -90,12 +90,24 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
 
         completionTask_ = Task.Run(async () =>
                                    {
-                                     (taskIds_, options_) = await submitter_.CreateTasks(sessionId_,
-                                                                                         parentTaskId_,
-                                                                                         processReply.CreateLargeTask.InitRequest.TaskOptions,
-                                                                                         taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
-                                                                                         cancellationToken)
-                                                                            .ConfigureAwait(false);
+                                     try
+                                     {
+
+                                       (taskIds_, options_) = await submitter_.CreateTasks(sessionId_,
+                                                                                           parentTaskId_,
+                                                                                           processReply.CreateLargeTask.InitRequest.TaskOptions,
+                                                                                           taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
+                                                                                           cancellationToken)
+                                                                              .ConfigureAwait(false);
+                                     }
+                                     catch (Exception e)
+                                     {
+                                       logger_.LogError(e,
+                                                        "Error in {classname}.{funName}",
+                                                        nameof(CreateLargeTaskProcessor),
+                                                        nameof(AddProcessReply));
+                                       throw;
+                                     }
 
                                      logger_.LogTrace("Send Task creation reply");
                                      await asyncPipe_.WriteAsync(new ProcessRequest
@@ -143,8 +155,8 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
           default:
             throw new ArgumentOutOfRangeException();
         }
-
         break;
+
       case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.TaskPayload:
         switch (processReply.CreateLargeTask.TaskPayload.TypeCase)
         {
