@@ -29,7 +29,7 @@ services:
       - armonik-backend
       - armonik-monitoring
     ports:
-      - 5001:80
+      - 5001:1080
     environment:
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
       - MongoDB__Host=database
@@ -64,7 +64,7 @@ services:
       - armonik-backend
       - armonik-monitoring
     ports:
-      - 5002:80
+      - 5002:1080
     environment:
       - Metrics__ApiVersion=TestApiVersion
       - Metrics__DescribedObject__ApiVersion=TestApiVersion
@@ -102,7 +102,7 @@ services:
       - armonik-backend
       - armonik-monitoring
     ports:
-      - 9980:80
+      - 9980:1080
     volumes:
       - socket_vol:/cache
       - ./trace:/trace
@@ -145,6 +145,8 @@ services:
     environment:
       - Serilog__Properties__Application=ArmoniK.Compute.Worker
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
+    ports:
+      - 1080:1080
     logging:
       driver: fluentd
       options:
