@@ -264,7 +264,7 @@ public class RequestProcessor : IDisposable
     {
       if (reply.TypeCase == ProcessReply.TypeOneofCase.Output)
       {
-        logger_.LogInformation("Received Task Output");
+        logger_.LogDebug("Received Task Output");
 
         async Task Epilog()
         {
@@ -282,7 +282,7 @@ public class RequestProcessor : IDisposable
 
           if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
           {
-            logger_.LogInformation("Complete processing of the request");
+            logger_.LogDebug("Complete processing of the request");
             await requestProcessors.Values.Select(processor => processor.CompleteProcessing(cancellationToken))
                                    .WhenAll()
                                    .ConfigureAwait(false);
@@ -293,10 +293,10 @@ public class RequestProcessor : IDisposable
                                              cancellationToken)
                           .ConfigureAwait(false);
 
-          logger_.LogInformation("End Task Epilog");
+          logger_.LogDebug("End Task Epilog");
         }
 
-        logger_.LogInformation("Start Task Epilog");
+        logger_.LogDebug("Start Task Epilog");
         // no await here because we want the epilog awaited outside of this function to pipeline task processing
         return Epilog();
       }
@@ -399,9 +399,9 @@ public class RequestProcessor : IDisposable
       var rp = requestProcessors.GetOrAdd(reply.RequestId,
                                           _ =>
                                           {
-                                            logger_.LogInformation("Received new Reply of type {ReplyType} with Id {RequestId}",
-                                                                   reply.TypeCase,
-                                                                   reply.RequestId);
+                                            logger_.LogDebug("Received new Reply of type {ReplyType} with Id {RequestId}",
+                                                             reply.TypeCase,
+                                                             reply.RequestId);
                                             return reply.TypeCase switch
                                                    {
                                                      ProcessReply.TypeOneofCase.Result => new

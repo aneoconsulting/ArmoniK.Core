@@ -204,9 +204,9 @@ public static class ServiceCollectionExt
                                         {
                                           settings.ClusterConfigurator += cb =>
                                                                           {
-                                                                            cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
-                                                                                                                                         e.CommandName,
-                                                                                                                                         e.Command.ToJson()));
+                                                                            //cb.Subscribe<CommandStartedEvent>(e => logger.LogDebug("{CommandName} - {Command}",
+                                                                            //                                                       e.CommandName,
+                                                                            //                                                       e.Command.ToJson()));
                                                                             cb.Subscribe(new DiagnosticsActivityEventSubscriber());
                                                                           };
 

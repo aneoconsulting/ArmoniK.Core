@@ -104,14 +104,8 @@ public class TaskHandler : ITaskHandler
   public async Task CreateTasksAsync(IEnumerable<TaskRequest> tasks,
                                      TaskOptions?             taskOptions = null)
   {
-    logger_.LogInformation("Semaphore: {value} before wait",
-                           semaphore_.CurrentCount);
-
     await semaphore_.WaitAsync(cancellationToken_)
                     .ConfigureAwait(false);
-
-    logger_.LogInformation("Semaphore: {value} after wait",
-                           semaphore_.CurrentCount);
 
     var requestId = $"R#{messageCounter_++}";
 
@@ -157,11 +151,7 @@ public class TaskHandler : ITaskHandler
     }
     finally
     {
-      logger_.LogInformation("Semaphore: {value} before release",
-                             semaphore_.CurrentCount);
       semaphore_.Release();
-      logger_.LogInformation("Semaphore: {value} after release",
-                             semaphore_.CurrentCount);
     }
   }
 
