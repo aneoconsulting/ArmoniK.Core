@@ -88,46 +88,61 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
       case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitRequest:
         fsm_.InitRequest();
 
-        completionTask_ = Task.Run(async () =>
-                                   {
-                                     try
-                                     {
+        completionTask_ = Task.Factory.StartNew(async () =>
+                                                {
+                                                  try
+                                                  {
 
-                                       (taskIds_, options_) = await submitter_.CreateTasks(sessionId_,
-                                                                                           parentTaskId_,
-                                                                                           processReply.CreateLargeTask.InitRequest.TaskOptions,
-                                                                                           taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
-                                                                                           cancellationToken)
-                                                                              .ConfigureAwait(false);
-                                     }
-                                     catch (Exception e)
-                                     {
-                                       logger_.LogError(e,
-                                                        "Error in {ClassName}.{FunName} for {RequestId}",
-                                                        nameof(CreateLargeTaskProcessor),
-                                                        nameof(AddProcessReply),
-                                                        processReply.RequestId);
-                                       throw;
-                                     }
+                                                    (taskIds_, options_) = await submitter_.CreateTasks(sessionId_,
+                                                                                                        parentTaskId_,
+                                                                                                        processReply.CreateLargeTask.InitRequest.TaskOptions,
+                                                                                                        taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
+                                                                                                        cancellationToken)
+                                                                                           .ConfigureAwait(false);
+                                                  }
+                                                  catch (Exception e)
+                                                  {
+                                                    logger_.LogError(e,
+                                                                     "Error in {ClassName}.{FunName} for {RequestId}",
+                                                                     nameof(CreateLargeTaskProcessor),
+                                                                     nameof(AddProcessReply),
+                                                                     processReply.RequestId);
+                                                    throw;
+                                                  }
 
-                                     logger_.LogInformation("Send Task creation reply for {RequestId}",
-                                                            processReply.RequestId);
-                                     await asyncPipe_.WriteAsync(new ProcessRequest
-                                                                 {
-                                                                   CreateTask = new ProcessRequest.Types.CreateTask
+                                                  logger_.LogInformation("Send Task creation reply for {RequestId}",
+                                                                         processReply.RequestId);
+                                                  try
+                                                  {
+                                                    await asyncPipe_.WriteAsync(new ProcessRequest
                                                                                 {
-                                                                                  Reply = new CreateTaskReply
-                                                                                          {
-                                                                                            Successfull = new Empty(),
-                                                                                          },
-                                                                                  ReplyId = processReply.RequestId,
-                                                                                },
-                                                                 })
-                                                     .ConfigureAwait(false);
-                                     logger_.LogInformation("Task creation reply sent for {RequestId}",
-                                                            processReply.RequestId);
-                                   },
-                                   cancellationToken);
+                                                                                  CreateTask = new ProcessRequest.Types.CreateTask
+                                                                                               {
+                                                                                                 Reply = new CreateTaskReply
+                                                                                                         {
+                                                                                                           Successfull = new Empty(),
+                                                                                                         },
+                                                                                                 ReplyId = processReply.RequestId,
+                                                                                               },
+                                                                                })
+                                                                    .ConfigureAwait(false);
+                                                  }
+                                                  catch (Exception e)
+                                                  {
+                                                    logger_.LogError(e,
+                                                                     "Error in {ClassName}.{FunName} for {RequestId}",
+                                                                     nameof(CreateLargeTaskProcessor),
+                                                                     nameof(AddProcessReply),
+                                                                     processReply.RequestId);
+                                                    throw;
+                                                  }
+
+                                                  logger_.LogInformation("Task creation reply sent for {RequestId}",
+                                                                         processReply.RequestId);
+                                                },
+                                                cancellationToken,
+                                                TaskCreationOptions.LongRunning,
+                                                TaskScheduler.Current);
         break;
       case ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitTask:
 
