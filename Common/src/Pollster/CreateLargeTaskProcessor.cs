@@ -102,12 +102,6 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                                                                                             taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
                                                                                                             cancellationToken)
                                                                                                .ConfigureAwait(false);
-                                                    if (taskIds_ is null)
-                                                      throw new NullReferenceException();
-                                                    if (options_ is null)
-                                                      throw new NullReferenceException();
-
-                                                    Interlocked.MemoryBarrierProcessWide();
                                                   }
                                                   catch (Exception e)
                                                   {
