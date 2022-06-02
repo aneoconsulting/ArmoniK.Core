@@ -47,7 +47,7 @@ public class TaskHandler : ITaskHandler
   private readonly IAsyncStreamReader<ProcessRequest> requestStream_;
   private readonly IServerStreamWriter<ProcessReply>  responseStream_;
 
-  private readonly SemaphoreSlim                        semaphore_ = new(1);
+  private readonly SemaphoreSlim                        semaphore_ = new(1,1);
   private          ComputeRequestStateMachine?          crsm_;
   private          IReadOnlyDictionary<string, byte[]>? dataDependencies_;
   private          IList<string>?                       expectedResults_;
@@ -104,12 +104,19 @@ public class TaskHandler : ITaskHandler
   public async Task CreateTasksAsync(IEnumerable<TaskRequest> tasks,
                                      TaskOptions?             taskOptions = null)
   {
+    logger_.LogInformation("Semaphore: {value} before wait",
+                           semaphore_.CurrentCount);
+
+    await semaphore_.WaitAsync(cancellationToken_)
+                    .ConfigureAwait(false);
+
+    logger_.LogInformation("Semaphore: {value} after wait",
+                           semaphore_.CurrentCount);
+
+    var requestId = $"R#{messageCounter_++}";
+
     try
     {
-      await semaphore_.WaitAsync(cancellationToken_)
-                      .ConfigureAwait(false);
-
-      var requestId = $"R#{messageCounter_++}";
 
       foreach (var createLargeTaskRequest in tasks.ToRequestStream(taskOptions,
                                                                    Configuration.DataChunkMaxSize))
@@ -118,7 +125,8 @@ public class TaskHandler : ITaskHandler
                                          {
                                            RequestId       = requestId,
                                            CreateLargeTask = createLargeTaskRequest,
-                                         })
+                                         },
+                                         CancellationToken.None)
                              .ConfigureAwait(false);
       }
 
@@ -149,7 +157,11 @@ public class TaskHandler : ITaskHandler
     }
     finally
     {
+      logger_.LogInformation("Semaphore: {value} before release",
+                             semaphore_.CurrentCount);
       semaphore_.Release();
+      logger_.LogInformation("Semaphore: {value} after release",
+                             semaphore_.CurrentCount);
     }
   }
 
