@@ -52,13 +52,13 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class RequestProcessor : IDisposable
 {
-  private readonly ActivitySource                                    activitySource_;
-  private readonly ILogger<Pollster>                                 logger_;
-  private readonly IObjectStorageFactory                             objectStorageFactory_;
-  private readonly IObjectStorage                                    resourcesStorage_;
-  private readonly IResultTable                                      resultTable_;
-  private readonly ISubmitter                                        submitter_;
-  private readonly IWorkerStreamHandler                              workerStreamHandler_;
+  private readonly ActivitySource        activitySource_;
+  private readonly ILogger<Pollster>     logger_;
+  private readonly IObjectStorageFactory objectStorageFactory_;
+  private readonly IObjectStorage        resourcesStorage_;
+  private readonly IResultTable          resultTable_;
+  private readonly ISubmitter            submitter_;
+  private readonly IWorkerStreamHandler  workerStreamHandler_;
 
   public RequestProcessor(IWorkerStreamHandler  workerStreamHandler,
                           IObjectStorageFactory objectStorageFactory,
@@ -83,7 +83,8 @@ public class RequestProcessor : IDisposable
   {
     try
     {
-      var result = await ProcessInternalsAsync(taskData, computeRequests,
+      var result = await ProcessInternalsAsync(taskData,
+                                               computeRequests,
                                                cancellationToken)
                      .ConfigureAwait(false);
 
@@ -300,6 +301,101 @@ public class RequestProcessor : IDisposable
         return Epilog();
       }
 
+      if (string.IsNullOrEmpty(reply.RequestId))
+      {
+        logger_.LogWarning("No request Id in the received request, request will not be processed");
+        switch (reply.TypeCase)
+        {
+          case ProcessReply.TypeOneofCase.Result:
+            // todo result reply to acknowledge reception or say that there is an error
+            await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                       {
+                                                         Resource = new ProcessRequest.Types.DataReply
+                                                                    {
+                                                                      Init = new ProcessRequest.Types.DataReply.Types.Init
+                                                                             {
+                                                                               Error = "No request Id",
+                                                                             },
+                                                                      ReplyId = "Missing request Id",
+                                                                    },
+                                                       })
+                                      .ConfigureAwait(false);
+            break;
+          case ProcessReply.TypeOneofCase.CreateLargeTask:
+            await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                       {
+                                                         CreateTask = new ProcessRequest.Types.CreateTask
+                                                                      {
+                                                                        Reply = new CreateTaskReply
+                                                                                {
+                                                                                  NonSuccessfullIds = new CreateTaskReply.Types.TaskIds
+                                                                                                      {
+                                                                                                        Ids =
+                                                                                                        {
+                                                                                                          "No request Id",
+                                                                                                        },
+                                                                                                      },
+                                                                                },
+                                                                        ReplyId = "Missing request Id",
+                                                                      },
+                                                       })
+                                      .ConfigureAwait(false);
+            break;
+          case ProcessReply.TypeOneofCase.Resource:
+            await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                       {
+                                                         Resource = new ProcessRequest.Types.DataReply
+                                                                    {
+                                                                      Init = new ProcessRequest.Types.DataReply.Types.Init
+                                                                             {
+                                                                               Error = "No request Id",
+                                                                             },
+                                                                      ReplyId = "Missing request Id",
+                                                                    },
+                                                       })
+                                      .ConfigureAwait(false);
+            break;
+          case ProcessReply.TypeOneofCase.CommonData:
+            await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                       {
+                                                         CommonData = new ProcessRequest.Types.DataReply
+                                                                      {
+                                                                        Init = new ProcessRequest.Types.DataReply.Types.Init
+                                                                               {
+                                                                                 Error = "No request Id",
+                                                                               },
+                                                                        ReplyId = "Missing request Id",
+                                                                      },
+                                                       })
+                                      .ConfigureAwait(false);
+            break;
+          case ProcessReply.TypeOneofCase.DirectData:
+            await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                       {
+                                                         DirectData = new ProcessRequest.Types.DataReply
+                                                                      {
+                                                                        Init = new ProcessRequest.Types.DataReply.Types.Init
+                                                                               {
+                                                                                 Error = "No request Id",
+                                                                               },
+                                                                        ReplyId = "Missing request Id",
+                                                                      },
+                                                       })
+                                      .ConfigureAwait(false);
+            break;
+          case ProcessReply.TypeOneofCase.CreateSmallTask:
+          case ProcessReply.TypeOneofCase.Output:
+          case ProcessReply.TypeOneofCase.None:
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+
+        await workerStreamHandler_.Pipe.CompleteAsync()
+                                  .ConfigureAwait(false);
+
+        return Task.CompletedTask;
+      }
+
       var rp = requestProcessors.GetOrAdd(reply.RequestId,
                                           _ =>
                                           {
@@ -331,7 +427,7 @@ public class RequestProcessor : IDisposable
                                                                                                                              logger_),
                                                      ProcessReply.TypeOneofCase.None   => throw new ArmoniKException("Unspecified process reply type"),
                                                      ProcessReply.TypeOneofCase.Output => throw new ArmoniKException("Unspecified process reply type"),
-                                                     _                                 => throw new ArmoniKException("Unspecified process reply type")
+                                                     _                                 => throw new ArmoniKException("Unspecified process reply type"),
                                                    };
                                           });
 

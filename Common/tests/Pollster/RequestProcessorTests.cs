@@ -94,17 +94,17 @@ public class RequestProcessorTest
     mockObjectStorageFactory_ = new Mock<IObjectStorageFactory>();
     mockObjectStorage_        = new Mock<IObjectStorage>();
     mockResultStorage_        = new Mock<IObjectStorage>();
-    mockResourceStorage_        = new Mock<IObjectStorage>();
-    mockWorkerStreamHandler_  = new Mock<IWorkerStreamHandler>(); 
+    mockResourceStorage_      = new Mock<IObjectStorage>();
+    mockWorkerStreamHandler_  = new Mock<IWorkerStreamHandler>();
 
     loggerFactory_ = LoggerFactory.Create(builder =>
-    {
-      builder.AddFilter("Microsoft",
-                        LogLevel.Warning)
-             .AddFilter("Microsoft",
-                        LogLevel.Error)
-             .AddConsole();
-    });
+                                          {
+                                            builder.AddFilter("Microsoft",
+                                                              LogLevel.Warning)
+                                                   .AddFilter("Microsoft",
+                                                              LogLevel.Error)
+                                                   .AddConsole();
+                                          });
 
     runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
                                   logger: loggerFactory_.CreateLogger<NullLogger>());
@@ -112,20 +112,19 @@ public class RequestProcessorTest
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string> minimalConfig = new()
-    {
-      {
-        "Components:TableStorage",
-        "ArmoniK.Adapters.MongoDB.TableStorage"
-      },
-      {
-        $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
-        DatabaseName
-      },
-      {
-        $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:PollingDelay",
-        "00:00:10"
-      },
-    };
+                                               {
+                                                 {
+                                                   "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
+                                                 },
+                                                 {
+                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
+                                                   DatabaseName
+                                                 },
+                                                 {
+                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:PollingDelay",
+                                                   "00:00:10"
+                                                 },
+                                               };
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(minimalConfig);
@@ -139,17 +138,17 @@ public class RequestProcessorTest
                                           .AddFilter(level => level >= LogLevel.Information));
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
-    {
-      ValidateOnBuild = true,
-    });
+                                                 {
+                                                   ValidateOnBuild = true,
+                                                 });
 
-    resultTable_ = provider.GetRequiredService<IResultTable>();
+    resultTable_  = provider.GetRequiredService<IResultTable>();
     sessionTable_ = provider.GetRequiredService<ISessionTable>();
-    taskTable_ = provider.GetRequiredService<ITaskTable>();
+    taskTable_    = provider.GetRequiredService<ITaskTable>();
 
     mockResultStorage_.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
-                                                  It.IsAny<CancellationToken>()))
-                      .Returns((string key,
+                                                   It.IsAny<CancellationToken>()))
+                      .Returns((string            key,
                                 CancellationToken token) => new List<byte[]>
                                                             {
                                                               Convert.FromBase64String("aaaa"),
@@ -158,7 +157,7 @@ public class RequestProcessorTest
                                                             }.ToAsyncEnumerable());
     mockObjectStorage_.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                    It.IsAny<CancellationToken>()))
-                      .Returns((string key,
+                      .Returns((string            key,
                                 CancellationToken token) => new List<byte[]>
                                                             {
                                                               Convert.FromBase64String("1111"),
@@ -170,24 +169,24 @@ public class RequestProcessorTest
 
     mockObjectStorageFactory_.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
                              .Returns((string objectName) =>
-                             {
-                               if (objectName.StartsWith("results"))
-                               {
-                                 return mockResultStorage_.Object;
-                               }
+                                      {
+                                        if (objectName.StartsWith("results"))
+                                        {
+                                          return mockResultStorage_.Object;
+                                        }
 
-                               if (objectName.StartsWith("payloads"))
-                               {
-                                 return mockObjectStorage_.Object;
-                               }
+                                        if (objectName.StartsWith("payloads"))
+                                        {
+                                          return mockObjectStorage_.Object;
+                                        }
 
-                               if (objectName.StartsWith("resource"))
-                               {
-                                 return mockResourceStorage_.Object;
-                               }
+                                        if (objectName.StartsWith("resource"))
+                                        {
+                                          return mockResourceStorage_.Object;
+                                        }
 
-                               return null;
-                             });
+                                        return null;
+                                      });
 
     taskTable_.CreateTasks(new[]
                            {
@@ -252,32 +251,33 @@ public class RequestProcessorTest
                            });
 
     resultTable_.Create(new[]
-                       {
-                         new Result(SessionId,
-                                    Output1,
-                                    Task1,
-                                    ResultStatus.Created,
-                                    DateTime.Today,
-                                    new[]
-                                    {
-                                      (byte) 1,
-                                    }),
-                         new Result(SessionId,
-                                    Output2,
-                                    Task2,
-                                    ResultStatus.Created,
-                                    DateTime.Today,
-                                    new[]
-                                    {
-                                      (byte) 1,
-                                    }),
-                       })
-               .Wait();
+                        {
+                          new Result(SessionId,
+                                     Output1,
+                                     Task1,
+                                     ResultStatus.Created,
+                                     DateTime.Today,
+                                     new[]
+                                     {
+                                       (byte)1,
+                                     }),
+                          new Result(SessionId,
+                                     Output2,
+                                     Task2,
+                                     ResultStatus.Created,
+                                     DateTime.Today,
+                                     new[]
+                                     {
+                                       (byte)1,
+                                     }),
+                        })
+                .Wait();
 
     sessionTable_.CreateSessionDataAsync(SessionId,
-                                        Task1,
-                                        new Api.gRPC.V1.TaskOptions(),
-                                        CancellationToken.None).Wait();
+                                         Task1,
+                                         new Api.gRPC.V1.TaskOptions(),
+                                         CancellationToken.None)
+                 .Wait();
 
     var queueStorage = new Mock<IQueueStorage>();
     var submitter = new gRPC.Services.Submitter(queueStorage.Object,
@@ -341,6 +341,7 @@ public class RequestProcessorTest
                                                                    Key = Output1,
                                                                  },
                                                         },
+                                               RequestId = "Result",
                                              },
                                              new()
                                              {
@@ -351,6 +352,7 @@ public class RequestProcessorTest
                                                                    Data = ByteString.FromBase64("1111"),
                                                                  },
                                                         },
+                                               RequestId = "Result",
                                              },
                                              new()
                                              {
@@ -361,6 +363,7 @@ public class RequestProcessorTest
                                                                    DataComplete = true,
                                                                  },
                                                         },
+                                               RequestId = "Result",
                                              },
                                              new()
                                              {
@@ -371,6 +374,7 @@ public class RequestProcessorTest
                                                                    LastResult = true,
                                                                  },
                                                         },
+                                               RequestId = "Result",
                                              },
                                              new()
                                              {
@@ -408,6 +412,7 @@ public class RequestProcessorTest
                                                                                                                   -1),
                                                                                   },
                                                                   },
+                                                RequestId = "CreateLargeTask",
                                               },
                                               new()
                                               {
@@ -429,6 +434,7 @@ public class RequestProcessorTest
                                                                                           },
                                                                                },
                                                                   },
+                                                RequestId = "CreateLargeTask",
                                               },
                                               new()
                                               {
@@ -439,6 +445,7 @@ public class RequestProcessorTest
                                                                                     Data = ByteString.Empty,
                                                                                   },
                                                                   },
+                                                RequestId = "CreateLargeTask",
                                               },
                                               new()
                                               {
@@ -449,6 +456,7 @@ public class RequestProcessorTest
                                                                                     DataComplete = true,
                                                                                   },
                                                                   },
+                                                RequestId = "CreateLargeTask",
                                               },
                                               new()
                                               {
@@ -459,6 +467,7 @@ public class RequestProcessorTest
                                                                                  LastTask = true,
                                                                                },
                                                                   },
+                                                RequestId = "CreateLargeTask",
                                               },
                                               new()
                                               {
@@ -477,6 +486,7 @@ public class RequestProcessorTest
                                                                      {
                                                                        Successfull = new Empty(),
                                                                      },
+                                                             ReplyId = "CreateLargeTask",
                                                            },
                                             });
 
@@ -486,7 +496,7 @@ public class RequestProcessorTest
 
   [TestCaseSource(nameof(ReplyTestData))]
   public async Task IntegrationProcessInternalsAsyncTest(List<ProcessReply> computeReplies,
-                                                         ProcessRequest request)
+                                                         ProcessRequest     request)
   {
     var tokenSource = new CancellationTokenSource(10000);
 
@@ -560,14 +570,14 @@ public class RequestProcessorTest
                                                new ProcessRequest
                                                {
                                                  Resource = new ProcessRequest.Types.DataReply
-                                                              {
-                                                                ReplyId = "ResourceDataId",
-                                                                Init = new ProcessRequest.Types.DataReply.Types.Init
-                                                                       {
-                                                                         Key   = "ResourceKey",
-                                                                         Error = "Key not found",
-                                                                       },
-                                                              },
+                                                            {
+                                                              ReplyId = "ResourceDataId",
+                                                              Init = new ProcessRequest.Types.DataReply.Types.Init
+                                                                     {
+                                                                       Key   = "ResourceKey",
+                                                                       Error = "Key not found",
+                                                                     },
+                                                            },
                                                });
     resourceRequestData.SetArgDisplayNames("ResourceData");
     yield return resourceRequestData;
@@ -642,7 +652,8 @@ public class RequestProcessorTest
   }
 
   [TestCaseSource(nameof(NonImplementedReplies))]
-  public async Task IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply> computeReplies, ProcessRequest request)
+  public async Task IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply> computeReplies,
+                                                                   ProcessRequest     request)
   {
     var tokenSource = new CancellationTokenSource(10000);
 
@@ -709,12 +720,12 @@ public class RequestProcessorTest
                             .Throws(() => new ArmoniKException());
 
     Assert.ThrowsAsync<ArmoniKException>(async () =>
-    {
-      await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                    requests,
-                                                    CancellationToken.None)
-                             .ConfigureAwait(false);
-    });
+                                         {
+                                           await requestProcessor_.ProcessInternalsAsync(taskData,
+                                                                                         requests,
+                                                                                         CancellationToken.None)
+                                                                  .ConfigureAwait(false);
+                                         });
   }
 
   [Test]
@@ -734,12 +745,13 @@ public class RequestProcessorTest
 
     var computeReplies = new List<ProcessReply>
                          {
-                           new ()
+                           new()
                            {
                              Result = new ProcessReply.Types.Result
                                       {
                                         Data = new DataChunk(),
                                       },
+                             RequestId = "Result",
                            },
                          };
 
