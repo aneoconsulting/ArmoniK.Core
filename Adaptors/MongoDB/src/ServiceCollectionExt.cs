@@ -201,9 +201,6 @@ public static class ServiceCollectionExt
 
     services.AddTransient<IMongoClient>(provider =>
                                         {
-                                          var logger = provider.GetRequiredService<ILogger<IMongoClient>>();
-
-
                                           //if (logger.IsEnabled(LogLevel.Trace))
                                           //  settings.ClusterConfigurator = cb =>
                                           //  {
@@ -217,7 +214,6 @@ public static class ServiceCollectionExt
                                           //  };
 
                                           settings.ClusterConfigurator = cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
-
                                                                                                                                             e.CommandName,
                                                                                                                                             e.Command.ToJson()));
 
