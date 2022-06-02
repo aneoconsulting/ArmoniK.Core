@@ -38,8 +38,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
+using MongoDB.Driver.Core.Events;
 using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -213,6 +215,11 @@ public static class ServiceCollectionExt
                                           //                  e.Command.ToJson());
                                           //    });
                                           //  };
+
+                                          settings.ClusterConfigurator = cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
+
+                                                                                                                                            e.CommandName,
+                                                                                                                                            e.Command.ToJson()));
 
                                           settings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
 
