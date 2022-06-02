@@ -213,11 +213,11 @@ public static class ServiceCollectionExt
                                           //    });
                                           //  };
 
-                                          settings.ClusterConfigurator = cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
+                                          settings.ClusterConfigurator += cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
                                                                                                                                             e.CommandName,
                                                                                                                                             e.Command.ToJson()));
 
-                                          settings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
+                                          settings.ClusterConfigurator += cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
 
                                           return new MongoClient(settings);
                                         });
