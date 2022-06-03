@@ -49,7 +49,7 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
   private readonly ISubmitter                               submitter_;
   private readonly IAsyncPipe<ProcessReply, ProcessRequest> asyncPipe_;
   private readonly ILogger                                  logger_;
-  private          IList<string>?                           taskIds_;
+  private          IEnumerable<Storage.TaskRequest>?        taskIds_;
   private          TaskOptions?                             options_;
   private readonly string                                   sessionId_;
   private readonly string                                   parentTaskId_;
@@ -97,11 +97,11 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                                   {
 
                                                     (taskIds_, options_) = await submitter_.CreateTasks(sessionId_,
-                                                                                                            parentTaskId_,
-                                                                                                            processReply.CreateLargeTask.InitRequest.TaskOptions,
-                                                                                                            taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
-                                                                                                            cancellationToken)
-                                                                                               .ConfigureAwait(false);
+                                                                                                        parentTaskId_,
+                                                                                                        processReply.CreateLargeTask.InitRequest.TaskOptions,
+                                                                                                        taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
+                                                                                                        cancellationToken)
+                                                                                           .ConfigureAwait(false);
                                                   }
                                                   // todo : Add error transition in FSM to properly manage errors at the FSM level
                                                   // in this case, an error triggers the global cancellation token but we do not want to rely on this to manage errors
@@ -230,6 +230,8 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
 
     await submitter_.FinalizeTaskCreation(taskIds_!,
                                           options_!,
+                                          sessionId_,
+                                          parentTaskId_,
                                           cancellationToken)
                     .ConfigureAwait(false);
   }

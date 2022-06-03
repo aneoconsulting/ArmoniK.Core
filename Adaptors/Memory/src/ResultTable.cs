@@ -59,23 +59,25 @@ public class ResultTable : IResultTable
                                   .Status == ResultStatus.Completed));
 
   /// <inheritdoc />
-  public Task ChangeResultOwnership(string              sessionId,
-                                    IEnumerable<string> keys,
-                                    string              oldTaskId,
-                                    string              newTaskId,
-                                    CancellationToken   cancellationToken)
+  public Task ChangeResultOwnership(string                                                 sessionId,
+                                    string                                                 oldTaskId,
+                                    IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
+                                    CancellationToken                                      cancellationToken)
   {
-    foreach (var result in results_[sessionId]
-                           .Values.ToImmutableList()
-                           .Where(result => result.OwnerTaskId == oldTaskId))
+    foreach (var request in requests)
     {
-      results_[result.SessionId]
-        .TryUpdate(result.Name,
-                   result with
-                   {
-                     OwnerTaskId = newTaskId,
-                   },
-                   result);
+      foreach (var result in results_[sessionId]
+                             .Values.ToImmutableList()
+                             .Where(result => result.OwnerTaskId == oldTaskId))
+      {
+        results_[result.SessionId]
+          .TryUpdate(result.Name,
+                     result with
+                     {
+                       OwnerTaskId = request.NewTaskId,
+                     },
+                     result);
+      }
     }
 
     return Task.CompletedTask;
