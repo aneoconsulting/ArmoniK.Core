@@ -48,4 +48,3 @@ dependencies:
   - xz=5.2.5=h7f8727e_1
   - yaml=0.2.5=h7b6447c_0
   - zlib=1.2.12=h7f8727e_2
-prefix: /home/jgurhem/anaconda3/envs/core
