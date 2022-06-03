@@ -215,6 +215,13 @@ public static class ServiceCollectionExt
 
     logger.LogInformation("MongoDB configuration complete");
 
+    logger.LogDebug("{Option} {Value}",
+                    nameof(mongoOptions.MaxConnectionPoolSize),
+                    mongoOptions.MaxConnectionPoolSize);
+    logger.LogDebug("{Option} {Value}",
+                    nameof(mongoOptions.DataRetention),
+                    mongoOptions.DataRetention);
+
     return services;
   }
 }
