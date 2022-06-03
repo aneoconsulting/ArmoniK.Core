@@ -36,16 +36,16 @@ public interface ISessionTable : IInitializable
 {
   ILogger Logger { get; }
 
-  Task CreateSessionDataAsync(string                  rootSessionId,
-                              string                  parentTaskId,
-                              Api.gRPC.V1.TaskOptions defaultOptions,
-                              CancellationToken       cancellationToken = default);
+  Task CreateSessionDataAsync(string            rootSessionId,
+                              string            parentTaskId,
+                              TaskOptions       defaultOptions,
+                              CancellationToken cancellationToken = default);
 
   Task<bool> IsSessionCancelledAsync(string            sessionId,
                                      CancellationToken cancellationToken = default);
 
-  Task<Api.gRPC.V1.TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                          CancellationToken cancellationToken = default);
+  Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
+                                              CancellationToken cancellationToken = default);
 
   Task CancelSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);

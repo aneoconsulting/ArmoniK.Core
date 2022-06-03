@@ -28,4 +28,4 @@ namespace ArmoniK.Core.Common.Storage;
 
 public record SessionData(string                  SessionId,
                           SessionStatus           Status,
-                          Api.gRPC.V1.TaskOptions Options);
+                          TaskOptions             Options);
