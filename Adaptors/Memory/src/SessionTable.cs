@@ -107,11 +107,12 @@ public class SessionTable : ISessionTable
                          {
                            if (data.Status == SessionStatus.Canceled)
                            {
-                             throw new ArmoniKException("Session already cancelled");
+                             throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
                            }
                            return data with
                                   {
                                     Status = SessionStatus.Canceled,
+                                    CancellationDate = DateTime.UtcNow,
                                   };
                          });
     return Task.CompletedTask;

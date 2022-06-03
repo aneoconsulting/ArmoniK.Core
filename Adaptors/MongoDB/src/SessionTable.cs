@@ -81,9 +81,9 @@ public class SessionTable : ISessionTable
                      parentTaskId);
     var sessionCollection = sessionCollectionProvider_.Get();
 
-    SessionData data = new(Options: defaultOptions,
-                           SessionId: rootSessionId,
-                           Status: SessionStatus.Running);
+    SessionData data = new(rootSessionId,
+                           SessionStatus.Running,
+                           defaultOptions);
 
     await sessionCollection.InsertOneAsync(data,
                                            cancellationToken: cancellationToken)
@@ -154,19 +154,16 @@ public class SessionTable : ISessionTable
     var sessionCollection = sessionCollectionProvider_.Get();
 
 
-    var resSession = sessionCollection.UpdateOneAsync(model => model.SessionId == sessionId,
+    var resSession = sessionCollection.UpdateOneAsync(model => model.SessionId == sessionId && model.Status == SessionStatus.Running,
                                                       Builders<SessionData>.Update.Set(model => model.Status,
-                                                                                       SessionStatus.Canceled),
+                                                                                       SessionStatus.Canceled)
+                                                                           .Set(model => model.CancellationDate,
+                                                                                DateTime.UtcNow),
                                                       cancellationToken: cancellationToken);
 
     if ((await resSession.ConfigureAwait(false)).MatchedCount < 1)
     {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
-    }
-
-    if ((await resSession.ConfigureAwait(false)).ModifiedCount < 1)
-    {
-      throw new ArmoniKException("No open session found. Was the session closed?");
+      throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
     }
   }
 

@@ -169,12 +169,12 @@ public class SessionTableTestBase
                                             CancellationToken.None)
                         .ConfigureAwait(false);
 
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                                     {
-                                                       await SessionTable.CancelSessionAsync("SessionId",
-                                                                                             CancellationToken.None)
-                                                                         .ConfigureAwait(false);
-                                                     });
+      Assert.ThrowsAsync<SessionNotFoundException>(async () =>
+                                                   {
+                                                     await SessionTable.CancelSessionAsync("SessionId",
+                                                                                           CancellationToken.None)
+                                                                       .ConfigureAwait(false);
+                                                   });
     }
   }
 
