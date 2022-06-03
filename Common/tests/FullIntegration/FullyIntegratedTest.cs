@@ -149,8 +149,6 @@ public class FullyIntegratedTest
                     taskStatus.Count);
     Assert.AreEqual(TaskStatus.Completed,
                     taskStatus.Status);
-
-
   }
 
   [Test]

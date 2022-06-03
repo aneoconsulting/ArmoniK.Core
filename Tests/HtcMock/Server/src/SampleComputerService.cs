@@ -94,9 +94,9 @@ public class SampleComputerService : WorkerStreamWrapper
       logger_.LogDebug("Inputs {input}",
                        inputs);
 
-      var requestProcessor = new RequestProcessor(true,
-                                                  true,
-                                                  true,
+      var requestProcessor = new RequestProcessor(false,
+                                                  false,
+                                                  false,
                                                   runConfiguration,
                                                   logger_);
       var res = requestProcessor.GetResult(request,

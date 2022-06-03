@@ -50,17 +50,21 @@ public class WorkerStreamHandlerFullTest : WorkerStreamHandlerBase
                           //  Console.WriteLine(requests.Current);
                           //}
 
-                          Console.WriteLine(await ChannelAsyncPipe.Reverse.Reader.FirstAsync());
+                          Console.WriteLine(await ChannelAsyncPipe.Reverse.Reader.FirstAsync(cancellationToken: cancellationToken)
+                                                                  .ConfigureAwait(false));
 
                           await ChannelAsyncPipe.Reverse.WriteAsync(new ProcessReply
-                                                         {
-                                                           Output = new Output
                                                                     {
-                                                                      Ok     = new Empty(),
-                                                                      Status = TaskStatus.Completed,
-                                                                    },
-                                                         })
-                                     .ConfigureAwait(false);
+                                                                      Output = new Output
+                                                                               {
+                                                                                 Ok     = new Empty(),
+                                                                                 Status = TaskStatus.Completed,
+                                                                               },
+                                                                    })
+                                                .ConfigureAwait(false);
+
+                          await ChannelAsyncPipe.Reverse.CompleteAsync()
+                                                .ConfigureAwait(false);
                         });
     TaskList.Add(task);
     task.Start();

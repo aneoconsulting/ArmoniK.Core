@@ -206,7 +206,7 @@ public class GrpcSubmitterServiceTests
     mockSubmitter.Setup(submitter => submitter.TryGetResult(It.IsAny<ResultRequest>(),
                                                             It.IsAny<IServerStreamWriter<ResultReply>>(),
                                                             CancellationToken.None))
-                 .Returns(() => throw new ResultDataNotFoundException());
+                 .Returns(() => throw new ObjectDataNotFoundException());
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);

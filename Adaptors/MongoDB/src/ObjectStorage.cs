@@ -164,7 +164,7 @@ public class ObjectStorage : IObjectStorage
 
     if (throwException)
     {
-      throw new ResultDataNotFoundException($"Result {key} not found");
+      throw new ObjectDataNotFoundException($"Result {key} not found");
     }
   }
 

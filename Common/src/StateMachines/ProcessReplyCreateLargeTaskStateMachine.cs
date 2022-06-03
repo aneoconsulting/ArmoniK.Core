@@ -36,23 +36,44 @@ using Stateless.Graph;
 namespace ArmoniK.Core.Common.StateMachines;
 
 /// <summary>
-/// Utility class for the Final State Machine from <see cref="ProcessRequest.Types.ComputeRequest"/>
+/// Utility class for the Final State Machine from <see cref="ProcessReply.Types.CreateLargeTaskRequest"/>
 /// </summary>
-public class ComputeRequestStateMachine
+public class ProcessReplyCreateLargeTaskStateMachine
 {
   /// <summary>
   /// States for the Final State Machine
   /// </summary>
   public enum State
   {
+    /// <summary>
+    /// Initial state of the Final State Machine
+    /// </summary>
     Init,
+
+    /// <summary>
+    /// State after triggering <see cref="Triggers.InitRequest"/>
+    /// </summary>
     InitRequest,
-    PayloadData,
-    PayloadComplete,
-    DataInit,
-    DataComplete,
-    Data,
-    DataLast,
+
+    /// <summary>
+    /// State after triggering <see cref="Triggers.AddHeader"/>
+    /// </summary>
+    TaskRequestHeader,
+
+    /// <summary>
+    /// State after triggering <see cref="Triggers.AddDataChunk"/>
+    /// </summary>
+    DataChunk,
+
+    /// <summary>
+    /// State after triggering <see cref="Triggers.CompleteData"/>
+    /// </summary>
+    DataChunkComplete,
+
+    /// <summary>
+    /// State after triggering <see cref="Triggers.CompleteRequest"/>
+    /// </summary>
+    InitTaskRequestLast,
   }
 
   /// <summary>
@@ -61,39 +82,29 @@ public class ComputeRequestStateMachine
   public enum Triggers
   {
     /// <summary>
-    /// Correspond to receive last request <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData"/>
-    /// </summary>
-    CompleteRequest,
-
-    /// <summary>
-    /// Correspond to receive request <see cref="DataChunk.TypeOneofCase.DataComplete"/> as <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data"/>
-    /// </summary>
-    CompleteDataDependency,
-
-    /// <summary>
-    /// Correspond to receive request <see cref="DataChunk.TypeOneofCase.Data"/> as <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data"/>
-    /// </summary>
-    AddDataDependencyChunk,
-
-    /// <summary>
-    /// Correspond to receive request <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData"/>
-    /// </summary>
-    InitDataDependency,
-
-    /// <summary>
-    /// Correspond to receive request <see cref="DataChunk.TypeOneofCase.DataComplete"/> as <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload"/>
-    /// </summary>
-    CompletePayload,
-
-    /// <summary>
-    /// Correspond to receive request <see cref="DataChunk.TypeOneofCase.Data"/> as <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload"/>
-    /// </summary>
-    AddPayloadChunk,
-
-    /// <summary>
-    /// Correspond to receive request <see cref="ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitRequest"/>
+    /// Correspond to receive request <see cref="ProcessReply.Types.CreateLargeTaskRequest.TypeOneofCase.InitRequest"/>
     /// </summary>
     InitRequest,
+
+    /// <summary>
+    /// Correspond to receive request <see cref="InitTaskRequest.TypeOneofCase.Header"/>
+    /// </summary>
+    AddHeader,
+
+    /// <summary>
+    /// Correspond to receive request <see cref="DataChunk.TypeOneofCase.Data"/>
+    /// </summary>
+    AddDataChunk,
+
+    /// <summary>
+    /// Correspond to receive request <see cref="DataChunk.TypeOneofCase.DataComplete"/>
+    /// </summary>
+    CompleteData,
+
+    /// <summary>
+    /// Correspond to receive request <see cref="InitTaskRequest.TypeOneofCase.LastTask"/>
+    /// </summary>
+    CompleteRequest,
   }
 
   private readonly ILogger logger_;
@@ -104,7 +115,7 @@ public class ComputeRequestStateMachine
   /// Constructor that initializes the Final State Machine
   /// </summary>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public ComputeRequestStateMachine(ILogger logger)
+  public ProcessReplyCreateLargeTaskStateMachine(ILogger logger)
   {
     logger_  = logger;
     machine_ = new StateMachine<State, Triggers>(State.Init);
@@ -114,36 +125,23 @@ public class ComputeRequestStateMachine
                     State.InitRequest);
 
     machine_.Configure(State.InitRequest)
-            .Permit(Triggers.AddPayloadChunk,
-                    State.PayloadData)
-            .Permit(Triggers.CompletePayload,
-                    State.PayloadComplete);
+            .Permit(Triggers.AddHeader,
+                    State.TaskRequestHeader);
 
-    machine_.Configure(State.PayloadData)
-            .PermitReentry(Triggers.AddPayloadChunk)
-            .Permit(Triggers.CompletePayload,
-                    State.PayloadComplete);
+    machine_.Configure(State.TaskRequestHeader)
+            .Permit(Triggers.AddDataChunk,
+                    State.DataChunk);
 
-    machine_.Configure(State.PayloadComplete)
-            .Permit(Triggers.InitDataDependency,
-                    State.DataInit)
+    machine_.Configure(State.DataChunk)
+            .PermitReentry(Triggers.AddDataChunk)
+            .Permit(Triggers.CompleteData,
+                    State.DataChunkComplete);
+
+    machine_.Configure(State.DataChunkComplete)
+            .Permit(Triggers.AddHeader,
+                    State.TaskRequestHeader)
             .Permit(Triggers.CompleteRequest,
-                    State.DataLast);
-
-    machine_.Configure(State.DataInit)
-            .Permit(Triggers.AddDataDependencyChunk,
-                    State.Data);
-
-    machine_.Configure(State.Data)
-            .PermitReentry(Triggers.AddDataDependencyChunk)
-            .Permit(Triggers.CompleteDataDependency,
-                    State.DataComplete);
-
-    machine_.Configure(State.DataComplete)
-            .Permit(Triggers.CompleteRequest,
-                    State.DataLast)
-            .Permit(Triggers.InitDataDependency,
-                    State.DataInit);
+                    State.InitTaskRequestLast);
 
     if (logger_.IsEnabled(LogLevel.Debug))
     {
@@ -161,39 +159,25 @@ public class ComputeRequestStateMachine
     => machine_.Fire(Triggers.InitRequest);
 
   /// <summary>
-  /// Function used when using <see cref="Triggers.AddPayloadChunk"/> transition
+  /// Function used when using <see cref="Triggers.AddHeader"/> transition
   /// </summary>
   /// <exception cref="InvalidOperationException">Invalid transition</exception>
-  public void AddPayloadChunk()
-    => machine_.Fire(Triggers.AddPayloadChunk);
+  public void AddHeader()
+    => machine_.Fire(Triggers.AddHeader);
 
   /// <summary>
-  /// Function used when using <see cref="Triggers.CompletePayload"/> transition
+  /// Function used when using <see cref="Triggers.AddDataChunk"/> transition
   /// </summary>
   /// <exception cref="InvalidOperationException">Invalid transition</exception>
-  public void CompletePayload()
-    => machine_.Fire(Triggers.CompletePayload);
+  public void AddDataChunk()
+    => machine_.Fire(Triggers.AddDataChunk);
 
   /// <summary>
-  /// Function used when using <see cref="Triggers.InitDataDependency"/> transition
+  /// Function used when using <see cref="Triggers.CompleteData"/> transition
   /// </summary>
   /// <exception cref="InvalidOperationException">Invalid transition</exception>
-  public void InitDataDependency()
-    => machine_.Fire(Triggers.InitDataDependency);
-
-  /// <summary>
-  /// Function used when using <see cref="Triggers.AddDataDependencyChunk"/> transition
-  /// </summary>
-  /// <exception cref="InvalidOperationException">Invalid transition</exception>
-  public void AddDataDependencyChunk()
-    => machine_.Fire(Triggers.AddDataDependencyChunk);
-
-  /// <summary>
-  /// Function used when using <see cref="Triggers.CompleteDataDependency"/> transition
-  /// </summary>
-  /// <exception cref="InvalidOperationException">Invalid transition</exception>
-  public void CompleteDataDependency()
-    => machine_.Fire(Triggers.CompleteDataDependency);
+  public void CompleteData()
+    => machine_.Fire(Triggers.CompleteData);
 
   /// <summary>
   /// Function used when using <see cref="Triggers.CompleteRequest"/> transition
@@ -201,6 +185,15 @@ public class ComputeRequestStateMachine
   /// <exception cref="InvalidOperationException">Invalid transition</exception>
   public void CompleteRequest()
     => machine_.Fire(Triggers.CompleteRequest);
+
+  /// <summary>
+  /// Check if the Final State Machine is in its completed state
+  /// </summary>
+  /// <returns>
+  /// A bool representing if the final state machine is in a completed state
+  /// </returns>
+  public bool IsComplete()
+    => machine_.State == State.InitTaskRequestLast;
 
   /// <summary>
   /// Generate a dot graph representing the Final State Machine
@@ -224,16 +217,17 @@ public class ComputeRequestStateMachine
     // Manually fix the footer; the last
     // 3 lines should be disposed
     var lines = str.Split(new[]
-                            {
-                              Environment.NewLine
-                            },
-                            StringSplitOptions.None);
+                          {
+                            Environment.NewLine
+                          },
+                          StringSplitOptions.None);
     str = string.Join(Environment.NewLine,
                       lines.Take(lines.Length - 3));
 
     // Enclose in markers for markdown
     var bld = new StringBuilder(str);
-    bld.Insert(0,"```mermaid\n");
+    bld.Insert(0,
+               "```mermaid\n");
     bld.Append("\n```\n");
 
     return bld.ToString();
