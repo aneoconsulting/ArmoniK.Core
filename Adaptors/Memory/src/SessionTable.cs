@@ -107,7 +107,7 @@ public class SessionTable : ISessionTable
                          {
                            if (data.Status == SessionStatus.Canceled)
                            {
-                             throw new SessionNotFoundException("No open session with key '{sessionId}' was found");
+                             throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
                            }
                            return data with
                                   {
