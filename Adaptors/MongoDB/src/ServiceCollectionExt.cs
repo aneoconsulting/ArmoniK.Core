@@ -200,15 +200,15 @@ public static class ServiceCollectionExt
     settings.Scheme                = ConnectionStringScheme.MongoDB;
     settings.MaxConnectionPoolSize = mongoOptions.MaxConnectionPoolSize;
 
-    services.AddTransient<IMongoClient>(provider =>
+    services.AddTransient<IMongoClient>(_ =>
                                         {
-                                          settings.ClusterConfigurator += cb =>
-                                                                          {
-                                                                            //cb.Subscribe<CommandStartedEvent>(e => logger.LogDebug("{CommandName} - {Command}",
-                                                                            //                                                       e.CommandName,
-                                                                            //                                                       e.Command.ToJson()));
-                                                                            cb.Subscribe(new DiagnosticsActivityEventSubscriber());
-                                                                          };
+                                          settings.ClusterConfigurator = cb =>
+                                                                         {
+                                                                           //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
+                                                                           //                                                       e.CommandName,
+                                                                           //                                                       e.Command.ToJson()));
+                                                                           cb.Subscribe(new DiagnosticsActivityEventSubscriber());
+                                                                         };
 
                                           return new MongoClient(settings);
                                         });
