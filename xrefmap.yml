@@ -883,11 +883,11 @@ references:
   commentId: T:ArmoniK.Core.Adapters.Memory.SessionData
   fullName: ArmoniK.Core.Adapters.Memory.SessionData
   nameWithType: SessionData
-- uid: ArmoniK.Core.Adapters.Memory.SessionData.#ctor(System.String,SessionStatus,TaskOptions)
+- uid: ArmoniK.Core.Adapters.Memory.SessionData.#ctor(System.String,SessionStatus,ArmoniK.Core.Common.Storage.TaskOptions)
   name: SessionData(String, SessionStatus, TaskOptions)
-  href: api/ArmoniK.Core.Adapters.Memory.SessionData.html#ArmoniK_Core_Adapters_Memory_SessionData__ctor_System_String_SessionStatus_TaskOptions_
-  commentId: M:ArmoniK.Core.Adapters.Memory.SessionData.#ctor(System.String,SessionStatus,TaskOptions)
-  fullName: ArmoniK.Core.Adapters.Memory.SessionData.SessionData(System.String, SessionStatus, TaskOptions)
+  href: api/ArmoniK.Core.Adapters.Memory.SessionData.html#ArmoniK_Core_Adapters_Memory_SessionData__ctor_System_String_SessionStatus_ArmoniK_Core_Common_Storage_TaskOptions_
+  commentId: M:ArmoniK.Core.Adapters.Memory.SessionData.#ctor(System.String,SessionStatus,ArmoniK.Core.Common.Storage.TaskOptions)
+  fullName: ArmoniK.Core.Adapters.Memory.SessionData.SessionData(System.String, SessionStatus, ArmoniK.Core.Common.Storage.TaskOptions)
   nameWithType: SessionData.SessionData(String, SessionStatus, TaskOptions)
 - uid: ArmoniK.Core.Adapters.Memory.SessionData.#ctor*
   name: SessionData
@@ -944,11 +944,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.SessionTable.Check
   nameWithType: SessionTable.Check
-- uid: ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
   name: CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_CreateSessionDataAsync_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_CreateSessionDataAsync_System_String_System_String_ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync(System.String, System.String, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
   nameWithType: SessionTable.CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync*
   name: CreateSessionDataAsync
@@ -1457,74 +1457,6 @@ references:
   commentId: N:ArmoniK.Core.Adapters.MongoDB
   fullName: ArmoniK.Core.Adapters.MongoDB
   nameWithType: ArmoniK.Core.Adapters.MongoDB
-- uid: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1
-  name: BsonProtoSerializer<T>
-  href: api/ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer-1.html
-  commentId: T:ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1
-  name.vb: BsonProtoSerializer(Of T)
-  fullName: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer<T>
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer(Of T)
-  nameWithType: BsonProtoSerializer<T>
-  nameWithType.vb: BsonProtoSerializer(Of T)
-- uid: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.Deserialize(BsonDeserializationContext,BsonDeserializationArgs)
-  name: Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
-  href: api/ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer-1.html#ArmoniK_Core_Adapters_MongoDB_BsonProtoSerializer_1_Deserialize_BsonDeserializationContext_BsonDeserializationArgs_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.Deserialize(BsonDeserializationContext,BsonDeserializationArgs)
-  fullName: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer<T>.Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer(Of T).Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
-  nameWithType: BsonProtoSerializer<T>.Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
-  nameWithType.vb: BsonProtoSerializer(Of T).Deserialize(BsonDeserializationContext, BsonDeserializationArgs)
-- uid: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.Deserialize*
-  name: Deserialize
-  href: api/ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer-1.html#ArmoniK_Core_Adapters_MongoDB_BsonProtoSerializer_1_Deserialize_
-  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.Deserialize
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer<T>.Deserialize
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer(Of T).Deserialize
-  nameWithType: BsonProtoSerializer<T>.Deserialize
-  nameWithType.vb: BsonProtoSerializer(Of T).Deserialize
-- uid: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.Serialize(BsonSerializationContext,BsonSerializationArgs,`0)
-  name: Serialize(BsonSerializationContext, BsonSerializationArgs, T)
-  href: api/ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer-1.html#ArmoniK_Core_Adapters_MongoDB_BsonProtoSerializer_1_Serialize_BsonSerializationContext_BsonSerializationArgs__0_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.Serialize(BsonSerializationContext,BsonSerializationArgs,`0)
-  fullName: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer<T>.Serialize(BsonSerializationContext, BsonSerializationArgs, T)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer(Of T).Serialize(BsonSerializationContext, BsonSerializationArgs, T)
-  nameWithType: BsonProtoSerializer<T>.Serialize(BsonSerializationContext, BsonSerializationArgs, T)
-  nameWithType.vb: BsonProtoSerializer(Of T).Serialize(BsonSerializationContext, BsonSerializationArgs, T)
-- uid: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.Serialize(BsonSerializationContext,BsonSerializationArgs,System.Object)
-  name: Serialize(BsonSerializationContext, BsonSerializationArgs, Object)
-  href: api/ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer-1.html#ArmoniK_Core_Adapters_MongoDB_BsonProtoSerializer_1_Serialize_BsonSerializationContext_BsonSerializationArgs_System_Object_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.Serialize(BsonSerializationContext,BsonSerializationArgs,System.Object)
-  fullName: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer<T>.Serialize(BsonSerializationContext, BsonSerializationArgs, System.Object)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer(Of T).Serialize(BsonSerializationContext, BsonSerializationArgs, System.Object)
-  nameWithType: BsonProtoSerializer<T>.Serialize(BsonSerializationContext, BsonSerializationArgs, Object)
-  nameWithType.vb: BsonProtoSerializer(Of T).Serialize(BsonSerializationContext, BsonSerializationArgs, Object)
-- uid: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.Serialize*
-  name: Serialize
-  href: api/ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer-1.html#ArmoniK_Core_Adapters_MongoDB_BsonProtoSerializer_1_Serialize_
-  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.Serialize
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer<T>.Serialize
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer(Of T).Serialize
-  nameWithType: BsonProtoSerializer<T>.Serialize
-  nameWithType.vb: BsonProtoSerializer(Of T).Serialize
-- uid: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.ValueType
-  name: ValueType
-  href: api/ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer-1.html#ArmoniK_Core_Adapters_MongoDB_BsonProtoSerializer_1_ValueType
-  commentId: P:ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.ValueType
-  fullName: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer<T>.ValueType
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer(Of T).ValueType
-  nameWithType: BsonProtoSerializer<T>.ValueType
-  nameWithType.vb: BsonProtoSerializer(Of T).ValueType
-- uid: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.ValueType*
-  name: ValueType
-  href: api/ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer-1.html#ArmoniK_Core_Adapters_MongoDB_BsonProtoSerializer_1_ValueType_
-  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer`1.ValueType
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer<T>.ValueType
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.BsonProtoSerializer(Of T).ValueType
-  nameWithType: BsonProtoSerializer<T>.ValueType
-  nameWithType.vb: BsonProtoSerializer(Of T).ValueType
 - uid: ArmoniK.Core.Adapters.MongoDB.Common
   name: ArmoniK.Core.Adapters.MongoDB.Common
   href: api/ArmoniK.Core.Adapters.MongoDB.Common.html
@@ -2852,11 +2784,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.Check
   nameWithType: SessionTable.Check
-- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
   name: CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_CreateSessionDataAsync_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_CreateSessionDataAsync_System_String_System_String_ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync(System.String, System.String, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
   nameWithType: SessionTable.CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync*
   name: CreateSessionDataAsync
@@ -8035,11 +7967,11 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ISessionTable.CancelSessionAsync
   nameWithType: ISessionTable.CancelSessionAsync
-- uid: ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
   name: CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_CreateSessionDataAsync_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_CreateSessionDataAsync_System_String_System_String_ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync(System.String, System.String, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
   nameWithType: ISessionTable.CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync*
   name: CreateSessionDataAsync
@@ -9170,11 +9102,11 @@ references:
   commentId: T:ArmoniK.Core.Common.Storage.SessionData
   fullName: ArmoniK.Core.Common.Storage.SessionData
   nameWithType: SessionData
-- uid: ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,ArmoniK.Api.gRPC.V1.TaskOptions)
+- uid: ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,ArmoniK.Core.Common.Storage.TaskOptions)
   name: SessionData(String, SessionStatus, TaskOptions)
-  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData__ctor_System_String_SessionStatus_ArmoniK_Api_gRPC_V1_TaskOptions_
-  commentId: M:ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,ArmoniK.Api.gRPC.V1.TaskOptions)
-  fullName: ArmoniK.Core.Common.Storage.SessionData.SessionData(System.String, SessionStatus, ArmoniK.Api.gRPC.V1.TaskOptions)
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData__ctor_System_String_SessionStatus_ArmoniK_Core_Common_Storage_TaskOptions_
+  commentId: M:ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,ArmoniK.Core.Common.Storage.TaskOptions)
+  fullName: ArmoniK.Core.Common.Storage.SessionData.SessionData(System.String, SessionStatus, ArmoniK.Core.Common.Storage.TaskOptions)
   nameWithType: SessionData.SessionData(String, SessionStatus, TaskOptions)
 - uid: ArmoniK.Core.Common.Storage.SessionData.#ctor*
   name: SessionData
