@@ -763,7 +763,7 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       foreach (var output in Enum.GetValues(typeof(SubmitterMockOutput)))
       {
-        yield return new TestCaseData(new ResultDataNotFoundException(),
+        yield return new TestCaseData(new ObjectDataNotFoundException(),
                                       output).Returns(StatusCode.NotFound);
       }
     }
@@ -812,7 +812,7 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       foreach (var output in Enum.GetValues(typeof(SubmitterMockOutput)))
       {
-        yield return new TestCaseData(new ResultDataNotFoundException(),
+        yield return new TestCaseData(new ObjectDataNotFoundException(),
                                       output).Returns(StatusCode.Internal);
       }
     }

@@ -89,6 +89,9 @@ internal class InjectionTests
                                                 $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DataRetention)}", "10.00:00:00"
                                               },
                                               {
+                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.MaxConnectionPoolSize)}", "100"
+                                              },
+                                              {
                                                 $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelayMin", "00:00:10"
                                               },
                                               {

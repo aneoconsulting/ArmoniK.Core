@@ -322,7 +322,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result not found"));
     }
-    catch (ResultDataNotFoundException e)
+    catch (ObjectDataNotFoundException e)
     {
       logger_.LogWarning(e,
                        "Error while getting results");

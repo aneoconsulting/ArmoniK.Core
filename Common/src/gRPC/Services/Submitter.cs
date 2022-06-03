@@ -678,6 +678,7 @@ public class Submitter : ISubmitter
                                            var intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
                                                                                    .ToList();
 
+                                           // TODO : write change owner in FinalizeCreation to avoid having to roll back
                                            if (intersect.Any())
                                            {
                                              await resultTable_.ChangeResultOwnership(session,

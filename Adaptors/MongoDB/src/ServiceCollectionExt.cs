@@ -38,8 +38,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
+using MongoDB.Driver.Core.Events;
 using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -192,29 +194,21 @@ public static class ServiceCollectionExt
     }
 
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
-    settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
-    settings.UseTls           = mongoOptions.Tls;
-    settings.DirectConnection = mongoOptions.DirectConnection;
-    settings.Scheme           = ConnectionStringScheme.MongoDB;
+    settings.AllowInsecureTls      = mongoOptions.AllowInsecureTls;
+    settings.UseTls                = mongoOptions.Tls;
+    settings.DirectConnection      = mongoOptions.DirectConnection;
+    settings.Scheme                = ConnectionStringScheme.MongoDB;
+    settings.MaxConnectionPoolSize = mongoOptions.MaxConnectionPoolSize;
 
-    services.AddTransient<IMongoClient>(provider =>
+    services.AddTransient<IMongoClient>(_ =>
                                         {
-                                          var logger = provider.GetRequiredService<ILogger<IMongoClient>>();
-
-
-                                          //if (logger.IsEnabled(LogLevel.Trace))
-                                          //  settings.ClusterConfigurator = cb =>
-                                          //  {
-                                          //    cb.Subscribe<CommandStartedEvent>(e =>
-                                          //    {
-                                          //      logger
-                                          //        .LogTrace("{CommandName} - {Command}",
-                                          //                  e.CommandName,
-                                          //                  e.Command.ToJson());
-                                          //    });
-                                          //  };
-
-                                          settings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber());
+                                          settings.ClusterConfigurator = cb =>
+                                                                         {
+                                                                           //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
+                                                                           //                                                       e.CommandName,
+                                                                           //                                                       e.Command.ToJson()));
+                                                                           cb.Subscribe(new DiagnosticsActivityEventSubscriber());
+                                                                         };
 
                                           return new MongoClient(settings);
                                         });
