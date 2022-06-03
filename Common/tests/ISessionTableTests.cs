@@ -31,6 +31,8 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
+using Google.Protobuf.WellKnownTypes;
+
 using NUnit.Framework;
 
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
@@ -49,7 +51,12 @@ public class SessionTableTestBase
     {
       SessionTable.CreateSessionDataAsync(RootSessionId,
                                           "TaskId",
-                                          new TaskOptions(),
+                                          new TaskOptions
+                                          {
+                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                            MaxRetries = 2,
+                                            Priority = 1,
+                                          },
                                           CancellationToken.None)
                   .Wait();
     }
