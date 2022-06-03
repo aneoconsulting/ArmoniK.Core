@@ -75,17 +75,21 @@ public class ResultTable : IResultTable
 
     try
     {
-      var writeResult = await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<Result>(result.ToResultDataModel())),
-                                                              new BulkWriteOptions
-                                                              {
-                                                                IsOrdered = false,
-                                                              },
-                                                              cancellationToken)
-                                              .ConfigureAwait(false);
+      if (results.Any())
+      {
+        await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<Result>(result.ToResultDataModel())),
+                                              new BulkWriteOptions
+                                              {
+                                                IsOrdered = false,
+                                              },
+                                              cancellationToken)
+                              .ConfigureAwait(false);
+      }
     }
-    catch
+    catch (Exception e)
     {
-      throw new ArmoniKException("Key already exists");
+      throw new ArmoniKException("Key already exists",
+                                 e);
     }
   }
 
