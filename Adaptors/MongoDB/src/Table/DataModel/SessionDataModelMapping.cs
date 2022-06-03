@@ -46,9 +46,15 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.Options))
                                                      .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.CreationDate))
+                                                     .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.CancellationDate))
+                                                     .SetIsRequired(true);
                                                    cm.SetIgnoreExtraElements(true);
                                                    cm.MapCreator(model => new SessionData(model.SessionId,
                                                                                           model.Status,
+                                                                                          model.CreationDate,
+                                                                                          model.CancellationDate,
                                                                                           model.Options));
                                                  });
     }

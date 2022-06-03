@@ -22,10 +22,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public record SessionData(string                  SessionId,
-                          SessionStatus           Status,
-                          TaskOptions             Options);
+public record SessionData(string        SessionId,
+                          SessionStatus Status,
+                          DateTime      CreationDate,
+                          DateTime      CancellationDate,
+                          TaskOptions   Options)
+{
+  public SessionData(string        sessionId,
+                     SessionStatus status,
+                     TaskOptions   options)
+    : this(sessionId,
+           status,
+           DateTime.UtcNow,
+           DateTime.MinValue,
+           options)
+  {
+  }
+}
