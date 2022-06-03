@@ -40,6 +40,7 @@ using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -275,7 +276,12 @@ public class RequestProcessorTest
 
     sessionTable_.CreateSessionDataAsync(SessionId,
                                          Task1,
-                                         new Api.gRPC.V1.TaskOptions(),
+                                         new Api.gRPC.V1.TaskOptions
+                                         {
+                                           MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                           MaxRetries  = 2,
+                                           Priority    = 1,
+                                         },
                                          CancellationToken.None)
                  .Wait();
 
