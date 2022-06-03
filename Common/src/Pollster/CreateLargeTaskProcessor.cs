@@ -103,6 +103,9 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                                                                                             cancellationToken)
                                                                                                .ConfigureAwait(false);
                                                   }
+                                                  // todo : Add error transition in FSM to properly manage errors at the FSM level
+                                                  // in this case, an error triggers the global cancellation token but we do not want to rely on this to manage errors
+                                                  // refactor to manage polling agent errors ?
                                                   catch (Exception e)
                                                   {
                                                     logger_.LogError(e,

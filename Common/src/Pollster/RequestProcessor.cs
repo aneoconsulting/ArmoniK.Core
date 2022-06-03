@@ -308,6 +308,7 @@ public class RequestProcessor : IDisposable
         {
           case ProcessReply.TypeOneofCase.Result:
             // todo result reply to acknowledge reception or say that there is an error
+            // todo we need to improve the proto to have better communication and management of errors between worker and polling agent
             await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
                                                        {
                                                          Resource = new ProcessRequest.Types.DataReply
