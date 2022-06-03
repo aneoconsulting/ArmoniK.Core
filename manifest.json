@@ -393,7 +393,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.html",
-          "hash": "dHCIIIydO2CFzwPcKPm+9XBfHzZDThTgiQSxF9zTZgM="
+          "hash": "ym+AwR04EV3CYkIxu8UjlN4e2Tg1L+mSDo3NF869xnY="
         }
       },
       "is_incremental": false,
@@ -501,7 +501,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.ServiceCollectionExt.html",
-          "hash": "bI0NuCd2fXciuIzqFhm2LCXkvkLYrjiGx08Zy5ikx2M="
+          "hash": "TbmK+vvMg6/bKr/3mvPIk21xxiGB5bL1O8FNAWa7IGk="
         }
       },
       "is_incremental": false,
@@ -825,7 +825,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Exceptions.ArmoniKException.html",
-          "hash": "gPhFZI1DqHGQj6aBknrDHPqNGzXEgw4DcV34IjScNUo="
+          "hash": "v960ssHIHN+OjkpeJSkJhKeUBwKz06JP73a8m0iYCes="
         }
       },
       "is_incremental": false,
@@ -857,11 +857,11 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.yml",
+      "source_relative_path": "api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.yml",
       "output": {
         ".html": {
-          "relative_path": "api/ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.html",
-          "hash": "6b+J6b6PgBgphK4nRjQCsVYeI+EVG94OZXVpF2o2QGQ="
+          "relative_path": "api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html",
+          "hash": "z2GXHkMSv6/zOjmvMtB9fiIrQ9xgB8b0/ZNgC9BDUhM="
         }
       },
       "is_incremental": false,
@@ -933,7 +933,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Exceptions.html",
-          "hash": "p0Ali2ZBjxBOILOTSggeLfPEmrUHOtBrjHajce0k1HI="
+          "hash": "/FG71yc4XwRNzo5F2KPXFhkK2gnOQHnGuUrmLijbCvM="
         }
       },
       "is_incremental": false,
@@ -1145,6 +1145,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html",
+          "hash": "sy/vVc+zFn9IUdPQyYab2MGWO1JSSfnpTZhcLiPypWk="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Pollster.ComputeRequestQueue.yml",
       "output": {
         ".html": {
@@ -1162,6 +1174,30 @@
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.DataPrefetcher.html",
           "hash": "pFO9IEF1D9zVmxn68zDK0TydIkOXPyNSiBAso8z8aI0="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html",
+          "hash": "kGGbjTVyUJhVLanVo29+Aa/kMmeuvLBpYRm1Zc9KBYI="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html",
+          "hash": "HoLiUX76c19OLryOXZQYPKgB+dm1Y+Exf7tdsYNZM1Q="
         }
       },
       "is_incremental": false,
@@ -1197,7 +1233,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.RequestProcessor.html",
-          "hash": "w/aMNKCNhcghGws79CHRRlQUxMqAmTdgYOpDVJXqmHE="
+          "hash": "IDSXGqxYkdaJzZ9ilknR9JAqvJALqFDoU4tjYvL+k2c="
         }
       },
       "is_incremental": false,
@@ -1205,11 +1241,11 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.yml",
+      "source_relative_path": "api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.yml",
       "output": {
         ".html": {
-          "relative_path": "api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html",
-          "hash": "KoUnFyBBdCG/j55n0vUY5eTmQ1Drs7SjBqrOuY7A98Y="
+          "relative_path": "api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html",
+          "hash": "95rL/t/eko4rtCc5r7NjkXAbrANXw0lsG2ZbAQFRIC4="
         }
       },
       "is_incremental": false,
@@ -1221,7 +1257,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.html",
-          "hash": "wc9iaG+tSRC9HlSmQiYuo3J0F6cHTCKkKzBYIrO+zRo="
+          "hash": "iB3dqi1rggzRXnA+xM6+kJxj6YUFWeZ2JOawamKTvYE="
         }
       },
       "is_incremental": false,
@@ -1233,7 +1269,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.State.html",
-          "hash": "uNTGBAJ314i2NVMzBfg9wbiD6KzcDiuu4GDJl+dAeuA="
+          "hash": "3fkeVki0fn2geO6od+ZmwXatshwoSpb7p1YO5PRZgBg="
         }
       },
       "is_incremental": false,
@@ -1245,7 +1281,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.Triggers.html",
-          "hash": "2Pc1x5cA1+PEMHJfzXwpI7Asr3tzSLPWgCJxVWK0jCM="
+          "hash": "97F5zg52PGZXovxHnbjb1TilRY6uO7DwmrF6rb0vmT8="
         }
       },
       "is_incremental": false,
@@ -1257,7 +1293,79 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.html",
-          "hash": "MXMm8FIF5hV6PxtxHdUxP3oWSU14e9EF79d7cXutYHg="
+          "hash": "jeu9RK9Re1wkz7+Z+Y76vtKNGmvdXuA/06wYs/adf9Q="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.html",
+          "hash": "N4ulXI8xpVDw0rdRxmx9uCNhciwFMhYFrCuMFv/XNSU="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.html",
+          "hash": "Rui/lJMuxlyPrzvsqGQC1Cvsb7p+G7+qIkopEnC5Ju0="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html",
+          "hash": "q3ae3kNLrD5KeLe1YggYoA8N+5N3jg1jrThlMGWx8hs="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.html",
+          "hash": "4hbz/b8RrGKmyw6t7kmjwpz65prtEGrChLLe4fDDhwE="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.html",
+          "hash": "cHLFJZT+rtMfahuwB8pRExNHQXtgSfY9zhikxqVndNA="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html",
+          "hash": "iWzv4Ahqu5+htbjwdgpG/J73JRjiYNWxHfGXLQ1YCmY="
         }
       },
       "is_incremental": false,
@@ -1293,7 +1401,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.StateMachines.html",
-          "hash": "ExT4wnyGlW/Ncw0lAoimS84JV+9onRUCohuWpon+rGQ="
+          "hash": "1PMcvmEYPXml67L6SkfYIYyXgoj4xTpSzSFF1fIfuAI="
         }
       },
       "is_incremental": false,
@@ -1689,7 +1797,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html",
-          "hash": "vMn3cMTDPb/K3XPTQtjgecN1BEYDA4qHrVolkSaX3rg="
+          "hash": "wiVuJdzd0F85HbBUqig0xYEjJsyigAhq/C8SWuqThSM="
         }
       },
       "is_incremental": false,
@@ -1701,7 +1809,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.html",
-          "hash": "2hpFdwX5jJ2EA5AIPykJ9Tu6y3rGLEbyeVsp+3/bjzw="
+          "hash": "KmZOyXSWZ7NCYhkBkXlH5OBmXqyms9DlrYcCNJZFR54="
         }
       },
       "is_incremental": false,
@@ -1785,7 +1893,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.FullIntegration.FullyIntegratedTest.html",
-          "hash": "NJ5M0Ta6wijO0XO6cvtodSyYFhhcExKQ09EhEDbyxwY="
+          "hash": "os0+ilu/AiS/Sj0HBoGHHFL1F1anxPFdvgDXQ9o/HkM="
         }
       },
       "is_incremental": false,
@@ -1929,7 +2037,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html",
-          "hash": "1U/t5JeoNeL0PclaPqvOsNg4a/q2EoqQmanj4W727dg="
+          "hash": "LLydSCv2dN6zuIbKoaVSExXFGPpPqpz1RG3hOGwCuN0="
         }
       },
       "is_incremental": false,
@@ -2009,11 +2117,35 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html",
+          "hash": "pHxilJpEWf8UXgvNjIu74Se9PfQH/2yYhbAK2k3c5NU="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html",
+          "hash": "xKWEu/L4Vqu4gc1JzPbnhRXfMzbNMDT4L/ZElul0VMw="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.StateMachines.yml",
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.StateMachines.html",
-          "hash": "gUHXBPVjXXrLaUVZz//kaZvtZPS3NomINv3tvBbUCOU="
+          "hash": "daTtzywTG6fZ40TdXmiiTVfHez+H6SEY7Kb9KM0KCAM="
         }
       },
       "is_incremental": false,
@@ -2949,7 +3081,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "8SS6YJFwqPbO0LYlWs27YW+qUm55Y49+uPuzqJIQYaA="
+          "hash": "pArYukN5E87AgSZGJ6yZ4mLUv3S056N+1oXYadEG3Mg="
         }
       },
       "is_incremental": false,
@@ -3024,7 +3156,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 244,
+          "total_file_count": 255,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {

@@ -2176,6 +2176,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.Host
   nameWithType: MongoDB.Host
+- uid: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.MaxConnectionPoolSize
+  name: MaxConnectionPoolSize
+  href: api/ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.html#ArmoniK_Core_Adapters_MongoDB_Options_MongoDB_MaxConnectionPoolSize
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.MaxConnectionPoolSize
+  fullName: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.MaxConnectionPoolSize
+  nameWithType: MongoDB.MaxConnectionPoolSize
+- uid: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.MaxConnectionPoolSize*
+  name: MaxConnectionPoolSize
+  href: api/ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.html#ArmoniK_Core_Adapters_MongoDB_Options_MongoDB_MaxConnectionPoolSize_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.MaxConnectionPoolSize
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.MaxConnectionPoolSize
+  nameWithType: MongoDB.MaxConnectionPoolSize
 - uid: ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.ObjectStorage
   name: ObjectStorage
   href: api/ArmoniK.Core.Adapters.MongoDB.Options.MongoDB.html#ArmoniK_Core_Adapters_MongoDB_Options_MongoDB_ObjectStorage
@@ -4126,43 +4139,43 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Exceptions.KeyNotFoundException.KeyNotFoundException
   nameWithType: KeyNotFoundException.KeyNotFoundException
-- uid: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException
-  name: ResultDataNotFoundException
-  href: api/ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.html
-  commentId: T:ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException
-  fullName: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException
-  nameWithType: ResultDataNotFoundException
-- uid: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.#ctor
-  name: ResultDataNotFoundException()
-  href: api/ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ResultDataNotFoundException__ctor
-  commentId: M:ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.#ctor
-  fullName: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.ResultDataNotFoundException()
-  nameWithType: ResultDataNotFoundException.ResultDataNotFoundException()
-- uid: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.#ctor(SerializationInfo,StreamingContext)
-  name: ResultDataNotFoundException(SerializationInfo, StreamingContext)
-  href: api/ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ResultDataNotFoundException__ctor_SerializationInfo_StreamingContext_
-  commentId: M:ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.#ctor(SerializationInfo,StreamingContext)
-  fullName: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.ResultDataNotFoundException(SerializationInfo, StreamingContext)
-  nameWithType: ResultDataNotFoundException.ResultDataNotFoundException(SerializationInfo, StreamingContext)
-- uid: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.#ctor(System.String)
-  name: ResultDataNotFoundException(String)
-  href: api/ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ResultDataNotFoundException__ctor_System_String_
-  commentId: M:ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.#ctor(System.String)
-  fullName: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.ResultDataNotFoundException(System.String)
-  nameWithType: ResultDataNotFoundException.ResultDataNotFoundException(String)
-- uid: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.#ctor(System.String,Exception)
-  name: ResultDataNotFoundException(String, Exception)
-  href: api/ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ResultDataNotFoundException__ctor_System_String_Exception_
-  commentId: M:ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.#ctor(System.String,Exception)
-  fullName: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.ResultDataNotFoundException(System.String, Exception)
-  nameWithType: ResultDataNotFoundException.ResultDataNotFoundException(String, Exception)
-- uid: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.#ctor*
-  name: ResultDataNotFoundException
-  href: api/ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ResultDataNotFoundException__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.#ctor
+- uid: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException
+  name: ObjectDataNotFoundException
+  href: api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html
+  commentId: T:ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException
+  fullName: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException
+  nameWithType: ObjectDataNotFoundException
+- uid: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor
+  name: ObjectDataNotFoundException()
+  href: api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ObjectDataNotFoundException__ctor
+  commentId: M:ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor
+  fullName: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.ObjectDataNotFoundException()
+  nameWithType: ObjectDataNotFoundException.ObjectDataNotFoundException()
+- uid: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor(SerializationInfo,StreamingContext)
+  name: ObjectDataNotFoundException(SerializationInfo, StreamingContext)
+  href: api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ObjectDataNotFoundException__ctor_SerializationInfo_StreamingContext_
+  commentId: M:ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor(SerializationInfo,StreamingContext)
+  fullName: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.ObjectDataNotFoundException(SerializationInfo, StreamingContext)
+  nameWithType: ObjectDataNotFoundException.ObjectDataNotFoundException(SerializationInfo, StreamingContext)
+- uid: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor(System.String)
+  name: ObjectDataNotFoundException(String)
+  href: api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ObjectDataNotFoundException__ctor_System_String_
+  commentId: M:ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor(System.String)
+  fullName: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.ObjectDataNotFoundException(System.String)
+  nameWithType: ObjectDataNotFoundException.ObjectDataNotFoundException(String)
+- uid: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor(System.String,Exception)
+  name: ObjectDataNotFoundException(String, Exception)
+  href: api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ObjectDataNotFoundException__ctor_System_String_Exception_
+  commentId: M:ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor(System.String,Exception)
+  fullName: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.ObjectDataNotFoundException(System.String, Exception)
+  nameWithType: ObjectDataNotFoundException.ObjectDataNotFoundException(String, Exception)
+- uid: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor*
+  name: ObjectDataNotFoundException
+  href: api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html#ArmoniK_Core_Common_Exceptions_ObjectDataNotFoundException__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.#ctor
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Exceptions.ResultDataNotFoundException.ResultDataNotFoundException
-  nameWithType: ResultDataNotFoundException.ResultDataNotFoundException
+  fullName: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.ObjectDataNotFoundException
+  nameWithType: ObjectDataNotFoundException.ObjectDataNotFoundException
 - uid: ArmoniK.Core.Common.Exceptions.ResultNotFoundException
   name: ResultNotFoundException
   href: api/ArmoniK.Core.Common.Exceptions.ResultNotFoundException.html
@@ -6110,6 +6123,93 @@ references:
   commentId: N:ArmoniK.Core.Common.Pollster
   fullName: ArmoniK.Core.Common.Pollster
   nameWithType: ArmoniK.Core.Common.Pollster
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor
+  name: CommonDataRequestProcessor
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html
+  commentId: T:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor
+  nameWithType: CommonDataRequestProcessor
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
+  name: CommonDataRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor__ctor_ArmoniK_Core_Common_Storage_IObjectStorage_ArmoniK_Core_Common_Utils_IAsyncPipe_ProcessReply_ProcessRequest__ILogger_
+  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
+  name.vb: CommonDataRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CommonDataRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
+  fullName.vb: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CommonDataRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
+  nameWithType: CommonDataRequestProcessor.CommonDataRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
+  nameWithType.vb: CommonDataRequestProcessor.CommonDataRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.#ctor*
+  name: CommonDataRequestProcessor
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CommonDataRequestProcessor
+  nameWithType: CommonDataRequestProcessor.CommonDataRequestProcessor
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
+  name: AddProcessReply(ProcessReply, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_AddProcessReply_ProcessReply_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
+  nameWithType: CommonDataRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply*
+  name: AddProcessReply
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_AddProcessReply_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply
+  nameWithType: CommonDataRequestProcessor.AddProcessReply
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel
+  name: Cancel()
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_Cancel
+  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel()
+  nameWithType: CommonDataRequestProcessor.Cancel()
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel*
+  name: Cancel
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_Cancel_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel
+  nameWithType: CommonDataRequestProcessor.Cancel
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing(CancellationToken)
+  name: CompleteProcessing(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_CompleteProcessing_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing(CancellationToken)
+  nameWithType: CommonDataRequestProcessor.CompleteProcessing(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing*
+  name: CompleteProcessing
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_CompleteProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing
+  nameWithType: CommonDataRequestProcessor.CompleteProcessing
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete
+  name: IsComplete()
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_IsComplete
+  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete()
+  nameWithType: CommonDataRequestProcessor.IsComplete()
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete*
+  name: IsComplete
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_IsComplete_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete
+  nameWithType: CommonDataRequestProcessor.IsComplete
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
+  name: WaitForResponseCompletion(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_WaitForResponseCompletion_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
+  nameWithType: CommonDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion*
+  name: WaitForResponseCompletion
+  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_WaitForResponseCompletion_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion
+  nameWithType: CommonDataRequestProcessor.WaitForResponseCompletion
 - uid: ArmoniK.Core.Common.Pollster.ComputeRequestQueue
   name: ComputeRequestQueue
   href: api/ArmoniK.Core.Common.Pollster.ComputeRequestQueue.html
@@ -6284,6 +6384,164 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.DataPrefetcher.PrefetchDataAsync
   nameWithType: DataPrefetcher.PrefetchDataAsync
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor
+  name: DirectDataRequestProcessor
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html
+  commentId: T:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor
+  nameWithType: DirectDataRequestProcessor
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
+  name: DirectDataRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor__ctor_ArmoniK_Core_Common_Storage_IObjectStorage_ArmoniK_Core_Common_Utils_IAsyncPipe_ProcessReply_ProcessRequest__ILogger_
+  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
+  name.vb: DirectDataRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.DirectDataRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
+  fullName.vb: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.DirectDataRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
+  nameWithType: DirectDataRequestProcessor.DirectDataRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
+  nameWithType.vb: DirectDataRequestProcessor.DirectDataRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.#ctor*
+  name: DirectDataRequestProcessor
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.DirectDataRequestProcessor
+  nameWithType: DirectDataRequestProcessor.DirectDataRequestProcessor
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
+  name: AddProcessReply(ProcessReply, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_AddProcessReply_ProcessReply_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
+  nameWithType: DirectDataRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply*
+  name: AddProcessReply
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_AddProcessReply_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply
+  nameWithType: DirectDataRequestProcessor.AddProcessReply
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel
+  name: Cancel()
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_Cancel
+  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel()
+  nameWithType: DirectDataRequestProcessor.Cancel()
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel*
+  name: Cancel
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_Cancel_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel
+  nameWithType: DirectDataRequestProcessor.Cancel
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing(CancellationToken)
+  name: CompleteProcessing(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_CompleteProcessing_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing(CancellationToken)
+  nameWithType: DirectDataRequestProcessor.CompleteProcessing(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing*
+  name: CompleteProcessing
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_CompleteProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing
+  nameWithType: DirectDataRequestProcessor.CompleteProcessing
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete
+  name: IsComplete()
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_IsComplete
+  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete()
+  nameWithType: DirectDataRequestProcessor.IsComplete()
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete*
+  name: IsComplete
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_IsComplete_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete
+  nameWithType: DirectDataRequestProcessor.IsComplete
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
+  name: WaitForResponseCompletion(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_WaitForResponseCompletion_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
+  nameWithType: DirectDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion*
+  name: WaitForResponseCompletion
+  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_WaitForResponseCompletion_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion
+  nameWithType: DirectDataRequestProcessor.WaitForResponseCompletion
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor
+  name: IProcessReplyProcessor
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html
+  commentId: T:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor
+  nameWithType: IProcessReplyProcessor
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply(ProcessReply,CancellationToken)
+  name: AddProcessReply(ProcessReply, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_AddProcessReply_ProcessReply_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply(ProcessReply,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply(ProcessReply, CancellationToken)
+  nameWithType: IProcessReplyProcessor.AddProcessReply(ProcessReply, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply*
+  name: AddProcessReply
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_AddProcessReply_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply
+  nameWithType: IProcessReplyProcessor.AddProcessReply
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel
+  name: Cancel()
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_Cancel
+  commentId: M:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel()
+  nameWithType: IProcessReplyProcessor.Cancel()
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel*
+  name: Cancel
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_Cancel_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel
+  nameWithType: IProcessReplyProcessor.Cancel
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing(CancellationToken)
+  name: CompleteProcessing(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_CompleteProcessing_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing(CancellationToken)
+  nameWithType: IProcessReplyProcessor.CompleteProcessing(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing*
+  name: CompleteProcessing
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_CompleteProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing
+  nameWithType: IProcessReplyProcessor.CompleteProcessing
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete
+  name: IsComplete()
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_IsComplete
+  commentId: M:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete()
+  nameWithType: IProcessReplyProcessor.IsComplete()
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete*
+  name: IsComplete
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_IsComplete_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete
+  nameWithType: IProcessReplyProcessor.IsComplete
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion(CancellationToken)
+  name: WaitForResponseCompletion(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_WaitForResponseCompletion_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion(CancellationToken)
+  nameWithType: IProcessReplyProcessor.WaitForResponseCompletion(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion*
+  name: WaitForResponseCompletion
+  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_WaitForResponseCompletion_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion
+  nameWithType: IProcessReplyProcessor.WaitForResponseCompletion
 - uid: ArmoniK.Core.Common.Pollster.Pollster
   name: Pollster
   href: api/ArmoniK.Core.Common.Pollster.Pollster.html
@@ -6460,146 +6718,93 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync
   nameWithType: RequestProcessor.ProcessInternalsAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ProcessReply)
-  name: ProvideCommonDataAsync(IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProvideCommonDataAsync_ArmoniK_Core_Common_Utils_IAsyncPipe_ProcessReply_ProcessRequest__ProcessReply_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ProcessReply)
-  name.vb: ProvideCommonDataAsync(IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
-  nameWithType: RequestProcessor.ProvideCommonDataAsync(IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
-  nameWithType.vb: RequestProcessor.ProvideCommonDataAsync(IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync*
-  name: ProvideCommonDataAsync
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProvideCommonDataAsync_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor
+  name: ResourceRequestProcessor
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html
+  commentId: T:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor
+  nameWithType: ResourceRequestProcessor
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
+  name: ResourceRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor__ctor_ArmoniK_Core_Common_Storage_IObjectStorage_ArmoniK_Core_Common_Utils_IAsyncPipe_ProcessReply_ProcessRequest__ILogger_
+  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
+  name.vb: ResourceRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.ResourceRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
+  fullName.vb: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.ResourceRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
+  nameWithType: ResourceRequestProcessor.ResourceRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
+  nameWithType.vb: ResourceRequestProcessor.ResourceRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.#ctor*
+  name: ResourceRequestProcessor
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.#ctor
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideCommonDataAsync
-  nameWithType: RequestProcessor.ProvideCommonDataAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ProcessReply)
-  name: ProvideDirectDataAsync(IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProvideDirectDataAsync_ArmoniK_Core_Common_Utils_IAsyncPipe_ProcessReply_ProcessRequest__ProcessReply_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ProcessReply)
-  name.vb: ProvideDirectDataAsync(IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync(ArmoniK.Core.Common.Utils.IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
-  nameWithType: RequestProcessor.ProvideDirectDataAsync(IAsyncPipe<ProcessReply, ProcessRequest>, ProcessReply)
-  nameWithType.vb: RequestProcessor.ProvideDirectDataAsync(IAsyncPipe(Of ProcessReply, ProcessRequest), ProcessReply)
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync*
-  name: ProvideDirectDataAsync
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProvideDirectDataAsync_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.ResourceRequestProcessor
+  nameWithType: ResourceRequestProcessor.ResourceRequestProcessor
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
+  name: AddProcessReply(ProcessReply, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_AddProcessReply_ProcessReply_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
+  nameWithType: ResourceRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply*
+  name: AddProcessReply
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_AddProcessReply_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProvideDirectDataAsync
-  nameWithType: RequestProcessor.ProvideDirectDataAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.StoreResultAsync(ArmoniK.Core.Common.Storage.IObjectStorage,ProcessReply,IList{ProcessReply},System.String,System.String,CancellationToken)
-  name: StoreResultAsync(IObjectStorage, ProcessReply, IList<ProcessReply>, String, String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_StoreResultAsync_ArmoniK_Core_Common_Storage_IObjectStorage_ProcessReply_IList_ProcessReply__System_String_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.StoreResultAsync(ArmoniK.Core.Common.Storage.IObjectStorage,ProcessReply,IList{ProcessReply},System.String,System.String,CancellationToken)
-  name.vb: StoreResultAsync(IObjectStorage, ProcessReply, IList(Of ProcessReply), String, String, CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.StoreResultAsync(ArmoniK.Core.Common.Storage.IObjectStorage, ProcessReply, IList<ProcessReply>, System.String, System.String, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.StoreResultAsync(ArmoniK.Core.Common.Storage.IObjectStorage, ProcessReply, IList(Of ProcessReply), System.String, System.String, CancellationToken)
-  nameWithType: RequestProcessor.StoreResultAsync(IObjectStorage, ProcessReply, IList<ProcessReply>, String, String, CancellationToken)
-  nameWithType.vb: RequestProcessor.StoreResultAsync(IObjectStorage, ProcessReply, IList(Of ProcessReply), String, String, CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.StoreResultAsync*
-  name: StoreResultAsync
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_StoreResultAsync_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.RequestProcessor.StoreResultAsync
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply
+  nameWithType: ResourceRequestProcessor.AddProcessReply
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel
+  name: Cancel()
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_Cancel
+  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel()
+  nameWithType: ResourceRequestProcessor.Cancel()
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel*
+  name: Cancel
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_Cancel_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.StoreResultAsync
-  nameWithType: RequestProcessor.StoreResultAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(ArmoniK.Core.Common.Storage.TaskData,ProcessReply,IList{ProcessReply},CancellationToken)
-  name: SubmitLargeTasksAsync(TaskData, ProcessReply, IList<ProcessReply>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_SubmitLargeTasksAsync_ArmoniK_Core_Common_Storage_TaskData_ProcessReply_IList_ProcessReply__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(ArmoniK.Core.Common.Storage.TaskData,ProcessReply,IList{ProcessReply},CancellationToken)
-  name.vb: SubmitLargeTasksAsync(TaskData, ProcessReply, IList(Of ProcessReply), CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(ArmoniK.Core.Common.Storage.TaskData, ProcessReply, IList<ProcessReply>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync(ArmoniK.Core.Common.Storage.TaskData, ProcessReply, IList(Of ProcessReply), CancellationToken)
-  nameWithType: RequestProcessor.SubmitLargeTasksAsync(TaskData, ProcessReply, IList<ProcessReply>, CancellationToken)
-  nameWithType.vb: RequestProcessor.SubmitLargeTasksAsync(TaskData, ProcessReply, IList(Of ProcessReply), CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync*
-  name: SubmitLargeTasksAsync
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_SubmitLargeTasksAsync_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel
+  nameWithType: ResourceRequestProcessor.Cancel
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing(CancellationToken)
+  name: CompleteProcessing(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_CompleteProcessing_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing(CancellationToken)
+  nameWithType: ResourceRequestProcessor.CompleteProcessing(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing*
+  name: CompleteProcessing
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_CompleteProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitLargeTasksAsync
-  nameWithType: RequestProcessor.SubmitLargeTasksAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync(ArmoniK.Core.Common.Storage.TaskData,ProcessReply,CancellationToken)
-  name: SubmitSmallTasksAsync(TaskData, ProcessReply, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_SubmitSmallTasksAsync_ArmoniK_Core_Common_Storage_TaskData_ProcessReply_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync(ArmoniK.Core.Common.Storage.TaskData,ProcessReply,CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync(ArmoniK.Core.Common.Storage.TaskData, ProcessReply, CancellationToken)
-  nameWithType: RequestProcessor.SubmitSmallTasksAsync(TaskData, ProcessReply, CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync*
-  name: SubmitSmallTasksAsync
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_SubmitSmallTasksAsync_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing
+  nameWithType: ResourceRequestProcessor.CompleteProcessing
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete
+  name: IsComplete()
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_IsComplete
+  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete()
+  nameWithType: ResourceRequestProcessor.IsComplete()
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete*
+  name: IsComplete
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_IsComplete_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.SubmitSmallTasksAsync
-  nameWithType: RequestProcessor.SubmitSmallTasksAsync
-- uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions
-  name: WorkerClientExtensions
-  href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html
-  commentId: T:ArmoniK.Core.Common.Pollster.WorkerClientExtensions
-  fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions
-  nameWithType: WorkerClientExtensions
-- uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest(IAsyncEnumerable{ProcessReply},CancellationToken,ILogger)
-  name: ReconstituteTaskRequest(IAsyncEnumerable<ProcessReply>, CancellationToken, ILogger)
-  href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html#ArmoniK_Core_Common_Pollster_WorkerClientExtensions_ReconstituteTaskRequest_IAsyncEnumerable_ProcessReply__CancellationToken_ILogger_
-  commentId: M:ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest(IAsyncEnumerable{ProcessReply},CancellationToken,ILogger)
-  name.vb: ReconstituteTaskRequest(IAsyncEnumerable(Of ProcessReply), CancellationToken, ILogger)
-  fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest(IAsyncEnumerable<ProcessReply>, CancellationToken, ILogger)
-  fullName.vb: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest(IAsyncEnumerable(Of ProcessReply), CancellationToken, ILogger)
-  nameWithType: WorkerClientExtensions.ReconstituteTaskRequest(IAsyncEnumerable<ProcessReply>, CancellationToken, ILogger)
-  nameWithType.vb: WorkerClientExtensions.ReconstituteTaskRequest(IAsyncEnumerable(Of ProcessReply), CancellationToken, ILogger)
-- uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest(IEnumerable{ProcessReply},ILogger)
-  name: ReconstituteTaskRequest(IEnumerable<ProcessReply>, ILogger)
-  href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html#ArmoniK_Core_Common_Pollster_WorkerClientExtensions_ReconstituteTaskRequest_IEnumerable_ProcessReply__ILogger_
-  commentId: M:ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest(IEnumerable{ProcessReply},ILogger)
-  name.vb: ReconstituteTaskRequest(IEnumerable(Of ProcessReply), ILogger)
-  fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest(IEnumerable<ProcessReply>, ILogger)
-  fullName.vb: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest(IEnumerable(Of ProcessReply), ILogger)
-  nameWithType: WorkerClientExtensions.ReconstituteTaskRequest(IEnumerable<ProcessReply>, ILogger)
-  nameWithType.vb: WorkerClientExtensions.ReconstituteTaskRequest(IEnumerable(Of ProcessReply), ILogger)
-- uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest*
-  name: ReconstituteTaskRequest
-  href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html#ArmoniK_Core_Common_Pollster_WorkerClientExtensions_ReconstituteTaskRequest_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete
+  nameWithType: ResourceRequestProcessor.IsComplete
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion(CancellationToken)
+  name: WaitForResponseCompletion(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_WaitForResponseCompletion_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion(CancellationToken)
+  nameWithType: ResourceRequestProcessor.WaitForResponseCompletion(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion*
+  name: WaitForResponseCompletion
+  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_WaitForResponseCompletion_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ReconstituteTaskRequest
-  nameWithType: WorkerClientExtensions.ReconstituteTaskRequest
-- uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncEnumerable{ProcessReply},ILogger,CancellationToken)
-  name: Separate(IAsyncEnumerable<ProcessReply>, ILogger, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html#ArmoniK_Core_Common_Pollster_WorkerClientExtensions_Separate_IAsyncEnumerable_ProcessReply__ILogger_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncEnumerable{ProcessReply},ILogger,CancellationToken)
-  name.vb: Separate(IAsyncEnumerable(Of ProcessReply), ILogger, CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncEnumerable<ProcessReply>, ILogger, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate(IAsyncEnumerable(Of ProcessReply), ILogger, CancellationToken)
-  nameWithType: WorkerClientExtensions.Separate(IAsyncEnumerable<ProcessReply>, ILogger, CancellationToken)
-  nameWithType.vb: WorkerClientExtensions.Separate(IAsyncEnumerable(Of ProcessReply), ILogger, CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate*
-  name: Separate
-  href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html#ArmoniK_Core_Common_Pollster_WorkerClientExtensions_Separate_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.Separate
-  nameWithType: WorkerClientExtensions.Separate
-- uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ToDataReply(IAsyncEnumerable{System.Byte[]},System.String,System.String,CancellationToken)
-  name: ToDataReply(IAsyncEnumerable<Byte[]>, String, String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html#ArmoniK_Core_Common_Pollster_WorkerClientExtensions_ToDataReply_IAsyncEnumerable_System_Byte____System_String_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ToDataReply(IAsyncEnumerable{System.Byte[]},System.String,System.String,CancellationToken)
-  name.vb: ToDataReply(IAsyncEnumerable(Of Byte()), String, String, CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ToDataReply(IAsyncEnumerable<System.Byte[]>, System.String, System.String, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ToDataReply(IAsyncEnumerable(Of System.Byte()), System.String, System.String, CancellationToken)
-  nameWithType: WorkerClientExtensions.ToDataReply(IAsyncEnumerable<Byte[]>, String, String, CancellationToken)
-  nameWithType.vb: WorkerClientExtensions.ToDataReply(IAsyncEnumerable(Of Byte()), String, String, CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ToDataReply*
-  name: ToDataReply
-  href: api/ArmoniK.Core.Common.Pollster.WorkerClientExtensions.html#ArmoniK_Core_Common_Pollster_WorkerClientExtensions_ToDataReply_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ToDataReply
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.WorkerClientExtensions.ToDataReply
-  nameWithType: WorkerClientExtensions.ToDataReply
+  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion
+  nameWithType: ResourceRequestProcessor.WaitForResponseCompletion
 - uid: ArmoniK.Core.Common.StateMachines
   name: ArmoniK.Core.Common.StateMachines
   href: api/ArmoniK.Core.Common.StateMachines.html
@@ -6857,6 +7062,409 @@ references:
   commentId: F:ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.Triggers.InitRequest
   fullName: ArmoniK.Core.Common.StateMachines.ComputeRequestStateMachine.Triggers.InitRequest
   nameWithType: ComputeRequestStateMachine.Triggers.InitRequest
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine
+  name: ProcessReplyCreateLargeTaskStateMachine
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html
+  commentId: T:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.#ctor(ILogger)
+  name: ProcessReplyCreateLargeTaskStateMachine(ILogger)
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine__ctor_ILogger_
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.#ctor(ILogger)
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.ProcessReplyCreateLargeTaskStateMachine(ILogger)
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.ProcessReplyCreateLargeTaskStateMachine(ILogger)
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.#ctor*
+  name: ProcessReplyCreateLargeTaskStateMachine
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine__ctor_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.ProcessReplyCreateLargeTaskStateMachine
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.ProcessReplyCreateLargeTaskStateMachine
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddDataChunk
+  name: AddDataChunk()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_AddDataChunk
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddDataChunk
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddDataChunk()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.AddDataChunk()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddDataChunk*
+  name: AddDataChunk
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_AddDataChunk_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddDataChunk
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddDataChunk
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.AddDataChunk
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddHeader
+  name: AddHeader()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_AddHeader
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddHeader
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddHeader()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.AddHeader()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddHeader*
+  name: AddHeader
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_AddHeader_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddHeader
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.AddHeader
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.AddHeader
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteData
+  name: CompleteData()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_CompleteData
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteData
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteData()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.CompleteData()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteData*
+  name: CompleteData
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_CompleteData_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteData
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.CompleteData
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteRequest
+  name: CompleteRequest()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_CompleteRequest
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteRequest
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteRequest()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.CompleteRequest()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteRequest*
+  name: CompleteRequest
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_CompleteRequest_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteRequest
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.CompleteRequest
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.CompleteRequest
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateGraph
+  name: GenerateGraph()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_GenerateGraph
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateGraph
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateGraph()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.GenerateGraph()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateGraph*
+  name: GenerateGraph
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_GenerateGraph_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateGraph
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateGraph
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.GenerateGraph
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateMermaidGraph
+  name: GenerateMermaidGraph()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_GenerateMermaidGraph
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateMermaidGraph
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateMermaidGraph()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.GenerateMermaidGraph()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateMermaidGraph*
+  name: GenerateMermaidGraph
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_GenerateMermaidGraph_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateMermaidGraph
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GenerateMermaidGraph
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.GenerateMermaidGraph
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GetState
+  name: GetState()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_GetState
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GetState
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GetState()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.GetState()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GetState*
+  name: GetState
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_GetState_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GetState
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.GetState
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.GetState
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.InitRequest
+  name: InitRequest()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_InitRequest
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.InitRequest
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.InitRequest()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.InitRequest()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.InitRequest*
+  name: InitRequest
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_InitRequest_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.InitRequest
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.InitRequest
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.InitRequest
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.IsComplete
+  name: IsComplete()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_IsComplete
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.IsComplete
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.IsComplete()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.IsComplete()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.IsComplete*
+  name: IsComplete
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_IsComplete_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.IsComplete
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.IsComplete
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.IsComplete
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State
+  name: ProcessReplyCreateLargeTaskStateMachine.State
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.html
+  commentId: T:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.State
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.DataChunk
+  name: DataChunk
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_State_DataChunk
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.DataChunk
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.DataChunk
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.State.DataChunk
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.DataChunkComplete
+  name: DataChunkComplete
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_State_DataChunkComplete
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.DataChunkComplete
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.DataChunkComplete
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.State.DataChunkComplete
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.Init
+  name: Init
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_State_Init
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.Init
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.Init
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.State.Init
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.InitRequest
+  name: InitRequest
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_State_InitRequest
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.InitRequest
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.InitRequest
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.State.InitRequest
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast
+  name: InitTaskRequestLast
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_State_InitTaskRequestLast
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.TaskRequestHeader
+  name: TaskRequestHeader
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_State_TaskRequestHeader
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.TaskRequestHeader
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.State.TaskRequestHeader
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.State.TaskRequestHeader
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers
+  name: ProcessReplyCreateLargeTaskStateMachine.Triggers
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.html
+  commentId: T:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.Triggers
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.AddDataChunk
+  name: AddDataChunk
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_Triggers_AddDataChunk
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.AddDataChunk
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.AddDataChunk
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.Triggers.AddDataChunk
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.AddHeader
+  name: AddHeader
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_Triggers_AddHeader
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.AddHeader
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.AddHeader
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.Triggers.AddHeader
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.CompleteData
+  name: CompleteData
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_Triggers_CompleteData
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.CompleteData
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.CompleteData
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.Triggers.CompleteData
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.CompleteRequest
+  name: CompleteRequest
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_Triggers_CompleteRequest
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.CompleteRequest
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.CompleteRequest
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.Triggers.CompleteRequest
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.InitRequest
+  name: InitRequest
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.html#ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_Triggers_InitRequest
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.InitRequest
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine.Triggers.InitRequest
+  nameWithType: ProcessReplyCreateLargeTaskStateMachine.Triggers.InitRequest
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine
+  name: ProcessReplyResultStateMachine
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html
+  commentId: T:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine
+  nameWithType: ProcessReplyResultStateMachine
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.#ctor(ILogger)
+  name: ProcessReplyResultStateMachine(ILogger)
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine__ctor_ILogger_
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.#ctor(ILogger)
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.ProcessReplyResultStateMachine(ILogger)
+  nameWithType: ProcessReplyResultStateMachine.ProcessReplyResultStateMachine(ILogger)
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.#ctor*
+  name: ProcessReplyResultStateMachine
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine__ctor_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.ProcessReplyResultStateMachine
+  nameWithType: ProcessReplyResultStateMachine.ProcessReplyResultStateMachine
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.AddDataChunk
+  name: AddDataChunk()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_AddDataChunk
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.AddDataChunk
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.AddDataChunk()
+  nameWithType: ProcessReplyResultStateMachine.AddDataChunk()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.AddDataChunk*
+  name: AddDataChunk
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_AddDataChunk_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.AddDataChunk
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.AddDataChunk
+  nameWithType: ProcessReplyResultStateMachine.AddDataChunk
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteData
+  name: CompleteData()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_CompleteData
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteData
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteData()
+  nameWithType: ProcessReplyResultStateMachine.CompleteData()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteData*
+  name: CompleteData
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_CompleteData_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteData
+  nameWithType: ProcessReplyResultStateMachine.CompleteData
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteRequest
+  name: CompleteRequest()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_CompleteRequest
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteRequest
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteRequest()
+  nameWithType: ProcessReplyResultStateMachine.CompleteRequest()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteRequest*
+  name: CompleteRequest
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_CompleteRequest_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteRequest
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.CompleteRequest
+  nameWithType: ProcessReplyResultStateMachine.CompleteRequest
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateGraph
+  name: GenerateGraph()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_GenerateGraph
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateGraph
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateGraph()
+  nameWithType: ProcessReplyResultStateMachine.GenerateGraph()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateGraph*
+  name: GenerateGraph
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_GenerateGraph_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateGraph
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateGraph
+  nameWithType: ProcessReplyResultStateMachine.GenerateGraph
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateMermaidGraph
+  name: GenerateMermaidGraph()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_GenerateMermaidGraph
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateMermaidGraph
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateMermaidGraph()
+  nameWithType: ProcessReplyResultStateMachine.GenerateMermaidGraph()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateMermaidGraph*
+  name: GenerateMermaidGraph
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_GenerateMermaidGraph_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateMermaidGraph
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GenerateMermaidGraph
+  nameWithType: ProcessReplyResultStateMachine.GenerateMermaidGraph
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GetState
+  name: GetState()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_GetState
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GetState
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GetState()
+  nameWithType: ProcessReplyResultStateMachine.GetState()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GetState*
+  name: GetState
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_GetState_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GetState
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.GetState
+  nameWithType: ProcessReplyResultStateMachine.GetState
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.InitKey
+  name: InitKey()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_InitKey
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.InitKey
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.InitKey()
+  nameWithType: ProcessReplyResultStateMachine.InitKey()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.InitKey*
+  name: InitKey
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_InitKey_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.InitKey
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.InitKey
+  nameWithType: ProcessReplyResultStateMachine.InitKey
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.IsComplete
+  name: IsComplete()
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_IsComplete
+  commentId: M:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.IsComplete
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.IsComplete()
+  nameWithType: ProcessReplyResultStateMachine.IsComplete()
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.IsComplete*
+  name: IsComplete
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_IsComplete_
+  commentId: Overload:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.IsComplete
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.IsComplete
+  nameWithType: ProcessReplyResultStateMachine.IsComplete
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State
+  name: ProcessReplyResultStateMachine.State
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.html
+  commentId: T:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State
+  nameWithType: ProcessReplyResultStateMachine.State
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.Data
+  name: Data
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_State_Data
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.Data
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.Data
+  nameWithType: ProcessReplyResultStateMachine.State.Data
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.DataComplete
+  name: DataComplete
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_State_DataComplete
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.DataComplete
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.DataComplete
+  nameWithType: ProcessReplyResultStateMachine.State.DataComplete
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.Init
+  name: Init
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_State_Init
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.Init
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.Init
+  nameWithType: ProcessReplyResultStateMachine.State.Init
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.InitKeyedData
+  name: InitKeyedData
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_State_InitKeyedData
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.InitKeyedData
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.InitKeyedData
+  nameWithType: ProcessReplyResultStateMachine.State.InitKeyedData
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.InitKeyedDataLast
+  name: InitKeyedDataLast
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_State_InitKeyedDataLast
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.InitKeyedDataLast
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.State.InitKeyedDataLast
+  nameWithType: ProcessReplyResultStateMachine.State.InitKeyedDataLast
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers
+  name: ProcessReplyResultStateMachine.Triggers
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.html
+  commentId: T:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers
+  nameWithType: ProcessReplyResultStateMachine.Triggers
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.AddDataChunk
+  name: AddDataChunk
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_Triggers_AddDataChunk
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.AddDataChunk
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.AddDataChunk
+  nameWithType: ProcessReplyResultStateMachine.Triggers.AddDataChunk
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.CompleteData
+  name: CompleteData
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_Triggers_CompleteData
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.CompleteData
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.CompleteData
+  nameWithType: ProcessReplyResultStateMachine.Triggers.CompleteData
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.CompleteRequest
+  name: CompleteRequest
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_Triggers_CompleteRequest
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.CompleteRequest
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.CompleteRequest
+  nameWithType: ProcessReplyResultStateMachine.Triggers.CompleteRequest
+- uid: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.InitKeyedData
+  name: InitKeyedData
+  href: api/ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.html#ArmoniK_Core_Common_StateMachines_ProcessReplyResultStateMachine_Triggers_InitKeyedData
+  commentId: F:ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.InitKeyedData
+  fullName: ArmoniK.Core.Common.StateMachines.ProcessReplyResultStateMachine.Triggers.InitKeyedData
+  nameWithType: ProcessReplyResultStateMachine.Triggers.InitKeyedData
 - uid: ArmoniK.Core.Common.StateMachines.UmlMermaidGraph
   name: UmlMermaidGraph
   href: api/ArmoniK.Core.Common.StateMachines.UmlMermaidGraph.html
@@ -9651,12 +10259,12 @@ references:
   fullName.vb: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable(Of TaskRequest), System.Nullable(Of TaskOptions), System.Int32)
   nameWithType: TaskRequestExtensions.ToRequestStream(IEnumerable<TaskRequest>, Nullable<TaskOptions>, Int32)
   nameWithType.vb: TaskRequestExtensions.ToRequestStream(IEnumerable(Of TaskRequest), Nullable(Of TaskOptions), Int32)
-- uid: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest,System.Boolean,System.Int32)
-  name: ToRequestStream(TaskRequest, Boolean, Int32)
-  href: api/ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.html#ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_TaskRequest_System_Boolean_System_Int32_
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest,System.Boolean,System.Int32)
-  fullName: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest, System.Boolean, System.Int32)
-  nameWithType: TaskRequestExtensions.ToRequestStream(TaskRequest, Boolean, Int32)
+- uid: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest,System.Boolean,System.Int32,ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)
+  name: ToRequestStream(TaskRequest, Boolean, Int32, ProcessReplyCreateLargeTaskStateMachine)
+  href: api/ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.html#ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_TaskRequest_System_Boolean_System_Int32_ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest,System.Boolean,System.Int32,ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)
+  fullName: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest, System.Boolean, System.Int32, ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)
+  nameWithType: TaskRequestExtensions.ToRequestStream(TaskRequest, Boolean, Int32, ProcessReplyCreateLargeTaskStateMachine)
 - uid: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream*
   name: ToRequestStream
   href: api/ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.html#ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_
@@ -11125,15 +11733,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest
   fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest
   nameWithType: RequestProcessorTest
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List{ProcessReply})
-  name: IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncNonImplemented_List_ProcessReply__
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List{ProcessReply})
-  name.vb: IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply))
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply))
-  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>)
-  nameWithType.vb: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply))
+- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List{ProcessReply},ProcessRequest)
+  name: IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>, ProcessRequest)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncNonImplemented_List_ProcessReply__ProcessRequest_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List{ProcessReply},ProcessRequest)
+  name.vb: IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply), ProcessRequest)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>, ProcessRequest)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply), ProcessRequest)
+  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>, ProcessRequest)
+  nameWithType.vb: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply), ProcessRequest)
 - uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented*
   name: IntegrationProcessInternalsAsyncNonImplemented
   href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncNonImplemented_
@@ -11141,15 +11749,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented
   nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List{ProcessReply})
-  name: IntegrationProcessInternalsAsyncTest(List<ProcessReply>)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncTest_List_ProcessReply__
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List{ProcessReply})
-  name.vb: IntegrationProcessInternalsAsyncTest(List(Of ProcessReply))
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List<ProcessReply>)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List(Of ProcessReply))
-  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List<ProcessReply>)
-  nameWithType.vb: RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List(Of ProcessReply))
+- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List{ProcessReply},ProcessRequest)
+  name: IntegrationProcessInternalsAsyncTest(List<ProcessReply>, ProcessRequest)
+  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncTest_List_ProcessReply__ProcessRequest_
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List{ProcessReply},ProcessRequest)
+  name.vb: IntegrationProcessInternalsAsyncTest(List(Of ProcessReply), ProcessRequest)
+  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List<ProcessReply>, ProcessRequest)
+  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List(Of ProcessReply), ProcessRequest)
+  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List<ProcessReply>, ProcessRequest)
+  nameWithType.vb: RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List(Of ProcessReply), ProcessRequest)
 - uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest*
   name: IntegrationProcessInternalsAsyncTest
   href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncTest_
@@ -11932,6 +12540,317 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.StateMachines.ComputeRequestStateMachineTest.TwoInitRequestsShouldFail
   nameWithType: ComputeRequestStateMachineTest.TwoInitRequestsShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest
+  name: ProcessReplyCreateLargeTaskStateMachineTest
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteDataFirstShouldFail
+  name: CompleteDataFirstShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_CompleteDataFirstShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteDataFirstShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteDataFirstShouldFail()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.CompleteDataFirstShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteDataFirstShouldFail*
+  name: CompleteDataFirstShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_CompleteDataFirstShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteDataFirstShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteDataFirstShouldFail
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.CompleteDataFirstShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestFirstShouldFail
+  name: CompleteRequestFirstShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_CompleteRequestFirstShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestFirstShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestFirstShouldFail()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestFirstShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestFirstShouldFail*
+  name: CompleteRequestFirstShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_CompleteRequestFirstShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestFirstShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestFirstShouldFail
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestFirstShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithDataCompleteShouldSucceed
+  name: CompleteRequestWithDataCompleteShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_CompleteRequestWithDataCompleteShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithDataCompleteShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithDataCompleteShouldSucceed()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithDataCompleteShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithDataCompleteShouldSucceed*
+  name: CompleteRequestWithDataCompleteShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_CompleteRequestWithDataCompleteShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithDataCompleteShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithDataCompleteShouldSucceed
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithDataCompleteShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithoutDataCompleteShouldFail
+  name: CompleteRequestWithoutDataCompleteShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_CompleteRequestWithoutDataCompleteShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithoutDataCompleteShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithoutDataCompleteShouldFail()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithoutDataCompleteShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithoutDataCompleteShouldFail*
+  name: CompleteRequestWithoutDataCompleteShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_CompleteRequestWithoutDataCompleteShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithoutDataCompleteShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithoutDataCompleteShouldFail
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.CompleteRequestWithoutDataCompleteShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DataChunkFirstShouldFail
+  name: DataChunkFirstShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_DataChunkFirstShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DataChunkFirstShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DataChunkFirstShouldFail()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.DataChunkFirstShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DataChunkFirstShouldFail*
+  name: DataChunkFirstShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_DataChunkFirstShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DataChunkFirstShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DataChunkFirstShouldFail
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.DataChunkFirstShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail
+  name: DoubleCompleteRequestWithoutDataCompleteShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_DoubleCompleteRequestWithoutDataCompleteShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail*
+  name: DoubleCompleteRequestWithoutDataCompleteShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_DoubleCompleteRequestWithoutDataCompleteShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateGraphShouldSucceed
+  name: GenerateGraphShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_GenerateGraphShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateGraphShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateGraphShouldSucceed()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.GenerateGraphShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateGraphShouldSucceed*
+  name: GenerateGraphShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_GenerateGraphShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateGraphShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateGraphShouldSucceed
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.GenerateGraphShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateMermaidGraphShouldSucceed
+  name: GenerateMermaidGraphShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_GenerateMermaidGraphShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateMermaidGraphShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateMermaidGraphShouldSucceed()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.GenerateMermaidGraphShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateMermaidGraphShouldSucceed*
+  name: GenerateMermaidGraphShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_GenerateMermaidGraphShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateMermaidGraphShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateMermaidGraphShouldSucceed
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.GenerateMermaidGraphShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmall2ShouldSucceed
+  name: HappyPathSmall2ShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_HappyPathSmall2ShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmall2ShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmall2ShouldSucceed()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmall2ShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmall2ShouldSucceed*
+  name: HappyPathSmall2ShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_HappyPathSmall2ShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmall2ShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmall2ShouldSucceed
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmall2ShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmallShouldSucceed
+  name: HappyPathSmallShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_HappyPathSmallShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmallShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmallShouldSucceed()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmallShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmallShouldSucceed*
+  name: HappyPathSmallShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_HappyPathSmallShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmallShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmallShouldSucceed
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.HappyPathSmallShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.Setup
+  name: Setup()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_Setup
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.Setup
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.Setup()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.Setup()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.Setup*
+  name: Setup
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_Setup_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.Setup
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.Setup
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.Setup
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.TwoInitRequestsShouldFail
+  name: TwoInitRequestsShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_TwoInitRequestsShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.TwoInitRequestsShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.TwoInitRequestsShouldFail()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.TwoInitRequestsShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.TwoInitRequestsShouldFail*
+  name: TwoInitRequestsShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_TwoInitRequestsShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.TwoInitRequestsShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.TwoInitRequestsShouldFail
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.TwoInitRequestsShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest
+  name: ProcessReplyResultStateMachineTest
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest
+  nameWithType: ProcessReplyResultStateMachineTest
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteDataFirstShouldFail
+  name: CompleteDataFirstShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_CompleteDataFirstShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteDataFirstShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteDataFirstShouldFail()
+  nameWithType: ProcessReplyResultStateMachineTest.CompleteDataFirstShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteDataFirstShouldFail*
+  name: CompleteDataFirstShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_CompleteDataFirstShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteDataFirstShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteDataFirstShouldFail
+  nameWithType: ProcessReplyResultStateMachineTest.CompleteDataFirstShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestFirstShouldFail
+  name: CompleteRequestFirstShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_CompleteRequestFirstShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestFirstShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestFirstShouldFail()
+  nameWithType: ProcessReplyResultStateMachineTest.CompleteRequestFirstShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestFirstShouldFail*
+  name: CompleteRequestFirstShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_CompleteRequestFirstShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestFirstShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestFirstShouldFail
+  nameWithType: ProcessReplyResultStateMachineTest.CompleteRequestFirstShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithoutPayloadCompleteShouldFail
+  name: CompleteRequestWithoutPayloadCompleteShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_CompleteRequestWithoutPayloadCompleteShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithoutPayloadCompleteShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithoutPayloadCompleteShouldFail()
+  nameWithType: ProcessReplyResultStateMachineTest.CompleteRequestWithoutPayloadCompleteShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithoutPayloadCompleteShouldFail*
+  name: CompleteRequestWithoutPayloadCompleteShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_CompleteRequestWithoutPayloadCompleteShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithoutPayloadCompleteShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithoutPayloadCompleteShouldFail
+  nameWithType: ProcessReplyResultStateMachineTest.CompleteRequestWithoutPayloadCompleteShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithPayloadCompleteShouldSucceed
+  name: CompleteRequestWithPayloadCompleteShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_CompleteRequestWithPayloadCompleteShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithPayloadCompleteShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithPayloadCompleteShouldSucceed()
+  nameWithType: ProcessReplyResultStateMachineTest.CompleteRequestWithPayloadCompleteShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithPayloadCompleteShouldSucceed*
+  name: CompleteRequestWithPayloadCompleteShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_CompleteRequestWithPayloadCompleteShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithPayloadCompleteShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.CompleteRequestWithPayloadCompleteShouldSucceed
+  nameWithType: ProcessReplyResultStateMachineTest.CompleteRequestWithPayloadCompleteShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DataChunkFirstShouldFail
+  name: DataChunkFirstShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_DataChunkFirstShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DataChunkFirstShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DataChunkFirstShouldFail()
+  nameWithType: ProcessReplyResultStateMachineTest.DataChunkFirstShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DataChunkFirstShouldFail*
+  name: DataChunkFirstShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_DataChunkFirstShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DataChunkFirstShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DataChunkFirstShouldFail
+  nameWithType: ProcessReplyResultStateMachineTest.DataChunkFirstShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DoubleCompleteRequestWithoutPayloadCompleteShouldFail
+  name: DoubleCompleteRequestWithoutPayloadCompleteShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_DoubleCompleteRequestWithoutPayloadCompleteShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DoubleCompleteRequestWithoutPayloadCompleteShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DoubleCompleteRequestWithoutPayloadCompleteShouldFail()
+  nameWithType: ProcessReplyResultStateMachineTest.DoubleCompleteRequestWithoutPayloadCompleteShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DoubleCompleteRequestWithoutPayloadCompleteShouldFail*
+  name: DoubleCompleteRequestWithoutPayloadCompleteShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_DoubleCompleteRequestWithoutPayloadCompleteShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DoubleCompleteRequestWithoutPayloadCompleteShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.DoubleCompleteRequestWithoutPayloadCompleteShouldFail
+  nameWithType: ProcessReplyResultStateMachineTest.DoubleCompleteRequestWithoutPayloadCompleteShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateGraphShouldSucceed
+  name: GenerateGraphShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_GenerateGraphShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateGraphShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateGraphShouldSucceed()
+  nameWithType: ProcessReplyResultStateMachineTest.GenerateGraphShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateGraphShouldSucceed*
+  name: GenerateGraphShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_GenerateGraphShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateGraphShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateGraphShouldSucceed
+  nameWithType: ProcessReplyResultStateMachineTest.GenerateGraphShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateMermaidGraphShouldSucceed
+  name: GenerateMermaidGraphShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_GenerateMermaidGraphShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateMermaidGraphShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateMermaidGraphShouldSucceed()
+  nameWithType: ProcessReplyResultStateMachineTest.GenerateMermaidGraphShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateMermaidGraphShouldSucceed*
+  name: GenerateMermaidGraphShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_GenerateMermaidGraphShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateMermaidGraphShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.GenerateMermaidGraphShouldSucceed
+  nameWithType: ProcessReplyResultStateMachineTest.GenerateMermaidGraphShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.HappyPathSmallShouldSucceed
+  name: HappyPathSmallShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_HappyPathSmallShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.HappyPathSmallShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.HappyPathSmallShouldSucceed()
+  nameWithType: ProcessReplyResultStateMachineTest.HappyPathSmallShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.HappyPathSmallShouldSucceed*
+  name: HappyPathSmallShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_HappyPathSmallShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.HappyPathSmallShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.HappyPathSmallShouldSucceed
+  nameWithType: ProcessReplyResultStateMachineTest.HappyPathSmallShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.Setup
+  name: Setup()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_Setup
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.Setup
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.Setup()
+  nameWithType: ProcessReplyResultStateMachineTest.Setup()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.Setup*
+  name: Setup
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_Setup_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.Setup
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.Setup
+  nameWithType: ProcessReplyResultStateMachineTest.Setup
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.TwoInitRequestsShouldFail
+  name: TwoInitRequestsShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_TwoInitRequestsShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.TwoInitRequestsShouldFail
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.TwoInitRequestsShouldFail()
+  nameWithType: ProcessReplyResultStateMachineTest.TwoInitRequestsShouldFail()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.TwoInitRequestsShouldFail*
+  name: TwoInitRequestsShouldFail
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyResultStateMachineTest_TwoInitRequestsShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.TwoInitRequestsShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.TwoInitRequestsShouldFail
+  nameWithType: ProcessReplyResultStateMachineTest.TwoInitRequestsShouldFail
 - uid: ArmoniK.Core.Common.Tests.Stream
   name: ArmoniK.Core.Common.Tests.Stream
   href: api/ArmoniK.Core.Common.Tests.Stream.html
