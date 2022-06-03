@@ -9108,6 +9108,12 @@ references:
   commentId: M:ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,ArmoniK.Core.Common.Storage.TaskOptions)
   fullName: ArmoniK.Core.Common.Storage.SessionData.SessionData(System.String, SessionStatus, ArmoniK.Core.Common.Storage.TaskOptions)
   nameWithType: SessionData.SessionData(String, SessionStatus, TaskOptions)
+- uid: ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,DateTime,DateTime,ArmoniK.Core.Common.Storage.TaskOptions)
+  name: SessionData(String, SessionStatus, DateTime, DateTime, TaskOptions)
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData__ctor_System_String_SessionStatus_DateTime_DateTime_ArmoniK_Core_Common_Storage_TaskOptions_
+  commentId: M:ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,DateTime,DateTime,ArmoniK.Core.Common.Storage.TaskOptions)
+  fullName: ArmoniK.Core.Common.Storage.SessionData.SessionData(System.String, SessionStatus, DateTime, DateTime, ArmoniK.Core.Common.Storage.TaskOptions)
+  nameWithType: SessionData.SessionData(String, SessionStatus, DateTime, DateTime, TaskOptions)
 - uid: ArmoniK.Core.Common.Storage.SessionData.#ctor*
   name: SessionData
   href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData__ctor_
@@ -9115,6 +9121,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.SessionData.SessionData
   nameWithType: SessionData.SessionData
+- uid: ArmoniK.Core.Common.Storage.SessionData.CancellationDate
+  name: CancellationDate
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_CancellationDate
+  commentId: P:ArmoniK.Core.Common.Storage.SessionData.CancellationDate
+  fullName: ArmoniK.Core.Common.Storage.SessionData.CancellationDate
+  nameWithType: SessionData.CancellationDate
+- uid: ArmoniK.Core.Common.Storage.SessionData.CancellationDate*
+  name: CancellationDate
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_CancellationDate_
+  commentId: Overload:ArmoniK.Core.Common.Storage.SessionData.CancellationDate
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.SessionData.CancellationDate
+  nameWithType: SessionData.CancellationDate
+- uid: ArmoniK.Core.Common.Storage.SessionData.CreationDate
+  name: CreationDate
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_CreationDate
+  commentId: P:ArmoniK.Core.Common.Storage.SessionData.CreationDate
+  fullName: ArmoniK.Core.Common.Storage.SessionData.CreationDate
+  nameWithType: SessionData.CreationDate
+- uid: ArmoniK.Core.Common.Storage.SessionData.CreationDate*
+  name: CreationDate
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_CreationDate_
+  commentId: Overload:ArmoniK.Core.Common.Storage.SessionData.CreationDate
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.SessionData.CreationDate
+  nameWithType: SessionData.CreationDate
 - uid: ArmoniK.Core.Common.Storage.SessionData.Options
   name: Options
   href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_Options
