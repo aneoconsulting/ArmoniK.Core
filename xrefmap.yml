@@ -713,15 +713,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.ResultTable.AreResultsAvailableAsync
   nameWithType: ResultTable.AreResultsAvailableAsync
-- uid: ArmoniK.Core.Adapters.Memory.ResultTable.ChangeResultOwnership(System.String,IEnumerable{System.String},System.String,System.String,CancellationToken)
-  name: ChangeResultOwnership(String, IEnumerable<String>, String, String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_ChangeResultOwnership_System_String_IEnumerable_System_String__System_String_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.ResultTable.ChangeResultOwnership(System.String,IEnumerable{System.String},System.String,System.String,CancellationToken)
-  name.vb: ChangeResultOwnership(String, IEnumerable(Of String), String, String, CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.ChangeResultOwnership(System.String, IEnumerable<System.String>, System.String, System.String, CancellationToken)
-  fullName.vb: ArmoniK.Core.Adapters.Memory.ResultTable.ChangeResultOwnership(System.String, IEnumerable(Of System.String), System.String, System.String, CancellationToken)
-  nameWithType: ResultTable.ChangeResultOwnership(String, IEnumerable<String>, String, String, CancellationToken)
-  nameWithType.vb: ResultTable.ChangeResultOwnership(String, IEnumerable(Of String), String, String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.ResultTable.ChangeResultOwnership(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest},CancellationToken)
+  name: ChangeResultOwnership(String, String, IEnumerable<IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_ChangeResultOwnership_System_String_System_String_IEnumerable_ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.ResultTable.ChangeResultOwnership(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest},CancellationToken)
+  name.vb: ChangeResultOwnership(String, String, IEnumerable(Of IResultTable.ChangeResultOwnershipRequest), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.ChangeResultOwnership(System.String, System.String, IEnumerable<ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.ResultTable.ChangeResultOwnership(System.String, System.String, IEnumerable(Of ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest), CancellationToken)
+  nameWithType: ResultTable.ChangeResultOwnership(String, String, IEnumerable<IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  nameWithType.vb: ResultTable.ChangeResultOwnership(String, String, IEnumerable(Of IResultTable.ChangeResultOwnershipRequest), CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.ResultTable.ChangeResultOwnership*
   name: ChangeResultOwnership
   href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_ChangeResultOwnership_
@@ -2546,15 +2546,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.AreResultsAvailableAsync
   nameWithType: ResultTable.AreResultsAvailableAsync
-- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.ChangeResultOwnership(System.String,IEnumerable{System.String},System.String,System.String,CancellationToken)
-  name: ChangeResultOwnership(String, IEnumerable<String>, String, String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_ChangeResultOwnership_System_String_IEnumerable_System_String__System_String_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultTable.ChangeResultOwnership(System.String,IEnumerable{System.String},System.String,System.String,CancellationToken)
-  name.vb: ChangeResultOwnership(String, IEnumerable(Of String), String, String, CancellationToken)
-  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.ChangeResultOwnership(System.String, IEnumerable<System.String>, System.String, System.String, CancellationToken)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.ResultTable.ChangeResultOwnership(System.String, IEnumerable(Of System.String), System.String, System.String, CancellationToken)
-  nameWithType: ResultTable.ChangeResultOwnership(String, IEnumerable<String>, String, String, CancellationToken)
-  nameWithType.vb: ResultTable.ChangeResultOwnership(String, IEnumerable(Of String), String, String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.ChangeResultOwnership(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest},CancellationToken)
+  name: ChangeResultOwnership(String, String, IEnumerable<IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_ChangeResultOwnership_System_String_System_String_IEnumerable_ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultTable.ChangeResultOwnership(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest},CancellationToken)
+  name.vb: ChangeResultOwnership(String, String, IEnumerable(Of IResultTable.ChangeResultOwnershipRequest), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.ChangeResultOwnership(System.String, System.String, IEnumerable<ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.ResultTable.ChangeResultOwnership(System.String, System.String, IEnumerable(Of ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest), CancellationToken)
+  nameWithType: ResultTable.ChangeResultOwnership(String, String, IEnumerable<IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  nameWithType.vb: ResultTable.ChangeResultOwnership(String, String, IEnumerable(Of IResultTable.ChangeResultOwnershipRequest), CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.ChangeResultOwnership*
   name: ChangeResultOwnership
   href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_ChangeResultOwnership_
@@ -4771,15 +4771,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks
   nameWithType: ISubmitter.CreateTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name: FinalizeTaskCreation(IList<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_IList_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name.vb: FinalizeTaskCreation(IList(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IList<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IList(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  nameWithType: ISubmitter.FinalizeTaskCreation(IList<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: ISubmitter.FinalizeTaskCreation(IList(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)
+  name: FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)
+  name.vb: FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable<ArmoniK.Core.Common.Storage.TaskRequest>, System.Int32, System.String, System.String, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskRequest), System.Int32, System.String, System.String, CancellationToken)
+  nameWithType: ISubmitter.FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, CancellationToken)
+  nameWithType.vb: ISubmitter.FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation*
   name: FinalizeTaskCreation
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_
@@ -5036,15 +5036,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks
   nameWithType: Submitter.CreateTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name: FinalizeTaskCreation(IList<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_FinalizeTaskCreation_IList_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name.vb: FinalizeTaskCreation(IList(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IList<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IList(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  nameWithType: Submitter.FinalizeTaskCreation(IList<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: Submitter.FinalizeTaskCreation(IList(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)
+  name: FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)
+  name.vb: FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable<ArmoniK.Core.Common.Storage.TaskRequest>, System.Int32, System.String, System.String, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskRequest), System.Int32, System.String, System.String, CancellationToken)
+  nameWithType: Submitter.FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, CancellationToken)
+  nameWithType.vb: Submitter.FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation*
   name: FinalizeTaskCreation
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_FinalizeTaskCreation_
@@ -5078,22 +5078,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.GetStatusAsync
   nameWithType: Submitter.GetStatusAsync
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.InitializeTaskCreationAsync(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},CancellationToken)
-  name: InitializeTaskCreationAsync(String, String, TaskOptions, IEnumerable<TaskRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_InitializeTaskCreationAsync_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.InitializeTaskCreationAsync(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},CancellationToken)
-  name.vb: InitializeTaskCreationAsync(String, String, TaskOptions, IEnumerable(Of TaskRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.InitializeTaskCreationAsync(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IEnumerable<ArmoniK.Core.Common.Storage.TaskRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.InitializeTaskCreationAsync(System.String, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IEnumerable(Of ArmoniK.Core.Common.Storage.TaskRequest), CancellationToken)
-  nameWithType: Submitter.InitializeTaskCreationAsync(String, String, TaskOptions, IEnumerable<TaskRequest>, CancellationToken)
-  nameWithType.vb: Submitter.InitializeTaskCreationAsync(String, String, TaskOptions, IEnumerable(Of TaskRequest), CancellationToken)
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.InitializeTaskCreationAsync*
-  name: InitializeTaskCreationAsync
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_InitializeTaskCreationAsync_
-  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Submitter.InitializeTaskCreationAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.InitializeTaskCreationAsync
-  nameWithType: Submitter.InitializeTaskCreationAsync
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.ListSessionsAsync(SessionFilter,CancellationToken)
   name: ListSessionsAsync(SessionFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_ListSessionsAsync_SessionFilter_CancellationToken_
@@ -7829,15 +7813,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.IResultTable.AreResultsAvailableAsync
   nameWithType: IResultTable.AreResultsAvailableAsync
-- uid: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership(System.String,IEnumerable{System.String},System.String,System.String,CancellationToken)
-  name: ChangeResultOwnership(String, IEnumerable<String>, String, String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnership_System_String_IEnumerable_System_String__System_String_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership(System.String,IEnumerable{System.String},System.String,System.String,CancellationToken)
-  name.vb: ChangeResultOwnership(String, IEnumerable(Of String), String, String, CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership(System.String, IEnumerable<System.String>, System.String, System.String, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership(System.String, IEnumerable(Of System.String), System.String, System.String, CancellationToken)
-  nameWithType: IResultTable.ChangeResultOwnership(String, IEnumerable<String>, String, String, CancellationToken)
-  nameWithType.vb: IResultTable.ChangeResultOwnership(String, IEnumerable(Of String), String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest},CancellationToken)
+  name: ChangeResultOwnership(String, String, IEnumerable<IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnership_System_String_System_String_IEnumerable_ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership(System.String,System.String,IEnumerable{ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest},CancellationToken)
+  name.vb: ChangeResultOwnership(String, String, IEnumerable(Of IResultTable.ChangeResultOwnershipRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership(System.String, System.String, IEnumerable<ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership(System.String, System.String, IEnumerable(Of ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest), CancellationToken)
+  nameWithType: IResultTable.ChangeResultOwnership(String, String, IEnumerable<IResultTable.ChangeResultOwnershipRequest>, CancellationToken)
+  nameWithType.vb: IResultTable.ChangeResultOwnership(String, String, IEnumerable(Of IResultTable.ChangeResultOwnershipRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership*
   name: ChangeResultOwnership
   href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnership_
@@ -7845,6 +7829,54 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnership
   nameWithType: IResultTable.ChangeResultOwnership
+- uid: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest
+  name: IResultTable.ChangeResultOwnershipRequest
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.html
+  commentId: T:ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest
+  nameWithType: IResultTable.ChangeResultOwnershipRequest
+- uid: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.#ctor(IEnumerable{System.String},System.String)
+  name: ChangeResultOwnershipRequest(IEnumerable<String>, String)
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.html#ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest__ctor_IEnumerable_System_String__System_String_
+  commentId: M:ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.#ctor(IEnumerable{System.String},System.String)
+  name.vb: ChangeResultOwnershipRequest(IEnumerable(Of String), String)
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.ChangeResultOwnershipRequest(IEnumerable<System.String>, System.String)
+  fullName.vb: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.ChangeResultOwnershipRequest(IEnumerable(Of System.String), System.String)
+  nameWithType: IResultTable.ChangeResultOwnershipRequest.ChangeResultOwnershipRequest(IEnumerable<String>, String)
+  nameWithType.vb: IResultTable.ChangeResultOwnershipRequest.ChangeResultOwnershipRequest(IEnumerable(Of String), String)
+- uid: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.#ctor*
+  name: ChangeResultOwnershipRequest
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.html#ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.ChangeResultOwnershipRequest
+  nameWithType: IResultTable.ChangeResultOwnershipRequest.ChangeResultOwnershipRequest
+- uid: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.Keys
+  name: Keys
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.html#ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest_Keys
+  commentId: P:ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.Keys
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.Keys
+  nameWithType: IResultTable.ChangeResultOwnershipRequest.Keys
+- uid: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.Keys*
+  name: Keys
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.html#ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest_Keys_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.Keys
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.Keys
+  nameWithType: IResultTable.ChangeResultOwnershipRequest.Keys
+- uid: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.NewTaskId
+  name: NewTaskId
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.html#ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest_NewTaskId
+  commentId: P:ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.NewTaskId
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.NewTaskId
+  nameWithType: IResultTable.ChangeResultOwnershipRequest.NewTaskId
+- uid: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.NewTaskId*
+  name: NewTaskId
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.html#ArmoniK_Core_Common_Storage_IResultTable_ChangeResultOwnershipRequest_NewTaskId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.NewTaskId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.ChangeResultOwnershipRequest.NewTaskId
+  nameWithType: IResultTable.ChangeResultOwnershipRequest.NewTaskId
 - uid: ArmoniK.Core.Common.Storage.IResultTable.Create(IEnumerable{ArmoniK.Core.Common.Storage.Result},CancellationToken)
   name: Create(IEnumerable<Result>, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_Create_IEnumerable_ArmoniK_Core_Common_Storage_Result__CancellationToken_
