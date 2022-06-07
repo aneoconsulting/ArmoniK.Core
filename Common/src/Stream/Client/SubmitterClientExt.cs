@@ -65,7 +65,7 @@ public static class SubmitterClientExt
 
   public static IEnumerable<CreateLargeTaskRequest> ToRequestStream(this IEnumerable<TaskRequest> taskRequests,
                                                                     string                        sessionId,
-                                                                    TaskOptions                   taskOptions,
+                                                                    TaskOptions?                  taskOptions,
                                                                     int                           chunkMaxSize)
   {
     yield return new CreateLargeTaskRequest
