@@ -55,7 +55,8 @@ public static class SubmitterClientExt
                                                                         taskOptions,
                                                                         serviceConfiguration.DataChunkMaxSize))
     {
-      await stream.RequestStream.WriteAsync(createLargeTaskRequest)
+      await stream.RequestStream.WriteAsync(createLargeTaskRequest,
+                                            CancellationToken.None)
                   .ConfigureAwait(false);
     }
 
@@ -182,7 +183,8 @@ public static class SubmitterClientExt
                                                   ResultRequest                  resultRequest,
                                                   CancellationToken              cancellationToken = default)
   {
-    var streamingCall = client.TryGetResultStream(resultRequest);
+    var streamingCall = client.TryGetResultStream(resultRequest,
+                                                  cancellationToken: cancellationToken);
 
     var result = new List<byte>();
 
