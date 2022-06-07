@@ -36,7 +36,6 @@ using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 
 namespace ArmoniK.Core.Common.Pollster;
@@ -50,7 +49,7 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
   private readonly IAsyncPipe<ProcessReply, ProcessRequest> asyncPipe_;
   private readonly ILogger                                  logger_;
   private          IEnumerable<Storage.TaskRequest>?        taskIds_;
-  private          TaskOptions?                             options_;
+  private          int                                      priority_;
   private readonly string                                   sessionId_;
   private readonly string                                   parentTaskId_;
   private readonly ProcessReplyCreateLargeTaskStateMachine  fsm_;
@@ -96,7 +95,7 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                                   try
                                                   {
 
-                                                    (taskIds_, options_) = await submitter_.CreateTasks(sessionId_,
+                                                    (taskIds_, priority_) = await submitter_.CreateTasks(sessionId_,
                                                                                                         parentTaskId_,
                                                                                                         processReply.CreateLargeTask.InitRequest.TaskOptions,
                                                                                                         taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
@@ -229,7 +228,7 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
       throw new ArmoniKException($"Should call {nameof(WaitForResponseCompletion)} before");
 
     await submitter_.FinalizeTaskCreation(taskIds_!,
-                                          options_!,
+                                          priority_!,
                                           sessionId_,
                                           parentTaskId_,
                                           cancellationToken)

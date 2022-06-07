@@ -165,7 +165,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                         submitter => submitter.CancelTasks(It.IsAny<TaskFilter>(),
                                                            It.IsAny<CancellationToken>()),
                         submitter => submitter.FinalizeTaskCreation(It.IsAny<IEnumerable<Storage.TaskRequest>>(),
-                                                                    It.IsAny<TaskOptions>(),
+                                                                    It.IsAny<int>(),
                                                                     It.IsAny<string>(),
                                                                     It.IsAny<string>(),
                                                                     It.IsAny<CancellationToken>()),

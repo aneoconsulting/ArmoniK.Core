@@ -181,7 +181,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                                   .ConfigureAwait(false);
 
       await submitter_.FinalizeTaskCreation(tuple.requests,
-                                            tuple.options,
+                                            tuple.priority,
                                             request.SessionId,
                                             request.SessionId,
                                             context.CancellationToken)
@@ -242,7 +242,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
                                   .ConfigureAwait(false);
 
       await submitter_.FinalizeTaskCreation(tuple.requests,
-                                            tuple.options,
+                                            tuple.priority,
                                             first.InitRequest.SessionId,
                                             first.InitRequest.SessionId,
                                             context.CancellationToken)

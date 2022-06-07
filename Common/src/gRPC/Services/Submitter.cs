@@ -100,7 +100,7 @@ public class Submitter : ISubmitter
                                        taskData.ExpectedOutputIds,
                                        taskData.DataDependencies),
                                  },
-                                 taskData.Options,
+                                 taskData.Options.Priority,
                                  taskData.SessionId,
                                  taskData.TaskId,
                                  cancellationToken)
@@ -165,7 +165,7 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<(IEnumerable<Storage.TaskRequest> requests, TaskOptions options)> CreateTasks(string                        sessionId,
+  public async Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(string                        sessionId,
                                                                                            string                        parentTaskId,
                                                                                            TaskOptions                   options,
                                                                                            IAsyncEnumerable<TaskRequest> taskRequests,
@@ -239,12 +239,12 @@ public class Submitter : ISubmitter
                                  cancellationToken)
                     .ConfigureAwait(false);
 
-    return (requests, options);
+    return (requests, options.Priority);
   }
 
   /// <inheritdoc />
   public async Task FinalizeTaskCreation(IEnumerable<Storage.TaskRequest> requests,
-                                         TaskOptions                      options,
+                                         int                              priority,
                                          string                           sessionId,
                                          string                           parentTaskId,
                                          CancellationToken                cancellationToken)
@@ -257,7 +257,7 @@ public class Submitter : ISubmitter
                                 cancellationToken);
 
     await lockedQueueStorage_.EnqueueMessagesAsync(taskIds,
-                                                   options.Priority,
+                                                   priority,
                                                    cancellationToken)
                              .ConfigureAwait(false);
 
