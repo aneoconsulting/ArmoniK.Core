@@ -94,9 +94,20 @@ public class SampleComputerService : WorkerStreamWrapper
       logger_.LogDebug("Inputs {input}",
                        inputs);
 
-      var requestProcessor = new RequestProcessor(false,
-                                                  false,
-                                                  false,
+      var fastCompute = bool.Parse(taskHandler.TaskOptions.GetValueOrDefault("FastCompute",
+                                                                             "true"));
+      var useLowMem = bool.Parse(taskHandler.TaskOptions.GetValueOrDefault("UseLowMem",
+                                                                           "true"));
+      var smallOutput = bool.Parse(taskHandler.TaskOptions.GetValueOrDefault("SmallOutput",
+                                                                             "true"));
+
+      logger_.LogDebug("Execute HtcMock request with FastCompute {FastCompute}, UseLowMem {UseLowMem} and SmallOutput {SmallOutput}",
+                       fastCompute,
+                       useLowMem,
+                       smallOutput);
+      var requestProcessor = new RequestProcessor(fastCompute,
+                                                  useLowMem,
+                                                  smallOutput,
                                                   runConfiguration,
                                                   logger_);
       var res = requestProcessor.GetResult(request,

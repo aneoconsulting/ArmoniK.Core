@@ -37,4 +37,7 @@ public class HtcMock
   public       int      DataSize             { get; set; } = 1;
   public       int      MemorySize           { get; set; } = 1;
   public       int      SubTasksLevels       { get; set; } = 4;
+  public       bool     FastCompute          { get; set; } = true;
+  public       bool     UseLowMem            { get; set; } = true;
+  public       bool     SmallOutput          { get; set; } = true;
 }
