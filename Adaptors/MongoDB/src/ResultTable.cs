@@ -75,17 +75,21 @@ public class ResultTable : IResultTable
 
     try
     {
-      var writeResult = await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<Result>(result.ToResultDataModel())),
-                                                              new BulkWriteOptions
-                                                              {
-                                                                IsOrdered = false,
-                                                              },
-                                                              cancellationToken)
-                                              .ConfigureAwait(false);
+      if (results.Any())
+      {
+        await resultCollection.BulkWriteAsync(results.Select(result => new InsertOneModel<Result>(result.ToResultDataModel())),
+                                              new BulkWriteOptions
+                                              {
+                                                IsOrdered = false,
+                                              },
+                                              cancellationToken)
+                              .ConfigureAwait(false);
+      }
     }
-    catch
+    catch (Exception e)
     {
-      throw new ArmoniKException("Key already exists");
+      throw new ArmoniKException("Key already exists",
+                                 e);
     }
   }
 
@@ -191,35 +195,31 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task ChangeResultOwnership(string              sessionId,
-                                          IEnumerable<string> keys,
-                                          string              oldTaskId,
-                                          string              newTaskId,
-                                          CancellationToken   cancellationToken)
+  public async Task ChangeResultOwnership(string                                                 sessionId,
+                                          string                                                 oldTaskId,
+                                          IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
+                                          CancellationToken                                      cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ChangeResultOwnership)}");
     activity?.SetTag($"{nameof(ChangeResultOwnership)}_sessionId",
                      sessionId);
-    activity?.SetTag($"{nameof(ChangeResultOwnership)}_oldTaskId",
-                     oldTaskId);
-    activity?.SetTag($"{nameof(ChangeResultOwnership)}_newTaskId",
-                     newTaskId);
-    activity?.SetTag($"{nameof(ChangeResultOwnership)}_keys",
-                     keys);
-    if (keys.Any())
-    {
-      var resultCollection = resultCollectionProvider_.Get();
 
-      var result = await resultCollection.UpdateManyAsync(model => model.OwnerTaskId == oldTaskId && keys.Contains(model.Name) && model.SessionId == sessionId,
-                                                          Builders<Result>.Update.Set(model => model.OwnerTaskId,
-                                                                                      newTaskId),
-                                                          cancellationToken: cancellationToken)
-                                         .ConfigureAwait(false);
-      if (result.ModifiedCount != keys.Count())
-      {
-        throw new ArmoniKException("The number of modified values should correspond to the number of keys provided");
-      }
-    }
+    var resultCollection = resultCollectionProvider_.Get();
+
+    await resultCollection.BulkWriteAsync(requests.Select(r => new UpdateManyModel<Result>(Builders<Result>.Filter.And(Builders<Result>.Filter.In(model => model.Name,
+                                                                                                                                                  r.Keys),
+                                                                                                                       Builders<Result>.Filter
+                                                                                                                                       .Eq(model => model.OwnerTaskId,
+                                                                                                                                           oldTaskId),
+                                                                                                                       Builders<Result>.Filter
+                                                                                                                                       .Eq(model => model.SessionId,
+                                                                                                                                           sessionId)),
+                                                                                           Builders<Result>.Update.Set(model => model.OwnerTaskId,
+                                                                                                                       r.NewTaskId))),
+
+                                          cancellationToken: cancellationToken)
+                          .ConfigureAwait(false);
+
   }
 
 

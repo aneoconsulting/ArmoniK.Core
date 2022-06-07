@@ -58,15 +58,17 @@ public interface ISubmitter
                                          TaskOptions       defaultTaskOptions,
                                          CancellationToken cancellationToken);
 
-  Task<(List<string> TaskIds, TaskOptions Options)> CreateTasks(string                        sessionId,
-                                                                string                        parentTaskId,
-                                                                TaskOptions                   options,
-                                                                IAsyncEnumerable<TaskRequest> taskRequests,
-                                                                CancellationToken             cancellationToken);
+  Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(string                        sessionId,
+                                                                              string                        parentTaskId,
+                                                                              TaskOptions                   options,
+                                                                              IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                              CancellationToken             cancellationToken);
 
-  Task FinalizeTaskCreation(IList<string>     taskIds,
-                            TaskOptions       options,
-                            CancellationToken cancellationToken);
+  Task FinalizeTaskCreation(IEnumerable<Storage.TaskRequest> requests,
+                            int                              priority,
+                            string                           sessionId,
+                            string                           parentTaskId,
+                            CancellationToken                cancellationToken);
 
   Task StartTask(string            taskId,
                  CancellationToken cancellationToken = default);

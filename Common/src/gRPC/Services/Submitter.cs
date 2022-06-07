@@ -94,11 +94,15 @@ public class Submitter : ISubmitter
       var newTaskId = await taskTable_.RetryTask(taskData,
                                                  cancellationToken)
                                       .ConfigureAwait(false);
-      await FinalizeTaskCreation(new List<string>
+      await FinalizeTaskCreation(new List<Storage.TaskRequest>
                                  {
-                                   newTaskId,
+                                   new(taskData.TaskId,
+                                       taskData.ExpectedOutputIds,
+                                       taskData.DataDependencies),
                                  },
-                                 taskData.Options,
+                                 taskData.Options.Priority,
+                                 taskData.SessionId,
+                                 taskData.TaskId,
                                  cancellationToken)
         .ConfigureAwait(false);
 
@@ -161,11 +165,11 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<(List<string> TaskIds, TaskOptions Options)> CreateTasks(string                        sessionId,
-                                                                     string                        parentTaskId,
-                                                                     TaskOptions                   options,
-                                                                     IAsyncEnumerable<TaskRequest> taskRequests,
-                                                                     CancellationToken             cancellationToken)
+  public async Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(string                        sessionId,
+                                                                                           string                        parentTaskId,
+                                                                                           TaskOptions                   options,
+                                                                                           IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                                           CancellationToken             cancellationToken)
   {
     using var logFunction = logger_.LogFunction(parentTaskId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
@@ -206,27 +210,54 @@ public class Submitter : ISubmitter
                                                  cancellationToken));
     }
 
-    await InitializeTaskCreationAsync(sessionId,
-                                      parentTaskId,
-                                      options,
-                                      requests,
-                                      cancellationToken)
-      .ConfigureAwait(false);
+    var parentTaskIds = new List<string>();
+
+    if (!parentTaskId.Equals(sessionId))
+    {
+      var res = await taskTable_.GetParentTaskIds(parentTaskId,
+                                                  cancellationToken)
+                                .ConfigureAwait(false);
+      parentTaskIds.AddRange(res);
+    }
+
+    parentTaskIds.Add(parentTaskId);
 
     await payloadUploadTasks.WhenAll()
                             .ConfigureAwait(false);
 
-    return (requests.Select(taskRequest => taskRequest.Id)
-                          .ToList(), options);
+    await taskTable_.CreateTasks(requests.Select(request => new TaskData(sessionId,
+                                                                         request.Id,
+                                                                         "",
+                                                                         parentTaskIds,
+                                                                         request.DataDependencies.ToList(),
+                                                                         request.ExpectedOutputKeys.ToList(),
+                                                                         Array.Empty<string>(),
+                                                                         TaskStatus.Creating,
+                                                                         options,
+                                                                         new Storage.Output(false,
+                                                                                            ""))),
+                                 cancellationToken)
+                    .ConfigureAwait(false);
+
+    return (requests, options.Priority);
   }
 
   /// <inheritdoc />
-  public async Task FinalizeTaskCreation(IList<string> taskIds,
-                                                          TaskOptions options,
-                                                          CancellationToken   cancellationToken)
+  public async Task FinalizeTaskCreation(IEnumerable<Storage.TaskRequest> requests,
+                                         int                              priority,
+                                         string                           sessionId,
+                                         string                           parentTaskId,
+                                         CancellationToken                cancellationToken)
   {
+    var taskIds = requests.Select(request => request.Id);
+
+    await ChangeResultOwnership(sessionId,
+                                parentTaskId,
+                                requests,
+                                cancellationToken);
+
     await lockedQueueStorage_.EnqueueMessagesAsync(taskIds,
-                                                   options.Priority,
+                                                   priority,
                                                    cancellationToken)
                              .ConfigureAwait(false);
 
@@ -609,90 +640,32 @@ public class Submitter : ISubmitter
   private IObjectStorage PayloadStorage(string session)
     => objectStorageFactory_.CreatePayloadStorage(session);
 
-  /*
-   * TODO :
-   * Pour bien faire, il faudrait couper en deux :
-   * Initialisation
-   * Mise en queue + finalisation
-   * Comme ça, depuis le request processor, on peut :
-   * initialiser
-   * attendre la fin de l'exec de la tâche
-   * mettre à jour les ownership
-   * Mise en queue + finalisation
-   * + chuncking
-   */
 
-  public async Task InitializeTaskCreationAsync(string                           session,
-                                                string                           parentTaskId,
-                                                TaskOptions                      options,
-                                                IEnumerable<Storage.TaskRequest> requests,
-                                                CancellationToken                cancellationToken = default)
+  private async Task ChangeResultOwnership(string                           session,
+                                          string                           parentTaskId,
+                                          IEnumerable<Storage.TaskRequest> requests,
+                                          CancellationToken                cancellationToken = default)
   {
     using var _        = logger_.LogFunction($"{session}.{parentTaskId}");
-    using var activity = activitySource_.StartActivity($"{nameof(InitializeTaskCreationAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(ChangeResultOwnership)}");
     activity?.AddTag("sessionId",
                      session);
     activity?.AddTag("parentTaskId",
                      parentTaskId);
-    activity?.AddTag("taskIds",
-                     string.Join(",",
-                                 requests.Select(request => request.Id)));
 
-    var parentTaskIds = new List<string>();
+    var parentExpectedOutputKeys = new List<string>();
 
     if (!parentTaskId.Equals(session))
     {
-      var res = await taskTable_.GetParentTaskIds(parentTaskId,
-                                                  cancellationToken)
-                                .ConfigureAwait(false);
-      parentTaskIds.AddRange(res);
+      parentExpectedOutputKeys.AddRange(await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
+                                                                                   cancellationToken)
+                                                        .ConfigureAwait(false));
     }
 
-    parentTaskIds.Add(parentTaskId);
-
-    var taskDataModels = requests.Select(async request =>
+    var taskDataModels = requests.Select(request =>
                                          {
-                                           var tdm = new TaskData(session,
-                                                                  request.Id,
-                                                                  "",
-                                                                  parentTaskIds,
-                                                                  request.DataDependencies.ToList(),
-                                                                  request.ExpectedOutputKeys.ToList(),
-                                                                  Array.Empty<string>(),
-                                                                  TaskStatus.Creating,
-                                                                  options,
-                                                                  new Storage.Output(false,
-                                                                                     ""));
-
-                                           var parentExpectedOutputKeys = new List<string>();
-
-                                           // if there is no parent task, we do not need to get parent task expected output keys
-                                           if (!parentTaskId.Equals(session))
-                                           {
-                                             parentExpectedOutputKeys.AddRange(await taskTable_.GetTaskExpectedOutputKeys(parentTaskId,
-                                                                                                                          cancellationToken)
-                                                                                               .ConfigureAwait(false));
-                                           }
-
-
                                            var intersect = parentExpectedOutputKeys.Intersect(request.ExpectedOutputKeys)
                                                                                    .ToList();
-
-                                           // TODO : write change owner in FinalizeCreation to avoid having to roll back
-                                           if (intersect.Any())
-                                           {
-                                             await resultTable_.ChangeResultOwnership(session,
-                                                                                      intersect,
-                                                                                      parentTaskId,
-                                                                                      request.Id,
-                                                                                      cancellationToken)
-                                                               .ConfigureAwait(false);
-                                           }
-                                           else
-                                           {
-                                             logger_.LogTrace("intersect empty, no " + nameof(resultTable_.ChangeResultOwnership));
-                                           }
-
 
                                            var resultModel = request.ExpectedOutputKeys.Except(intersect)
                                                                     .Select(key => new Result(session,
@@ -701,20 +674,19 @@ public class Submitter : ISubmitter
                                                                                               ResultStatus.Created,
                                                                                               DateTime.UtcNow,
                                                                                               Array.Empty<byte>()));
-                                           return (TaskDataModel: tdm, ResultModel: resultModel);
-                                         })
-                                 .ToList();
 
-    await taskTable_.CreateTasks(taskDataModels.Select(tuple => tuple.Result.TaskDataModel),
-                                 cancellationToken)
-                    .ConfigureAwait(false);
+                                           return (Result: resultModel, Req: new IResultTable.ChangeResultOwnershipRequest(intersect,
+                                                                                                                           request.Id));
+                                         });
 
-    var resultCreations = taskDataModels.SelectMany(tuple => tuple.Result.ResultModel);
-    if (resultCreations.Any())
-    {
-      await resultTable_.Create(resultCreations,
-                                cancellationToken)
-                        .ConfigureAwait(false);
-    }
+    await resultTable_.ChangeResultOwnership(session,
+                                             parentTaskId,
+                                             taskDataModels.Select(tuple => tuple.Req),
+                                             cancellationToken)
+                      .ConfigureAwait(false);
+
+    await resultTable_.Create(taskDataModels.SelectMany(task => task.Result),
+                              cancellationToken)
+                      .ConfigureAwait(false);
   }
 }
