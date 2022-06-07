@@ -38,8 +38,6 @@ using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
-using Grpc.Net.Client;
-
 using Microsoft.Extensions.Configuration;
 
 using NUnit.Framework;
@@ -83,32 +81,7 @@ internal class StreamWrapperTests
     var sessionId = Guid.NewGuid() + "mytestsession";
     var taskId    = Guid.NewGuid() + "mytask";
 
-    var taskOptions = new TaskOptions
-                      {
-                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                        MaxRetries  = 2,
-                        Priority    = 1,
-                      };
-
-    Console.WriteLine("Creating Session");
-    var session = client_.CreateSession(new CreateSessionRequest
-                                        {
-                                          DefaultTaskOption = taskOptions,
-                                          Id                = sessionId,
-                                        });
-    switch (session.ResultCase)
-    {
-      case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception("Error while creating session : " + session.Error);
-      case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateSessionReply.ResultOneofCase.Ok:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    Console.WriteLine("Session Created");
+    client_.CreateSessionExt(sessionId);
 
     var payload = new TestPayload
                   {
@@ -129,51 +102,13 @@ internal class StreamWrapperTests
 
     Console.WriteLine("TaskRequest Created");
 
-    var createTaskReply = await client_.CreateTasksAsync(sessionId,
-                                                         taskOptions,
-                                                         new[]
-                                                         {
-                                                           req,
-                                                         })
-                                       .ConfigureAwait(false);
-
-    switch (createTaskReply.DataCase)
-    {
-      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
-        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
-      case CreateTaskReply.DataOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.DataOneofCase.Successfull:
-        Console.WriteLine("Task Created");
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-                                                      {
-                                                        Filter = new TaskFilter
-                                                                 {
-                                                                   Session = new TaskFilter.Types.IdsRequest
-                                                                             {
-                                                                               Ids =
-                                                                               {
-                                                                                 sessionId,
-                                                                               },
-                                                                             },
-                                                                   //Included = new TaskFilter.Types.StatusesRequest
-                                                                   //{
-                                                                   //  Statuses =
-                                                                   //  {
-                                                                   //    TaskStatus.Completed,
-                                                                   //  },
-                                                                   //},
-                                                                 },
-                                                        StopOnFirstTaskCancellation = true,
-                                                        StopOnFirstTaskError        = true,
-                                                      });
-
-    Console.WriteLine(waitForCompletion.ToString());
+    await client_.CreateTasksExtAsync(sessionId,
+                                      null,
+                                      new[]
+                                      {
+                                        req,
+                                      })
+                 .ConfigureAwait(false);
 
     var resultRequest = new ResultRequest
                         {
@@ -210,32 +145,7 @@ internal class StreamWrapperTests
     var sessionId = Guid.NewGuid() + "mytestsession";
     var taskId    = Guid.NewGuid() + "mytask";
 
-    var taskOptions = new TaskOptions
-                      {
-                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                        MaxRetries  = 2,
-                        Priority    = 1,
-                      };
-
-    Console.WriteLine("Creating Session");
-    var session = client_.CreateSession(new CreateSessionRequest
-                                        {
-                                          DefaultTaskOption = taskOptions,
-                                          Id                = sessionId,
-                                        });
-    switch (session.ResultCase)
-    {
-      case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception("Error while creating session : " + session.Error);
-      case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateSessionReply.ResultOneofCase.Ok:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    Console.WriteLine("Session Created");
+    client_.CreateSessionExt(sessionId);
 
     var payload = new TestPayload
                   {
@@ -254,44 +164,13 @@ internal class StreamWrapperTests
 
     Console.WriteLine("TaskRequest Created");
 
-    var createTaskReply = await client_.CreateTasksAsync(sessionId,
-                                                         taskOptions,
-                                                         new[]
-                                                         {
-                                                           req,
-                                                         })
-                                       .ConfigureAwait(false);
-
-    switch (createTaskReply.DataCase)
-    {
-      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
-        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
-      case CreateTaskReply.DataOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.DataOneofCase.Successfull:
-        Console.WriteLine("Task Created");
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-                                                      {
-                                                        Filter = new TaskFilter
-                                                                 {
-                                                                   Session = new TaskFilter.Types.IdsRequest
-                                                                             {
-                                                                               Ids =
-                                                                               {
-                                                                                 sessionId,
-                                                                               },
-                                                                             },
-                                                                 },
-                                                        StopOnFirstTaskCancellation = true,
-                                                        StopOnFirstTaskError        = true,
-                                                      });
-
-    Console.WriteLine(waitForCompletion.ToString());
+    await client_.CreateTasksExtAsync(sessionId,
+                                      null,
+                                      new[]
+                                      {
+                                        req,
+                                      })
+                 .ConfigureAwait(false);
 
     var resultRequest = new ResultRequest
                         {
@@ -311,32 +190,7 @@ internal class StreamWrapperTests
   {
     var sessionId = Guid.NewGuid() + nameof(TaskFailed);
 
-    var taskOptions = new TaskOptions
-                      {
-                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                        MaxRetries  = 5,
-                        Priority    = 1,
-                      };
-
-    Console.WriteLine("Creating Session");
-    var session = client_.CreateSession(new CreateSessionRequest
-                                        {
-                                          DefaultTaskOption = taskOptions,
-                                          Id                = sessionId,
-                                        });
-    switch (session.ResultCase)
-    {
-      case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception("Error while creating session : " + session.Error);
-      case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateSessionReply.ResultOneofCase.Ok:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    Console.WriteLine("Session Created");
+    client_.CreateSessionExt(sessionId);
 
     var payload = new TestPayload
                   {
@@ -362,41 +216,10 @@ internal class StreamWrapperTests
 
     Console.WriteLine("TaskRequest Created");
 
-    var createTaskReply = await client_.CreateTasksAsync(sessionId,
-                                                         taskOptions,
-                                                         taskRequests)
-                                       .ConfigureAwait(false);
-
-    switch (createTaskReply.DataCase)
-    {
-      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
-        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
-      case CreateTaskReply.DataOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.DataOneofCase.Successfull:
-        Console.WriteLine("Task Created");
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-                                                      {
-                                                        Filter = new TaskFilter
-                                                                 {
-                                                                   Task = new TaskFilter.Types.IdsRequest
-                                                                          {
-                                                                            Ids =
-                                                                            {
-                                                                              taskRequests.Select(request => request.Id),
-                                                                            },
-                                                                          },
-                                                                 },
-                                                        StopOnFirstTaskCancellation = true,
-                                                        StopOnFirstTaskError        = true,
-                                                      });
-
-    Console.WriteLine(waitForCompletion.ToString());
+    await client_.CreateTasksExtAsync(sessionId,
+                                      null,
+                                      taskRequests)
+                 .ConfigureAwait(false);
 
     var taskOutput = taskRequests.Select(request =>
                                          {
@@ -427,32 +250,7 @@ internal class StreamWrapperTests
     var sessionId = "sessionId-" + Guid.NewGuid() + "-" + nameof(MultipleTasks) + " - " + taskType;
     Console.WriteLine($"Type of task {taskType}");
 
-    var taskOptions = new TaskOptions
-                      {
-                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                        MaxRetries  = 3,
-                        Priority    = 1,
-                      };
-
-    Console.WriteLine($"Creating Session {sessionId}");
-    var session = client_.CreateSession(new CreateSessionRequest
-                                        {
-                                          DefaultTaskOption = taskOptions,
-                                          Id                = sessionId,
-                                        });
-    switch (session.ResultCase)
-    {
-      case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception("Error while creating session : " + session.Error);
-      case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateSessionReply.ResultOneofCase.Ok:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    Console.WriteLine("Session Created");
+    client_.CreateSessionExt(sessionId);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -481,41 +279,10 @@ internal class StreamWrapperTests
 
     Console.WriteLine("TaskRequest Created");
 
-    var createTaskReply = await client_.CreateTasksAsync(sessionId,
-                                                         taskOptions,
-                                                         taskRequestList)
-                                       .ConfigureAwait(false);
-
-    switch (createTaskReply.DataCase)
-    {
-      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
-        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
-      case CreateTaskReply.DataOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.DataOneofCase.Successfull:
-        Console.WriteLine("Task Created");
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-                                                      {
-                                                        Filter = new TaskFilter
-                                                                 {
-                                                                   Task = new TaskFilter.Types.IdsRequest
-                                                                          {
-                                                                            Ids =
-                                                                            {
-                                                                              taskRequestList.Select(request => request.Id),
-                                                                            },
-                                                                          },
-                                                                 },
-                                                        StopOnFirstTaskCancellation = true,
-                                                        StopOnFirstTaskError        = true,
-                                                      });
-
-    Console.WriteLine(waitForCompletion.ToString());
+    await client_.CreateTasksExtAsync(sessionId,
+                                      null,
+                                      taskRequestList)
+                 .ConfigureAwait(false);
 
     var resultAvailability = taskRequestList.Select(request =>
                                                     {
@@ -579,33 +346,7 @@ internal class StreamWrapperTests
   {
     var sessionId = Guid.NewGuid() + "-MultipleDatadependencies";
 
-
-    var taskOptions = new TaskOptions
-                      {
-                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                        MaxRetries  = 2,
-                        Priority    = 1,
-                      };
-
-    Console.WriteLine("Creating Session");
-    var session = client_.CreateSession(new CreateSessionRequest
-                                        {
-                                          DefaultTaskOption = taskOptions,
-                                          Id                = sessionId,
-                                        });
-    switch (session.ResultCase)
-    {
-      case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception("Error while creating session : " + session.Error);
-      case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateSessionReply.ResultOneofCase.Ok:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    Console.WriteLine("Session Created");
+    client_.CreateSessionExt(sessionId);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -635,41 +376,10 @@ internal class StreamWrapperTests
 
     Console.WriteLine("TaskRequest Created");
 
-    var createTaskReply = await client_.CreateTasksAsync(sessionId,
-                                                         taskOptions,
-                                                         taskRequestList)
-                                       .ConfigureAwait(false);
-
-    switch (createTaskReply.DataCase)
-    {
-      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
-        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
-      case CreateTaskReply.DataOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.DataOneofCase.Successfull:
-        Console.WriteLine("Task Created");
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-                                                      {
-                                                        Filter = new TaskFilter
-                                                                 {
-                                                                   Task = new TaskFilter.Types.IdsRequest
-                                                                          {
-                                                                            Ids =
-                                                                            {
-                                                                              taskRequestList.Select(request => request.Id),
-                                                                            },
-                                                                          },
-                                                                 },
-                                                        StopOnFirstTaskCancellation = true,
-                                                        StopOnFirstTaskError        = true,
-                                                      });
-
-    Console.WriteLine(waitForCompletion.ToString());
+    await client_.CreateTasksExtAsync(sessionId,
+                                      null,
+                                      taskRequestList)
+                 .ConfigureAwait(false);
 
     var resultAvailability1 = taskRequestList.Select(request =>
                                                      {
@@ -688,7 +398,7 @@ internal class StreamWrapperTests
                                                      {
                                                        var resultRequest = new ResultRequest
                                                                            {
-                                                                             Key     = request.Id + "-res1",
+                                                                             Key     = request.Id + "-res2",
                                                                              Session = sessionId,
                                                                            };
                                                        var availabilityReply = client_.WaitForAvailability(resultRequest);
@@ -764,32 +474,8 @@ internal class StreamWrapperTests
                                   int size)
   {
     var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
-    var taskOptions = new TaskOptions
-                      {
-                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                        MaxRetries  = 3,
-                        Priority    = 1,
-                      };
 
-    Console.WriteLine($"Creating Session {sessionId}");
-    var session = client_.CreateSession(new CreateSessionRequest
-                                        {
-                                          DefaultTaskOption = taskOptions,
-                                          Id                = sessionId,
-                                        });
-    switch (session.ResultCase)
-    {
-      case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception("Error while creating session : " + session.Error);
-      case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateSessionReply.ResultOneofCase.Ok:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    Console.WriteLine("Session Created");
+    client_.CreateSessionExt(sessionId);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -826,41 +512,10 @@ internal class StreamWrapperTests
 
     Console.WriteLine("TaskRequest Created");
 
-    var createTaskReply = await client_.CreateTasksAsync(sessionId,
-                                                         taskOptions,
-                                                         taskRequestList)
-                                       .ConfigureAwait(false);
-
-    switch (createTaskReply.DataCase)
-    {
-      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
-        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
-      case CreateTaskReply.DataOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.DataOneofCase.Successfull:
-        Console.WriteLine("Task Created");
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-                                                      {
-                                                        Filter = new TaskFilter
-                                                                 {
-                                                                   Task = new TaskFilter.Types.IdsRequest
-                                                                          {
-                                                                            Ids =
-                                                                            {
-                                                                              taskRequestList.Select(request => request.Id),
-                                                                            },
-                                                                          },
-                                                                 },
-                                                        StopOnFirstTaskCancellation = true,
-                                                        StopOnFirstTaskError        = true,
-                                                      });
-
-    Console.WriteLine(waitForCompletion.ToString());
+    await client_.CreateTasksExtAsync(sessionId,
+                                      null,
+                                      taskRequestList)
+                 .ConfigureAwait(false);
 
     var resultAvailability = taskRequestList.Select(request =>
                                                     {
@@ -915,81 +570,26 @@ internal class StreamWrapperTests
   public async Task EmptyPayload()
   {
     var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
-    var taskOptions = new TaskOptions
-                      {
-                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                        MaxRetries  = 3,
-                        Priority    = 1,
-                      };
 
-    Console.WriteLine($"Creating Session {sessionId}");
-    var session = client_.CreateSession(new CreateSessionRequest
-                                        {
-                                          DefaultTaskOption = taskOptions,
-                                          Id                = sessionId,
-                                        });
-    switch (session.ResultCase)
-    {
-      case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception("Error while creating session : " + session.Error);
-      case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateSessionReply.ResultOneofCase.Ok:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    Console.WriteLine("Session Created");
+    client_.CreateSessionExt(sessionId);
 
     var taskId = nameof(LargePayloads) + "-" + Guid.NewGuid();
 
-    var createTaskReply = await client_.CreateTasksAsync(sessionId,
-                                                         taskOptions,
-                                                         new[]
-                                                         {
-                                                           new TaskRequest
-                                                           {
-                                                             Id = taskId,
-                                                             ExpectedOutputKeys =
-                                                             {
-                                                               taskId,
-                                                             },
-                                                             Payload = ByteString.Empty,
-                                                           },
-                                                         })
-                                       .ConfigureAwait(false);
-
-    switch (createTaskReply.DataCase)
-    {
-      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
-        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
-      case CreateTaskReply.DataOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.DataOneofCase.Successfull:
-        Console.WriteLine("Task Created");
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    var waitForCompletion = client_.WaitForCompletion(new WaitRequest
-                                                      {
-                                                        Filter = new TaskFilter
-                                                                 {
-                                                                   Task = new TaskFilter.Types.IdsRequest
-                                                                          {
-                                                                            Ids =
-                                                                            {
-                                                                              taskId,
-                                                                            },
-                                                                          },
-                                                                 },
-                                                        StopOnFirstTaskCancellation = true,
-                                                        StopOnFirstTaskError        = true,
-                                                      });
-
-    Console.WriteLine(waitForCompletion.ToString());
+    await client_.CreateTasksExtAsync(sessionId,
+                                      null,
+                                      new[]
+                                      {
+                                        new TaskRequest
+                                        {
+                                          Id = taskId,
+                                          ExpectedOutputKeys =
+                                          {
+                                            taskId,
+                                          },
+                                          Payload = ByteString.Empty,
+                                        },
+                                      })
+                 .ConfigureAwait(false);
 
     var resultRequest = new ResultRequest
                         {
@@ -1011,32 +611,8 @@ internal class StreamWrapperTests
                                   int n)
   {
     var sessionId = Guid.NewGuid() + "-" + nameof(PriorityShouldHaveAnEffect);
-    var taskOptions = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-      MaxRetries = 3,
-      Priority = 1,
-    };
 
-    Console.WriteLine($"Creating Session {sessionId}");
-    var session = client_.CreateSession(new CreateSessionRequest
-    {
-      DefaultTaskOption = taskOptions,
-      Id = sessionId,
-    });
-    switch (session.ResultCase)
-    {
-      case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception("Error while creating session : " + session.Error);
-      case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateSessionReply.ResultOneofCase.Ok:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    Console.WriteLine("Session Created");
+    client_.CreateSessionExt(sessionId);
 
     var tasks = Enumerable.Range(1,
                                  9).Select(i => Task.Run(() => RunForPriority(sessionId,
@@ -1083,32 +659,21 @@ internal class StreamWrapperTests
       taskRequestList.Add(req);
     }
 
-    var createTaskReply = await client_.CreateTasksAsync(sessionId,
-                                                         taskOptions,
-                                                         taskRequestList)
-                                       .ConfigureAwait(false);
-    switch (createTaskReply.DataCase)
-    {
-      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
-        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
-      case CreateTaskReply.DataOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateTaskReply.DataOneofCase.Successfull:
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
+    await client_.CreateTasksExtAsync(sessionId,
+                                      taskOptions,
+                                      taskRequestList)
+                 .ConfigureAwait(false);
 
     var resultAvailability = taskRequestList.Select(request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key = request.Id,
-        Session = sessionId,
-      };
-      var availabilityReply = client_.WaitForAvailability(resultRequest);
-      return availabilityReply.TypeCase;
-    });
+                                                    {
+                                                      var resultRequest = new ResultRequest
+                                                                          {
+                                                                            Key = request.Id,
+                                                                            Session = sessionId,
+                                                                          };
+                                                      var availabilityReply = client_.WaitForAvailability(resultRequest);
+                                                      return availabilityReply.TypeCase;
+                                                    });
 
     if (resultAvailability.Any(c => c != AvailabilityReply.TypeOneofCase.Ok))
       return -1;

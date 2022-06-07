@@ -42,7 +42,7 @@ public static class SubmitterClientExt
 {
   public static async Task<CreateTaskReply> CreateTasksAsync(this Submitter.SubmitterClient client,
                                                              string                         sessionId,
-                                                             TaskOptions                    taskOptions,
+                                                             TaskOptions?                   taskOptions,
                                                              IEnumerable<TaskRequest>       taskRequests,
                                                              CancellationToken              cancellationToken = default)
   {
