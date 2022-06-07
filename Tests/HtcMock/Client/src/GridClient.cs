@@ -38,13 +38,16 @@ namespace ArmoniK.Samples.HtcMock.Client;
 public class GridClient : IGridClient
 {
   private readonly Submitter.SubmitterClient client_;
+  private readonly Options.HtcMock           optionsHtcMock_;
   private readonly ILogger<GridClient>       logger_;
 
   public GridClient(Submitter.SubmitterClient client,
-                    ILoggerFactory            loggerFactory)
+                    ILoggerFactory            loggerFactory,
+                    Options.HtcMock           optionsHtcMock)
   {
-    client_ = client;
-    logger_ = loggerFactory.CreateLogger<GridClient>();
+    client_         = client;
+    optionsHtcMock_ = optionsHtcMock;
+    logger_         = loggerFactory.CreateLogger<GridClient>();
   }
 
   public ISessionClient CreateSubSession(string taskId)
@@ -62,6 +65,18 @@ public class GridClient : IGridClient
                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
                                                        MaxRetries  = 2,
                                                        Priority    = 1,
+                                                       Options =
+                                                       {
+                                                         {
+                                                           "FastCompute", optionsHtcMock_.FastCompute.ToString()
+                                                         },
+                                                         {
+                                                           "UseLowMem", optionsHtcMock_.UseLowMem.ToString()
+                                                         },
+                                                         {
+                                                           "SmallOutput", optionsHtcMock_.SmallOutput.ToString()
+                                                         },
+                                                       },
                                                      },
                                  Id = sessionId,
                                };
