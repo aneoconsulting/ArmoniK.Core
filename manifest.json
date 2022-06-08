@@ -1749,7 +1749,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.html",
-          "hash": "ahvcSOOly0HntxJQ7wUatReM/DJqnEj6LbSjrfiBKWA="
+          "hash": "jrDqL8G9EAPESWebF4LUqqg/tHsqEAvkWeH4zSgFLTg="
         }
       },
       "is_incremental": false,
@@ -2849,6 +2849,30 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html",
+          "hash": "SuRPdgdj4a5V0DFEl3z35DLPNmRIuZ3uZLAsJ+LCg2o="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.html",
+          "hash": "iiguF23CoQSlooZQ39Hm/vDhHg+I8XuuITXC2d7pU4A="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.TestPayload.TaskType.yml",
       "output": {
         ".html": {
@@ -3081,7 +3105,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "0i96yDduyiUMY8SKoxp3RKGU+YNGEVKFwGbemlnQvb8="
+          "hash": "idVfg8Aatq57K7FyvOTs9koJWzSsUcUrDDa3KU8hOok="
         }
       },
       "is_incremental": false,
@@ -3156,7 +3180,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 255,
+          "total_file_count": 257,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {

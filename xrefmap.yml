@@ -9773,15 +9773,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Stream.Client.SubmitterClientExt
   fullName: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt
   nameWithType: SubmitterClientExt
-- uid: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient,System.String,TaskOptions,IEnumerable{TaskRequest},CancellationToken)
-  name: CreateTasksAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable<TaskRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.html#ArmoniK_Core_Common_Stream_Client_SubmitterClientExt_CreateTasksAsync_Submitter_SubmitterClient_System_String_TaskOptions_IEnumerable_TaskRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient,System.String,TaskOptions,IEnumerable{TaskRequest},CancellationToken)
-  name.vb: CreateTasksAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable(Of TaskRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient, System.String, TaskOptions, IEnumerable<TaskRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient, System.String, TaskOptions, IEnumerable(Of TaskRequest), CancellationToken)
-  nameWithType: SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable<TaskRequest>, CancellationToken)
-  nameWithType.vb: SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable(Of TaskRequest), CancellationToken)
+- uid: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient,System.String,System.Nullable{TaskOptions},IEnumerable{TaskRequest},CancellationToken)
+  name: CreateTasksAsync(Submitter.SubmitterClient, String, Nullable<TaskOptions>, IEnumerable<TaskRequest>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.html#ArmoniK_Core_Common_Stream_Client_SubmitterClientExt_CreateTasksAsync_Submitter_SubmitterClient_System_String_System_Nullable_TaskOptions__IEnumerable_TaskRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient,System.String,System.Nullable{TaskOptions},IEnumerable{TaskRequest},CancellationToken)
+  name.vb: CreateTasksAsync(Submitter.SubmitterClient, String, Nullable(Of TaskOptions), IEnumerable(Of TaskRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient, System.String, System.Nullable<TaskOptions>, IEnumerable<TaskRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient, System.String, System.Nullable(Of TaskOptions), IEnumerable(Of TaskRequest), CancellationToken)
+  nameWithType: SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient, String, Nullable<TaskOptions>, IEnumerable<TaskRequest>, CancellationToken)
+  nameWithType.vb: SubmitterClientExt.CreateTasksAsync(Submitter.SubmitterClient, String, Nullable(Of TaskOptions), IEnumerable(Of TaskRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.CreateTasksAsync*
   name: CreateTasksAsync
   href: api/ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.html#ArmoniK_Core_Common_Stream_Client_SubmitterClientExt_CreateTasksAsync_
@@ -9802,15 +9802,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.GetResultAsync
   nameWithType: SubmitterClientExt.GetResultAsync
-- uid: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.ToRequestStream(IEnumerable{TaskRequest},System.String,TaskOptions,System.Int32)
-  name: ToRequestStream(IEnumerable<TaskRequest>, String, TaskOptions, Int32)
-  href: api/ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.html#ArmoniK_Core_Common_Stream_Client_SubmitterClientExt_ToRequestStream_IEnumerable_TaskRequest__System_String_TaskOptions_System_Int32_
-  commentId: M:ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.ToRequestStream(IEnumerable{TaskRequest},System.String,TaskOptions,System.Int32)
-  name.vb: ToRequestStream(IEnumerable(Of TaskRequest), String, TaskOptions, Int32)
-  fullName: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.ToRequestStream(IEnumerable<TaskRequest>, System.String, TaskOptions, System.Int32)
-  fullName.vb: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.ToRequestStream(IEnumerable(Of TaskRequest), System.String, TaskOptions, System.Int32)
-  nameWithType: SubmitterClientExt.ToRequestStream(IEnumerable<TaskRequest>, String, TaskOptions, Int32)
-  nameWithType.vb: SubmitterClientExt.ToRequestStream(IEnumerable(Of TaskRequest), String, TaskOptions, Int32)
+- uid: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.ToRequestStream(IEnumerable{TaskRequest},System.String,System.Nullable{TaskOptions},System.Int32)
+  name: ToRequestStream(IEnumerable<TaskRequest>, String, Nullable<TaskOptions>, Int32)
+  href: api/ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.html#ArmoniK_Core_Common_Stream_Client_SubmitterClientExt_ToRequestStream_IEnumerable_TaskRequest__System_String_System_Nullable_TaskOptions__System_Int32_
+  commentId: M:ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.ToRequestStream(IEnumerable{TaskRequest},System.String,System.Nullable{TaskOptions},System.Int32)
+  name.vb: ToRequestStream(IEnumerable(Of TaskRequest), String, Nullable(Of TaskOptions), Int32)
+  fullName: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.ToRequestStream(IEnumerable<TaskRequest>, System.String, System.Nullable<TaskOptions>, System.Int32)
+  fullName.vb: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.ToRequestStream(IEnumerable(Of TaskRequest), System.String, System.Nullable(Of TaskOptions), System.Int32)
+  nameWithType: SubmitterClientExt.ToRequestStream(IEnumerable<TaskRequest>, String, Nullable<TaskOptions>, Int32)
+  nameWithType.vb: SubmitterClientExt.ToRequestStream(IEnumerable(Of TaskRequest), String, Nullable(Of TaskOptions), Int32)
 - uid: ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.ToRequestStream(TaskRequest,System.Boolean,System.Int32)
   name: ToRequestStream(TaskRequest, Boolean, Int32)
   href: api/ArmoniK.Core.Common.Stream.Client.SubmitterClientExt.html#ArmoniK_Core_Common_Stream_Client_SubmitterClientExt_ToRequestStream_TaskRequest_System_Boolean_System_Int32_
@@ -15330,6 +15330,47 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryDataModelMapping.InitializeIndexesAsync
   nameWithType: OpenTelemetryDataModelMapping.InitializeIndexesAsync
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client
+  name: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.html
+  commentId: N:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client
+  nameWithType: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt
+  name: SubmitterExt
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html
+  commentId: T:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt
+  nameWithType: SubmitterExt
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient,System.String)
+  name: CreateSessionAndCheckReply(Submitter.SubmitterClient, String)
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateSessionAndCheckReply_Submitter_SubmitterClient_System_String_
+  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient,System.String)
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient, System.String)
+  nameWithType: SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient, String)
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply*
+  name: CreateSessionAndCheckReply
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateSessionAndCheckReply_
+  commentId: Overload:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply
+  isSpec: "True"
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply
+  nameWithType: SubmitterExt.CreateSessionAndCheckReply
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient,System.String,TaskOptions,IEnumerable{TaskRequest})
+  name: CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable<TaskRequest>)
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateTasksAndCheckReplyAsync_Submitter_SubmitterClient_System_String_TaskOptions_IEnumerable_TaskRequest__
+  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient,System.String,TaskOptions,IEnumerable{TaskRequest})
+  name.vb: CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable(Of TaskRequest))
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, System.String, TaskOptions, IEnumerable<TaskRequest>)
+  fullName.vb: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, System.String, TaskOptions, IEnumerable(Of TaskRequest))
+  nameWithType: SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable<TaskRequest>)
+  nameWithType.vb: SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable(Of TaskRequest))
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync*
+  name: CreateTasksAndCheckReplyAsync
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateTasksAndCheckReplyAsync_
+  commentId: Overload:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync
+  isSpec: "True"
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync
+  nameWithType: SubmitterExt.CreateTasksAndCheckReplyAsync
 - uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
   name: ArmoniK.Extensions.Common.StreamWrapper.Tests.Common
   href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.html
