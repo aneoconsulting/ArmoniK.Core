@@ -32,7 +32,6 @@ using ArmoniK.Core.Common.Utils;
 using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
-using Grpc.Net.Client;
 
 using Microsoft.Extensions.Configuration;
 
@@ -50,7 +49,7 @@ internal class CreateSessionTests
     Dictionary<string, string> baseConfig = new()
                                             {
                                               {
-                                                "Grpc:Endpoint", "http://localhost:5001"
+                                                "GrpcClient:Endpoint", "http://localhost:5001"
                                               },
                                             };
 
