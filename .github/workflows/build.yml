@@ -362,7 +362,6 @@ jobs:
       matrix:
         queue:
           - activemqp
-          - artemis
           - rabbitmq
         log-level:
           - Information
