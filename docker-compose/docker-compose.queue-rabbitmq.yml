@@ -20,7 +20,12 @@ services:
       - Amqp__User=guest
       - Amqp__Password=guest
 
-  armonik.compute.pollingagent:
+  armonik.compute.pollingagent0:
+    environment:
+      - Amqp__User=guest
+      - Amqp__Password=guest
+
+  armonik.compute.pollingagent1:
     environment:
       - Amqp__User=guest
       - Amqp__Password=guest

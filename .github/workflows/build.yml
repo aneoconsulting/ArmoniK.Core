@@ -324,7 +324,7 @@ jobs:
           export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
-          docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
+          docker-compose -f docker-compose/docker-compose.override.yml -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml --compatibility up -d --build --force-recreate --remove-orphans
           sleep 10
           ls -la docker-compose/logs/*.json
 
@@ -362,7 +362,6 @@ jobs:
       matrix:
         queue:
           - activemqp
-          - artemis
           - rabbitmq
         log-level:
           - Information
@@ -394,7 +393,7 @@ jobs:
           export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
-          docker-compose -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml up -d --build --force-recreate --remove-orphans
+          docker-compose -f docker-compose/docker-compose.override.yml -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml --compatibility up -d --build --force-recreate --remove-orphans
           sleep 10
           ls -la docker-compose/logs/*.json
 
