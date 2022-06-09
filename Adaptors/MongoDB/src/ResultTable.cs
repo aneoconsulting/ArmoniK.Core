@@ -131,10 +131,15 @@ public class ResultTable : IResultTable
     var sessionHandle = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
-    return !await resultCollection.AsQueryable(sessionHandle)
-                                  .AnyAsync(model => model.Status != ResultStatus.Completed && model.SessionId == sessionId && keys.Contains(model.Name),
-                                            cancellationToken)
-                                  .ConfigureAwait(false);
+    var result = await resultCollection.AsQueryable(sessionHandle)
+                                       .Where(model => model.Status == ResultStatus.Completed && model.SessionId == sessionId && keys.Contains(model.Name))
+                                       .ToListAsync(cancellationToken)
+                                       .ConfigureAwait(false);
+
+    Logger.LogInformation("Number of elements : {elements}",
+                          result.Count);
+
+    return result.Count == keys.Count() && result.TrueForAll(_ => true);
   }
 
   /// <inheritdoc />
