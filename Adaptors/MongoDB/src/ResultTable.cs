@@ -131,8 +131,6 @@ public class ResultTable : IResultTable
     var sessionHandle = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
-
-
     var result = await resultCollection.AsQueryable(sessionHandle)
                                        .Where(model => model.Status == ResultStatus.Completed && model.SessionId == sessionId && keys.Contains(model.Name))
                                        .CountAsync(cancellationToken)
