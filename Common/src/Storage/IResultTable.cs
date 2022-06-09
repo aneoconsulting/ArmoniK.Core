@@ -32,17 +32,19 @@ namespace ArmoniK.Core.Common.Storage;
 
 public interface IResultTable : IInitializable
 {
+  public record ChangeResultOwnershipRequest(IEnumerable<string> Keys,
+                                             string              NewTaskId);
+
   public ILogger Logger { get; }
 
   Task<bool> AreResultsAvailableAsync(string              sessionId,
                                       IEnumerable<string> keys,
                                       CancellationToken   cancellationToken = default);
 
-  Task ChangeResultOwnership(string              sessionId,
-                             IEnumerable<string> keys,
-                             string              oldTaskId,
-                             string              newTaskId,
-                             CancellationToken   cancellationToken);
+  Task ChangeResultOwnership(string                                    sessionId,
+                             string                                    oldTaskId,
+                             IEnumerable<ChangeResultOwnershipRequest> requests,
+                             CancellationToken                         cancellationToken);
 
   Task Create(IEnumerable<Result> results,
               CancellationToken   cancellationToken = default);

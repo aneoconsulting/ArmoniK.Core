@@ -73,7 +73,8 @@ internal class Program
     var submitterClient = new Submitter.SubmitterClient(channel);
 
     var gridClient = new GridClient(submitterClient,
-                                    factory);
+                                    factory,
+                                    optionsHtcMock);
 
     using var client = new HtcMockClient(gridClient,
                                          factory.CreateLogger<Htc.Mock.Client>());

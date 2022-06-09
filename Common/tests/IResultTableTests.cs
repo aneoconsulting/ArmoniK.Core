@@ -128,12 +128,15 @@ public class ResultTableTestBase
     if (RunTests)
     {
       await ResultTable.ChangeResultOwnership("SessionId",
-                                              new[]
-                                              {
-                                                "ResultIsAvailable",
-                                              },
                                               "OwnerId",
-                                              "NewOwnerId",
+                                              new IResultTable.ChangeResultOwnershipRequest[]
+                                              {
+                                                new(new[]
+                                                    {
+                                                      "ResultIsAvailable",
+                                                    },
+                                                    "NewOwnerId"),
+                                              },
                                               CancellationToken.None)
                        .ConfigureAwait(false);
       var result = await ResultTable.GetResult("SessionId",

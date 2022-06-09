@@ -22,12 +22,33 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
+using System;
+using System.Collections.Generic;
 
-namespace ArmoniK.Core.Adapters.Memory;
+using Google.Protobuf.WellKnownTypes;
 
-public record SessionData(string                     SessionId,
-                          SessionStatus              Status,
-                          Common.Storage.TaskOptions Options) : Common.Storage.SessionData(SessionId,
-                                                                                           Status,
-                                                                                           Options);
+namespace ArmoniK.Core.Common.Storage;
+
+public record TaskOptions(IDictionary<string, string> Options,
+                          TimeSpan                    MaxDuration,
+                          int                         MaxRetries,
+                          int                         Priority)
+{
+  public static implicit operator Api.gRPC.V1.TaskOptions(TaskOptions taskOption)
+    => new()
+       {
+         MaxDuration = Duration.FromTimeSpan(taskOption.MaxDuration),
+         MaxRetries  = taskOption.MaxRetries,
+         Priority    = taskOption.Priority,
+         Options =
+         {
+           taskOption.Options,
+         },
+       };
+
+  public static implicit operator TaskOptions(Api.gRPC.V1.TaskOptions taskOption)
+    => new(taskOption.Options,
+           taskOption.MaxDuration.ToTimeSpan(),
+           taskOption.MaxRetries,
+           taskOption.Priority);
+}

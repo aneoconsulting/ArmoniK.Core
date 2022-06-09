@@ -206,7 +206,7 @@ public class GrpcSubmitterServiceTests
     mockSubmitter.Setup(submitter => submitter.TryGetResult(It.IsAny<ResultRequest>(),
                                                             It.IsAny<IServerStreamWriter<ResultReply>>(),
                                                             CancellationToken.None))
-                 .Returns(() => throw new ResultDataNotFoundException());
+                 .Returns(() => throw new ObjectDataNotFoundException());
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
@@ -809,7 +809,7 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<string>(), new TaskOptions())));
+                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int())));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
@@ -955,7 +955,7 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<string>(), new TaskOptions())));
+                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int())));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
@@ -992,7 +992,7 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<string>(), new TaskOptions())));
+                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int())));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);

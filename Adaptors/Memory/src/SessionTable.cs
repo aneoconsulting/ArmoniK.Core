@@ -36,8 +36,6 @@ using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
 
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
-
 namespace ArmoniK.Core.Adapters.Memory;
 
 public class SessionTable : ISessionTable
@@ -62,7 +60,7 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public Task CreateSessionDataAsync(string            rootSessionId,
                                      string            parentTaskId,
-                                     TaskOptions       defaultOptions,
+                                     Common.Storage.TaskOptions       defaultOptions,
                                      CancellationToken cancellationToken = default)
   {
     storage_.TryAdd(rootSessionId,
@@ -86,8 +84,8 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                     CancellationToken cancellationToken = default)
+  public Task<Common.Storage.TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
+                                                                    CancellationToken cancellationToken = default)
   {
     if (!storage_.ContainsKey(sessionId))
     {
@@ -109,11 +107,12 @@ public class SessionTable : ISessionTable
                          {
                            if (data.Status == SessionStatus.Canceled)
                            {
-                             throw new ArmoniKException("Session already cancelled");
+                             throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
                            }
                            return data with
                                   {
                                     Status = SessionStatus.Canceled,
+                                    CancellationDate = DateTime.UtcNow,
                                   };
                          });
     return Task.CompletedTask;

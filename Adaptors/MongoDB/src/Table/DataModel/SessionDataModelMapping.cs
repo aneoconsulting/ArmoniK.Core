@@ -30,8 +30,6 @@ using ArmoniK.Core.Common.Storage;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
-
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
 public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
@@ -47,12 +45,36 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                    cm.MapProperty(nameof(SessionData.Status))
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.Options))
-                                                     .SetIsRequired(true)
-                                                     .SetSerializer(new BsonProtoSerializer<TaskOptions>());
+                                                     .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.CreationDate))
+                                                     .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.CancellationDate))
+                                                     .SetIsRequired(true);
                                                    cm.SetIgnoreExtraElements(true);
                                                    cm.MapCreator(model => new SessionData(model.SessionId,
                                                                                           model.Status,
+                                                                                          model.CreationDate,
+                                                                                          model.CancellationDate,
                                                                                           model.Options));
+                                                 });
+    }
+
+    if (!BsonClassMap.IsClassMapRegistered(typeof(TaskOptions)))
+    {
+      BsonClassMap.RegisterClassMap<TaskOptions>(map =>
+                                                 {
+                                                   map.MapProperty(nameof(TaskOptions.MaxDuration))
+                                                      .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.MaxRetries))
+                                                      .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.Options))
+                                                      .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.Priority))
+                                                      .SetIsRequired(true);
+                                                   map.MapCreator(options => new TaskOptions(options.Options,
+                                                                                             options.MaxDuration,
+                                                                                             options.MaxRetries,
+                                                                                             options.Priority));
                                                  });
     }
   }
@@ -63,7 +85,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
 
   /// <inheritdoc />
   public Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
-                                           IMongoCollection<SessionData> collection)
+                                     IMongoCollection<SessionData> collection)
   {
     return Task.CompletedTask;
   }

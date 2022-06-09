@@ -9,4 +9,8 @@ RUN dotnet restore "Tests/Stream/Client/ArmoniK.Extensions.Common.StreamWrapper.
 COPY . .
 WORKDIR "/src/Tests/Stream/Client"
 RUN dotnet build "ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.csproj" -c Release -o /app/build
+RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
+RUN chown -R armonikuser: /src
+RUN rm -rf /tmp/NuGetScratch
+USER armonikuser
 ENTRYPOINT ["dotnet", "test"]

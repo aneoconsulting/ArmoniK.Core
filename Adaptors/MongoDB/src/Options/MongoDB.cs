@@ -61,5 +61,7 @@ public class MongoDB
 
   public ObjectStorage ObjectStorage { get; set; }
 
-  public QueueStorage QueueStorage { get; set; }
+  public QueueStorage QueueStorage          { get; set; }
+
+  public int MaxConnectionPoolSize { get; set; } = 500;
 }

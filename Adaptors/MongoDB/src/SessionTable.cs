@@ -45,8 +45,6 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
-
 namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class SessionTable : ISessionTable
@@ -71,10 +69,10 @@ public class SessionTable : ISessionTable
 
 
   [PublicAPI]
-  public async Task CreateSessionDataAsync(string            rootSessionId,
-                                           string            parentTaskId,
-                                           TaskOptions       defaultOptions,
-                                           CancellationToken cancellationToken = default)
+  public async Task CreateSessionDataAsync(string                          rootSessionId,
+                                           string                          parentTaskId,
+                                           Core.Common.Storage.TaskOptions defaultOptions,
+                                           CancellationToken               cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSessionDataAsync)}");
     activity?.SetTag($"{nameof(CreateSessionDataAsync)}_sessionId",
@@ -83,10 +81,9 @@ public class SessionTable : ISessionTable
                      parentTaskId);
     var sessionCollection = sessionCollectionProvider_.Get();
 
-    SessionData data = new(Options: defaultOptions,
-                           SessionId: rootSessionId,
-                           Status: SessionStatus.Running
-                          );
+    SessionData data = new(rootSessionId,
+                           SessionStatus.Running,
+                           defaultOptions);
 
     await sessionCollection.InsertOneAsync(data,
                                            cancellationToken: cancellationToken)
@@ -101,7 +98,7 @@ public class SessionTable : ISessionTable
     using var activity = activitySource_.StartActivity($"{nameof(IsSessionCancelledAsync)}");
     activity?.SetTag($"{nameof(IsSessionCancelledAsync)}_sessionId",
                      sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    var sessionHandle     = sessionProvider_.Get();
     var sessionCollection = sessionCollectionProvider_.Get();
 
 
@@ -109,25 +106,25 @@ public class SessionTable : ISessionTable
     {
       return await sessionCollection.AsQueryable(sessionHandle)
                                     .Where(sdm => sdm.SessionId == sessionId)
-                                    .Select(sdm => sdm.Status == SessionStatus.Canceled)
+                                    .Select(sdm => sdm.Status   == SessionStatus.Canceled)
                                     .SingleAsync(cancellationToken)
                                     .ConfigureAwait(false);
     }
     catch (InvalidOperationException e)
     {
       throw new SessionNotFoundException($"Key '{sessionId}' not found",
-                                           e);
+                                         e);
     }
   }
 
   /// <inheritdoc />
-  public async Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                           CancellationToken cancellationToken = default)
+  public async Task<Core.Common.Storage.TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
+                                                                               CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetDefaultTaskOptionAsync)}");
     activity?.SetTag($"{nameof(GetDefaultTaskOptionAsync)}_sessionId",
                      sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    var sessionHandle     = sessionProvider_.Get();
     var sessionCollection = sessionCollectionProvider_.Get();
 
     try
@@ -141,7 +138,7 @@ public class SessionTable : ISessionTable
     catch (InvalidOperationException e)
     {
       throw new SessionNotFoundException($"Key '{sessionId}' not found",
-                                           e);
+                                         e);
     }
   }
 
@@ -157,19 +154,16 @@ public class SessionTable : ISessionTable
     var sessionCollection = sessionCollectionProvider_.Get();
 
 
-    var resSession = sessionCollection.UpdateOneAsync(model => model.SessionId == sessionId,
+    var resSession = sessionCollection.UpdateOneAsync(model => model.SessionId == sessionId && model.Status == SessionStatus.Running,
                                                       Builders<SessionData>.Update.Set(model => model.Status,
-                                                                                       SessionStatus.Canceled),
+                                                                                       SessionStatus.Canceled)
+                                                                           .Set(model => model.CancellationDate,
+                                                                                DateTime.UtcNow),
                                                       cancellationToken: cancellationToken);
 
     if ((await resSession.ConfigureAwait(false)).MatchedCount < 1)
     {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
-    }
-
-    if ((await resSession.ConfigureAwait(false)).ModifiedCount < 1)
-    {
-      throw new ArmoniKException("No open session found. Was the session closed?");
+      throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
     }
   }
 
@@ -203,11 +197,11 @@ public class SessionTable : ISessionTable
     var       sessionCollection = sessionCollectionProvider_.Get();
 
     await foreach (var sessionId in sessionCollection.AsQueryable(sessionHandle)
-                                                  .FilterQuery(sessionFilter)
-                                                  .Select(model => model.SessionId)
-                                                  .ToAsyncEnumerable()
-                                                  .WithCancellation(cancellationToken)
-                                                  .ConfigureAwait(false))
+                                                     .FilterQuery(sessionFilter)
+                                                     .Select(model => model.SessionId)
+                                                     .ToAsyncEnumerable()
+                                                     .WithCancellation(cancellationToken)
+                                                     .ConfigureAwait(false))
     {
       yield return sessionId;
     }

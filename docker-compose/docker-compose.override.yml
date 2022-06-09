@@ -9,10 +9,34 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 
-  armonik.compute.pollingagent:
+  armonik.compute.pollingagent0:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - 9980:1080
+    volumes:
+      - socket_vol0:/cache
 
-  armonik.compute.worker:
+  armonik.compute.pollingagent1:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - 9981:1080
+    volumes:
+      - socket_vol1:/cache
+
+  armonik.compute.worker0:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - 1080:1080
+    volumes:
+      - socket_vol0:/cache
+
+  armonik.compute.worker1:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - 1081:1080
+    volumes:
+      - socket_vol1:/cache

@@ -145,7 +145,7 @@ public class QueueStorage : IQueueStorage
                                     .ConfigureAwait(false);
         if (message is null)
         {
-          logger_.LogDebug("Message is null receiver {i}",
+          logger_.LogTrace("Message is null receiver {i}",
                            i);
           continue;
         }

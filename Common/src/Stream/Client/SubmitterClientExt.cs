@@ -42,7 +42,7 @@ public static class SubmitterClientExt
 {
   public static async Task<CreateTaskReply> CreateTasksAsync(this Submitter.SubmitterClient client,
                                                              string                         sessionId,
-                                                             TaskOptions                    taskOptions,
+                                                             TaskOptions?                   taskOptions,
                                                              IEnumerable<TaskRequest>       taskRequests,
                                                              CancellationToken              cancellationToken = default)
   {
@@ -55,7 +55,8 @@ public static class SubmitterClientExt
                                                                         taskOptions,
                                                                         serviceConfiguration.DataChunkMaxSize))
     {
-      await stream.RequestStream.WriteAsync(createLargeTaskRequest)
+      await stream.RequestStream.WriteAsync(createLargeTaskRequest,
+                                            CancellationToken.None)
                   .ConfigureAwait(false);
     }
 
@@ -65,7 +66,7 @@ public static class SubmitterClientExt
 
   public static IEnumerable<CreateLargeTaskRequest> ToRequestStream(this IEnumerable<TaskRequest> taskRequests,
                                                                     string                        sessionId,
-                                                                    TaskOptions                   taskOptions,
+                                                                    TaskOptions?                  taskOptions,
                                                                     int                           chunkMaxSize)
   {
     yield return new CreateLargeTaskRequest
@@ -182,7 +183,8 @@ public static class SubmitterClientExt
                                                   ResultRequest                  resultRequest,
                                                   CancellationToken              cancellationToken = default)
   {
-    var streamingCall = client.TryGetResultStream(resultRequest);
+    var streamingCall = client.TryGetResultStream(resultRequest,
+                                                  cancellationToken: cancellationToken);
 
     var result = new List<byte>();
 

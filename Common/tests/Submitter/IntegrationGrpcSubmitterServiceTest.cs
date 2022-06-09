@@ -164,8 +164,10 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                              It.IsAny<CancellationToken>()),
                         submitter => submitter.CancelTasks(It.IsAny<TaskFilter>(),
                                                            It.IsAny<CancellationToken>()),
-                        submitter => submitter.FinalizeTaskCreation(It.IsAny<IList<string>>(),
-                                                                    It.IsAny<TaskOptions>(),
+                        submitter => submitter.FinalizeTaskCreation(It.IsAny<IEnumerable<Storage.TaskRequest>>(),
+                                                                    It.IsAny<int>(),
+                                                                    It.IsAny<string>(),
+                                                                    It.IsAny<string>(),
                                                                     It.IsAny<CancellationToken>()),
                         submitter => submitter.StartTask(It.IsAny<string>(),
                                                          It.IsAny<CancellationToken>()),
@@ -678,6 +680,38 @@ internal class IntegrationGrpcSubmitterServiceTest
                   nameof(TestCasesOutputSessionNotFoundInternal))]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
                   nameof(TestCasesOutputTaskNotFound))]
+  public async Task<StatusCode?> GetStatusAsyncThrowsException(Exception           exception,
+                                                          SubmitterMockOutput output)
+  {
+    helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
+    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                        .ConfigureAwait(false));
+
+    try
+    {
+      _ = await client.GetStatusAsync(new GetStatusrequest())
+                      .ConfigureAwait(false);
+      Assert.Fail("Function should throw an exception");
+    }
+    catch (RpcException e)
+    {
+      return e.StatusCode;
+    }
+
+    return null;
+  }
+
+  [Test]
+  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
+                  nameof(TestCasesOutput))]
+  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
+                  nameof(TestCasesOutputResultDataNotFoundInternal))]
+  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
+                  nameof(TestCasesOutputResultNotFoundInternal))]
+  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
+                  nameof(TestCasesOutputSessionNotFoundInternal))]
+  [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
+                  nameof(TestCasesOutputTaskNotFound))]
   public async Task<StatusCode?> ListTasksThrowsException(Exception           exception,
                                                           SubmitterMockOutput output)
   {
@@ -763,7 +797,7 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       foreach (var output in Enum.GetValues(typeof(SubmitterMockOutput)))
       {
-        yield return new TestCaseData(new ResultDataNotFoundException(),
+        yield return new TestCaseData(new ObjectDataNotFoundException(),
                                       output).Returns(StatusCode.NotFound);
       }
     }
@@ -812,7 +846,7 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       foreach (var output in Enum.GetValues(typeof(SubmitterMockOutput)))
       {
-        yield return new TestCaseData(new ResultDataNotFoundException(),
+        yield return new TestCaseData(new ObjectDataNotFoundException(),
                                       output).Returns(StatusCode.Internal);
       }
     }

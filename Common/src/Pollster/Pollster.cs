@@ -111,7 +111,7 @@ public class Pollster
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
       while (!cancellationToken.IsCancellationRequested)
       {
-        logger_.LogDebug("Trying to fetch messages");
+        logger_.LogTrace("Trying to fetch messages");
 
         logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
         var messages = queueStorage_.PullAsync(messageBatchSize_,
@@ -167,11 +167,10 @@ public class Pollster
                                                                       cancellationToken)
                                                         .ConfigureAwait(false);
 
-              logger_.LogDebug("Finish task processing");
+              logger_.LogDebug("CompleteProcessing task processing");
 
 
-              await Task.WhenAll(processResult)
-                        .ConfigureAwait(false);
+              await processResult.ConfigureAwait(false);
 
               logger_.LogDebug("Task returned");
             }

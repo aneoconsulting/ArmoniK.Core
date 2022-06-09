@@ -29,14 +29,15 @@ services:
       - armonik-backend
       - armonik-monitoring
     ports:
-      - 5001:80
+      - 5001:1080
     environment:
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
       - MongoDB__Host=database
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
+      - MongoDB__MaxConnectionPoolSize=500
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
-      - MongoDB__TableStorage__PollingDelayMax=00:00:10
+      - MongoDB__TableStorage__PollingDelayMax=00:00:01
       - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
       - Redis__EndpointUrl=object:6379
       - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
@@ -63,7 +64,7 @@ services:
       - armonik-backend
       - armonik-monitoring
     ports:
-      - 5002:80
+      - 5002:1080
     environment:
       - Metrics__ApiVersion=TestApiVersion
       - Metrics__DescribedObject__ApiVersion=TestApiVersion
@@ -73,6 +74,7 @@ services:
       - MongoDB__Host=database
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
+      - MongoDB__MaxConnectionPoolSize=500
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:10
       - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
@@ -88,7 +90,7 @@ services:
       options:
         fluentd-address: 127.0.0.1:24224
 
-  armonik.compute.pollingagent:
+  armonik.compute.pollingagent0: &armonik_compute_pollingagent_base
     image: ${ARMONIK_POLLINGAGENT}
     depends_on:
       - database
@@ -99,16 +101,12 @@ services:
     networks:
       - armonik-backend
       - armonik-monitoring
-    ports:
-      - 9980:80
-    volumes:
-      - socket_vol:/cache
-      - ./trace:/trace
     environment:
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
       - MongoDB__Host=database
       - MongoDB__Port=27017
       - MongoDB__DatabaseName=database
+      - MongoDB__MaxConnectionPoolSize=500
       - MongoDB__TableStorage__PollingDelayMin=00:00:01
       - MongoDB__TableStorage__PollingDelayMax=00:00:10
       - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
@@ -126,8 +124,16 @@ services:
       driver: fluentd
       options:
         fluentd-address: 127.0.0.1:24224
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.5'
 
-  armonik.compute.worker:
+  armonik.compute.pollingagent1:
+    <<: *armonik_compute_pollingagent_base
+
+
+  armonik.compute.worker0: &armonik_compute_worker_base
     image: ${ARMONIK_WORKER}
     # build:
     #   context: ..
@@ -137,8 +143,6 @@ services:
       - armonik-monitoring
     depends_on:
       - fluentbit
-    volumes:
-      - socket_vol:/cache
     environment:
       - Serilog__Properties__Application=ArmoniK.Compute.Worker
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
@@ -146,6 +150,10 @@ services:
       driver: fluentd
       options:
         fluentd-address: 127.0.0.1:24224
+
+  armonik.compute.worker1:
+    <<: *armonik_compute_worker_base
+
 
   fluentbit:
     image: fluent/fluent-bit:latest
@@ -188,4 +196,5 @@ networks:
     name: armonik-monitoring
 
 volumes:
-  socket_vol: {}
+  socket_vol0: {}
+  socket_vol1: {}
