@@ -169,7 +169,7 @@ public class PreconditionChecker : IInitializable
 
     if (!await dependencyCheckTask.ConfigureAwait(false))
     {
-      logger_.LogInformation("Dependencies are not complete yet.");
+      logger_.LogDebug("Dependencies are not complete yet.");
       messageHandler.Status = QueueMessageStatus.Postponed;
       return null;
     }
