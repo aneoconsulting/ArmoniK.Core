@@ -108,4 +108,10 @@ public interface ISubmitter
 
   Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
                                         CancellationToken contextCancellationToken);
+
+  Task SetResult(string                                 sessionId,
+                 string                                 ownerTaskId,
+                 string                                 key,
+                 IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
+                 CancellationToken                      cancellationToken);
 }

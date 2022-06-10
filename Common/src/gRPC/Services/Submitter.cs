@@ -740,4 +740,25 @@ public class Submitter : ISubmitter
                               cancellationToken)
                       .ConfigureAwait(false);
   }
+
+  public async Task SetResult(string                                 sessionId,
+                              string                                 ownerTaskId,
+                              string                                 key,
+                              IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
+                              CancellationToken                      cancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
+    var       storage  = ResultStorage(sessionId);
+
+    await storage.AddOrUpdateAsync(key,
+                                   chunks,
+                                   cancellationToken)
+                 .ConfigureAwait(false);
+
+    await resultTable_.SetResult(sessionId,
+                                 ownerTaskId,
+                                 key,
+                                 cancellationToken)
+                      .ConfigureAwait(false);
+  }
 }
