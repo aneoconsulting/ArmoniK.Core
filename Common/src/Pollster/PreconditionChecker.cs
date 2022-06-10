@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -41,8 +42,8 @@ public class PreconditionChecker : IInitializable
   private readonly ActivitySource               activitySource_;
   private readonly ILogger<PreconditionChecker> logger_;
   private readonly IResultTable                 resultTable_;
-  private readonly ISessionTable sessionTable_;
-  private readonly ITaskTable    taskTable_;
+  private readonly ISessionTable                sessionTable_;
+  private readonly ITaskTable                   taskTable_;
 
   private bool isInitialized_;
 
@@ -78,15 +79,18 @@ public class PreconditionChecker : IInitializable
     }
   }
 
-  public async Task<TaskData?> CheckPreconditionsAsync(IQueueMessageHandler messageHandler, CancellationToken cancellationToken)
+  public async Task<TaskData?> CheckPreconditionsAsync(IQueueMessageHandler messageHandler,
+                                                       CancellationToken    cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CheckPreconditionsAsync)}");
 
-    var taskData = await taskTable_.ReadTaskAsync(messageHandler.TaskId,
-                                                  cancellationToken)
-                                   .ConfigureAwait(false);
+    try
+    {
+      var taskData = await taskTable_.ReadTaskAsync(messageHandler.TaskId,
+                                                    cancellationToken)
+                                     .ConfigureAwait(false);
 
-    /*
+      /*
      * Check preconditions:
      *  - Session is not cancelled
      *  - Task is not cancelled
@@ -95,95 +99,105 @@ public class PreconditionChecker : IInitializable
      *  - Max number of retries has not been reached
      */
 
-    logger_.LogDebug("Handling the task status ({status})",
-                     taskData.Status);
-    switch (taskData.Status)
-    {
-      case TaskStatus.Canceling:
+      logger_.LogDebug("Handling the task status ({status})",
+                       taskData.Status);
+      switch (taskData.Status)
+      {
+        case TaskStatus.Canceling:
+          logger_.LogInformation("Task is being cancelled");
+          messageHandler.Status = QueueMessageStatus.Cancelled;
+          await taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
+                                                 TaskStatus.Canceled,
+                                                 CancellationToken.None)
+                          .ConfigureAwait(false);
+          return null;
+        case TaskStatus.Completed:
+          logger_.LogInformation("Task was already completed");
+          messageHandler.Status = QueueMessageStatus.Processed;
+          return null;
+        case TaskStatus.Creating:
+          logger_.LogInformation("Task is still creating");
+          messageHandler.Status = QueueMessageStatus.Postponed;
+          return null;
+        case TaskStatus.Submitted:
+          break;
+        case TaskStatus.Dispatched:
+          break;
+        case TaskStatus.Error:
+          logger_.LogInformation("Task was on error elsewhere ; task should have been resubmitted");
+          messageHandler.Status = QueueMessageStatus.Cancelled;
+          return null;
+        case TaskStatus.Timeout:
+          logger_.LogInformation("Task was timeout elsewhere ; taking over here");
+          break;
+        case TaskStatus.Canceled:
+          logger_.LogInformation("Task has been cancelled");
+          messageHandler.Status = QueueMessageStatus.Cancelled;
+          return null;
+        case TaskStatus.Processing:
+          logger_.LogInformation("Task is processing elsewhere ; taking over here");
+          break;
+        case TaskStatus.Failed:
+          logger_.LogInformation("Task is failed");
+          messageHandler.Status = QueueMessageStatus.Poisonous;
+          return null;
+        case TaskStatus.Unspecified:
+        default:
+          logger_.LogCritical("Task was in an unknown state {state}",
+                              taskData.Status);
+          throw new ArgumentException(nameof(taskData));
+      }
+
+      var dependencyCheckTask = taskData.DataDependencies.Any()
+                                  ? resultTable_.AreResultsAvailableAsync(taskData.SessionId,
+                                                                          taskData.DataDependencies,
+                                                                          cancellationToken)
+                                  : Task.FromResult(true);
+
+      var isSessionCancelled = await sessionTable_.IsSessionCancelledAsync(taskData.SessionId,
+                                                                           cancellationToken)
+                                                  .ConfigureAwait(false);
+
+      if (isSessionCancelled && taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.Error))
+      {
         logger_.LogInformation("Task is being cancelled");
+
         messageHandler.Status = QueueMessageStatus.Cancelled;
         await taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
                                                TaskStatus.Canceled,
-                                               CancellationToken.None)
+                                               cancellationToken)
                         .ConfigureAwait(false);
         return null;
-      case TaskStatus.Completed:
-        logger_.LogInformation("Task was already completed");
-        messageHandler.Status = QueueMessageStatus.Processed;
-        return null;
-      case TaskStatus.Creating:
-        logger_.LogInformation("Task is still creating");
+      }
+
+
+      if (!await dependencyCheckTask.ConfigureAwait(false))
+      {
+        logger_.LogDebug("Dependencies are not complete yet.");
         messageHandler.Status = QueueMessageStatus.Postponed;
         return null;
-      case TaskStatus.Submitted:
-        break;
-      case TaskStatus.Dispatched:
-        break;
-      case TaskStatus.Error:
-        logger_.LogInformation("Task was on error elsewhere ; task should have been resubmitted");
-        messageHandler.Status = QueueMessageStatus.Cancelled;
+      }
+
+
+      logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
+
+      var acquireTask = await taskTable_.AcquireTask(messageHandler.TaskId,
+                                                     cancellationToken)
+                                        .ConfigureAwait(false);
+      if (!acquireTask)
+      {
+        messageHandler.Status = QueueMessageStatus.Postponed;
         return null;
-      case TaskStatus.Timeout:
-        logger_.LogInformation("Task was timeout elsewhere ; taking over here");
-        break;
-      case TaskStatus.Canceled:
-        logger_.LogInformation("Task has been cancelled");
-        messageHandler.Status = QueueMessageStatus.Cancelled;
-        return null;
-      case TaskStatus.Processing:
-        logger_.LogInformation("Task is processing elsewhere ; taking over here");
-        break;
-      case TaskStatus.Failed:
-        logger_.LogInformation("Task is failed");
-        messageHandler.Status = QueueMessageStatus.Poisonous;
-        return null;
-      case TaskStatus.Unspecified:
-      default:
-        logger_.LogCritical("Task was in an unknown state {state}",
-                            taskData.Status);
-        throw new ArgumentException(nameof(taskData));
+      }
+
+      logger_.LogInformation("Task preconditions are OK");
+      return taskData;
     }
-
-    var dependencyCheckTask = taskData.DataDependencies.Any()
-                                ? resultTable_.AreResultsAvailableAsync(taskData.SessionId,
-                                                                        taskData.DataDependencies,
-                                                                        cancellationToken)
-                                : Task.FromResult(true);
-
-    var isSessionCancelled = await sessionTable_.IsSessionCancelledAsync(taskData.SessionId,
-                                                                         cancellationToken)
-                                                .ConfigureAwait(false);
-
-    if (isSessionCancelled && taskData.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.Error))
+    catch (TaskNotFoundException e)
     {
-      logger_.LogInformation("Task is being cancelled");
-
-      messageHandler.Status = QueueMessageStatus.Cancelled;
-      await taskTable_.UpdateTaskStatusAsync(messageHandler.TaskId,
-                                             TaskStatus.Canceled,
-                                             cancellationToken)
-                      .ConfigureAwait(false);
+      logger_.LogWarning("TaskId coming from message queue was not found, delete message from queue", e);
+      messageHandler.Status = QueueMessageStatus.Processed;
       return null;
     }
-
-
-    if (!await dependencyCheckTask.ConfigureAwait(false))
-    {
-      logger_.LogDebug("Dependencies are not complete yet.");
-      messageHandler.Status = QueueMessageStatus.Postponed;
-      return null;
-    }
-
-
-    logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
-
-    var acquireTask = await taskTable_.AcquireTask(messageHandler.TaskId,
-                                                   cancellationToken)
-                                      .ConfigureAwait(false);
-    if (!acquireTask)
-      return null;
-
-    logger_.LogInformation("Task preconditions are OK");
-    return taskData;
   }
 }
