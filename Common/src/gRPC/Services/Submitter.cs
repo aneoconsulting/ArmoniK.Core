@@ -327,8 +327,6 @@ public class Submitter : ISubmitter
                                  IServerStreamWriter<ResultReply> responseStream,
                                  CancellationToken                cancellationToken)
   {
-
-    // TODO make it match API
     using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
     var       storage  = ResultStorage(request.Session);
 
@@ -336,6 +334,59 @@ public class Submitter : ISubmitter
                                               request.Key,
                                               cancellationToken)
                                    .ConfigureAwait(false);
+
+    if (result.Status != ResultStatus.Completed)
+    {
+
+      var taskData = await taskTable_.ReadTaskAsync(result.OwnerTaskId,
+                                                    cancellationToken)
+                                     .ConfigureAwait(false);
+
+      switch (taskData.Status)
+      {
+        case TaskStatus.Processed:
+        case TaskStatus.Completed:
+          break;
+        case TaskStatus.Error:
+        case TaskStatus.Failed:
+          await responseStream.WriteAsync(new ResultReply
+                                          {
+                                            Error = new TaskError
+                                                    {
+                                                      TaskId = taskData.TaskId,
+                                                      Error =
+                                                      {
+                                                        new Error
+                                                        {
+                                                          Detail     = taskData.Output.Error,
+                                                          TaskStatus = taskData.Status,
+                                                        },
+                                                      },
+                                                    },
+                                          },
+                                          CancellationToken.None)
+                              .ConfigureAwait(false);
+          return;
+        case TaskStatus.Creating:
+        case TaskStatus.Timeout:
+        case TaskStatus.Canceling:
+        case TaskStatus.Canceled:
+        case TaskStatus.Submitted:
+        case TaskStatus.Dispatched:
+        case TaskStatus.Processing:
+          await responseStream.WriteAsync(new ResultReply
+                                          {
+                                            NotCompletedTask = taskData.TaskId,
+                                          },
+                                          CancellationToken.None)
+                              .ConfigureAwait(false);
+          return;
+
+        case TaskStatus.Unspecified:
+        default:
+          throw new ArgumentOutOfRangeException();
+      }
+    }
 
     await foreach (var chunk in storage.GetValuesAsync(request.Key,
                                                        cancellationToken)
