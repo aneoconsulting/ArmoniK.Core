@@ -349,6 +349,9 @@ public class Submitter : ISubmitter
           break;
         case TaskStatus.Error:
         case TaskStatus.Failed:
+        case TaskStatus.Timeout:
+        case TaskStatus.Canceled:
+        case TaskStatus.Canceling:
           await responseStream.WriteAsync(new ResultReply
                                           {
                                             Error = new TaskError
@@ -368,9 +371,6 @@ public class Submitter : ISubmitter
                               .ConfigureAwait(false);
           return;
         case TaskStatus.Creating:
-        case TaskStatus.Timeout:
-        case TaskStatus.Canceling:
-        case TaskStatus.Canceled:
         case TaskStatus.Submitted:
         case TaskStatus.Dispatched:
         case TaskStatus.Processing:
