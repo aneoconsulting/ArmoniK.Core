@@ -406,8 +406,7 @@ public class RequestProcessor : IDisposable
                                             return reply.TypeCase switch
                                                    {
                                                      ProcessReply.TypeOneofCase.Result => new
-                                                       ResultProcessor(objectStorageFactory_.CreateResultStorage(taskData.SessionId),
-                                                                       resultTable_,
+                                                       ResultProcessor(submitter_,
                                                                        taskData.SessionId,
                                                                        taskData.RetryOfIds.FirstOrDefault(taskData.TaskId),
                                                                        logger_),

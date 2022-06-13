@@ -28,8 +28,8 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.StateMachines;
-using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
 
@@ -41,8 +41,7 @@ namespace ArmoniK.Core.Common.Pollster;
 internal class ResultProcessor : IProcessReplyProcessor
 {
   private readonly ProcessReplyResultStateMachine fsm_;
-  private readonly IObjectStorage                 resultStorage_;
-  private readonly IResultTable                   resultTable_;
+  private readonly ISubmitter                     submitter_;
   private readonly string                         sessionId_;
   private readonly string                         ownerTaskId_;
   private          Task?                          completionTask_;
@@ -51,22 +50,19 @@ internal class ResultProcessor : IProcessReplyProcessor
   /// <summary>
   /// Initializes the class with its required objects
   /// </summary>
-  /// <param name="resultStorage">Interface class to interact with object storage</param>
-  /// <param name="resultTable">Interface class to interact with the database table for results</param>
+  /// <param name="submitter">Interface class to manage tasks</param>
   /// <param name="sessionId">Session Id of the task that owns the result</param>
   /// <param name="ownerTaskId">Task Id of the task that owns the result</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public ResultProcessor(IObjectStorage resultStorage,
-                         IResultTable   resultTable,
-                         string         sessionId,
-                         string         ownerTaskId,
-                         ILogger        logger)
+  public ResultProcessor(ISubmitter submitter,
+                         string     sessionId,
+                         string     ownerTaskId,
+                         ILogger    logger)
   {
-    resultStorage_ = resultStorage;
-    resultTable_   = resultTable;
-    sessionId_     = sessionId;
-    ownerTaskId_   = ownerTaskId;
-    fsm_           = new ProcessReplyResultStateMachine(logger);
+    submitter_   = submitter;
+    sessionId_   = sessionId;
+    ownerTaskId_ = ownerTaskId;
+    fsm_         = new ProcessReplyResultStateMachine(logger);
     chunksChannel_ = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
                                                                    {
                                                                      SingleWriter = true,
@@ -87,15 +83,12 @@ internal class ResultProcessor : IProcessReplyProcessor
             fsm_.InitKey();
             completionTask_ = Task.Run(async () =>
                                        {
-                                         await resultStorage_.AddOrUpdateAsync(processReply.Result.Init.Key,
-                                                                               chunksChannel_.Reader.ReadAllAsync(cancellationToken),
-                                                                               cancellationToken)
-                                                             .ConfigureAwait(false);
-                                         await resultTable_.SetResult(sessionId_,
-                                                                      ownerTaskId_,
-                                                                      processReply.Result.Init.Key,
-                                                                      cancellationToken)
-                                                           .ConfigureAwait(false);
+                                         await submitter_.SetResult(sessionId_,
+                                                                    ownerTaskId_,
+                                                                    processReply.Result.Init.Key,
+                                                                    chunksChannel_.Reader.ReadAllAsync(cancellationToken),
+                                                                    cancellationToken)
+                                                         .ConfigureAwait(false);
                                        },
                                        cancellationToken);
             break;
