@@ -4852,6 +4852,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask
   nameWithType: ISubmitter.ResubmitTask
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult(System.String,System.String,System.String,IAsyncEnumerable{ReadOnlyMemory{System.Byte}},CancellationToken)
+  name: SetResult(String, String, String, IAsyncEnumerable<ReadOnlyMemory<Byte>>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_SetResult_System_String_System_String_System_String_IAsyncEnumerable_ReadOnlyMemory_System_Byte___CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult(System.String,System.String,System.String,IAsyncEnumerable{ReadOnlyMemory{System.Byte}},CancellationToken)
+  name.vb: SetResult(String, String, String, IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult(System.String, System.String, System.String, IAsyncEnumerable<ReadOnlyMemory<System.Byte>>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult(System.String, System.String, System.String, IAsyncEnumerable(Of ReadOnlyMemory(Of System.Byte)), CancellationToken)
+  nameWithType: ISubmitter.SetResult(String, String, String, IAsyncEnumerable<ReadOnlyMemory<Byte>>, CancellationToken)
+  nameWithType.vb: ISubmitter.SetResult(String, String, String, IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult*
+  name: SetResult
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_SetResult_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult
+  nameWithType: ISubmitter.SetResult
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.StartTask(System.String,CancellationToken)
   name: StartTask(String, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_StartTask_System_String_CancellationToken_
@@ -5117,6 +5133,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask
   nameWithType: Submitter.ResubmitTask
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult(System.String,System.String,System.String,IAsyncEnumerable{ReadOnlyMemory{System.Byte}},CancellationToken)
+  name: SetResult(String, String, String, IAsyncEnumerable<ReadOnlyMemory<Byte>>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_SetResult_System_String_System_String_System_String_IAsyncEnumerable_ReadOnlyMemory_System_Byte___CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult(System.String,System.String,System.String,IAsyncEnumerable{ReadOnlyMemory{System.Byte}},CancellationToken)
+  name.vb: SetResult(String, String, String, IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult(System.String, System.String, System.String, IAsyncEnumerable<ReadOnlyMemory<System.Byte>>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult(System.String, System.String, System.String, IAsyncEnumerable(Of ReadOnlyMemory(Of System.Byte)), CancellationToken)
+  nameWithType: Submitter.SetResult(String, String, String, IAsyncEnumerable<ReadOnlyMemory<Byte>>, CancellationToken)
+  nameWithType.vb: Submitter.SetResult(String, String, String, IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult*
+  name: SetResult
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_SetResult_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult
+  nameWithType: Submitter.SetResult
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.StartTask(System.String,CancellationToken)
   name: StartTask(String, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_StartTask_System_String_CancellationToken_
@@ -13573,6 +13605,181 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.WaitForCompletionShouldSucceed
   nameWithType: GrpcSubmitterServiceTests.WaitForCompletionShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests
+  name: SubmitterTests
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html
+  commentId: T:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests
+  nameWithType: SubmitterTests
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelSessionShouldSucceed
+  name: CancelSessionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CancelSessionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelSessionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelSessionShouldSucceed()
+  nameWithType: SubmitterTests.CancelSessionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelSessionShouldSucceed*
+  name: CancelSessionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CancelSessionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelSessionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelSessionShouldSucceed
+  nameWithType: SubmitterTests.CancelSessionShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelTaskShouldSucceed
+  name: CancelTaskShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CancelTaskShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelTaskShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelTaskShouldSucceed()
+  nameWithType: SubmitterTests.CancelTaskShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelTaskShouldSucceed*
+  name: CancelTaskShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CancelTaskShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelTaskShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelTaskShouldSucceed
+  nameWithType: SubmitterTests.CancelTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionShouldSucceed
+  name: CreateSessionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionShouldSucceed()
+  nameWithType: SubmitterTests.CreateSessionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionShouldSucceed*
+  name: CreateSessionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionShouldSucceed
+  nameWithType: SubmitterTests.CreateSessionShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskShouldSucceed
+  name: CreateTaskShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateTaskShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskShouldSucceed()
+  nameWithType: SubmitterTests.CreateTaskShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskShouldSucceed*
+  name: CreateTaskShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateTaskShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskShouldSucceed
+  nameWithType: SubmitterTests.CreateTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.FinalizeTaskCreationShouldSucceed
+  name: FinalizeTaskCreationShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_FinalizeTaskCreationShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.FinalizeTaskCreationShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.FinalizeTaskCreationShouldSucceed()
+  nameWithType: SubmitterTests.FinalizeTaskCreationShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.FinalizeTaskCreationShouldSucceed*
+  name: FinalizeTaskCreationShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_FinalizeTaskCreationShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.FinalizeTaskCreationShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.FinalizeTaskCreationShouldSucceed
+  nameWithType: SubmitterTests.FinalizeTaskCreationShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail
+  name: GetStatusShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetStatusShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail()
+  nameWithType: SubmitterTests.GetStatusShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail*
+  name: GetStatusShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetStatusShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail
+  nameWithType: SubmitterTests.GetStatusShouldFail
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldSucceed
+  name: GetStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldSucceed()
+  nameWithType: SubmitterTests.GetStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldSucceed*
+  name: GetStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldSucceed
+  nameWithType: SubmitterTests.GetStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetTaskOutputShouldSucceed
+  name: GetTaskOutputShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetTaskOutputShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetTaskOutputShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetTaskOutputShouldSucceed()
+  nameWithType: SubmitterTests.GetTaskOutputShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetTaskOutputShouldSucceed*
+  name: GetTaskOutputShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetTaskOutputShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetTaskOutputShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetTaskOutputShouldSucceed
+  nameWithType: SubmitterTests.GetTaskOutputShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_SetUp
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.SetUp
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.SetUp()
+  nameWithType: SubmitterTests.SetUp()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_SetUp_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.SetUp
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.SetUp
+  nameWithType: SubmitterTests.SetUp
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_TearDown
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TearDown
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TearDown()
+  nameWithType: SubmitterTests.TearDown()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_TearDown_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TearDown
+  nameWithType: SubmitterTests.TearDown
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldFail
+  name: TryGetResultShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_TryGetResultShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldFail()
+  nameWithType: SubmitterTests.TryGetResultShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldFail*
+  name: TryGetResultShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_TryGetResultShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldFail
+  nameWithType: SubmitterTests.TryGetResultShouldFail
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldSucceed
+  name: TryGetResultShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_TryGetResultShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldSucceed()
+  nameWithType: SubmitterTests.TryGetResultShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldSucceed*
+  name: TryGetResultShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_TryGetResultShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultShouldSucceed
+  nameWithType: SubmitterTests.TryGetResultShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply
+  name: TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply()
+  nameWithType: SubmitterTests.TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply*
+  name: TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply
+  nameWithType: SubmitterTests.TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply
 - uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest
   name: TaskFilterValidatorTest
   href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html

@@ -1221,7 +1221,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.RequestProcessor.html",
-          "hash": "IDSXGqxYkdaJzZ9ilknR9JAqvJALqFDoU4tjYvL+k2c="
+          "hash": "ozyoI89sEc6TIMUZSK91AUOUyXpLrk1sWATfeVQnrHM="
         }
       },
       "is_incremental": false,
@@ -2189,11 +2189,23 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html",
+          "hash": "4K4Y5T290gV46j046Nn60KgAG3svJUet13SnPxTpbPY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.Submitter.yml",
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Submitter.html",
-          "hash": "Y36J8intbsVRd6Heu5wzWLPkw5zWGCABihA72YxjOJ0="
+          "hash": "28KXs0+0VgvEZscQEVh336eUBY+EcI4bCsdgoq1X+Gs="
         }
       },
       "is_incremental": false,
@@ -2421,7 +2433,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html",
-          "hash": "ksTWZI8KvjWeEBP/F0ggfX32Df2hiEU4ZSyvL1K5Q3I="
+          "hash": "Cr4CbuciZ3mXJP1+Q2VLNLvfts+PivtH2X8tENqsfuE="
         }
       },
       "is_incremental": false,
@@ -2433,7 +2445,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.gRPC.Services.Submitter.html",
-          "hash": "E9EVps4gpgeeascihn2WKB04cHi+EGsK2Yspt47air0="
+          "hash": "ek5mEifoXjkql/33KQXW9A3PJ+/Xz4ItNHlQiW4Id3U="
         }
       },
       "is_incremental": false,
@@ -3105,7 +3117,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "idVfg8Aatq57K7FyvOTs9koJWzSsUcUrDDa3KU8hOok="
+          "hash": "PPZ6Z471rOrmaldeOQxw6r+VJZ27JHXlkPY/0iauO0Y="
         }
       },
       "is_incremental": false,
@@ -3180,7 +3192,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 257,
+          "total_file_count": 258,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
