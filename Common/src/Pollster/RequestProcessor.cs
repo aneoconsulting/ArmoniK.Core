@@ -176,7 +176,7 @@ public class RequestProcessor : IDisposable
                                                CancellationToken.None)
                         .ConfigureAwait(false);
         await submitter_.ResubmitTask(taskData,
-                                      cancellationToken)
+                                      CancellationToken.None)
                         .ConfigureAwait(false);
         return true;
       }
@@ -189,7 +189,7 @@ public class RequestProcessor : IDisposable
           if (!await HandleExceptionAsync(ie,
                                           taskData,
                                           messageHandler,
-                                          cancellationToken)
+                                          CancellationToken.None)
                  .ConfigureAwait(false))
           {
             return false;
@@ -210,7 +210,7 @@ public class RequestProcessor : IDisposable
                                                CancellationToken.None)
                         .ConfigureAwait(false);
         await submitter_.ResubmitTask(taskData,
-                                      cancellationToken)
+                                      CancellationToken.None)
                         .ConfigureAwait(false);
         return false;
       }
