@@ -15930,19 +15930,45 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.DataSize
   nameWithType: HtcMock.DataSize
-- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.FastCompute
-  name: FastCompute
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_FastCompute
-  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.FastCompute
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.FastCompute
-  nameWithType: HtcMock.FastCompute
-- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.FastCompute*
-  name: FastCompute
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_FastCompute_
-  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.FastCompute
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableFastCompute
+  name: EnableFastCompute
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_EnableFastCompute
+  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableFastCompute
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableFastCompute
+  nameWithType: HtcMock.EnableFastCompute
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableFastCompute*
+  name: EnableFastCompute
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_EnableFastCompute_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableFastCompute
   isSpec: "True"
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.FastCompute
-  nameWithType: HtcMock.FastCompute
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableFastCompute
+  nameWithType: HtcMock.EnableFastCompute
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableSmallOutput
+  name: EnableSmallOutput
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_EnableSmallOutput
+  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableSmallOutput
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableSmallOutput
+  nameWithType: HtcMock.EnableSmallOutput
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableSmallOutput*
+  name: EnableSmallOutput
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_EnableSmallOutput_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableSmallOutput
+  isSpec: "True"
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableSmallOutput
+  nameWithType: HtcMock.EnableSmallOutput
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableUseLowMem
+  name: EnableUseLowMem
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_EnableUseLowMem
+  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableUseLowMem
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableUseLowMem
+  nameWithType: HtcMock.EnableUseLowMem
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableUseLowMem*
+  name: EnableUseLowMem
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_EnableUseLowMem_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableUseLowMem
+  isSpec: "True"
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.EnableUseLowMem
+  nameWithType: HtcMock.EnableUseLowMem
 - uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.MemorySize
   name: MemorySize
   href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_MemorySize
@@ -15975,19 +16001,6 @@ references:
   commentId: F:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SettingSection
   fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SettingSection
   nameWithType: HtcMock.SettingSection
-- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SmallOutput
-  name: SmallOutput
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_SmallOutput
-  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SmallOutput
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SmallOutput
-  nameWithType: HtcMock.SmallOutput
-- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SmallOutput*
-  name: SmallOutput
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_SmallOutput_
-  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SmallOutput
-  isSpec: "True"
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SmallOutput
-  nameWithType: HtcMock.SmallOutput
 - uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SubTasksLevels
   name: SubTasksLevels
   href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_SubTasksLevels
@@ -16014,19 +16027,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TotalCalculationTime
   nameWithType: HtcMock.TotalCalculationTime
-- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.UseLowMem
-  name: UseLowMem
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_UseLowMem
-  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.UseLowMem
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.UseLowMem
-  nameWithType: HtcMock.UseLowMem
-- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.UseLowMem*
-  name: UseLowMem
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_UseLowMem_
-  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.UseLowMem
-  isSpec: "True"
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.UseLowMem
-  nameWithType: HtcMock.UseLowMem
 - uid: ArmoniK.Samples.HtcMock.Client.SessionClient
   name: SessionClient
   href: api/ArmoniK.Samples.HtcMock.Client.SessionClient.html
