@@ -197,6 +197,28 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
+  public async Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
+                                                                                      string              sessionId,
+                                                                                      CancellationToken   cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(GetResultStatus)}");
+
+    var sessionHandle    = sessionProvider_.Get();
+    var resultCollection = resultCollectionProvider_.Get();
+
+
+    return await resultCollection.AsQueryable(sessionHandle)
+                                 .Where(model => ids.Contains(model.Name) && model.SessionId == sessionId)
+                                 .Select(model => new GetResultStatusReply.Types.IdStatus
+                                                  {
+                                                    ResultId = model.Name,
+                                                    Status   = model.Status,
+                                                  })
+                                 .ToListAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
   public async Task ChangeResultOwnership(string                                                 sessionId,
                                           string                                                 oldTaskId,
                                           IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,

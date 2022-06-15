@@ -26,6 +26,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -73,4 +75,8 @@ public interface IResultTable : IInitializable
                  string            ownerTaskId,
                  string            key,
                  CancellationToken cancellationToken = default);
+
+  Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
+                                                                         string              sessionId,
+                                                                         CancellationToken   cancellationToken = default);
 }

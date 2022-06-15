@@ -458,32 +458,63 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
   }
 
-  public override Task<GetStatusReply> GetStatus(GetStatusrequest  request,
-                                                 ServerCallContext context)
+  public override Task<GetTaskStatusReply> GetTaskStatus(GetTaskStatusRequest request,
+                                                         ServerCallContext    context)
   {
     try
     {
-      return submitter_.GetStatusAsync(request,
-                                       context.CancellationToken);
+      return submitter_.GetTaskStatusAsync(request,
+                                           context.CancellationToken);
     }
     catch (TaskNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting status");
+                         "Error while getting status");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting status");
+                         "Error while getting status");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while getting status");
+                         "Error while getting status");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
+
+  public override Task<GetResultStatusReply> GetResultStatus(GetResultStatusRequest request,
+                                                             ServerCallContext      context)
+  {
+    try
+    {
+      return submitter_.GetResultStatusAsync(request,
+                                             context.CancellationToken);
+    }
+    catch (ResultNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting status");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result not found"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting status");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting status");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
