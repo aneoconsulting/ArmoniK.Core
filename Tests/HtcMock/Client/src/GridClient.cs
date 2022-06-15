@@ -68,13 +68,13 @@ public class GridClient : IGridClient
                                                        Options =
                                                        {
                                                          {
-                                                           "FastCompute", optionsHtcMock_.FastCompute.ToString()
+                                                           "FastCompute", optionsHtcMock_.EnableFastCompute.ToString()
                                                          },
                                                          {
-                                                           "UseLowMem", optionsHtcMock_.UseLowMem.ToString()
+                                                           "UseLowMem", optionsHtcMock_.EnableUseLowMem.ToString()
                                                          },
                                                          {
-                                                           "SmallOutput", optionsHtcMock_.SmallOutput.ToString()
+                                                           "SmallOutput", optionsHtcMock_.EnableSmallOutput.ToString()
                                                          },
                                                        },
                                                      },
