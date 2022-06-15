@@ -105,9 +105,9 @@ public class SampleComputerService : WorkerStreamWrapper
                        fastCompute,
                        useLowMem,
                        smallOutput);
-      var requestProcessor = new RequestProcessor(!fastCompute,
-                                                  !useLowMem,
-                                                  !smallOutput,
+      var requestProcessor = new RequestProcessor(fastCompute,
+                                                  useLowMem,
+                                                  smallOutput,
                                                   runConfiguration,
                                                   logger_);
       var res = requestProcessor.GetResult(request,
