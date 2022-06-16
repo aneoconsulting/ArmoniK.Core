@@ -100,8 +100,11 @@ public interface ISubmitter
   Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                    CancellationToken contextCancellationToken);
 
-  Task<GetStatusReply> GetStatusAsync(GetStatusrequest  request,
-                                      CancellationToken contextCancellationToken);
+  Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
+                                              CancellationToken    contextCancellationToken);
+
+  Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
+                                                  CancellationToken      contextCancellationToken);
 
   Task<TaskIdList> ListTasksAsync(TaskFilter        request,
                                   CancellationToken contextCancellationToken);

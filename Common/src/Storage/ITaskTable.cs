@@ -91,8 +91,8 @@ public interface ITaskTable : IInitializable
   Task<bool> AcquireTask(string            taskId,
                          CancellationToken cancellationToken = default);
 
-  Task<TaskStatus> GetTaskStatus(string            taskId,
-                                 CancellationToken cancellationToken = default);
+  Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskId,
+                                                                     CancellationToken   cancellationToken = default);
 
   Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,
                                                       CancellationToken cancellationToken = default);

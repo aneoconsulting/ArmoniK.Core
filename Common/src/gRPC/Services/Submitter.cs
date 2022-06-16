@@ -647,15 +647,35 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<GetStatusReply> GetStatusAsync(GetStatusrequest  request,
-                                                   CancellationToken contextCancellationToken)
+  public async Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
+                                                           CancellationToken    contextCancellationToken)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetStatusAsync)}");
-    return new GetStatusReply
+    using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatusAsync)}");
+    return new GetTaskStatusReply
            {
-             Status = await taskTable_.GetTaskStatus(request.TaskId,
-                                                     contextCancellationToken)
-                                      .ConfigureAwait(false),
+             IdStatus =
+             {
+               await taskTable_.GetTaskStatus(request.TaskId.ToList(),
+                                              contextCancellationToken)
+                               .ConfigureAwait(false),
+             },
+           };
+  }
+
+  /// <inheritdoc />
+  public async Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
+                                                               CancellationToken      contextCancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(GetResultStatusAsync)}");
+    return new GetResultStatusReply
+           {
+             IdStatus =
+             {
+               await resultTable_.GetResultStatus(request.ResultId.ToList(),
+                                                  request.SessionId,
+                                                  contextCancellationToken)
+                                 .ConfigureAwait(false),
+             },
            };
   }
 

@@ -194,6 +194,20 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
+  public Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
+                                                                                string              sessionId,
+                                                                                CancellationToken   cancellationToken = default)
+  {
+    return Task.FromResult(results_[sessionId]
+                           .Where(model => ids.Contains(model.Key))
+                           .Select(model => new GetResultStatusReply.Types.IdStatus
+                                            {
+                                              ResultId = model.Value.Name,
+                                              Status   = model.Value.Status,
+                                            }));
+  }
+
+  /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
