@@ -40,4 +40,6 @@ public class HtcMock
   public       bool     EnableFastCompute    { get; set; } = true;
   public       bool     EnableUseLowMem      { get; set; } = true;
   public       bool     EnableSmallOutput    { get; set; } = true;
+  public       string   TaskRpcException     { get; set; } = "0";
+  public       string   TaskError            { get; set; } = "0";
 }
