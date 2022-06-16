@@ -797,6 +797,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.ResultTable.GetResult
   nameWithType: ResultTable.GetResult
+- uid: ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
+  name: GetResultStatus(IEnumerable<String>, String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_GetResultStatus_IEnumerable_System_String__System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
+  name.vb: GetResultStatus(IEnumerable(Of String), String, CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus(IEnumerable<System.String>, System.String, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus(IEnumerable(Of System.String), System.String, CancellationToken)
+  nameWithType: ResultTable.GetResultStatus(IEnumerable<String>, String, CancellationToken)
+  nameWithType.vb: ResultTable.GetResultStatus(IEnumerable(Of String), String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus*
+  name: GetResultStatus
+  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_GetResultStatus_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus
+  nameWithType: ResultTable.GetResultStatus
 - uid: ArmoniK.Core.Adapters.Memory.ResultTable.Init(CancellationToken)
   name: Init(CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_Init_CancellationToken_
@@ -1206,12 +1222,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskOutput
   nameWithType: TaskTable.GetTaskOutput
-- uid: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskStatus(System.String,CancellationToken)
-  name: GetTaskStatus(String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_GetTaskStatus_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskStatus(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskStatus(System.String, CancellationToken)
-  nameWithType: TaskTable.GetTaskStatus(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
+  name: GetTaskStatus(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
+  name.vb: GetTaskStatus(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskStatus(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskStatus(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: TaskTable.GetTaskStatus(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: TaskTable.GetTaskStatus(IEnumerable(Of String), CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.GetTaskStatus*
   name: GetTaskStatus
   href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_GetTaskStatus_
@@ -2630,6 +2649,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResult
   nameWithType: ResultTable.GetResult
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
+  name: GetResultStatus(IEnumerable<String>, String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_GetResultStatus_IEnumerable_System_String__System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
+  name.vb: GetResultStatus(IEnumerable(Of String), String, CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResultStatus(IEnumerable<System.String>, System.String, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResultStatus(IEnumerable(Of System.String), System.String, CancellationToken)
+  nameWithType: ResultTable.GetResultStatus(IEnumerable<String>, String, CancellationToken)
+  nameWithType.vb: ResultTable.GetResultStatus(IEnumerable(Of String), String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResultStatus*
+  name: GetResultStatus
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_GetResultStatus_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResultStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.GetResultStatus
+  nameWithType: ResultTable.GetResultStatus
 - uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.Init(CancellationToken)
   name: Init(CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_Init_CancellationToken_
@@ -3388,12 +3423,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskOutput
   nameWithType: TaskTable.GetTaskOutput
-- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus(System.String,CancellationToken)
-  name: GetTaskStatus(String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskStatus_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus(System.String, CancellationToken)
-  nameWithType: TaskTable.GetTaskStatus(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
+  name: GetTaskStatus(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
+  name.vb: GetTaskStatus(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: TaskTable.GetTaskStatus(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: TaskTable.GetTaskStatus(IEnumerable(Of String), CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus*
   name: GetTaskStatus
   href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskStatus_
@@ -4577,6 +4615,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateSmallTasks
   nameWithType: GrpcSubmitterService.CreateSmallTasks
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetResultStatus(GetResultStatusRequest,ServerCallContext)
+  name: GetResultStatus(GetResultStatusRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetResultStatus_GetResultStatusRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetResultStatus(GetResultStatusRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetResultStatus(GetResultStatusRequest, ServerCallContext)
+  nameWithType: GrpcSubmitterService.GetResultStatus(GetResultStatusRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetResultStatus*
+  name: GetResultStatus
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetResultStatus_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetResultStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetResultStatus
+  nameWithType: GrpcSubmitterService.GetResultStatus
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetServiceConfiguration(Empty,ServerCallContext)
   name: GetServiceConfiguration(Empty, ServerCallContext)
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetServiceConfiguration_Empty_ServerCallContext_
@@ -4590,19 +4641,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetServiceConfiguration
   nameWithType: GrpcSubmitterService.GetServiceConfiguration
-- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetStatus(GetStatusrequest,ServerCallContext)
-  name: GetStatus(GetStatusrequest, ServerCallContext)
-  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetStatus_GetStatusrequest_ServerCallContext_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetStatus(GetStatusrequest,ServerCallContext)
-  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetStatus(GetStatusrequest, ServerCallContext)
-  nameWithType: GrpcSubmitterService.GetStatus(GetStatusrequest, ServerCallContext)
-- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetStatus*
-  name: GetStatus
-  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetStatus_
-  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetStatus
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetTaskStatus(GetTaskStatusRequest,ServerCallContext)
+  name: GetTaskStatus(GetTaskStatusRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetTaskStatus_GetTaskStatusRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetTaskStatus(GetTaskStatusRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetTaskStatus(GetTaskStatusRequest, ServerCallContext)
+  nameWithType: GrpcSubmitterService.GetTaskStatus(GetTaskStatusRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetTaskStatus*
+  name: GetTaskStatus
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_GetTaskStatus_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetTaskStatus
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetStatus
-  nameWithType: GrpcSubmitterService.GetStatus
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.GetTaskStatus
+  nameWithType: GrpcSubmitterService.GetTaskStatus
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.ListSessions(SessionFilter,ServerCallContext)
   name: ListSessions(SessionFilter, ServerCallContext)
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_ListSessions_SessionFilter_ServerCallContext_
@@ -4787,6 +4838,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation
   nameWithType: ISubmitter.FinalizeTaskCreation
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetResultStatusAsync(GetResultStatusRequest,CancellationToken)
+  name: GetResultStatusAsync(GetResultStatusRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetResultStatusAsync_GetResultStatusRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetResultStatusAsync(GetResultStatusRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetResultStatusAsync(GetResultStatusRequest, CancellationToken)
+  nameWithType: ISubmitter.GetResultStatusAsync(GetResultStatusRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetResultStatusAsync*
+  name: GetResultStatusAsync
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetResultStatusAsync_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetResultStatusAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetResultStatusAsync
+  nameWithType: ISubmitter.GetResultStatusAsync
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetServiceConfiguration(Empty,CancellationToken)
   name: GetServiceConfiguration(Empty, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetServiceConfiguration_Empty_CancellationToken_
@@ -4800,19 +4864,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetServiceConfiguration
   nameWithType: ISubmitter.GetServiceConfiguration
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetStatusAsync(GetStatusrequest,CancellationToken)
-  name: GetStatusAsync(GetStatusrequest, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetStatusAsync_GetStatusrequest_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetStatusAsync(GetStatusrequest,CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetStatusAsync(GetStatusrequest, CancellationToken)
-  nameWithType: ISubmitter.GetStatusAsync(GetStatusrequest, CancellationToken)
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetStatusAsync*
-  name: GetStatusAsync
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetStatusAsync_
-  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetStatusAsync
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetTaskStatusAsync(GetTaskStatusRequest,CancellationToken)
+  name: GetTaskStatusAsync(GetTaskStatusRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetTaskStatusAsync_GetTaskStatusRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetTaskStatusAsync(GetTaskStatusRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetTaskStatusAsync(GetTaskStatusRequest, CancellationToken)
+  nameWithType: ISubmitter.GetTaskStatusAsync(GetTaskStatusRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetTaskStatusAsync*
+  name: GetTaskStatusAsync
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetTaskStatusAsync_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetTaskStatusAsync
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetStatusAsync
-  nameWithType: ISubmitter.GetStatusAsync
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetTaskStatusAsync
+  nameWithType: ISubmitter.GetTaskStatusAsync
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListSessionsAsync(SessionFilter,CancellationToken)
   name: ListSessionsAsync(SessionFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_ListSessionsAsync_SessionFilter_CancellationToken_
@@ -5068,6 +5132,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation
   nameWithType: Submitter.FinalizeTaskCreation
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.GetResultStatusAsync(GetResultStatusRequest,CancellationToken)
+  name: GetResultStatusAsync(GetResultStatusRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_GetResultStatusAsync_GetResultStatusRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.GetResultStatusAsync(GetResultStatusRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.GetResultStatusAsync(GetResultStatusRequest, CancellationToken)
+  nameWithType: Submitter.GetResultStatusAsync(GetResultStatusRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.GetResultStatusAsync*
+  name: GetResultStatusAsync
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_GetResultStatusAsync_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Submitter.GetResultStatusAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.GetResultStatusAsync
+  nameWithType: Submitter.GetResultStatusAsync
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.GetServiceConfiguration(Empty,CancellationToken)
   name: GetServiceConfiguration(Empty, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_GetServiceConfiguration_Empty_CancellationToken_
@@ -5081,19 +5158,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.GetServiceConfiguration
   nameWithType: Submitter.GetServiceConfiguration
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.GetStatusAsync(GetStatusrequest,CancellationToken)
-  name: GetStatusAsync(GetStatusrequest, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_GetStatusAsync_GetStatusrequest_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.GetStatusAsync(GetStatusrequest,CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.GetStatusAsync(GetStatusrequest, CancellationToken)
-  nameWithType: Submitter.GetStatusAsync(GetStatusrequest, CancellationToken)
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.GetStatusAsync*
-  name: GetStatusAsync
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_GetStatusAsync_
-  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Submitter.GetStatusAsync
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.GetTaskStatusAsync(GetTaskStatusRequest,CancellationToken)
+  name: GetTaskStatusAsync(GetTaskStatusRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_GetTaskStatusAsync_GetTaskStatusRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.GetTaskStatusAsync(GetTaskStatusRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.GetTaskStatusAsync(GetTaskStatusRequest, CancellationToken)
+  nameWithType: Submitter.GetTaskStatusAsync(GetTaskStatusRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.GetTaskStatusAsync*
+  name: GetTaskStatusAsync
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_GetTaskStatusAsync_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Submitter.GetTaskStatusAsync
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.GetStatusAsync
-  nameWithType: Submitter.GetStatusAsync
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.GetTaskStatusAsync
+  nameWithType: Submitter.GetTaskStatusAsync
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.ListSessionsAsync(SessionFilter,CancellationToken)
   name: ListSessionsAsync(SessionFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_ListSessionsAsync_SessionFilter_CancellationToken_
@@ -7964,6 +8041,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.IResultTable.GetResult
   nameWithType: IResultTable.GetResult
+- uid: ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
+  name: GetResultStatus(IEnumerable<String>, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_GetResultStatus_IEnumerable_System_String__System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)
+  name.vb: GetResultStatus(IEnumerable(Of String), String, CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus(IEnumerable<System.String>, System.String, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus(IEnumerable(Of System.String), System.String, CancellationToken)
+  nameWithType: IResultTable.GetResultStatus(IEnumerable<String>, String, CancellationToken)
+  nameWithType.vb: IResultTable.GetResultStatus(IEnumerable(Of String), String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus*
+  name: GetResultStatus
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_GetResultStatus_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.GetResultStatus
+  nameWithType: IResultTable.GetResultStatus
 - uid: ArmoniK.Core.Common.Storage.IResultTable.ListResultsAsync(System.String,CancellationToken)
   name: ListResultsAsync(String, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_ListResultsAsync_System_String_CancellationToken_
@@ -8251,12 +8344,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ITaskTable.GetTaskOutput
   nameWithType: ITaskTable.GetTaskOutput
-- uid: ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus(System.String,CancellationToken)
-  name: GetTaskStatus(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_GetTaskStatus_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus(System.String, CancellationToken)
-  nameWithType: ITaskTable.GetTaskStatus(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
+  name: GetTaskStatus(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)
+  name.vb: GetTaskStatus(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: ITaskTable.GetTaskStatus(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: ITaskTable.GetTaskStatus(IEnumerable(Of String), CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.ITaskTable.GetTaskStatus*
   name: GetTaskStatus
   href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_GetTaskStatus_
@@ -11929,6 +12025,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.DeleteUnknownResultShouldFail
   nameWithType: ResultTableTestBase.DeleteUnknownResultShouldFail
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetNotExistingResultStatusShouldSucceed
+  name: GetNotExistingResultStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_GetNotExistingResultStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ResultTableTestBase.GetNotExistingResultStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetNotExistingResultStatusShouldSucceed()
+  nameWithType: ResultTableTestBase.GetNotExistingResultStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetNotExistingResultStatusShouldSucceed*
+  name: GetNotExistingResultStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_GetNotExistingResultStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultTableTestBase.GetNotExistingResultStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetNotExistingResultStatusShouldSucceed
+  nameWithType: ResultTableTestBase.GetNotExistingResultStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultStatusShouldSucceed
+  name: GetResultStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_GetResultStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultStatusShouldSucceed()
+  nameWithType: ResultTableTestBase.GetResultStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultStatusShouldSucceed*
+  name: GetResultStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_GetResultStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultStatusShouldSucceed
+  nameWithType: ResultTableTestBase.GetResultStatusShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultTableInstance
   name: GetResultTableInstance()
   href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_GetResultTableInstance
@@ -13228,6 +13350,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetConfigurationShouldSucceed
   nameWithType: GrpcSubmitterServiceTests.GetConfigurationShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow
+  name: GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.html#ArmoniK_Core_Common_Tests_Submitter_GrpcSubmitterServiceTests_GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow
+  fullName: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow()
+  nameWithType: GrpcSubmitterServiceTests.GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow()
+- uid: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow*
+  name: GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow
+  href: api/ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.html#ArmoniK_Core_Common_Tests_Submitter_GrpcSubmitterServiceTests_GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow
+  nameWithType: GrpcSubmitterServiceTests.GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow
+- uid: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusShouldSucceed
+  name: GetResultStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.html#ArmoniK_Core_Common_Tests_Submitter_GrpcSubmitterServiceTests_GetResultStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusShouldSucceed()
+  nameWithType: GrpcSubmitterServiceTests.GetResultStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusShouldSucceed*
+  name: GetResultStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.html#ArmoniK_Core_Common_Tests_Submitter_GrpcSubmitterServiceTests_GetResultStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetResultStatusShouldSucceed
+  nameWithType: GrpcSubmitterServiceTests.GetResultStatusShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.GetStatusArmonikExceptionShouldThrow
   name: GetStatusArmonikExceptionShouldThrow()
   href: api/ArmoniK.Core.Common.Tests.Submitter.GrpcSubmitterServiceTests.html#ArmoniK_Core_Common_Tests_Submitter_GrpcSubmitterServiceTests_GetStatusArmonikExceptionShouldThrow
@@ -13676,19 +13824,45 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.FinalizeTaskCreationShouldSucceed
   nameWithType: SubmitterTests.FinalizeTaskCreationShouldSucceed
-- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail
-  name: GetStatusShouldFail()
-  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetStatusShouldFail
-  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail
-  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail()
-  nameWithType: SubmitterTests.GetStatusShouldFail()
-- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail*
-  name: GetStatusShouldFail
-  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetStatusShouldFail_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetNotExistingResultStatusShouldSucceed
+  name: GetNotExistingResultStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetNotExistingResultStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetNotExistingResultStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetNotExistingResultStatusShouldSucceed()
+  nameWithType: SubmitterTests.GetNotExistingResultStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetNotExistingResultStatusShouldSucceed*
+  name: GetNotExistingResultStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetNotExistingResultStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetNotExistingResultStatusShouldSucceed
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldFail
-  nameWithType: SubmitterTests.GetStatusShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetNotExistingResultStatusShouldSucceed
+  nameWithType: SubmitterTests.GetNotExistingResultStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetResultStatusShouldSucceed
+  name: GetResultStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetResultStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetResultStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetResultStatusShouldSucceed()
+  nameWithType: SubmitterTests.GetResultStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetResultStatusShouldSucceed*
+  name: GetResultStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetResultStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetResultStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetResultStatusShouldSucceed
+  nameWithType: SubmitterTests.GetResultStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusReturnEmptyList
+  name: GetStatusReturnEmptyList()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetStatusReturnEmptyList
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusReturnEmptyList
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusReturnEmptyList()
+  nameWithType: SubmitterTests.GetStatusReturnEmptyList()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusReturnEmptyList*
+  name: GetStatusReturnEmptyList
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetStatusReturnEmptyList_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusReturnEmptyList
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusReturnEmptyList
+  nameWithType: SubmitterTests.GetStatusReturnEmptyList
 - uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetStatusShouldSucceed
   name: GetStatusShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetStatusShouldSucceed

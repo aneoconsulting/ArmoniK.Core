@@ -138,7 +138,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_ResultTable_Logger.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.ResultTable.Logger%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/Memory/src/ResultTable.cs/#L201">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/Memory/src/ResultTable.cs/#L215">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_Memory_ResultTable_Logger_" data-uid="ArmoniK.Core.Adapters.Memory.ResultTable.Logger*"></a>
   <h4 id="ArmoniK_Core_Adapters_Memory_ResultTable_Logger" data-uid="ArmoniK.Core.Adapters.Memory.ResultTable.Logger">Logger</h4>
@@ -289,7 +289,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_ResultTable_Check_ArmoniK_Core_Common_HealthCheckTag_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.ResultTable.Check(ArmoniK.Core.Common.HealthCheckTag)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/Memory/src/ResultTable.cs/#L204">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/Memory/src/ResultTable.cs/#L218">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_Memory_ResultTable_Check_" data-uid="ArmoniK.Core.Adapters.Memory.ResultTable.Check*"></a>
   <h4 id="ArmoniK_Core_Adapters_Memory_ResultTable_Check_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Adapters.Memory.ResultTable.Check(ArmoniK.Core.Common.HealthCheckTag)">Check(HealthCheckTag)</h4>
@@ -551,10 +551,67 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_ResultTable_Init_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.ResultTable.Init(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_ResultTable_GetResultStatus_IEnumerable_System_String__System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus(IEnumerable%7BSystem.String%7D%2CSystem.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/Memory/src/ResultTable.cs/#L197">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_Memory_ResultTable_GetResultStatus_" data-uid="ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus*"></a>
+  <h4 id="ArmoniK_Core_Adapters_Memory_ResultTable_GetResultStatus_IEnumerable_System_String__System_String_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Memory.ResultTable.GetResultStatus(IEnumerable{System.String},System.String,CancellationToken)">GetResultStatus(IEnumerable&lt;String&gt;, String, CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;IEnumerable&lt;GetResultStatusReply.Types.IdStatus&gt;&gt; GetResultStatus(IEnumerable&lt;string&gt; ids, string sessionId, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">IEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="parametername">ids</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">sessionId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span>&lt;<span class="xref">IEnumerable</span>&lt;<span class="xref">GetResultStatusReply.Types.IdStatus</span>&gt;&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_ResultTable_Init_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.ResultTable.Init(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/Memory/src/ResultTable.cs/#L211">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_Memory_ResultTable_Init_" data-uid="ArmoniK.Core.Adapters.Memory.ResultTable.Init*"></a>
   <h4 id="ArmoniK_Core_Adapters_Memory_ResultTable_Init_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Memory.ResultTable.Init(CancellationToken)">Init(CancellationToken)</h4>
