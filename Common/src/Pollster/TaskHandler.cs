@@ -226,7 +226,6 @@ internal class TaskHandler : IAsyncDisposable
                                                       objectStorageFactory_,
                                                       logger_,
                                                       submitter_,
-                                                      resultTable_,
                                                       activitySource_);
 
     processResult_ = await requestProcessor.ProcessAsync(messageHandler_,

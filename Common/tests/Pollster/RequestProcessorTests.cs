@@ -298,7 +298,6 @@ public class RequestProcessorTest
                                              mockObjectStorageFactory_.Object,
                                              loggerFactory_.CreateLogger<Common.Pollster.Pollster>(),
                                              submitter,
-                                             resultTable_,
                                              activitySource_);
   }
 
