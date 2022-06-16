@@ -333,16 +333,15 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task<TaskStatus> GetTaskStatus(string            taskId,
-                                        CancellationToken cancellationToken = default)
+  public Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
+                                                                            CancellationToken   cancellationToken = default)
   {
-    if (!taskId2TaskData_.ContainsKey(taskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
-    }
-
-    return Task.FromResult(taskId2TaskData_[taskId]
-                             .Status);
+    return Task.FromResult(taskId2TaskData_.Where(tdm => taskIds.Contains(tdm.Key))
+                                           .Select(model => new GetTaskStatusReply.Types.IdStatus
+                                                            {
+                                                              Status = model.Value.Status,
+                                                              TaskId = model.Value.TaskId,
+                                                            }));
   }
 
   /// <inheritdoc />

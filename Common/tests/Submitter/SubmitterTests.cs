@@ -328,13 +328,17 @@ public class SubmitterTests
 
     var result = await submitter_.GetTaskStatusAsync(new GetTaskStatusRequest
                                                      {
-                                                       TaskId = TaskCreatingId,
+                                                       TaskId =
+                                                       {
+                                                         TaskCreatingId,
+                                                       },
                                                      },
                                                      CancellationToken.None)
                                  .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Creating,
-                    result.Status);
+                    result.IdStatus.Single()
+                          .Status);
   }
 
   [Test]
@@ -346,27 +350,37 @@ public class SubmitterTests
 
     var result = await submitter_.GetTaskStatusAsync(new GetTaskStatusRequest
                                                      {
-                                                       TaskId = TaskSubmittedId,
+                                                       TaskId =
+                                                       {
+                                                         TaskSubmittedId
+                                                       },
                                                      },
                                                      CancellationToken.None)
                                  .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Submitted,
-                    result.Status);
+                    result.IdStatus.Single()
+                          .Status);
   }
 
   [Test]
-  public async Task GetStatusShouldFail()
+  public async Task GetStatusReturnEmptyList()
   {
     await InitSubmitter(submitter_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
-    Assert.ThrowsAsync<TaskNotFoundException>(() => submitter_.GetTaskStatusAsync(new GetTaskStatusRequest
-                                                                                  {
-                                                                                    TaskId = "taskdoesnotexist",
-                                                                                  },
-                                                                                  CancellationToken.None));
+    var res = await submitter_.GetTaskStatusAsync(new GetTaskStatusRequest
+                                                  {
+                                                    TaskId =
+                                                    {
+                                                      "taskdoesnotexist",
+                                                    },
+                                                  },
+                                                  CancellationToken.None);
+
+    Assert.AreEqual(0,
+                    res.IdStatus.Count);
   }
 
   [Test]
@@ -531,13 +545,17 @@ public class SubmitterTests
 
     var reply = await submitter_.GetTaskStatusAsync(new GetTaskStatusRequest
                                                     {
-                                                      TaskId = TaskCreatingId,
+                                                      TaskId =
+                                                      {
+                                                        TaskCreatingId,
+                                                      },
                                                     },
                                                     CancellationToken.None)
                                 .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Canceling,
-                    reply.Status);
+                    reply.IdStatus.Single()
+                         .Status);
   }
 
   [Test]

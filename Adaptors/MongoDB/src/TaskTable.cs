@@ -138,10 +138,13 @@ public class TaskTable : ITaskTable
     switch (res.MatchedCount)
     {
       case 0:
-        var taskStatus = await GetTaskStatus(id,
+        var taskStatus = await GetTaskStatus(new[]
+                                             {
+                                               id,
+                                             },
                                              cancellationToken)
                            .ConfigureAwait(false);
-        throw new ArmoniKException($"Task not found or task already in a terminal state - {id} from {taskStatus} to {status}");
+        throw new ArmoniKException($"Task not found or task already in a terminal state - {id} from {taskStatus.Single()} to {status}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }
@@ -222,10 +225,18 @@ public class TaskTable : ITaskTable
     switch (res.MatchedCount)
     {
       case 0:
-        var taskStatus = await GetTaskStatus(taskId,
+        var taskStatus = await GetTaskStatus(new[]
+                                             {
+                                               taskId,
+                                             },
                                              cancellationToken)
                            .ConfigureAwait(false);
-        throw new TaskNotFoundException($"Task not found or task already in a terminal state - {taskStatus} from {taskStatus} to {TaskStatus.Processing}");
+
+        if (!taskStatus.Any())
+        {
+          throw new TaskNotFoundException($"Task {taskId} not found");
+        }
+        throw new ArmoniKException($"Task already in a terminal state - {taskStatus.Single()} to {TaskStatus.Processing}");
       case > 1:
         throw new ArmoniKException("Multiple tasks modified");
     }
@@ -477,28 +488,26 @@ public class TaskTable : ITaskTable
     }
   }
 
-  public async Task<TaskStatus> GetTaskStatus(string            taskId,
-                                              CancellationToken cancellationToken = default)
+  /// <inheritdoc />
+
+  public async Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
+                                                                                  CancellationToken   cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatus)}");
-    activity?.SetTag($"{nameof(GetTaskStatus)}_TaskId",
-                     taskId);
-    var sessionHandle = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
+    using var activity       = activitySource_.StartActivity($"{nameof(GetTaskStatus)}");
+    var       sessionHandle  = sessionProvider_.Get();
+    var       taskCollection = taskCollectionProvider_.Get();
 
-    try
-    {
-      return await taskCollection.AsQueryable(sessionHandle)
-                                 .Where(tdm => tdm.TaskId == taskId)
-                                 .Select(model => model.Status)
-                                 .SingleAsync(cancellationToken)
-                                 .ConfigureAwait(false);
+    return await taskCollection.AsQueryable(sessionHandle)
+                               .Where(tdm => taskIds.Contains(tdm.TaskId))
+                               .Select(model => new GetTaskStatusReply.Types.IdStatus
+                                                {
+                                                  Status = model.Status,
+                                                  TaskId = model.TaskId,
+                                                })
+                               .ToListAsync(cancellationToken)
+                               .ConfigureAwait(false);
 
-    }
-    catch (InvalidOperationException)
-    {
-      throw new TaskNotFoundException($"Task '{taskId}' not found.");
-    }
+
   }
 
   public async Task<IEnumerable<string>> GetTaskExpectedOutputKeys(string            taskId,

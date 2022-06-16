@@ -35,6 +35,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
+using Google.Protobuf.Collections;
 
 using Grpc.Core;
 
@@ -1511,7 +1512,14 @@ public class GrpcSubmitterServiceTests
                                                                   CancellationToken.None))
                  .Returns(() => Task.FromResult(new GetTaskStatusReply
                                                 {
-                                                  Status = TaskStatus.Completed,
+                                                  IdStatus =
+                                                  {
+                                                    new GetTaskStatusReply.Types.IdStatus
+                                                    {
+                                                      Status = TaskStatus.Completed,
+                                                      TaskId = "TaskId",
+                                                    },
+                                                  },
                                                 }));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
@@ -1521,13 +1529,15 @@ public class GrpcSubmitterServiceTests
 
     var response = await service.GetTaskStatus(new GetTaskStatusRequest
                                                {
-                                                 TaskId = "TaskId",
+                                                 TaskId = {
+                                                            "TaskId",
+                                                          },
                                                },
                                                TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Completed,
-                    response.Status);
+                    response.IdStatus.Single().Status);
   }
 
   [Test]
@@ -1547,7 +1557,10 @@ public class GrpcSubmitterServiceTests
     {
       await service.GetTaskStatus(new GetTaskStatusRequest
                                   {
-                                    TaskId = "TaskId",
+                                    TaskId =
+                                    {
+                                      "TaskId",
+                                    },
                                   },
                                   TestServerCallContext.Create())
                    .ConfigureAwait(false);
@@ -1578,7 +1591,10 @@ public class GrpcSubmitterServiceTests
     {
       await service.GetTaskStatus(new GetTaskStatusRequest
                                   {
-                                    TaskId = "TaskId",
+                                    TaskId =
+                                    {
+                                      "TaskId",
+                                    },
                                   },
                                   TestServerCallContext.Create())
                    .ConfigureAwait(false);
@@ -1609,7 +1625,10 @@ public class GrpcSubmitterServiceTests
     {
       await service.GetTaskStatus(new GetTaskStatusRequest
                                   {
-                                    TaskId = "TaskId",
+                                    TaskId =
+                                    {
+                                      "TaskId",
+                                    },
                                   },
                                   TestServerCallContext.Create())
                    .ConfigureAwait(false);
@@ -1807,4 +1826,43 @@ public class GrpcSubmitterServiceTests
                       e.StatusCode);
     }
   }
+
+  [Test]
+  public async Task GetResultStatusShouldSucceed()
+  {
+    var mockSubmitter = new Mock<ISubmitter>();
+    mockSubmitter.Setup(submitter => submitter.GetResultStatusAsync(It.IsAny<GetResultStatusRequest>(),
+                                                                  CancellationToken.None))
+                 .Returns(() => Task.FromResult(new GetResultStatusReply
+                                                {
+                                                  IdStatus =
+                                                  {
+                                                    new GetResultStatusReply.Types.IdStatus
+                                                    {
+                                                      Status   = ResultStatus.Completed,
+                                                      ResultId = "ResultId",
+                                                    },
+                                                  },
+                                                }));
+
+    var service = new GrpcSubmitterService(mockSubmitter.Object,
+                                           NullLogger<GrpcSubmitterService>.Instance);
+
+    mockSubmitter.Verify();
+
+    var response = await service.GetResultStatus(new GetResultStatusRequest
+                                               {
+                                                 ResultId =
+                                                 {
+                                                   "ResultId",
+                                                 },
+                                               },
+                                               TestServerCallContext.Create())
+                                .ConfigureAwait(false);
+
+    Assert.AreEqual(ResultStatus.Completed,
+                    response.IdStatus.Single()
+                            .Status);
+  }
+
 }

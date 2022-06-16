@@ -647,15 +647,18 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest  request,
-                                                   CancellationToken contextCancellationToken)
+  public async Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
+                                                           CancellationToken    contextCancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatusAsync)}");
     return new GetTaskStatusReply
            {
-             Status = await taskTable_.GetTaskStatus(request.TaskId,
-                                                     contextCancellationToken)
-                                      .ConfigureAwait(false),
+             IdStatus =
+             {
+               await taskTable_.GetTaskStatus(request.TaskId.ToList(),
+                                              contextCancellationToken)
+                               .ConfigureAwait(false),
+             },
            };
   }
 
