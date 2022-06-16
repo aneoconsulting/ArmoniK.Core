@@ -112,7 +112,6 @@ public class TestPollingAgentProvider : IDisposable
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddSingleton<IQueueStorage, QueueStorage>()
            .AddSingleton<Common.Pollster.Pollster>()
-           .AddSingleton<PreconditionChecker>()
            .AddSingleton<DataPrefetcher>()
            .AddSingleton(workerStreamHandler);
 

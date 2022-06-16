@@ -82,6 +82,7 @@ jobs:
           - Adaptors/Memory/tests
         os:
           - ubuntu-latest
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
@@ -116,6 +117,7 @@ jobs:
           - Common/tests
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
+      fail-fast: false
     runs-on: windows-latest
     steps:
     - name: Checkout
