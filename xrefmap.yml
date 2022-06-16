@@ -6573,15 +6573,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Pollster.Pollster
   fullName: ArmoniK.Core.Common.Pollster.Pollster
   nameWithType: Pollster
-- uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.PreconditionChecker,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  name: Pollster(IQueueStorage, PreconditionChecker, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, IWorkerStreamHandler)
-  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_ArmoniK_Core_Common_Storage_IQueueStorage_ArmoniK_Core_Common_Pollster_PreconditionChecker_ArmoniK_Core_Common_Pollster_DataPrefetcher_ArmoniK_Core_Common_Injection_Options_ComputePlan_IHostApplicationLifetime_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_Storage_IObjectStorageFactory_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_
-  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.PreconditionChecker,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  name.vb: Pollster(IQueueStorage, PreconditionChecker, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, IWorkerStreamHandler)
-  fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.PreconditionChecker, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  fullName.vb: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.PreconditionChecker, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  nameWithType: Pollster.Pollster(IQueueStorage, PreconditionChecker, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, IWorkerStreamHandler)
-  nameWithType.vb: Pollster.Pollster(IQueueStorage, PreconditionChecker, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, IWorkerStreamHandler)
+- uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  name: Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, IWorkerStreamHandler)
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_ArmoniK_Core_Common_Storage_IQueueStorage_ArmoniK_Core_Common_Pollster_DataPrefetcher_ArmoniK_Core_Common_Injection_Options_ComputePlan_IHostApplicationLifetime_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_Storage_IObjectStorageFactory_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_
+  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  name.vb: Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, IWorkerStreamHandler)
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  fullName.vb: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  nameWithType: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, IWorkerStreamHandler)
+  nameWithType.vb: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, IWorkerStreamHandler)
 - uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor*
   name: Pollster
   href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_
@@ -6615,82 +6615,18 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.Pollster.MainLoop
   nameWithType: Pollster.MainLoop
-- uid: ArmoniK.Core.Common.Pollster.PreconditionChecker
-  name: PreconditionChecker
-  href: api/ArmoniK.Core.Common.Pollster.PreconditionChecker.html
-  commentId: T:ArmoniK.Core.Common.Pollster.PreconditionChecker
-  fullName: ArmoniK.Core.Common.Pollster.PreconditionChecker
-  nameWithType: PreconditionChecker
-- uid: ArmoniK.Core.Common.Pollster.PreconditionChecker.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.PreconditionChecker})
-  name: PreconditionChecker(ISessionTable, ITaskTable, IResultTable, ActivitySource, ILogger<PreconditionChecker>)
-  href: api/ArmoniK.Core.Common.Pollster.PreconditionChecker.html#ArmoniK_Core_Common_Pollster_PreconditionChecker__ctor_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_IResultTable_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_PreconditionChecker__
-  commentId: M:ArmoniK.Core.Common.Pollster.PreconditionChecker.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.PreconditionChecker})
-  name.vb: PreconditionChecker(ISessionTable, ITaskTable, IResultTable, ActivitySource, ILogger(Of PreconditionChecker))
-  fullName: ArmoniK.Core.Common.Pollster.PreconditionChecker.PreconditionChecker(ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.PreconditionChecker>)
-  fullName.vb: ArmoniK.Core.Common.Pollster.PreconditionChecker.PreconditionChecker(ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.PreconditionChecker))
-  nameWithType: PreconditionChecker.PreconditionChecker(ISessionTable, ITaskTable, IResultTable, ActivitySource, ILogger<PreconditionChecker>)
-  nameWithType.vb: PreconditionChecker.PreconditionChecker(ISessionTable, ITaskTable, IResultTable, ActivitySource, ILogger(Of PreconditionChecker))
-- uid: ArmoniK.Core.Common.Pollster.PreconditionChecker.#ctor*
-  name: PreconditionChecker
-  href: api/ArmoniK.Core.Common.Pollster.PreconditionChecker.html#ArmoniK_Core_Common_Pollster_PreconditionChecker__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.PreconditionChecker.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.PreconditionChecker.PreconditionChecker
-  nameWithType: PreconditionChecker.PreconditionChecker
-- uid: ArmoniK.Core.Common.Pollster.PreconditionChecker.Check(ArmoniK.Core.Common.HealthCheckTag)
-  name: Check(HealthCheckTag)
-  href: api/ArmoniK.Core.Common.Pollster.PreconditionChecker.html#ArmoniK_Core_Common_Pollster_PreconditionChecker_Check_ArmoniK_Core_Common_HealthCheckTag_
-  commentId: M:ArmoniK.Core.Common.Pollster.PreconditionChecker.Check(ArmoniK.Core.Common.HealthCheckTag)
-  fullName: ArmoniK.Core.Common.Pollster.PreconditionChecker.Check(ArmoniK.Core.Common.HealthCheckTag)
-  nameWithType: PreconditionChecker.Check(HealthCheckTag)
-- uid: ArmoniK.Core.Common.Pollster.PreconditionChecker.Check*
-  name: Check
-  href: api/ArmoniK.Core.Common.Pollster.PreconditionChecker.html#ArmoniK_Core_Common_Pollster_PreconditionChecker_Check_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.PreconditionChecker.Check
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.PreconditionChecker.Check
-  nameWithType: PreconditionChecker.Check
-- uid: ArmoniK.Core.Common.Pollster.PreconditionChecker.CheckPreconditionsAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler,CancellationToken)
-  name: CheckPreconditionsAsync(IQueueMessageHandler, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.PreconditionChecker.html#ArmoniK_Core_Common_Pollster_PreconditionChecker_CheckPreconditionsAsync_ArmoniK_Core_Common_Storage_IQueueMessageHandler_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.PreconditionChecker.CheckPreconditionsAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler,CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.PreconditionChecker.CheckPreconditionsAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler, CancellationToken)
-  nameWithType: PreconditionChecker.CheckPreconditionsAsync(IQueueMessageHandler, CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.PreconditionChecker.CheckPreconditionsAsync*
-  name: CheckPreconditionsAsync
-  href: api/ArmoniK.Core.Common.Pollster.PreconditionChecker.html#ArmoniK_Core_Common_Pollster_PreconditionChecker_CheckPreconditionsAsync_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.PreconditionChecker.CheckPreconditionsAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.PreconditionChecker.CheckPreconditionsAsync
-  nameWithType: PreconditionChecker.CheckPreconditionsAsync
-- uid: ArmoniK.Core.Common.Pollster.PreconditionChecker.Init(CancellationToken)
-  name: Init(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.PreconditionChecker.html#ArmoniK_Core_Common_Pollster_PreconditionChecker_Init_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.PreconditionChecker.Init(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.PreconditionChecker.Init(CancellationToken)
-  nameWithType: PreconditionChecker.Init(CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.PreconditionChecker.Init*
-  name: Init
-  href: api/ArmoniK.Core.Common.Pollster.PreconditionChecker.html#ArmoniK_Core_Common_Pollster_PreconditionChecker_Init_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.PreconditionChecker.Init
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.PreconditionChecker.Init
-  nameWithType: PreconditionChecker.Init
 - uid: ArmoniK.Core.Common.Pollster.RequestProcessor
   name: RequestProcessor
   href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html
   commentId: T:ArmoniK.Core.Common.Pollster.RequestProcessor
   fullName: ArmoniK.Core.Common.Pollster.RequestProcessor
   nameWithType: RequestProcessor
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.IResultTable,ActivitySource)
-  name: RequestProcessor(IWorkerStreamHandler, IObjectStorageFactory, ILogger<Pollster>, ISubmitter, IResultTable, ActivitySource)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_IResultTable_ActivitySource_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.IResultTable,ActivitySource)
-  name.vb: RequestProcessor(IWorkerStreamHandler, IObjectStorageFactory, ILogger(Of Pollster), ISubmitter, IResultTable, ActivitySource)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.RequestProcessor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.IResultTable, ActivitySource)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.RequestProcessor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.IResultTable, ActivitySource)
-  nameWithType: RequestProcessor.RequestProcessor(IWorkerStreamHandler, IObjectStorageFactory, ILogger<Pollster>, ISubmitter, IResultTable, ActivitySource)
-  nameWithType.vb: RequestProcessor.RequestProcessor(IWorkerStreamHandler, IObjectStorageFactory, ILogger(Of Pollster), ISubmitter, IResultTable, ActivitySource)
+- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ActivitySource)
+  name: RequestProcessor(IWorkerStreamHandler, IObjectStorageFactory, ILogger, ISubmitter, ActivitySource)
+  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ILogger_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ActivitySource_
+  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ActivitySource)
+  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.RequestProcessor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ActivitySource)
+  nameWithType: RequestProcessor.RequestProcessor(IWorkerStreamHandler, IObjectStorageFactory, ILogger, ISubmitter, ActivitySource)
 - uid: ArmoniK.Core.Common.Pollster.RequestProcessor.#ctor*
   name: RequestProcessor
   href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor__ctor_
