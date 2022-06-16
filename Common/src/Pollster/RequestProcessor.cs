@@ -44,7 +44,6 @@ using Microsoft.Extensions.Logging;
 using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskCanceledException = System.Threading.Tasks.TaskCanceledException;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 using TimeoutException = System.TimeoutException;
 
@@ -53,25 +52,22 @@ namespace ArmoniK.Core.Common.Pollster;
 public class RequestProcessor : IDisposable
 {
   private readonly ActivitySource        activitySource_;
-  private readonly ILogger<Pollster>     logger_;
+  private readonly ILogger               logger_;
   private readonly IObjectStorageFactory objectStorageFactory_;
   private readonly IObjectStorage        resourcesStorage_;
-  private readonly IResultTable          resultTable_;
   private readonly ISubmitter            submitter_;
   private readonly IWorkerStreamHandler  workerStreamHandler_;
 
   public RequestProcessor(IWorkerStreamHandler  workerStreamHandler,
                           IObjectStorageFactory objectStorageFactory,
-                          ILogger<Pollster>     logger,
+                          ILogger               logger,
                           ISubmitter            submitter,
-                          IResultTable          resultTable,
                           ActivitySource        activitySource)
   {
     workerStreamHandler_  = workerStreamHandler;
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
     submitter_            = submitter;
-    resultTable_          = resultTable;
     activitySource_       = activitySource;
     resourcesStorage_     = objectStorageFactory.CreateResourcesStorage();
   }

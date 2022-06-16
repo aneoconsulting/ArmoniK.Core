@@ -44,16 +44,16 @@ public class Pollster
   private readonly IHostApplicationLifetime lifeTime_;
   private readonly ILogger<Pollster>        logger_;
   private readonly int                      messageBatchSize_;
-  private readonly PreconditionChecker      preconditionChecker_;
   private readonly IQueueStorage            queueStorage_;
   private readonly IObjectStorageFactory    objectStorageFactory_;
   private readonly IResultTable             resultTable_;
   private readonly ISubmitter               submitter_;
+  private readonly ISessionTable            sessionTable_;
+  private readonly ITaskTable               taskTable_;
   private readonly IWorkerStreamHandler     workerStreamHandler_;
 
 
   public Pollster(IQueueStorage            queueStorage,
-                  PreconditionChecker      preconditionChecker,
                   DataPrefetcher           dataPrefetcher,
                   ComputePlan              options,
                   IHostApplicationLifetime lifeTime,
@@ -62,8 +62,9 @@ public class Pollster
                   IObjectStorageFactory    objectStorageFactory,
                   IResultTable             resultTable,
                   ISubmitter               submitter,
-                  IWorkerStreamHandler     workerStreamHandler
-                  )
+                  ISessionTable            sessionTable,
+                  ITaskTable               taskTable,
+                  IWorkerStreamHandler     workerStreamHandler)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -75,12 +76,13 @@ public class Pollster
     activitySource_       = activitySource;
     queueStorage_         = queueStorage;
     lifeTime_             = lifeTime;
-    preconditionChecker_  = preconditionChecker;
     dataPrefetcher_       = dataPrefetcher;
     messageBatchSize_     = options.MessageBatchSize;
     objectStorageFactory_ = objectStorageFactory;
     resultTable_          = resultTable;
     submitter_            = submitter;
+    sessionTable_         = sessionTable;
+    taskTable_            = taskTable;
     workerStreamHandler_  = workerStreamHandler;
   }
 
@@ -90,14 +92,16 @@ public class Pollster
                        .ConfigureAwait(false);
     await dataPrefetcher_.Init(cancellationToken)
                          .ConfigureAwait(false);
-    await preconditionChecker_.Init(cancellationToken)
-                              .ConfigureAwait(false);
     await workerStreamHandler_.Init(cancellationToken)
                               .ConfigureAwait(false);
     await objectStorageFactory_.Init(cancellationToken)
                                .ConfigureAwait(false);
     await resultTable_.Init(cancellationToken)
                       .ConfigureAwait(false);
+    await sessionTable_.Init(cancellationToken)
+                       .ConfigureAwait(false);
+    await taskTable_.Init(cancellationToken)
+                    .ConfigureAwait(false);
   }
 
   public async Task MainLoop(CancellationToken cancellationToken)
@@ -120,8 +124,6 @@ public class Pollster
         await foreach (var message in messages.WithCancellation(cancellationToken)
                                               .ConfigureAwait(false))
         {
-          await using var msg = message;
-
           using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
                                                            ("messageHandler", message.MessageId),
                                                            ("taskId", message.TaskId));
@@ -138,39 +140,32 @@ public class Pollster
                                                                             cancellationToken);
           try
           {
-            logger_.LogDebug("Loading task data");
+            await using var taskHandler = new TaskHandler(sessionTable_,
+                                                          taskTable_,
+                                                          resultTable_,
+                                                          submitter_,
+                                                          dataPrefetcher_,
+                                                          workerStreamHandler_,
+                                                          objectStorageFactory_,
+                                                          message,
+                                                          activitySource_,
+                                                          logger_);
 
-            var precondition = await preconditionChecker_.CheckPreconditionsAsync(message,
-                                                                                  cancellationToken)
-                                                         .ConfigureAwait(false);
+            var precondition = await taskHandler.AcquireTask(combinedCts.Token)
+                                                .ConfigureAwait(false);
 
-            if (precondition is not null)
+            if (precondition)
             {
-              var taskData = precondition;
+              await taskHandler.PreProcessing(cancellationToken)
+                               .ConfigureAwait(false);
 
-              logger_.LogDebug("Start prefetch data");
-              var computeRequestStream = await dataPrefetcher_.PrefetchDataAsync(taskData,
-                                                                                 cancellationToken)
-                                                              .ConfigureAwait(false);
-
-              logger_.LogDebug("Start a new Task to process the messageHandler");
-              using var requestProcessor = new RequestProcessor(workerStreamHandler_,
-                                                                objectStorageFactory_,
-                                                                logger_,
-                                                                submitter_,
-                                                                resultTable_,
-                                                                activitySource_);
-
-              var processResult = await requestProcessor.ProcessAsync(message,
-                                                                      taskData,
-                                                                      computeRequestStream,
-                                                                      cancellationToken)
-                                                        .ConfigureAwait(false);
+              await taskHandler.ExecuteTask(cancellationToken)
+                               .ConfigureAwait(false);
 
               logger_.LogDebug("CompleteProcessing task processing");
 
-
-              await processResult.ConfigureAwait(false);
+              await taskHandler.PostProcessing(cancellationToken)
+                               .ConfigureAwait(false);
 
               logger_.LogDebug("Task returned");
             }
