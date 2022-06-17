@@ -318,7 +318,6 @@ public class RequestProcessorTest
                                                Output = new Api.gRPC.V1.Output
                                                         {
                                                           Ok     = new Empty(),
-                                                          Status = TaskStatus.Completed,
                                                         },
                                              },
                                            },
@@ -386,7 +385,6 @@ public class RequestProcessorTest
                                                Output = new Api.gRPC.V1.Output
                                                         {
                                                           Ok     = new Empty(),
-                                                          Status = TaskStatus.Completed,
                                                         },
                                              },
                                            },
@@ -479,7 +477,6 @@ public class RequestProcessorTest
                                                 Output = new Api.gRPC.V1.Output
                                                          {
                                                            Ok     = new Empty(),
-                                                           Status = TaskStatus.Completed,
                                                          },
                                               },
                                             },
@@ -568,7 +565,6 @@ public class RequestProcessorTest
                                                    Output = new Api.gRPC.V1.Output
                                                             {
                                                               Ok     = new Empty(),
-                                                              Status = TaskStatus.Completed,
                                                             },
                                                  },
                                                },
@@ -602,7 +598,6 @@ public class RequestProcessorTest
                                                  Output = new Api.gRPC.V1.Output
                                                           {
                                                             Ok     = new Empty(),
-                                                            Status = TaskStatus.Completed,
                                                           },
                                                },
                                              },
@@ -636,7 +631,6 @@ public class RequestProcessorTest
                                                  Output = new Api.gRPC.V1.Output
                                                           {
                                                             Ok     = new Empty(),
-                                                            Status = TaskStatus.Completed,
                                                           },
                                                },
                                              },

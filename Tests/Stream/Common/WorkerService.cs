@@ -31,8 +31,6 @@ using Google.Protobuf;
 
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-
 namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 
 public class WorkerService : WorkerStreamWrapper
@@ -59,10 +57,8 @@ public class WorkerService : WorkerStreamWrapper
     {
       output.Error = new Output.Types.Error
                      {
-                       Details      = "No payload",
-                       KillSubTasks = true,
+                       Details = "No payload",
                      };
-      output.Status = TaskStatus.Failed;
       return output;
     }
 
@@ -86,8 +82,7 @@ public class WorkerService : WorkerStreamWrapper
                              .ConfigureAwait(false);
             output = new Output
                      {
-                       Ok     = new Empty(),
-                       Status = TaskStatus.Completed,
+                       Ok = new Empty(),
                      };
             break;
           }
@@ -122,8 +117,7 @@ public class WorkerService : WorkerStreamWrapper
                              taskId);
             output = new Output
                      {
-                       Ok     = new Empty(),
-                       Status = TaskStatus.Completed,
+                       Ok = new Empty(),
                      };
           }
             break;
@@ -177,8 +171,7 @@ public class WorkerService : WorkerStreamWrapper
 
             output = new Output
                      {
-                       Ok     = new Empty(),
-                       Status = TaskStatus.Completed,
+                       Ok = new Empty(),
                      };
           }
             break;
@@ -224,8 +217,7 @@ public class WorkerService : WorkerStreamWrapper
 
             output = new Output
                      {
-                       Ok     = new Empty(),
-                       Status = TaskStatus.Completed,
+                       Ok = new Empty(),
                      };
           }
             break;
@@ -234,10 +226,8 @@ public class WorkerService : WorkerStreamWrapper
                      {
                        Error = new Output.Types.Error
                                {
-                                 Details      = "Failed task",
-                                 KillSubTasks = true,
+                                 Details = "Failed task",
                                },
-                       Status = TaskStatus.Failed,
                      };
             break;
           case TestPayload.TaskType.PayloadCheckSum:
@@ -251,8 +241,7 @@ public class WorkerService : WorkerStreamWrapper
                              .ConfigureAwait(false);
             output = new Output
                      {
-                       Ok     = new Empty(),
-                       Status = TaskStatus.Completed,
+                       Ok = new Empty(),
                      };
             break;
           default:
@@ -269,10 +258,8 @@ public class WorkerService : WorkerStreamWrapper
                {
                  Error = new Output.Types.Error
                          {
-                           Details      = ex.Message + ex.StackTrace,
-                           KillSubTasks = true,
+                           Details = ex.Message + ex.StackTrace,
                          },
-                 Status = TaskStatus.Error,
                };
     }
 

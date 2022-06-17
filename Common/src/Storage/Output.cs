@@ -35,8 +35,7 @@ public record Output(bool   Success,
     {
       return new Api.gRPC.V1.Output
              {
-               Ok     = new Empty(),
-               Status = TaskStatus.Completed,
+               Ok = new Empty(),
              };
     }
 
@@ -46,16 +45,17 @@ public record Output(bool   Success,
                      {
                        Details = output.Error,
                      },
-             Status = TaskStatus.Error,
            };
   }
 
   public static implicit operator Output(Api.gRPC.V1.Output output)
-    => output.Status switch
-       {
-         TaskStatus.Completed => new Output(true,
-                                            ""),
-         _ => new Output(false,
-                         output.Error.Details),
-       };
+  {
+    return output.TypeCase switch
+           {
+             Api.gRPC.V1.Output.TypeOneofCase.Ok => new Output(true,
+                                                               ""),
+             _ => new Output(false,
+                             output.Error.Details),
+           };
+  }
 }

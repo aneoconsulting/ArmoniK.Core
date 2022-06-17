@@ -558,8 +558,16 @@ public class TaskTableTestBase
                                                     CancellationToken.None)
                                      .ConfigureAwait(false);
 
-      Assert.IsTrue(result.IsCompletedSuccessfully && resStatus.Single()
-                                                               .Status == TaskStatus.Completed);
+      Assert.AreEqual(TaskStatus.Error,
+                      resStatus.Single()
+                               .Status);
+
+      var output = await TaskTable.GetTaskOutput("TaskProcessingId",
+                                    CancellationToken.None)
+                     .ConfigureAwait(false);
+
+      Assert.AreEqual("Testing SetTaskError",
+                      output.Error);
     }
   }
 

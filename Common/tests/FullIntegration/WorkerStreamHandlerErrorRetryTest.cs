@@ -62,7 +62,6 @@ class WorkerStreamHandlerErrorRetryTest : WorkerStreamHandlerBase
                                                            Output = new Output
                                                                     {
                                                                       Ok     = new Empty(),
-                                                                      Status = TaskStatus.Completed,
                                                                     },
                                                          })
                                      .ConfigureAwait(false);

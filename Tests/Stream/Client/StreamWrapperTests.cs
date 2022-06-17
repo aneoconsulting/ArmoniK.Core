@@ -231,10 +231,10 @@ internal class StreamWrapperTests
 
                                            var taskOutput = client_.TryGetTaskOutput(resultRequest);
                                            Console.WriteLine(request.Id + " - " + taskOutput);
-                                           return taskOutput.Status;
+                                           return taskOutput.TypeCase;
                                          });
 
-    Assert.IsTrue(taskOutput.All(status => status == TaskStatus.Error));
+    Assert.IsTrue(taskOutput.All(status => status == Output.TypeOneofCase.Error));
   }
 
 
@@ -598,12 +598,14 @@ internal class StreamWrapperTests
                         };
     var availabilityReply = client_.WaitForAvailability(resultRequest);
 
-    Assert.IsTrue(availabilityReply.TypeCase == AvailabilityReply.TypeOneofCase.Ok);
+    Assert.AreEqual(AvailabilityReply.TypeOneofCase.Error,
+                    availabilityReply.TypeCase);
 
     var taskOutput = client_.TryGetTaskOutput(resultRequest);
     Console.WriteLine(taskId + " - " + taskOutput);
 
-    Assert.IsTrue(taskOutput.TypeCase == Output.TypeOneofCase.Error);
+    Assert.AreEqual(Output.TypeOneofCase.Error,
+                    taskOutput.TypeCase);
   }
 
   [Test]

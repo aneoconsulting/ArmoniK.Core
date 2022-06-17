@@ -53,7 +53,6 @@ public class RequestProcessor : IDisposable
 {
   private readonly ActivitySource        activitySource_;
   private readonly ILogger               logger_;
-  private readonly IObjectStorageFactory objectStorageFactory_;
   private readonly IObjectStorage        resourcesStorage_;
   private readonly ISubmitter            submitter_;
   private readonly IWorkerStreamHandler  workerStreamHandler_;
@@ -65,7 +64,6 @@ public class RequestProcessor : IDisposable
                           ActivitySource        activitySource)
   {
     workerStreamHandler_  = workerStreamHandler;
-    objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
     submitter_            = submitter;
     activitySource_       = activitySource;
@@ -234,8 +232,6 @@ public class RequestProcessor : IDisposable
     {
       throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
     }
-
-    var resultStorage = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
 
     {
       using var activity2 = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.SendComputeRequests");
