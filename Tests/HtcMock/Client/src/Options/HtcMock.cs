@@ -85,12 +85,12 @@ public class HtcMock
   public bool EnableSmallOutput { get; set; } = true;
 
   /// <summary>
-  /// Raise RpcException when task id ends by this string, ignored if "0"
+  /// Raise RpcException when task id ends by this string, ignored if empty string
   /// </summary>
-  public string TaskRpcException { get; set; } = "0";
+  public string TaskRpcException { get; set; } = string.Empty;
 
   /// <summary>
-  /// Finish task with Output of type <see cref="Output.TypeOneofCase.Error"/> when task id ends by this string, ignored if "0"
+  /// Finish task with Output of type <see cref="Output.TypeOneofCase.Error"/> when task id ends by this string, ignored if empty string
   /// </summary>
-  public string TaskError { get; set; } = "0";
+  public string TaskError { get; set; } = string.Empty;
 }
