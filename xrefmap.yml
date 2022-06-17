@@ -16124,19 +16124,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SubTasksLevels
   nameWithType: HtcMock.SubTasksLevels
-- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
-  name: TaskError
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskError
-  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
-  nameWithType: HtcMock.TaskError
-- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError*
-  name: TaskError
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskError_
-  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed
+  name: TaskFailed
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskFailed
+  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed
+  nameWithType: HtcMock.TaskFailed
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed*
+  name: TaskFailed
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskFailed_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed
   isSpec: "True"
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
-  nameWithType: HtcMock.TaskError
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed
+  nameWithType: HtcMock.TaskFailed
 - uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskRpcException
   name: TaskRpcException
   href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskRpcException
@@ -16302,12 +16302,12 @@ references:
   commentId: T:ArmoniK.Samples.HtcMock.Server.SampleComputerService
   fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService
   nameWithType: SampleComputerService
-- uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory,ArmoniK.Samples.HtcMock.GridWorker.ApplicationLifeTimeManager)
-  name: SampleComputerService(ILoggerFactory, ApplicationLifeTimeManager)
-  href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html#ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_ILoggerFactory_ArmoniK_Samples_HtcMock_GridWorker_ApplicationLifeTimeManager_
-  commentId: M:ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory,ArmoniK.Samples.HtcMock.GridWorker.ApplicationLifeTimeManager)
-  fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService.SampleComputerService(ILoggerFactory, ArmoniK.Samples.HtcMock.GridWorker.ApplicationLifeTimeManager)
-  nameWithType: SampleComputerService.SampleComputerService(ILoggerFactory, ApplicationLifeTimeManager)
+- uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory)
+  name: SampleComputerService(ILoggerFactory)
+  href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html#ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_ILoggerFactory_
+  commentId: M:ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory)
+  fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService.SampleComputerService(ILoggerFactory)
+  nameWithType: SampleComputerService.SampleComputerService(ILoggerFactory)
 - uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor*
   name: SampleComputerService
   href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html#ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_
