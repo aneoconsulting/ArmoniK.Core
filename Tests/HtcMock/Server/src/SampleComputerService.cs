@@ -62,17 +62,17 @@ public class SampleComputerService : WorkerStreamWrapper
 
     Output output;
 
-    var taskFailed = taskHandler.TaskOptions.GetValueOrDefault("TaskFailed",
+    var taskFailed = taskHandler.TaskOptions.GetValueOrDefault("TaskError",
                                                                string.Empty);
 
-    if (taskFailed != string.Empty && !taskHandler.TaskId.Contains("###") && taskHandler.TaskId.EndsWith(taskFailed))
+    if (taskFailed != string.Empty && taskHandler.TaskId.EndsWith(taskFailed))
     {
-      logger_.LogInformation("Return Deterministic Failed Output");
+      logger_.LogInformation("Return Deterministic Error Output");
       output = new Output
                {
                  Error = new Output.Types.Error
                          {
-                           Details = "Deterministic Failed",
+                           Details = "Deterministic Error",
                          },
                };
       return output;
@@ -81,7 +81,7 @@ public class SampleComputerService : WorkerStreamWrapper
     var taskRpcException = taskHandler.TaskOptions.GetValueOrDefault("TaskRpcException",
                                                                      string.Empty);
 
-    if (taskRpcException != string.Empty && !taskHandler.TaskId.Contains("###") && taskHandler.TaskId.EndsWith(taskRpcException))
+    if (taskRpcException != string.Empty && taskHandler.TaskId.EndsWith(taskRpcException))
     {
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Deterministic Exception"));
