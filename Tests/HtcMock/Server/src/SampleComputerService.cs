@@ -24,7 +24,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,7 +31,6 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Stream.Worker;
-using ArmoniK.Samples.HtcMock.GridWorker;
 
 using Google.Protobuf;
 
@@ -42,26 +40,14 @@ using Htc.Mock.Core;
 
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-
 namespace ArmoniK.Samples.HtcMock.Server;
 
 public class SampleComputerService : WorkerStreamWrapper
 {
-  [SuppressMessage("CodeQuality",
-                   "IDE0052:Remove unread private members",
-                   Justification = "Used for side effects")]
-  private readonly ApplicationLifeTimeManager applicationLifeTime_;
-
-  private readonly ILoggerFactory loggerFactory_;
-
-  public SampleComputerService(ILoggerFactory             loggerFactory,
-                               ApplicationLifeTimeManager applicationLifeTime)
+  public SampleComputerService(ILoggerFactory loggerFactory)
     : base(loggerFactory)
   {
-    logger_              = loggerFactory.CreateLogger<SampleComputerService>();
-    loggerFactory_       = loggerFactory;
-    applicationLifeTime_ = applicationLifeTime;
+    logger_ = loggerFactory.CreateLogger<SampleComputerService>();
   }
 
   public override async Task<Output> Process(ITaskHandler taskHandler)
@@ -76,17 +62,17 @@ public class SampleComputerService : WorkerStreamWrapper
 
     Output output;
 
-    var taskError = taskHandler.TaskOptions.GetValueOrDefault("TaskError",
-                                                              string.Empty);
+    var taskFailed = taskHandler.TaskOptions.GetValueOrDefault("TaskFailed",
+                                                               string.Empty);
 
-    if (taskError != string.Empty && !taskHandler.TaskId.Contains("###") && taskHandler.TaskId.EndsWith(taskError))
+    if (taskFailed != string.Empty && !taskHandler.TaskId.Contains("###") && taskHandler.TaskId.EndsWith(taskFailed))
     {
-      logger_.LogInformation("Return Deterministic Error Output");
+      logger_.LogInformation("Return Deterministic Failed Output");
       output = new Output
                {
                  Error = new Output.Types.Error
                          {
-                           Details = "Deterministic Error",
+                           Details = "Deterministic Failed",
                          },
                };
       return output;
@@ -205,8 +191,7 @@ public class SampleComputerService : WorkerStreamWrapper
 
       output = new Output
                {
-                 Ok     = new Empty(),
-                 Status = TaskStatus.Completed,
+                 Ok = new Empty(),
                };
     }
     catch (Exception ex)
@@ -218,10 +203,8 @@ public class SampleComputerService : WorkerStreamWrapper
                {
                  Error = new Output.Types.Error
                          {
-                           Details      = ex.Message + ex.StackTrace,
-                           KillSubTasks = true,
+                           Details = ex.Message + ex.StackTrace,
                          },
-                 Status = TaskStatus.Error,
                };
     }
 

@@ -90,7 +90,7 @@ public class HtcMock
   public string TaskRpcException { get; set; } = string.Empty;
 
   /// <summary>
-  /// Finish task with Output of type <see cref="Output.TypeOneofCase.Error"/> when task id ends by this string, ignored if empty string
+  /// Finish task with Output of type <see cref="Output.TypeOneofCase.Failed"/> when task id ends by this string, ignored if empty string
   /// </summary>
-  public string TaskError { get; set; } = string.Empty;
+  public string TaskFailed { get; set; } = string.Empty;
 }

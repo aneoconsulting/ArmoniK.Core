@@ -477,6 +477,7 @@ public class Submitter : ISubmitter
             break;
           case TaskStatus.Error:
             notCompleted += count;
+            error        =  true;
             break;
           case TaskStatus.Unspecified:
             notCompleted += count;

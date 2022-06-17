@@ -373,8 +373,9 @@ public class TaskTable : ITaskTable
                                                                        TaskStatus.Completed)
                                                                   .Set(tdm => tdm.EndDate,
                                                                        DateTime.UtcNow);
-    Logger.LogDebug("update task {taskId} to output {output}",
+    Logger.LogInformation("update task {taskId} to status {status} with {output}",
                     taskId,
+                    TaskStatus.Completed,
                     taskOutput);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
                                                    updateDefinition,
@@ -400,16 +401,15 @@ public class TaskTable : ITaskTable
     var taskOutput = new Output(Error: errorDetail,
                                 Success: false);
 
-    /* A Task that errors is conceptually a  completed task,
-     * the error is reported and detailed in its Output*/
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
                                                                        taskOutput)
                                                                   .Set(tdm => tdm.Status,
-                                                                       TaskStatus.Completed)
+                                                                       TaskStatus.Error)
                                                                   .Set(tdm => tdm.EndDate,
                                                                        DateTime.UtcNow);
-    Logger.LogDebug("update task {taskId} to output {output}",
+    Logger.LogInformation("update task {taskId} to status {status} with {output}",
                     taskId,
+                    TaskStatus.Error,
                     taskOutput);
     var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
                                                    updateDefinition,
@@ -603,7 +603,8 @@ public class TaskTable : ITaskTable
                                                                        TaskStatus.Submitted)
                                                                   .Set(tdm => tdm.SubmittedDate,
                                                                        DateTime.UtcNow);
-    Logger.LogInformation("update all tasks to statuses to status {status}", TaskStatus.Submitted);
+    Logger.LogInformation("update all tasks to status {status}",
+                          TaskStatus.Submitted);
     var res = await taskCollection.UpdateManyAsync(tdm => taskIds.Contains(tdm.TaskId) && tdm.Status == TaskStatus.Creating,
                                                    updateDefinition,
                                                    cancellationToken: cancellationToken)

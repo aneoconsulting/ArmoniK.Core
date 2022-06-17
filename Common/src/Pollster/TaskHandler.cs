@@ -83,8 +83,9 @@ internal class TaskHandler : IAsyncDisposable
 
   public async Task<bool> AcquireTask(CancellationToken cancellationToken)
   {
-    logger_.LogInformation("Acquiring task");
     using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
+    using var _ = logger_.BeginNamedScope("Acquiring task",
+                                          ("taskId", messageHandler_.TaskId));
 
     try
     {
@@ -204,6 +205,8 @@ internal class TaskHandler : IAsyncDisposable
   public async Task PreProcessing(CancellationToken cancellationToken)
   {
     logger_.LogDebug("Start prefetch data");
+    using var _ = logger_.BeginNamedScope("PreProcessing",
+                                          ("taskId", messageHandler_.TaskId));
     if (taskData_ == null)
     {
       throw new NullReferenceException();
@@ -216,6 +219,8 @@ internal class TaskHandler : IAsyncDisposable
 
   public async Task ExecuteTask(CancellationToken cancellationToken)
   {
+    using var _ = logger_.BeginNamedScope("TaskExecution",
+                                          ("taskId", messageHandler_.TaskId));
     if (computeRequestStream_ == null || taskData_ == null)
     {
       throw new NullReferenceException();
@@ -237,6 +242,8 @@ internal class TaskHandler : IAsyncDisposable
 
   public async Task PostProcessing(CancellationToken cancellationToken)
   {
+    using var _ = logger_.BeginNamedScope("PostProcessing",
+                                          ("taskId", messageHandler_.TaskId));
     if (processResult_ == null)
     {
       throw new NullReferenceException();
@@ -248,6 +255,8 @@ internal class TaskHandler : IAsyncDisposable
 
   public async ValueTask DisposeAsync()
   {
+    using var _ = logger_.BeginNamedScope("DisposeAsync",
+                                          ("taskId", messageHandler_.TaskId));
     await messageHandler_.DisposeAsync()
                          .ConfigureAwait(false);
   }
