@@ -87,18 +87,12 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
   public async Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
                                            IMongoCollection<SessionData> collection)
   {
-    var sessionIndex      = Builders<SessionData>.IndexKeys.Hashed(model => model.SessionId);
     var statusIndex       = Builders<SessionData>.IndexKeys.Hashed(model => model.Status);
     var creationIndex     = Builders<SessionData>.IndexKeys.Ascending(model => model.CreationDate);
     var cancellationIndex = Builders<SessionData>.IndexKeys.Ascending(model => model.CancellationDate);
 
     var indexModels = new CreateIndexModel<SessionData>[]
                       {
-                        new(sessionIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(sessionIndex),
-                            }),
                         new(statusIndex,
                             new CreateIndexOptions
                             {

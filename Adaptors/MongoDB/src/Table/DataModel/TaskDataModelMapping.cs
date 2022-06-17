@@ -139,7 +139,6 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                            IMongoCollection<TaskData> collection)
   {
     var sessionIndex   = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
-    var taskIndex      = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
     var ownerIndex     = Builders<TaskData>.IndexKeys.Hashed(model => model.OwnerPodId);
     var creationIndex  = Builders<TaskData>.IndexKeys.Ascending(model => model.CreationDate);
     var submittedIndex = Builders<TaskData>.IndexKeys.Ascending(model => model.SubmittedDate);
@@ -153,11 +152,6 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                             new CreateIndexOptions
                             {
                               Name = nameof(sessionIndex),
-                            }),
-                        new(taskIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(taskIndex),
                             }),
                         new(ownerIndex,
                             new CreateIndexOptions
