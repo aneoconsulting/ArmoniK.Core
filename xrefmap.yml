@@ -16124,6 +16124,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SubTasksLevels
   nameWithType: HtcMock.SubTasksLevels
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
+  name: TaskError
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskError
+  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
+  nameWithType: HtcMock.TaskError
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError*
+  name: TaskError
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskError_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
+  isSpec: "True"
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
+  nameWithType: HtcMock.TaskError
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskRpcException
+  name: TaskRpcException
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskRpcException
+  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskRpcException
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskRpcException
+  nameWithType: HtcMock.TaskRpcException
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskRpcException*
+  name: TaskRpcException
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskRpcException_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskRpcException
+  isSpec: "True"
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskRpcException
+  nameWithType: HtcMock.TaskRpcException
 - uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TotalCalculationTime
   name: TotalCalculationTime
   href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TotalCalculationTime
@@ -16242,38 +16268,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Samples.HtcMock.GridWorker.ApplicationLifeTimeManager.ApplicationLifeTimeManager
   nameWithType: ApplicationLifeTimeManager.ApplicationLifeTimeManager
-- uid: ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService
-  name: SampleComputerService
-  href: api/ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.html
-  commentId: T:ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService
-  fullName: ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService
-  nameWithType: SampleComputerService
-- uid: ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.#ctor(ILoggerFactory,ArmoniK.Samples.HtcMock.GridWorker.ApplicationLifeTimeManager)
-  name: SampleComputerService(ILoggerFactory, ApplicationLifeTimeManager)
-  href: api/ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.html#ArmoniK_Samples_HtcMock_GridWorker_SampleComputerService__ctor_ILoggerFactory_ArmoniK_Samples_HtcMock_GridWorker_ApplicationLifeTimeManager_
-  commentId: M:ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.#ctor(ILoggerFactory,ArmoniK.Samples.HtcMock.GridWorker.ApplicationLifeTimeManager)
-  fullName: ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.SampleComputerService(ILoggerFactory, ArmoniK.Samples.HtcMock.GridWorker.ApplicationLifeTimeManager)
-  nameWithType: SampleComputerService.SampleComputerService(ILoggerFactory, ApplicationLifeTimeManager)
-- uid: ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.#ctor*
-  name: SampleComputerService
-  href: api/ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.html#ArmoniK_Samples_HtcMock_GridWorker_SampleComputerService__ctor_
-  commentId: Overload:ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.SampleComputerService
-  nameWithType: SampleComputerService.SampleComputerService
-- uid: ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)
-  name: Process(ITaskHandler)
-  href: api/ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.html#ArmoniK_Samples_HtcMock_GridWorker_SampleComputerService_Process_ArmoniK_Core_Common_Stream_Worker_ITaskHandler_
-  commentId: M:ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)
-  fullName: ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)
-  nameWithType: SampleComputerService.Process(ITaskHandler)
-- uid: ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.Process*
-  name: Process
-  href: api/ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.html#ArmoniK_Samples_HtcMock_GridWorker_SampleComputerService_Process_
-  commentId: Overload:ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.Process
-  isSpec: "True"
-  fullName: ArmoniK.Samples.HtcMock.GridWorker.SampleComputerService.Process
-  nameWithType: SampleComputerService.Process
 - uid: ArmoniK.Samples.HtcMock.Server
   name: ArmoniK.Samples.HtcMock.Server
   href: api/ArmoniK.Samples.HtcMock.Server.html
@@ -16302,6 +16296,38 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Samples.HtcMock.Server.Program.Main
   nameWithType: Program.Main
+- uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService
+  name: SampleComputerService
+  href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html
+  commentId: T:ArmoniK.Samples.HtcMock.Server.SampleComputerService
+  fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService
+  nameWithType: SampleComputerService
+- uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory,ArmoniK.Samples.HtcMock.GridWorker.ApplicationLifeTimeManager)
+  name: SampleComputerService(ILoggerFactory, ApplicationLifeTimeManager)
+  href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html#ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_ILoggerFactory_ArmoniK_Samples_HtcMock_GridWorker_ApplicationLifeTimeManager_
+  commentId: M:ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory,ArmoniK.Samples.HtcMock.GridWorker.ApplicationLifeTimeManager)
+  fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService.SampleComputerService(ILoggerFactory, ArmoniK.Samples.HtcMock.GridWorker.ApplicationLifeTimeManager)
+  nameWithType: SampleComputerService.SampleComputerService(ILoggerFactory, ApplicationLifeTimeManager)
+- uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor*
+  name: SampleComputerService
+  href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html#ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService.SampleComputerService
+  nameWithType: SampleComputerService.SampleComputerService
+- uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)
+  name: Process(ITaskHandler)
+  href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html#ArmoniK_Samples_HtcMock_Server_SampleComputerService_Process_ArmoniK_Core_Common_Stream_Worker_ITaskHandler_
+  commentId: M:ArmoniK.Samples.HtcMock.Server.SampleComputerService.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)
+  fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)
+  nameWithType: SampleComputerService.Process(ITaskHandler)
+- uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService.Process*
+  name: Process
+  href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html#ArmoniK_Samples_HtcMock_Server_SampleComputerService_Process_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Server.SampleComputerService.Process
+  isSpec: "True"
+  fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService.Process
+  nameWithType: SampleComputerService.Process
 - uid: armonik_core_api
   name: Armonik.Core API
   href: api/index.html
