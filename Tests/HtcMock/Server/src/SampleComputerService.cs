@@ -93,9 +93,9 @@ public class SampleComputerService : WorkerStreamWrapper
     }
 
     var taskRpcException = taskHandler.TaskOptions.GetValueOrDefault("TaskRpcException",
-                                                                     "0");
+                                                                     string.Empty);
 
-    if (taskRpcException != "0" && !taskHandler.TaskId.Contains("###") && taskHandler.TaskId.EndsWith(taskRpcException))
+    if (taskRpcException != string.Empty && !taskHandler.TaskId.Contains("###") && taskHandler.TaskId.EndsWith(taskRpcException))
     {
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Deterministic Exception"));
