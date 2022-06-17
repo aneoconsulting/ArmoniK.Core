@@ -138,8 +138,13 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                            IMongoCollection<TaskData> collection)
   {
-    var sessionIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
-    var statusIndex   = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
+    var sessionIndex   = Builders<TaskData>.IndexKeys.Hashed(model => model.SessionId);
+    var ownerIndex     = Builders<TaskData>.IndexKeys.Hashed(model => model.OwnerPodId);
+    var creationIndex  = Builders<TaskData>.IndexKeys.Ascending(model => model.CreationDate);
+    var submittedIndex = Builders<TaskData>.IndexKeys.Ascending(model => model.SubmittedDate);
+    var startIndex     = Builders<TaskData>.IndexKeys.Ascending(model => model.StartDate);
+    var endIndex       = Builders<TaskData>.IndexKeys.Ascending(model => model.EndDate);
+    var statusIndex    = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
 
     var indexModels = new CreateIndexModel<TaskData>[]
                       {
@@ -147,6 +152,31 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                             new CreateIndexOptions
                             {
                               Name = nameof(sessionIndex),
+                            }),
+                        new(ownerIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(ownerIndex),
+                            }),
+                        new(creationIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(creationIndex),
+                            }),
+                        new(submittedIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(submittedIndex),
+                            }),
+                        new(startIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(startIndex),
+                            }),
+                        new(endIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(endIndex),
                             }),
                         new(statusIndex,
                             new CreateIndexOptions

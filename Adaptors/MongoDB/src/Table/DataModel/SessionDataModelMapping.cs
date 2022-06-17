@@ -84,9 +84,34 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
     => nameof(SessionData);
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
-                                     IMongoCollection<SessionData> collection)
+  public async Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
+                                           IMongoCollection<SessionData> collection)
   {
-    return Task.CompletedTask;
+    var statusIndex       = Builders<SessionData>.IndexKeys.Hashed(model => model.Status);
+    var creationIndex     = Builders<SessionData>.IndexKeys.Ascending(model => model.CreationDate);
+    var cancellationIndex = Builders<SessionData>.IndexKeys.Ascending(model => model.CancellationDate);
+
+    var indexModels = new CreateIndexModel<SessionData>[]
+                      {
+                        new(statusIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(statusIndex),
+                            }),
+                        new(creationIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(creationIndex),
+                            }),
+                        new(cancellationIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(cancellationIndex),
+                            }),
+                      };
+
+    await collection.Indexes.CreateManyAsync(sessionHandle,
+                                             indexModels)
+                    .ConfigureAwait(false);
   }
 }
