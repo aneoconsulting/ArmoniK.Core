@@ -46,6 +46,12 @@ public class ObjectStorage : IObjectStorage
   private readonly string                 objectStorageName_;
   private readonly IDatabaseAsync         redis_;
 
+  /// <summary>
+  /// <see cref="IObjectStorage"/> implementation for Redis
+  /// </summary>
+  /// <param name="redis">Connection to redis database</param>
+  /// <param name="objectStorageName">Name of the object storage used to differentiate them</param>
+  /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(IDatabaseAsync         redis,
                        string                 objectStorageName,
                        ILogger<ObjectStorage> logger)

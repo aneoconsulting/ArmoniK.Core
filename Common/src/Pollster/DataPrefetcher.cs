@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,6 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf;
@@ -37,6 +39,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+/// Prefetch data needed to execute a task
+/// </summary>
 public class DataPrefetcher : IInitializable
 {
   private readonly ActivitySource          activitySource_;
@@ -45,6 +50,12 @@ public class DataPrefetcher : IInitializable
 
   private bool isInitialized_;
 
+  /// <summary>
+  /// Create data prefetcher for tasks
+  /// </summary>
+  /// <param name="objectStorageFactory">Factory to create Object Storage</param>
+  /// <param name="activitySource">Activity source for tracing</param>
+  /// <param name="logger">Logger used to print logs</param>
   public DataPrefetcher(IObjectStorageFactory   objectStorageFactory,
                         ActivitySource          activitySource,
                         ILogger<DataPrefetcher> logger)
@@ -69,6 +80,16 @@ public class DataPrefetcher : IInitializable
     }
   }
 
+  /// <summary>
+  /// Method used to prefetch data before executing a task
+  /// </summary>
+  /// <param name="taskData">Task metadata</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// Queue containing the request containing the data for the task which can be sent to the worker
+  /// </returns>
+  /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
+  /// <exception cref="InvalidOperationException">invalid transition between states</exception>
   public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData          taskData,
                                                                                   CancellationToken cancellationToken)
   {
