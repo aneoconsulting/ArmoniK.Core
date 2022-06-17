@@ -76,6 +76,12 @@ public class GridClient : IGridClient
                                                          {
                                                            "SmallOutput", optionsHtcMock_.EnableSmallOutput.ToString()
                                                          },
+                                                         {
+                                                           "TaskError", optionsHtcMock_.TaskError
+                                                         },
+                                                         {
+                                                           "TaskRpcException", optionsHtcMock_.TaskRpcException
+                                                         },
                                                        },
                                                      },
                                  Id = sessionId,
