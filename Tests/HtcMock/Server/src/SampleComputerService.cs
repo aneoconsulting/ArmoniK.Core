@@ -24,7 +24,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,30 +34,20 @@ using ArmoniK.Core.Common.Stream.Worker;
 
 using Google.Protobuf;
 
+using Grpc.Core;
+
 using Htc.Mock.Core;
 
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-
-namespace ArmoniK.Samples.HtcMock.GridWorker;
+namespace ArmoniK.Samples.HtcMock.Server;
 
 public class SampleComputerService : WorkerStreamWrapper
 {
-  [SuppressMessage("CodeQuality",
-                   "IDE0052:Remove unread private members",
-                   Justification = "Used for side effects")]
-  private readonly ApplicationLifeTimeManager applicationLifeTime_;
-
-  private readonly ILoggerFactory loggerFactory_;
-
-  public SampleComputerService(ILoggerFactory             loggerFactory,
-                               ApplicationLifeTimeManager applicationLifeTime)
+  public SampleComputerService(ILoggerFactory loggerFactory)
     : base(loggerFactory)
   {
-    logger_              = loggerFactory.CreateLogger<SampleComputerService>();
-    loggerFactory_       = loggerFactory;
-    applicationLifeTime_ = applicationLifeTime;
+    logger_ = loggerFactory.CreateLogger<SampleComputerService>();
   }
 
   public override async Task<Output> Process(ITaskHandler taskHandler)
@@ -72,6 +61,32 @@ public class SampleComputerService : WorkerStreamWrapper
                      taskHandler.ExpectedResults);
 
     Output output;
+
+    var taskFailed = taskHandler.TaskOptions.GetValueOrDefault("TaskError",
+                                                               string.Empty);
+
+    if (taskFailed != string.Empty && taskHandler.TaskId.EndsWith(taskFailed))
+    {
+      logger_.LogInformation("Return Deterministic Error Output");
+      output = new Output
+               {
+                 Error = new Output.Types.Error
+                         {
+                           Details = "Deterministic Error",
+                         },
+               };
+      return output;
+    }
+
+    var taskRpcException = taskHandler.TaskOptions.GetValueOrDefault("TaskRpcException",
+                                                                     string.Empty);
+
+    if (taskRpcException != string.Empty && taskHandler.TaskId.EndsWith(taskRpcException))
+    {
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Deterministic Exception"));
+    }
+
     try
     {
       var (runConfiguration, request) = DataAdapter.ReadPayload(taskHandler.Payload);
@@ -124,7 +139,7 @@ public class SampleComputerService : WorkerStreamWrapper
       }
       else
       {
-        var requests = res.SubRequests.GroupBy(r => r.Dependencies is null || r.Dependencies.Count == 0)
+        var requests = res.SubRequests.GroupBy(r => r.Dependencies.Count == 0)
                           .ToDictionary(g => g.Key,
                                         g => g);
         logger_.LogDebug("Will submit {count} new tasks",
@@ -176,8 +191,7 @@ public class SampleComputerService : WorkerStreamWrapper
 
       output = new Output
                {
-                 Ok     = new Empty(),
-                 Status = TaskStatus.Completed,
+                 Ok = new Empty(),
                };
     }
     catch (Exception ex)
@@ -189,10 +203,8 @@ public class SampleComputerService : WorkerStreamWrapper
                {
                  Error = new Output.Types.Error
                          {
-                           Details      = ex.Message + ex.StackTrace,
-                           KillSubTasks = true,
+                           Details = ex.Message + ex.StackTrace,
                          },
-                 Status = TaskStatus.Error,
                };
     }
 

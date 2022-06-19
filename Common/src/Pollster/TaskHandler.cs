@@ -81,10 +81,19 @@ internal class TaskHandler : IAsyncDisposable
     taskData_             = null;
   }
 
+  /// <summary>
+  /// Acquisition of the task in the message given to the constructor
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// Bool representing whether the task has been acquired
+  /// </returns>
+  /// <exception cref="ArgumentException">status of the task is not recognized</exception>
   public async Task<bool> AcquireTask(CancellationToken cancellationToken)
   {
-    logger_.LogInformation("Acquiring task");
     using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
+    using var _ = logger_.BeginNamedScope("Acquiring task",
+                                          ("taskId", messageHandler_.TaskId));
 
     try
     {
@@ -201,9 +210,19 @@ internal class TaskHandler : IAsyncDisposable
     }
   }
 
+  /// <summary>
+  /// Preprocessing (including the data prefetching) of the acquired task
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// Task representing the asynchronous execution of the method
+  /// </returns>
+  /// <exception cref="NullReferenceException">wrong order of execution</exception>
   public async Task PreProcessing(CancellationToken cancellationToken)
   {
     logger_.LogDebug("Start prefetch data");
+    using var _ = logger_.BeginNamedScope("PreProcessing",
+                                          ("taskId", messageHandler_.TaskId));
     if (taskData_ == null)
     {
       throw new NullReferenceException();
@@ -214,8 +233,18 @@ internal class TaskHandler : IAsyncDisposable
                                                  .ConfigureAwait(false);
   }
 
+  /// <summary>
+  /// Execution of the acquired task on the worker
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// Task representing the asynchronous execution of the method
+  /// </returns>
+  /// <exception cref="NullReferenceException">wrong order of execution</exception>
   public async Task ExecuteTask(CancellationToken cancellationToken)
   {
+    using var _ = logger_.BeginNamedScope("TaskExecution",
+                                          ("taskId", messageHandler_.TaskId));
     if (computeRequestStream_ == null || taskData_ == null)
     {
       throw new NullReferenceException();
@@ -235,8 +264,18 @@ internal class TaskHandler : IAsyncDisposable
                                            .ConfigureAwait(false);
   }
 
+  /// <summary>
+  /// Post processing of the acquired task
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// Task representing the asynchronous execution of the method
+  /// </returns>
+  /// <exception cref="NullReferenceException">wrong order of execution</exception>
   public async Task PostProcessing(CancellationToken cancellationToken)
   {
+    using var _ = logger_.BeginNamedScope("PostProcessing",
+                                          ("taskId", messageHandler_.TaskId));
     if (processResult_ == null)
     {
       throw new NullReferenceException();
@@ -246,8 +285,11 @@ internal class TaskHandler : IAsyncDisposable
                         .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
+    using var _ = logger_.BeginNamedScope("DisposeAsync",
+                                          ("taskId", messageHandler_.TaskId));
     await messageHandler_.DisposeAsync()
                          .ConfigureAwait(false);
   }

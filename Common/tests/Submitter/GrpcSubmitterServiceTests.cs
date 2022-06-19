@@ -410,8 +410,7 @@ public class GrpcSubmitterServiceTests
                                                 {
                                                   Error = new Output.Types.Error
                                                           {
-                                                            KillSubTasks = true,
-                                                            Details      = "Test error",
+                                                            Details = "Test error",
                                                           },
                                                 }));
 

@@ -97,7 +97,7 @@ public class SessionClient : ISessionClient
       case Output.TypeOneofCase.Ok:
         break;
       case Output.TypeOneofCase.Error:
-        throw new Exception($"Task in Error - {id}");
+        throw new Exception($"Task Error - {id}");
       default:
         throw new ArgumentOutOfRangeException(nameof(taskOutput.TypeCase));
     }

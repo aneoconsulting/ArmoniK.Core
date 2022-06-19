@@ -268,32 +268,80 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task SetTaskSuccessAsync(string            taskId,
-                                        CancellationToken cancellationToken)
-    => await UpdateTaskStatusAsync(taskId,
-                                   TaskStatus.Completed,
-                                   cancellationToken)
-         .ConfigureAwait(false);
+  public Task SetTaskSuccessAsync(string            taskId,
+                                  CancellationToken cancellationToken)
+  {
+    using var _ = Logger.LogFunction();
+
+    var taskOutput = new Output(Error: "",
+                                Success: false);
+
+    Logger.LogInformation("update task {taskId} to status {status} with {output}",
+                          taskId,
+                          TaskStatus.Completed,
+                          taskOutput);
+
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    taskId2TaskData_.AddOrUpdate(taskId,
+                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 (_,
+                                  data) =>
+                                 {
+                                   if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   {
+                                     throw new ArmoniKException("Task already in a final status");
+                                   }
+
+                                   return data with
+                                          {
+                                            Status = TaskStatus.Completed,
+                                            Output = taskOutput,
+                                          };
+                                 });
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
-  public async Task SetTaskErrorAsync(string            taskId,
-                                      string            errorDetail,
-                                      CancellationToken cancellationToken)
+  public Task SetTaskErrorAsync(string            taskId,
+                                string            errorDetail,
+                                CancellationToken cancellationToken)
   {
     using var _ = Logger.LogFunction();
 
     var taskOutput = new Output(Error: errorDetail,
                                 Success: false);
 
-    Logger.LogDebug("update task {taskId} to output {output}",
-                    taskId,
-                    taskOutput);
-    /* A Task that errors is conceptually a  completed task,
-     * the error is reported and detailed in its Output*/
-    await UpdateTaskStatusAsync(taskId,
-                                TaskStatus.Completed,
-                                cancellationToken)
-      .ConfigureAwait(false);
+    Logger.LogInformation("update task {taskId} to status {status} with {output}",
+                          taskId,
+                          TaskStatus.Error,
+                          taskOutput);
+
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    taskId2TaskData_.AddOrUpdate(taskId,
+                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 (_,
+                                  data) =>
+                                 {
+                                   if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   {
+                                     throw new ArmoniKException("Task already in a final status");
+                                   }
+
+                                   return data with
+                                          {
+                                            Status = TaskStatus.Error,
+                                            Output = taskOutput,
+                                          };
+                                 });
+    return Task.CompletedTask;
   }
 
   /// <inheritdoc />

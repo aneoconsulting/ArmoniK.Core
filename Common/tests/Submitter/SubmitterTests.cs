@@ -267,7 +267,6 @@ public class SubmitterTests
                                       new Output
                                       {
                                         Ok     = new Empty(),
-                                        Status = TaskStatus.Completed,
                                       },
                                       token)
                    .ConfigureAwait(false);
@@ -519,8 +518,8 @@ public class SubmitterTests
                                                         CancellationToken.None)
                                  .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Completed,
-                    output.Status);
+    Assert.AreEqual(Output.TypeOneofCase.Ok,
+                    output.TypeCase);
   }
 
   [Test]
