@@ -41,18 +41,19 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
-      - name: Install dotnet-coverage tool
+      - name: Install Report generator tools
         run: |
-            dotnet tool install --global dotnet-coverage
+          dotnet tool install -g dotnet-reportgenerator-globaltool
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"aneoconsulting_ArmoniK.Core" /o:"aneoconsulting" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"aneoconsulting_ArmoniK.Core" /o:"aneoconsulting" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.vscoveragexml.reportsPaths="Cobertura.xml"
           dotnet build --no-incremental ArmoniK.Core.sln
-          dotnet-coverage collect 'dotnet test' -f xml  -o 'coverage.xml'
+          dotnet test --collect:"Xplat Code Coverage" --results:"reportsToMerge"
+          reportgenerator -reports:"reportsToMerge/*/*.xml" -targetdir:"\." -reporttypes=Cobertura
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   versionning:
