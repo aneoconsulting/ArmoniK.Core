@@ -62,10 +62,10 @@ public class SampleComputerService : WorkerStreamWrapper
 
     Output output;
 
-    var taskFailed = taskHandler.TaskOptions.GetValueOrDefault("TaskError",
-                                                               string.Empty);
+    var taskError = taskHandler.TaskOptions.GetValueOrDefault("TaskError",
+                                                              string.Empty);
 
-    if (taskFailed != string.Empty && taskHandler.TaskId.EndsWith(taskFailed))
+    if (taskError != string.Empty && taskHandler.TaskId.EndsWith(taskError))
     {
       logger_.LogInformation("Return Deterministic Error Output");
       output = new Output
