@@ -156,15 +156,15 @@ public class Pollster
 
             if (precondition)
             {
-              await taskHandler.PreProcessing(cancellationToken)
+              await taskHandler.PreProcessing(combinedCts.Token)
                                .ConfigureAwait(false);
 
-              await taskHandler.ExecuteTask(cancellationToken)
+              await taskHandler.ExecuteTask(combinedCts.Token)
                                .ConfigureAwait(false);
 
               logger_.LogDebug("CompleteProcessing task processing");
 
-              await taskHandler.PostProcessing(cancellationToken)
+              await taskHandler.PostProcessing(combinedCts.Token)
                                .ConfigureAwait(false);
 
               logger_.LogDebug("Task returned");
@@ -175,7 +175,7 @@ public class Pollster
             logger_.LogWarning(e,
                                "Error with messageHandler {messageId}",
                                message.MessageId);
-            throw;
+            combinedCts.Cancel();
           }
         }
       }
