@@ -172,9 +172,9 @@ public class Pollster
           }
           catch (Exception e)
           {
-            logger_.LogWarning(e,
-                               "Error with messageHandler {messageId}",
-                               message.MessageId);
+            logger_.LogError(e,
+                             "Error with messageHandler {messageId}",
+                             message.MessageId);
             combinedCts.Cancel();
           }
         }
