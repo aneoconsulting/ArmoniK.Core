@@ -16124,19 +16124,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SubTasksLevels
   nameWithType: HtcMock.SubTasksLevels
-- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed
-  name: TaskFailed
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskFailed
-  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed
-  nameWithType: HtcMock.TaskFailed
-- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed*
-  name: TaskFailed
-  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskFailed_
-  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
+  name: TaskError
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskError
+  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
+  nameWithType: HtcMock.TaskError
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError*
+  name: TaskError
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskError_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
   isSpec: "True"
-  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskFailed
-  nameWithType: HtcMock.TaskFailed
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskError
+  nameWithType: HtcMock.TaskError
 - uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.TaskRpcException
   name: TaskRpcException
   href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_TaskRpcException
