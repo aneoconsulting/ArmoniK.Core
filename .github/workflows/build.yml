@@ -65,11 +65,12 @@ jobs:
     - name: Generate Version
       id: genver
       run: |
-        if[[ "${{ github.ref_name }}" == "releases/*" ]]
+        if [[ "${{ github.ref_name }}" == "releases/"* ]]
         then
           VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=${{ github.ref_name }} --dev-branch=master) 
         else
           VERSION=$(docker run --rm -v $(pwd):/repo codacy/git-version /bin/git-version --folder=/repo --release-branch=release --dev-branch=master) 
+        fi
 
         echo "::set-output name=version::$VERSION"
         echo $VERSION
