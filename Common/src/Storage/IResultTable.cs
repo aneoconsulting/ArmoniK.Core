@@ -39,9 +39,9 @@ public interface IResultTable : IInitializable
 
   public ILogger Logger { get; }
 
-  Task<bool> AreResultsAvailableAsync(string              sessionId,
-                                      IEnumerable<string> keys,
-                                      CancellationToken   cancellationToken = default);
+  Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
+                                                                IEnumerable<string> keys,
+                                                                CancellationToken   cancellationToken = default);
 
   Task ChangeResultOwnership(string                                    sessionId,
                              string                                    oldTaskId,
@@ -79,4 +79,8 @@ public interface IResultTable : IInitializable
   Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
                                                                          string              sessionId,
                                                                          CancellationToken   cancellationToken = default);
+
+  Task AbortTaskResults(string            sessionId,
+                        string            ownerTaskId,
+                        CancellationToken cancellationToken = default);
 }

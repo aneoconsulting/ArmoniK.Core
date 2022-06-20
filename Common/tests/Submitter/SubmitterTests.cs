@@ -222,6 +222,27 @@ public class SubmitterTests
                                Priority    = 1,
                              };
 
+    var taskdata = new TaskData(SessionId,
+                                TaskCompletedId,
+                                "OwnerPodId",
+                                new List<string>(),
+                                new List<string>(),
+                                new List<string>
+                                {
+                                  ExpectedOutput3
+                                },
+                                new List<string>(),
+                                TaskStatus.Completed,
+                                "",
+                                defaultTaskOptions,
+                                DateTime.UtcNow,
+                                DateTime.MinValue,
+                                DateTime.MinValue,
+                                DateTime.UtcNow,
+                                DateTime.UtcNow,
+                                new Storage.Output(false,
+                                                   ""));
+
     var tuple = await submitter.CreateTasks(SessionId,
                                             SessionId,
                                             defaultTaskOptions,
@@ -263,10 +284,11 @@ public class SubmitterTests
                               token)
                    .ConfigureAwait(false);
 
-    await submitter.CompleteTaskAsync(TaskCompletedId,
+    await submitter.CompleteTaskAsync(taskdata,
+                                      true,
                                       new Output
                                       {
-                                        Ok     = new Empty(),
+                                        Ok = new Empty(),
                                       },
                                       token)
                    .ConfigureAwait(false);

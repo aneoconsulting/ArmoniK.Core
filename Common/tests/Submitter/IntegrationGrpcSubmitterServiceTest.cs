@@ -174,9 +174,10 @@ internal class IntegrationGrpcSubmitterServiceTest
                         submitter => submitter.UpdateTaskStatusAsync(It.IsAny<string>(),
                                                                      It.IsAny<TaskStatus>(),
                                                                      It.IsAny<CancellationToken>()),
-                        submitter => submitter.CompleteTaskAsync(It.IsAny<string>(),
+                        submitter => submitter.CompleteTaskAsync(It.IsAny<TaskData>(),
+                                                                    It.IsAny<bool>(),
                                                                  It.IsAny<Output>(),
-                                                                 It.IsAny<CancellationToken>()),
+                                                                    It.IsAny<CancellationToken>()),
                       };
 
     foreach (var expression in expressions)
@@ -225,8 +226,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            It.IsAny<CancellationToken>()),
 
-                        submitter => submitter.ResubmitTask(It.IsAny<TaskData>(),
-                                                            It.IsAny<CancellationToken>()),
                         submitter => submitter.WaitForCompletion(It.IsAny<WaitRequest>(),
                                                                  It.IsAny<CancellationToken>()),
                         submitter => submitter.TryGetTaskOutputAsync(It.IsAny<ResultRequest>(),

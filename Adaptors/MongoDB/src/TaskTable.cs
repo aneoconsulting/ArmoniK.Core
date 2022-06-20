@@ -296,8 +296,7 @@ public class TaskTable : ITaskTable
                                   .ToListAsync(cancellationToken)
                                   .ConfigureAwait(false);
 
-    return res.Select(tuple => new TaskStatusCount(tuple.Status,
-                                                   tuple.Count));
+    return res;
   }
 
   /// <inheritdoc />

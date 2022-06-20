@@ -111,12 +111,30 @@ public class ResultTableTestBase
                                                                   },
                                                                   CancellationToken.None)
                                         .ConfigureAwait(false);
-      Assert.IsTrue(checkTable);
+      Assert.AreEqual(1,
+                      checkTable.Count(count => count.Status == ResultStatus.Completed));
     }
   }
 
   [Test]
-  public async Task ResultsAreAvailableShouldFail()
+  public async Task ResultsAreAvailableShouldReturnEmpty()
+  {
+    if (RunTests)
+    {
+      var checkTable = await ResultTable.AreResultsAvailableAsync("SessionId",
+                                                                  new[]
+                                                                  {
+                                                                    "ResultDoesNotExist",
+                                                                  },
+                                                                  CancellationToken.None)
+                                        .ConfigureAwait(false);
+      Assert.AreEqual(0,
+                      checkTable.Count(count => count.Status == ResultStatus.Aborted));
+    }
+  }
+
+  [Test]
+  public async Task ResultsAreAvailableShouldReturnAborted()
   {
     if (RunTests)
     {
@@ -127,7 +145,8 @@ public class ResultTableTestBase
                                                                   },
                                                                   CancellationToken.None)
                                         .ConfigureAwait(false);
-      Assert.IsFalse(checkTable);
+      Assert.AreEqual(1,
+                      checkTable.Count(count => count.Status == ResultStatus.Aborted));
     }
   }
 

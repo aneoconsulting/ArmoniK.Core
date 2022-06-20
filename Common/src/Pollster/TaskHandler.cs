@@ -37,6 +37,7 @@ using ArmoniK.Core.Common.Stream.Worker;
 
 using Microsoft.Extensions.Logging;
 
+using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Pollster;
@@ -159,11 +160,43 @@ internal class TaskHandler : IAsyncDisposable
           throw new ArgumentException(nameof(taskData_));
       }
 
-      var dependencyCheckTask = taskData_.DataDependencies.Any()
-                                  ? resultTable_.AreResultsAvailableAsync(taskData_.SessionId,
-                                                                          taskData_.DataDependencies,
-                                                                          cancellationToken)
-                                  : Task.FromResult(true);
+      if (taskData_.DataDependencies.Any())
+      {
+        var dependencies = await resultTable_.AreResultsAvailableAsync(taskData_.SessionId,
+                                                                       taskData_.DataDependencies,
+                                                                       cancellationToken)
+                                             .ConfigureAwait(false);
+
+        if (!dependencies.Any() || dependencies.Single(i => i.Status == ResultStatus.Completed)
+                                               .Count != taskData_.DataDependencies.Count)
+        {
+          logger_.LogDebug("Dependencies are not complete yet.");
+          messageHandler_.Status = QueueMessageStatus.Postponed;
+          return false;
+        }
+
+        if (dependencies.SingleOrDefault(i => i.Status == ResultStatus.Aborted,
+                                         new ResultStatusCount(ResultStatus.Aborted,
+                                                               0))
+                        .Count > 0)
+        {
+          logger_.LogInformation("One of the input data is aborted. Removing task from the queue");
+
+          await submitter_.CompleteTaskAsync(taskData_,
+                                             false,
+                                             new Output
+                                             {
+                                               Error = new Output.Types.Error
+                                                       {
+                                                         Details = "One of the input data is aborted.",
+                                                       },
+                                             },
+                                             CancellationToken.None)
+                          .ConfigureAwait(false);
+          messageHandler_.Status = QueueMessageStatus.Cancelled;
+          return false;
+        }
+      }
 
       var isSessionCancelled = await sessionTable_.IsSessionCancelledAsync(taskData_.SessionId,
                                                                            cancellationToken)
@@ -178,13 +211,6 @@ internal class TaskHandler : IAsyncDisposable
                                                TaskStatus.Canceled,
                                                cancellationToken)
                         .ConfigureAwait(false);
-        return false;
-      }
-
-      if (!await dependencyCheckTask.ConfigureAwait(false))
-      {
-        logger_.LogDebug("Dependencies are not complete yet.");
-        messageHandler_.Status = QueueMessageStatus.Postponed;
         return false;
       }
 
