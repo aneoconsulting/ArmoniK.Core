@@ -77,7 +77,7 @@ public class GridClient : IGridClient
                                                            "SmallOutput", optionsHtcMock_.EnableSmallOutput.ToString()
                                                          },
                                                          {
-                                                           "TaskFailed", optionsHtcMock_.TaskFailed
+                                                           "TaskError", optionsHtcMock_.TaskError
                                                          },
                                                          {
                                                            "TaskRpcException", optionsHtcMock_.TaskRpcException
