@@ -138,7 +138,7 @@ public class RequestProcessor : IDisposable
             await submitter_.CompleteTaskAsync(taskData,
                                                false,
                                                reply.Output,
-                                               cancellationToken)
+                                               CancellationToken.None)
                             .ConfigureAwait(false);
             messageHandler.Status = QueueMessageStatus.Processed;
 
