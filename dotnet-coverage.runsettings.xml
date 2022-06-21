@@ -6,10 +6,10 @@
                 <ModulePath>.*\.dll$</ModulePath>
                 <ModulePath>.*\.exe$</ModulePath>
             </Include>
-	        <Exclude>
-		        <ModulePath>.*Moq.dll$</ModulePath>
+            <Exclude>
+                <ModulePath>.*Moq.dll$</ModulePath>
                 <ModulePath>.*Mongo2Go.dll$</ModulePath>
-		        <ModulePath>.*FluentValidation.dll$</ModulePath>
+                <ModulePath>.*FluentValidation.dll$</ModulePath>
                 <ModulePath>.*NUnit3.TestAdapter.dll$</ModulePath>
                 <ModulePath>.*System.*\.dll$</ModulePath>
                 <ModulePath>.*StackExchange.Redis.dll$</ModulePath>
