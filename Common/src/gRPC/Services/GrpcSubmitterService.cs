@@ -114,6 +114,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   {
     try
     {
+      logger_.LogTrace("request received {request}",
+                       request);
       await submitter_.CancelTasks(request,
                                    context.CancellationToken)
                       .ConfigureAwait(false);
