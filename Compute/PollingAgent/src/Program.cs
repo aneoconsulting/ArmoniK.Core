@@ -25,6 +25,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
@@ -145,6 +146,10 @@ public static class Program
                                                    {
                                                      Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
                                                    });
+
+                         endpoints.MapGet("/taskprocessing",
+                                          () => Task.FromResult(app.Services.GetRequiredService<Pollster>()
+                                                                   .TaskProcessing));
                        });
       app.Run();
       return 0;

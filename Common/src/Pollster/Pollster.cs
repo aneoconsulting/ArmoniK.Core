@@ -51,6 +51,7 @@ public class Pollster
   private readonly ISessionTable            sessionTable_;
   private readonly ITaskTable               taskTable_;
   private readonly IWorkerStreamHandler     workerStreamHandler_;
+  public           string                   TaskProcessing;
 
 
   public Pollster(IQueueStorage            queueStorage,
@@ -84,6 +85,7 @@ public class Pollster
     sessionTable_         = sessionTable;
     taskTable_            = taskTable;
     workerStreamHandler_  = workerStreamHandler;
+    TaskProcessing        = "";
   }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -127,6 +129,7 @@ public class Pollster
           using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
                                                            ("messageHandler", message.MessageId),
                                                            ("taskId", message.TaskId));
+          TaskProcessing = "";
 
           using var activity = activitySource_.StartActivity("ProcessQueueMessage");
           activity?.SetBaggage("TaskId",
@@ -156,6 +159,7 @@ public class Pollster
 
             if (precondition)
             {
+              TaskProcessing = taskHandler.GetAcquiredTask();
               await taskHandler.PreProcessing(combinedCts.Token)
                                .ConfigureAwait(false);
 

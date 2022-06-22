@@ -237,6 +237,19 @@ internal class TaskHandler : IAsyncDisposable
   }
 
   /// <summary>
+  /// Get the task id of the acquired task
+  /// </summary>
+  /// <returns>
+  /// A string representing the acquired task id or null if there is no task acquired
+  /// </returns>
+  public string GetAcquiredTask()
+  {
+    return taskData_ != null
+             ? taskData_.TaskId
+             : "";
+  }
+
+  /// <summary>
   /// Preprocessing (including the data prefetching) of the acquired task
   /// </summary>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
