@@ -580,10 +580,10 @@ public class TaskTable : ITaskTable
                                    "",
                                    taskData.Options,
                                    DateTime.UtcNow,
-                                   DateTime.MinValue,
-                                   DateTime.MinValue,
-                                   DateTime.MinValue,
-                                   DateTime.MinValue,
+                                   null,
+                                   null,
+                                   null,
+                                   null,
                                    new Output(false,
                                               ""));
 

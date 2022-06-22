@@ -31,7 +31,7 @@ namespace ArmoniK.Core.Common.Storage;
 public record SessionData(string        SessionId,
                           SessionStatus Status,
                           DateTime      CreationDate,
-                          DateTime      CancellationDate,
+                          DateTime?     CancellationDate,
                           TaskOptions   Options)
 {
   public SessionData(string        sessionId,
@@ -40,7 +40,7 @@ public record SessionData(string        SessionId,
     : this(sessionId,
            status,
            DateTime.UtcNow,
-           DateTime.MinValue,
+           null,
            options)
   {
   }
