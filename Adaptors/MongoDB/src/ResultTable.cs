@@ -121,22 +121,23 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public async Task<bool> AreResultsAvailableAsync(string              sessionId,
-                                                   IEnumerable<string> keys,
-                                                   CancellationToken   cancellationToken = default)
+  public async Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
+                                                                            IEnumerable<string> keys,
+                                                                            CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(AreResultsAvailableAsync)}");
     activity?.SetTag($"{nameof(AreResultsAvailableAsync)}_sessionId",
                      sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    var sessionHandle    = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
-    var result = await resultCollection.AsQueryable(sessionHandle)
-                                       .Where(model => model.Status == ResultStatus.Completed && model.SessionId == sessionId && keys.Contains(model.Name))
-                                       .CountAsync(cancellationToken)
-                                       .ConfigureAwait(false);
-
-    return result == keys.Count();
+    return await resultCollection.AsQueryable(sessionHandle)
+                                 .Where(model => model.SessionId == sessionId && keys.Contains(model.Name))
+                                 .GroupBy(model => model.Status)
+                                 .Select(models => new ResultStatusCount(models.Key,
+                                                                         models.Count()))
+                                 .ToListAsync(cancellationToken)
+                                 .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -192,7 +193,7 @@ public class ResultTable : IResultTable
                                     .ConfigureAwait(false);
     if (res.MatchedCount == 0)
     {
-      throw new ResultNotFoundException($"Key '{key}' not found");
+      throw new ResultNotFoundException($"Key '{key}' not found for '{ownerTaskId}'");
     }
   }
 
@@ -216,6 +217,21 @@ public class ResultTable : IResultTable
                                                   })
                                  .ToListAsync(cancellationToken)
                                  .ConfigureAwait(false);
+  }
+
+  public async Task AbortTaskResults(string            sessionId,
+                                     string            ownerTaskId,
+                                     CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(AbortTaskResults)}");
+
+    var resultCollection = resultCollectionProvider_.Get();
+
+    var res = await resultCollection.UpdateManyAsync(Builders<Result>.Filter.Where(model => model.SessionId == sessionId && model.OwnerTaskId == ownerTaskId),
+                                                     Builders<Result>.Update.Set(model => model.Status,
+                                                                                 ResultStatus.Aborted),
+                                                     cancellationToken: cancellationToken)
+                                    .ConfigureAwait(false);
   }
 
   /// <inheritdoc />

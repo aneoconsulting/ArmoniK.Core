@@ -317,7 +317,7 @@ public class RequestProcessorTest
                                              {
                                                Output = new Api.gRPC.V1.Output
                                                         {
-                                                          Ok     = new Empty(),
+                                                          Ok = new Empty(),
                                                         },
                                              },
                                            },
@@ -384,7 +384,7 @@ public class RequestProcessorTest
                                              {
                                                Output = new Api.gRPC.V1.Output
                                                         {
-                                                          Ok     = new Empty(),
+                                                          Ok = new Empty(),
                                                         },
                                              },
                                            },
@@ -476,7 +476,7 @@ public class RequestProcessorTest
                                               {
                                                 Output = new Api.gRPC.V1.Output
                                                          {
-                                                           Ok     = new Empty(),
+                                                           Ok = new Empty(),
                                                          },
                                               },
                                             },
@@ -535,10 +535,14 @@ public class RequestProcessorTest
                                        return cap;
                                      });
 
-    var processResult = await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                                      requests,
-                                                                      CancellationToken.None)
+    var mockMessageHandler = new Mock<IQueueMessageHandler>();
+
+    var processResult = await requestProcessor_.ProcessAsync(mockMessageHandler.Object,
+                                                             taskData,
+                                                             requests,
+                                                             tokenSource.Token)
                                                .ConfigureAwait(false);
+
     await Task.WhenAll(processResult)
               .ConfigureAwait(false);
 
@@ -564,7 +568,7 @@ public class RequestProcessorTest
                                                  {
                                                    Output = new Api.gRPC.V1.Output
                                                             {
-                                                              Ok     = new Empty(),
+                                                              Ok = new Empty(),
                                                             },
                                                  },
                                                },
@@ -597,7 +601,7 @@ public class RequestProcessorTest
                                                {
                                                  Output = new Api.gRPC.V1.Output
                                                           {
-                                                            Ok     = new Empty(),
+                                                            Ok = new Empty(),
                                                           },
                                                },
                                              },
@@ -630,7 +634,7 @@ public class RequestProcessorTest
                                                {
                                                  Output = new Api.gRPC.V1.Output
                                                           {
-                                                            Ok     = new Empty(),
+                                                            Ok = new Empty(),
                                                           },
                                                },
                                              },
@@ -688,9 +692,13 @@ public class RequestProcessorTest
                                           .Wait(tokenSource.Token);
                                        return cap;
                                      });
-    await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                  requests,
-                                                  tokenSource.Token)
+
+    var mockMessageHandler = new Mock<IQueueMessageHandler>();
+
+    await requestProcessor_.ProcessAsync(mockMessageHandler.Object,
+                                         taskData,
+                                         requests,
+                                         tokenSource.Token)
                            .ConfigureAwait(false);
 
     Assert.AreEqual(request,
@@ -720,9 +728,11 @@ public class RequestProcessorTest
 
     Assert.ThrowsAsync<ArmoniKException>(async () =>
                                          {
-                                           await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                                                         requests,
-                                                                                         CancellationToken.None)
+                                           var mockMessageHandler = new Mock<IQueueMessageHandler>();
+                                           await requestProcessor_.ProcessAsync(mockMessageHandler.Object,
+                                                                                taskData,
+                                                                                requests,
+                                                                                CancellationToken.None)
                                                                   .ConfigureAwait(false);
                                          });
   }
@@ -765,9 +775,11 @@ public class RequestProcessorTest
 
     Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
                                                     {
-                                                      await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                                                                    requests,
-                                                                                                    CancellationToken.None)
+                                                      var mockMessageHandler = new Mock<IQueueMessageHandler>();
+                                                      await requestProcessor_.ProcessAsync(mockMessageHandler.Object,
+                                                                                           taskData,
+                                                                                           requests,
+                                                                                           CancellationToken.None)
                                                                              .ConfigureAwait(false);
                                                     });
   }

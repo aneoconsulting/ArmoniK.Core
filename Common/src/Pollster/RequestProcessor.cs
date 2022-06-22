@@ -37,25 +37,22 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 
-using JetBrains.Annotations;
+using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
 using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
 using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskCanceledException = System.Threading.Tasks.TaskCanceledException;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-using TimeoutException = System.TimeoutException;
 
 namespace ArmoniK.Core.Common.Pollster;
 
 public class RequestProcessor : IDisposable
 {
-  private readonly ActivitySource        activitySource_;
-  private readonly ILogger               logger_;
-  private readonly IObjectStorage        resourcesStorage_;
-  private readonly ISubmitter            submitter_;
-  private readonly IWorkerStreamHandler  workerStreamHandler_;
+  private readonly ActivitySource       activitySource_;
+  private readonly ILogger              logger_;
+  private readonly IObjectStorage       resourcesStorage_;
+  private readonly ISubmitter           submitter_;
+  private readonly IWorkerStreamHandler workerStreamHandler_;
 
   public RequestProcessor(IWorkerStreamHandler  workerStreamHandler,
                           IObjectStorageFactory objectStorageFactory,
@@ -63,11 +60,11 @@ public class RequestProcessor : IDisposable
                           ISubmitter            submitter,
                           ActivitySource        activitySource)
   {
-    workerStreamHandler_  = workerStreamHandler;
-    logger_               = logger;
-    submitter_            = submitter;
-    activitySource_       = activitySource;
-    resourcesStorage_     = objectStorageFactory.CreateResourcesStorage();
+    workerStreamHandler_ = workerStreamHandler;
+    logger_              = logger;
+    submitter_           = submitter;
+    activitySource_      = activitySource;
+    resourcesStorage_    = objectStorageFactory.CreateResourcesStorage();
   }
 
   public async Task<Task> ProcessAsync(IQueueMessageHandler  messageHandler,
@@ -75,167 +72,26 @@ public class RequestProcessor : IDisposable
                                        Queue<ComputeRequest> computeRequests,
                                        CancellationToken     cancellationToken)
   {
-    try
-    {
-      var result = await ProcessInternalsAsync(taskData,
-                                               computeRequests,
-                                               cancellationToken)
-                     .ConfigureAwait(false);
-
-      messageHandler.Status = QueueMessageStatus.Processed;
-      return result;
-    }
-    catch (Exception e)
-    {
-      logger_.LogError(e,
-                       "Error while processing request");
-      // TODO cancel session dispatch, cancel task ?
-      //await submitter_.CancelDispatchSessionAsync(taskData.SessionId,
-      //                                            dispatch.Id,
-      //                                            cancellationToken)
-      //                .ConfigureAwait(false);
-
-      if (!await HandleExceptionAsync(e,
-                                      taskData,
-                                      messageHandler,
-                                      cancellationToken)
-             .ConfigureAwait(false))
-      {
-        throw;
-      }
-
-      throw new ArmoniKException("An error occurred while executing. Error has been managed.");
-    }
-  }
-
-
-  [PublicAPI]
-  private async Task<bool> HandleExceptionAsync(Exception            e,
-                                                TaskData             taskData,
-                                                IQueueMessageHandler messageHandler,
-                                                CancellationToken    cancellationToken)
-  {
-    switch (e)
-    {
-      case TimeoutException:
-      {
-        logger_.LogError(e,
-                         "Deadline exceeded when computing task {taskId} from session {sessionId}",
-                         taskData.TaskId,
-                         taskData.SessionId);
-        messageHandler.Status = QueueMessageStatus.Failed;
-        await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
-                                               TaskStatus.Timeout,
-                                               CancellationToken.None)
-                        .ConfigureAwait(false);
-        return true;
-      }
-      case TaskCanceledException:
-      {
-        var details = string.Empty;
-
-        if (messageHandler.CancellationToken.IsCancellationRequested)
-        {
-          details += "Message was cancelled. ";
-        }
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-          details += "Root token was cancelled. ";
-        }
-
-        logger_.LogError(e,
-                         "Execution has been cancelled for task {taskId} from session {sessionId}. {details}",
-                         taskData.TaskId,
-                         taskData.SessionId,
-                         details);
-        messageHandler.Status = QueueMessageStatus.Cancelled;
-        await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
-                                               TaskStatus.Canceling,
-                                               CancellationToken.None)
-                        .ConfigureAwait(false);
-        return true;
-      }
-      case ArmoniKException:
-      {
-        logger_.LogError(e,
-                         "Execution has failed for task {taskId} from session {sessionId}. {details}",
-                         taskData.TaskId,
-                         taskData.SessionId,
-                         e.ToString());
-
-        messageHandler.Status = QueueMessageStatus.Failed;
-        await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
-                                               TaskStatus.Error,
-                                               CancellationToken.None)
-                        .ConfigureAwait(false);
-        await submitter_.ResubmitTask(taskData,
-                                      cancellationToken)
-                        .ConfigureAwait(false);
-        return true;
-      }
-      case AggregateException ae:
-      {
-        foreach (var ie in ae.InnerExceptions)
-          // If the exception was not handled, lazily allocate a list of unhandled
-          // exceptions (to be rethrown later) and add it.
-        {
-          if (!await HandleExceptionAsync(ie,
-                                          taskData,
-                                          messageHandler,
-                                          cancellationToken)
-                 .ConfigureAwait(false))
-          {
-            return false;
-          }
-        }
-
-        return true;
-      }
-      default:
-      {
-        logger_.LogError(e,
-                         "Exception encountered when computing task {taskId} from session {sessionId}",
-                         taskData.TaskId,
-                         taskData.SessionId);
-        messageHandler.Status = QueueMessageStatus.Failed;
-        await submitter_.UpdateTaskStatusAsync(taskData.TaskId,
-                                               TaskStatus.Error,
-                                               CancellationToken.None)
-                        .ConfigureAwait(false);
-        await submitter_.ResubmitTask(taskData,
-                                      cancellationToken)
-                        .ConfigureAwait(false);
-        return false;
-      }
-    }
-  }
-
-  public async Task<Task> ProcessInternalsAsync(TaskData              taskData,
-                                                Queue<ComputeRequest> computeRequests,
-                                                CancellationToken     cancellationToken)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}");
+    using var activity = activitySource_.StartActivity($"{nameof(ProcessAsync)}");
     activity?.SetBaggage("SessionId",
                          taskData.SessionId);
     activity?.SetBaggage("TaskId",
                          taskData.TaskId);
 
-    logger_.LogDebug("Set task status to Processing");
-    await submitter_.StartTask(taskData.TaskId,
-                               cancellationToken)
-                    .ConfigureAwait(false);
-
-    workerStreamHandler_.StartTaskProcessing(taskData,
-                                             cancellationToken);
-    if (workerStreamHandler_.Pipe is null)
+    try
     {
-      throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
-    }
+      logger_.LogDebug("Start processing task");
+      await submitter_.StartTask(taskData.TaskId,
+                                 cancellationToken)
+                      .ConfigureAwait(false);
 
-    {
-      using var activity2 = activitySource_.StartActivity($"{nameof(ProcessInternalsAsync)}.SendComputeRequests");
-      // send the compute requests
+      workerStreamHandler_.StartTaskProcessing(taskData,
+                                               cancellationToken);
+      if (workerStreamHandler_.Pipe is null)
+      {
+        throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
+      }
+
       while (computeRequests.TryDequeue(out var computeRequest))
       {
         activity?.AddEvent(new ActivityEvent(computeRequest.TypeCase.ToString()));
@@ -245,192 +101,211 @@ public class RequestProcessor : IDisposable
                                                    })
                                   .ConfigureAwait(false);
       }
-    }
 
-    var requestProcessors = new ConcurrentDictionary<string, IProcessReplyProcessor>();
+      var requestProcessors = new ConcurrentDictionary<string, IProcessReplyProcessor>();
 
-    activity?.AddEvent(new ActivityEvent("Processing ResponseStream"));
+      activity?.AddEvent(new ActivityEvent("Processing ResponseStream"));
 
-    await foreach (var reply in workerStreamHandler_.Pipe.Reader.WithCancellation(cancellationToken)
-                                                    .ConfigureAwait(false))
-    {
-      if (reply.TypeCase == ProcessReply.TypeOneofCase.Output)
+      await foreach (var reply in workerStreamHandler_.Pipe.Reader.WithCancellation(cancellationToken)
+                                                      .ConfigureAwait(false))
       {
-        logger_.LogDebug("Received Task Output");
-
-        async Task Epilog()
+        if (reply.TypeCase == ProcessReply.TypeOneofCase.Output)
         {
-          await requestProcessors.Values.Select(processor => processor.WaitForResponseCompletion(cancellationToken))
-                                 .WhenAll()
-                                 .ConfigureAwait(false);
+          logger_.LogDebug("Received Task Output");
 
-          if (requestProcessors.Values.Any(processor => !processor.IsComplete()))
+          async Task Epilog()
           {
-            throw new ArmoniKException("All processors should be complete here");
+            await requestProcessors.Values.Select(processor => processor.WaitForResponseCompletion(cancellationToken))
+                                   .WhenAll()
+                                   .ConfigureAwait(false);
+
+            if (requestProcessors.Values.Any(processor => !processor.IsComplete()))
+            {
+              throw new ArmoniKException("All processors should be complete here");
+            }
+
+            await workerStreamHandler_.Pipe.CompleteAsync()
+                                      .ConfigureAwait(false);
+
+            if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
+            {
+              logger_.LogDebug("Complete processing of the request");
+              await requestProcessors.Values.Select(processor => processor.CompleteProcessing(cancellationToken))
+                                     .WhenAll()
+                                     .ConfigureAwait(false);
+            }
+
+            await submitter_.CompleteTaskAsync(taskData,
+                                               false,
+                                               reply.Output,
+                                               CancellationToken.None)
+                            .ConfigureAwait(false);
+            messageHandler.Status = QueueMessageStatus.Processed;
+
+            logger_.LogDebug("End Task Epilog");
+          }
+
+          logger_.LogDebug("Start Task Epilog");
+          // no await here because we want the epilog awaited outside of this function to pipeline task processing
+          return Epilog();
+        }
+
+        if (string.IsNullOrEmpty(reply.RequestId))
+        {
+          logger_.LogWarning("No request Id in the received request, request will not be processed");
+          switch (reply.TypeCase)
+          {
+            case ProcessReply.TypeOneofCase.Result:
+              // todo result reply to acknowledge reception or say that there is an error
+              // todo we need to improve the proto to have better communication and management of errors between worker and polling agent
+              await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                         {
+                                                           Resource = new ProcessRequest.Types.DataReply
+                                                                      {
+                                                                        Init = new ProcessRequest.Types.DataReply.Types.Init
+                                                                               {
+                                                                                 Error = "No request Id",
+                                                                               },
+                                                                        ReplyId = "Missing request Id",
+                                                                      },
+                                                         })
+                                        .ConfigureAwait(false);
+              break;
+            case ProcessReply.TypeOneofCase.CreateLargeTask:
+              await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                         {
+                                                           CreateTask = new ProcessRequest.Types.CreateTask
+                                                                        {
+                                                                          Reply = new CreateTaskReply
+                                                                                  {
+                                                                                    NonSuccessfullIds = new CreateTaskReply.Types.TaskIds
+                                                                                                        {
+                                                                                                          Ids =
+                                                                                                          {
+                                                                                                            "No request Id",
+                                                                                                          },
+                                                                                                        },
+                                                                                  },
+                                                                          ReplyId = "Missing request Id",
+                                                                        },
+                                                         })
+                                        .ConfigureAwait(false);
+              break;
+            case ProcessReply.TypeOneofCase.Resource:
+              await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                         {
+                                                           Resource = new ProcessRequest.Types.DataReply
+                                                                      {
+                                                                        Init = new ProcessRequest.Types.DataReply.Types.Init
+                                                                               {
+                                                                                 Error = "No request Id",
+                                                                               },
+                                                                        ReplyId = "Missing request Id",
+                                                                      },
+                                                         })
+                                        .ConfigureAwait(false);
+              break;
+            case ProcessReply.TypeOneofCase.CommonData:
+              await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                         {
+                                                           CommonData = new ProcessRequest.Types.DataReply
+                                                                        {
+                                                                          Init = new ProcessRequest.Types.DataReply.Types.Init
+                                                                                 {
+                                                                                   Error = "No request Id",
+                                                                                 },
+                                                                          ReplyId = "Missing request Id",
+                                                                        },
+                                                         })
+                                        .ConfigureAwait(false);
+              break;
+            case ProcessReply.TypeOneofCase.DirectData:
+              await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                         {
+                                                           DirectData = new ProcessRequest.Types.DataReply
+                                                                        {
+                                                                          Init = new ProcessRequest.Types.DataReply.Types.Init
+                                                                                 {
+                                                                                   Error = "No request Id",
+                                                                                 },
+                                                                          ReplyId = "Missing request Id",
+                                                                        },
+                                                         })
+                                        .ConfigureAwait(false);
+              break;
+            case ProcessReply.TypeOneofCase.CreateSmallTask:
+            case ProcessReply.TypeOneofCase.Output:
+            case ProcessReply.TypeOneofCase.None:
+            default:
+              throw new ArgumentOutOfRangeException();
           }
 
           await workerStreamHandler_.Pipe.CompleteAsync()
                                     .ConfigureAwait(false);
 
-          if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
-          {
-            logger_.LogDebug("Complete processing of the request");
-            await requestProcessors.Values.Select(processor => processor.CompleteProcessing(cancellationToken))
-                                   .WhenAll()
-                                   .ConfigureAwait(false);
-          }
-
-          await submitter_.CompleteTaskAsync(taskData.TaskId,
-                                             reply.Output,
-                                             cancellationToken)
-                          .ConfigureAwait(false);
-
-          logger_.LogDebug("End Task Epilog");
+          return Task.CompletedTask;
         }
 
-        logger_.LogDebug("Start Task Epilog");
-        // no await here because we want the epilog awaited outside of this function to pipeline task processing
-        return Epilog();
-      }
+        var rp = requestProcessors.GetOrAdd(reply.RequestId,
+                                            _ =>
+                                            {
+                                              logger_.LogDebug("Received new Reply of type {ReplyType} with Id {RequestId}",
+                                                               reply.TypeCase,
+                                                               reply.RequestId);
+                                              return reply.TypeCase switch
+                                                     {
+                                                       ProcessReply.TypeOneofCase.Result => new ResultProcessor(submitter_,
+                                                                                                                taskData.SessionId,
+                                                                                                                taskData.TaskId,
+                                                                                                                logger_),
+                                                       ProcessReply.TypeOneofCase.CreateLargeTask => new CreateLargeTaskProcessor(submitter_,
+                                                                                                                                  workerStreamHandler_.Pipe,
+                                                                                                                                  taskData.SessionId,
+                                                                                                                                  taskData.TaskId,
+                                                                                                                                  logger_),
+                                                       ProcessReply.TypeOneofCase.CreateSmallTask => throw new NotImplementedException(),
+                                                       ProcessReply.TypeOneofCase.Resource => new ResourceRequestProcessor(resourcesStorage_,
+                                                                                                                           workerStreamHandler_.Pipe,
+                                                                                                                           logger_),
+                                                       ProcessReply.TypeOneofCase.CommonData => new CommonDataRequestProcessor(resourcesStorage_,
+                                                                                                                               workerStreamHandler_.Pipe,
+                                                                                                                               logger_),
+                                                       ProcessReply.TypeOneofCase.DirectData => new DirectDataRequestProcessor(resourcesStorage_,
+                                                                                                                               workerStreamHandler_.Pipe,
+                                                                                                                               logger_),
+                                                       ProcessReply.TypeOneofCase.None   => throw new ArmoniKException("Unspecified process reply type"),
+                                                       ProcessReply.TypeOneofCase.Output => throw new ArmoniKException("Unspecified process reply type"),
+                                                       _                                 => throw new ArmoniKException("Unspecified process reply type"),
+                                                     };
+                                            });
 
-      if (string.IsNullOrEmpty(reply.RequestId))
-      {
-        logger_.LogWarning("No request Id in the received request, request will not be processed");
-        switch (reply.TypeCase)
+        if (rp == null)
         {
-          case ProcessReply.TypeOneofCase.Result:
-            // todo result reply to acknowledge reception or say that there is an error
-            // todo we need to improve the proto to have better communication and management of errors between worker and polling agent
-            await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
-                                                       {
-                                                         Resource = new ProcessRequest.Types.DataReply
-                                                                    {
-                                                                      Init = new ProcessRequest.Types.DataReply.Types.Init
-                                                                             {
-                                                                               Error = "No request Id",
-                                                                             },
-                                                                      ReplyId = "Missing request Id",
-                                                                    },
-                                                       })
-                                      .ConfigureAwait(false);
-            break;
-          case ProcessReply.TypeOneofCase.CreateLargeTask:
-            await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
-                                                       {
-                                                         CreateTask = new ProcessRequest.Types.CreateTask
-                                                                      {
-                                                                        Reply = new CreateTaskReply
-                                                                                {
-                                                                                  NonSuccessfullIds = new CreateTaskReply.Types.TaskIds
-                                                                                                      {
-                                                                                                        Ids =
-                                                                                                        {
-                                                                                                          "No request Id",
-                                                                                                        },
-                                                                                                      },
-                                                                                },
-                                                                        ReplyId = "Missing request Id",
-                                                                      },
-                                                       })
-                                      .ConfigureAwait(false);
-            break;
-          case ProcessReply.TypeOneofCase.Resource:
-            await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
-                                                       {
-                                                         Resource = new ProcessRequest.Types.DataReply
-                                                                    {
-                                                                      Init = new ProcessRequest.Types.DataReply.Types.Init
-                                                                             {
-                                                                               Error = "No request Id",
-                                                                             },
-                                                                      ReplyId = "Missing request Id",
-                                                                    },
-                                                       })
-                                      .ConfigureAwait(false);
-            break;
-          case ProcessReply.TypeOneofCase.CommonData:
-            await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
-                                                       {
-                                                         CommonData = new ProcessRequest.Types.DataReply
-                                                                      {
-                                                                        Init = new ProcessRequest.Types.DataReply.Types.Init
-                                                                               {
-                                                                                 Error = "No request Id",
-                                                                               },
-                                                                        ReplyId = "Missing request Id",
-                                                                      },
-                                                       })
-                                      .ConfigureAwait(false);
-            break;
-          case ProcessReply.TypeOneofCase.DirectData:
-            await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
-                                                       {
-                                                         DirectData = new ProcessRequest.Types.DataReply
-                                                                      {
-                                                                        Init = new ProcessRequest.Types.DataReply.Types.Init
-                                                                               {
-                                                                                 Error = "No request Id",
-                                                                               },
-                                                                        ReplyId = "Missing request Id",
-                                                                      },
-                                                       })
-                                      .ConfigureAwait(false);
-            break;
-          case ProcessReply.TypeOneofCase.CreateSmallTask:
-          case ProcessReply.TypeOneofCase.Output:
-          case ProcessReply.TypeOneofCase.None:
-          default:
-            throw new ArgumentOutOfRangeException();
+          throw new ArmoniKException("request processor should not be null");
         }
 
-        await workerStreamHandler_.Pipe.CompleteAsync()
-                                  .ConfigureAwait(false);
-
-        return Task.CompletedTask;
+        await rp.AddProcessReply(reply,
+                                 cancellationToken)
+                .ConfigureAwait(false);
       }
-
-      var rp = requestProcessors.GetOrAdd(reply.RequestId,
-                                          _ =>
-                                          {
-                                            logger_.LogDebug("Received new Reply of type {ReplyType} with Id {RequestId}",
-                                                             reply.TypeCase,
-                                                             reply.RequestId);
-                                            return reply.TypeCase switch
+    }
+    catch (RpcException e)
+    {
+      logger_.LogError(e,
+                       "Error while computing task, retrying task");
+      await submitter_.CompleteTaskAsync(taskData,
+                                         true,
+                                         new Output
+                                         {
+                                           Error = new Output.Types.Error
                                                    {
-                                                     ProcessReply.TypeOneofCase.Result => new
-                                                       ResultProcessor(submitter_,
-                                                                       taskData.SessionId,
-                                                                       taskData.RetryOfIds.FirstOrDefault(taskData.TaskId),
-                                                                       logger_),
-                                                     ProcessReply.TypeOneofCase.CreateLargeTask => new CreateLargeTaskProcessor(submitter_,
-                                                                                                                                workerStreamHandler_.Pipe,
-                                                                                                                                taskData.SessionId,
-                                                                                                                                taskData.TaskId,
-                                                                                                                                logger_),
-                                                     ProcessReply.TypeOneofCase.CreateSmallTask => throw new NotImplementedException(),
-                                                     ProcessReply.TypeOneofCase.Resource => new ResourceRequestProcessor(resourcesStorage_,
-                                                                                                                         workerStreamHandler_.Pipe,
-                                                                                                                         logger_),
-                                                     ProcessReply.TypeOneofCase.CommonData => new CommonDataRequestProcessor(resourcesStorage_,
-                                                                                                                             workerStreamHandler_.Pipe,
-                                                                                                                             logger_),
-                                                     ProcessReply.TypeOneofCase.DirectData => new DirectDataRequestProcessor(resourcesStorage_,
-                                                                                                                             workerStreamHandler_.Pipe,
-                                                                                                                             logger_),
-                                                     ProcessReply.TypeOneofCase.None   => throw new ArmoniKException("Unspecified process reply type"),
-                                                     ProcessReply.TypeOneofCase.Output => throw new ArmoniKException("Unspecified process reply type"),
-                                                     _                                 => throw new ArmoniKException("Unspecified process reply type"),
-                                                   };
-                                          });
-
-      if (rp == null)
-      {
-        throw new ArmoniKException("request processor should not be null");
-      }
-
-      await rp.AddProcessReply(reply,
-                               cancellationToken)
-              .ConfigureAwait(false);
+                                                     Details = e.Message,
+                                                   },
+                                         },
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
+      messageHandler.Status = QueueMessageStatus.Cancelled;
+      return Task.CompletedTask;
     }
 
     throw new ArmoniKException("This should never happen");

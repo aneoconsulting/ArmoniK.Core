@@ -73,9 +73,6 @@ public interface ISubmitter
   Task StartTask(string            taskId,
                  CancellationToken cancellationToken = default);
 
-  Task<string?> ResubmitTask(TaskData          taskId,
-                             CancellationToken cancellationToken = default);
-
   Task<Configuration> GetServiceConfiguration(Empty             request,
                                               CancellationToken cancellationToken);
 
@@ -90,7 +87,8 @@ public interface ISubmitter
                              TaskStatus        status,
                              CancellationToken cancellationToken = default);
 
-  Task CompleteTaskAsync(string            id,
+  Task CompleteTaskAsync(TaskData          taskData,
+                         bool              resubmit,
                          Output            output,
                          CancellationToken cancellationToken = default);
 
