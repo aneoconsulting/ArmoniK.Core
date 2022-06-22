@@ -68,7 +68,7 @@ public interface IResultTable : IInitializable
   /// </summary>
   /// <param name="sessionId">Session id of the session using the results</param>
   /// <param name="oldTaskId">Task Id of the previous owner</param>
-  /// <param name="requests"></param>
+  /// <param name="requests">Change ownership requests that will be executed</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   /// Task representing the asynchronous execution of the method
@@ -79,7 +79,7 @@ public interface IResultTable : IInitializable
                              CancellationToken                         cancellationToken);
 
   /// <summary>
-  /// Put the given result in the database
+  /// Inserts the given results in the database
   /// </summary>
   /// <param name="results">Results that will be inserted into the database</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -155,7 +155,7 @@ public interface IResultTable : IInitializable
                  CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Update result with small payload
+  /// Update result
   /// </summary>
   /// <param name="sessionId">id of the session containing the results</param>
   /// <param name="ownerTaskId">id of the task owning the result</param>
