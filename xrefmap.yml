@@ -13899,6 +13899,84 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest
   fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest
   nameWithType: TaskFilterValidatorTest
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.BothIdsShouldBeValid
+  name: BothIdsShouldBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_BothIdsShouldBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.BothIdsShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.BothIdsShouldBeValid()
+  nameWithType: TaskFilterValidatorTest.BothIdsShouldBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.BothIdsShouldBeValid*
+  name: BothIdsShouldBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_BothIdsShouldBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.BothIdsShouldBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.BothIdsShouldBeValid
+  nameWithType: TaskFilterValidatorTest.BothIdsShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyBothTaskAndSessionShouldNotBeValid
+  name: EmptyBothTaskAndSessionShouldNotBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_EmptyBothTaskAndSessionShouldNotBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyBothTaskAndSessionShouldNotBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyBothTaskAndSessionShouldNotBeValid()
+  nameWithType: TaskFilterValidatorTest.EmptyBothTaskAndSessionShouldNotBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyBothTaskAndSessionShouldNotBeValid*
+  name: EmptyBothTaskAndSessionShouldNotBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_EmptyBothTaskAndSessionShouldNotBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyBothTaskAndSessionShouldNotBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyBothTaskAndSessionShouldNotBeValid
+  nameWithType: TaskFilterValidatorTest.EmptyBothTaskAndSessionShouldNotBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyExcludedShouldNotBeValid
+  name: EmptyExcludedShouldNotBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_EmptyExcludedShouldNotBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyExcludedShouldNotBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyExcludedShouldNotBeValid()
+  nameWithType: TaskFilterValidatorTest.EmptyExcludedShouldNotBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyExcludedShouldNotBeValid*
+  name: EmptyExcludedShouldNotBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_EmptyExcludedShouldNotBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyExcludedShouldNotBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyExcludedShouldNotBeValid
+  nameWithType: TaskFilterValidatorTest.EmptyExcludedShouldNotBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyIncludedShouldNotBeValid
+  name: EmptyIncludedShouldNotBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_EmptyIncludedShouldNotBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyIncludedShouldNotBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyIncludedShouldNotBeValid()
+  nameWithType: TaskFilterValidatorTest.EmptyIncludedShouldNotBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyIncludedShouldNotBeValid*
+  name: EmptyIncludedShouldNotBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_EmptyIncludedShouldNotBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyIncludedShouldNotBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyIncludedShouldNotBeValid
+  nameWithType: TaskFilterValidatorTest.EmptyIncludedShouldNotBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptySessionShouldNotBeValid
+  name: EmptySessionShouldNotBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_EmptySessionShouldNotBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptySessionShouldNotBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptySessionShouldNotBeValid()
+  nameWithType: TaskFilterValidatorTest.EmptySessionShouldNotBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptySessionShouldNotBeValid*
+  name: EmptySessionShouldNotBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_EmptySessionShouldNotBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptySessionShouldNotBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptySessionShouldNotBeValid
+  nameWithType: TaskFilterValidatorTest.EmptySessionShouldNotBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyTaskShouldNotBeValid
+  name: EmptyTaskShouldNotBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_EmptyTaskShouldNotBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyTaskShouldNotBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyTaskShouldNotBeValid()
+  nameWithType: TaskFilterValidatorTest.EmptyTaskShouldNotBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyTaskShouldNotBeValid*
+  name: EmptyTaskShouldNotBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_EmptyTaskShouldNotBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyTaskShouldNotBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.EmptyTaskShouldNotBeValid
+  nameWithType: TaskFilterValidatorTest.EmptyTaskShouldNotBeValid
 - uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.MultipleExcludedStatusesShouldBeValid
   name: MultipleExcludedStatusesShouldBeValid()
   href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_MultipleExcludedStatusesShouldBeValid
@@ -13925,6 +14003,71 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.MultipleIncludedStatusesShouldBeValid
   nameWithType: TaskFilterValidatorTest.MultipleIncludedStatusesShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.NoTaskIdAndNoSessionIdShouldNotBeValid
+  name: NoTaskIdAndNoSessionIdShouldNotBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_NoTaskIdAndNoSessionIdShouldNotBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.NoTaskIdAndNoSessionIdShouldNotBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.NoTaskIdAndNoSessionIdShouldNotBeValid()
+  nameWithType: TaskFilterValidatorTest.NoTaskIdAndNoSessionIdShouldNotBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.NoTaskIdAndNoSessionIdShouldNotBeValid*
+  name: NoTaskIdAndNoSessionIdShouldNotBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_NoTaskIdAndNoSessionIdShouldNotBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.NoTaskIdAndNoSessionIdShouldNotBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.NoTaskIdAndNoSessionIdShouldNotBeValid
+  nameWithType: TaskFilterValidatorTest.NoTaskIdAndNoSessionIdShouldNotBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyExcludedShouldNotBeValid
+  name: TaskAndEmptyExcludedShouldNotBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_TaskAndEmptyExcludedShouldNotBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyExcludedShouldNotBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyExcludedShouldNotBeValid()
+  nameWithType: TaskFilterValidatorTest.TaskAndEmptyExcludedShouldNotBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyExcludedShouldNotBeValid*
+  name: TaskAndEmptyExcludedShouldNotBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_TaskAndEmptyExcludedShouldNotBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyExcludedShouldNotBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyExcludedShouldNotBeValid
+  nameWithType: TaskFilterValidatorTest.TaskAndEmptyExcludedShouldNotBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyIncludedShouldNotBeValid
+  name: TaskAndEmptyIncludedShouldNotBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_TaskAndEmptyIncludedShouldNotBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyIncludedShouldNotBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyIncludedShouldNotBeValid()
+  nameWithType: TaskFilterValidatorTest.TaskAndEmptyIncludedShouldNotBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyIncludedShouldNotBeValid*
+  name: TaskAndEmptyIncludedShouldNotBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_TaskAndEmptyIncludedShouldNotBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyIncludedShouldNotBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndEmptyIncludedShouldNotBeValid
+  nameWithType: TaskFilterValidatorTest.TaskAndEmptyIncludedShouldNotBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndSessionEmptyShouldBeValid
+  name: TaskAndSessionEmptyShouldBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_TaskAndSessionEmptyShouldBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndSessionEmptyShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndSessionEmptyShouldBeValid()
+  nameWithType: TaskFilterValidatorTest.TaskAndSessionEmptyShouldBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndSessionEmptyShouldBeValid*
+  name: TaskAndSessionEmptyShouldBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_TaskAndSessionEmptyShouldBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndSessionEmptyShouldBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskAndSessionEmptyShouldBeValid
+  nameWithType: TaskFilterValidatorTest.TaskAndSessionEmptyShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskEmptyAndSessionShouldBeValid
+  name: TaskEmptyAndSessionShouldBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_TaskEmptyAndSessionShouldBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskEmptyAndSessionShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskEmptyAndSessionShouldBeValid()
+  nameWithType: TaskFilterValidatorTest.TaskEmptyAndSessionShouldBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskEmptyAndSessionShouldBeValid*
+  name: TaskEmptyAndSessionShouldBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.html#ArmoniK_Core_Common_Tests_TaskFilterValidatorTest_TaskEmptyAndSessionShouldBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskEmptyAndSessionShouldBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskFilterValidatorTest.TaskEmptyAndSessionShouldBeValid
+  nameWithType: TaskFilterValidatorTest.TaskEmptyAndSessionShouldBeValid
 - uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest
   name: TaskOptionsValidatorTest
   href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html
@@ -14106,6 +14249,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.CancelSessionAsyncShouldSucceed
   nameWithType: TaskTableTestBase.CancelSessionAsyncShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.CancelTasksShouldSucceed
+  name: CancelTasksShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_CancelTasksShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.CancelTasksShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.CancelTasksShouldSucceed()
+  nameWithType: TaskTableTestBase.CancelTasksShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.CancelTasksShouldSucceed*
+  name: CancelTasksShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_CancelTasksShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.CancelTasksShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.CancelTasksShouldSucceed
+  nameWithType: TaskTableTestBase.CancelTasksShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.CountAllTasksAsyncShouldSucceed
   name: CountAllTasksAsyncShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_CountAllTasksAsyncShouldSucceed
