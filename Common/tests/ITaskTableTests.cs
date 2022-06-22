@@ -383,6 +383,58 @@ public class TaskTableTestBase
     }
   }
 
+  [Test]
+  public async Task CancelTasksShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var testFilter = new TaskFilter
+                       {
+                         Task = new TaskFilter.Types.IdsRequest
+                                {
+                                  Ids =
+                                  {
+                                    "TaskProcessingId",
+                                    "TaskCreatingId",
+                                  },
+                                },
+                       };
+      await TaskTable.CancelTasks(testFilter,
+                                               CancellationToken.None)
+                     .ConfigureAwait(false);
+      var resCreating = await TaskTable.GetTaskStatus(new[]
+                                                      {
+                                                        "TaskCreatingId",
+                                                      },
+                                                      CancellationToken.None)
+                                       .ConfigureAwait(false);
+      var resProcessing = await TaskTable.GetTaskStatus(new[]
+                                                        {
+                                                          "TaskProcessingId",
+                                                        },
+                                                        CancellationToken.None)
+                                         .ConfigureAwait(false);
+
+      Assert.AreEqual(TaskStatus.Canceling,
+                      resCreating.Single()
+                                 .Status);
+      Assert.AreEqual(TaskStatus.Canceling,
+                      resProcessing.Single()
+                                   .Status);
+
+      var resAnotherProcessing = await TaskTable.GetTaskStatus(new[]
+                                                        {
+                                                          "TaskAnotherProcessingId",
+                                                        },
+                                                        CancellationToken.None)
+                                         .ConfigureAwait(false);
+
+      Assert.AreNotEqual(TaskStatus.Canceling,
+                         resAnotherProcessing.Single()
+                                             .Status);
+    }
+  }
+
   [Test(Description = "Forbidden update: A given Task its on a final status")]
   public void UpdateAllTaskStatusAsyncShouldFail()
   {
