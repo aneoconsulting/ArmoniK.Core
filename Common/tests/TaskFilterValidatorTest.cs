@@ -97,7 +97,7 @@ public class TaskFilterValidatorTest
              };
 
     Assert.IsFalse(validator_.Validate(tf)
-                           .IsValid);
+                             .IsValid);
   }
 
   [Test]
@@ -127,7 +127,7 @@ public class TaskFilterValidatorTest
              };
 
     Assert.IsFalse(validator_.Validate(tf)
-                           .IsValid);
+                             .IsValid);
   }
 
   [Test]
@@ -188,6 +188,46 @@ public class TaskFilterValidatorTest
 
     Assert.IsTrue(validator_.Validate(tf)
                             .IsValid);
+  }
+
+  [Test]
+  public void TaskAndEmptyIncludedShouldNotBeValid()
+  {
+    var tf = new TaskFilter
+             {
+               Task = new TaskFilter.Types.IdsRequest
+                      {
+                        Ids =
+                        {
+                          "test",
+                        },
+                      },
+               Included = new TaskFilter.Types.StatusesRequest(),
+             };
+
+
+    Assert.IsFalse(validator_.Validate(tf)
+                             .IsValid);
+  }
+
+  [Test]
+  public void TaskAndEmptyExcludedShouldNotBeValid()
+  {
+    var tf = new TaskFilter
+             {
+               Task = new TaskFilter.Types.IdsRequest
+                      {
+                        Ids =
+                        {
+                          "test",
+                        },
+                      },
+               Excluded = new TaskFilter.Types.StatusesRequest(),
+             };
+
+
+    Assert.IsFalse(validator_.Validate(tf)
+                             .IsValid);
   }
 
   // It is valid but one is ignored
