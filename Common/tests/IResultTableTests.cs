@@ -389,4 +389,60 @@ public class ResultTableTestBase
                       result.Count());
     }
   }
+
+  [Test]
+  public async Task AbortResultsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      await ResultTable.AbortTaskResults("SessionId",
+                                         "OwnerId",
+                                         CancellationToken.None)
+                       .ConfigureAwait(false);
+
+
+      var resultStatus = await ResultTable.GetResultStatus(new[]
+                                                           {
+                                                             "ResultIsAvailable",
+                                                             "ResultIsNotAvailable",
+                                                             "ResultIsCreated",
+                                                           },
+                                                           "SessionId",
+                                                           CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+      Assert.AreEqual(3,
+                      resultStatus.Count(status => status.Status == ResultStatus.Aborted));
+      Assert.AreEqual(0,
+                      resultStatus.Count(status => status.Status != ResultStatus.Aborted));
+    }
+  }
+
+  [Test]
+  public async Task AbortResultsShouldFail()
+  {
+    if (RunTests)
+    {
+      await ResultTable.AbortTaskResults("SessionId",
+                                         "TaskDoesNotExist",
+                                         CancellationToken.None)
+                       .ConfigureAwait(false);
+
+
+      var resultStatus = await ResultTable.GetResultStatus(new[]
+                                                           {
+                                                             "ResultIsAvailable",
+                                                             "ResultIsNotAvailable",
+                                                             "ResultIsCreated",
+                                                           },
+                                                           "SessionId",
+                                                           CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+      Assert.AreEqual(1,
+                      resultStatus.Count(status => status.Status == ResultStatus.Aborted));
+      Assert.AreEqual(2,
+                      resultStatus.Count(status => status.Status != ResultStatus.Aborted));
+    }
+  }
 }
