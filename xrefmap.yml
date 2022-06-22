@@ -9204,12 +9204,15 @@ references:
   commentId: M:ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,ArmoniK.Core.Common.Storage.TaskOptions)
   fullName: ArmoniK.Core.Common.Storage.SessionData.SessionData(System.String, SessionStatus, ArmoniK.Core.Common.Storage.TaskOptions)
   nameWithType: SessionData.SessionData(String, SessionStatus, TaskOptions)
-- uid: ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,DateTime,DateTime,ArmoniK.Core.Common.Storage.TaskOptions)
-  name: SessionData(String, SessionStatus, DateTime, DateTime, TaskOptions)
-  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData__ctor_System_String_SessionStatus_DateTime_DateTime_ArmoniK_Core_Common_Storage_TaskOptions_
-  commentId: M:ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,DateTime,DateTime,ArmoniK.Core.Common.Storage.TaskOptions)
-  fullName: ArmoniK.Core.Common.Storage.SessionData.SessionData(System.String, SessionStatus, DateTime, DateTime, ArmoniK.Core.Common.Storage.TaskOptions)
-  nameWithType: SessionData.SessionData(String, SessionStatus, DateTime, DateTime, TaskOptions)
+- uid: ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,DateTime,System.Nullable{DateTime},ArmoniK.Core.Common.Storage.TaskOptions)
+  name: SessionData(String, SessionStatus, DateTime, Nullable<DateTime>, TaskOptions)
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData__ctor_System_String_SessionStatus_DateTime_System_Nullable_DateTime__ArmoniK_Core_Common_Storage_TaskOptions_
+  commentId: M:ArmoniK.Core.Common.Storage.SessionData.#ctor(System.String,SessionStatus,DateTime,System.Nullable{DateTime},ArmoniK.Core.Common.Storage.TaskOptions)
+  name.vb: SessionData(String, SessionStatus, DateTime, Nullable(Of DateTime), TaskOptions)
+  fullName: ArmoniK.Core.Common.Storage.SessionData.SessionData(System.String, SessionStatus, DateTime, System.Nullable<DateTime>, ArmoniK.Core.Common.Storage.TaskOptions)
+  fullName.vb: ArmoniK.Core.Common.Storage.SessionData.SessionData(System.String, SessionStatus, DateTime, System.Nullable(Of DateTime), ArmoniK.Core.Common.Storage.TaskOptions)
+  nameWithType: SessionData.SessionData(String, SessionStatus, DateTime, Nullable<DateTime>, TaskOptions)
+  nameWithType.vb: SessionData.SessionData(String, SessionStatus, DateTime, Nullable(Of DateTime), TaskOptions)
 - uid: ArmoniK.Core.Common.Storage.SessionData.#ctor*
   name: SessionData
   href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData__ctor_
@@ -9374,15 +9377,15 @@ references:
   fullName.vb: ArmoniK.Core.Common.Storage.TaskData.TaskData(System.String, System.String, System.String, IList(Of System.String), IList(Of System.String), IList(Of System.String), IList(Of System.String), TaskStatus, ArmoniK.Core.Common.Storage.TaskOptions, ArmoniK.Core.Common.Storage.Output)
   nameWithType: TaskData.TaskData(String, String, String, IList<String>, IList<String>, IList<String>, IList<String>, TaskStatus, TaskOptions, Output)
   nameWithType.vb: TaskData.TaskData(String, String, String, IList(Of String), IList(Of String), IList(Of String), IList(Of String), TaskStatus, TaskOptions, Output)
-- uid: ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,System.String,ArmoniK.Core.Common.Storage.TaskOptions,DateTime,DateTime,DateTime,DateTime,DateTime,ArmoniK.Core.Common.Storage.Output)
-  name: TaskData(String, String, String, IList<String>, IList<String>, IList<String>, IList<String>, TaskStatus, String, TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, Output)
-  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__IList_System_String__TaskStatus_System_String_ArmoniK_Core_Common_Storage_TaskOptions_DateTime_DateTime_DateTime_DateTime_DateTime_ArmoniK_Core_Common_Storage_Output_
-  commentId: M:ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,System.String,ArmoniK.Core.Common.Storage.TaskOptions,DateTime,DateTime,DateTime,DateTime,DateTime,ArmoniK.Core.Common.Storage.Output)
-  name.vb: TaskData(String, String, String, IList(Of String), IList(Of String), IList(Of String), IList(Of String), TaskStatus, String, TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, Output)
-  fullName: ArmoniK.Core.Common.Storage.TaskData.TaskData(System.String, System.String, System.String, IList<System.String>, IList<System.String>, IList<System.String>, IList<System.String>, TaskStatus, System.String, ArmoniK.Core.Common.Storage.TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, ArmoniK.Core.Common.Storage.Output)
-  fullName.vb: ArmoniK.Core.Common.Storage.TaskData.TaskData(System.String, System.String, System.String, IList(Of System.String), IList(Of System.String), IList(Of System.String), IList(Of System.String), TaskStatus, System.String, ArmoniK.Core.Common.Storage.TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, ArmoniK.Core.Common.Storage.Output)
-  nameWithType: TaskData.TaskData(String, String, String, IList<String>, IList<String>, IList<String>, IList<String>, TaskStatus, String, TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, Output)
-  nameWithType.vb: TaskData.TaskData(String, String, String, IList(Of String), IList(Of String), IList(Of String), IList(Of String), TaskStatus, String, TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, Output)
+- uid: ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,System.String,ArmoniK.Core.Common.Storage.TaskOptions,DateTime,System.Nullable{DateTime},System.Nullable{DateTime},System.Nullable{DateTime},System.Nullable{DateTime},ArmoniK.Core.Common.Storage.Output)
+  name: TaskData(String, String, String, IList<String>, IList<String>, IList<String>, IList<String>, TaskStatus, String, TaskOptions, DateTime, Nullable<DateTime>, Nullable<DateTime>, Nullable<DateTime>, Nullable<DateTime>, Output)
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__IList_System_String__TaskStatus_System_String_ArmoniK_Core_Common_Storage_TaskOptions_DateTime_System_Nullable_DateTime__System_Nullable_DateTime__System_Nullable_DateTime__System_Nullable_DateTime__ArmoniK_Core_Common_Storage_Output_
+  commentId: M:ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,System.String,ArmoniK.Core.Common.Storage.TaskOptions,DateTime,System.Nullable{DateTime},System.Nullable{DateTime},System.Nullable{DateTime},System.Nullable{DateTime},ArmoniK.Core.Common.Storage.Output)
+  name.vb: TaskData(String, String, String, IList(Of String), IList(Of String), IList(Of String), IList(Of String), TaskStatus, String, TaskOptions, DateTime, Nullable(Of DateTime), Nullable(Of DateTime), Nullable(Of DateTime), Nullable(Of DateTime), Output)
+  fullName: ArmoniK.Core.Common.Storage.TaskData.TaskData(System.String, System.String, System.String, IList<System.String>, IList<System.String>, IList<System.String>, IList<System.String>, TaskStatus, System.String, ArmoniK.Core.Common.Storage.TaskOptions, DateTime, System.Nullable<DateTime>, System.Nullable<DateTime>, System.Nullable<DateTime>, System.Nullable<DateTime>, ArmoniK.Core.Common.Storage.Output)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskData.TaskData(System.String, System.String, System.String, IList(Of System.String), IList(Of System.String), IList(Of System.String), IList(Of System.String), TaskStatus, System.String, ArmoniK.Core.Common.Storage.TaskOptions, DateTime, System.Nullable(Of DateTime), System.Nullable(Of DateTime), System.Nullable(Of DateTime), System.Nullable(Of DateTime), ArmoniK.Core.Common.Storage.Output)
+  nameWithType: TaskData.TaskData(String, String, String, IList<String>, IList<String>, IList<String>, IList<String>, TaskStatus, String, TaskOptions, DateTime, Nullable<DateTime>, Nullable<DateTime>, Nullable<DateTime>, Nullable<DateTime>, Output)
+  nameWithType.vb: TaskData.TaskData(String, String, String, IList(Of String), IList(Of String), IList(Of String), IList(Of String), TaskStatus, String, TaskOptions, DateTime, Nullable(Of DateTime), Nullable(Of DateTime), Nullable(Of DateTime), Nullable(Of DateTime), Output)
 - uid: ArmoniK.Core.Common.Storage.TaskData.#ctor*
   name: TaskData
   href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData__ctor_

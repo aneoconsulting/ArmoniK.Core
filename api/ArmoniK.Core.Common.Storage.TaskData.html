@@ -171,18 +171,18 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__IList_System_String__TaskStatus_System_String_ArmoniK_Core_Common_Storage_TaskOptions_DateTime_DateTime_DateTime_DateTime_DateTime_ArmoniK_Core_Common_Storage_Output_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.%23ctor(System.String%2CSystem.String%2CSystem.String%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CTaskStatus%2CSystem.String%2CArmoniK.Core.Common.Storage.TaskOptions%2CDateTime%2CDateTime%2CDateTime%2CDateTime%2CDateTime%2CArmoniK.Core.Common.Storage.Output)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__IList_System_String__TaskStatus_System_String_ArmoniK_Core_Common_Storage_TaskOptions_DateTime_System_Nullable_DateTime__System_Nullable_DateTime__System_Nullable_DateTime__System_Nullable_DateTime__ArmoniK_Core_Common_Storage_Output_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskData.%23ctor(System.String%2CSystem.String%2CSystem.String%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CIList%7BSystem.String%7D%2CTaskStatus%2CSystem.String%2CArmoniK.Core.Common.Storage.TaskOptions%2CDateTime%2CSystem.Nullable%7BDateTime%7D%2CSystem.Nullable%7BDateTime%7D%2CSystem.Nullable%7BDateTime%7D%2CSystem.Nullable%7BDateTime%7D%2CArmoniK.Core.Common.Storage.Output)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Storage/TaskData.cs/#L32">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskData__ctor_" data-uid="ArmoniK.Core.Common.Storage.TaskData.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__IList_System_String__TaskStatus_System_String_ArmoniK_Core_Common_Storage_TaskOptions_DateTime_DateTime_DateTime_DateTime_DateTime_ArmoniK_Core_Common_Storage_Output_" data-uid="ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,System.String,ArmoniK.Core.Common.Storage.TaskOptions,DateTime,DateTime,DateTime,DateTime,DateTime,ArmoniK.Core.Common.Storage.Output)">TaskData(String, String, String, IList&lt;String&gt;, IList&lt;String&gt;, IList&lt;String&gt;, IList&lt;String&gt;, TaskStatus, String, TaskOptions, DateTime, DateTime, DateTime, DateTime, DateTime, Output)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_TaskData__ctor_System_String_System_String_System_String_IList_System_String__IList_System_String__IList_System_String__IList_System_String__TaskStatus_System_String_ArmoniK_Core_Common_Storage_TaskOptions_DateTime_System_Nullable_DateTime__System_Nullable_DateTime__System_Nullable_DateTime__System_Nullable_DateTime__ArmoniK_Core_Common_Storage_Output_" data-uid="ArmoniK.Core.Common.Storage.TaskData.#ctor(System.String,System.String,System.String,IList{System.String},IList{System.String},IList{System.String},IList{System.String},TaskStatus,System.String,ArmoniK.Core.Common.Storage.TaskOptions,DateTime,System.Nullable{DateTime},System.Nullable{DateTime},System.Nullable{DateTime},System.Nullable{DateTime},ArmoniK.Core.Common.Storage.Output)">TaskData(String, String, String, IList&lt;String&gt;, IList&lt;String&gt;, IList&lt;String&gt;, IList&lt;String&gt;, TaskStatus, String, TaskOptions, DateTime, Nullable&lt;DateTime&gt;, Nullable&lt;DateTime&gt;, Nullable&lt;DateTime&gt;, Nullable&lt;DateTime&gt;, Output)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public TaskData(string SessionId, string TaskId, string OwnerPodId, IList&lt;string&gt; ParentTaskIds, IList&lt;string&gt; DataDependencies, IList&lt;string&gt; ExpectedOutputIds, IList&lt;string&gt; RetryOfIds, TaskStatus Status, string StatusMessage, TaskOptions Options, DateTime CreationDate, DateTime SubmittedDate, DateTime StartDate, DateTime EndDate, DateTime PodTtl, Output Output)</code></pre>
+    <pre><code class="lang-csharp hljs">public TaskData(string SessionId, string TaskId, string OwnerPodId, IList&lt;string&gt; ParentTaskIds, IList&lt;string&gt; DataDependencies, IList&lt;string&gt; ExpectedOutputIds, IList&lt;string&gt; RetryOfIds, TaskStatus Status, string StatusMessage, TaskOptions Options, DateTime CreationDate, DateTime? SubmittedDate, DateTime? StartDate, DateTime? EndDate, DateTime? PodTtl, Output Output)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -250,22 +250,22 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">DateTime</span></td>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td><span class="parametername">SubmittedDate</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">DateTime</span></td>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td><span class="parametername">StartDate</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">DateTime</span></td>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td><span class="parametername">EndDate</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">DateTime</span></td>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td><span class="parametername">PodTtl</span></td>
         <td></td>
       </tr>
@@ -351,7 +351,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public DateTime EndDate { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public DateTime? EndDate { get; set; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -363,7 +363,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">DateTime</span></td>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -531,7 +531,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public DateTime PodTtl { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public DateTime? PodTtl { get; set; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -543,7 +543,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">DateTime</span></td>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -621,7 +621,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public DateTime StartDate { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public DateTime? StartDate { get; set; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -633,7 +633,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">DateTime</span></td>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -711,7 +711,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public DateTime SubmittedDate { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public DateTime? SubmittedDate { get; set; }</code></pre>
   </div>
   <h5 class="propertyValue">Property Value</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -723,7 +723,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">DateTime</span></td>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">DateTime</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
