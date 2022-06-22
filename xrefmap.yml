@@ -697,6 +697,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.ResultTable.ResultTable
   nameWithType: ResultTable.ResultTable
+- uid: ArmoniK.Core.Adapters.Memory.ResultTable.AbortTaskResults(System.String,System.String,CancellationToken)
+  name: AbortTaskResults(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_AbortTaskResults_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.ResultTable.AbortTaskResults(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.AbortTaskResults(System.String, System.String, CancellationToken)
+  nameWithType: ResultTable.AbortTaskResults(String, String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.ResultTable.AbortTaskResults*
+  name: AbortTaskResults
+  href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_AbortTaskResults_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.ResultTable.AbortTaskResults
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.ResultTable.AbortTaskResults
+  nameWithType: ResultTable.AbortTaskResults
 - uid: ArmoniK.Core.Adapters.Memory.ResultTable.AreResultsAvailableAsync(System.String,IEnumerable{System.String},CancellationToken)
   name: AreResultsAvailableAsync(String, IEnumerable<String>, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html#ArmoniK_Core_Adapters_Memory_ResultTable_AreResultsAvailableAsync_System_String_IEnumerable_System_String__CancellationToken_
@@ -2549,6 +2562,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.ResultTable
   nameWithType: ResultTable.ResultTable
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.AbortTaskResults(System.String,System.String,CancellationToken)
+  name: AbortTaskResults(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_AbortTaskResults_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.ResultTable.AbortTaskResults(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.AbortTaskResults(System.String, System.String, CancellationToken)
+  nameWithType: ResultTable.AbortTaskResults(String, String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.AbortTaskResults*
+  name: AbortTaskResults
+  href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_AbortTaskResults_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.ResultTable.AbortTaskResults
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.ResultTable.AbortTaskResults
+  nameWithType: ResultTable.AbortTaskResults
 - uid: ArmoniK.Core.Adapters.MongoDB.ResultTable.AreResultsAvailableAsync(System.String,IEnumerable{System.String},CancellationToken)
   name: AreResultsAvailableAsync(String, IEnumerable<String>, CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.ResultTable.html#ArmoniK_Core_Adapters_MongoDB_ResultTable_AreResultsAvailableAsync_System_String_IEnumerable_System_String__CancellationToken_
@@ -4767,12 +4793,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CancelTasks
   nameWithType: ISubmitter.CancelTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CompleteTaskAsync(System.String,ArmoniK.Api.gRPC.V1.Output,CancellationToken)
-  name: CompleteTaskAsync(String, Output, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CompleteTaskAsync_System_String_ArmoniK_Api_gRPC_V1_Output_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.CompleteTaskAsync(System.String,ArmoniK.Api.gRPC.V1.Output,CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CompleteTaskAsync(System.String, ArmoniK.Api.gRPC.V1.Output, CancellationToken)
-  nameWithType: ISubmitter.CompleteTaskAsync(String, Output, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CompleteTaskAsync(ArmoniK.Core.Common.Storage.TaskData,System.Boolean,ArmoniK.Api.gRPC.V1.Output,CancellationToken)
+  name: CompleteTaskAsync(TaskData, Boolean, Output, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CompleteTaskAsync_ArmoniK_Core_Common_Storage_TaskData_System_Boolean_ArmoniK_Api_gRPC_V1_Output_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.CompleteTaskAsync(ArmoniK.Core.Common.Storage.TaskData,System.Boolean,ArmoniK.Api.gRPC.V1.Output,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CompleteTaskAsync(ArmoniK.Core.Common.Storage.TaskData, System.Boolean, ArmoniK.Api.gRPC.V1.Output, CancellationToken)
+  nameWithType: ISubmitter.CompleteTaskAsync(TaskData, Boolean, Output, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CompleteTaskAsync*
   name: CompleteTaskAsync
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CompleteTaskAsync_
@@ -4903,19 +4929,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListTasksAsync
   nameWithType: ISubmitter.ListTasksAsync
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
-  name: ResubmitTask(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_ResubmitTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
-  nameWithType: ISubmitter.ResubmitTask(TaskData, CancellationToken)
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask*
-  name: ResubmitTask
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_ResubmitTask_
-  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.ResubmitTask
-  nameWithType: ISubmitter.ResubmitTask
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult(System.String,System.String,System.String,IAsyncEnumerable{ReadOnlyMemory{System.Byte}},CancellationToken)
   name: SetResult(String, String, String, IAsyncEnumerable<ReadOnlyMemory<Byte>>, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_SetResult_System_String_System_String_System_String_IAsyncEnumerable_ReadOnlyMemory_System_Byte___CancellationToken_
@@ -5061,12 +5074,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CancelTasks
   nameWithType: Submitter.CancelTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CompleteTaskAsync(System.String,ArmoniK.Api.gRPC.V1.Output,CancellationToken)
-  name: CompleteTaskAsync(String, Output, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CompleteTaskAsync_System_String_ArmoniK_Api_gRPC_V1_Output_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.CompleteTaskAsync(System.String,ArmoniK.Api.gRPC.V1.Output,CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CompleteTaskAsync(System.String, ArmoniK.Api.gRPC.V1.Output, CancellationToken)
-  nameWithType: Submitter.CompleteTaskAsync(String, Output, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CompleteTaskAsync(ArmoniK.Core.Common.Storage.TaskData,System.Boolean,ArmoniK.Api.gRPC.V1.Output,CancellationToken)
+  name: CompleteTaskAsync(TaskData, Boolean, Output, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CompleteTaskAsync_ArmoniK_Core_Common_Storage_TaskData_System_Boolean_ArmoniK_Api_gRPC_V1_Output_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.CompleteTaskAsync(ArmoniK.Core.Common.Storage.TaskData,System.Boolean,ArmoniK.Api.gRPC.V1.Output,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CompleteTaskAsync(ArmoniK.Core.Common.Storage.TaskData, System.Boolean, ArmoniK.Api.gRPC.V1.Output, CancellationToken)
+  nameWithType: Submitter.CompleteTaskAsync(TaskData, Boolean, Output, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CompleteTaskAsync*
   name: CompleteTaskAsync
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CompleteTaskAsync_
@@ -5197,19 +5210,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.ListTasksAsync
   nameWithType: Submitter.ListTasksAsync
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
-  name: ResubmitTask(TaskData, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_ResubmitTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
-  nameWithType: Submitter.ResubmitTask(TaskData, CancellationToken)
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask*
-  name: ResubmitTask
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_ResubmitTask_
-  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.ResubmitTask
-  nameWithType: Submitter.ResubmitTask
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.SetResult(System.String,System.String,System.String,IAsyncEnumerable{ReadOnlyMemory{System.Byte}},CancellationToken)
   name: SetResult(String, String, String, IAsyncEnumerable<ReadOnlyMemory<Byte>>, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_SetResult_System_String_System_String_System_String_IAsyncEnumerable_ReadOnlyMemory_System_Byte___CancellationToken_
@@ -6663,22 +6663,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync
   nameWithType: RequestProcessor.ProcessAsync
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(ArmoniK.Core.Common.Storage.TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
-  name: ProcessInternalsAsync(TaskData, Queue<ProcessRequest.Types.ComputeRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProcessInternalsAsync_ArmoniK_Core_Common_Storage_TaskData_Queue_ArmoniK_Api_gRPC_V1_ProcessRequest_Types_ComputeRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(ArmoniK.Core.Common.Storage.TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
-  name.vb: ProcessInternalsAsync(TaskData, Queue(Of ProcessRequest.Types.ComputeRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(ArmoniK.Core.Common.Storage.TaskData, Queue<ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync(ArmoniK.Core.Common.Storage.TaskData, Queue(Of ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest), CancellationToken)
-  nameWithType: RequestProcessor.ProcessInternalsAsync(TaskData, Queue<ProcessRequest.Types.ComputeRequest>, CancellationToken)
-  nameWithType.vb: RequestProcessor.ProcessInternalsAsync(TaskData, Queue(Of ProcessRequest.Types.ComputeRequest), CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync*
-  name: ProcessInternalsAsync
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProcessInternalsAsync_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessInternalsAsync
-  nameWithType: RequestProcessor.ProcessInternalsAsync
 - uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor
   name: ResourceRequestProcessor
   href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html
@@ -7842,6 +7826,19 @@ references:
   commentId: T:ArmoniK.Core.Common.Storage.IResultTable
   fullName: ArmoniK.Core.Common.Storage.IResultTable
   nameWithType: IResultTable
+- uid: ArmoniK.Core.Common.Storage.IResultTable.AbortTaskResults(System.String,System.String,CancellationToken)
+  name: AbortTaskResults(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_AbortTaskResults_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IResultTable.AbortTaskResults(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.AbortTaskResults(System.String, System.String, CancellationToken)
+  nameWithType: IResultTable.AbortTaskResults(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IResultTable.AbortTaskResults*
+  name: AbortTaskResults
+  href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_AbortTaskResults_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IResultTable.AbortTaskResults
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IResultTable.AbortTaskResults
+  nameWithType: IResultTable.AbortTaskResults
 - uid: ArmoniK.Core.Common.Storage.IResultTable.AreResultsAvailableAsync(System.String,IEnumerable{System.String},CancellationToken)
   name: AreResultsAvailableAsync(String, IEnumerable<String>, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.IResultTable.html#ArmoniK_Core_Common_Storage_IResultTable_AreResultsAvailableAsync_System_String_IEnumerable_System_String__CancellationToken_
@@ -9192,6 +9189,51 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.Result.Status
   nameWithType: Result.Status
+- uid: ArmoniK.Core.Common.Storage.ResultStatusCount
+  name: ResultStatusCount
+  href: api/ArmoniK.Core.Common.Storage.ResultStatusCount.html
+  commentId: T:ArmoniK.Core.Common.Storage.ResultStatusCount
+  fullName: ArmoniK.Core.Common.Storage.ResultStatusCount
+  nameWithType: ResultStatusCount
+- uid: ArmoniK.Core.Common.Storage.ResultStatusCount.#ctor(ResultStatus,System.Int32)
+  name: ResultStatusCount(ResultStatus, Int32)
+  href: api/ArmoniK.Core.Common.Storage.ResultStatusCount.html#ArmoniK_Core_Common_Storage_ResultStatusCount__ctor_ResultStatus_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Storage.ResultStatusCount.#ctor(ResultStatus,System.Int32)
+  fullName: ArmoniK.Core.Common.Storage.ResultStatusCount.ResultStatusCount(ResultStatus, System.Int32)
+  nameWithType: ResultStatusCount.ResultStatusCount(ResultStatus, Int32)
+- uid: ArmoniK.Core.Common.Storage.ResultStatusCount.#ctor*
+  name: ResultStatusCount
+  href: api/ArmoniK.Core.Common.Storage.ResultStatusCount.html#ArmoniK_Core_Common_Storage_ResultStatusCount__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.ResultStatusCount.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.ResultStatusCount.ResultStatusCount
+  nameWithType: ResultStatusCount.ResultStatusCount
+- uid: ArmoniK.Core.Common.Storage.ResultStatusCount.Count
+  name: Count
+  href: api/ArmoniK.Core.Common.Storage.ResultStatusCount.html#ArmoniK_Core_Common_Storage_ResultStatusCount_Count
+  commentId: P:ArmoniK.Core.Common.Storage.ResultStatusCount.Count
+  fullName: ArmoniK.Core.Common.Storage.ResultStatusCount.Count
+  nameWithType: ResultStatusCount.Count
+- uid: ArmoniK.Core.Common.Storage.ResultStatusCount.Count*
+  name: Count
+  href: api/ArmoniK.Core.Common.Storage.ResultStatusCount.html#ArmoniK_Core_Common_Storage_ResultStatusCount_Count_
+  commentId: Overload:ArmoniK.Core.Common.Storage.ResultStatusCount.Count
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.ResultStatusCount.Count
+  nameWithType: ResultStatusCount.Count
+- uid: ArmoniK.Core.Common.Storage.ResultStatusCount.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.ResultStatusCount.html#ArmoniK_Core_Common_Storage_ResultStatusCount_Status
+  commentId: P:ArmoniK.Core.Common.Storage.ResultStatusCount.Status
+  fullName: ArmoniK.Core.Common.Storage.ResultStatusCount.Status
+  nameWithType: ResultStatusCount.Status
+- uid: ArmoniK.Core.Common.Storage.ResultStatusCount.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.ResultStatusCount.html#ArmoniK_Core_Common_Storage_ResultStatusCount_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.ResultStatusCount.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.ResultStatusCount.Status
+  nameWithType: ResultStatusCount.Status
 - uid: ArmoniK.Core.Common.Storage.SessionData
   name: SessionData
   href: api/ArmoniK.Core.Common.Storage.SessionData.html
@@ -11886,6 +11928,32 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.ResultTableTestBase
   fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase
   nameWithType: ResultTableTestBase
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldFail
+  name: AbortResultsShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_AbortResultsShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldFail()
+  nameWithType: ResultTableTestBase.AbortResultsShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldFail*
+  name: AbortResultsShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_AbortResultsShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldFail
+  nameWithType: ResultTableTestBase.AbortResultsShouldFail
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldSucceed
+  name: AbortResultsShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_AbortResultsShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldSucceed()
+  nameWithType: ResultTableTestBase.AbortResultsShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldSucceed*
+  name: AbortResultsShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_AbortResultsShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.AbortResultsShouldSucceed
+  nameWithType: ResultTableTestBase.AbortResultsShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.ChangeResultOwnershipShouldSucceed
   name: ChangeResultOwnershipShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_ChangeResultOwnershipShouldSucceed
@@ -12003,19 +12071,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.GetResultTableInstance
   nameWithType: ResultTableTestBase.GetResultTableInstance
-- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldFail
-  name: ResultsAreAvailableShouldFail()
-  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_ResultsAreAvailableShouldFail
-  commentId: M:ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldFail
-  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldFail()
-  nameWithType: ResultTableTestBase.ResultsAreAvailableShouldFail()
-- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldFail*
-  name: ResultsAreAvailableShouldFail
-  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_ResultsAreAvailableShouldFail_
-  commentId: Overload:ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldFail
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnAborted
+  name: ResultsAreAvailableShouldReturnAborted()
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_ResultsAreAvailableShouldReturnAborted
+  commentId: M:ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnAborted
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnAborted()
+  nameWithType: ResultTableTestBase.ResultsAreAvailableShouldReturnAborted()
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnAborted*
+  name: ResultsAreAvailableShouldReturnAborted
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_ResultsAreAvailableShouldReturnAborted_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnAborted
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldFail
-  nameWithType: ResultTableTestBase.ResultsAreAvailableShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnAborted
+  nameWithType: ResultTableTestBase.ResultsAreAvailableShouldReturnAborted
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnEmpty
+  name: ResultsAreAvailableShouldReturnEmpty()
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_ResultsAreAvailableShouldReturnEmpty
+  commentId: M:ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnEmpty
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnEmpty()
+  nameWithType: ResultTableTestBase.ResultsAreAvailableShouldReturnEmpty()
+- uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnEmpty*
+  name: ResultsAreAvailableShouldReturnEmpty
+  href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_ResultsAreAvailableShouldReturnEmpty_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnEmpty
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldReturnEmpty
+  nameWithType: ResultTableTestBase.ResultsAreAvailableShouldReturnEmpty
 - uid: ArmoniK.Core.Common.Tests.ResultTableTestBase.ResultsAreAvailableShouldSucceed
   name: ResultsAreAvailableShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html#ArmoniK_Core_Common_Tests_ResultTableTestBase_ResultsAreAvailableShouldSucceed
