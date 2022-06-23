@@ -41,7 +41,14 @@ namespace ArmoniK.Core.Common.Storage;
 /// </summary>
 public interface ITaskTable : IInitializable
 {
+  /// <summary>
+  /// Lower bound time span for a task to complete
+  /// </summary>
   TimeSpan PollingDelayMin { get; }
+
+  /// <summary>
+  /// Upper bound time span for a task to complete
+  /// </summary>
   TimeSpan PollingDelayMax { get; }
 
   /// <summary>
