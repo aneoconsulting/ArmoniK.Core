@@ -42,12 +42,16 @@ namespace ArmoniK.Core.Common.Storage;
 public interface ITaskTable : IInitializable
 {
   /// <summary>
-  /// Lower bound time span for a task to complete
+  /// Lower bound delay between two data base accesses
+  /// when active polling is employed to wait for a task
+  /// status to change
   /// </summary>
   TimeSpan PollingDelayMin { get; }
 
   /// <summary>
-  /// Upper bound time span for a task to complete
+  /// Upper bound delay between two data base accesses
+  /// when active polling is employed to wait for a task
+  /// status to change
   /// </summary>
   TimeSpan PollingDelayMax { get; }
 
@@ -109,7 +113,7 @@ public interface ITaskTable : IInitializable
   /// <param name="taskId">Id of the task to check</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Boolean representing the cancellation status of the task
+  /// Boolean representing the cancelation status of the task
   /// </returns>
   Task<bool> IsTaskCancelledAsync(string            taskId,
                                   CancellationToken cancellationToken = default);
@@ -180,7 +184,7 @@ public interface ITaskTable : IInitializable
                                           CancellationToken cancellationToken);
 
   /// <summary>
-  ///  Tag a task as succeded
+  ///  Change the status of the task to succeeded
   /// </summary>
   /// <param name="taskId">Id of the task to tag as succeeded</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -270,7 +274,7 @@ public interface ITaskTable : IInitializable
                          CancellationToken cancellationToken);
 
   /// <summary>
-  /// Tag a collection of tasks as created
+  /// Tag a collection of tasks as submitted
   /// </summary>
   /// <param name="taskIds">Task ids whose creation will be finalised</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
