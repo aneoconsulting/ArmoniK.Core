@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -167,14 +168,6 @@ internal class TaskHandler : IAsyncDisposable
                                                                        cancellationToken)
                                              .ConfigureAwait(false);
 
-        if (!dependencies.Any() || dependencies.Single(i => i.Status == ResultStatus.Completed)
-                                               .Count != taskData_.DataDependencies.Count)
-        {
-          logger_.LogDebug("Dependencies are not complete yet.");
-          messageHandler_.Status = QueueMessageStatus.Postponed;
-          return false;
-        }
-
         if (dependencies.SingleOrDefault(i => i.Status == ResultStatus.Aborted,
                                          new ResultStatusCount(ResultStatus.Aborted,
                                                                0))
@@ -194,6 +187,14 @@ internal class TaskHandler : IAsyncDisposable
                                              CancellationToken.None)
                           .ConfigureAwait(false);
           messageHandler_.Status = QueueMessageStatus.Cancelled;
+          return false;
+        }
+
+        if (!dependencies.Any() || dependencies.Single(i => i.Status == ResultStatus.Completed)
+                                               .Count != taskData_.DataDependencies.Count)
+        {
+          logger_.LogDebug("Dependencies are not complete yet.");
+          messageHandler_.Status = QueueMessageStatus.Postponed;
           return false;
         }
       }
@@ -216,9 +217,10 @@ internal class TaskHandler : IAsyncDisposable
 
       logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
       var acquireTask = await taskTable_.AcquireTask(messageHandler_.TaskId,
+                                                     Dns.GetHostName(),
                                                      cancellationToken)
                                         .ConfigureAwait(false);
-      if (!acquireTask)
+      if (acquireTask == null)
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
         return false;

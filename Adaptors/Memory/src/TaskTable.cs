@@ -357,27 +357,48 @@ public class TaskTable : ITaskTable
                              .Output);
   }
 
-  public Task<bool> AcquireTask(string            taskId,
-                                CancellationToken cancellationToken = default)
+  /// <inheritdoc />
+  public Task<TaskData> AcquireTask(string            taskId,
+                                    string            ownerPodId,
+                                    CancellationToken cancellationToken = default)
   {
-    var updated = false;
-    taskId2TaskData_.AddOrUpdate(taskId,
-                                 _ => throw new InvalidOperationException("The task does not exist."),
-                                 (_,
-                                  data) =>
-                                 {
-                                   if (data.OwnerPodId != "")
-                                   {
-                                     return data;
-                                   }
+    return Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
+                                                        _ => throw new InvalidOperationException("The task does not exist."),
+                                                        (_,
+                                                         data) =>
+                                                        {
+                                                          if (data.OwnerPodId != "")
+                                                          {
+                                                            return null;
+                                                          }
 
-                                   updated = true;
-                                   return data with
-                                          {
-                                            OwnerPodId = Dns.GetHostName(),
-                                          };
-                                 });
-    return Task.FromResult(updated);
+                                                          return data with
+                                                                 {
+                                                                   OwnerPodId = ownerPodId,
+                                                                 };
+                                                        }));
+  }
+
+  /// <inheritdoc />
+  public Task<TaskData> ReleaseTask(string            taskId,
+                                    string            ownerPodId,
+                                    CancellationToken cancellationToken = default)
+  {
+    return Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
+                                                        _ => throw new InvalidOperationException("The task does not exist."),
+                                                        (_,
+                                                         data) =>
+                                                        {
+                                                          if (data.OwnerPodId != ownerPodId)
+                                                          {
+                                                            return null;
+                                                          }
+
+                                                          return data with
+                                                                 {
+                                                                   OwnerPodId = "",
+                                                                 };
+                                                        }));
   }
 
   /// <inheritdoc />

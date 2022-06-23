@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -400,7 +401,7 @@ public class TaskTableTestBase
                                 },
                        };
       await TaskTable.CancelTasks(testFilter,
-                                               CancellationToken.None)
+                                  CancellationToken.None)
                      .ConfigureAwait(false);
       var resCreating = await TaskTable.GetTaskStatus(new[]
                                                       {
@@ -423,11 +424,11 @@ public class TaskTableTestBase
                                    .Status);
 
       var resAnotherProcessing = await TaskTable.GetTaskStatus(new[]
-                                                        {
-                                                          "TaskAnotherProcessingId",
-                                                        },
-                                                        CancellationToken.None)
-                                         .ConfigureAwait(false);
+                                                               {
+                                                                 "TaskAnotherProcessingId",
+                                                               },
+                                                               CancellationToken.None)
+                                                .ConfigureAwait(false);
 
       Assert.AreNotEqual(TaskStatus.Canceling,
                          resAnotherProcessing.Single()
@@ -615,8 +616,8 @@ public class TaskTableTestBase
                                .Status);
 
       var output = await TaskTable.GetTaskOutput("TaskProcessingId",
-                                    CancellationToken.None)
-                     .ConfigureAwait(false);
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.AreEqual("Testing SetTaskError",
                       output.Error);
@@ -722,12 +723,43 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
+      var hostname = Dns.GetHostName();
 
       var result = await TaskTable.AcquireTask("TaskSubmittedId",
+                                               hostname,
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      Assert.IsTrue(result);
+      Assert.AreEqual("TaskSubmittedId",
+                      result!.TaskId);
+      Assert.AreEqual(hostname,
+                      result!.OwnerPodId);
+    }
+  }
+
+  [Test]
+  public async Task AcquireAcquiredTaskShouldFail()
+  {
+    if (RunTests)
+    {
+      var hostname = Dns.GetHostName();
+
+      var result = await TaskTable.AcquireTask("TaskSubmittedId",
+                                               hostname,
+                                               CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual("TaskSubmittedId",
+                      result!.TaskId);
+      Assert.AreEqual(hostname,
+                      result!.OwnerPodId);
+
+      result = await TaskTable.AcquireTask("TaskSubmittedId",
+                                           hostname,
+                                           CancellationToken.None)
+                              .ConfigureAwait(false);
+      Assert.AreEqual(null,
+                      result);
     }
   }
 
@@ -738,10 +770,12 @@ public class TaskTableTestBase
     {
 
       var result = await TaskTable.AcquireTask("TaskFailedId",
+                                               Dns.GetHostName(),
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      Assert.IsFalse(result);
+      Assert.AreEqual(null,
+                      result);
     }
   }
 

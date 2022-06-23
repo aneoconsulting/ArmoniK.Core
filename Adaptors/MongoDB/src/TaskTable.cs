@@ -26,7 +26,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,8 +50,9 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
+  /// <inheritdoc />
 public class TaskTable : ITaskTable
-{
+  {
   private readonly ActivitySource                                          activitySource_;
   private readonly SessionProvider                                         sessionProvider_;
   private readonly MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider_;
@@ -448,43 +448,60 @@ public class TaskTable : ITaskTable
     }
   }
 
-  public async Task<bool> AcquireTask(string            taskId,
-                                CancellationToken cancellationToken = default)
+  /// <inheritdoc />
+  public async Task<TaskData> AcquireTask(string taskId,
+                                          string ownerPodId,
+                                           CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
     var taskCollection = taskCollectionProvider_.Get();
 
-    var hostname = Dns.GetHostName();
-
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.OwnerPodId,
-                                                                       hostname)
+                                                                       ownerPodId)
                                                                   .Set(tdm => tdm.Status,
                                                                        TaskStatus.Dispatched);
 
-    Logger.LogDebug("Acquire task {taskId} on {podName}",
-                    taskId,
-                    hostname);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId && x.OwnerPodId == "",
-                                                   updateDefinition,
-                                                   cancellationToken: cancellationToken)
-                                  .ConfigureAwait(false);
+    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId && x.OwnerPodId == "");
 
-    switch (res.MatchedCount)
-    {
-      case 0:
-        var sessionHandle = sessionProvider_.Get();
-        var ownerPodId = await taskCollection.AsQueryable(sessionHandle)
-                            .Where(tdm => tdm.TaskId == taskId)
-                            .Select(model => model.OwnerPodId)
-                            .SingleAsync(cancellationToken)
-                            .ConfigureAwait(false);
-        Logger.LogInformation("Task {taskId} already acquired by {OtherOwnerPodId}", taskId, ownerPodId);
-        return false;
-      case 1:
-        return true;
-      default:
-        throw new ArmoniKException($"Error during acquisition of task {taskId}");
-    }
+    Logger.LogDebug("Acquire task {task} on {podName}",
+                    taskId,
+                    ownerPodId);
+    return await taskCollection.FindOneAndUpdateAsync(filter,
+                                                      updateDefinition,
+                                                      new FindOneAndUpdateOptions<TaskData>
+                                                      {
+                                                        ReturnDocument = ReturnDocument.After,
+                                                      },
+                                                      cancellationToken)
+                               .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
+  public async Task<TaskData> ReleaseTask(string            taskId,
+                                          string            ownerPodId,
+                                          CancellationToken cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(ReleaseTask)}");
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.OwnerPodId,
+                                                                       "")
+                                                                  .Set(tdm => tdm.Status,
+                                                                       TaskStatus.Submitted);
+
+    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId && x.OwnerPodId == ownerPodId);
+
+    Logger.LogDebug("Release task {task} on {podName}",
+                    taskId,
+                    ownerPodId);
+    return await taskCollection.FindOneAndUpdateAsync(filter,
+                                                      updateDefinition,
+                                                      new FindOneAndUpdateOptions<TaskData>
+                                                      {
+                                                        ReturnDocument = ReturnDocument.After,
+                                                      },
+                                                      cancellationToken)
+                               .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
