@@ -222,6 +222,14 @@ internal class TaskHandler : IAsyncDisposable
                                         .ConfigureAwait(false);
       if (acquireTask == null)
       {
+        taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
+                                                   cancellationToken)
+                                    .ConfigureAwait(false);
+
+        logger_.LogInformation("Task {taskId} already acquired by {OtherOwnerPodId}",
+                               taskData_.TaskId,
+                               taskData_.OwnerPodId);
+
         messageHandler_.Status = QueueMessageStatus.Postponed;
         return false;
       }
