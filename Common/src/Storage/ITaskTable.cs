@@ -45,7 +45,7 @@ public interface ITaskTable : IInitializable
   TimeSpan PollingDelayMax { get; }
 
   /// <summary>
-  /// Logger for this class
+  /// Logger for class ITaskTable
   /// </summary>
   public ILogger Logger { get; }
 
@@ -97,7 +97,7 @@ public interface ITaskTable : IInitializable
                                      TaskStatus        status,
                                      CancellationToken cancellationToken = default);
   /// <summary>
-  ///  Query a task status to check for cancellation
+  ///  Query a task status to check for cancelation
   /// </summary>
   /// <param name="taskId">Id of the task to check</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
