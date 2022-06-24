@@ -194,7 +194,9 @@ internal class TaskHandler : IAsyncDisposable
           return false;
         }
 
-        if (!dependencies.Any() || dependencies.Single(i => i.Status == ResultStatus.Completed)
+        if (!dependencies.Any() || dependencies.SingleOrDefault(i => i.Status == ResultStatus.Completed,
+                                                                new ResultStatusCount(ResultStatus.Completed,
+                                                                                      0))
                                                .Count != taskData_.DataDependencies.Count)
         {
           logger_.LogDebug("Dependencies are not complete yet.");
