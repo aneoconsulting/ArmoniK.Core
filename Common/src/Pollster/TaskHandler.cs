@@ -172,11 +172,22 @@ internal class TaskHandler : IAsyncDisposable
                                                                        cancellationToken)
                                              .ConfigureAwait(false);
 
-        if (!dependencies.Any() || dependencies.SingleOrDefault(i => i.Status == ResultStatus.Aborted,
-                                                                new ResultStatusCount(ResultStatus.Aborted,
+        if (!dependencies.Any() || dependencies.SingleOrDefault(i => i.Status == ResultStatus.Completed,
+                                                                new ResultStatusCount(ResultStatus.Completed,
                                                                                       0))
-                                               .Count > 0)
+                                               .Count != taskData_.DataDependencies.Count)
         {
+          logger_.LogDebug("Dependencies are not complete yet. Checking the status of the results");
+          messageHandler_.Status = QueueMessageStatus.Postponed;
+
+          if (dependencies.SingleOrDefault(i => i.Status == ResultStatus.Aborted,
+                                           new ResultStatusCount(ResultStatus.Aborted,
+                                                                 0))
+                          .Count == 0)
+          {
+            return false;
+          }
+
           logger_.LogInformation("One of the input data is aborted. Removing task from the queue");
 
           await submitter_.CompleteTaskAsync(taskData_,
@@ -191,16 +202,7 @@ internal class TaskHandler : IAsyncDisposable
                                              CancellationToken.None)
                           .ConfigureAwait(false);
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          return false;
-        }
 
-        if (!dependencies.Any() || dependencies.SingleOrDefault(i => i.Status == ResultStatus.Completed,
-                                                                new ResultStatusCount(ResultStatus.Completed,
-                                                                                      0))
-                                               .Count != taskData_.DataDependencies.Count)
-        {
-          logger_.LogDebug("Dependencies are not complete yet.");
-          messageHandler_.Status = QueueMessageStatus.Postponed;
           return false;
         }
       }
