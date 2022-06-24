@@ -81,18 +81,18 @@ public interface ITaskTable : IInitializable
   Task SetTaskSuccessAsync(string            taskId,
                            CancellationToken cancellationToken);
 
-  Task SetTaskErrorAsync(string            taskId,
-                         string            errorDetail,
-                         CancellationToken cancellationToken);
+  Task<bool> SetTaskErrorAsync(string            taskId,
+                               string            errorDetail,
+                               CancellationToken cancellationToken);
 
   Task<Output> GetTaskOutput(string            taskId,
                              CancellationToken cancellationToken = default);
 
-  Task<TaskData?> AcquireTask(string            taskId,
+  Task<TaskData> AcquireTask(string            taskId,
                               string            ownerPodId,
                               CancellationToken cancellationToken = default);
 
-  Task<TaskData?> ReleaseTask(string            taskId,
+  Task<TaskData> ReleaseTask(string            taskId,
                               string            ownerPodId,
                               CancellationToken cancellationToken = default);
 

@@ -33,6 +33,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 
@@ -49,6 +50,7 @@ internal class TaskHandler : IAsyncDisposable
   private readonly ITaskTable                                  taskTable_;
   private readonly IResultTable                                resultTable_;
   private readonly IQueueMessageHandler                        messageHandler_;
+  private readonly ITaskProcessingChecker                      taskProcessingChecker_;
   private readonly ISubmitter                                  submitter_;
   private readonly DataPrefetcher                              dataPrefetcher_;
   private readonly IWorkerStreamHandler                        workerStreamHandler_;
@@ -59,28 +61,30 @@ internal class TaskHandler : IAsyncDisposable
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private          Task?                                       processResult_;
 
-  public TaskHandler(ISessionTable         sessionTable,
-                     ITaskTable            taskTable,
-                     IResultTable          resultTable,
-                     ISubmitter            submitter,
-                     DataPrefetcher        dataPrefetcher,
-                     IWorkerStreamHandler  workerStreamHandler,
-                     IObjectStorageFactory objectStorageFactory,
-                     IQueueMessageHandler  messageHandler,
-                     ActivitySource        activitySource,
-                     ILogger               logger)
+  public TaskHandler(ISessionTable          sessionTable,
+                     ITaskTable             taskTable,
+                     IResultTable           resultTable,
+                     ISubmitter             submitter,
+                     DataPrefetcher         dataPrefetcher,
+                     IWorkerStreamHandler   workerStreamHandler,
+                     IObjectStorageFactory  objectStorageFactory,
+                     IQueueMessageHandler   messageHandler,
+                     ITaskProcessingChecker taskProcessingChecker,
+                     ActivitySource         activitySource,
+                     ILogger                logger)
   {
-    sessionTable_         = sessionTable;
-    taskTable_            = taskTable;
-    resultTable_          = resultTable;
-    messageHandler_       = messageHandler;
-    submitter_            = submitter;
-    dataPrefetcher_       = dataPrefetcher;
-    workerStreamHandler_  = workerStreamHandler;
-    objectStorageFactory_ = objectStorageFactory;
-    activitySource_       = activitySource;
-    logger_               = logger;
-    taskData_             = null;
+    sessionTable_          = sessionTable;
+    taskTable_             = taskTable;
+    resultTable_           = resultTable;
+    messageHandler_        = messageHandler;
+    taskProcessingChecker_ = taskProcessingChecker;
+    submitter_             = submitter;
+    dataPrefetcher_        = dataPrefetcher;
+    workerStreamHandler_   = workerStreamHandler;
+    objectStorageFactory_  = objectStorageFactory;
+    activitySource_        = activitySource;
+    logger_                = logger;
+    taskData_              = null;
   }
 
   /// <summary>
@@ -168,10 +172,10 @@ internal class TaskHandler : IAsyncDisposable
                                                                        cancellationToken)
                                              .ConfigureAwait(false);
 
-        if (dependencies.SingleOrDefault(i => i.Status == ResultStatus.Aborted,
-                                         new ResultStatusCount(ResultStatus.Aborted,
-                                                               0))
-                        .Count > 0)
+        if (!dependencies.Any() || dependencies.SingleOrDefault(i => i.Status == ResultStatus.Aborted,
+                                                                new ResultStatusCount(ResultStatus.Aborted,
+                                                                                      0))
+                                               .Count > 0)
         {
           logger_.LogInformation("One of the input data is aborted. Removing task from the queue");
 
@@ -215,22 +219,53 @@ internal class TaskHandler : IAsyncDisposable
         return false;
       }
 
-      logger_.LogDebug("checking that the number of retries is not greater than the max retry number");
+      var ownerPodId = Dns.GetHostName();
+
+      logger_.LogDebug("Trying to acquire task");
       var acquireTask = await taskTable_.AcquireTask(messageHandler_.TaskId,
-                                                     Dns.GetHostName(),
+                                                     ownerPodId,
                                                      cancellationToken)
                                         .ConfigureAwait(false);
-      if (acquireTask == null)
+
+      // we check if the task was acquired by this pod
+      if (acquireTask.OwnerPodId != ownerPodId)
       {
-        taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
-                                                   cancellationToken)
-                                    .ConfigureAwait(false);
+        // if the task is acquired by another pod, we check if the task is running on the other pod
+        var taskProcessingElsewhere = await taskProcessingChecker_.Check(taskData_.TaskId,
+                                                                         taskData_.OwnerPodId,
+                                                                         cancellationToken)
+                                                                  .ConfigureAwait(false);
 
-        logger_.LogInformation("Task {taskId} already acquired by {OtherOwnerPodId}",
+        logger_.LogInformation("Task {taskId} already acquired by {OtherOwnerPodId}, treating it {processing}",
                                taskData_.TaskId,
-                               taskData_.OwnerPodId);
+                               taskData_.OwnerPodId,
+                               taskProcessingElsewhere);
 
-        messageHandler_.Status = QueueMessageStatus.Postponed;
+        // if the task is not running on the other pod, we resubmit the task in the queue
+        if (!taskProcessingElsewhere)
+        {
+          taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
+                                                     cancellationToken)
+                                      .ConfigureAwait(false);
+          if (taskData_.OwnerPodId != ownerPodId && taskData_.Status is TaskStatus.Processing)
+          {
+            await submitter_.CompleteTaskAsync(taskData_,
+                                               true,
+                                               new Output
+                                               {
+                                                 Error = new Output.Types.Error
+                                                         {
+                                                           Details = "Other pod seems to have crashed, resubmitting task",
+                                                         },
+                                               },
+                                               CancellationToken.None)
+                            .ConfigureAwait(false);
+          }
+        }
+
+        // if the task is running elsewhere, then the message is duplicated so we remove it from the queue
+        // and do not acquire the task
+        messageHandler_.Status = QueueMessageStatus.Processed;
         return false;
       }
 

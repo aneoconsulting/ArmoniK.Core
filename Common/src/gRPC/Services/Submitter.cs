@@ -513,12 +513,17 @@ public class Submitter : ISubmitter
     }
     else
     {
+      // not done means that another pod put this task in error so we do not need to do it a second time
+      // so nothing to do
+      if (!await taskTable_.SetTaskErrorAsync(taskData.TaskId,
+                                              cOutput.Error,
+                                              cancellationToken)
+                           .ConfigureAwait(false))
+      {
+        return;
+      }
 
-      await taskTable_.SetTaskErrorAsync(taskData.TaskId,
-                                         cOutput.Error,
-                                         cancellationToken)
-                      .ConfigureAwait(false);
-
+      // TODO FIXME: nothing will resubmit the task if there is a crash there
       if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
       {
 

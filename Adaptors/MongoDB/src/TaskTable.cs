@@ -390,7 +390,7 @@ public class TaskTable : ITaskTable
     }
   }
 
-  public async Task SetTaskErrorAsync(string            taskId,
+  public async Task<bool> SetTaskErrorAsync(string            taskId,
                                       string            errorDetail,
                                       CancellationToken cancellationToken = default)
   {
@@ -406,22 +406,28 @@ public class TaskTable : ITaskTable
                                                                        TaskStatus.Error)
                                                                   .Set(tdm => tdm.EndDate,
                                                                        DateTime.UtcNow);
+
+    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId);
+
     Logger.LogInformation("update task {taskId} to status {status} with {output}",
                     taskId,
                     TaskStatus.Error,
                     taskOutput);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
-                                                   updateDefinition,
-                                                   cancellationToken: cancellationToken)
+    var task = await taskCollection.FindOneAndUpdateAsync(filter,
+                                                         updateDefinition,
+                                                         new FindOneAndUpdateOptions<TaskData>
+                                                         {
+                                                           ReturnDocument = ReturnDocument.Before,
+                                                         },
+                                                         cancellationToken: cancellationToken)
                                   .ConfigureAwait(false);
 
-    switch (res.MatchedCount)
+    if (task == null)
     {
-      case 0:
-        throw new TaskNotFoundException($"Task not found {taskId}");
-      case > 1:
-        throw new ArmoniKException("Multiple tasks modified");
+      throw new TaskNotFoundException($"Task not found {taskId}");
     }
+
+    return task.Status != TaskStatus.Error;
   }
 
   /// <inheritdoc />
@@ -449,31 +455,35 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<TaskData> AcquireTask(string taskId,
-                                          string ownerPodId,
-                                           CancellationToken cancellationToken = default)
+  public async Task<TaskData> AcquireTask(string            taskId,
+                                          string            ownerPodId,
+                                          CancellationToken cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
-    var taskCollection = taskCollectionProvider_.Get();
+    using var activity       = activitySource_.StartActivity($"{nameof(AcquireTask)}");
+    var       taskCollection = taskCollectionProvider_.Get();
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.OwnerPodId,
                                                                        ownerPodId)
                                                                   .Set(tdm => tdm.Status,
                                                                        TaskStatus.Dispatched);
 
-    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId && x.OwnerPodId == "");
+    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId && x.OwnerPodId == "" && x.Status == TaskStatus.Submitted);
 
     Logger.LogDebug("Acquire task {task} on {podName}",
                     taskId,
                     ownerPodId);
-    return await taskCollection.FindOneAndUpdateAsync(filter,
-                                                      updateDefinition,
-                                                      new FindOneAndUpdateOptions<TaskData>
-                                                      {
-                                                        ReturnDocument = ReturnDocument.After,
-                                                      },
-                                                      cancellationToken)
-                               .ConfigureAwait(false);
+    var res = await taskCollection.FindOneAndUpdateAsync(filter,
+                                                         updateDefinition,
+                                                         new FindOneAndUpdateOptions<TaskData>
+                                                         {
+                                                           ReturnDocument = ReturnDocument.After,
+                                                         },
+                                                         cancellationToken)
+                                  .ConfigureAwait(false);
+
+    return res ?? await ReadTaskAsync(taskId,
+                                      cancellationToken)
+             .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -489,19 +499,24 @@ public class TaskTable : ITaskTable
                                                                   .Set(tdm => tdm.Status,
                                                                        TaskStatus.Submitted);
 
-    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId && x.OwnerPodId == ownerPodId);
+    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId && x.OwnerPodId == ownerPodId &&
+                                                                    (x.Status == TaskStatus.Processing || x.Status == TaskStatus.Dispatched));
 
     Logger.LogDebug("Release task {task} on {podName}",
                     taskId,
                     ownerPodId);
-    return await taskCollection.FindOneAndUpdateAsync(filter,
-                                                      updateDefinition,
-                                                      new FindOneAndUpdateOptions<TaskData>
-                                                      {
-                                                        ReturnDocument = ReturnDocument.After,
-                                                      },
-                                                      cancellationToken)
-                               .ConfigureAwait(false);
+    var res = await taskCollection.FindOneAndUpdateAsync(filter,
+                                                         updateDefinition,
+                                                         new FindOneAndUpdateOptions<TaskData>
+                                                         {
+                                                           ReturnDocument = ReturnDocument.After,
+                                                         },
+                                                         cancellationToken)
+                                  .ConfigureAwait(false);
+
+    return res ?? await ReadTaskAsync(taskId,
+                                      cancellationToken)
+             .ConfigureAwait(false);
   }
 
   /// <inheritdoc />

@@ -738,28 +738,31 @@ public class TaskTableTestBase
   }
 
   [Test]
-  public async Task AcquireAcquiredTaskShouldFail()
+  public async Task AcquireAcquiredTaskShouldReturnSame()
   {
     if (RunTests)
     {
       var hostname = Dns.GetHostName();
 
-      var result = await TaskTable.AcquireTask("TaskSubmittedId",
+      var result1 = await TaskTable.AcquireTask("TaskSubmittedId",
                                                hostname,
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
       Assert.AreEqual("TaskSubmittedId",
-                      result!.TaskId);
+                      result1!.TaskId);
       Assert.AreEqual(hostname,
-                      result!.OwnerPodId);
+                      result1!.OwnerPodId);
 
-      result = await TaskTable.AcquireTask("TaskSubmittedId",
+      var result2 = await TaskTable.AcquireTask("TaskSubmittedId",
                                            hostname,
                                            CancellationToken.None)
                               .ConfigureAwait(false);
-      Assert.AreEqual(null,
-                      result);
+      Assert.AreEqual(result1.Status,
+                      result2.Status);
+
+      Assert.AreEqual(result1.OwnerPodId,
+                      result2.OwnerPodId);
     }
   }
 
@@ -774,8 +777,8 @@ public class TaskTableTestBase
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(null,
-                      result);
+      Assert.AreNotEqual(Dns.GetHostName(),
+                         result.OwnerPodId);
     }
   }
 

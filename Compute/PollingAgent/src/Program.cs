@@ -34,6 +34,7 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Pollster;
+using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -88,7 +89,9 @@ public static class Program
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>()
              .AddSingleton<ISubmitter, Submitter>()
-             .AddSingleton<DataPrefetcher>();
+             .AddSingleton<DataPrefetcher>()
+             .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
+             .AddHttpClient();
 
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
       {
