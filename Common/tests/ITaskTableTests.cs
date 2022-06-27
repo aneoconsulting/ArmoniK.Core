@@ -25,13 +25,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using NUnit.Framework;
 
@@ -723,7 +723,7 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var hostname = Dns.GetHostName();
+      var hostname = LocalIPv4.GetLocalIPv4Ethernet();
 
       var result = await TaskTable.AcquireTask("TaskSubmittedId",
                                                hostname,
@@ -742,7 +742,7 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var hostname = Dns.GetHostName();
+      var hostname = LocalIPv4.GetLocalIPv4Ethernet();
 
       var result1 = await TaskTable.AcquireTask("TaskSubmittedId",
                                                hostname,
@@ -773,11 +773,11 @@ public class TaskTableTestBase
     {
 
       var result = await TaskTable.AcquireTask("TaskFailedId",
-                                               Dns.GetHostName(),
+                                               LocalIPv4.GetLocalIPv4Ethernet(),
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      Assert.AreNotEqual(Dns.GetHostName(),
+      Assert.AreNotEqual(LocalIPv4.GetLocalIPv4Ethernet(),
                          result.OwnerPodId);
     }
   }

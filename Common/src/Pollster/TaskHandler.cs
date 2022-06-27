@@ -174,7 +174,7 @@ internal class TaskHandler : IAsyncDisposable
 
         if (!dependencies.Any())
         {
-          logger_.LogDebug("Dependencies are not available yet.");
+          logger_.LogDebug("Dependencies are not ready yet.");
           messageHandler_.Status = QueueMessageStatus.Postponed;
           return false;
         }

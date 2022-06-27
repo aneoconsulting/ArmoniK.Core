@@ -499,8 +499,16 @@ public class TaskTable : ITaskTable
                                                                   .Set(tdm => tdm.Status,
                                                                        TaskStatus.Submitted);
 
-    var filter = new FilterDefinitionBuilder<TaskData>().Where(x => x.TaskId == taskId && x.OwnerPodId == ownerPodId &&
-                                                                    (x.Status == TaskStatus.Processing || x.Status == TaskStatus.Dispatched));
+    var filter = new FilterDefinitionBuilder<TaskData>().And(new FilterDefinitionBuilder<TaskData>().Eq(x => x.OwnerPodId,
+                                                                                                        ownerPodId),
+                                                             new FilterDefinitionBuilder<TaskData>().Eq(x => x.TaskId,
+                                                                                                        taskId),
+                                                             new FilterDefinitionBuilder<TaskData>().In(x => x.Status,
+                                                                                                        new[]
+                                                                                                        {
+                                                                                                          TaskStatus.Processing,
+                                                                                                          TaskStatus.Dispatched,
+                                                                                                        }));
 
     Logger.LogDebug("Release task {task} on {podName}",
                     taskId,

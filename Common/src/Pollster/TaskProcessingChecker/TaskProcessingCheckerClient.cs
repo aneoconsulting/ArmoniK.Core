@@ -75,11 +75,5 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
                          "Invalid other pod hostname");
       return false;
     }
-    catch (Exception ex)
-    {
-      logger_.LogError(ex,
-                       "Error while checking");
-      throw;
-    }
   }
 }
