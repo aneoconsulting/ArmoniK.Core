@@ -234,13 +234,13 @@ internal class TaskHandler : IAsyncDisposable
       var ownerPodId = Dns.GetHostName();
 
       logger_.LogDebug("Trying to acquire task");
-      var acquireTask = await taskTable_.AcquireTask(messageHandler_.TaskId,
-                                                     ownerPodId,
-                                                     cancellationToken)
-                                        .ConfigureAwait(false);
+      taskData_ = await taskTable_.AcquireTask(messageHandler_.TaskId,
+                                               ownerPodId,
+                                               cancellationToken)
+                                  .ConfigureAwait(false);
 
       // we check if the task was acquired by this pod
-      if (acquireTask.OwnerPodId != ownerPodId)
+      if (taskData_.OwnerPodId != ownerPodId)
       {
         // if the task is acquired by another pod, we check if the task is running on the other pod
         var taskProcessingElsewhere = await taskProcessingChecker_.Check(taskData_.TaskId,
