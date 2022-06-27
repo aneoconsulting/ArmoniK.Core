@@ -63,6 +63,12 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
                          "Cannot communicate with other pod");
       return false;
     }
+    catch (HttpRequestException ex)
+    {
+      logger_.LogWarning(ex,
+                         "Cannot communicate with other pod");
+      return false;
+    }
     catch (UriFormatException ex)
     {
       logger_.LogWarning(ex,
