@@ -259,7 +259,7 @@ internal class TaskHandler : IAsyncDisposable
           taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
                                                      cancellationToken)
                                       .ConfigureAwait(false);
-          if (taskData_.OwnerPodId != ownerPodId && taskData_.Status is TaskStatus.Processing)
+          if (taskData_.OwnerPodId != ownerPodId && taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched)
           {
             logger_.LogDebug("Resubmitting task {task} on another pod",
                              taskData_.TaskId);
