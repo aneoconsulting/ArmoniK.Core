@@ -32,7 +32,11 @@
 	  <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
 	  <PackageReference Include="Htc.Mock" Version="3.0.0-alpha11" />
 	</ItemGroup>
-
+	
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+	</ItemGroup>
+	
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
 	</ItemGroup>

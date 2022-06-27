@@ -14,7 +14,11 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
     <PackageReference Include="redis-inside" Version="3.3.0" />
   </ItemGroup>
-
+	
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+  </ItemGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\tests\ArmoniK.Core.Common.Tests.csproj" />
     <ProjectReference Include="..\src\ArmoniK.Core.Adapters.Redis.csproj" />
