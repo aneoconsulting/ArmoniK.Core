@@ -28,7 +28,7 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
 
     try
     {
-      var result = await client.GetStringAsync(ownerPodId,
+      var result = await client.GetStringAsync("http://" + ownerPodId + ":1080/taskprocessing",
                                                cancellationToken)
                                .ConfigureAwait(false);
       return result.Equals(taskId);
@@ -37,6 +37,12 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
     {
       logger_.LogWarning(ex,
                          "Cannot communicate with other pod");
+      return false;
+    }
+    catch (UriFormatException ex)
+    {
+      logger_.LogWarning(ex,
+                         "Invalid other pod hostname");
       return false;
     }
     catch (Exception ex)
