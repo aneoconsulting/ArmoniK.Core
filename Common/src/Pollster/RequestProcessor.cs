@@ -129,10 +129,33 @@ public class RequestProcessor : IDisposable
 
             if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
             {
-              logger_.LogDebug("Complete processing of the request");
-              await requestProcessors.Values.Select(processor => processor.CompleteProcessing(cancellationToken))
-                                     .WhenAll()
-                                     .ConfigureAwait(false);
+              try
+              {
+                logger_.LogDebug("Complete processing of the request");
+                await requestProcessors.Values.Select(processor => processor.CompleteProcessing(cancellationToken))
+                                       .WhenAll()
+                                       .ConfigureAwait(false);
+              }
+              catch (ResultNotFoundException e)
+              {
+                logger_.LogWarning(e,
+                                   "Result not found when completing task, putting task in error");
+                await submitter_.CompleteTaskAsync(taskData,
+                                                   false,
+                                                   new Output
+                                                   {
+                                                     Error = new Output.Types.Error
+                                                             {
+                                                               Details = "Result not found when completing task",
+                                                             },
+                                                   },
+                                                   CancellationToken.None)
+                                .ConfigureAwait(false);
+                messageHandler.Status = QueueMessageStatus.Processed;
+
+                logger_.LogDebug("End Task Epilog");
+                return;
+              }
             }
 
             await submitter_.CompleteTaskAsync(taskData,
