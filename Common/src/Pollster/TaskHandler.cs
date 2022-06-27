@@ -172,10 +172,17 @@ internal class TaskHandler : IAsyncDisposable
                                                                        cancellationToken)
                                              .ConfigureAwait(false);
 
-        if (!dependencies.Any() || dependencies.SingleOrDefault(i => i.Status == ResultStatus.Completed,
-                                                                new ResultStatusCount(ResultStatus.Completed,
-                                                                                      0))
-                                               .Count != taskData_.DataDependencies.Count)
+        if (!dependencies.Any())
+        {
+          logger_.LogDebug("Dependencies are not available yet.");
+          messageHandler_.Status = QueueMessageStatus.Postponed;
+          return false;
+        }
+
+        if (dependencies.SingleOrDefault(i => i.Status == ResultStatus.Completed,
+                                         new ResultStatusCount(ResultStatus.Completed,
+                                                               0))
+                        .Count != taskData_.DataDependencies.Count)
         {
           logger_.LogDebug("Dependencies are not complete yet. Checking the status of the results");
           messageHandler_.Status = QueueMessageStatus.Postponed;
@@ -185,6 +192,7 @@ internal class TaskHandler : IAsyncDisposable
                                                                  0))
                           .Count == 0)
           {
+            logger_.LogDebug("No results aborted. Waiting for the remaining uncompleted results.");
             return false;
           }
 
@@ -253,6 +261,8 @@ internal class TaskHandler : IAsyncDisposable
                                       .ConfigureAwait(false);
           if (taskData_.OwnerPodId != ownerPodId && taskData_.Status is TaskStatus.Processing)
           {
+            logger_.LogDebug("Resubmitting task {task} on another pod",
+                             taskData_.TaskId);
             await submitter_.CompleteTaskAsync(taskData_,
                                                true,
                                                new Output

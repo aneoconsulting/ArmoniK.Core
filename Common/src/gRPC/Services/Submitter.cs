@@ -527,7 +527,7 @@ public class Submitter : ISubmitter
       if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
       {
 
-        logger_.LogWarning("Resubmit {Task}",
+        logger_.LogWarning("Resubmit {task}",
                            taskData.TaskId);
 
         var newTaskId = await taskTable_.RetryTask(taskData,
