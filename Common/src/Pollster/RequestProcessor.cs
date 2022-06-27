@@ -115,47 +115,51 @@ public class RequestProcessor : IDisposable
 
           async Task Epilog()
           {
-            await requestProcessors.Values.Select(processor => processor.WaitForResponseCompletion(cancellationToken))
-                                   .WhenAll()
-                                   .ConfigureAwait(false);
-
-            if (requestProcessors.Values.Any(processor => !processor.IsComplete()))
+            try
             {
-              throw new ArmoniKException("All processors should be complete here");
-            }
 
-            await workerStreamHandler_.Pipe.CompleteAsync()
-                                      .ConfigureAwait(false);
+              await requestProcessors.Values.Select(processor => processor.WaitForResponseCompletion(cancellationToken))
+                                     .WhenAll()
+                                     .ConfigureAwait(false);
 
-            if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
-            {
-              try
+              if (requestProcessors.Values.Any(processor => !processor.IsComplete()))
               {
+                throw new ArmoniKException("All processors should be complete here");
+              }
+
+              await workerStreamHandler_.Pipe.CompleteAsync()
+                                        .ConfigureAwait(false);
+
+              if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
+              {
+
                 logger_.LogDebug("Complete processing of the request");
                 await requestProcessors.Values.Select(processor => processor.CompleteProcessing(cancellationToken))
                                        .WhenAll()
                                        .ConfigureAwait(false);
-              }
-              catch (ResultNotFoundException e)
-              {
-                logger_.LogWarning(e,
-                                   "Result not found when completing task, putting task in error");
-                await submitter_.CompleteTaskAsync(taskData,
-                                                   false,
-                                                   new Output
-                                                   {
-                                                     Error = new Output.Types.Error
-                                                             {
-                                                               Details = "Result not found when completing task",
-                                                             },
-                                                   },
-                                                   CancellationToken.None)
-                                .ConfigureAwait(false);
-                messageHandler.Status = QueueMessageStatus.Processed;
 
-                logger_.LogDebug("End Task Epilog");
-                return;
               }
+
+            }
+            catch (ResultNotFoundException e)
+            {
+              logger_.LogWarning(e,
+                                 "Result not found when completing task, putting task in error");
+              await submitter_.CompleteTaskAsync(taskData,
+                                                 false,
+                                                 new Output
+                                                 {
+                                                   Error = new Output.Types.Error
+                                                           {
+                                                             Details = "Result not found when completing task",
+                                                           },
+                                                 },
+                                                 CancellationToken.None)
+                              .ConfigureAwait(false);
+              messageHandler.Status = QueueMessageStatus.Processed;
+
+              logger_.LogDebug("End Task Epilog");
+              return;
             }
 
             await submitter_.CompleteTaskAsync(taskData,
