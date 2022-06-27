@@ -26,7 +26,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,6 +35,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -231,7 +231,7 @@ internal class TaskHandler : IAsyncDisposable
         return false;
       }
 
-      var ownerPodId = Dns.GetHostName();
+      var ownerPodId = LocalIPv4.GetLocalIPv4Ethernet();
 
       logger_.LogDebug("Trying to acquire task");
       taskData_ = await taskTable_.AcquireTask(messageHandler_.TaskId,
