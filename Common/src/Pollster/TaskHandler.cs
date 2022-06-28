@@ -125,9 +125,8 @@ internal class TaskHandler : IAsyncDisposable
         case TaskStatus.Canceling:
           logger_.LogInformation("Task is being cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await taskTable_.UpdateTaskStatusAsync(messageHandler_.TaskId,
-                                                 TaskStatus.Canceled,
-                                                 CancellationToken.None)
+          await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
+                                                CancellationToken.None)
                           .ConfigureAwait(false);
           return false;
         case TaskStatus.Completed:
@@ -226,9 +225,8 @@ internal class TaskHandler : IAsyncDisposable
         logger_.LogInformation("Task is being cancelled");
 
         messageHandler_.Status = QueueMessageStatus.Cancelled;
-        await taskTable_.UpdateTaskStatusAsync(messageHandler_.TaskId,
-                                               TaskStatus.Canceled,
-                                               cancellationToken)
+        await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
+                                              cancellationToken)
                         .ConfigureAwait(false);
         return false;
       }
@@ -286,9 +284,8 @@ internal class TaskHandler : IAsyncDisposable
           if (taskData_.Status is TaskStatus.Canceling)
           {
             messageHandler_.Status = QueueMessageStatus.Cancelled;
-            await taskTable_.UpdateTaskStatusAsync(messageHandler_.TaskId,
-                                                   TaskStatus.Canceled,
-                                                   CancellationToken.None)
+            await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
+                                                  CancellationToken.None)
                             .ConfigureAwait(false);
             return false;
           }

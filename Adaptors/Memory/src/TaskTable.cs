@@ -306,6 +306,44 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public Task SetTaskCanceledAsync(string taskId,
+                                  CancellationToken cancellationToken)
+  {
+    using var _ = Logger.LogFunction();
+
+    var taskOutput = new Output(Error: "",
+                                Success: false);
+
+    Logger.LogInformation("update task {taskId} to status {status} with {output}",
+                          taskId,
+                          TaskStatus.Canceled,
+                          taskOutput);
+
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    taskId2TaskData_.AddOrUpdate(taskId,
+                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 (_,
+                                  data) =>
+                                 {
+                                   if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   {
+                                     throw new ArmoniKException("Task already in a final status");
+                                   }
+
+                                   return data with
+                                   {
+                                     Status = TaskStatus.Canceled,
+                                     Output = taskOutput,
+                                   };
+                                 });
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
   public Task<bool> SetTaskErrorAsync(string            taskId,
                                 string            errorDetail,
                                 CancellationToken cancellationToken)

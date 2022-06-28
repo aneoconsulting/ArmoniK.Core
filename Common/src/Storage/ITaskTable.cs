@@ -197,6 +197,17 @@ public interface ITaskTable : IInitializable
                            CancellationToken cancellationToken);
 
   /// <summary>
+  ///  Change the status of the task to canceled
+  /// </summary>
+  /// <param name="taskId">Id of the task to tag as canceled</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// Task representing the asynchronous execution of the method
+  /// </returns>
+  Task SetTaskCanceledAsync(string taskId,
+                           CancellationToken cancellationToken);
+
+  /// <summary>
   ///  Tag a task as errored and populate its output with an
   ///  error message
   /// </summary>

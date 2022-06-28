@@ -390,6 +390,39 @@ public class TaskTable : ITaskTable
     }
   }
 
+  public async Task SetTaskCanceledAsync(string taskId,
+                                        CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(SetTaskCanceledAsync)}");
+    var taskCollection = taskCollectionProvider_.Get();
+
+    var taskOutput = new Output(Error: "",
+                                Success: false);
+
+    var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Set(tdm => tdm.Output,
+                                                                       taskOutput)
+                                                                  .Set(tdm => tdm.Status,
+                                                                       TaskStatus.Canceled)
+                                                                  .Set(tdm => tdm.EndDate,
+                                                                       DateTime.UtcNow);
+    Logger.LogInformation("update task {taskId} to status {status} with {output}",
+                    taskId,
+                    TaskStatus.Canceled,
+                    taskOutput);
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId,
+                                                   updateDefinition,
+                                                   cancellationToken: cancellationToken)
+                                  .ConfigureAwait(false);
+
+    switch (res.MatchedCount)
+    {
+      case 0:
+        throw new TaskNotFoundException($"Task not found {taskId}");
+      case > 1:
+        throw new ArmoniKException("Multiple tasks modified");
+    }
+  }
+
   public async Task<bool> SetTaskErrorAsync(string            taskId,
                                       string            errorDetail,
                                       CancellationToken cancellationToken = default)
