@@ -625,6 +625,27 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public async Task SetTaskCanceledAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var result = TaskTable.SetTaskCanceledAsync("TaskProcessingId",
+                                                 CancellationToken.None);
+      await result.ConfigureAwait(false);
+
+      var resStatus = await TaskTable.GetTaskStatus(new[]
+                                                    {
+                                                      "TaskProcessingId",
+                                                    },
+                                                    CancellationToken.None)
+                                     .ConfigureAwait(false);
+
+      Assert.IsTrue(result.IsCompletedSuccessfully && resStatus.Single()
+                                                  .Status == TaskStatus.Canceled);
+    }
+  }
+
+  [Test]
   public async Task GetTaskOutputShouldSucceed()
   {
     if (RunTests)
