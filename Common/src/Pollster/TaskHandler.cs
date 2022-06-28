@@ -129,6 +129,10 @@ internal class TaskHandler : IAsyncDisposable
                                                  TaskStatus.Canceled,
                                                  CancellationToken.None)
                           .ConfigureAwait(false);
+          await resultTable_.AbortTaskResults(taskData_.SessionId,
+                                              taskData_.TaskId,
+                                              CancellationToken.None)
+                            .ConfigureAwait(false);
           return false;
         case TaskStatus.Completed:
           logger_.LogInformation("Task was already completed");
@@ -290,6 +294,10 @@ internal class TaskHandler : IAsyncDisposable
                                                    TaskStatus.Canceled,
                                                    CancellationToken.None)
                             .ConfigureAwait(false);
+            await resultTable_.AbortTaskResults(taskData_.SessionId,
+                                                taskData_.TaskId,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
             return false;
           }
         }
