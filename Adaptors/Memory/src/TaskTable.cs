@@ -274,7 +274,7 @@ public class TaskTable : ITaskTable
     using var _ = Logger.LogFunction();
 
     var taskOutput = new Output(Error: "",
-                                Success: false);
+                                Success: true);
 
     Logger.LogInformation("update task {taskId} to status {status} with {output}",
                           taskId,
