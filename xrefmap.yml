@@ -1086,12 +1086,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.TaskTable
   nameWithType: TaskTable.TaskTable
-- uid: ArmoniK.Core.Adapters.Memory.TaskTable.AcquireTask(System.String,CancellationToken)
-  name: AcquireTask(String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_AcquireTask_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.AcquireTask(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.AcquireTask(System.String, CancellationToken)
-  nameWithType: TaskTable.AcquireTask(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.AcquireTask(System.String,System.String,CancellationToken)
+  name: AcquireTask(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_AcquireTask_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.AcquireTask(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.AcquireTask(System.String, System.String, CancellationToken)
+  nameWithType: TaskTable.AcquireTask(String, String, CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.AcquireTask*
   name: AcquireTask
   href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_AcquireTask_
@@ -1342,6 +1342,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.ReadTaskAsync
   nameWithType: TaskTable.ReadTaskAsync
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.ReleaseTask(System.String,System.String,CancellationToken)
+  name: ReleaseTask(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_ReleaseTask_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.ReleaseTask(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.ReleaseTask(System.String, System.String, CancellationToken)
+  nameWithType: TaskTable.ReleaseTask(String, String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.ReleaseTask*
+  name: ReleaseTask
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_ReleaseTask_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.TaskTable.ReleaseTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.ReleaseTask
+  nameWithType: TaskTable.ReleaseTask
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: RetryTask(TaskData, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
@@ -3300,12 +3313,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.TaskTable
   nameWithType: TaskTable.TaskTable
-- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask(System.String,CancellationToken)
-  name: AcquireTask(String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_AcquireTask_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask(System.String, CancellationToken)
-  nameWithType: TaskTable.AcquireTask(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask(System.String,System.String,CancellationToken)
+  name: AcquireTask(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_AcquireTask_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask(System.String, System.String, CancellationToken)
+  nameWithType: TaskTable.AcquireTask(String, String, CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask*
   name: AcquireTask
   href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_AcquireTask_
@@ -3556,6 +3569,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.ReadTaskAsync
   nameWithType: TaskTable.ReadTaskAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.ReleaseTask(System.String,System.String,CancellationToken)
+  name: ReleaseTask(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_ReleaseTask_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.ReleaseTask(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.ReleaseTask(System.String, System.String, CancellationToken)
+  nameWithType: TaskTable.ReleaseTask(String, String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.ReleaseTask*
+  name: ReleaseTask
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_ReleaseTask_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.TaskTable.ReleaseTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.ReleaseTask
+  nameWithType: TaskTable.ReleaseTask
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: RetryTask(TaskData, CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
@@ -6573,15 +6599,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Pollster.Pollster
   fullName: ArmoniK.Core.Common.Pollster.Pollster
   nameWithType: Pollster
-- uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  name: Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, IWorkerStreamHandler)
-  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_ArmoniK_Core_Common_Storage_IQueueStorage_ArmoniK_Core_Common_Pollster_DataPrefetcher_ArmoniK_Core_Common_Injection_Options_ComputePlan_IHostApplicationLifetime_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_Storage_IObjectStorageFactory_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_
-  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  name.vb: Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, IWorkerStreamHandler)
-  fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  fullName.vb: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  nameWithType: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, IWorkerStreamHandler)
-  nameWithType.vb: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, IWorkerStreamHandler)
+- uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  name: Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler)
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_ArmoniK_Core_Common_Storage_IQueueStorage_ArmoniK_Core_Common_Pollster_DataPrefetcher_ArmoniK_Core_Common_Injection_Options_ComputePlan_IHostApplicationLifetime_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_Storage_IObjectStorageFactory_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_
+  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  name.vb: Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler)
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  fullName.vb: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
+  nameWithType: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler)
+  nameWithType.vb: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler)
 - uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor*
   name: Pollster
   href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_
@@ -6615,6 +6641,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.Pollster.MainLoop
   nameWithType: Pollster.MainLoop
+- uid: ArmoniK.Core.Common.Pollster.Pollster.TaskProcessing
+  name: TaskProcessing
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster_TaskProcessing
+  commentId: F:ArmoniK.Core.Common.Pollster.Pollster.TaskProcessing
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.TaskProcessing
+  nameWithType: Pollster.TaskProcessing
 - uid: ArmoniK.Core.Common.Pollster.RequestProcessor
   name: RequestProcessor
   href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html
@@ -6750,6 +6782,66 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion
   nameWithType: ResourceRequestProcessor.WaitForResponseCompletion
+- uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker
+  name: ArmoniK.Core.Common.Pollster.TaskProcessingChecker
+  href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.html
+  commentId: N:ArmoniK.Core.Common.Pollster.TaskProcessingChecker
+  fullName: ArmoniK.Core.Common.Pollster.TaskProcessingChecker
+  nameWithType: ArmoniK.Core.Common.Pollster.TaskProcessingChecker
+- uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker
+  name: ITaskProcessingChecker
+  href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker.html
+  commentId: T:ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker
+  fullName: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker
+  nameWithType: ITaskProcessingChecker
+- uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker.Check(System.String,System.String,CancellationToken)
+  name: Check(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker.html#ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_Check_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker.Check(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker.Check(System.String, System.String, CancellationToken)
+  nameWithType: ITaskProcessingChecker.Check(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker.html#ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_Check_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker.Check
+  nameWithType: ITaskProcessingChecker.Check
+- uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient
+  name: TaskProcessingCheckerClient
+  href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.html
+  commentId: T:ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient
+  fullName: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient
+  nameWithType: TaskProcessingCheckerClient
+- uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.#ctor(IHttpClientFactory,ILogger{ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient})
+  name: TaskProcessingCheckerClient(IHttpClientFactory, ILogger<TaskProcessingCheckerClient>)
+  href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.html#ArmoniK_Core_Common_Pollster_TaskProcessingChecker_TaskProcessingCheckerClient__ctor_IHttpClientFactory_ILogger_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_TaskProcessingCheckerClient__
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.#ctor(IHttpClientFactory,ILogger{ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient})
+  name.vb: TaskProcessingCheckerClient(IHttpClientFactory, ILogger(Of TaskProcessingCheckerClient))
+  fullName: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.TaskProcessingCheckerClient(IHttpClientFactory, ILogger<ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient>)
+  fullName.vb: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.TaskProcessingCheckerClient(IHttpClientFactory, ILogger(Of ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient))
+  nameWithType: TaskProcessingCheckerClient.TaskProcessingCheckerClient(IHttpClientFactory, ILogger<TaskProcessingCheckerClient>)
+  nameWithType.vb: TaskProcessingCheckerClient.TaskProcessingCheckerClient(IHttpClientFactory, ILogger(Of TaskProcessingCheckerClient))
+- uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.#ctor*
+  name: TaskProcessingCheckerClient
+  href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.html#ArmoniK_Core_Common_Pollster_TaskProcessingChecker_TaskProcessingCheckerClient__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.TaskProcessingCheckerClient
+  nameWithType: TaskProcessingCheckerClient.TaskProcessingCheckerClient
+- uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.Check(System.String,System.String,CancellationToken)
+  name: Check(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.html#ArmoniK_Core_Common_Pollster_TaskProcessingChecker_TaskProcessingCheckerClient_Check_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.Check(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.Check(System.String, System.String, CancellationToken)
+  nameWithType: TaskProcessingCheckerClient.Check(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.html#ArmoniK_Core_Common_Pollster_TaskProcessingChecker_TaskProcessingCheckerClient_Check_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskProcessingChecker.TaskProcessingCheckerClient.Check
+  nameWithType: TaskProcessingCheckerClient.Check
 - uid: ArmoniK.Core.Common.StateMachines
   name: ArmoniK.Core.Common.StateMachines
   href: api/ArmoniK.Core.Common.StateMachines.html
@@ -8141,12 +8233,12 @@ references:
   commentId: T:ArmoniK.Core.Common.Storage.ITaskTable
   fullName: ArmoniK.Core.Common.Storage.ITaskTable
   nameWithType: ITaskTable
-- uid: ArmoniK.Core.Common.Storage.ITaskTable.AcquireTask(System.String,CancellationToken)
-  name: AcquireTask(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_AcquireTask_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.AcquireTask(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ITaskTable.AcquireTask(System.String, CancellationToken)
-  nameWithType: ITaskTable.AcquireTask(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.AcquireTask(System.String,System.String,CancellationToken)
+  name: AcquireTask(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_AcquireTask_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.AcquireTask(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.AcquireTask(System.String, System.String, CancellationToken)
+  nameWithType: ITaskTable.AcquireTask(String, String, CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.ITaskTable.AcquireTask*
   name: AcquireTask
   href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_AcquireTask_
@@ -8371,6 +8463,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ITaskTable.ReadTaskAsync
   nameWithType: ITaskTable.ReadTaskAsync
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.ReleaseTask(System.String,System.String,CancellationToken)
+  name: ReleaseTask(String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_ReleaseTask_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.ReleaseTask(System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.ReleaseTask(System.String, System.String, CancellationToken)
+  nameWithType: ITaskTable.ReleaseTask(String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.ReleaseTask*
+  name: ReleaseTask
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_ReleaseTask_
+  commentId: Overload:ArmoniK.Core.Common.Storage.ITaskTable.ReleaseTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.ReleaseTask
+  nameWithType: ITaskTable.ReleaseTask
 - uid: ArmoniK.Core.Common.Storage.ITaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
   name: RetryTask(TaskData, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
@@ -14278,6 +14383,19 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.TaskTableTestBase
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase
   nameWithType: TaskTableTestBase
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.AcquireAcquiredTaskShouldReturnSame
+  name: AcquireAcquiredTaskShouldReturnSame()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_AcquireAcquiredTaskShouldReturnSame
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.AcquireAcquiredTaskShouldReturnSame
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.AcquireAcquiredTaskShouldReturnSame()
+  nameWithType: TaskTableTestBase.AcquireAcquiredTaskShouldReturnSame()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.AcquireAcquiredTaskShouldReturnSame*
+  name: AcquireAcquiredTaskShouldReturnSame
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_AcquireAcquiredTaskShouldReturnSame_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.AcquireAcquiredTaskShouldReturnSame
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.AcquireAcquiredTaskShouldReturnSame
+  nameWithType: TaskTableTestBase.AcquireAcquiredTaskShouldReturnSame
 - uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.AcquireTaskShouldFail
   name: AcquireTaskShouldFail()
   href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_AcquireTaskShouldFail
@@ -15012,6 +15130,38 @@ references:
   fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync
   nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.WriteAsync
   nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).WriteAsync
+- uid: ArmoniK.Core.Common.Utils.LocalIPv4
+  name: LocalIPv4
+  href: api/ArmoniK.Core.Common.Utils.LocalIPv4.html
+  commentId: T:ArmoniK.Core.Common.Utils.LocalIPv4
+  fullName: ArmoniK.Core.Common.Utils.LocalIPv4
+  nameWithType: LocalIPv4
+- uid: ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4(NetworkInterfaceType)
+  name: GetLocalIPv4(NetworkInterfaceType)
+  href: api/ArmoniK.Core.Common.Utils.LocalIPv4.html#ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4_NetworkInterfaceType_
+  commentId: M:ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4(NetworkInterfaceType)
+  fullName: ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4(NetworkInterfaceType)
+  nameWithType: LocalIPv4.GetLocalIPv4(NetworkInterfaceType)
+- uid: ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4*
+  name: GetLocalIPv4
+  href: api/ArmoniK.Core.Common.Utils.LocalIPv4.html#ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4_
+  commentId: Overload:ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4
+  nameWithType: LocalIPv4.GetLocalIPv4
+- uid: ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet
+  name: GetLocalIPv4Ethernet()
+  href: api/ArmoniK.Core.Common.Utils.LocalIPv4.html#ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4Ethernet
+  commentId: M:ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet
+  fullName: ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet()
+  nameWithType: LocalIPv4.GetLocalIPv4Ethernet()
+- uid: ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet*
+  name: GetLocalIPv4Ethernet
+  href: api/ArmoniK.Core.Common.Utils.LocalIPv4.html#ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4Ethernet_
+  commentId: Overload:ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet
+  nameWithType: LocalIPv4.GetLocalIPv4Ethernet
 - uid: ArmoniK.Core.Common.Utils.TaskExt
   name: TaskExt
   href: api/ArmoniK.Core.Common.Utils.TaskExt.html

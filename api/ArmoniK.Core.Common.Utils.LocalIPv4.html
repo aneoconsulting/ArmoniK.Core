@@ -5,10 +5,10 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class Program
+    <title>Class LocalIPv4
    </title>
     <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class Program
+    <meta name="title" content="Class LocalIPv4
    ">
     <meta name="generator" content="docfx 2.59.2.0">
     
@@ -68,40 +68,40 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Compute.PollingAgent.Program">
+            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4">
   
   
-  <h1 id="ArmoniK_Core_Compute_PollingAgent_Program" data-uid="ArmoniK.Core.Compute.PollingAgent.Program" class="text-break">Class Program
+  <h1 id="ArmoniK_Core_Common_Utils_LocalIPv4" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4" class="text-break">Class LocalIPv4
   </h1>
   <div class="markdown level0 summary"></div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
     <div class="level0"><span class="xref">System.Object</span></div>
-    <div class="level1"><span class="xref">Program</span></div>
+    <div class="level1"><span class="xref">LocalIPv4</span></div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Compute.PollingAgent.html">ArmoniK.Core.Compute.PollingAgent</a></h6>
-  <h6><strong>Assembly</strong>: ArmoniK.Core.Compute.PollingAgent.dll</h6>
-  <h5 id="ArmoniK_Core_Compute_PollingAgent_Program_syntax">Syntax</h5>
+  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Utils.html">ArmoniK.Core.Common.Utils</a></h6>
+  <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
+  <h5 id="ArmoniK_Core_Common_Utils_LocalIPv4_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static class Program : object</code></pre>
+    <pre><code class="lang-csharp hljs">public class LocalIPv4 : object</code></pre>
   </div>
   <h3 id="methods">Methods
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Compute_PollingAgent_Program_Main_System_String___.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Compute.PollingAgent.Program.Main(System.String%5B%5D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4_NetworkInterfaceType_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4(NetworkInterfaceType)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Compute/PollingAgent/src/Program.cs/#L57">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Utils/LocalIPv4.cs/#L34">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Compute_PollingAgent_Program_Main_" data-uid="ArmoniK.Core.Compute.PollingAgent.Program.Main*"></a>
-  <h4 id="ArmoniK_Core_Compute_PollingAgent_Program_Main_System_String___" data-uid="ArmoniK.Core.Compute.PollingAgent.Program.Main(System.String[])">Main(String[])</h4>
+  <a id="ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4_" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4*"></a>
+  <h4 id="ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4_NetworkInterfaceType_" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4(NetworkInterfaceType)">GetLocalIPv4(NetworkInterfaceType)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static int Main(string[] args)</code></pre>
+    <pre><code class="lang-csharp hljs">public static string GetLocalIPv4(NetworkInterfaceType _type)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -114,8 +114,8 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.String</span>[]</td>
-        <td><span class="parametername">args</span></td>
+        <td><span class="xref">NetworkInterfaceType</span></td>
+        <td><span class="parametername">_type</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -130,7 +130,37 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><span class="xref">System.String</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4Ethernet.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Utils/LocalIPv4.cs/#L60">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4Ethernet_" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet*"></a>
+  <h4 id="ArmoniK_Core_Common_Utils_LocalIPv4_GetLocalIPv4Ethernet" data-uid="ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet">GetLocalIPv4Ethernet()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string GetLocalIPv4Ethernet()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -143,10 +173,10 @@
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Compute_PollingAgent_Program.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Compute.PollingAgent.Program%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Utils_LocalIPv4.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Utils.LocalIPv4%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Compute/PollingAgent/src/Program.cs/#L53" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Utils/LocalIPv4.cs/#L32" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

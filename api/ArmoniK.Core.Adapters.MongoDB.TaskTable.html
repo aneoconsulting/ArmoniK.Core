@@ -73,7 +73,9 @@
   
   <h1 id="ArmoniK_Core_Adapters_MongoDB_TaskTable" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable" class="text-break">Class TaskTable
   </h1>
-  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 summary"><p>Interface to manage tasks and their life cycle
+in the data base</p>
+</div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
@@ -153,7 +155,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_Logger.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.Logger%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L615">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L655">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_Logger_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.Logger*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_Logger" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.Logger">Logger</h4>
@@ -242,18 +244,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_AcquireTask_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask(System.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_AcquireTask_System_String_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask(System.String%2CSystem.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L451">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L458">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_AcquireTask_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask*"></a>
-  <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_AcquireTask_System_String_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask(System.String,CancellationToken)">AcquireTask(String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_AcquireTask_System_String_System_String_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.AcquireTask(System.String,System.String,CancellationToken)">AcquireTask(String, String, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task&lt;bool&gt; AcquireTask(string taskId, CancellationToken cancellationToken = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public async Task&lt;TaskData&gt; AcquireTask(string taskId, string ownerPodId, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -268,6 +270,11 @@
       <tr>
         <td><span class="xref">System.String</span></td>
         <td><span class="parametername">taskId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">ownerPodId</span></td>
         <td></td>
       </tr>
       <tr>
@@ -287,7 +294,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Task</span>&lt;<span class="xref">System.Boolean</span>&gt;</td>
+        <td><span class="xref">Task</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskData.html">TaskData</a>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -349,7 +356,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_Check_ArmoniK_Core_Common_HealthCheckTag_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.Check(ArmoniK.Core.Common.HealthCheckTag)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L618">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L658">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_Check_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.Check*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_Check_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.Check(ArmoniK.Core.Common.HealthCheckTag)">Check(HealthCheckTag)</h4>
@@ -604,7 +611,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_FinalizeTaskCreation_IEnumerable_System_String__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.FinalizeTaskCreation(IEnumerable%7BSystem.String%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L595">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L635">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_FinalizeTaskCreation_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.FinalizeTaskCreation*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_FinalizeTaskCreation_IEnumerable_System_String__CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.FinalizeTaskCreation(IEnumerable{System.String},CancellationToken)">FinalizeTaskCreation(IEnumerable&lt;String&gt;, CancellationToken)</h4>
@@ -656,7 +663,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_GetParentTaskIds_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.GetParentTaskIds(System.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L535">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L575">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_GetParentTaskIds_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.GetParentTaskIds*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_GetParentTaskIds_System_String_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.GetParentTaskIds(System.String,CancellationToken)">GetParentTaskIds(String, CancellationToken)</h4>
@@ -708,7 +715,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskExpectedOutputKeys_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskExpectedOutputKeys(System.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L512">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L552">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskExpectedOutputKeys_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskExpectedOutputKeys*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskExpectedOutputKeys_System_String_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskExpectedOutputKeys(System.String,CancellationToken)">GetTaskExpectedOutputKeys(String, CancellationToken)</h4>
@@ -760,7 +767,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskOutput_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskOutput(System.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L428">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L434">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskOutput_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskOutput*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskOutput_System_String_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskOutput(System.String,CancellationToken)">GetTaskOutput(String, CancellationToken)</h4>
@@ -812,7 +819,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus(IEnumerable%7BSystem.String%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L492">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L532">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskStatus_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_GetTaskStatus_IEnumerable_System_String__CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.GetTaskStatus(IEnumerable{System.String},CancellationToken)">GetTaskStatus(IEnumerable&lt;String&gt;, CancellationToken)</h4>
@@ -864,7 +871,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_Init_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.Init(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L622">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L662">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_Init_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.Init*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_Init_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.Init(CancellationToken)">Init(CancellationToken)</h4>
@@ -1064,10 +1071,67 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_ReleaseTask_System_String_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.ReleaseTask(System.String%2CSystem.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L490">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_ReleaseTask_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.ReleaseTask*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_ReleaseTask_System_String_System_String_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.ReleaseTask(System.String,System.String,CancellationToken)">ReleaseTask(String, String, CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public async Task&lt;TaskData&gt; ReleaseTask(string taskId, string ownerPodId, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">taskId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">ownerPodId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskData.html">TaskData</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_TaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L558">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Adaptors/MongoDB/src/TaskTable.cs/#L598">View Source</a>
   </span>
   <a id="ArmoniK_Core_Adapters_MongoDB_TaskTable_RetryTask_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask*"></a>
   <h4 id="ArmoniK_Core_Adapters_MongoDB_TaskTable_RetryTask_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)">RetryTask(TaskData, CancellationToken)</h4>
@@ -1127,7 +1191,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public async Task SetTaskErrorAsync(string taskId, string errorDetail, CancellationToken cancellationToken = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public async Task&lt;bool&gt; SetTaskErrorAsync(string taskId, string errorDetail, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1166,7 +1230,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Task</span></td>
+        <td><span class="xref">Task</span>&lt;<span class="xref">System.Boolean</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
