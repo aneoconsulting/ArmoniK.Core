@@ -1368,6 +1368,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.RetryTask
   nameWithType: TaskTable.RetryTask
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.SetTaskCanceledAsync(System.String,CancellationToken)
+  name: SetTaskCanceledAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_SetTaskCanceledAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.SetTaskCanceledAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.SetTaskCanceledAsync(System.String, CancellationToken)
+  nameWithType: TaskTable.SetTaskCanceledAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.SetTaskCanceledAsync*
+  name: SetTaskCanceledAsync
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_SetTaskCanceledAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.TaskTable.SetTaskCanceledAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.SetTaskCanceledAsync
+  nameWithType: TaskTable.SetTaskCanceledAsync
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.SetTaskErrorAsync(System.String,System.String,CancellationToken)
   name: SetTaskErrorAsync(String, String, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_SetTaskErrorAsync_System_String_System_String_CancellationToken_
@@ -3595,6 +3608,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.RetryTask
   nameWithType: TaskTable.RetryTask
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.SetTaskCanceledAsync(System.String,CancellationToken)
+  name: SetTaskCanceledAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_SetTaskCanceledAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.SetTaskCanceledAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.SetTaskCanceledAsync(System.String, CancellationToken)
+  nameWithType: TaskTable.SetTaskCanceledAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.SetTaskCanceledAsync*
+  name: SetTaskCanceledAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_SetTaskCanceledAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.TaskTable.SetTaskCanceledAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.SetTaskCanceledAsync
+  nameWithType: TaskTable.SetTaskCanceledAsync
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.SetTaskErrorAsync(System.String,System.String,CancellationToken)
   name: SetTaskErrorAsync(String, String, CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_SetTaskErrorAsync_System_String_System_String_CancellationToken_
@@ -8489,6 +8515,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ITaskTable.RetryTask
   nameWithType: ITaskTable.RetryTask
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.SetTaskCanceledAsync(System.String,CancellationToken)
+  name: SetTaskCanceledAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_SetTaskCanceledAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.SetTaskCanceledAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.SetTaskCanceledAsync(System.String, CancellationToken)
+  nameWithType: ITaskTable.SetTaskCanceledAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.SetTaskCanceledAsync*
+  name: SetTaskCanceledAsync
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_SetTaskCanceledAsync_
+  commentId: Overload:ArmoniK.Core.Common.Storage.ITaskTable.SetTaskCanceledAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.SetTaskCanceledAsync
+  nameWithType: ITaskTable.SetTaskCanceledAsync
 - uid: ArmoniK.Core.Common.Storage.ITaskTable.SetTaskErrorAsync(System.String,System.String,CancellationToken)
   name: SetTaskErrorAsync(String, String, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_SetTaskErrorAsync_System_String_System_String_CancellationToken_
@@ -14701,6 +14740,19 @@ references:
   commentId: F:ArmoniK.Core.Common.Tests.TaskTableTestBase.RunTests
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.RunTests
   nameWithType: TaskTableTestBase.RunTests
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.SetTaskCanceledAsyncShouldSucceed
+  name: SetTaskCanceledAsyncShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_SetTaskCanceledAsyncShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.SetTaskCanceledAsyncShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.SetTaskCanceledAsyncShouldSucceed()
+  nameWithType: TaskTableTestBase.SetTaskCanceledAsyncShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.SetTaskCanceledAsyncShouldSucceed*
+  name: SetTaskCanceledAsyncShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_SetTaskCanceledAsyncShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.SetTaskCanceledAsyncShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.SetTaskCanceledAsyncShouldSucceed
+  nameWithType: TaskTableTestBase.SetTaskCanceledAsyncShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.SetTaskErrorAsyncShouldSucceed
   name: SetTaskErrorAsyncShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_SetTaskErrorAsyncShouldSucceed
