@@ -25,6 +25,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
@@ -33,6 +34,7 @@ using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Pollster;
+using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -87,7 +89,9 @@ public static class Program
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>()
              .AddSingleton<ISubmitter, Submitter>()
-             .AddSingleton<DataPrefetcher>();
+             .AddSingleton<DataPrefetcher>()
+             .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
+             .AddHttpClient();
 
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
       {
@@ -145,6 +149,10 @@ public static class Program
                                                    {
                                                      Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
                                                    });
+
+                         endpoints.MapGet("/taskprocessing",
+                                          () => Task.FromResult(app.Services.GetRequiredService<Pollster>()
+                                                                   .TaskProcessing));
                        });
       app.Run();
       return 0;

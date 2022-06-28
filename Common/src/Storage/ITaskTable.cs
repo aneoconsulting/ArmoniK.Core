@@ -107,6 +107,7 @@ public interface ITaskTable : IInitializable
   Task<int> UpdateAllTaskStatusAsync(TaskFilter        filter,
                                      TaskStatus        status,
                                      CancellationToken cancellationToken = default);
+
   /// <summary>
   ///  Query a task status to check for cancelation
   /// </summary>
@@ -150,6 +151,7 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                      CancellationToken cancellationToken = default);
+
   /// <summary>
   /// Count tasks matching a given status
   /// </summary>
@@ -202,11 +204,11 @@ public interface ITaskTable : IInitializable
   /// <param name="errorDetail">Error message to be inserted in task's output</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  /// A boolean representing whether the status has been updated
   /// </returns>
-  Task SetTaskErrorAsync(string            taskId,
-                         string            errorDetail,
-                         CancellationToken cancellationToken);
+  Task<bool> SetTaskErrorAsync(string            taskId,
+                               string            errorDetail,
+                               CancellationToken cancellationToken);
 
   /// <summary>
   ///  Retrieve a task's output
@@ -220,15 +222,30 @@ public interface ITaskTable : IInitializable
                              CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Query acquired status of a task
+  /// Acquire the task to process it on the current agent
   /// </summary>
-  /// <param name="taskId">Id of the target task</param>
+  /// <param name="taskId">Id of the task to acquire</param>
+  /// <param name="ownerPodId">Identifier (Ip) that will be used to reach the pod if another pod tries to acquire the task</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Boolean representing the acquired status of the task
+  /// Metadata of the task we try to acquire
   /// </returns>
-  Task<bool> AcquireTask(string            taskId,
-                         CancellationToken cancellationToken = default);
+  Task<TaskData> AcquireTask(string            taskId,
+                             string            ownerPodId,
+                             CancellationToken cancellationToken = default);
+
+  /// <summary>
+  /// Release the task from the current agent
+  /// </summary>
+  /// <param name="taskId">Id of the task to release</param>
+  /// <param name="ownerPodId">Identifier (Ip) that will be used to reach the pod if another pod tries to acquire the task</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// Metadata of the task we try to release
+  /// </returns>
+  Task<TaskData> ReleaseTask(string            taskId,
+                             string            ownerPodId,
+                             CancellationToken cancellationToken = default);
 
   /// <summary>
   /// Get reply status metadata of a task given its id
@@ -240,6 +257,7 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskId,
                                                                      CancellationToken   cancellationToken = default);
+
   /// <summary>
   /// Get expected output keys of a task given its id
   /// </summary>

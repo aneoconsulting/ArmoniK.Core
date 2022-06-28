@@ -182,7 +182,7 @@ public class SampleComputerService : WorkerStreamWrapper
                                                },
                                                ExpectedOutputKeys =
                                                {
-                                                 taskHandler.TaskId,
+                                                 taskHandler.ExpectedResults,
                                                },
                                              },
                                            })

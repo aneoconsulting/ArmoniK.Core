@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using NUnit.Framework;
 
@@ -400,7 +401,7 @@ public class TaskTableTestBase
                                 },
                        };
       await TaskTable.CancelTasks(testFilter,
-                                               CancellationToken.None)
+                                  CancellationToken.None)
                      .ConfigureAwait(false);
       var resCreating = await TaskTable.GetTaskStatus(new[]
                                                       {
@@ -423,11 +424,11 @@ public class TaskTableTestBase
                                    .Status);
 
       var resAnotherProcessing = await TaskTable.GetTaskStatus(new[]
-                                                        {
-                                                          "TaskAnotherProcessingId",
-                                                        },
-                                                        CancellationToken.None)
-                                         .ConfigureAwait(false);
+                                                               {
+                                                                 "TaskAnotherProcessingId",
+                                                               },
+                                                               CancellationToken.None)
+                                                .ConfigureAwait(false);
 
       Assert.AreNotEqual(TaskStatus.Canceling,
                          resAnotherProcessing.Single()
@@ -615,8 +616,8 @@ public class TaskTableTestBase
                                .Status);
 
       var output = await TaskTable.GetTaskOutput("TaskProcessingId",
-                                    CancellationToken.None)
-                     .ConfigureAwait(false);
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
 
       Assert.AreEqual("Testing SetTaskError",
                       output.Error);
@@ -722,12 +723,46 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
+      var hostname = LocalIPv4.GetLocalIPv4Ethernet();
 
       var result = await TaskTable.AcquireTask("TaskSubmittedId",
+                                               hostname,
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      Assert.IsTrue(result);
+      Assert.AreEqual("TaskSubmittedId",
+                      result!.TaskId);
+      Assert.AreEqual(hostname,
+                      result!.OwnerPodId);
+    }
+  }
+
+  [Test]
+  public async Task AcquireAcquiredTaskShouldReturnSame()
+  {
+    if (RunTests)
+    {
+      var hostname = LocalIPv4.GetLocalIPv4Ethernet();
+
+      var result1 = await TaskTable.AcquireTask("TaskSubmittedId",
+                                               hostname,
+                                               CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual("TaskSubmittedId",
+                      result1!.TaskId);
+      Assert.AreEqual(hostname,
+                      result1!.OwnerPodId);
+
+      var result2 = await TaskTable.AcquireTask("TaskSubmittedId",
+                                           hostname,
+                                           CancellationToken.None)
+                              .ConfigureAwait(false);
+      Assert.AreEqual(result1.Status,
+                      result2.Status);
+
+      Assert.AreEqual(result1.OwnerPodId,
+                      result2.OwnerPodId);
     }
   }
 
@@ -738,10 +773,12 @@ public class TaskTableTestBase
     {
 
       var result = await TaskTable.AcquireTask("TaskFailedId",
+                                               LocalIPv4.GetLocalIPv4Ethernet(),
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      Assert.IsFalse(result);
+      Assert.AreNotEqual(LocalIPv4.GetLocalIPv4Ethernet(),
+                         result.OwnerPodId);
     }
   }
 
