@@ -32,6 +32,7 @@ using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -54,6 +55,7 @@ public class Pollster
   private readonly ITaskProcessingChecker   taskProcessingChecker_;
   private readonly IWorkerStreamHandler     workerStreamHandler_;
   public           string                   TaskProcessing;
+  private readonly string                   ownerPodId_;
 
 
   public Pollster(IQueueStorage            queueStorage,
@@ -76,20 +78,22 @@ public class Pollster
                                             $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
     }
 
-    logger_                     = logger;
-    activitySource_             = activitySource;
-    queueStorage_               = queueStorage;
-    lifeTime_                   = lifeTime;
-    dataPrefetcher_             = dataPrefetcher;
-    messageBatchSize_           = options.MessageBatchSize;
-    objectStorageFactory_       = objectStorageFactory;
-    resultTable_                = resultTable;
-    submitter_                  = submitter;
-    sessionTable_               = sessionTable;
-    taskTable_                  = taskTable;
-    taskProcessingChecker_      = taskProcessingChecker;
-    workerStreamHandler_        = workerStreamHandler;
-    TaskProcessing              = "";
+    logger_                = logger;
+    activitySource_        = activitySource;
+    queueStorage_          = queueStorage;
+    lifeTime_              = lifeTime;
+    dataPrefetcher_        = dataPrefetcher;
+    messageBatchSize_      = options.MessageBatchSize;
+    objectStorageFactory_  = objectStorageFactory;
+    resultTable_           = resultTable;
+    submitter_             = submitter;
+    sessionTable_          = sessionTable;
+    taskTable_             = taskTable;
+    taskProcessingChecker_ = taskProcessingChecker;
+    workerStreamHandler_   = workerStreamHandler;
+    TaskProcessing         = "";
+    ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
+
   }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -156,6 +160,7 @@ public class Pollster
                                                           objectStorageFactory_,
                                                           message,
                                                           taskProcessingChecker_,
+                                                          ownerPodId_,
                                                           activitySource_,
                                                           logger_);
 

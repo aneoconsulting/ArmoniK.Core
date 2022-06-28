@@ -35,7 +35,6 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
-using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -60,6 +59,7 @@ internal class TaskHandler : IAsyncDisposable
   private          TaskData?                                   taskData_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private          Task?                                       processResult_;
+  private          string                                      ownerPodId_;
 
   public TaskHandler(ISessionTable          sessionTable,
                      ITaskTable             taskTable,
@@ -70,6 +70,7 @@ internal class TaskHandler : IAsyncDisposable
                      IObjectStorageFactory  objectStorageFactory,
                      IQueueMessageHandler   messageHandler,
                      ITaskProcessingChecker taskProcessingChecker,
+                     string                 ownerPodId,
                      ActivitySource         activitySource,
                      ILogger                logger)
   {
@@ -84,6 +85,7 @@ internal class TaskHandler : IAsyncDisposable
     objectStorageFactory_  = objectStorageFactory;
     activitySource_        = activitySource;
     logger_                = logger;
+    ownerPodId_            = ownerPodId;
     taskData_              = null;
   }
 
@@ -231,16 +233,21 @@ internal class TaskHandler : IAsyncDisposable
         return false;
       }
 
-      var ownerPodId = LocalIPv4.GetLocalIPv4Ethernet();
-
       logger_.LogDebug("Trying to acquire task");
       taskData_ = await taskTable_.AcquireTask(messageHandler_.TaskId,
-                                               ownerPodId,
+                                               ownerPodId_,
                                                cancellationToken)
                                   .ConfigureAwait(false);
 
+      // empty OwnerPodId means that the task was not acquired because not ready
+      if (taskData_.OwnerPodId == "")
+      {
+        messageHandler_.Status = QueueMessageStatus.Postponed;
+        return false;
+      }
+
       // we check if the task was acquired by this pod
-      if (taskData_.OwnerPodId != ownerPodId)
+      if (taskData_.OwnerPodId != ownerPodId_)
       {
         // if the task is acquired by another pod, we check if the task is running on the other pod
         var taskProcessingElsewhere = await taskProcessingChecker_.Check(taskData_.TaskId,
@@ -259,7 +266,7 @@ internal class TaskHandler : IAsyncDisposable
           taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
                                                      cancellationToken)
                                       .ConfigureAwait(false);
-          if (taskData_.OwnerPodId != ownerPodId && taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched)
+          if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
           {
             logger_.LogDebug("Resubmitting task {task} on another pod",
                              taskData_.TaskId);
@@ -274,6 +281,16 @@ internal class TaskHandler : IAsyncDisposable
                                                },
                                                CancellationToken.None)
                             .ConfigureAwait(false);
+          }
+
+          if (taskData_.Status is TaskStatus.Canceling)
+          {
+            messageHandler_.Status = QueueMessageStatus.Cancelled;
+            await taskTable_.UpdateTaskStatusAsync(messageHandler_.TaskId,
+                                                   TaskStatus.Canceled,
+                                                   CancellationToken.None)
+                            .ConfigureAwait(false);
+            return false;
           }
         }
 
