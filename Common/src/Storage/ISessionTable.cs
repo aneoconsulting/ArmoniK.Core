@@ -43,17 +43,17 @@ public interface ISessionTable : IInitializable
   ILogger Logger { get; }
 
   /// <summary>
-  /// Create a new session
+  /// Set metadata for a new session
   /// </summary>
-  /// <param name="rootSessionId">Id for the session to be created</param>
-  /// <param name="defaultOptions">Default options for the tasks to be created in this session</param>
+  /// <param name="rootSessionId">Id for the new session</param>
+  /// <param name="defaultOptions">Default metadata for the tasks to be created in this session</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   /// Task representing the asynchronous execution of the method
   /// </returns>
-  Task CreateSessionDataAsync(string            rootSessionId,
-                              TaskOptions       defaultOptions,
-                              CancellationToken cancellationToken = default);
+  Task SetSessionDataAsync(string            rootSessionId,
+                           TaskOptions       defaultOptions,
+                           CancellationToken cancellationToken = default);
 
   /// <summary>
   ///  Query a session status to check if it is canceled
