@@ -46,14 +46,12 @@ public interface ISessionTable : IInitializable
   /// Create a new session
   /// </summary>
   /// <param name="rootSessionId">Id for the session to be created</param>
-  /// <param name="parentTaskId">Id of the task spawing this session; should be identical to <param name="rootSessionId"\> for the first session</param>
   /// <param name="defaultOptions">Default options for the tasks to be created in this session</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   /// Task representing the asynchronous execution of the method
   /// </returns>
   Task CreateSessionDataAsync(string            rootSessionId,
-                              string            parentTaskId,
                               TaskOptions       defaultOptions,
                               CancellationToken cancellationToken = default);
 

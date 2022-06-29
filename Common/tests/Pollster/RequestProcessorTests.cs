@@ -275,7 +275,6 @@ public class RequestProcessorTest
                 .Wait();
 
     sessionTable_.CreateSessionDataAsync(SessionId,
-                                         Task1,
                                          new Api.gRPC.V1.TaskOptions
                                          {
                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),

@@ -37,7 +37,6 @@ public static class SessionTableExtensions
     using var _ = sessionTable.Logger.LogFunction(id);
 
     await sessionTable.CreateSessionDataAsync(id,
-                                              id,
                                               defaultOptions,
                                               cancellationToken)
                       .ConfigureAwait(false);

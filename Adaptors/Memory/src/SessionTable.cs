@@ -59,7 +59,6 @@ public class SessionTable : ISessionTable
 
   /// <inheritdoc />
   public Task CreateSessionDataAsync(string            rootSessionId,
-                                     string            parentTaskId,
                                      Common.Storage.TaskOptions       defaultOptions,
                                      CancellationToken cancellationToken = default)
   {

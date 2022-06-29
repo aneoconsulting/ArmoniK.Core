@@ -70,15 +70,12 @@ public class SessionTable : ISessionTable
 
   [PublicAPI]
   public async Task CreateSessionDataAsync(string                          rootSessionId,
-                                           string                          parentTaskId,
                                            Core.Common.Storage.TaskOptions defaultOptions,
                                            CancellationToken               cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSessionDataAsync)}");
     activity?.SetTag($"{nameof(CreateSessionDataAsync)}_sessionId",
                      rootSessionId);
-    activity?.SetTag($"{nameof(CreateSessionDataAsync)}_parentTaskId",
-                     parentTaskId);
     var sessionCollection = sessionCollectionProvider_.Get();
 
     SessionData data = new(rootSessionId,

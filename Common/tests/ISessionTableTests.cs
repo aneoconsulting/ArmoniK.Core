@@ -50,7 +50,6 @@ public class SessionTableTestBase
     if (RunTests)
     {
       SessionTable.CreateSessionDataAsync(RootSessionId,
-                                          "TaskId",
                                           new TaskOptions
                                           {
                                             MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
