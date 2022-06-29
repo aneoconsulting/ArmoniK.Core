@@ -136,8 +136,7 @@ public class SessionClient : ISessionClient
 
     foreach (var (payload, dependencies) in payloadsWithDependencies)
     {
-      var taskId = Guid.NewGuid()
-                       .ToString();
+      var taskId = "root";
       logger_.LogDebug("Create task {taskId}",
                        taskId);
       var taskRequest = new TaskRequest

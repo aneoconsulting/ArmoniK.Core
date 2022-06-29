@@ -60,33 +60,6 @@ public class SampleComputerService : WorkerStreamWrapper
     logger_.LogTrace("ExpectedResults {ExpectedResults}",
                      taskHandler.ExpectedResults);
 
-    Output output;
-
-    var taskError = taskHandler.TaskOptions.GetValueOrDefault("TaskError",
-                                                              string.Empty);
-
-    if (taskError != string.Empty && taskHandler.TaskId.EndsWith(taskError))
-    {
-      logger_.LogInformation("Return Deterministic Error Output");
-      output = new Output
-               {
-                 Error = new Output.Types.Error
-                         {
-                           Details = "Deterministic Error",
-                         },
-               };
-      return output;
-    }
-
-    var taskRpcException = taskHandler.TaskOptions.GetValueOrDefault("TaskRpcException",
-                                                                     string.Empty);
-
-    if (taskRpcException != string.Empty && taskHandler.TaskId.EndsWith(taskRpcException))
-    {
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Deterministic Exception"));
-    }
-
     try
     {
       var (runConfiguration, request) = DataAdapter.ReadPayload(taskHandler.Payload);
@@ -189,25 +162,47 @@ public class SampleComputerService : WorkerStreamWrapper
                          .ConfigureAwait(false);
       }
 
-      output = new Output
+      var taskError = taskHandler.TaskOptions.GetValueOrDefault("TaskError",
+                                                                string.Empty);
+
+      if (taskError != string.Empty && taskHandler.TaskId.EndsWith(taskError))
+      {
+        logger_.LogInformation("Return Deterministic Error Output");
+        return new Output
                {
-                 Ok = new Empty(),
+                 Error = new Output.Types.Error
+                         {
+                           Details = "Deterministic Error",
+                         },
                };
+      }
+
+      var taskRpcException = taskHandler.TaskOptions.GetValueOrDefault("TaskRpcException",
+                                                                       string.Empty);
+
+      if (taskRpcException != string.Empty && taskHandler.TaskId.EndsWith(taskRpcException))
+      {
+        throw new RpcException(new Status(StatusCode.Internal,
+                                          "Deterministic Exception"));
+      }
+
+      return new Output
+             {
+               Ok = new Empty(),
+             };
     }
     catch (Exception ex)
     {
       logger_.LogError(ex,
                        "Error while computing task");
 
-      output = new Output
-               {
-                 Error = new Output.Types.Error
-                         {
-                           Details = ex.Message + ex.StackTrace,
-                         },
-               };
+      return new Output
+             {
+               Error = new Output.Types.Error
+                       {
+                         Details = ex.Message + ex.StackTrace,
+                       },
+             };
     }
-
-    return output;
   }
 }
