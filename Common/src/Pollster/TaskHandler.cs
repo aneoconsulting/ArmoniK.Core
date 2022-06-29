@@ -234,6 +234,10 @@ internal class TaskHandler : IAsyncDisposable
                                                TaskStatus.Canceled,
                                                cancellationToken)
                         .ConfigureAwait(false);
+        await resultTable_.AbortTaskResults(taskData_.SessionId,
+                                            taskData_.TaskId,
+                                            CancellationToken.None)
+                          .ConfigureAwait(false);
         return false;
       }
 
