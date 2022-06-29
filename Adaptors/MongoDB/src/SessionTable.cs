@@ -69,16 +69,13 @@ public class SessionTable : ISessionTable
 
 
   [PublicAPI]
-  public async Task CreateSessionDataAsync(string                          rootSessionId,
-                                           string                          parentTaskId,
-                                           Core.Common.Storage.TaskOptions defaultOptions,
-                                           CancellationToken               cancellationToken = default)
+  public async Task SetSessionDataAsync(string                          rootSessionId,
+                                        Core.Common.Storage.TaskOptions defaultOptions,
+                                        CancellationToken               cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(CreateSessionDataAsync)}");
-    activity?.SetTag($"{nameof(CreateSessionDataAsync)}_sessionId",
+    using var activity = activitySource_.StartActivity($"{nameof(SetSessionDataAsync)}");
+    activity?.SetTag($"{nameof(SetSessionDataAsync)}_sessionId",
                      rootSessionId);
-    activity?.SetTag($"{nameof(CreateSessionDataAsync)}_parentTaskId",
-                     parentTaskId);
     var sessionCollection = sessionCollectionProvider_.Get();
 
     SessionData data = new(rootSessionId,

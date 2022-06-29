@@ -274,15 +274,14 @@ public class RequestProcessorTest
                         })
                 .Wait();
 
-    sessionTable_.CreateSessionDataAsync(SessionId,
-                                         Task1,
-                                         new Api.gRPC.V1.TaskOptions
-                                         {
-                                           MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                           MaxRetries  = 2,
-                                           Priority    = 1,
-                                         },
-                                         CancellationToken.None)
+    sessionTable_.SetSessionDataAsync(SessionId,
+                                     new Api.gRPC.V1.TaskOptions
+                                     {
+                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                       MaxRetries  = 2,
+                                       Priority    = 1,
+                                     },
+                                     CancellationToken.None)
                  .Wait();
 
     var queueStorage = new Mock<IQueueStorage>();

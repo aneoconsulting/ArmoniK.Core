@@ -49,15 +49,14 @@ public class SessionTableTestBase
 
     if (RunTests)
     {
-      SessionTable.CreateSessionDataAsync(RootSessionId,
-                                          "TaskId",
-                                          new TaskOptions
-                                          {
-                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                            MaxRetries = 2,
-                                            Priority = 1,
-                                          },
-                                          CancellationToken.None)
+      SessionTable.SetSessionDataAsync(RootSessionId,
+                                       new TaskOptions
+                                       {
+                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                         MaxRetries = 2,
+                                         Priority = 1,
+                                       },
+                                       CancellationToken.None)
                   .Wait();
     }
   }

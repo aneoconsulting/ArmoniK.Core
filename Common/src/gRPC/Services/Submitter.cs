@@ -269,9 +269,9 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
-      await sessionTable_.CreateSessionAsync(sessionId,
-                                             defaultTaskOptions,
-                                             cancellationToken)
+      await sessionTable_.SetSessionDataAsync(sessionId,
+                                              defaultTaskOptions,
+                                              cancellationToken)
                          .ConfigureAwait(false);
       return new CreateSessionReply
              {
