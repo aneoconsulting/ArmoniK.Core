@@ -973,19 +973,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.SessionTable.Check
   nameWithType: SessionTable.Check
-- uid: ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  name: CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_CreateSessionDataAsync_System_String_System_String_ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync(System.String, System.String, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
-  nameWithType: SessionTable.CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync*
-  name: CreateSessionDataAsync
-  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_CreateSessionDataAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.CreateSessionDataAsync
-  nameWithType: SessionTable.CreateSessionDataAsync
 - uid: ArmoniK.Core.Adapters.Memory.SessionTable.DeleteSessionAsync(System.String,CancellationToken)
   name: DeleteSessionAsync(String, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_DeleteSessionAsync_System_String_CancellationToken_
@@ -1064,6 +1051,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.SessionTable.Logger
   nameWithType: SessionTable.Logger
+- uid: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name: SetSessionDataAsync(String, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_SetSessionDataAsync_System_String_ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(System.String, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  nameWithType: SessionTable.SetSessionDataAsync(String, TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync*
+  name: SetSessionDataAsync
+  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_SetSessionDataAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync
+  nameWithType: SessionTable.SetSessionDataAsync
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable
   name: TaskTable
   href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html
@@ -2871,19 +2871,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.Check
   nameWithType: SessionTable.Check
-- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  name: CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_CreateSessionDataAsync_System_String_System_String_ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync(System.String, System.String, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
-  nameWithType: SessionTable.CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
-- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync*
-  name: CreateSessionDataAsync
-  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_CreateSessionDataAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.CreateSessionDataAsync
-  nameWithType: SessionTable.CreateSessionDataAsync
 - uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.DeleteSessionAsync(System.String,CancellationToken)
   name: DeleteSessionAsync(String, CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_DeleteSessionAsync_System_String_CancellationToken_
@@ -2962,6 +2949,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.Logger
   nameWithType: SessionTable.Logger
+- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name: SetSessionDataAsync(String, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_SetSessionDataAsync_System_String_ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(System.String, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  nameWithType: SessionTable.SetSessionDataAsync(String, TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync*
+  name: SetSessionDataAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_SetSessionDataAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync
+  nameWithType: SessionTable.SetSessionDataAsync
 - uid: ArmoniK.Core.Adapters.MongoDB.Table
   name: ArmoniK.Core.Adapters.MongoDB.Table
   href: api/ArmoniK.Core.Adapters.MongoDB.Table.html
@@ -8175,19 +8175,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ISessionTable.CancelSessionAsync
   nameWithType: ISessionTable.CancelSessionAsync
-- uid: ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  name: CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_CreateSessionDataAsync_System_String_System_String_ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync(System.String,System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync(System.String, System.String, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
-  nameWithType: ISessionTable.CreateSessionDataAsync(String, String, TaskOptions, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync*
-  name: CreateSessionDataAsync
-  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_CreateSessionDataAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.ISessionTable.CreateSessionDataAsync
-  nameWithType: ISessionTable.CreateSessionDataAsync
 - uid: ArmoniK.Core.Common.Storage.ISessionTable.DeleteSessionAsync(System.String,CancellationToken)
   name: DeleteSessionAsync(String, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_DeleteSessionAsync_System_String_CancellationToken_
@@ -8253,6 +8240,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ISessionTable.Logger
   nameWithType: ISessionTable.Logger
+- uid: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name: SetSessionDataAsync(String, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_SetSessionDataAsync_System_String_ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(System.String,ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(System.String, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  nameWithType: ISessionTable.SetSessionDataAsync(String, TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync*
+  name: SetSessionDataAsync
+  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_SetSessionDataAsync_
+  commentId: Overload:ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync
+  nameWithType: ISessionTable.SetSessionDataAsync
 - uid: ArmoniK.Core.Common.Storage.ITaskTable
   name: ITaskTable
   href: api/ArmoniK.Core.Common.Storage.ITaskTable.html
@@ -9471,25 +9471,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.SessionData.Status
   nameWithType: SessionData.Status
-- uid: ArmoniK.Core.Common.Storage.SessionTableExtensions
-  name: SessionTableExtensions
-  href: api/ArmoniK.Core.Common.Storage.SessionTableExtensions.html
-  commentId: T:ArmoniK.Core.Common.Storage.SessionTableExtensions
-  fullName: ArmoniK.Core.Common.Storage.SessionTableExtensions
-  nameWithType: SessionTableExtensions
-- uid: ArmoniK.Core.Common.Storage.SessionTableExtensions.CreateSessionAsync(ArmoniK.Core.Common.Storage.ISessionTable,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name: CreateSessionAsync(ISessionTable, String, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.SessionTableExtensions.html#ArmoniK_Core_Common_Storage_SessionTableExtensions_CreateSessionAsync_ArmoniK_Core_Common_Storage_ISessionTable_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.SessionTableExtensions.CreateSessionAsync(ArmoniK.Core.Common.Storage.ISessionTable,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.SessionTableExtensions.CreateSessionAsync(ArmoniK.Core.Common.Storage.ISessionTable, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  nameWithType: SessionTableExtensions.CreateSessionAsync(ISessionTable, String, TaskOptions, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.SessionTableExtensions.CreateSessionAsync*
-  name: CreateSessionAsync
-  href: api/ArmoniK.Core.Common.Storage.SessionTableExtensions.html#ArmoniK_Core_Common_Storage_SessionTableExtensions_CreateSessionAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.SessionTableExtensions.CreateSessionAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.SessionTableExtensions.CreateSessionAsync
-  nameWithType: SessionTableExtensions.CreateSessionAsync
 - uid: ArmoniK.Core.Common.Storage.StatusTime
   name: StatusTime
   href: api/ArmoniK.Core.Common.Storage.StatusTime.html
