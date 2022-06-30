@@ -49,16 +49,7 @@ public class LoggerInit
   }
 
   public void Configure(ILoggingBuilder loggingBuilder)
-  {
-    loggingBuilder.AddSerilog(loggerConfiguration_);
-    if (loggerConfiguration_.IsEnabled(LogEventLevel.Information))
-    {
-      loggingBuilder.AddFilter("Microsoft.AspNetCore.Routing.EndpointMiddleware",
-                               LogLevel.Information);
-      loggingBuilder.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics",
-                               LogLevel.Information);
-    }
-  }
+    => loggingBuilder.AddSerilog(loggerConfiguration_);
 
   public Logger GetSerilogConf()
     => loggerConfiguration_;
