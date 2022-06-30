@@ -128,6 +128,10 @@ internal class TaskHandler : IAsyncDisposable
           await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
                                                 CancellationToken.None)
                           .ConfigureAwait(false);
+          await resultTable_.AbortTaskResults(taskData_.SessionId,
+                                              taskData_.TaskId,
+                                              CancellationToken.None)
+                            .ConfigureAwait(false);
           return false;
         case TaskStatus.Completed:
           logger_.LogInformation("Task was already completed");
@@ -144,6 +148,10 @@ internal class TaskHandler : IAsyncDisposable
         case TaskStatus.Error:
           logger_.LogInformation("Task was on error elsewhere ; task should have been resubmitted");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
+          await resultTable_.AbortTaskResults(taskData_.SessionId,
+                                              taskData_.TaskId,
+                                              CancellationToken.None)
+                            .ConfigureAwait(false);
           return false;
         case TaskStatus.Timeout:
           logger_.LogInformation("Task was timeout elsewhere ; taking over here");
@@ -151,6 +159,10 @@ internal class TaskHandler : IAsyncDisposable
         case TaskStatus.Canceled:
           logger_.LogInformation("Task has been cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
+          await resultTable_.AbortTaskResults(taskData_.SessionId,
+                                              taskData_.TaskId,
+                                              CancellationToken.None)
+                            .ConfigureAwait(false);
           return false;
         case TaskStatus.Processing:
           logger_.LogInformation("Task is processing elsewhere ; taking over here");
@@ -228,6 +240,10 @@ internal class TaskHandler : IAsyncDisposable
         await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
                                               cancellationToken)
                         .ConfigureAwait(false);
+        await resultTable_.AbortTaskResults(taskData_.SessionId,
+                                            taskData_.TaskId,
+                                            CancellationToken.None)
+                          .ConfigureAwait(false);
         return false;
       }
 
@@ -287,6 +303,10 @@ internal class TaskHandler : IAsyncDisposable
             await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
                                                   CancellationToken.None)
                             .ConfigureAwait(false);
+            await resultTable_.AbortTaskResults(taskData_.SessionId,
+                                                taskData_.TaskId,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
             return false;
           }
         }
