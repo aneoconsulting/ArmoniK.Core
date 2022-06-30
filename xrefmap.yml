@@ -15195,6 +15195,64 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Utils.LocalIPv4.GetLocalIPv4Ethernet
   nameWithType: LocalIPv4.GetLocalIPv4Ethernet
+- uid: ArmoniK.Core.Common.Utils.LoggerInit
+  name: LoggerInit
+  href: api/ArmoniK.Core.Common.Utils.LoggerInit.html
+  commentId: T:ArmoniK.Core.Common.Utils.LoggerInit
+  fullName: ArmoniK.Core.Common.Utils.LoggerInit
+  nameWithType: LoggerInit
+- uid: ArmoniK.Core.Common.Utils.LoggerInit.#ctor(IConfiguration)
+  name: LoggerInit(IConfiguration)
+  href: api/ArmoniK.Core.Common.Utils.LoggerInit.html#ArmoniK_Core_Common_Utils_LoggerInit__ctor_IConfiguration_
+  commentId: M:ArmoniK.Core.Common.Utils.LoggerInit.#ctor(IConfiguration)
+  fullName: ArmoniK.Core.Common.Utils.LoggerInit.LoggerInit(IConfiguration)
+  nameWithType: LoggerInit.LoggerInit(IConfiguration)
+- uid: ArmoniK.Core.Common.Utils.LoggerInit.#ctor*
+  name: LoggerInit
+  href: api/ArmoniK.Core.Common.Utils.LoggerInit.html#ArmoniK_Core_Common_Utils_LoggerInit__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Utils.LoggerInit.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.LoggerInit.LoggerInit
+  nameWithType: LoggerInit.LoggerInit
+- uid: ArmoniK.Core.Common.Utils.LoggerInit.Configure(ILoggingBuilder)
+  name: Configure(ILoggingBuilder)
+  href: api/ArmoniK.Core.Common.Utils.LoggerInit.html#ArmoniK_Core_Common_Utils_LoggerInit_Configure_ILoggingBuilder_
+  commentId: M:ArmoniK.Core.Common.Utils.LoggerInit.Configure(ILoggingBuilder)
+  fullName: ArmoniK.Core.Common.Utils.LoggerInit.Configure(ILoggingBuilder)
+  nameWithType: LoggerInit.Configure(ILoggingBuilder)
+- uid: ArmoniK.Core.Common.Utils.LoggerInit.Configure*
+  name: Configure
+  href: api/ArmoniK.Core.Common.Utils.LoggerInit.html#ArmoniK_Core_Common_Utils_LoggerInit_Configure_
+  commentId: Overload:ArmoniK.Core.Common.Utils.LoggerInit.Configure
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.LoggerInit.Configure
+  nameWithType: LoggerInit.Configure
+- uid: ArmoniK.Core.Common.Utils.LoggerInit.GetLogger
+  name: GetLogger()
+  href: api/ArmoniK.Core.Common.Utils.LoggerInit.html#ArmoniK_Core_Common_Utils_LoggerInit_GetLogger
+  commentId: M:ArmoniK.Core.Common.Utils.LoggerInit.GetLogger
+  fullName: ArmoniK.Core.Common.Utils.LoggerInit.GetLogger()
+  nameWithType: LoggerInit.GetLogger()
+- uid: ArmoniK.Core.Common.Utils.LoggerInit.GetLogger*
+  name: GetLogger
+  href: api/ArmoniK.Core.Common.Utils.LoggerInit.html#ArmoniK_Core_Common_Utils_LoggerInit_GetLogger_
+  commentId: Overload:ArmoniK.Core.Common.Utils.LoggerInit.GetLogger
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.LoggerInit.GetLogger
+  nameWithType: LoggerInit.GetLogger
+- uid: ArmoniK.Core.Common.Utils.LoggerInit.GetSerilogConf
+  name: GetSerilogConf()
+  href: api/ArmoniK.Core.Common.Utils.LoggerInit.html#ArmoniK_Core_Common_Utils_LoggerInit_GetSerilogConf
+  commentId: M:ArmoniK.Core.Common.Utils.LoggerInit.GetSerilogConf
+  fullName: ArmoniK.Core.Common.Utils.LoggerInit.GetSerilogConf()
+  nameWithType: LoggerInit.GetSerilogConf()
+- uid: ArmoniK.Core.Common.Utils.LoggerInit.GetSerilogConf*
+  name: GetSerilogConf
+  href: api/ArmoniK.Core.Common.Utils.LoggerInit.html#ArmoniK_Core_Common_Utils_LoggerInit_GetSerilogConf_
+  commentId: Overload:ArmoniK.Core.Common.Utils.LoggerInit.GetSerilogConf
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.LoggerInit.GetSerilogConf
+  nameWithType: LoggerInit.GetSerilogConf
 - uid: ArmoniK.Core.Common.Utils.TaskExt
   name: TaskExt
   href: api/ArmoniK.Core.Common.Utils.TaskExt.html
