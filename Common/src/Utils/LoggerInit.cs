@@ -54,9 +54,9 @@ public class LoggerInit
     if (loggerConfiguration_.IsEnabled(LogEventLevel.Information))
     {
       loggingBuilder.AddFilter("Microsoft.AspNetCore.Routing.EndpointMiddleware",
-                               LogLevel.Error);
+                               LogLevel.Information);
       loggingBuilder.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics",
-                               LogLevel.Error);
+                               LogLevel.Information);
     }
   }
 
