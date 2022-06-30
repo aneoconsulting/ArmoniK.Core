@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -191,6 +192,28 @@ public class SampleComputerService : WorkerStreamWrapper
                Ok = new Empty(),
              };
     }
+    catch (RpcException ex)
+    {
+      var taskRpcException = taskHandler.TaskOptions.GetValueOrDefault("TaskRpcException",
+                                                                       string.Empty);
+      if (taskRpcException != string.Empty && taskHandler.TaskId.EndsWith(taskRpcException))
+      {
+        Thread.Sleep(TimeSpan.FromSeconds(15));
+        throw;
+      }
+
+      logger_.LogError(ex,
+                       "Error while computing task");
+
+      return new Output
+             {
+               Error = new Output.Types.Error
+                       {
+                         Details = ex.Message + ex.StackTrace,
+                       },
+             };
+    }
+
     catch (Exception ex)
     {
       logger_.LogError(ex,
