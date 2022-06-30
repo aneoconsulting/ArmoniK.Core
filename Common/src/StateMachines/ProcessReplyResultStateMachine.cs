@@ -132,7 +132,7 @@ public class ProcessReplyResultStateMachine
     if (logger_.IsEnabled(LogLevel.Debug))
     {
       machine_.OnTransitioned(t => logger_.LogDebug("OnTransitioned {FSM}: {Source} -> {Destination}",
-                                                    nameof(ComputeRequestStateMachine),
+                                                    nameof(ProcessReplyResultStateMachine),
                                                     t.Source,
                                                     t.Destination));
     }
