@@ -2,9 +2,9 @@
 
 ## Task dependencies
 
-ArmoniK supports data dependencies between tasks i.e., tasks will be executed only when their input data are available. The input data can be created by other tasks.
+ArmoniK supports data dependencies between tasks, it means that a task will be executed only when all their input data are available. The input data can be created by other tasks.
 
-A task cannot directly wait for another tasks since we want to make sure that a task that does nothing (just wait) will not occupy a pod for no reason. For the same reason, a task cannot wait for the completion of its subtasks. Child tasks are only submitted when the parent task completes successfully in order to simplify the management of the children when there is an issue during the execution of the parent task.
+A task cannot directly wait for another tasks since we want to make sure that a task that does nothing (just wait) will not occupy a pod for no reason. Similarly, a task cannot wait for the completion of its child tasks. Child tasks are only submitted when the parent task completes successfully in order to simplify the management of the children when there is an issue during the execution of the parent task.
 
 ## Error management
 
