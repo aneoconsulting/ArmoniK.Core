@@ -96,11 +96,11 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                                   {
 
                                                     (taskIds_, priority_) = await submitter_.CreateTasks(sessionId_,
-                                                                                                        parentTaskId_,
-                                                                                                        processReply.CreateLargeTask.InitRequest.TaskOptions,
-                                                                                                        taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
-                                                                                                        cancellationToken)
-                                                                                           .ConfigureAwait(false);
+                                                                                                         parentTaskId_,
+                                                                                                         processReply.CreateLargeTask.InitRequest.TaskOptions,
+                                                                                                         taskRequestsChannel_.Reader.ReadAllAsync(cancellationToken),
+                                                                                                         cancellationToken)
+                                                                                            .ConfigureAwait(false);
                                                   }
                                                   // todo : Add error transition in FSM to properly manage errors at the FSM level
                                                   // in this case, an error triggers the global cancellation token but we do not want to rely on this to manage errors
@@ -108,11 +108,24 @@ internal class CreateLargeTaskProcessor : IProcessReplyProcessor
                                                   catch (Exception e)
                                                   {
                                                     logger_.LogError(e,
-                                                                     "Error in {ClassName}.{FunName} for {RequestId}",
+                                                                     "Error in {ClassName}.{FunName} for {RequestId}, send error to worker",
                                                                      nameof(CreateLargeTaskProcessor),
                                                                      nameof(AddProcessReply),
                                                                      processReply.RequestId);
-                                                    throw;
+
+                                                    await asyncPipe_.WriteAsync(new ProcessRequest
+                                                                                {
+                                                                                  CreateTask = new ProcessRequest.Types.CreateTask
+                                                                                               {
+                                                                                                 Reply = new CreateTaskReply
+                                                                                                         {
+                                                                                                           NonSuccessfullIds = new CreateTaskReply.Types.TaskIds(),
+                                                                                                         },
+                                                                                                 ReplyId = processReply.RequestId,
+                                                                                               },
+                                                                                })
+                                                                    .ConfigureAwait(false);
+                                                    return;
                                                   }
 
                                                   logger_.LogDebug("Send Task creation reply for {RequestId}",
