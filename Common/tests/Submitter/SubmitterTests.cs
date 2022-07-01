@@ -349,7 +349,7 @@ public class SubmitterTests
 
     var result = await submitter_.GetTaskStatusAsync(new GetTaskStatusRequest
                                                      {
-                                                       TaskId =
+                                                       TaskIds =
                                                        {
                                                          TaskCreatingId,
                                                        },
@@ -371,7 +371,7 @@ public class SubmitterTests
 
     var result = await submitter_.GetTaskStatusAsync(new GetTaskStatusRequest
                                                      {
-                                                       TaskId =
+                                                       TaskIds =
                                                        {
                                                          TaskSubmittedId
                                                        },
@@ -393,7 +393,7 @@ public class SubmitterTests
 
     var res = await submitter_.GetTaskStatusAsync(new GetTaskStatusRequest
                                                   {
-                                                    TaskId =
+                                                    TaskIds =
                                                     {
                                                       "taskdoesnotexist",
                                                     },
@@ -566,7 +566,7 @@ public class SubmitterTests
 
     var reply = await submitter_.GetTaskStatusAsync(new GetTaskStatusRequest
                                                     {
-                                                      TaskId =
+                                                      TaskIds =
                                                       {
                                                         TaskCreatingId,
                                                       },
@@ -589,7 +589,7 @@ public class SubmitterTests
     var result = await submitter_.GetResultStatusAsync(new GetResultStatusRequest
                                                        {
                                                          SessionId = SessionId,
-                                                         ResultId =
+                                                         ResultIds =
                                                          {
                                                            ExpectedOutput2,
                                                          },
@@ -615,7 +615,7 @@ public class SubmitterTests
     var result = await submitter_.GetResultStatusAsync(new GetResultStatusRequest
                                                        {
                                                          SessionId = SessionId,
-                                                         ResultId =
+                                                         ResultIds =
                                                          {
                                                            "NotExistingId",
                                                          },

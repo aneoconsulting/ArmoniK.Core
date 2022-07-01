@@ -1528,7 +1528,7 @@ public class GrpcSubmitterServiceTests
 
     var response = await service.GetTaskStatus(new GetTaskStatusRequest
                                                {
-                                                 TaskId = {
+                                                 TaskIds = {
                                                             "TaskId",
                                                           },
                                                },
@@ -1556,7 +1556,7 @@ public class GrpcSubmitterServiceTests
     {
       await service.GetTaskStatus(new GetTaskStatusRequest
                                   {
-                                    TaskId =
+                                    TaskIds =
                                     {
                                       "TaskId",
                                     },
@@ -1590,7 +1590,7 @@ public class GrpcSubmitterServiceTests
     {
       await service.GetTaskStatus(new GetTaskStatusRequest
                                   {
-                                    TaskId =
+                                    TaskIds =
                                     {
                                       "TaskId",
                                     },
@@ -1624,7 +1624,7 @@ public class GrpcSubmitterServiceTests
     {
       await service.GetTaskStatus(new GetTaskStatusRequest
                                   {
-                                    TaskId =
+                                    TaskIds =
                                     {
                                       "TaskId",
                                     },
@@ -1809,7 +1809,7 @@ public class GrpcSubmitterServiceTests
       await service.GetResultStatus(new GetResultStatusRequest
                                     {
                                       SessionId = "sessionId",
-                                      ResultId =
+                                      ResultIds =
                                       {
                                         "Result",
                                       },
@@ -1851,7 +1851,7 @@ public class GrpcSubmitterServiceTests
 
     var response = await service.GetResultStatus(new GetResultStatusRequest
                                                {
-                                                 ResultId =
+                                                 ResultIds =
                                                  {
                                                    "ResultId",
                                                  },

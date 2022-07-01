@@ -324,7 +324,7 @@ public class Submitter : ISubmitter
                                             Error = new TaskError
                                                     {
                                                       TaskId = taskData.TaskId,
-                                                      Error =
+                                                      Errors =
                                                       {
                                                         new Error
                                                         {
@@ -605,7 +605,7 @@ public class Submitter : ISubmitter
                    Error = new TaskError
                            {
                              TaskId = taskData.TaskId,
-                             Error =
+                             Errors =
                              {
                                new Error
                                {
@@ -639,7 +639,7 @@ public class Submitter : ISubmitter
            {
               IdStatuses =
              {
-               await taskTable_.GetTaskStatus(request.TaskId.ToList(),
+               await taskTable_.GetTaskStatus(request.TaskIds.ToList(),
                                               contextCancellationToken)
                                .ConfigureAwait(false),
              },
@@ -655,7 +655,7 @@ public class Submitter : ISubmitter
            {
              IdStatuses =
              {
-               await resultTable_.GetResultStatus(request.ResultId.ToList(),
+               await resultTable_.GetResultStatus(request.ResultIds.ToList(),
                                                   request.SessionId,
                                                   contextCancellationToken)
                                  .ConfigureAwait(false),
