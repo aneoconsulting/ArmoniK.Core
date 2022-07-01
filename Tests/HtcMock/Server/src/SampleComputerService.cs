@@ -198,7 +198,6 @@ public class SampleComputerService : WorkerStreamWrapper
                                                                        string.Empty);
       if (taskRpcException != string.Empty && taskHandler.TaskId.EndsWith(taskRpcException))
       {
-        Thread.Sleep(TimeSpan.FromSeconds(15));
         throw;
       }
 
