@@ -141,17 +141,17 @@ public class RequestProcessor : IDisposable
               }
 
             }
-            catch (ResultNotFoundException e)
+            catch (Exception e)
             {
               logger_.LogWarning(e,
-                                 "Result not found when completing task, putting task in error");
+                                 "Error while finalizing task processing");
               await submitter_.CompleteTaskAsync(taskData,
                                                  false,
                                                  new Output
                                                  {
                                                    Error = new Output.Types.Error
                                                            {
-                                                             Details = "Result not found when completing task",
+                                                             Details = e.Message,
                                                            },
                                                  },
                                                  CancellationToken.None)
