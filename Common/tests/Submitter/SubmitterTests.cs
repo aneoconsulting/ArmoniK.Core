@@ -358,7 +358,7 @@ public class SubmitterTests
                                  .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Creating,
-                    result.IdStatus.Single()
+                    result.IdStatuses.Single()
                           .Status);
   }
 
@@ -380,7 +380,7 @@ public class SubmitterTests
                                  .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Submitted,
-                    result.IdStatus.Single()
+                    result.IdStatuses.Single()
                           .Status);
   }
 
@@ -401,7 +401,7 @@ public class SubmitterTests
                                                   CancellationToken.None);
 
     Assert.AreEqual(0,
-                    res.IdStatus.Count);
+                    res.IdStatuses.Count);
   }
 
   [Test]
@@ -575,7 +575,7 @@ public class SubmitterTests
                                 .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Canceling,
-                    reply.IdStatus.Single()
+                    reply.IdStatuses.Single()
                          .Status);
   }
 
@@ -598,10 +598,10 @@ public class SubmitterTests
                                  .ConfigureAwait(false);
 
     Assert.AreEqual(ResultStatus.Created,
-                    result.IdStatus.Single()
+                    result.IdStatuses.Single()
                           .Status);
     Assert.AreEqual(ExpectedOutput2,
-                    result.IdStatus.Single()
+                    result.IdStatuses.Single()
                           .ResultId);
   }
 
@@ -624,6 +624,6 @@ public class SubmitterTests
                                  .ConfigureAwait(false);
 
     Assert.AreEqual(0,
-                    result.IdStatus.Count);
+                    result.IdStatuses.Count);
   }
 }

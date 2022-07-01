@@ -637,7 +637,7 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatusAsync)}");
     return new GetTaskStatusReply
            {
-             IdStatus =
+              IdStatuses =
              {
                await taskTable_.GetTaskStatus(request.TaskId.ToList(),
                                               contextCancellationToken)
@@ -653,7 +653,7 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(GetResultStatusAsync)}");
     return new GetResultStatusReply
            {
-             IdStatus =
+             IdStatuses =
              {
                await resultTable_.GetResultStatus(request.ResultId.ToList(),
                                                   request.SessionId,

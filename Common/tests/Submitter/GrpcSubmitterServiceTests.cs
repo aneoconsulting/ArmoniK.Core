@@ -1511,7 +1511,7 @@ public class GrpcSubmitterServiceTests
                                                                   CancellationToken.None))
                  .Returns(() => Task.FromResult(new GetTaskStatusReply
                                                 {
-                                                  IdStatus =
+                                                  IdStatuses =
                                                   {
                                                     new GetTaskStatusReply.Types.IdStatus
                                                     {
@@ -1536,7 +1536,7 @@ public class GrpcSubmitterServiceTests
                                 .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Completed,
-                    response.IdStatus.Single().Status);
+                    response.IdStatuses.Single().Status);
   }
 
   [Test]
@@ -1834,7 +1834,7 @@ public class GrpcSubmitterServiceTests
                                                                   CancellationToken.None))
                  .Returns(() => Task.FromResult(new GetResultStatusReply
                                                 {
-                                                  IdStatus =
+                                                  IdStatuses =
                                                   {
                                                     new GetResultStatusReply.Types.IdStatus
                                                     {
@@ -1860,7 +1860,7 @@ public class GrpcSubmitterServiceTests
                                 .ConfigureAwait(false);
 
     Assert.AreEqual(ResultStatus.Completed,
-                    response.IdStatus.Single()
+                    response.IdStatuses.Single()
                             .Status);
   }
 
