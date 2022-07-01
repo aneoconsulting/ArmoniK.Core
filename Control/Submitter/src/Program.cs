@@ -33,6 +33,7 @@ using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -72,23 +73,17 @@ public static class Program
              .AddEnvironmentVariables()
              .AddCommandLine(args);
 
-      Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
-                                            .WriteTo.Console(new CompactJsonFormatter())
-                                            .Enrich.FromLogContext()
-                                            .CreateLogger();
+      var logger = new LoggerInit(builder.Configuration);
 
-      var logger = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger))
-                                .CreateLogger("root");
+      builder.Host.UseSerilog(logger.GetSerilogConf());
 
-      builder.Host.UseSerilog(Log.Logger);
-
-      builder.Services.AddLogging()
+      builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
-                                 logger)
+                                 logger.GetLogger())
              .AddAmqp(builder.Configuration,
-                      logger)
+                      logger.GetLogger())
              .AddRedis(builder.Configuration,
-                       logger)
+                       logger.GetLogger())
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .ValidateGrpcRequests();
 
