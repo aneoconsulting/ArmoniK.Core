@@ -12919,6 +12919,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail
   nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable
+  name: FSMShouldNotBeReusable()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FSMShouldNotBeReusable
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable*
+  name: FSMShouldNotBeReusable
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FSMShouldNotBeReusable_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2
+  name: FSMShouldNotBeReusable2()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FSMShouldNotBeReusable2
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2*
+  name: FSMShouldNotBeReusable2
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FSMShouldNotBeReusable2_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2
 - uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateGraphShouldSucceed
   name: GenerateGraphShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_GenerateGraphShouldSucceed
