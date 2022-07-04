@@ -3184,12 +3184,24 @@
       "version": ""
     },
     {
+      "type": "Conceptual",
+      "source_relative_path": "articles/tasks.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/tasks.html",
+          "hash": "P0jtlr8vmuGx8uYDIbW+Qxuj+v37n6XIhG/1v6Fs9Cs="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
       "type": "Toc",
       "source_relative_path": "articles/toc.yml",
       "output": {
         ".html": {
           "relative_path": "articles/toc.html",
-          "hash": "BlPxk5mtl2kgfcZUgkEguqiSAR/EUyUTT4EdebwkQvs="
+          "hash": "UbEuIxXx0ul4+ijV5IjgWSX7Hu0HvJND4z6kUPykItg="
         }
       },
       "is_incremental": false,
@@ -3234,7 +3246,7 @@
         "ConceptualDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 3,
+          "total_file_count": 4,
           "skipped_file_count": 0
         },
         "ManagedReferenceDocumentProcessor": {

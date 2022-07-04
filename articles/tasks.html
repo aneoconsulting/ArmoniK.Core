@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Tasks </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Tasks ">
+    <meta name="generator" content="docfx 2.59.2.0">
+    
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles/docfx.vendor.css">
+    <link rel="stylesheet" href="../styles/docfx.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <meta property="docfx:navrel" content="../toc.html">
+    <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+              <a class="navbar-brand" href="../index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="tasks">Tasks</h1>
+
+<h2 id="task-dependencies">Task dependencies</h2>
+<p>ArmoniK supports data dependencies between tasks, it means that a task will be executed only when all their input data are available. The input data can be created by other tasks.</p>
+<p>A task cannot directly wait for another tasks since we want to make sure that a task that does nothing (just wait) will not occupy a pod for no reason. Similarly, a task cannot wait for the completion of its child tasks. Child tasks are only submitted when the parent task completes successfully in order to simplify the management of the children when there is an issue during the execution of the parent task.</p>
+<h2 id="error-management">Error management</h2>
+<pre><code class="lang-mermaid">graph TD
+    Task[Task Ends] --&gt; Error{Return Output}
+    Error --&gt;|OK| Completed[Task Completed]
+    Error --&gt;|KO| Failed
+    Error --&gt;|Throw Grpc Error| grpcex{retry &lt; MaxRetries}
+    grpcex --&gt;|Yes| SubmitDuplicate[Task Error + Submit a duplicated task]
+    grpcex --&gt;|No| Failed[Task Error + No retries]
+</code></pre>
+<ul>
+<li>Task Completed
+<ul>
+<li>Status Ok</li>
+<li>Subtask creation OK : child tasks are created when received (with creating status i.e; created &quot;on the fly&quot;) and submitted at the end of the parent task</li>
+<li>Outputs OK</li>
+</ul>
+</li>
+<li>Task Error
+<ul>
+<li>Cancellation of outputs and child tasks</li>
+<li>Error not managed by application (raise a gRPC Error that will be transfered to the polling agent), annulate output from child tasks.</li>
+<li>creation of Task Duplicate (with link for monitoring and number of retry) and transfer output creation responsibility</li>
+</ul>
+</li>
+<li>Task resubmission
+<ul>
+<li>copy of task metadata with new id</li>
+</ul>
+</li>
+</ul>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Documentation/articles/tasks.md/#L1" class="contribution-link">Improve this Doc</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In This Article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    <script type="text/javascript" src="../styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>
