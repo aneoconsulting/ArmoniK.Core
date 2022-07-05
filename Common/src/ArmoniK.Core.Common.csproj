@@ -43,8 +43,11 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <Protobuf Include="..\..\Api\Protos\V1\worker_service.proto" GrpcServices="Both">
+    <Protobuf Include="..\..\Api\Protos\V1\worker_service.proto" GrpcServices="Both">
       <Link>gRPC\Protos\V1\worker_service.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\Api\Protos\V1\agent_service.proto" GrpcServices="Both">
+      <Link>gRPC\Protos\V1\agent_service.proto</Link>
     </Protobuf>
     <Protobuf Include="..\..\Api\Protos\V1\submitter_service.proto" GrpcServices="Both">
       <Link>gRPC\Protos\V1\submitter_service.proto</Link>

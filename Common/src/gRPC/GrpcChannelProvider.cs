@@ -42,17 +42,16 @@ namespace ArmoniK.Core.Common.gRPC;
 [UsedImplicitly]
 public class GrpcChannelProvider
 {
-  private readonly GrpcChannel                  options_;
-  private readonly ILogger<GrpcChannelProvider> logger_;
-  private readonly string                       address_;
+  private readonly GrpcChannel options_;
+  private readonly ILogger     logger_;
+  private readonly string      address_;
 
-  // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-  public GrpcChannelProvider(GrpcChannel                  options,
-                             ILogger<GrpcChannelProvider> logger)
+  public GrpcChannelProvider(GrpcChannel options,
+                             ILogger     logger)
   {
-    options_       = options;
-    logger_        = logger;
-    address_       = options_.Address ?? throw new InvalidOperationException();
+    options_ = options;
+    logger_  = logger;
+    address_ = options_.Address ?? throw new InvalidOperationException();
   }
 
   private static ChannelBase BuildWebGrpcChannel(string  address,

@@ -30,11 +30,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+
+using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
@@ -55,10 +58,10 @@ internal class TaskHandler : IAsyncDisposable
   private readonly IWorkerStreamHandler                        workerStreamHandler_;
   private readonly IObjectStorageFactory                       objectStorageFactory_;
   private readonly ActivitySource                              activitySource_;
+  private readonly IAgent                                      agent_;
   private readonly ILogger                                     logger_;
   private          TaskData?                                   taskData_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
-  private          Task?                                       processResult_;
   private          string                                      ownerPodId_;
 
   public TaskHandler(ISessionTable          sessionTable,
@@ -72,6 +75,7 @@ internal class TaskHandler : IAsyncDisposable
                      ITaskProcessingChecker taskProcessingChecker,
                      string                 ownerPodId,
                      ActivitySource         activitySource,
+                     IAgent                 agent,
                      ILogger                logger)
   {
     sessionTable_          = sessionTable;
@@ -84,6 +88,7 @@ internal class TaskHandler : IAsyncDisposable
     workerStreamHandler_   = workerStreamHandler;
     objectStorageFactory_  = objectStorageFactory;
     activitySource_        = activitySource;
+    agent_                 = agent;
     logger_                = logger;
     ownerPodId_            = ownerPodId;
     taskData_              = null;
@@ -383,17 +388,30 @@ internal class TaskHandler : IAsyncDisposable
     }
 
     logger_.LogDebug("Start a new Task to process the messageHandler");
-    using var requestProcessor = new RequestProcessor(workerStreamHandler_,
-                                                      objectStorageFactory_,
-                                                      logger_,
-                                                      submitter_,
-                                                      activitySource_);
 
-    processResult_ = await requestProcessor.ProcessAsync(messageHandler_,
-                                                         taskData_,
-                                                         computeRequestStream_,
-                                                         cancellationToken)
-                                           .ConfigureAwait(false);
+    await agent_.Activate(taskData_)
+                .ConfigureAwait(false);
+
+    logger_.LogDebug("Start processing task");
+    await submitter_.StartTask(taskData_.TaskId,
+                               cancellationToken)
+                    .ConfigureAwait(false);
+
+    workerStreamHandler_.StartTaskProcessing(taskData_,
+                                             cancellationToken);
+    if (workerStreamHandler_.Pipe is null)
+    {
+      throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
+    }
+
+    while (computeRequestStream_.TryDequeue(out var computeRequest))
+    {
+      await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                 {
+                                                   Compute = computeRequest,
+                                                 })
+                                .ConfigureAwait(false);
+    }
   }
 
   /// <summary>
@@ -408,14 +426,79 @@ internal class TaskHandler : IAsyncDisposable
   {
     using var _ = logger_.BeginNamedScope("PostProcessing",
                                           ("taskId", messageHandler_.TaskId));
-    if (processResult_ == null)
+
+    if (workerStreamHandler_.Pipe == null || taskData_ == null)
     {
-      throw new NullReferenceException();
+      throw new ArgumentNullException();
     }
 
-    await processResult_.WaitAsync(cancellationToken)
-                        .ConfigureAwait(false);
+    var reply = await workerStreamHandler_.Pipe.Read(cancellationToken)
+                                          .ConfigureAwait(false);
+
+    // at this point worker requests should have ended
+    try
+    {
+      await workerStreamHandler_.Pipe.CompleteAsync()
+                                .ConfigureAwait(false);
+
+      if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
+      {
+
+        logger_.LogDebug("Complete processing of the request");
+        await agent_.FinalizeTaskCreation(CancellationToken.None).ConfigureAwait(false);
+
+      }
+
+    }
+    catch (RpcException e)
+    {
+      logger_.LogError(e,
+                       "Error while computing task, retrying task");
+      await submitter_.CompleteTaskAsync(taskData_,
+                                         true,
+                                         new Output
+                                         {
+                                           Error = new Output.Types.Error
+                                                   {
+                                                     Details = e.Message,
+                                                   },
+                                         },
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
+      messageHandler_.Status = QueueMessageStatus.Cancelled;
+      return;
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while finalizing task processing");
+      await submitter_.CompleteTaskAsync(taskData_,
+                                         false,
+                                         new Output
+                                         {
+                                           Error = new Output.Types.Error
+                                                   {
+                                                     Details = e.Message,
+                                                   },
+                                         },
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
+      messageHandler_.Status = QueueMessageStatus.Processed;
+
+      logger_.LogDebug("End Task Epilog");
+      return;
+    }
+
+    await submitter_.CompleteTaskAsync(taskData_,
+                                       false,
+                                       reply.Output,
+                                       CancellationToken.None)
+                    .ConfigureAwait(false);
+    messageHandler_.Status = QueueMessageStatus.Processed;
+
+    logger_.LogDebug("End Task Processing");
   }
+
 
   /// <inheritdoc />
   public async ValueTask DisposeAsync()

@@ -25,6 +25,7 @@
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.StateMachines;
 
 using Google.Protobuf;
@@ -50,7 +51,7 @@ public class ComputeRequestQueue
   public void Init(int                         dataChunkMaxSize,
                    string                      sessionId,
                    string                      taskId,
-                   IDictionary<string, string> taskOptions,
+                   TaskOptions                 taskOptions,
                    ByteString?                 payload,
                    IList<string>               expectedOutputKeys)
   {
@@ -65,10 +66,7 @@ public class ComputeRequestQueue
                                                                },
                                                TaskId    = taskId,
                                                SessionId = sessionId,
-                                               TaskOptions =
-                                               {
-                                                 taskOptions,
-                                               },
+                                               TaskOptions = taskOptions,
                                                Payload = payload is not null
                                                            ? new DataChunk
                                                              {

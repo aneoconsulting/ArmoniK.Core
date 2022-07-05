@@ -31,6 +31,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
@@ -92,7 +93,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                 }));
 
     helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object);
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                         .ConfigureAwait(false));
 
     var response = client.GetServiceConfiguration(new Empty());
@@ -125,8 +126,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                           });
 
     helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object);
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     var response = client.TryGetResultStream(new ResultRequest
                                              {
@@ -266,8 +267,8 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsException(exception,
                                                                             output));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -303,8 +304,8 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsException(exception,
                                                                             output));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -330,8 +331,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                         SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -356,8 +357,8 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsException(exception,
                                                                             output));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -392,8 +393,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                            SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -428,8 +429,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                               SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -464,8 +465,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                  SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -508,8 +509,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                  SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -560,8 +561,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                   SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -592,8 +593,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                  SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -623,8 +624,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                     SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -654,8 +655,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                           SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -685,8 +686,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                    SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -717,8 +718,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                      SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {
@@ -749,8 +750,8 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                           SubmitterMockOutput output)
   {
     helper_ = new GrpcSubmitterServiceHelper(CreateSubmitterThrowsExceptionOnly(exception));
-    var client = new Api.gRPC.V1.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+    var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
+                                                                                  .ConfigureAwait(false));
 
     try
     {

@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
@@ -44,8 +45,8 @@ public class ChannelAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMes
     writerChannel_ = writerChannel;
   }
 
-  public IAsyncEnumerable<TReadMessage> Reader
-    => readerChannel_.Reader.ReadAllAsync();
+  public Task<TReadMessage> Read(CancellationToken cancellationToken)
+    => throw new System.NotImplementedException();
 
   public async Task WriteAsync(TWriteMessage message)
     => await writerChannel_.Writer.WriteAsync(message)

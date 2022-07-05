@@ -82,12 +82,12 @@ public class SampleComputerService : WorkerStreamWrapper
       logger_.LogDebug("Inputs {input}",
                        inputs);
 
-      var fastCompute = bool.Parse(taskHandler.TaskOptions.GetValueOrDefault("FastCompute",
-                                                                             "true"));
-      var useLowMem = bool.Parse(taskHandler.TaskOptions.GetValueOrDefault("UseLowMem",
-                                                                           "true"));
-      var smallOutput = bool.Parse(taskHandler.TaskOptions.GetValueOrDefault("SmallOutput",
-                                                                             "true"));
+      var fastCompute = bool.Parse(taskHandler.TaskOptions.Options.GetValueOrDefault("FastCompute",
+                                                                                     "true"));
+      var useLowMem = bool.Parse(taskHandler.TaskOptions.Options.GetValueOrDefault("UseLowMem",
+                                                                                   "true"));
+      var smallOutput = bool.Parse(taskHandler.TaskOptions.Options.GetValueOrDefault("SmallOutput",
+                                                                                     "true"));
 
       logger_.LogDebug("Execute HtcMock request with FastCompute {FastCompute}, UseLowMem {UseLowMem} and SmallOutput {SmallOutput}",
                        fastCompute,
@@ -162,8 +162,8 @@ public class SampleComputerService : WorkerStreamWrapper
                          .ConfigureAwait(false);
       }
 
-      var taskError = taskHandler.TaskOptions.GetValueOrDefault("TaskError",
-                                                                string.Empty);
+      var taskError = taskHandler.TaskOptions.Options.GetValueOrDefault("TaskError",
+                                                                        string.Empty);
 
       if (taskError != string.Empty && taskHandler.TaskId.EndsWith(taskError))
       {
@@ -177,8 +177,8 @@ public class SampleComputerService : WorkerStreamWrapper
                };
       }
 
-      var taskRpcException = taskHandler.TaskOptions.GetValueOrDefault("TaskRpcException",
-                                                                       string.Empty);
+      var taskRpcException = taskHandler.TaskOptions.Options.GetValueOrDefault("TaskRpcException",
+                                                                               string.Empty);
 
       if (taskRpcException != string.Empty && taskHandler.TaskId.EndsWith(taskRpcException))
       {
@@ -193,8 +193,8 @@ public class SampleComputerService : WorkerStreamWrapper
     }
     catch (RpcException ex)
     {
-      var taskRpcException = taskHandler.TaskOptions.GetValueOrDefault("TaskRpcException",
-                                                                       string.Empty);
+      var taskRpcException = taskHandler.TaskOptions.Options.GetValueOrDefault("TaskRpcException",
+                                                                               string.Empty);
       if (taskRpcException != string.Empty && taskHandler.TaskId.EndsWith(taskRpcException))
       {
         throw;

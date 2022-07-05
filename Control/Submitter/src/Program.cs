@@ -42,12 +42,10 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 using OpenTelemetry.Trace;
 
 using Serilog;
-using Serilog.Formatting.Compact;
 
 using SessionProvider = ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider;
 

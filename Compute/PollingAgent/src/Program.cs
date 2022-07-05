@@ -42,12 +42,10 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 using OpenTelemetry.Trace;
 
 using Serilog;
-using Serilog.Formatting.Compact;
 
 namespace ArmoniK.Core.Compute.PollingAgent;
 
@@ -85,6 +83,7 @@ public static class Program
              .AddSingleton<ISubmitter, Submitter>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
+             .AddSingleton<IAgent, Agent>()
              .AddHttpClient();
 
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
@@ -123,6 +122,8 @@ public static class Program
       {
         app.UseDeveloperExceptionPage();
       }
+
+      app.MapGrpcService<GrpcAgentService>();
 
       app.UseEndpoints(endpoints =>
                        {

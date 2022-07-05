@@ -23,30 +23,32 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 
 using Grpc.Core;
 
 namespace ArmoniK.Core.Common.Utils;
 
-class GrpcAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMessage, TWriteMessage>
+internal class GrpcAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMessage, TWriteMessage>
 {
-  private readonly IAsyncStreamReader<TReadMessage>  reader_;
+  private readonly Task<TReadMessage>                       response_;
   private readonly IClientStreamWriter<TWriteMessage> writer_;
 
-  public GrpcAsyncPipe(IAsyncStreamReader<TReadMessage>  reader,
+  public GrpcAsyncPipe(Task<TReadMessage>                 response,
                        IClientStreamWriter<TWriteMessage> writer)
   {
-    reader_ = reader;
-    writer_ = writer;
+    response_            = response;
+    writer_              = writer;
     writer_.WriteOptions = new WriteOptions(WriteFlags.NoCompress);
   }
 
-  public IAsyncEnumerable<TReadMessage> Reader
-    => reader_.ReadAllAsync();
+
+  public async Task<TReadMessage> Read(CancellationToken cancellationToken)
+    => await response_.WaitAsync(cancellationToken)
+                      .ConfigureAwait(false);
 
   public Task WriteAsync(TWriteMessage message)
     => writer_.WriteAsync(message);

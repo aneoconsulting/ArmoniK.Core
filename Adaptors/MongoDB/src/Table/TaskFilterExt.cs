@@ -27,6 +27,7 @@ using System.Linq;
 using System.Linq.Expressions;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table;

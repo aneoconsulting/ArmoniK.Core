@@ -30,6 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;

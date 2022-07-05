@@ -54,6 +54,7 @@ public class Pollster
   private readonly ITaskTable               taskTable_;
   private readonly ITaskProcessingChecker   taskProcessingChecker_;
   private readonly IWorkerStreamHandler     workerStreamHandler_;
+  private readonly IAgent                   agent_;
   public           string                   TaskProcessing;
   private readonly string                   ownerPodId_;
 
@@ -70,7 +71,8 @@ public class Pollster
                   ISessionTable            sessionTable,
                   ITaskTable               taskTable,
                   ITaskProcessingChecker   taskProcessingChecker,
-                  IWorkerStreamHandler     workerStreamHandler)
+                  IWorkerStreamHandler     workerStreamHandler,
+                  IAgent                   agent)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -91,6 +93,7 @@ public class Pollster
     taskTable_             = taskTable;
     taskProcessingChecker_ = taskProcessingChecker;
     workerStreamHandler_   = workerStreamHandler;
+    agent_                 = agent;
     TaskProcessing         = "";
     ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
 
@@ -162,6 +165,7 @@ public class Pollster
                                                           taskProcessingChecker_,
                                                           ownerPodId_,
                                                           activitySource_,
+                                                          agent_,
                                                           logger_);
 
             var precondition = await taskHandler.AcquireTask(combinedCts.Token)

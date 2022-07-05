@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.StateMachines;
 
@@ -40,17 +41,19 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 [PublicAPI]
 public static class TaskRequestExtensions
 {
-  public static IEnumerable<ProcessReply.Types.CreateLargeTaskRequest> ToRequestStream(this IEnumerable<TaskRequest> taskRequests,
-                                                                                       TaskOptions?                  taskOptions,
-                                                                                       int                           chunkMaxSize)
+  public static IEnumerable<CreateTaskRequest> ToRequestStream(this IEnumerable<TaskRequest> taskRequests,
+                                                               TaskOptions?                  taskOptions,
+                                                               string                        communicationToken,
+                                                               int                           chunkMaxSize)
   {
     var fsm = new ProcessReplyCreateLargeTaskStateMachine(NullLogger.Instance);
     fsm.InitRequest();
     if (taskOptions is not null)
     {
-      yield return new ProcessReply.Types.CreateLargeTaskRequest
+      yield return new CreateTaskRequest
                    {
-                     InitRequest = new ProcessReply.Types.CreateLargeTaskRequest.Types.InitRequest
+                     CommunicationToken = communicationToken,
+                     InitRequest = new CreateTaskRequest.Types.InitRequest
                                    {
                                      TaskOptions = taskOptions,
                                    },
@@ -58,9 +61,10 @@ public static class TaskRequestExtensions
     }
     else
     {
-      yield return new ProcessReply.Types.CreateLargeTaskRequest
+      yield return new CreateTaskRequest
                    {
-                     InitRequest = new ProcessReply.Types.CreateLargeTaskRequest.Types.InitRequest(),
+                     CommunicationToken = communicationToken,
+                     InitRequest        = new CreateTaskRequest.Types.InitRequest(),
                    };
     }
 
@@ -76,6 +80,7 @@ public static class TaskRequestExtensions
     while (taskRequestEnumerator.MoveNext())
     {
       foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(false,
+                                                                            communicationToken,
                                                                             chunkMaxSize,
                                                                             fsm))
       {
@@ -87,6 +92,7 @@ public static class TaskRequestExtensions
     }
 
     foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(true,
+                                                                          communicationToken,
                                                                           chunkMaxSize,
                                                                           fsm))
     {
@@ -99,14 +105,16 @@ public static class TaskRequestExtensions
     }
   }
 
-  public static IEnumerable<ProcessReply.Types.CreateLargeTaskRequest> ToRequestStream(this TaskRequest                        taskRequest,
-                                                                                       bool                                    isLast,
-                                                                                       int                                     chunkMaxSize,
-                                                                                       ProcessReplyCreateLargeTaskStateMachine processReplyCreateLargeTaskStateMachine)
+  public static IEnumerable<CreateTaskRequest> ToRequestStream(this TaskRequest                        taskRequest,
+                                                               bool                                    isLast,
+                                                               string                                  communicationToken,
+                                                               int                                     chunkMaxSize,
+                                                               ProcessReplyCreateLargeTaskStateMachine processReplyCreateLargeTaskStateMachine)
   {
     processReplyCreateLargeTaskStateMachine.AddHeader();
-    yield return new ProcessReply.Types.CreateLargeTaskRequest
+    yield return new CreateTaskRequest
                  {
+                   CommunicationToken = communicationToken,
                    InitTask = new InitTaskRequest
                               {
                                 Header = new TaskRequestHeader
@@ -132,8 +140,9 @@ public static class TaskRequestExtensions
                                taskRequest.Payload.Length - start);
 
       processReplyCreateLargeTaskStateMachine.AddDataChunk();
-      yield return new ProcessReply.Types.CreateLargeTaskRequest
+      yield return new CreateTaskRequest
                    {
+                     CommunicationToken = communicationToken,
                      TaskPayload = new DataChunk
                                    {
                                      Data = ByteString.CopyFrom(taskRequest.Payload.Span.Slice(start,
@@ -145,8 +154,9 @@ public static class TaskRequestExtensions
     }
 
     processReplyCreateLargeTaskStateMachine.CompleteData();
-    yield return new ProcessReply.Types.CreateLargeTaskRequest
+    yield return new CreateTaskRequest
                  {
+                   CommunicationToken = communicationToken,
                    TaskPayload = new DataChunk
                                  {
                                    DataComplete = true,
@@ -156,8 +166,9 @@ public static class TaskRequestExtensions
     if (isLast)
     {
       processReplyCreateLargeTaskStateMachine.CompleteRequest();
-      yield return new ProcessReply.Types.CreateLargeTaskRequest
+      yield return new CreateTaskRequest
                    {
+                     CommunicationToken = communicationToken,
                      InitTask = new InitTaskRequest
                                 {
                                   LastTask = true,

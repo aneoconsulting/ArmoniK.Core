@@ -26,6 +26,7 @@ using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 
 using Grpc.Core;
 
@@ -36,7 +37,7 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Common.Stream.Worker;
 
 [PublicAPI]
-public class WorkerStreamWrapper : Api.gRPC.V1.Worker.WorkerBase
+public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase
 {
   private readonly ILoggerFactory               loggerFactory_;
   public           ILogger<WorkerStreamWrapper> logger_;
@@ -47,13 +48,10 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.WorkerBase
     loggerFactory_ = loggerFactory;
   }
 
-  /// <inheritdoc />
-  public sealed override async Task Process(IAsyncStreamReader<ProcessRequest> requestStream,
-                                            IServerStreamWriter<ProcessReply>  responseStream,
-                                            ServerCallContext                  context)
+  public sealed override async Task<ProcessReply> Process(IAsyncStreamReader<ProcessRequest> requestStream,
+                                                          ServerCallContext                  context)
   {
     var taskHandler = await TaskHandler.Create(requestStream,
-                                               responseStream,
                                                new Configuration
                                                {
                                                  DataChunkMaxSize = 50 * 1024,
@@ -69,16 +67,10 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.WorkerBase
     var output = await Process(taskHandler)
                    .ConfigureAwait(false);
 
-    await responseStream.WriteAsync(new ProcessReply
-                                    {
-                                      Output = output,
-                                    })
-                        .ConfigureAwait(false);
-    if (await requestStream.MoveNext(context.CancellationToken)
-                           .ConfigureAwait(false))
-    {
-      throw new InvalidOperationException("The request stream is expected to be finished.");
-    }
+    return new ProcessReply
+           {
+             Output = output,
+           };
   }
 
   public virtual Task<Output> Process(ITaskHandler taskHandler)

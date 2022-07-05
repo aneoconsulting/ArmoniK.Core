@@ -47,7 +47,7 @@ public interface ITaskHandler
   /// <summary>
   ///   List of options provided when submitting the task.
   /// </summary>
-  IReadOnlyDictionary<string, string> TaskOptions { get; }
+  TaskOptions TaskOptions { get; }
 
   /// <summary>
   ///   The data provided when submitting the task.

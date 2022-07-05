@@ -23,11 +23,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Injection.Options;
@@ -38,8 +38,7 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
-using WorkerClient = ArmoniK.Api.gRPC.V1.Worker.WorkerClient;
+using WorkerClient = ArmoniK.Api.gRPC.V1.Worker.Worker.WorkerClient;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
 
@@ -60,11 +59,6 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     logger_            = logger;
   }
 
-  public Queue<ComputeRequest> WorkerReturn()
-  {
-    return new Queue<ComputeRequest>();
-  }
-
   public void StartTaskProcessing(TaskData          taskData,
                                   CancellationToken cancellationToken)
   {
@@ -73,19 +67,19 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       throw new ArmoniKException("Worker client should be initialized");
     }
 
-    stream_ = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
+
+    // todo : using var ? stream is IDisposable
+    var stream = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
                                     cancellationToken: cancellationToken);
 
-    if (stream_ is null)
+    if (stream is null)
     {
       throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
     }
 
-    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream_.ResponseStream,
-                                                           stream_.RequestStream);
+    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream.ResponseAsync,
+                                                           stream.RequestStream);
   }
-
-  private AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? stream_;
 
   public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 
@@ -141,7 +135,6 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public void Dispose()
   {
-    stream_?.Dispose();
     GC.SuppressFinalize(this);
   }
 }

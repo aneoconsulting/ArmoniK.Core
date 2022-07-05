@@ -29,6 +29,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Agent;
+using ArmoniK.Api.gRPC.V1.Worker;
+using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.StateMachines;
 
 using Google.Protobuf;
@@ -45,29 +49,26 @@ public class TaskHandler : ITaskHandler
   private readonly ILogger<TaskHandler> logger_;
 
   private readonly IAsyncStreamReader<ProcessRequest> requestStream_;
-  private readonly IServerStreamWriter<ProcessReply>  responseStream_;
 
-  private readonly SemaphoreSlim                        semaphore_ = new(1,1);
-  private          ComputeRequestStateMachine?          crsm_;
-  private          IReadOnlyDictionary<string, byte[]>? dataDependencies_;
-  private          IList<string>?                       expectedResults_;
+  private ComputeRequestStateMachine?          crsm_;
+  private IReadOnlyDictionary<string, byte[]>? dataDependencies_;
+  private IList<string>?                       expectedResults_;
 
   private bool isInitialized_;
 
-  private int                                  messageCounter_;
-  private byte[]?                              payload_;
-  private string?                              sessionId_;
-  private string?                              taskId_;
-  private IReadOnlyDictionary<string, string>? taskOptions_;
+  private byte[]?           payload_;
+  private string?           sessionId_;
+  private string?           taskId_;
+  private TaskOptions?      taskOptions_;
+  private Agent.AgentClient client_;
+  private string            communicationToken_;
 
   private TaskHandler(IAsyncStreamReader<ProcessRequest> requestStream,
-                      IServerStreamWriter<ProcessReply>  responseStream,
                       Configuration                      configuration,
                       CancellationToken                  cancellationToken,
                       ILogger<TaskHandler>               logger)
   {
     requestStream_     = requestStream;
-    responseStream_    = responseStream;
     cancellationToken_ = cancellationToken;
     Configuration      = configuration;
     logger_            = logger;
@@ -82,7 +83,7 @@ public class TaskHandler : ITaskHandler
     => taskId_ ?? throw TaskHandlerException(nameof(TaskId));
 
   /// <inheritdoc />
-  public IReadOnlyDictionary<string, string> TaskOptions
+  public TaskOptions TaskOptions
     => taskOptions_ ?? throw TaskHandlerException(nameof(TaskOptions));
 
   /// <inheritdoc />
@@ -104,54 +105,27 @@ public class TaskHandler : ITaskHandler
   public async Task CreateTasksAsync(IEnumerable<TaskRequest> tasks,
                                      TaskOptions?             taskOptions = null)
   {
-    await semaphore_.WaitAsync(cancellationToken_)
-                    .ConfigureAwait(false);
+    var stream = client_.CreateTask();
 
-    var requestId = $"R#{messageCounter_++}";
-
-    try
+    foreach (var createLargeTaskRequest in tasks.ToRequestStream(taskOptions,
+                                                                 communicationToken_,
+                                                                 Configuration.DataChunkMaxSize))
     {
-
-      foreach (var createLargeTaskRequest in tasks.ToRequestStream(taskOptions,
-                                                                   Configuration.DataChunkMaxSize))
-      {
-        await responseStream_.WriteAsync(new ProcessReply
-                                         {
-                                           RequestId       = requestId,
-                                           CreateLargeTask = createLargeTaskRequest,
-                                         },
-                                         CancellationToken.None)
-                             .ConfigureAwait(false);
-      }
-
-      if (!await requestStream_.MoveNext(cancellationToken_)
-                               .ConfigureAwait(false))
-      {
-        throw new InvalidOperationException("Request stream ended unexpectedly.");
-      }
-
-
-      var current = requestStream_.Current;
-
-      if (current.TypeCase != ProcessRequest.TypeOneofCase.CreateTask)
-      {
-        throw new InvalidOperationException("Expected a CreateTask answer.");
-      }
-
-      if (current.CreateTask.ReplyId != requestId)
-      {
-        throw new InvalidOperationException($"Expected reply for request {requestId}");
-      }
-
-      var reply = current.CreateTask.Reply;
-      if (reply.DataCase == CreateTaskReply.DataOneofCase.NonSuccessfullIds)
-      {
-        throw new AggregateException(reply.NonSuccessfullIds.Ids.Select(s => new InvalidOperationException($"Could not create task it id={s}")));
-      }
+      await stream.RequestStream.WriteAsync(createLargeTaskRequest,
+                                            CancellationToken.None)
+                  .ConfigureAwait(false);
     }
-    finally
+
+    if (!await requestStream_.MoveNext(cancellationToken_)
+                             .ConfigureAwait(false))
     {
-      semaphore_.Release();
+      throw new InvalidOperationException("Request stream ended unexpectedly.");
+    }
+
+    var reply = await stream.ResponseAsync.ConfigureAwait(false);
+    if (reply.DataCase == CreateTaskReply.DataOneofCase.NonSuccessfullIds)
+    {
+      throw new AggregateException(reply.NonSuccessfullIds.Ids.Select(s => new InvalidOperationException($"Could not create task it id={s}")));
     }
   }
 
@@ -171,102 +145,77 @@ public class TaskHandler : ITaskHandler
   public async Task SendResult(string key,
                                byte[] data)
   {
-    try
+    var fsm = new ProcessReplyResultStateMachine(logger_);
+
+    var stream = client_.SendResult();
+
+    fsm.InitKey();
+
+    await stream.RequestStream.WriteAsync(new Result
+                                          {
+                                            CommunicationToken = communicationToken_,
+                                            Init = new InitKeyedDataStream
+                                                   {
+                                                     Key = key,
+                                                   },
+                                          },
+                                          CancellationToken.None)
+                .ConfigureAwait(false);
+    var start = 0;
+
+    while (start < data.Length)
     {
-      var fsm = new ProcessReplyResultStateMachine(logger_);
-      await semaphore_.WaitAsync(cancellationToken_)
-                      .ConfigureAwait(false);
-      var requestId = $"R#{messageCounter_++}";
+      var chunkSize = Math.Min(Configuration.DataChunkMaxSize,
+                               data.Length - start);
 
-      fsm.InitKey();
-      var reply = new ProcessReply
-                  {
-                    Result = new ProcessReply.Types.Result
-                             {
-                               Init = new InitKeyedDataStream
-                                      {
-                                        Key = key,
-                                      },
-                             },
-                    RequestId = requestId,
-                  };
+      fsm.AddDataChunk();
+      await stream.RequestStream.WriteAsync(new Result
+                                            {
+                                              CommunicationToken = communicationToken_,
+                                              Data = new DataChunk
+                                                     {
+                                                       Data = ByteString.CopyFrom(data.AsMemory()
+                                                                                      .Span.Slice(start,
+                                                                                                  chunkSize)),
+                                                     },
+                                            },
+                                            CancellationToken.None)
+                  .ConfigureAwait(false);
 
-      await responseStream_.WriteAsync(reply)
-                           .ConfigureAwait(false);
-      var start = 0;
-
-      while (start < data.Length)
-      {
-        var chunkSize = Math.Min(Configuration.DataChunkMaxSize,
-                                 data.Length - start);
-
-        fsm.AddDataChunk();
-        reply = new ProcessReply
-                {
-                  Result = new ProcessReply.Types.Result
-                           {
-                             Data = new DataChunk
-                                    {
-                                      Data = ByteString.CopyFrom(data.AsMemory()
-                                                                     .Span.Slice(start,
-                                                                                 chunkSize)),
-                                    },
-                           },
-                  RequestId = requestId,
-                };
-
-        await responseStream_.WriteAsync(reply)
-                             .ConfigureAwait(false);
-
-        start += chunkSize;
-      }
-
-      fsm.CompleteData();
-      reply = new ProcessReply
-              {
-                Result = new ProcessReply.Types.Result
-                         {
-                           Data = new DataChunk
-                                  {
-                                    DataComplete = true,
-                                  },
-                         },
-                RequestId = requestId,
-              };
-
-      await responseStream_.WriteAsync(reply)
-                           .ConfigureAwait(false);
-
-      fsm.CompleteRequest();
-      reply = new ProcessReply
-              {
-                Result = new ProcessReply.Types.Result
-                         {
-                           Init = new InitKeyedDataStream
-                                  {
-                                    LastResult = true,
-                                  },
-                         },
-                RequestId = requestId,
-              };
-
-      await responseStream_.WriteAsync(reply)
-                           .ConfigureAwait(false);
+      start += chunkSize;
     }
-    finally
-    {
-      semaphore_.Release();
-    }
+
+    fsm.CompleteData();
+    await stream.RequestStream.WriteAsync(new Result
+                                          {
+                                            CommunicationToken = communicationToken_,
+                                            Data = new DataChunk
+                                                   {
+                                                     DataComplete = true,
+                                                   },
+                                          },
+                                          CancellationToken.None)
+                .ConfigureAwait(false);
+
+    fsm.CompleteRequest();
+    await stream.RequestStream.WriteAsync(new Result
+                                          {
+                                            CommunicationToken = communicationToken_,
+                                            Init = new InitKeyedDataStream
+                                                   {
+                                                     LastResult = true,
+                                                   },
+                                          },
+                                          CancellationToken.None)
+                .ConfigureAwait(false);
   }
 
   public static async Task<TaskHandler> Create(IAsyncStreamReader<ProcessRequest> requestStream,
-                                               IServerStreamWriter<ProcessReply>  responseStream,
                                                Configuration                      configuration,
                                                ILogger<TaskHandler>               logger,
                                                CancellationToken                  cancellationToken)
   {
     var output = new TaskHandler(requestStream,
-                                 responseStream,
                                  configuration,
                                  cancellationToken,
                                  logger);
@@ -275,8 +224,17 @@ public class TaskHandler : ITaskHandler
     return output;
   }
 
-  protected async Task Init()
+  private async Task Init()
   {
+    var channelBase = new GrpcChannelProvider(new GrpcChannel
+                                              {
+                                                Address    = "/cache/armonik_agent.sock",
+                                                SocketType = GrpcSocketType.UnixSocket,
+                                              },
+                                              logger_).Get();
+
+    client_ = new Agent.AgentClient(channelBase);
+
     crsm_ = new ComputeRequestStateMachine(logger_);
     if (!await requestStream_.MoveNext()
                              .ConfigureAwait(false))
@@ -284,18 +242,18 @@ public class TaskHandler : ITaskHandler
       throw new InvalidOperationException("Request stream ended unexpectedly.");
     }
 
-    if (requestStream_.Current.TypeCase         != ProcessRequest.TypeOneofCase.Compute ||
-        requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitRequest)
+    if (requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitRequest)
     {
       throw new InvalidOperationException("Expected a Compute request type with InitRequest to start the stream.");
     }
 
     crsm_.InitRequest();
     var initRequest = requestStream_.Current.Compute.InitRequest;
-    sessionId_       = initRequest.SessionId;
-    taskId_          = initRequest.TaskId;
-    taskOptions_     = initRequest.TaskOptions;
-    expectedResults_ = initRequest.ExpectedOutputKeys;
+    communicationToken_ = requestStream_.Current.CommunicationToken;
+    sessionId_          = initRequest.SessionId;
+    taskId_             = initRequest.TaskId;
+    taskOptions_        = initRequest.TaskOptions;
+    expectedResults_    = initRequest.ExpectedOutputKeys;
 
     if (initRequest.Payload.DataComplete)
     {
@@ -316,8 +274,7 @@ public class TaskHandler : ITaskHandler
           throw new InvalidOperationException("Request stream ended unexpectedly.");
         }
 
-        if (requestStream_.Current.TypeCase         != ProcessRequest.TypeOneofCase.Compute ||
-            requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload)
+        if (requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.Payload)
         {
           throw new InvalidOperationException("Expected a Compute request type with Payload to continue the stream.");
         }
@@ -359,8 +316,7 @@ public class TaskHandler : ITaskHandler
       }
 
 
-      if (requestStream_.Current.TypeCase         != ProcessRequest.TypeOneofCase.Compute ||
-          requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData)
+      if (requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.InitData)
       {
         throw new InvalidOperationException("Expected a Compute request type with InitData to continue the stream.");
       }
@@ -379,8 +335,7 @@ public class TaskHandler : ITaskHandler
             throw new InvalidOperationException("Request stream ended unexpectedly.");
           }
 
-          if (requestStream_.Current.TypeCase         != ProcessRequest.TypeOneofCase.Compute ||
-              requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data)
+          if (requestStream_.Current.Compute.TypeCase != ProcessRequest.Types.ComputeRequest.TypeOneofCase.Data)
           {
             throw new InvalidOperationException("Expected a Compute request type with Data to continue the stream.");
           }

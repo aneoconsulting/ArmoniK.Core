@@ -30,6 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -110,7 +111,7 @@ public class DataPrefetcher : IInitializable
     computeRequests.Init(PayloadConfiguration.MaxChunkSize,
                          taskData.SessionId,
                          taskData.TaskId,
-                         taskData.Options.Options,
+                         taskData.Options,
                          payloadChunks.FirstOrDefault(),
                          taskData.ExpectedOutputIds);
 
