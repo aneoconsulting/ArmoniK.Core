@@ -29,11 +29,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Identity;
-
-namespace ArmoniK.Core.Common.Auth.Types
+namespace ArmoniK.Core.Common.Tests.Auth
 {
-  public record User(string UserId, string UserName, string CN, string CertificateFingerprint)
+  internal class TestAuthSourceProvider
   {
   }
 }

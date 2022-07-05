@@ -29,11 +29,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Identity;
-
-namespace ArmoniK.Core.Common.Auth.Types
+namespace ArmoniK.Core.Common.Auth
 {
-  public record User(string UserId, string UserName, string CN, string CertificateFingerprint)
+  public static class Actions
   {
+    public const string GetServiceConfiguration = "GetServiceConfiguration";
+
+    public static class Session
+    {
+      private const string prefix_       = "session:";
+      public const  string CancelSession = prefix_ +"CancelSession";
+      public const  string CreateSession = prefix_ +"CreateSession";
+      public const  string ListSessions  = prefix_ + "ListSessions";
+    }
+
+    //TODO TO BE COMPLETED
   }
 }
