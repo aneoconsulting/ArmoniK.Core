@@ -31,11 +31,10 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public interface IAgent
 {
-  Task<string> Activate(TaskData taskData);
+  Task Init(string sessionId,
+            string taskId);
 
   Task FinalizeTaskCreation(CancellationToken cancellationToken);
-
-  Task Deactivate();
 
   Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                    CancellationToken                     cancellationToken);

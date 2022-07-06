@@ -54,7 +54,7 @@ public class Pollster
   private readonly ITaskTable               taskTable_;
   private readonly ITaskProcessingChecker   taskProcessingChecker_;
   private readonly IWorkerStreamHandler     workerStreamHandler_;
-  private readonly IAgent                   agent_;
+  private readonly LoggerInit               loggerInitializer_;
   public           string                   TaskProcessing;
   private readonly string                   ownerPodId_;
 
@@ -72,7 +72,7 @@ public class Pollster
                   ITaskTable               taskTable,
                   ITaskProcessingChecker   taskProcessingChecker,
                   IWorkerStreamHandler     workerStreamHandler,
-                  IAgent                   agent)
+                  LoggerInit loggerInitializer)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -80,22 +80,22 @@ public class Pollster
                                             $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
     }
 
-    logger_                = logger;
-    activitySource_        = activitySource;
-    queueStorage_          = queueStorage;
-    lifeTime_              = lifeTime;
-    dataPrefetcher_        = dataPrefetcher;
-    messageBatchSize_      = options.MessageBatchSize;
-    objectStorageFactory_  = objectStorageFactory;
-    resultTable_           = resultTable;
-    submitter_             = submitter;
-    sessionTable_          = sessionTable;
-    taskTable_             = taskTable;
-    taskProcessingChecker_ = taskProcessingChecker;
-    workerStreamHandler_   = workerStreamHandler;
-    agent_                 = agent;
-    TaskProcessing         = "";
-    ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
+    logger_                 = logger;
+    activitySource_         = activitySource;
+    queueStorage_           = queueStorage;
+    lifeTime_               = lifeTime;
+    dataPrefetcher_         = dataPrefetcher;
+    messageBatchSize_       = options.MessageBatchSize;
+    objectStorageFactory_   = objectStorageFactory;
+    resultTable_            = resultTable;
+    submitter_              = submitter;
+    sessionTable_           = sessionTable;
+    taskTable_              = taskTable;
+    taskProcessingChecker_  = taskProcessingChecker;
+    workerStreamHandler_    = workerStreamHandler;
+    loggerInitializer_ = loggerInitializer;
+    TaskProcessing          = "";
+    ownerPodId_             = LocalIPv4.GetLocalIPv4Ethernet();
 
   }
 
@@ -154,6 +154,13 @@ public class Pollster
                                                                             cancellationToken);
           try
           {
+            var agent = new Agent(submitter_,
+                                  objectStorageFactory_,
+                                  logger_);
+
+            var agentHandler = new AgentHandler(agent,
+                                                loggerInitializer_);
+
             await using var taskHandler = new TaskHandler(sessionTable_,
                                                           taskTable_,
                                                           resultTable_,
@@ -165,7 +172,7 @@ public class Pollster
                                                           taskProcessingChecker_,
                                                           ownerPodId_,
                                                           activitySource_,
-                                                          agent_,
+                                                          agentHandler,
                                                           logger_);
 
             var precondition = await taskHandler.AcquireTask(combinedCts.Token)
@@ -180,7 +187,7 @@ public class Pollster
               await taskHandler.ExecuteTask(combinedCts.Token)
                                .ConfigureAwait(false);
 
-              logger_.LogDebug("CompleteProcessing task processing");
+              logger_.LogDebug("Complete task processing");
 
               await taskHandler.PostProcessing(combinedCts.Token)
                                .ConfigureAwait(false);

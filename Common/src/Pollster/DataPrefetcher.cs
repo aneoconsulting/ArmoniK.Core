@@ -85,6 +85,7 @@ public class DataPrefetcher : IInitializable
   /// Method used to prefetch data before executing a task
   /// </summary>
   /// <param name="taskData">Task metadata</param>
+  /// <param name="socketPath">Path to the socket used for receiving the requests from the worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   /// Queue containing the request containing the data for the task which can be sent to the worker
@@ -92,6 +93,7 @@ public class DataPrefetcher : IInitializable
   /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
   /// <exception cref="InvalidOperationException">invalid transition between states</exception>
   public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData          taskData,
+                                                                                  string            socketPath,
                                                                                   CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity(nameof(PrefetchDataAsync));
@@ -113,7 +115,8 @@ public class DataPrefetcher : IInitializable
                          taskData.TaskId,
                          taskData.Options,
                          payloadChunks.FirstOrDefault(),
-                         taskData.ExpectedOutputIds);
+                         taskData.ExpectedOutputIds,
+                         socketPath);
 
     for (var i = 1; i < payloadChunks.Count; i++)
     {

@@ -58,11 +58,12 @@ internal class TaskHandler : IAsyncDisposable
   private readonly IWorkerStreamHandler                        workerStreamHandler_;
   private readonly IObjectStorageFactory                       objectStorageFactory_;
   private readonly ActivitySource                              activitySource_;
-  private readonly IAgent                                      agent_;
   private readonly ILogger                                     logger_;
   private          TaskData?                                   taskData_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private          string                                      ownerPodId_;
+  private readonly IAgentHandler                               agentHandler_;
+  private readonly string                                      socketPath_;
 
   public TaskHandler(ISessionTable          sessionTable,
                      ITaskTable             taskTable,
@@ -75,7 +76,7 @@ internal class TaskHandler : IAsyncDisposable
                      ITaskProcessingChecker taskProcessingChecker,
                      string                 ownerPodId,
                      ActivitySource         activitySource,
-                     IAgent                 agent,
+                     IAgentHandler           agentHandler,
                      ILogger                logger)
   {
     sessionTable_          = sessionTable;
@@ -88,10 +89,11 @@ internal class TaskHandler : IAsyncDisposable
     workerStreamHandler_   = workerStreamHandler;
     objectStorageFactory_  = objectStorageFactory;
     activitySource_        = activitySource;
-    agent_                 = agent;
+    agentHandler_          = agentHandler;
     logger_                = logger;
     ownerPodId_            = ownerPodId;
     taskData_              = null;
+    socketPath_            = "/cache/armonik_" + Guid.NewGuid() + ".sock";
   }
 
   /// <summary>
@@ -366,6 +368,7 @@ internal class TaskHandler : IAsyncDisposable
     }
 
     computeRequestStream_ = await dataPrefetcher_.PrefetchDataAsync(taskData_,
+                                                                    socketPath_,
                                                                     cancellationToken)
                                                  .ConfigureAwait(false);
   }
@@ -389,8 +392,10 @@ internal class TaskHandler : IAsyncDisposable
 
     logger_.LogDebug("Start a new Task to process the messageHandler");
 
-    await agent_.Activate(taskData_)
-                .ConfigureAwait(false);
+    await agentHandler_.Start(taskData_.SessionId,
+                              taskData_.TaskId,
+                              socketPath_)
+                       .ConfigureAwait(false);
 
     logger_.LogDebug("Start processing task");
     await submitter_.StartTask(taskData_.TaskId,
@@ -445,8 +450,7 @@ internal class TaskHandler : IAsyncDisposable
       {
 
         logger_.LogDebug("Complete processing of the request");
-        await agent_.FinalizeTaskCreation(CancellationToken.None).ConfigureAwait(false);
-
+        await agentHandler_.FinalizeTaskCreation(CancellationToken.None).ConfigureAwait(false);
       }
 
     }

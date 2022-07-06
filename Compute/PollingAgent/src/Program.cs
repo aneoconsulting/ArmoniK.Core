@@ -81,12 +81,11 @@ public static class Program
                        logger.GetLogger())
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>()
+             .AddSingleton(logger)
              .AddSingleton<ISubmitter, Submitter>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
-             .AddSingleton<IAgent, Agent>()
-             .AddHttpClient()
-             .AddGrpc();
+             .AddHttpClient();
 
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
       {
@@ -124,8 +123,6 @@ public static class Program
       {
         app.UseDeveloperExceptionPage();
       }
-
-      app.MapGrpcService<GrpcAgentService>();
 
       app.UseEndpoints(endpoints =>
                        {

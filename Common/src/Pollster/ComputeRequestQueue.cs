@@ -48,12 +48,13 @@ public class ComputeRequestQueue
     machine_         = new ComputeRequestStateMachine(logger_);
   }
 
-  public void Init(int                         dataChunkMaxSize,
-                   string                      sessionId,
-                   string                      taskId,
-                   TaskOptions                 taskOptions,
-                   ByteString?                 payload,
-                   IList<string>               expectedOutputKeys)
+  public void Init(int           dataChunkMaxSize,
+                   string        sessionId,
+                   string        taskId,
+                   TaskOptions   taskOptions,
+                   ByteString?   payload,
+                   IList<string> expectedOutputKeys,
+                   string        socketPath)
   {
     machine_.InitRequest();
     computeRequests_.Enqueue(new ProcessRequest.Types.ComputeRequest
@@ -77,6 +78,7 @@ public class ComputeRequestQueue
                                                {
                                                  expectedOutputKeys,
                                                },
+                                               AgentLocation = socketPath,
                                              },
                              });
   }

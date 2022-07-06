@@ -42,31 +42,29 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class Agent : IAgent
 {
-  private readonly ISubmitter                                                       submitter_;
-  private readonly ILogger<GrpcAgentService>                                        logger_;
-  private          List<(IEnumerable<Storage.TaskRequest> requests, int priority)>? createdTasks_;
-  private readonly IObjectStorage                                                   resourcesStorage_;
-  private          TaskData?                                                        taskData_;
-  private          string?                                                          communicationToken_;
+  private readonly ISubmitter                                                      submitter_;
+  private readonly ILogger                                                         logger_;
+  private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority)> createdTasks_;
+  private readonly IObjectStorage                                                  resourcesStorage_;
+  private          string?                                                         sessionId_;
+  private          string?                                                         taskId_;
 
-  public Agent(ISubmitter                submitter,
-               IObjectStorageFactory     objectStorageFactory,
-               ILogger<GrpcAgentService> logger)
+  public Agent(ISubmitter            submitter,
+               IObjectStorageFactory objectStorageFactory,
+               ILogger               logger)
   {
-    submitter_          = submitter;
-    logger_             = logger;
-    resourcesStorage_   = objectStorageFactory.CreateResourcesStorage();
-    taskData_           = null;
-    communicationToken_ = null;
-    createdTasks_       = null;
+    submitter_        = submitter;
+    logger_           = logger;
+    resourcesStorage_ = objectStorageFactory.CreateResourcesStorage();
+    createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority)>();
   }
 
-  public Task<string> Activate(TaskData taskData)
+  public Task Init(string sessionId,
+                   string taskId)
   {
-    communicationToken_ = Guid.NewGuid().ToString();
-    taskData_           = taskData;
-    createdTasks_       = new List<(IEnumerable<Storage.TaskRequest> requests, int priority)>();
-    return Task.FromResult(communicationToken_);
+    sessionId_ = sessionId;
+    taskId_    = taskId;
+    return Task.CompletedTask;
   }
 
   public async Task FinalizeTaskCreation(CancellationToken cancellationToken)
@@ -80,19 +78,11 @@ public class Agent : IAgent
     {
       await submitter_.FinalizeTaskCreation(createdTask.requests,
                                             createdTask.priority,
-                                            taskData_!.SessionId,
-                                            taskData_.TaskId,
+                                            sessionId_!,
+                                            taskId_!,
                                             cancellationToken)
                       .ConfigureAwait(false);
     }
-  }
-
-
-  public Task Deactivate()
-  {
-    taskData_           = null;
-    communicationToken_ = null;
-    return Task.CompletedTask;
   }
 
   public async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
@@ -106,24 +96,6 @@ public class Agent : IAgent
     await foreach (var request in requestStream.ReadAllAsync(cancellationToken: cancellationToken)
                                                .ConfigureAwait(false))
     {
-      if (communicationToken_ == null)
-      {
-        return new CreateTaskReply
-               {
-                 CommunicationToken = request.CommunicationToken,
-                 Error              = "Server not available yet",
-               };
-      }
-
-      if (request.CommunicationToken != communicationToken_)
-      {
-        return new CreateTaskReply
-               {
-                 CommunicationToken = request.CommunicationToken,
-                 Error              = "Wrong communication token",
-               };
-      }
-
       switch (request.TypeCase)
       {
         case CreateTaskRequest.TypeOneofCase.InitRequest:
@@ -131,12 +103,12 @@ public class Agent : IAgent
 
           completionTask = Task.Run(async () =>
                                     {
-                                      createdTasks_!.Add(await submitter_.CreateTasks(taskData_!.SessionId,
-                                                                                    taskData_.TaskId,
-                                                                                    request.InitRequest.TaskOptions,
-                                                                                    taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
-                                                                                    cancellationToken)
-                                                                       .ConfigureAwait(false));
+                                      createdTasks_!.Add(await submitter_.CreateTasks(sessionId_!,
+                                                                                      taskId_!,
+                                                                                      request.InitRequest.TaskOptions,
+                                                                                      taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
+                                                                                      cancellationToken)
+                                                                         .ConfigureAwait(false));
 
                                     },
                                     cancellationToken);
@@ -166,9 +138,6 @@ public class Agent : IAgent
             case InitTaskRequest.TypeOneofCase.LastTask:
               fsmCreate.CompleteRequest();
               taskRequestsChannel.Writer.Complete();
-              logger_.LogDebug("Send Task creation reply for {RequestId}",
-                               request.CommunicationToken);
-
 
               try
               {
@@ -185,7 +154,6 @@ public class Agent : IAgent
 
                 return new CreateTaskReply
                        {
-                         CommunicationToken = request.CommunicationToken,
                          Successfull        = new Empty(),
                        };
               }
@@ -195,7 +163,6 @@ public class Agent : IAgent
                                    "Error during task creation");
                 return new CreateTaskReply
                        {
-                         CommunicationToken = request.CommunicationToken,
                          NonSuccessfullIds  = new CreateTaskReply.Types.TaskIds(),
                        };
               }
@@ -233,76 +200,27 @@ public class Agent : IAgent
       }
     }
 
-    return new CreateTaskReply
-           {
-             CommunicationToken = "",
-           };
+    return new CreateTaskReply();
   }
 
   public async Task GetCommonData(DataRequest                    request,
                                   IServerStreamWriter<DataReply> responseStream,
                                   CancellationToken              cancellationToken)
   {
-    if (communicationToken_ == null)
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Server not yet available",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-    }
-
-    if (request.CommunicationToken != communicationToken_)
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Wrong Communication Token",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-    }
-
     await responseStream.WriteAsync(new DataReply
                                     {
-                                      CommunicationToken = request.CommunicationToken,
                                       Error              = "Common data are not supported yet",
                                     },
                                     cancellationToken)
                         .ConfigureAwait(false);
   }
 
-  public async Task GetDirectData(DataRequest                             request,
-                                           IServerStreamWriter<DataReply> responseStream,
-                                           CancellationToken              cancellationToken)
+  public async Task GetDirectData(DataRequest                    request,
+                                  IServerStreamWriter<DataReply> responseStream,
+                                  CancellationToken              cancellationToken)
   {
-    if (communicationToken_ == null)
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Server not yet available",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-    }
-
-    if (request.CommunicationToken != communicationToken_)
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Wrong Communication Token",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-    }
-
     await responseStream.WriteAsync(new DataReply
                                     {
-                                      CommunicationToken = request.CommunicationToken,
                                       Error              = "Direct data are not supported yet",
                                     },
                                     cancellationToken)
@@ -313,40 +231,16 @@ public class Agent : IAgent
                                     IServerStreamWriter<DataReply> responseStream,
                                     CancellationToken              cancellationToken)
   {
-    if (communicationToken_ == null)
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Server not yet available",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-    }
-
-    if (request.CommunicationToken != communicationToken_)
-    {
-      await responseStream.WriteAsync(new DataReply
-                                      {
-                                        CommunicationToken = request.CommunicationToken,
-                                        Error              = "Wrong Communication Token",
-                                      },
-                                      cancellationToken)
-                          .ConfigureAwait(false);
-      return;
-    }
-
     IAsyncEnumerable<byte[]> bytes;
     try
     {
       bytes = resourcesStorage_.GetValuesAsync(request.Key,
-                                              cancellationToken);
+                                               cancellationToken);
     }
     catch (ObjectDataNotFoundException)
     {
       await responseStream.WriteAsync(new DataReply
                                       {
-                                        CommunicationToken = communicationToken_,
                                         Init = new DataReply.Types.Init
                                                {
                                                  Key   = request.Key,
@@ -360,7 +254,6 @@ public class Agent : IAgent
 
     await responseStream.WriteAsync(new DataReply
                                     {
-                                      CommunicationToken = communicationToken_,
                                       Init = new DataReply.Types.Init
                                              {
                                                Key = request.Key,
@@ -379,7 +272,6 @@ public class Agent : IAgent
     {
       await responseStream.WriteAsync(new DataReply
                                       {
-                                        CommunicationToken = communicationToken_,
                                         Init = new DataReply.Types.Init
                                                {
                                                  Key = request.Key,
@@ -395,7 +287,6 @@ public class Agent : IAgent
 
     await responseStream.WriteAsync(new DataReply
                                     {
-                                      CommunicationToken = communicationToken_,
                                       Data = new DataChunk
                                              {
                                                DataComplete = true,
@@ -420,24 +311,6 @@ public class Agent : IAgent
     await foreach (var request in requestStream.ReadAllAsync(cancellationToken)
                                                .ConfigureAwait(false))
     {
-      if (communicationToken_ == null)
-      {
-        return new ResultReply
-               {
-                 CommunicationToken = request.CommunicationToken,
-                 Error              = "Server not yet available",
-               };
-      }
-
-      if (request.CommunicationToken != communicationToken_)
-      {
-        return new ResultReply
-               {
-                 CommunicationToken = request.CommunicationToken,
-                 Error              = "Wrong Communication Token",
-               };
-      }
-
       switch (request.TypeCase)
       {
         case Result.TypeOneofCase.Init:
@@ -447,8 +320,8 @@ public class Agent : IAgent
               fsmResult.InitKey();
               completionTask = Task.Run(async () =>
                                         {
-                                          await submitter_.SetResult(taskData_!.SessionId,
-                                                                     taskData_.TaskId,
+                                          await submitter_.SetResult(sessionId_!,
+                                                                     taskId_!,
                                                                      request.Init.Key,
                                                                      chunksChannel.Reader.ReadAllAsync(cancellationToken),
                                                                      cancellationToken)
@@ -484,7 +357,6 @@ public class Agent : IAgent
                                      .ConfigureAwait(false);
                 return new ResultReply
                        {
-                         CommunicationToken = request.CommunicationToken,
                          Ok                 = new Empty(),
                        };
               }
@@ -494,7 +366,6 @@ public class Agent : IAgent
                                    "Error while receiving results");
                 return new ResultReply
                        {
-                         CommunicationToken = request.CommunicationToken,
                          Error              = "Error while receiving results",
                        };
               }
@@ -510,9 +381,6 @@ public class Agent : IAgent
       }
     }
 
-    return new ResultReply
-           {
-             CommunicationToken = "",
-           };
+    return new ResultReply();
   }
 }
