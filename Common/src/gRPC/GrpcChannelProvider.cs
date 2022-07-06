@@ -52,6 +52,8 @@ public class GrpcChannelProvider
     options_ = options;
     logger_  = logger;
     address_ = options_.Address ?? throw new InvalidOperationException();
+    logger.LogDebug("Channel created for address : {address}",
+                    address_);
   }
 
   private static ChannelBase BuildWebGrpcChannel(string  address,

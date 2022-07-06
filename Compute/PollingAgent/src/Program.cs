@@ -85,7 +85,8 @@ public static class Program
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
              .AddSingleton<IAgent, Agent>()
-             .AddHttpClient();
+             .AddHttpClient()
+             .AddGrpc();
 
       if (!string.IsNullOrEmpty(builder.Configuration["Zipkin:Uri"]))
       {

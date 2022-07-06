@@ -42,7 +42,7 @@ namespace ArmoniK.Samples.HtcMock.Server;
 
 public static class Program
 {
-  private static readonly string SocketPath = "/cache/armonik.sock";
+  private static readonly string SocketPath = "/cache/armonik_worker.sock";
 
   public static int Main(string[] args)
   {
