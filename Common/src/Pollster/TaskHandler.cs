@@ -110,6 +110,7 @@ internal class TaskHandler : IAsyncDisposable
     using var _ = logger_.BeginNamedScope("Acquiring task",
                                           ("taskId", messageHandler_.TaskId));
 
+    logger_.LogInformation("Acquire task");
     try
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
@@ -390,14 +391,14 @@ internal class TaskHandler : IAsyncDisposable
       throw new NullReferenceException();
     }
 
-    logger_.LogDebug("Start a new Task to process the messageHandler");
+    logger_.LogDebug("Create agent server to receive requests from worker");
 
     await agentHandler_.Start(taskData_.SessionId,
                               taskData_.TaskId,
                               socketPath_)
                        .ConfigureAwait(false);
 
-    logger_.LogDebug("Start processing task");
+    logger_.LogInformation("Start processing task");
     await submitter_.StartTask(taskData_.TaskId,
                                cancellationToken)
                     .ConfigureAwait(false);
@@ -437,8 +438,10 @@ internal class TaskHandler : IAsyncDisposable
       throw new ArgumentNullException();
     }
 
+    logger_.LogDebug("Waiting for task output");
     var reply = await workerStreamHandler_.Pipe.Read(cancellationToken)
                                           .ConfigureAwait(false);
+    logger_.LogInformation("Process task output");
 
     // at this point worker requests should have ended
     try

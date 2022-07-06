@@ -43,6 +43,39 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
 
+
+class Counter : IDisposable
+{
+  private readonly int[] counter_;
+
+  public Counter(int[] counter)
+  {
+    counter_ = counter;
+    Interlocked.Increment(ref counter_[0]);
+  }
+
+
+  public void Dispose()
+  {
+    Interlocked.Decrement(ref counter_[0]);
+  }
+}
+
+class AutomaticCounter
+{
+  private readonly int[] counter_ =
+  {
+    0
+  };
+
+  public Counter GetCounter()
+    => new(counter_);
+
+  public bool IsZero
+    => counter_[0] == 0;
+}
+
+
 public class TaskHandler : ITaskHandler
 {
   private readonly CancellationToken    cancellationToken_;
@@ -62,6 +95,9 @@ public class TaskHandler : ITaskHandler
   private string?            taskId_;
   private TaskOptions?       taskOptions_;
   private Agent.AgentClient? client_;
+  private ChannelBase?       channel_;
+  private AutomaticCounter   counter_;
+
 
   private TaskHandler(IAsyncStreamReader<ProcessRequest> requestStream,
                       Configuration                      configuration,
@@ -106,7 +142,8 @@ public class TaskHandler : ITaskHandler
   public async Task CreateTasksAsync(IEnumerable<TaskRequest> tasks,
                                      TaskOptions?             taskOptions = null)
   {
-    var stream = client_!.CreateTask();
+    using var counter = counter_.GetCounter();
+    var       stream  = client_!.CreateTask();
 
     foreach (var createLargeTaskRequest in tasks.ToRequestStream(taskOptions,
                                                                  Configuration.DataChunkMaxSize))
@@ -139,6 +176,8 @@ public class TaskHandler : ITaskHandler
   public async Task SendResult(string key,
                                byte[] data)
   {
+    using var counter = counter_.GetCounter();
+
     var fsm = new ProcessReplyResultStateMachine(logger_);
 
     var stream = client_!.SendResult();
@@ -235,14 +274,14 @@ public class TaskHandler : ITaskHandler
     taskOptions_        = initRequest.TaskOptions;
     expectedResults_    = initRequest.ExpectedOutputKeys;
 
-    var channelBase = new GrpcChannelProvider(new GrpcChannel
+     channel_ = new GrpcChannelProvider(new GrpcChannel
                                               {
                                                 Address    = initRequest.AgentLocation,
                                                 SocketType = GrpcSocketType.UnixSocket,
                                               },
                                               loggerFactory_.CreateLogger<GrpcChannelProvider>()).Get();
 
-    client_ = new Agent.AgentClient(channelBase);
+    client_ = new Agent.AgentClient(channel_);
 
     if (initRequest.Payload.DataComplete)
     {
@@ -375,4 +414,13 @@ public class TaskHandler : ITaskHandler
     => isInitialized_
          ? new InvalidOperationException($"Error in initalization: {argumentName} is null")
          : new InvalidOperationException("");
+
+  public async ValueTask DisposeAsync()
+  {
+    if (!counter_.IsZero)
+    {
+      logger_.LogWarning("At least one request to the agent is running");
+    }
+    await (channel_?.ShutdownAsync()!).ConfigureAwait(false);
+  }
 }

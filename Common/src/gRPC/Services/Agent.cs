@@ -40,7 +40,7 @@ using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-public class Agent : IAgent
+public class Agent : IAgent, IDisposable
 {
   private readonly ISubmitter                                                      submitter_;
   private readonly ILogger                                                         logger_;
@@ -48,6 +48,7 @@ public class Agent : IAgent
   private readonly IObjectStorage                                                  resourcesStorage_;
   private          string?                                                         sessionId_;
   private          string?                                                         taskId_;
+  private          IDisposable?                                                    loggerScope_;
 
   public Agent(ISubmitter            submitter,
                IObjectStorageFactory objectStorageFactory,
@@ -64,6 +65,9 @@ public class Agent : IAgent
   {
     sessionId_ = sessionId;
     taskId_    = taskId;
+    loggerScope_ = logger_.BeginNamedScope("Agent",
+                                           ("taskId", taskId),
+                                           ("sessionId", sessionId));
     return Task.CompletedTask;
   }
 
@@ -377,5 +381,10 @@ public class Agent : IAgent
     }
 
     return new ResultReply();
+  }
+
+  public void Dispose()
+  {
+    loggerScope_?.Dispose();
   }
 }

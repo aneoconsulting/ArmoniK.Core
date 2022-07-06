@@ -154,9 +154,9 @@ public class Pollster
                                                                             cancellationToken);
           try
           {
-            var agent = new Agent(submitter_,
-                                  objectStorageFactory_,
-                                  logger_);
+            using var agent = new Agent(submitter_,
+                                        objectStorageFactory_,
+                                        logger_);
 
             var agentHandler = new AgentHandler(agent,
                                                 loggerInitializer_);

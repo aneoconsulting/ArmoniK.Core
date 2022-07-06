@@ -51,22 +51,24 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase
   public sealed override async Task<ProcessReply> Process(IAsyncStreamReader<ProcessRequest> requestStream,
                                                           ServerCallContext                  context)
   {
-    var taskHandler = await TaskHandler.Create(requestStream,
-                                               new Configuration
-                                               {
-                                                 DataChunkMaxSize = 50 * 1024,
-                                               },
-                                               loggerFactory_,
-                                               context.CancellationToken)
-                                       .ConfigureAwait(false);
+    Output output;
+    {
+      var taskHandler = await TaskHandler.Create(requestStream,
+                                                 new Configuration
+                                                 {
+                                                   DataChunkMaxSize = 50 * 1024,
+                                                 },
+                                                 loggerFactory_,
+                                                 context.CancellationToken)
+                                         .ConfigureAwait(false);
 
-    using var _ = logger_.BeginNamedScope("Execute task",
-                                          ("taskId", taskHandler.TaskId),
-                                          ("sessionId", taskHandler.SessionId));
-    logger_.LogDebug("Execute Process");
-    var output = await Process(taskHandler)
-                   .ConfigureAwait(false);
-
+      using var _ = logger_.BeginNamedScope("Execute task",
+                                            ("taskId", taskHandler.TaskId),
+                                            ("sessionId", taskHandler.SessionId));
+      logger_.LogDebug("Execute Process");
+      output = await Process(taskHandler)
+                 .ConfigureAwait(false);
+    }
     return new ProcessReply
            {
              Output = output,
