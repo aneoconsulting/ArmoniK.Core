@@ -116,12 +116,6 @@ public class TaskHandler : ITaskHandler
                   .ConfigureAwait(false);
     }
 
-    if (!await requestStream_.MoveNext(cancellationToken_)
-                             .ConfigureAwait(false))
-    {
-      throw new InvalidOperationException("Request stream ended unexpectedly.");
-    }
-
     var reply = await stream.ResponseAsync.ConfigureAwait(false);
     if (reply.DataCase == CreateTaskReply.DataOneofCase.NonSuccessfullIds)
     {
