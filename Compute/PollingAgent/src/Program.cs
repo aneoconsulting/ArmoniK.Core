@@ -42,6 +42,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 using OpenTelemetry.Trace;
 
@@ -55,19 +56,19 @@ public static class Program
 
   public static int Main(string[] args)
   {
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
+           .AddJsonFile("appsettings.json",
+                        true,
+                        false)
+           .AddEnvironmentVariables()
+           .AddCommandLine(args);
+
+    var logger = new LoggerInit(builder.Configuration);
+
     try
     {
-      var builder = WebApplication.CreateBuilder(args);
-
-      builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
-             .AddJsonFile("appsettings.json",
-                          true,
-                          false)
-             .AddEnvironmentVariables()
-             .AddCommandLine(args);
-
-      var logger = new LoggerInit(builder.Configuration);
-
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
       builder.Services.AddLogging(logger.Configure)
@@ -154,8 +155,9 @@ public static class Program
     }
     catch (Exception ex)
     {
-      Log.Fatal(ex,
-                "Host terminated unexpectedly");
+      logger.GetLogger()
+            .LogCritical(ex,
+                         "Host terminated unexpectedly");
       return 1;
     }
     finally

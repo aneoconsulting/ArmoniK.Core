@@ -46,6 +46,7 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 public class TaskHandler : ITaskHandler
 {
   private readonly CancellationToken    cancellationToken_;
+  private readonly ILoggerFactory       loggerFactory_;
   private readonly ILogger<TaskHandler> logger_;
 
   private readonly IAsyncStreamReader<ProcessRequest> requestStream_;
@@ -66,12 +67,13 @@ public class TaskHandler : ITaskHandler
   private TaskHandler(IAsyncStreamReader<ProcessRequest> requestStream,
                       Configuration                      configuration,
                       CancellationToken                  cancellationToken,
-                      ILogger<TaskHandler>               logger)
+                      ILoggerFactory                     loggerFactory)
   {
     requestStream_     = requestStream;
     cancellationToken_ = cancellationToken;
+    loggerFactory_     = loggerFactory;
     Configuration      = configuration;
-    logger_            = logger;
+    logger_            = loggerFactory.CreateLogger<TaskHandler>();
   }
 
   /// <inheritdoc />
@@ -212,13 +214,13 @@ public class TaskHandler : ITaskHandler
 
   public static async Task<TaskHandler> Create(IAsyncStreamReader<ProcessRequest> requestStream,
                                                Configuration                      configuration,
-                                               ILogger<TaskHandler>               logger,
+                                               ILoggerFactory                     loggerFactory,
                                                CancellationToken                  cancellationToken)
   {
     var output = new TaskHandler(requestStream,
                                  configuration,
                                  cancellationToken,
-                                 logger);
+                                 loggerFactory);
     await output.Init()
                 .ConfigureAwait(false);
     return output;
@@ -231,7 +233,7 @@ public class TaskHandler : ITaskHandler
                                                 Address    = "/cache/armonik_agent.sock",
                                                 SocketType = GrpcSocketType.UnixSocket,
                                               },
-                                              logger_).Get();
+                                              loggerFactory_.CreateLogger<GrpcChannelProvider>()).Get();
 
     client_ = new Agent.AgentClient(channelBase);
 

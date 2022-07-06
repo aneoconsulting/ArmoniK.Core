@@ -42,12 +42,12 @@ namespace ArmoniK.Core.Common.gRPC;
 [UsedImplicitly]
 public class GrpcChannelProvider
 {
-  private readonly GrpcChannel options_;
-  private readonly ILogger     logger_;
-  private readonly string      address_;
+  private readonly GrpcChannel                  options_;
+  private readonly ILogger<GrpcChannelProvider> logger_;
+  private readonly string                       address_;
 
-  public GrpcChannelProvider(GrpcChannel options,
-                             ILogger     logger)
+  public GrpcChannelProvider(GrpcChannel                  options,
+                             ILogger<GrpcChannelProvider> logger)
   {
     options_ = options;
     logger_  = logger;

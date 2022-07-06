@@ -56,7 +56,7 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase
                                                {
                                                  DataChunkMaxSize = 50 * 1024,
                                                },
-                                               loggerFactory_.CreateLogger<TaskHandler>(),
+                                               loggerFactory_,
                                                context.CancellationToken)
                                        .ConfigureAwait(false);
 
