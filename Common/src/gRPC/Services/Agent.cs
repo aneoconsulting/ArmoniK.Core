@@ -144,13 +144,8 @@ public class Agent : IAgent
                 await completionTask!.WaitAsync(cancellationToken)
                                      .ConfigureAwait(false);
 
-                // todo : finalize creation
-                //await submitter_.FinalizeTaskCreation(taskIds_!,
-                //                                      priority_!,
-                //                                      sessionId_,
-                //                                      parentTaskId_,
-                //                                      context.CancellationToken)
-                //                .ConfigureAwait(false);
+                logger_.LogDebug("Send successful {reply}",
+                                 nameof(CreateTaskReply));
 
                 return new CreateTaskReply
                        {

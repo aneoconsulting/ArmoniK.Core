@@ -56,8 +56,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
 
     var builder = WebApplication.CreateBuilder();
 
-    builder.Logging.AddSerilog(loggerInit_.GetSerilogConf());
-
     builder.Services.AddSingleton(agent_)
            .AddLogging(loggerInit_.Configure)
            .AddGrpc();

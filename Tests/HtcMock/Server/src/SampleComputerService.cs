@@ -53,7 +53,7 @@ public class SampleComputerService : WorkerStreamWrapper
   public override async Task<Output> Process(ITaskHandler taskHandler)
   {
     using var scopedLog = logger_.BeginNamedScope("Execute task",
-                                                  ("Session", taskHandler.SessionId),
+                                                  ("sessionId", taskHandler.SessionId),
                                                   ("taskId", taskHandler.TaskId));
     logger_.LogTrace("DataDependencies {DataDependencies}",
                      taskHandler.DataDependencies.Keys);
@@ -122,7 +122,7 @@ public class SampleComputerService : WorkerStreamWrapper
         await taskHandler.CreateTasksAsync(readyRequests.Select(r =>
                                                                 {
                                                                   var taskId = taskHandler.SessionId + "%" + r.Id;
-                                                                  logger_.LogDebug("Create task {taskId}",
+                                                                  logger_.LogDebug("Create task {task}",
                                                                                    taskId);
                                                                   return new TaskRequest
                                                                          {
