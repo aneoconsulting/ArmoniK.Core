@@ -48,7 +48,6 @@ public class Agent : IAgent, IDisposable
   private readonly IObjectStorage                                                  resourcesStorage_;
   private          string?                                                         sessionId_;
   private          string?                                                         taskId_;
-  private          IDisposable?                                                    loggerScope_;
 
   public Agent(ISubmitter            submitter,
                IObjectStorageFactory objectStorageFactory,
@@ -65,14 +64,14 @@ public class Agent : IAgent, IDisposable
   {
     sessionId_ = sessionId;
     taskId_    = taskId;
-    loggerScope_ = logger_.BeginNamedScope("Agent",
-                                           ("taskId", taskId),
-                                           ("sessionId", sessionId));
     return Task.CompletedTask;
   }
 
   public async Task FinalizeTaskCreation(CancellationToken cancellationToken)
   {
+    using var _ = logger_.BeginNamedScope(nameof(FinalizeTaskCreation),
+                                          ("taskId", taskId_)!,
+                                          ("sessionId", sessionId_)!);
     if (createdTasks_ == null)
     {
       throw new ArmoniKException("Created tasks should not be null");
@@ -97,6 +96,9 @@ public class Agent : IAgent, IDisposable
     Channel<ReadOnlyMemory<byte>>? payloadsChannel     = null;
     var                            taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
 
+    using var _ = logger_.BeginNamedScope(nameof(CreateTask),
+                                          ("taskId", taskId_)!,
+                                          ("sessionId", sessionId_)!);
     await foreach (var request in requestStream.ReadAllAsync(cancellationToken: cancellationToken)
                                                .ConfigureAwait(false))
     {
@@ -107,12 +109,12 @@ public class Agent : IAgent, IDisposable
 
           completionTask = Task.Run(async () =>
                                     {
-                                      createdTasks_!.Add(await submitter_.CreateTasks(sessionId_!,
-                                                                                      taskId_!,
-                                                                                      request.InitRequest.TaskOptions,
-                                                                                      taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
-                                                                                      cancellationToken)
-                                                                         .ConfigureAwait(false));
+                                      createdTasks_.Add(await submitter_.CreateTasks(sessionId_!,
+                                                                                     taskId_!,
+                                                                                     request.InitRequest.TaskOptions,
+                                                                                     taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
+                                                                                     cancellationToken)
+                                                                        .ConfigureAwait(false));
 
                                     },
                                     cancellationToken);
@@ -153,7 +155,7 @@ public class Agent : IAgent, IDisposable
 
                 return new CreateTaskReply
                        {
-                         Successfull        = new Empty(),
+                         Successfull = new Empty(),
                        };
               }
               catch (Exception e)
@@ -162,7 +164,7 @@ public class Agent : IAgent, IDisposable
                                    "Error during task creation");
                 return new CreateTaskReply
                        {
-                         NonSuccessfullIds  = new CreateTaskReply.Types.TaskIds(),
+                         NonSuccessfullIds = new CreateTaskReply.Types.TaskIds(),
                        };
               }
 
@@ -206,9 +208,12 @@ public class Agent : IAgent, IDisposable
                                   IServerStreamWriter<DataReply> responseStream,
                                   CancellationToken              cancellationToken)
   {
+    using var _ = logger_.BeginNamedScope(nameof(GetCommonData),
+                                          ("taskId", taskId_)!,
+                                          ("sessionId", sessionId_)!);
     await responseStream.WriteAsync(new DataReply
                                     {
-                                      Error              = "Common data are not supported yet",
+                                      Error = "Common data are not supported yet",
                                     },
                                     cancellationToken)
                         .ConfigureAwait(false);
@@ -218,9 +223,12 @@ public class Agent : IAgent, IDisposable
                                   IServerStreamWriter<DataReply> responseStream,
                                   CancellationToken              cancellationToken)
   {
+    using var _ = logger_.BeginNamedScope(nameof(GetDirectData),
+                                          ("taskId", taskId_)!,
+                                          ("sessionId", sessionId_)!);
     await responseStream.WriteAsync(new DataReply
                                     {
-                                      Error              = "Direct data are not supported yet",
+                                      Error = "Direct data are not supported yet",
                                     },
                                     cancellationToken)
                         .ConfigureAwait(false);
@@ -230,6 +238,9 @@ public class Agent : IAgent, IDisposable
                                     IServerStreamWriter<DataReply> responseStream,
                                     CancellationToken              cancellationToken)
   {
+    using var _ = logger_.BeginNamedScope(nameof(GetResourceData),
+                                          ("taskId", taskId_)!,
+                                          ("sessionId", sessionId_)!);
     IAsyncEnumerable<byte[]> bytes;
     try
     {
@@ -299,6 +310,10 @@ public class Agent : IAgent, IDisposable
   public async Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
                                             CancellationToken          cancellationToken)
   {
+    using var _ = logger_.BeginNamedScope(nameof(SendResult),
+                                          ("taskId", taskId_)!,
+                                          ("sessionId", sessionId_)!);
+
     Task? completionTask = null;
     var   fsmResult      = new ProcessReplyResultStateMachine(logger_);
     var chunksChannel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>(new UnboundedChannelOptions
@@ -356,7 +371,7 @@ public class Agent : IAgent, IDisposable
                                      .ConfigureAwait(false);
                 return new ResultReply
                        {
-                         Ok                 = new Empty(),
+                         Ok = new Empty(),
                        };
               }
               catch (Exception e)
@@ -365,7 +380,7 @@ public class Agent : IAgent, IDisposable
                                    "Error while receiving results");
                 return new ResultReply
                        {
-                         Error              = "Error while receiving results",
+                         Error = "Error while receiving results",
                        };
               }
             case DataChunk.TypeOneofCase.None:
@@ -385,6 +400,5 @@ public class Agent : IAgent, IDisposable
 
   public void Dispose()
   {
-    loggerScope_?.Dispose();
   }
 }

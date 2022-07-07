@@ -81,7 +81,6 @@ public static class Program
                        logger.GetLogger())
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>()
-             .AddSingleton(logger)
              .AddSingleton<ISubmitter, Submitter>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()

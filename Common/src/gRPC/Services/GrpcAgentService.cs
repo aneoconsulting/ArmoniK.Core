@@ -31,12 +31,12 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
 {
-  private readonly IAgent                    agent_;
-  private readonly ILogger<GrpcAgentService> logger_;
+  private readonly IAgent  agent_;
+  private readonly ILogger logger_;
 
 
-  public GrpcAgentService(IAgent                    agent,
-                          ILogger<GrpcAgentService> logger)
+  public GrpcAgentService(IAgent  agent,
+                          ILogger logger)
   {
     agent_  = agent;
     logger_ = logger;

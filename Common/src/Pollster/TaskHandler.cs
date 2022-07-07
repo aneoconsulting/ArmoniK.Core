@@ -61,7 +61,7 @@ internal class TaskHandler : IAsyncDisposable
   private readonly ILogger                                     logger_;
   private          TaskData?                                   taskData_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
-  private          string                                      ownerPodId_;
+  private readonly string                                      ownerPodId_;
   private readonly IAgentHandler                               agentHandler_;
   private readonly string                                      socketPath_;
 
@@ -441,8 +441,12 @@ internal class TaskHandler : IAsyncDisposable
     logger_.LogDebug("Waiting for task output");
     var reply = await workerStreamHandler_.Pipe.Read(cancellationToken)
                                           .ConfigureAwait(false);
-    logger_.LogInformation("Process task output");
 
+    logger_.LogDebug("Stop agent server");
+    await agentHandler_.Stop(CancellationToken.None)
+                       .ConfigureAwait(false);
+
+    logger_.LogInformation("Process task output");
     // at this point worker requests should have ended
     try
     {
@@ -512,6 +516,9 @@ internal class TaskHandler : IAsyncDisposable
   {
     using var _ = logger_.BeginNamedScope("DisposeAsync",
                                           ("taskId", messageHandler_.TaskId));
+
+    logger_.LogDebug("MessageHandler status is {status}",
+                     messageHandler_.Status);
     await messageHandler_.DisposeAsync()
                          .ConfigureAwait(false);
   }

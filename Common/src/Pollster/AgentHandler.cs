@@ -23,28 +23,26 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
-
-using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
 public class AgentHandler : IAgentHandler, IAsyncDisposable
 {
   private readonly IAgent          agent_;
-  private readonly LoggerInit      loggerInit_;
+  private readonly ILogger         logger_;
   private          WebApplication? app_;
 
-  public AgentHandler(IAgent  agent,
-                      LoggerInit loggerInit)
+  public AgentHandler(IAgent            agent,
+                      ILogger logger)
   {
-    agent_           = agent;
-    loggerInit_ = loggerInit;
+    agent_       = agent;
+    logger_ = logger;
   }
 
   public Task Start(string sessionId,
@@ -57,7 +55,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     var builder = WebApplication.CreateBuilder();
 
     builder.Services.AddSingleton(agent_)
-           .AddLogging(loggerInit_.Configure)
+           .AddSingleton(logger_)
            .AddGrpc();
 
     builder.WebHost.ConfigureKestrel(options =>
@@ -80,8 +78,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
 
     app_.MapGrpcService<GrpcAgentService>();
 
-    app_.RunAsync();
-    return Task.CompletedTask;
+    return app_.StartAsync();
   }
 
   public async Task Stop(CancellationToken cancellationToken)
@@ -90,6 +87,8 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     {
       await app_.StopAsync(cancellationToken)
                 .ConfigureAwait(false);
+      await app_.DisposeAsync()
+                .ConfigureAwait(false);
     }
   }
 
@@ -97,12 +96,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     => await agent_.FinalizeTaskCreation(cancellationToken)
                    .ConfigureAwait(false);
 
-  public async ValueTask DisposeAsync()
-  {
-    if (app_ != null)
-    {
-      await app_.DisposeAsync()
-                .ConfigureAwait(false);
-    }
-  }
+  public ValueTask DisposeAsync()
+    => new();
 }
