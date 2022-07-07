@@ -40,11 +40,13 @@ using GrpcChannel = ArmoniK.Core.Common.Injection.Options.GrpcChannel;
 namespace ArmoniK.Core.Common.gRPC;
 
 [UsedImplicitly]
-public class GrpcChannelProvider
+public class GrpcChannelProvider : IDisposable
 {
   private readonly GrpcChannel                  options_;
   private readonly ILogger<GrpcChannelProvider> logger_;
   private readonly string                       address_;
+  private static   Socket?                      _socket;
+  private static   NetworkStream?               _networkStream;
 
   public GrpcChannelProvider(GrpcChannel                  options,
                              ILogger<GrpcChannelProvider> logger)
@@ -75,21 +77,22 @@ public class GrpcChannelProvider
                                ConnectCallback = async (_,
                                                         cancellationToken) =>
                                                  {
-                                                   var socket = new Socket(AddressFamily.Unix,
+                                                   _socket = new Socket(AddressFamily.Unix,
                                                                            SocketType.Stream,
                                                                            ProtocolType.Unspecified);
 
                                                    try
                                                    {
-                                                     await socket.ConnectAsync(udsEndPoint,
+                                                     await _socket.ConnectAsync(udsEndPoint,
                                                                                cancellationToken)
                                                                  .ConfigureAwait(false);
-                                                     return new NetworkStream(socket,
-                                                                              true);
+                                                     _networkStream = new NetworkStream(_socket,
+                                                                       true);
+                                                     return _networkStream;
                                                    }
                                                    catch
                                                    {
-                                                     socket.Dispose();
+                                                     _socket.Dispose();
                                                      throw;
                                                    }
                                                  },
@@ -115,5 +118,12 @@ public class GrpcChannelProvider
       default:
         throw new InvalidOperationException();
     }
+  }
+
+  public void Dispose()
+  {
+    _socket?.Close();
+    _socket?.Dispose();
+    _networkStream?.Dispose();
   }
 }

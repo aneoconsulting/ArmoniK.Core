@@ -51,20 +51,16 @@ public class Agent : IAgent, IDisposable
 
   public Agent(ISubmitter            submitter,
                IObjectStorageFactory objectStorageFactory,
+               string                sessionId,
+               string taskId,
                ILogger               logger)
   {
     submitter_        = submitter;
     logger_           = logger;
     resourcesStorage_ = objectStorageFactory.CreateResourcesStorage();
     createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority)>();
-  }
-
-  public Task Init(string sessionId,
-                   string taskId)
-  {
-    sessionId_ = sessionId;
-    taskId_    = taskId;
-    return Task.CompletedTask;
+    sessionId_        = sessionId;
+    taskId_           = taskId;
   }
 
   public async Task FinalizeTaskCreation(CancellationToken cancellationToken)

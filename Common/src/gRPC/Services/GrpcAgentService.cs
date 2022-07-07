@@ -31,42 +31,100 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
 {
-  private readonly IAgent  agent_;
-  private readonly ILogger logger_;
+  private          IAgent?                   agent_;
+  private readonly ILogger<GrpcAgentService> logger_;
 
 
-  public GrpcAgentService(IAgent  agent,
-                          ILogger logger)
+  public GrpcAgentService(ILogger<GrpcAgentService> logger)
   {
-    agent_  = agent;
     logger_ = logger;
+  }
+
+  public Task Start(IAgent agent)
+  {
+    agent_ = agent;
+    return Task.CompletedTask;
+  }
+
+  public Task Stop()
+  {
+    agent_ = null;
+    return Task.CompletedTask;
   }
 
   public override async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                          ServerCallContext                     context)
-    => await agent_.CreateTask(requestStream,
-                               context.CancellationToken)
-                   .ConfigureAwait(false);
+  {
+    if (agent_ != null)
+    {
+      return await agent_.CreateTask(requestStream,
+                                     context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    return new CreateTaskReply
+           {
+             Error = "No task is accepting request",
+           };
+  }
 
   public override async Task GetCommonData(DataRequest                    request,
                                            IServerStreamWriter<DataReply> responseStream,
                                            ServerCallContext              context)
-    => await agent_.GetCommonData(request,
-                                  responseStream,
-                                  context.CancellationToken)
-                   .ConfigureAwait(false);
+  {
+    if (agent_ != null)
+    {
+      await agent_.GetCommonData(request,
+                                 responseStream,
+                                 context.CancellationToken)
+                  .ConfigureAwait(false);
+    }
+    else
+    {
+      await responseStream.WriteAsync(new DataReply
+                                      {
+                                        Error = "No task is accepting request",
+                                      })
+                          .ConfigureAwait(false);
+    }
+
+
+  }
 
   public override async Task GetResourceData(DataRequest                    request,
                                              IServerStreamWriter<DataReply> responseStream,
                                              ServerCallContext              context)
-    => await agent_.GetResourceData(request,
-                                    responseStream,
-                                    context.CancellationToken)
-                   .ConfigureAwait(false);
+  {
+    if (agent_ != null)
+    {
+      await agent_.GetResourceData(request,
+                                   responseStream,
+                                   context.CancellationToken)
+                  .ConfigureAwait(false);
+    }
+    else
+    {
+      await responseStream.WriteAsync(new DataReply
+                                      {
+                                        Error = "No task is accepting request",
+                                      })
+                          .ConfigureAwait(false);
+    }
+  }
 
   public override async Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
                                                      ServerCallContext          context)
-    => await agent_.SendResult(requestStream,
-                               context.CancellationToken)
-                   .ConfigureAwait(false);
+  {
+    if (agent_ != null)
+    {
+      return await agent_.SendResult(requestStream,
+                                     context.CancellationToken)
+                         .ConfigureAwait(false);
+    }
+
+    return new ResultReply
+           {
+             Error = "No task is accepting request",
+           };
+  }
 }

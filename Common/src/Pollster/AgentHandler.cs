@@ -18,11 +18,12 @@
 // but WITHOUT ANY WARRANTY
 
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,72 +31,101 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using Serilog;
+
 namespace ArmoniK.Core.Common.Pollster;
 
 public class AgentHandler : IAgentHandler, IAsyncDisposable
 {
-  private readonly IAgent          agent_;
-  private readonly ILogger         logger_;
-  private          WebApplication? app_;
+  private readonly ILogger<AgentHandler> logger_;
+  private readonly WebApplication        app_;
+  private readonly GrpcAgentService      service_;
+  private readonly Task                  runningApp_;
 
-  public AgentHandler(IAgent            agent,
-                      ILogger logger)
+  public AgentHandler(LoggerInit            loggerInit,
+                      ComputePlan           computePlanOptions,
+                      ILogger<AgentHandler> logger)
   {
-    agent_       = agent;
     logger_ = logger;
+
+    try
+    {
+      if (computePlanOptions.AgentChannel?.Address == null)
+      {
+        throw new ArgumentNullException(nameof(computePlanOptions.AgentChannel));
+      }
+
+      logger.LogDebug("Agent address is {address}",
+                      computePlanOptions.AgentChannel.Address);
+
+      var builder = WebApplication.CreateBuilder();
+
+      builder.Services.AddLogging(loggerInit.Configure)
+             .AddSingleton<GrpcAgentService>()
+             .AddGrpc();
+
+      builder.Host.UseSerilog(loggerInit.GetSerilogConf());
+
+      builder.WebHost.ConfigureKestrel(options => options.ListenUnixSocket(computePlanOptions.AgentChannel.Address!,
+                                                                           listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
+
+      app_ = builder.Build();
+
+      app_.UseRouting();
+      app_.MapGrpcService<GrpcAgentService>();
+
+      service_ = app_.Services.GetRequiredService<GrpcAgentService>();
+      app_.RunAsync();
+    }
+    catch (Exception e)
+    {
+      logger.LogError(e,
+                      "Error while initializing agent server");
+      throw;
+    }
   }
 
-  public Task Start(string sessionId,
-                    string taskId,
-                    string socketPath)
+  public async Task Start(IAgent            agent,
+                          CancellationToken cancellationToken)
   {
-    agent_.Init(sessionId,
-                taskId);
-
-    var builder = WebApplication.CreateBuilder();
-
-    builder.Services.AddSingleton(agent_)
-           .AddSingleton(logger_)
-           .AddGrpc();
-
-    builder.WebHost.ConfigureKestrel(options =>
-                                     {
-                                       if (File.Exists(socketPath))
-                                       {
-                                         File.Delete(socketPath);
-                                       }
-
-                                       options.ListenUnixSocket(socketPath,
-                                                                listenOptions =>
-                                                                {
-                                                                  listenOptions.Protocols = HttpProtocols.Http2;
-                                                                });
-                                     });
-
-    app_ = builder.Build();
-
-    app_.UseRouting();
-
-    app_.MapGrpcService<GrpcAgentService>();
-
-    return app_.StartAsync();
+    try
+    {
+      //await app_.StartAsync(CancellationToken.None)
+      //          .ConfigureAwait(false);
+      await service_.Start(agent)
+                    .ConfigureAwait(false);
+    }
+    catch (Exception e)
+    {
+      logger_.LogError(e,
+                      "Error while starting agent server");
+      throw;
+    }
   }
 
   public async Task Stop(CancellationToken cancellationToken)
   {
-    if (app_ != null)
+    try
     {
-      await app_.StopAsync(cancellationToken)
-                .ConfigureAwait(false);
-      await app_.DisposeAsync()
-                .ConfigureAwait(false);
+      await service_.Stop()
+                    .ConfigureAwait(false);
+      //await app_.StopAsync(cancellationToken)
+      //          .ConfigureAwait(false);
+
+      //app_.Lifetime.StopApplication();
+    }
+    catch (Exception e)
+    {
+      logger_.LogError(e,
+                       "Error while stopping agent server");
+    throw;
     }
   }
 
-  public async Task FinalizeTaskCreation(CancellationToken cancellationToken)
-    => await agent_.FinalizeTaskCreation(cancellationToken)
-                   .ConfigureAwait(false);
-
-  public ValueTask DisposeAsync()
-    => new();
+  public async ValueTask DisposeAsync()
+  {
+    runningApp_?.Dispose();
+    await app_.DisposeAsync()
+              .ConfigureAwait(false);
+  }
 }

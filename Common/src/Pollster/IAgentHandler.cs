@@ -20,15 +20,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.gRPC.Services;
+
 namespace ArmoniK.Core.Common.Pollster;
 
-interface IAgentHandler
+public interface IAgentHandler
 {
   Task Stop(CancellationToken                 cancellationToken);
 
-  Task FinalizeTaskCreation(CancellationToken cancellationToken);
-
-  Task Start(string sessionId,
-             string taskId,
-             string socketPath);
+  Task Start(IAgent            agent,
+             CancellationToken cancellationToken);
 }

@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -53,14 +52,14 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase
   {
     Output output;
     {
-      var taskHandler = await TaskHandler.Create(requestStream,
-                                                 new Configuration
-                                                 {
-                                                   DataChunkMaxSize = 50 * 1024,
-                                                 },
-                                                 loggerFactory_,
-                                                 context.CancellationToken)
-                                         .ConfigureAwait(false);
+      await using var taskHandler = await TaskHandler.Create(requestStream,
+                                                             new Configuration
+                                                             {
+                                                               DataChunkMaxSize = 50 * 1024,
+                                                             },
+                                                             loggerFactory_,
+                                                             context.CancellationToken)
+                                                     .ConfigureAwait(false);
 
       using var _ = logger_.BeginNamedScope("Execute task",
                                             ("taskId", taskHandler.TaskId),

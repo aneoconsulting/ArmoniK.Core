@@ -90,13 +90,14 @@ public class TaskHandler : ITaskHandler
 
   private bool isInitialized_;
 
-  private          byte[]?            payload_;
-  private          string?            sessionId_;
-  private          string?            taskId_;
-  private          TaskOptions?       taskOptions_;
-  private          Agent.AgentClient? client_;
-  private          ChannelBase?       channel_;
-  private readonly AutomaticCounter   counter_ = new AutomaticCounter();
+  private          byte[]?             payload_;
+  private          string?             sessionId_;
+  private          string?             taskId_;
+  private          TaskOptions?        taskOptions_;
+  private          Agent.AgentClient?  client_;
+  private          ChannelBase?        channel_;
+  private readonly AutomaticCounter    counter_ = new AutomaticCounter();
+  private          GrpcChannelProvider channelProvider_;
 
 
   private TaskHandler(IAsyncStreamReader<ProcessRequest> requestStream,
@@ -281,12 +282,16 @@ public class TaskHandler : ITaskHandler
     taskOptions_        = initRequest.TaskOptions;
     expectedResults_    = initRequest.ExpectedOutputKeys;
 
-     channel_ = new GrpcChannelProvider(new GrpcChannel
-                                              {
-                                                Address    = initRequest.AgentLocation,
-                                                SocketType = GrpcSocketType.UnixSocket,
-                                              },
-                                              loggerFactory_.CreateLogger<GrpcChannelProvider>()).Get();
+    logger_.LogDebug("Trying to create channel for {address}",
+                     initRequest.AgentLocation);
+
+    channelProvider_ = new GrpcChannelProvider(new GrpcChannel
+                                               {
+                                                 Address    = initRequest.AgentLocation,
+                                                 SocketType = GrpcSocketType.UnixSocket,
+                                               },
+                                               loggerFactory_.CreateLogger<GrpcChannelProvider>());
+    channel_ = channelProvider_.Get();
 
     client_ = new Agent.AgentClient(channel_);
 
@@ -429,5 +434,6 @@ public class TaskHandler : ITaskHandler
       logger_.LogWarning("At least one request to the agent is running");
     }
     await (channel_?.ShutdownAsync()!).ConfigureAwait(false);
+    channelProvider_.Dispose();
   }
 }

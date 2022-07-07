@@ -64,6 +64,7 @@ internal class TaskHandler : IAsyncDisposable
   private readonly string                                      ownerPodId_;
   private readonly IAgentHandler                               agentHandler_;
   private readonly string                                      socketPath_;
+  private          Agent?                                      agent_;
 
   public TaskHandler(ISessionTable          sessionTable,
                      ITaskTable             taskTable,
@@ -76,7 +77,8 @@ internal class TaskHandler : IAsyncDisposable
                      ITaskProcessingChecker taskProcessingChecker,
                      string                 ownerPodId,
                      ActivitySource         activitySource,
-                     IAgentHandler           agentHandler,
+                     IAgentHandler          agentHandler,
+                     string                 socketPath,
                      ILogger                logger)
   {
     sessionTable_          = sessionTable;
@@ -91,9 +93,9 @@ internal class TaskHandler : IAsyncDisposable
     activitySource_        = activitySource;
     agentHandler_          = agentHandler;
     logger_                = logger;
+    socketPath_       = socketPath;
     ownerPodId_            = ownerPodId;
     taskData_              = null;
-    socketPath_            = "/cache/armonik_" + Guid.NewGuid() + ".sock";
   }
 
   /// <summary>
@@ -393,9 +395,14 @@ internal class TaskHandler : IAsyncDisposable
 
     logger_.LogDebug("Create agent server to receive requests from worker");
 
-    await agentHandler_.Start(taskData_.SessionId,
-                              taskData_.TaskId,
-                              socketPath_)
+    agent_ = new Agent(submitter_,
+                           objectStorageFactory_,
+                           taskData_.SessionId,
+                           taskData_.TaskId,
+                           logger_);
+
+    await agentHandler_.Start(agent_,
+                              cancellationToken)
                        .ConfigureAwait(false);
 
     logger_.LogInformation("Start processing task");
@@ -433,7 +440,7 @@ internal class TaskHandler : IAsyncDisposable
     using var _ = logger_.BeginNamedScope("PostProcessing",
                                           ("taskId", messageHandler_.TaskId));
 
-    if (workerStreamHandler_.Pipe == null || taskData_ == null)
+    if (workerStreamHandler_.Pipe == null || taskData_ == null || agent_ == null)
     {
       throw new ArgumentNullException();
     }
@@ -457,7 +464,8 @@ internal class TaskHandler : IAsyncDisposable
       {
 
         logger_.LogDebug("Complete processing of the request");
-        await agentHandler_.FinalizeTaskCreation(CancellationToken.None).ConfigureAwait(false);
+        await agent_.FinalizeTaskCreation(CancellationToken.None)
+                    .ConfigureAwait(false);
       }
 
     }
@@ -521,5 +529,7 @@ internal class TaskHandler : IAsyncDisposable
                      messageHandler_.Status);
     await messageHandler_.DisposeAsync()
                          .ConfigureAwait(false);
+
+    agent_?.Dispose();
   }
 }

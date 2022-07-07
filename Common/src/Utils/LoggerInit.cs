@@ -55,8 +55,6 @@ public class LoggerInit
     => loggerConfiguration_;
 
   public ILogger GetLogger()
-  {
-    return logger_ ??= LoggerFactory.Create(Configure)
-                                    .CreateLogger("root");
-  }
+    => logger_ ??= LoggerFactory.Create(Configure)
+                                .CreateLogger("root");
 }

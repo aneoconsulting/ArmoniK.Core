@@ -54,8 +54,10 @@ public class Pollster
   private readonly ITaskTable               taskTable_;
   private readonly ITaskProcessingChecker   taskProcessingChecker_;
   private readonly IWorkerStreamHandler     workerStreamHandler_;
+  private readonly IAgentHandler            agentHandler_;
   public           string                   TaskProcessing;
   private readonly string                   ownerPodId_;
+  private readonly string                  socketPath_;
 
 
   public Pollster(IQueueStorage            queueStorage,
@@ -70,7 +72,8 @@ public class Pollster
                   ISessionTable            sessionTable,
                   ITaskTable               taskTable,
                   ITaskProcessingChecker   taskProcessingChecker,
-                  IWorkerStreamHandler     workerStreamHandler)
+                  IWorkerStreamHandler     workerStreamHandler,
+                  IAgentHandler            agentHandler)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -78,22 +81,23 @@ public class Pollster
                                             $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
     }
 
-    logger_                 = logger;
-    activitySource_         = activitySource;
-    queueStorage_           = queueStorage;
-    lifeTime_               = lifeTime;
-    dataPrefetcher_         = dataPrefetcher;
-    messageBatchSize_       = options.MessageBatchSize;
-    objectStorageFactory_   = objectStorageFactory;
-    resultTable_            = resultTable;
-    submitter_              = submitter;
-    sessionTable_           = sessionTable;
-    taskTable_              = taskTable;
-    taskProcessingChecker_  = taskProcessingChecker;
-    workerStreamHandler_    = workerStreamHandler;
-    TaskProcessing          = "";
-    ownerPodId_             = LocalIPv4.GetLocalIPv4Ethernet();
-
+    logger_                = logger;
+    activitySource_        = activitySource;
+    queueStorage_          = queueStorage;
+    lifeTime_              = lifeTime;
+    dataPrefetcher_        = dataPrefetcher;
+    messageBatchSize_      = options.MessageBatchSize;
+    objectStorageFactory_  = objectStorageFactory;
+    resultTable_           = resultTable;
+    submitter_             = submitter;
+    sessionTable_          = sessionTable;
+    taskTable_             = taskTable;
+    taskProcessingChecker_ = taskProcessingChecker;
+    workerStreamHandler_   = workerStreamHandler;
+    agentHandler_          = agentHandler;
+    TaskProcessing         = "";
+    ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
+    socketPath_            = options.AgentChannel.Address ?? throw new InvalidOperationException();
   }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -151,13 +155,6 @@ public class Pollster
                                                                             cancellationToken);
           try
           {
-            using var agent = new Agent(submitter_,
-                                        objectStorageFactory_,
-                                        logger_);
-
-            await using var agentHandler = new AgentHandler(agent,
-                                                           logger_);
-
             await using var taskHandler = new TaskHandler(sessionTable_,
                                                           taskTable_,
                                                           resultTable_,
@@ -169,7 +166,8 @@ public class Pollster
                                                           taskProcessingChecker_,
                                                           ownerPodId_,
                                                           activitySource_,
-                                                          agentHandler,
+                                                          agentHandler_,
+                                                          socketPath_,
                                                           logger_);
 
             var precondition = await taskHandler.AcquireTask(combinedCts.Token)

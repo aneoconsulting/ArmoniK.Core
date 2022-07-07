@@ -81,7 +81,9 @@ public static class Program
                        logger.GetLogger())
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>()
+             .AddSingleton(logger)
              .AddSingleton<ISubmitter, Submitter>()
+             .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
              .AddHttpClient();

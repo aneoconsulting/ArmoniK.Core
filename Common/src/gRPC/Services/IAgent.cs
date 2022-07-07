@@ -31,9 +31,6 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public interface IAgent
 {
-  Task Init(string sessionId,
-            string taskId);
-
   Task FinalizeTaskCreation(CancellationToken cancellationToken);
 
   Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
