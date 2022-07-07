@@ -102,6 +102,7 @@ jobs:
         jb cleanupcode ArmoniK.Core.sln
 
     - name: Check Diff
+      continue-on-error: true
       run: |
         DIFF="$(git status --porcelain --untracked-files=no)"
 
@@ -111,8 +112,7 @@ jobs:
           echo "Error: Format was not clean"
           echo "List of files:"
           echo "$DIFF"
-          # Uncomment the following line when repo is ready
-          #exit 1
+          exit 1
         fi
 
 
