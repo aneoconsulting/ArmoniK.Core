@@ -78,6 +78,7 @@ class AutomaticCounter
 
 public class TaskHandler : ITaskHandler
 {
+  private readonly CancellationToken    cancellationToken_;
   private readonly ILoggerFactory       loggerFactory_;
   private readonly ILogger<TaskHandler> logger_;
 
@@ -302,7 +303,7 @@ public class TaskHandler : ITaskHandler
 
       while (!dataChunk.DataComplete)
       {
-        if (!await requestStream_.MoveNext()
+        if (!await requestStream_.MoveNext(cancellationToken_)
                                  .ConfigureAwait(false))
         {
           throw new InvalidOperationException("Request stream ended unexpectedly.");
@@ -343,7 +344,7 @@ public class TaskHandler : ITaskHandler
     ProcessRequest.Types.ComputeRequest.Types.InitData initData;
     do
     {
-      if (!await requestStream_.MoveNext()
+      if (!await requestStream_.MoveNext(cancellationToken_)
                                .ConfigureAwait(false))
       {
         throw new InvalidOperationException("Request stream ended unexpectedly.");
@@ -363,7 +364,7 @@ public class TaskHandler : ITaskHandler
 
         while (true)
         {
-          if (!await requestStream_.MoveNext()
+          if (!await requestStream_.MoveNext(cancellationToken_)
                                    .ConfigureAwait(false))
           {
             throw new InvalidOperationException("Request stream ended unexpectedly.");
