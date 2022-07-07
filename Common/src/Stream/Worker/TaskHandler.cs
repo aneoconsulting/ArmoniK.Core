@@ -90,14 +90,14 @@ public class TaskHandler : ITaskHandler
 
   private bool isInitialized_;
 
-  private          byte[]?             payload_;
-  private          string?             sessionId_;
-  private          string?             taskId_;
-  private          TaskOptions?        taskOptions_;
-  private          Agent.AgentClient?  client_;
-  private          ChannelBase?        channel_;
-  private readonly AutomaticCounter    counter_ = new AutomaticCounter();
-  private          GrpcChannelProvider channelProvider_;
+  private          byte[]?              payload_;
+  private          string?              sessionId_;
+  private          string?              taskId_;
+  private          TaskOptions?         taskOptions_;
+  private          Agent.AgentClient?   client_;
+  private          ChannelBase?         channel_;
+  private readonly AutomaticCounter     counter_ = new AutomaticCounter();
+  private          GrpcChannelProvider? channelProvider_;
 
 
   private TaskHandler(IAsyncStreamReader<ProcessRequest> requestStream,

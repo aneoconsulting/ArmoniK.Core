@@ -149,6 +149,7 @@ public static class Program
                                           () => Task.FromResult(app.Services.GetRequiredService<Pollster>()
                                                                    .TaskProcessing));
                        });
+
       app.Run();
       return 0;
     }

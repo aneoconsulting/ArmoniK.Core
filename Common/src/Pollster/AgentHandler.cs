@@ -40,7 +40,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   private readonly ILogger<AgentHandler> logger_;
   private readonly WebApplication        app_;
   private readonly GrpcAgentService      service_;
-  private readonly Task                  runningApp_;
 
   public AgentHandler(LoggerInit            loggerInit,
                       ComputePlan           computePlanOptions,
@@ -75,7 +74,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
       app_.MapGrpcService<GrpcAgentService>();
 
       service_ = app_.Services.GetRequiredService<GrpcAgentService>();
-      app_.RunAsync();
+      app_.StartAsync();
     }
     catch (Exception e)
     {
@@ -124,7 +123,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
 
   public async ValueTask DisposeAsync()
   {
-    runningApp_?.Dispose();
     await app_.DisposeAsync()
               .ConfigureAwait(false);
   }
