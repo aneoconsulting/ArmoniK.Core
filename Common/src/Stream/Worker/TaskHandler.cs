@@ -78,7 +78,6 @@ class AutomaticCounter
 
 public class TaskHandler : ITaskHandler
 {
-  private readonly CancellationToken    cancellationToken_;
   private readonly ILoggerFactory       loggerFactory_;
   private readonly ILogger<TaskHandler> logger_;
 
@@ -90,13 +89,13 @@ public class TaskHandler : ITaskHandler
 
   private bool isInitialized_;
 
-  private byte[]?            payload_;
-  private string?            sessionId_;
-  private string?            taskId_;
-  private TaskOptions?       taskOptions_;
-  private Agent.AgentClient? client_;
-  private ChannelBase?       channel_;
-  private AutomaticCounter   counter_;
+  private          byte[]?            payload_;
+  private          string?            sessionId_;
+  private          string?            taskId_;
+  private          TaskOptions?       taskOptions_;
+  private          Agent.AgentClient? client_;
+  private          ChannelBase?       channel_;
+  private readonly AutomaticCounter   counter_ = new AutomaticCounter();
 
 
   private TaskHandler(IAsyncStreamReader<ProcessRequest> requestStream,
@@ -237,6 +236,13 @@ public class TaskHandler : ITaskHandler
                                           },
                                           CancellationToken.None)
                 .ConfigureAwait(false);
+
+    var reply = await stream.ResponseAsync.ConfigureAwait(false);
+    if (reply.TypeCase == ResultReply.TypeOneofCase.Error)
+    {
+      logger_.LogError(reply.Error);
+      throw new InvalidOperationException($"Cannot send result id={key}");
+    }
   }
 
   public static async Task<TaskHandler> Create(IAsyncStreamReader<ProcessRequest> requestStream,
