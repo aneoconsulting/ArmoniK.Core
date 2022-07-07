@@ -23,34 +23,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Security.Principal;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-
-namespace ArmoniK.Core.Common.Auth
+namespace ArmoniK.Core.Common.Auth.Authentication
 {
-  internal class AuthSource : IAuthenticationSource
+  public interface IAuthenticationSource
   {
-    private readonly ILogger logger_;
-    public AuthSource(ConfigurationManager config,
-                      ILogger              logger)
-    {
-      logger_ = logger;
-    }
 
-    public IIdentity? GetIdentity(string CN,
-                                  string fingerprint)
-      => throw new NotImplementedException();
+    public ClaimsIdentity? GetIdentity(string CN,
+                                       string fingerprint);
 
-    public IEnumerable<Claim> GetClaims(string CN,
-                                        string fingerprint)
-      => throw new NotImplementedException();
+    public Task<ClaimsIdentity?> GetIdentityAsync(string CN,
+                                             string fingerprint, CancellationToken cancellationToken);
   }
 }

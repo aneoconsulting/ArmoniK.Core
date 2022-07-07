@@ -23,39 +23,38 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Security.Principal;
-using System.Text;
 using System.Text.Encodings.Web;
+using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Exceptions;
-
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace ArmoniK.Core.Common.Auth
+namespace ArmoniK.Core.Common.Auth.Authentication
 {
-  internal class AuthenticatorOptions : AuthenticationSchemeOptions
+  public class AuthenticatorOptions : AuthenticationSchemeOptions
   {
+
+    public static string SectionName = nameof(AuthenticatorOptions);
     public AuthenticatorOptions()
     {
       CNHeader          = "X-Certificate-Client-CN";
       FingerprintHeader = "X-Certificate-Client-Fingerprint";
     }
 
+    public void CopyFrom(AuthenticatorOptions o)
+    {
+      CNHeader = o.CNHeader;
+      FingerprintHeader = o.FingerprintHeader;
+    }
+
     public string                 CNHeader          { get; set; }
     public string                 FingerprintHeader { get; set; }
-    public IAuthenticationSource? AuthSource        { get; set; }
   }
 
-  internal class Authenticator : AuthenticationHandler<AuthenticatorOptions>
+  public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   {
     private readonly ILogger<Authenticator> logger_;
     private readonly string                 cnHeader_;
@@ -65,7 +64,8 @@ namespace ArmoniK.Core.Common.Auth
     public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,
                          ILoggerFactory                        loggerFactory,
                          UrlEncoder                            encoder,
-                         ISystemClock                          clock)
+                         ISystemClock                          clock,
+                         IAuthenticationSource authSource)
       : base(options,
              loggerFactory,
              encoder,
@@ -73,11 +73,11 @@ namespace ArmoniK.Core.Common.Auth
     {
       fingerprintHeader_ = options.CurrentValue.FingerprintHeader;
       cnHeader_          = options.CurrentValue.CNHeader;
-      authSource_        = options.CurrentValue.AuthSource ?? throw new ArmoniKException("AuthSource isn't specified");
+      authSource_        = authSource;
       logger_            = loggerFactory.CreateLogger<Authenticator>();
     }
 
-    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
       var cn = Request.Headers[cnHeader_]
                       .ToString();
@@ -87,16 +87,16 @@ namespace ArmoniK.Core.Common.Auth
                        cn,
                        fingerprint);
 
-      var identity = authSource_.GetIdentity(cn,
-                                             fingerprint);
+      var identity = await authSource_.GetIdentityAsync(cn, fingerprint, new CancellationToken(false))
+                                .ConfigureAwait(false);
       if (identity == null)
       {
-        return Task.FromResult(AuthenticateResult.Fail("Unrecognized fingerprint"));
+        return AuthenticateResult.Fail("Unrecognized fingerprint");
       }
 
       var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity),
                                             Scheme.Name);
-      return Task.FromResult(AuthenticateResult.Success(ticket));
+      return AuthenticateResult.Success(ticket);
     }
   }
 }

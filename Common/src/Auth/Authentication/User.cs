@@ -23,26 +23,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ArmoniK.Core.Common.Auth
+namespace ArmoniK.Core.Common.Auth.Authentication
 {
-  public static class Actions
+  public record User(string UserId, string UserName, string CN, string CertificateFingerprint)
   {
-    public const string GetServiceConfiguration = "GetServiceConfiguration";
-
-    public static class Session
-    {
-      private const string prefix_       = "session:";
-      public const  string CancelSession = prefix_ +"CancelSession";
-      public const  string CreateSession = prefix_ +"CreateSession";
-      public const  string ListSessions  = prefix_ + "ListSessions";
-    }
-
-    //TODO TO BE COMPLETED
   }
 }

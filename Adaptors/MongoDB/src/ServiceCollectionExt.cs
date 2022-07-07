@@ -23,17 +23,22 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Auth;
+using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -222,6 +227,28 @@ public static class ServiceCollectionExt
                     nameof(mongoOptions.DataRetention),
                     mongoOptions.DataRetention);
 
+    return services;
+  }
+
+  [PublicAPI]
+  public static IServiceCollection AddClientSubmitterAuthentication(this IServiceCollection services,
+                                                                    ConfigurationManager    configuration,
+                                                                    ILogger                 logger)
+  {
+    services.AddTransient<IPermissionTable, PermissionTable>()
+            .AddOption<AuthenticatorOptions>(configuration,
+                       AuthenticatorOptions.SectionName, out var authenticatorOptions);
+    services.AddAuthentication()
+            .AddScheme<AuthenticatorOptions, Authenticator>("SubmitterAuthenticationScheme", o => o.CopyFrom(authenticatorOptions));
+    return services;
+  }
+
+  [PublicAPI]
+  public static IServiceCollection AddClientSubmitterAuthorization(this IServiceCollection services,
+                                                                   ConfigurationManager    configuration,
+                                                                   ILogger                 logger)
+  {
+    services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
     return services;
   }
 }
