@@ -33,6 +33,8 @@ using Microsoft.Extensions.Logging;
 
 using Serilog;
 
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+
 namespace ArmoniK.Core.Common.Pollster;
 
 public class AgentHandler : IAgentHandler, IAsyncDisposable
@@ -85,6 +87,8 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   }
 
   public async Task Start(IAgent            agent,
+                          string token,
+                          ILogger logger,
                           CancellationToken cancellationToken)
   {
     try

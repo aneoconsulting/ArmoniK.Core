@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.gRPC.Services;
 
+using Microsoft.Extensions.Logging;
+
 namespace ArmoniK.Core.Common.Pollster;
 
 public interface IAgentHandler
@@ -29,5 +31,7 @@ public interface IAgentHandler
   Task Stop(CancellationToken                 cancellationToken);
 
   Task Start(IAgent            agent,
+             string            token,
+             ILogger           logger,
              CancellationToken cancellationToken);
 }
