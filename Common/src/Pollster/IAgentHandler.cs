@@ -26,10 +26,30 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+/// Interface to create classes that will populate <see cref="IAgent"/> when worker sends requests
+/// </summary>
 public interface IAgentHandler
 {
-  Task Stop(CancellationToken                 cancellationToken);
+  /// <summary>
+  /// Stops the handler
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// Task representing the asynchronous execution of the method
+  /// </returns>
+  Task Stop(CancellationToken cancellationToken);
 
+  /// <summary>
+  /// Starts the handler
+  /// </summary>
+  /// <param name="agent">Agent that will be populated with requests from the worker</param>
+  /// <param name="token">Token that can be used to differentiate running tasks</param>
+  /// <param name="logger">Logger that may be injected into the handler that embed preconfigured scopes</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// Task representing the asynchronous execution of the method
+  /// </returns>
   Task Start(IAgent            agent,
              string            token,
              ILogger           logger,

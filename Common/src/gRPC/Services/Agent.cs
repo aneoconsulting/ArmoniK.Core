@@ -40,6 +40,10 @@ using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+
+/// <summary>
+/// Represents the internal processing requests received by the agent. Provides methods to process those requests
+/// </summary>
 public class Agent : IAgent, IDisposable
 {
   private readonly ISubmitter                                                      submitter_;
@@ -49,10 +53,18 @@ public class Agent : IAgent, IDisposable
   private          string?                                                         sessionId_;
   private          string?                                                         taskId_;
 
+  /// <summary>
+  /// Initializes a new instance of the <see cref="Agent"/>
+  /// </summary>
+  /// <param name="submitter">Interface to manage tasks</param>
+  /// <param name="objectStorageFactory">Interface class to create object storage</param>
+  /// <param name="sessionId">Id of the session</param>
+  /// <param name="taskId">Id of the task</param>
+  /// <param name="logger">Logger used to produce logs for this class</param>
   public Agent(ISubmitter            submitter,
                IObjectStorageFactory objectStorageFactory,
                string                sessionId,
-               string taskId,
+               string                taskId,
                ILogger               logger)
   {
     submitter_        = submitter;

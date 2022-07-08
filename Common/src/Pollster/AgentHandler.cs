@@ -37,12 +37,21 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+/// Represents the handler that will provide servers to process requests from worker
+/// </summary>
 public class AgentHandler : IAgentHandler, IAsyncDisposable
 {
   private readonly ILogger<AgentHandler> logger_;
   private readonly WebApplication        app_;
   private readonly GrpcAgentService      service_;
 
+  /// <summary>
+  /// Initializes a new instance
+  /// </summary>
+  /// <param name="loggerInit">Logger initializer used to configure the loggers needed by the worker</param>
+  /// <param name="computePlanOptions">Options needed for the creation of the servers</param>
+  /// <param name="logger">Logger used to produce logs for this class</param>
   public AgentHandler(LoggerInit            loggerInit,
                       ComputePlan           computePlanOptions,
                       ILogger<AgentHandler> logger)
