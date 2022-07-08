@@ -112,6 +112,7 @@ jobs:
           echo "Error: Format was not clean"
           echo "List of files:"
           echo "$DIFF"
+          git diff
           exit 1
         fi
 
