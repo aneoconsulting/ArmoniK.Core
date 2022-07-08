@@ -73,6 +73,8 @@ public class Agent : IAgent, IDisposable
       throw new ArmoniKException("Created tasks should not be null");
     }
 
+    logger_.LogDebug("Finalize child task creation");
+
     foreach (var createdTask in createdTasks_)
     {
       await submitter_.FinalizeTaskCreation(createdTask.requests,
@@ -341,25 +343,6 @@ public class Agent : IAgent, IDisposable
               break;
             case InitKeyedDataStream.TypeOneofCase.LastResult:
               fsmResult.CompleteRequest();
-              break;
-            case InitKeyedDataStream.TypeOneofCase.None:
-            default:
-              throw new ArgumentOutOfRangeException();
-          }
-
-          break;
-        case Result.TypeOneofCase.Data:
-          switch (request.Data.TypeCase)
-          {
-            case DataChunk.TypeOneofCase.Data:
-              fsmResult.AddDataChunk();
-              await chunksChannel.Writer.WriteAsync(request.Data.Data.Memory,
-                                                    cancellationToken)
-                                 .ConfigureAwait(false);
-              break;
-            case DataChunk.TypeOneofCase.DataComplete:
-              fsmResult.CompleteData();
-              chunksChannel.Writer.Complete();
 
               try
               {
@@ -379,6 +362,27 @@ public class Agent : IAgent, IDisposable
                          Error = "Error while receiving results",
                        };
               }
+
+            case InitKeyedDataStream.TypeOneofCase.None:
+            default:
+              throw new ArgumentOutOfRangeException();
+          }
+
+          break;
+        case Result.TypeOneofCase.Data:
+          switch (request.Data.TypeCase)
+          {
+            case DataChunk.TypeOneofCase.Data:
+              fsmResult.AddDataChunk();
+              await chunksChannel.Writer.WriteAsync(request.Data.Data.Memory,
+                                                    cancellationToken)
+                                 .ConfigureAwait(false);
+              break;
+            case DataChunk.TypeOneofCase.DataComplete:
+              fsmResult.CompleteData();
+              chunksChannel.Writer.Complete();
+              break;
+
             case DataChunk.TypeOneofCase.None:
             default:
               throw new ArgumentOutOfRangeException();

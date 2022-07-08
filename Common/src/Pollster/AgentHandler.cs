@@ -59,11 +59,11 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
 
       var builder = WebApplication.CreateBuilder();
 
+      builder.Host.UseSerilog(loggerInit.GetSerilogConf());
+
       builder.Services.AddLogging(loggerInit.Configure)
              .AddSingleton<GrpcAgentService>()
              .AddGrpc();
-
-      builder.Host.UseSerilog(loggerInit.GetSerilogConf());
 
       builder.WebHost.ConfigureKestrel(options => options.ListenUnixSocket(computePlanOptions.AgentChannel.Address!,
                                                                            listenOptions => listenOptions.Protocols = HttpProtocols.Http2));

@@ -453,7 +453,8 @@ internal class TaskHandler : IAsyncDisposable
     await agentHandler_.Stop(CancellationToken.None)
                        .ConfigureAwait(false);
 
-    logger_.LogInformation("Process task output");
+    logger_.LogInformation("Process task output of type {type}",
+                           reply.Output.TypeCase);
     // at this point worker requests should have ended
     try
     {
