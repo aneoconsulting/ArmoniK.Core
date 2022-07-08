@@ -97,6 +97,10 @@ jobs:
       run: |
         dotnet tool install -g JetBrains.ReSharper.GlobalTools
 
+    - name: Restore
+      run: |
+        dotnet restore ArmoniK.Core.sln
+
     - name: Reformat
       run: |
         jb cleanupcode ArmoniK.Core.sln
