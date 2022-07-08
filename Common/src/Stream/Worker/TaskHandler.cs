@@ -434,6 +434,6 @@ public class TaskHandler : ITaskHandler
       logger_.LogWarning("At least one request to the agent is running");
     }
     await (channel_?.ShutdownAsync()!).ConfigureAwait(false);
-    channelProvider_.Dispose();
+    channelProvider_?.Dispose();
   }
 }

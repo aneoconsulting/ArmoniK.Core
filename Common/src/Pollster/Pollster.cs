@@ -97,7 +97,14 @@ public class Pollster
     agentHandler_          = agentHandler;
     TaskProcessing         = "";
     ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
-    socketPath_            = options.AgentChannel.Address ?? throw new InvalidOperationException();
+    if (options.AgentChannel != null)
+    {
+      socketPath_ = options.AgentChannel.Address ?? throw new InvalidOperationException();
+    }
+    else
+    {
+      throw new InvalidOperationException();
+    }
   }
 
   public async Task Init(CancellationToken cancellationToken)
