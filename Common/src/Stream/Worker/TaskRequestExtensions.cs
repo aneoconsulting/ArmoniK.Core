@@ -61,7 +61,7 @@ public static class TaskRequestExtensions
     {
       yield return new CreateTaskRequest
                    {
-                     InitRequest        = new CreateTaskRequest.Types.InitRequest(),
+                     InitRequest = new CreateTaskRequest.Types.InitRequest(),
                    };
     }
 
