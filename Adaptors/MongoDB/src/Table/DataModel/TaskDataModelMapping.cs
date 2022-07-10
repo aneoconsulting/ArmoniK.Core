@@ -47,6 +47,8 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.OwnerPodId))
                                                   .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.PayloadId))
+                                                  .SetIsRequired(true);  
                                                 cm.MapProperty(nameof(TaskData.ParentTaskIds))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.DataDependencies))
@@ -78,6 +80,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                 cm.MapCreator(model => new TaskData(model.SessionId,
                                                                                     model.TaskId,
                                                                                     model.OwnerPodId,
+                                                                                    model.PayloadId,
                                                                                     model.ParentTaskIds,
                                                                                     model.DataDependencies,
                                                                                     model.ExpectedOutputIds,
