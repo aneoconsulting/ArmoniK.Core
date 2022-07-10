@@ -44,11 +44,12 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
-  private readonly GrpcChannelProvider          channelProvider_;
-  private readonly InitWorker                   optionsInitWorker_;
-  private readonly ILogger<WorkerStreamHandler> logger_;
-  private          WorkerClient?                workerClient_;
-  private          bool                         isInitialized_;
+  private readonly GrpcChannelProvider                                     channelProvider_;
+  private readonly InitWorker                                              optionsInitWorker_;
+  private readonly ILogger<WorkerStreamHandler>                            logger_;
+  private          WorkerClient?                                           workerClient_;
+  private          bool                                                    isInitialized_;
+  private          AsyncClientStreamingCall<ProcessRequest, ProcessReply>? stream_;
 
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
                              InitWorker                   optionsInitWorker,
@@ -67,18 +68,16 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       throw new ArmoniKException("Worker client should be initialized");
     }
 
-
-    // todo : using var ? stream is IDisposable
-    var stream = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
+    stream_ = workerClient_.Process(deadline: DateTime.UtcNow + taskData.Options.MaxDuration,
                                     cancellationToken: cancellationToken);
 
-    if (stream is null)
+    if (stream_ is null)
     {
       throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
     }
 
-    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream.ResponseAsync,
-                                                           stream.RequestStream);
+    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream_.ResponseAsync,
+                                                           stream_.RequestStream);
   }
 
   public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
@@ -135,6 +134,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
 
   public void Dispose()
   {
+    stream_?.Dispose();
     GC.SuppressFinalize(this);
   }
 }
