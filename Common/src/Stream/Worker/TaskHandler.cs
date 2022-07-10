@@ -277,10 +277,10 @@ public class TaskHandler : ITaskHandler
 
     crsm_.InitRequest();
     var initRequest = requestStream_.Current.Compute.InitRequest;
-    sessionId_          = initRequest.SessionId;
-    taskId_             = initRequest.TaskId;
-    taskOptions_        = initRequest.TaskOptions;
-    expectedResults_    = initRequest.ExpectedOutputKeys;
+    sessionId_       = initRequest.SessionId;
+    taskId_          = initRequest.TaskId;
+    taskOptions_     = initRequest.TaskOptions;
+    expectedResults_ = initRequest.ExpectedOutputKeys;
 
     logger_.LogDebug("Trying to create channel for {address}",
                      initRequest.AgentLocation);
@@ -433,6 +433,7 @@ public class TaskHandler : ITaskHandler
     {
       logger_.LogWarning("At least one request to the agent is running");
     }
+
     await (channel_?.ShutdownAsync()!).ConfigureAwait(false);
     channelProvider_?.Dispose();
   }

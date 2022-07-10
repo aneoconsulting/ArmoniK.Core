@@ -96,8 +96,8 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   }
 
   public async Task Start(IAgent            agent,
-                          string token,
-                          ILogger logger,
+                          string            token,
+                          ILogger           logger,
                           CancellationToken cancellationToken)
   {
     try
@@ -110,7 +110,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     catch (Exception e)
     {
       logger_.LogError(e,
-                      "Error while starting agent server");
+                       "Error while starting agent server");
       throw;
     }
   }
@@ -130,7 +130,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     {
       logger_.LogError(e,
                        "Error while stopping agent server");
-    throw;
+      throw;
     }
   }
 
