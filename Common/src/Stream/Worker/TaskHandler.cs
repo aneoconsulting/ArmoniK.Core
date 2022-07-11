@@ -433,6 +433,10 @@ public class TaskHandler : ITaskHandler
     }
 
     await (channel_?.ShutdownAsync()!).ConfigureAwait(false);
-    channelProvider_?.Dispose();
+    if (channelProvider_ != null)
+    {
+      await channelProvider_.DisposeAsync()
+                            .ConfigureAwait(false);
+    }
   }
 }

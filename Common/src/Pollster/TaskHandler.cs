@@ -93,7 +93,7 @@ internal class TaskHandler : IAsyncDisposable
     activitySource_        = activitySource;
     agentHandler_          = agentHandler;
     logger_                = logger;
-    socketPath_       = socketPath;
+    socketPath_            = socketPath;
     ownerPodId_            = ownerPodId;
     taskData_              = null;
   }
@@ -396,10 +396,10 @@ internal class TaskHandler : IAsyncDisposable
     logger_.LogDebug("Create agent server to receive requests from worker");
 
     agent_ = new Agent(submitter_,
-                           objectStorageFactory_,
-                           taskData_.SessionId,
-                           taskData_.TaskId,
-                           logger_);
+                       objectStorageFactory_,
+                       taskData_.SessionId,
+                       taskData_.TaskId,
+                       logger_);
 
     await agentHandler_.Start(agent_,
                               "",

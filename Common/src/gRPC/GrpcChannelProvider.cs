@@ -25,6 +25,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Injection.Options;
 
@@ -40,13 +41,13 @@ using GrpcChannel = ArmoniK.Core.Common.Injection.Options.GrpcChannel;
 namespace ArmoniK.Core.Common.gRPC;
 
 [UsedImplicitly]
-public class GrpcChannelProvider : IDisposable
+public class GrpcChannelProvider : IAsyncDisposable
 {
   private readonly GrpcChannel                  options_;
   private readonly ILogger<GrpcChannelProvider> logger_;
   private readonly string                       address_;
-  private static   Socket?                      _socket;
-  private static   NetworkStream?               _networkStream;
+  private          Socket?                      socket_;
+  private          NetworkStream?               networkStream_;
 
   public GrpcChannelProvider(GrpcChannel                  options,
                              ILogger<GrpcChannelProvider> logger)
@@ -65,8 +66,8 @@ public class GrpcChannelProvider : IDisposable
     return Grpc.Net.Client.GrpcChannel.ForAddress(address);
   }
 
-  private static ChannelBase BuildUnixSocketGrpcChannel(string  address,
-                                                        ILogger logger)
+  private ChannelBase BuildUnixSocketGrpcChannel(string  address,
+                                                 ILogger logger)
   {
     using var _ = logger.LogFunction();
 
@@ -77,22 +78,22 @@ public class GrpcChannelProvider : IDisposable
                                ConnectCallback = async (_,
                                                         cancellationToken) =>
                                                  {
-                                                   _socket = new Socket(AddressFamily.Unix,
-                                                                           SocketType.Stream,
-                                                                           ProtocolType.Unspecified);
+                                                   socket_ = new Socket(AddressFamily.Unix,
+                                                                        SocketType.Stream,
+                                                                        ProtocolType.Unspecified);
 
                                                    try
                                                    {
-                                                     await _socket.ConnectAsync(udsEndPoint,
-                                                                               cancellationToken)
-                                                                 .ConfigureAwait(false);
-                                                     _networkStream = new NetworkStream(_socket,
-                                                                       true);
-                                                     return _networkStream;
+                                                     await socket_.ConnectAsync(udsEndPoint,
+                                                                                cancellationToken)
+                                                                  .ConfigureAwait(false);
+                                                     networkStream_ = new NetworkStream(socket_,
+                                                                                        true);
+                                                     return networkStream_;
                                                    }
                                                    catch
                                                    {
-                                                     _socket.Dispose();
+                                                     socket_.Dispose();
                                                      throw;
                                                    }
                                                  },
@@ -120,10 +121,14 @@ public class GrpcChannelProvider : IDisposable
     }
   }
 
-  public void Dispose()
+  public async ValueTask DisposeAsync()
   {
-    _socket?.Close();
-    _socket?.Dispose();
-    _networkStream?.Dispose();
+    socket_?.Close();
+    socket_?.Dispose();
+    if (networkStream_ != null)
+    {
+      await networkStream_.DisposeAsync()
+                          .ConfigureAwait(false);
+    }
   }
 }
