@@ -102,6 +102,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   {
     try
     {
+      // this code stays there intentionally as a remainder on how to start the server when needed
       //await app_.StartAsync(CancellationToken.None)
       //          .ConfigureAwait(false);
       await service_.Start(agent)
@@ -121,6 +122,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     {
       await service_.Stop()
                     .ConfigureAwait(false);
+      // this code stays there intentionally as a remainder on how to stop the server when needed
       //await app_.StopAsync(cancellationToken)
       //          .ConfigureAwait(false);
 
