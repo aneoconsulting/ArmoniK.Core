@@ -96,19 +96,17 @@ public class TaskHandler : ITaskHandler
   private          TaskOptions?         taskOptions_;
   private          Agent.AgentClient?   client_;
   private          ChannelBase?         channel_;
-  private readonly AutomaticCounter     counter_ = new AutomaticCounter();
+  private readonly AutomaticCounter     counter_ = new();
   private          GrpcChannelProvider? channelProvider_;
 
 
   private TaskHandler(IAsyncStreamReader<ProcessRequest> requestStream,
-                      Configuration                      configuration,
                       CancellationToken                  cancellationToken,
                       ILoggerFactory                     loggerFactory)
   {
     requestStream_     = requestStream;
     cancellationToken_ = cancellationToken;
     loggerFactory_     = loggerFactory;
-    Configuration      = configuration;
     logger_            = loggerFactory.CreateLogger<TaskHandler>();
   }
 
@@ -136,8 +134,9 @@ public class TaskHandler : ITaskHandler
   public IList<string> ExpectedResults
     => expectedResults_ ?? throw TaskHandlerException(nameof(ExpectedResults));
 
+  // this ? was added due to the initialization pattern with the Create method
   /// <inheritdoc />
-  public Configuration Configuration { get; init; }
+  public Configuration? Configuration { get; private set; }
 
   /// <inheritdoc />
   public async Task CreateTasksAsync(IEnumerable<TaskRequest> tasks,
@@ -147,7 +146,7 @@ public class TaskHandler : ITaskHandler
     var       stream  = client_!.CreateTask();
 
     foreach (var createLargeTaskRequest in tasks.ToRequestStream(taskOptions,
-                                                                 Configuration.DataChunkMaxSize))
+                                                                 Configuration!.DataChunkMaxSize))
     {
       await stream.RequestStream.WriteAsync(createLargeTaskRequest,
                                             CancellationToken.None)
@@ -198,7 +197,7 @@ public class TaskHandler : ITaskHandler
 
     while (start < data.Length)
     {
-      var chunkSize = Math.Min(Configuration.DataChunkMaxSize,
+      var chunkSize = Math.Min(Configuration!.DataChunkMaxSize,
                                data.Length - start);
 
       fsm.AddDataChunk();
@@ -248,12 +247,10 @@ public class TaskHandler : ITaskHandler
   }
 
   public static async Task<TaskHandler> Create(IAsyncStreamReader<ProcessRequest> requestStream,
-                                               Configuration                      configuration,
                                                ILoggerFactory                     loggerFactory,
                                                CancellationToken                  cancellationToken)
   {
     var output = new TaskHandler(requestStream,
-                                 configuration,
                                  cancellationToken,
                                  loggerFactory);
     await output.Init()
@@ -281,6 +278,7 @@ public class TaskHandler : ITaskHandler
     taskId_          = initRequest.TaskId;
     taskOptions_     = initRequest.TaskOptions;
     expectedResults_ = initRequest.ExpectedOutputKeys;
+    Configuration    = initRequest.Configuration;
 
     logger_.LogDebug("Trying to create channel for {address}",
                      initRequest.AgentLocation);

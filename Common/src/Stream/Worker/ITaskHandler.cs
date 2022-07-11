@@ -68,7 +68,7 @@ public interface ITaskHandler : IAsyncDisposable
   /// <summary>
   ///   The configuration parameters for the interaction with ArmoniK.
   /// </summary>
-  Configuration Configuration { get; }
+  Configuration? Configuration { get; }
 
   /// <summary>
   ///   This method allows to create subtasks.

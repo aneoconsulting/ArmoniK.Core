@@ -53,10 +53,6 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase
     Output output;
     {
       await using var taskHandler = await TaskHandler.Create(requestStream,
-                                                             new Configuration
-                                                             {
-                                                               DataChunkMaxSize = 50 * 1024,
-                                                             },
                                                              loggerFactory_,
                                                              context.CancellationToken)
                                                      .ConfigureAwait(false);
