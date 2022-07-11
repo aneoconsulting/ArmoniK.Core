@@ -46,7 +46,7 @@ internal class GrpcAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMess
   }
 
 
-  public async Task<TReadMessage> Read(CancellationToken cancellationToken)
+  public async Task<TReadMessage> ReadAsync(CancellationToken cancellationToken)
     => await response_.WaitAsync(cancellationToken)
                       .ConfigureAwait(false);
 

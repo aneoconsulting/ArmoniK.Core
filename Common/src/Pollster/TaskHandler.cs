@@ -448,7 +448,7 @@ internal class TaskHandler : IAsyncDisposable
     }
 
     logger_.LogDebug("Waiting for task output");
-    var reply = await workerStreamHandler_.Pipe.Read(cancellationToken)
+    var reply = await workerStreamHandler_.Pipe.ReadAsync(cancellationToken)
                                           .ConfigureAwait(false);
 
     logger_.LogDebug("Stop agent server");

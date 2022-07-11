@@ -30,7 +30,7 @@ namespace ArmoniK.Core.Common.Utils;
 
 public interface IAsyncPipe<TReadMessage, in TWriteMessage>
 {
-  Task<TReadMessage> Read(CancellationToken cancellationToken);
+  Task<TReadMessage> ReadAsync(CancellationToken cancellationToken);
 
   Task WriteAsync(TWriteMessage message);
 

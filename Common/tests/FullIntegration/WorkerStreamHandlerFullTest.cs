@@ -49,7 +49,7 @@ public class WorkerStreamHandlerFullTest : WorkerStreamHandlerBase
                           //  Console.WriteLine(requests.Current);
                           //}
 
-                          Console.WriteLine(await ChannelAsyncPipe.Reverse.Read(cancellationToken)
+                          Console.WriteLine(await ChannelAsyncPipe.Reverse.ReadAsync(cancellationToken)
                                                                   .ConfigureAwait(false));
 
                           await ChannelAsyncPipe.Reverse.WriteAsync(new ProcessReply

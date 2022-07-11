@@ -45,7 +45,7 @@ public class ChannelAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMes
     writerChannel_ = writerChannel;
   }
 
-  public Task<TReadMessage> Read(CancellationToken cancellationToken)
+  public Task<TReadMessage> ReadAsync(CancellationToken cancellationToken)
     => throw new System.NotImplementedException();
 
   public async Task WriteAsync(TWriteMessage message)
