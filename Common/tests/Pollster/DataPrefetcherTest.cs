@@ -145,7 +145,7 @@ public class DataPrefetcherTest
                                                                   DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
-                                                                             "/socket",
+                                                     "/socket",
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
     var computeRequests = res.ToArray();
@@ -269,12 +269,12 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
-    const string taskId = "TaskId";
-    const string output1 = "Output1";
-    const string dependency1 = "Dependency1";
-    const string podId = "PodId";
+    const string taskId       = "TaskId";
+    const string output1      = "Output1";
+    const string dependency1  = "Dependency1";
+    const string podId        = "PodId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
@@ -304,7 +304,7 @@ public class DataPrefetcherTest
                                                                   DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
-                                                                             "/socket",
+                                                     "/socket",
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
     Assert.AreNotEqual(0,
@@ -361,12 +361,12 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
-    const string taskId = "TaskId";
-    const string output1 = "Output1";
-    const string dependency1 = "Dependency1";
-    const string podId = "PodId";
+    const string taskId       = "TaskId";
+    const string output1      = "Output1";
+    const string dependency1  = "Dependency1";
+    const string podId        = "PodId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
@@ -453,12 +453,12 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
-    const string taskId = "TaskId";
-    const string output1 = "Output1";
-    const string dependency1 = "Dependency1";
-    const string podId = "PodId";
+    const string taskId       = "TaskId";
+    const string output1      = "Output1";
+    const string dependency1  = "Dependency1";
+    const string podId        = "PodId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
@@ -627,13 +627,13 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
-    const string taskId = "TaskId";
-    const string output1 = "Output1";
-    const string dependency1 = "Dependency1";
-    const string dependency2 = "Dependency2";
-    const string podId = "PodId";
+    const string taskId       = "TaskId";
+    const string output1      = "Output1";
+    const string dependency1  = "Dependency1";
+    const string dependency2  = "Dependency2";
+    const string podId        = "PodId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
