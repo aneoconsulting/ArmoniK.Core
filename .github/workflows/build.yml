@@ -81,6 +81,7 @@ jobs:
 
   format:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -109,7 +110,7 @@ jobs:
     - name: Check Diff
       continue-on-error: true
       run: |
-        DIFF="$(git status --porcelain --untracked-files=no)"
+        DIFF="$(git diff --name-only)"
 
         if [ -z "$DIFF" ]; then
           echo "OK: Format is clean"
