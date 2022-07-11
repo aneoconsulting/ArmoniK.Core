@@ -490,7 +490,7 @@ public class TaskTable : ITaskTable
     var newTaskData = new TaskData(taskData.SessionId,
                                    newTaskId,
                                    "",
-                                   taskData.RetryOfIds.First(), //TODO: I think here we need newTaskRetryOfIds
+                                   newTaskRetryOfIds.First(),
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
                                    taskData.ExpectedOutputIds,
