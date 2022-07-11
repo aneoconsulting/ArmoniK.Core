@@ -401,6 +401,7 @@ internal class TaskHandler : IAsyncDisposable
                        taskData_.TaskId,
                        logger_);
 
+    // In theory we could create the server duriing dependencies checking and activate it only now
     await agentHandler_.Start(agent_,
                               "",
                               logger_,
@@ -452,6 +453,7 @@ internal class TaskHandler : IAsyncDisposable
                                           .ConfigureAwait(false);
 
     logger_.LogDebug("Stop agent server");
+    // todo fixme: Add stop to the server in Dispose in case of error
     await agentHandler_.Stop(CancellationToken.None)
                        .ConfigureAwait(false);
 
