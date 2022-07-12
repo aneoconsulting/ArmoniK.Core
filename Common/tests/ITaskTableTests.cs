@@ -964,7 +964,7 @@ public class TaskTableTestBase
         var retriedTask = await TaskTable.ReadTaskAsync(newTaskId, CancellationToken.None)
           .ConfigureAwait(false);
 
-        Assert.AreEqual("TaskFailedId", retriedTask.PayloadId, );
+        Assert.AreEqual("TaskFailedId", retriedTask.PayloadId);
 
         taskToRetry = retriedTask;
       }
