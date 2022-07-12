@@ -932,4 +932,42 @@ public class TaskTableTestBase
                       taskList.Count);
     }
   }
+
+  [Test]
+  public async Task RetryTaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var taskToRetry = await TaskTable.ReadTaskAsync("TaskFailedId", CancellationToken.None)
+        .ConfigureAwait(false);
+
+      var expectedNewId = taskToRetry.TaskId + $"###{taskToRetry.RetryOfIds.Count + 1}";
+
+      var newTaskId = await TaskTable.RetryTask(taskToRetry, CancellationToken.None)
+        .ConfigureAwait(false);
+
+      Assert.AreEqual(expectedNewId, newTaskId);
+    }
+  }
+
+  [Test]
+  public async Task PayloadIdAfterRetryShouldBeCorrect()
+  {
+    if (RunTests)
+    {
+      var taskToRetry = await TaskTable.ReadTaskAsync("TaskFailedId", CancellationToken.None).ConfigureAwait(false);
+      for (var i = 0; i < 3; i++)
+      {
+        var newTaskId = await TaskTable.RetryTask(taskToRetry, CancellationToken.None)
+          .ConfigureAwait(false);
+
+        var retriedTask = await TaskTable.ReadTaskAsync(newTaskId, CancellationToken.None)
+          .ConfigureAwait(false);
+
+        Assert.AreEqual(retriedTask.PayloadId, "TaskFailedId");
+
+        taskToRetry = retriedTask;
+      }
+    }
+  }
 }
