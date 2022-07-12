@@ -41,6 +41,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Bson;
@@ -106,8 +107,8 @@ public static class ServiceCollectionExt
 
     services.AddTransient(provider => provider.GetRequiredService<IMongoClient>()
                                               .GetDatabase(mongoOptions.DatabaseName))
-            .AddSingleton(typeof(MongoCollectionProvider<,>))
-            .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}");
+            .AddSingleton(typeof(MongoCollectionProvider<,>));
+    services.AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}");
 
     return services;
   }
@@ -235,9 +236,10 @@ public static class ServiceCollectionExt
                                                                     ConfigurationManager    configuration,
                                                                     ILogger                 logger)
   {
-    services.AddTransient<IPermissionTable, PermissionTable>()
+    services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
+    services.AddTransient<IAuthenticationSource, AuthenticationSource>()
             .AddOption<AuthenticatorOptions>(configuration,
-                       AuthenticatorOptions.SectionName, out var authenticatorOptions);
+                                             AuthenticatorOptions.SectionName, out var authenticatorOptions);
     services.AddAuthentication()
             .AddScheme<AuthenticatorOptions, Authenticator>("SubmitterAuthenticationScheme", o => o.CopyFrom(authenticatorOptions));
     return services;

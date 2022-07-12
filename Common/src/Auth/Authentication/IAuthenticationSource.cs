@@ -23,19 +23,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Auth.Authentication
 {
-  public interface IAuthenticationSource
+  public interface IAuthenticationSource : IInitializable
   {
+    public Task<ClaimsIdentity?> GetIdentityAsync(string            cn,
+                                                  string            fingerprint,
+                                                  CancellationToken cancellationToken);
 
-    public ClaimsIdentity? GetIdentity(string CN,
-                                       string fingerprint);
+    public Task<ClaimsIdentity?> GetIdentityFromIdAsync(string            id,
+                                                  CancellationToken cancellationToken);
 
-    public Task<ClaimsIdentity?> GetIdentityAsync(string CN,
-                                             string fingerprint, CancellationToken cancellationToken);
+    public Task<ClaimsIdentity?> GetIdentityFromNameAsync(string            username,
+                                                        CancellationToken cancellationToken);
   }
 }

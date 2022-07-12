@@ -24,42 +24,25 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ArmoniK.Core.Common.Auth.Authorization
 {
-  public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
+  public class RequiresPermissionAttribute : AuthorizeAttribute
   {
+    public const string PolicyPrefix = "RequiresPermission:";
 
-    private readonly AuthenticationScheme authScheme_;
+    public RequiresPermissionAttribute(Permissions.Permission permission) => Permission = permission;
 
-    public AuthorizationPolicyProvider(AuthenticationScheme scheme)
+    public Permissions.Permission Permission
     {
-      authScheme_ = scheme;
+      get => Policy != null ? Permissions.Parse(Policy[PolicyPrefix.Length..]) : Permissions.None;
+      set => Policy = $"{PolicyPrefix}{value}";
     }
-
-    public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
-    {
-      if (!policyName.StartsWith(RequiresPermissionAttribute.PolicyPrefix))
-      {
-        return Task.FromResult<AuthorizationPolicy?>(null);
-      }
-
-      var permission = Permissions.Parse(policyName[RequiresPermissionAttribute.PolicyPrefix.Length..]);
-      return Task.FromResult<AuthorizationPolicy?>(
-                                                   new AuthorizationPolicyBuilder(authScheme_.Name).RequireClaim(permission.ToBasePermission())
-                                                     .Build());
-
-    }
-
-    public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
-      => Task.FromResult(new AuthorizationPolicyBuilder(authScheme_.Name).RequireAuthenticatedUser()
-                                                                         .Build());
-
-    public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
-      => Task.FromResult<AuthorizationPolicy?>(null);
   }
 }

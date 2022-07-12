@@ -23,9 +23,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Common.Auth.Authentication
-{
-  public record User(string UserId, string UserName, string CN, string CertificateFingerprint)
-  {
-  }
-}
+using System.Collections.Generic;
+
+namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
+
+public record RoleData(string        RoleId,
+                       string        RoleName,
+                       IList<string> Permissions);

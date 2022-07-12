@@ -23,16 +23,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Auth.Authorization
-{
-  internal class RequiresOwnershipAttribute
-  {
-    //TODO
-  }
-}
+using ArmoniK.Core.Common.Auth.Authorization;
+
+namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
+
+public record UserPermissions(string UserId, IList<string> Roles, IList<string> Permissions);

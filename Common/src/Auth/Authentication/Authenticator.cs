@@ -23,35 +23,37 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Exceptions;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Common.Auth.Authentication
 {
   public class AuthenticatorOptions : AuthenticationSchemeOptions
   {
 
-    public static string SectionName = nameof(AuthenticatorOptions);
-    public AuthenticatorOptions()
-    {
-      CNHeader          = "X-Certificate-Client-CN";
-      FingerprintHeader = "X-Certificate-Client-Fingerprint";
-    }
+    public const string SectionName = nameof(AuthenticatorOptions);
 
     public void CopyFrom(AuthenticatorOptions o)
     {
-      CNHeader = o.CNHeader;
-      FingerprintHeader = o.FingerprintHeader;
+      CNHeader                  = o.CNHeader;
+      FingerprintHeader         = o.FingerprintHeader;
+      ImpersonationHeader       = o.ImpersonationHeader;
+      ImpersonationWithUsername = o.ImpersonationWithUsername;
     }
 
-    public string                 CNHeader          { get; set; }
-    public string                 FingerprintHeader { get; set; }
+    public string? CNHeader { get; set; }
+    public string? FingerprintHeader { get; set; }
+
+    public string? ImpersonationHeader       { get; set; }
+    public bool?   ImpersonationWithUsername { get; set; }
   }
 
   public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
@@ -59,39 +61,83 @@ namespace ArmoniK.Core.Common.Auth.Authentication
     private readonly ILogger<Authenticator> logger_;
     private readonly string                 cnHeader_;
     private readonly string                 fingerprintHeader_;
+    private readonly string?                impersonationHeader_;
     private readonly IAuthenticationSource  authSource_;
+    private readonly bool                   impersonationWithUsername_;
 
     public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,
-                         ILoggerFactory                        loggerFactory,
-                         UrlEncoder                            encoder,
-                         ISystemClock                          clock,
+                         ILoggerFactory loggerFactory,
+                         UrlEncoder encoder,
+                         ISystemClock clock,
                          IAuthenticationSource authSource)
       : base(options,
              loggerFactory,
              encoder,
              clock)
     {
-      fingerprintHeader_ = options.CurrentValue.FingerprintHeader;
-      cnHeader_          = options.CurrentValue.CNHeader;
-      authSource_        = authSource;
-      logger_            = loggerFactory.CreateLogger<Authenticator>();
+      fingerprintHeader_ = options.CurrentValue.FingerprintHeader ?? throw new ArmoniKException($"{AuthenticatorOptions.SectionName}.FingerprintHeader is not configured");
+      cnHeader_ = options.CurrentValue.CNHeader ?? throw new ArmoniKException($"{AuthenticatorOptions.SectionName}.CNHeader is not configured");
+      impersonationHeader_ = options.CurrentValue.ImpersonationHeader;
+      impersonationWithUsername_ = options.CurrentValue.ImpersonationWithUsername ?? false;
+      
+      authSource_ = authSource;
+      logger_ = loggerFactory.CreateLogger<Authenticator>();
     }
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-      var cn = Request.Headers[cnHeader_]
-                      .ToString();
-      var fingerprint = Request.Headers[fingerprintHeader_]
-                               .ToString();
-      logger_.LogDebug("Authenticating request with CN {CN} and fingerprint {Fingerprint}",
-                       cn,
-                       fingerprint);
-
-      var identity = await authSource_.GetIdentityAsync(cn, fingerprint, new CancellationToken(false))
-                                .ConfigureAwait(false);
-      if (identity == null)
+      ClaimsIdentity? identity;
+      if (Request.Headers.TryGetValue(cnHeader_,
+                                      out var cns) && Request.Headers.TryGetValue(fingerprintHeader_,
+                                                                                  out var fingerprints))
       {
-        return AuthenticateResult.Fail("Unrecognized fingerprint");
+
+        var cn = cns.First();
+        var fingerprint = fingerprints.First();
+        logger_.LogDebug("Authenticating request with CN {CN} and fingerprint {Fingerprint}",
+                         cn,
+                         fingerprint);
+        identity = await authSource_.GetIdentityAsync(cn,
+                                                          fingerprint,
+                                                          new CancellationToken(false))
+                                        .ConfigureAwait(false);
+        if (identity == null)
+        {
+          return AuthenticateResult.Fail("Unrecognized user certificate");
+        }
+      }
+      else
+      {
+        return AuthenticateResult.Fail("Missing Certificate Headers");
+      }
+
+      if (impersonationHeader_ != null && Request.Headers.TryGetValue(impersonationHeader_, out var imps))
+      {
+        if (identity.HasClaim(c => c.Type == Permissions.General.Impersonate.Claim.Type))
+        {
+          if (impersonationWithUsername_)
+          {
+            identity = await authSource_.GetIdentityFromNameAsync(imps.First(),
+                                                          new CancellationToken(false))
+                                        .ConfigureAwait(false);
+          }
+          else
+          {
+            identity = await authSource_.GetIdentityFromIdAsync(imps.First(),
+                                                                  new CancellationToken(false))
+                                        .ConfigureAwait(false);
+          }
+          
+
+          if (identity == null)
+          {
+            return AuthenticateResult.Fail("User being impersonated doesn't exist");
+          }
+        }
+        else
+        {
+          return AuthenticateResult.Fail("Given certificate cannot impersonate a user");
+        }
       }
 
       var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity),

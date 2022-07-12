@@ -29,10 +29,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Auth.Authorization
+namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth
 {
-  internal class RequiresOwnershipAttribute
-  {
-    //TODO
-  }
+  public record AuthData(string AuthId, string UserId, string CN, string Fingerprint);
 }
