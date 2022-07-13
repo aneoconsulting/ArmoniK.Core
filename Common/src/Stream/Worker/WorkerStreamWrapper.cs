@@ -55,11 +55,11 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase, IAsyncD
 
 
     logger_.LogDebug("Trying to create channel for {address}",
-                     "/cache/armonik_server.sock");
+                     "/cache/armonik_agent.sock");
 
     channelProvider_ = new GrpcChannelProvider(new GrpcChannel
                                                {
-                                                 Address    = "/cache/armonik_server.sock",
+                                                 Address    = "/cache/armonik_agent.sock",
                                                  SocketType = GrpcSocketType.UnixSocket,
                                                },
                                                loggerFactory_.CreateLogger<GrpcChannelProvider>());
