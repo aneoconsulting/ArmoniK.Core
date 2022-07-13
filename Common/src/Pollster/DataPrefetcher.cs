@@ -93,7 +93,6 @@ public class DataPrefetcher : IInitializable
   /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
   /// <exception cref="InvalidOperationException">invalid transition between states</exception>
   public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData          taskData,
-                                                                                  string            socketPath,
                                                                                   CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity(nameof(PrefetchDataAsync));
@@ -115,8 +114,7 @@ public class DataPrefetcher : IInitializable
                          taskData.TaskId,
                          taskData.Options,
                          payloadChunks.FirstOrDefault(),
-                         taskData.ExpectedOutputIds,
-                         socketPath);
+                         taskData.ExpectedOutputIds);
 
     for (var i = 1; i < payloadChunks.Count; i++)
     {

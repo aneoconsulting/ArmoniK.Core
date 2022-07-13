@@ -57,8 +57,6 @@ public class Pollster
   private readonly IAgentHandler            agentHandler_;
   public           string                   TaskProcessing;
   private readonly string                   ownerPodId_;
-  private readonly string                  socketPath_;
-
 
   public Pollster(IQueueStorage            queueStorage,
                   DataPrefetcher           dataPrefetcher,
@@ -97,14 +95,6 @@ public class Pollster
     agentHandler_          = agentHandler;
     TaskProcessing         = "";
     ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
-    if (options.AgentChannel != null)
-    {
-      socketPath_ = options.AgentChannel.Address ?? throw new InvalidOperationException();
-    }
-    else
-    {
-      throw new InvalidOperationException();
-    }
   }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -174,7 +164,6 @@ public class Pollster
                                                           ownerPodId_,
                                                           activitySource_,
                                                           agentHandler_,
-                                                          socketPath_,
                                                           logger_);
 
             var precondition = await taskHandler.AcquireTask(combinedCts.Token)

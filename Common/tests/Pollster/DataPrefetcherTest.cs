@@ -145,7 +145,6 @@ public class DataPrefetcherTest
                                                                   DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
-                                                     "/socket",
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
     var computeRequests = res.ToArray();
@@ -304,7 +303,6 @@ public class DataPrefetcherTest
                                                                   DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
-                                                     "/socket",
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
     Assert.AreNotEqual(0,
@@ -396,7 +394,6 @@ public class DataPrefetcherTest
                                                                   DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
-                                                     "/socket",
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
     Assert.AreNotEqual(0,
@@ -488,7 +485,6 @@ public class DataPrefetcherTest
                                                                   DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
-                                                     "/socket",
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
     Assert.AreNotEqual(0,
@@ -576,7 +572,6 @@ public class DataPrefetcherTest
                                                                   DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
-                                                     "/socket",
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
     Assert.AreNotEqual(0,
@@ -664,7 +659,6 @@ public class DataPrefetcherTest
                                                                   DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
-                                                     "/socket",
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
 

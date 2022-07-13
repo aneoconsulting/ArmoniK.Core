@@ -43,6 +43,7 @@ public static class TaskRequestExtensions
 {
   public static IEnumerable<CreateTaskRequest> ToRequestStream(this IEnumerable<TaskRequest> taskRequests,
                                                                TaskOptions?                  taskOptions,
+                                                               string                        token,
                                                                int                           chunkMaxSize)
   {
     var fsm = new ProcessReplyCreateLargeTaskStateMachine(NullLogger.Instance);
@@ -51,6 +52,7 @@ public static class TaskRequestExtensions
     {
       yield return new CreateTaskRequest
                    {
+                     CommunicationToken = token,
                      InitRequest = new CreateTaskRequest.Types.InitRequest
                                    {
                                      TaskOptions = taskOptions,
@@ -61,7 +63,8 @@ public static class TaskRequestExtensions
     {
       yield return new CreateTaskRequest
                    {
-                     InitRequest = new CreateTaskRequest.Types.InitRequest(),
+                     CommunicationToken = token,
+                     InitRequest        = new CreateTaskRequest.Types.InitRequest(),
                    };
     }
 
@@ -77,6 +80,7 @@ public static class TaskRequestExtensions
     while (taskRequestEnumerator.MoveNext())
     {
       foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(false,
+                                                                            token,
                                                                             chunkMaxSize,
                                                                             fsm))
       {
@@ -88,6 +92,7 @@ public static class TaskRequestExtensions
     }
 
     foreach (var createLargeTaskRequest in currentRequest.ToRequestStream(true,
+                                                                          token,
                                                                           chunkMaxSize,
                                                                           fsm))
     {
@@ -102,12 +107,14 @@ public static class TaskRequestExtensions
 
   public static IEnumerable<CreateTaskRequest> ToRequestStream(this TaskRequest                        taskRequest,
                                                                bool                                    isLast,
+                                                               string                                  token,
                                                                int                                     chunkMaxSize,
                                                                ProcessReplyCreateLargeTaskStateMachine processReplyCreateLargeTaskStateMachine)
   {
     processReplyCreateLargeTaskStateMachine.AddHeader();
     yield return new CreateTaskRequest
                  {
+                   CommunicationToken = token,
                    InitTask = new InitTaskRequest
                               {
                                 Header = new TaskRequestHeader
@@ -135,6 +142,7 @@ public static class TaskRequestExtensions
       processReplyCreateLargeTaskStateMachine.AddDataChunk();
       yield return new CreateTaskRequest
                    {
+                     CommunicationToken = token,
                      TaskPayload = new DataChunk
                                    {
                                      Data = ByteString.CopyFrom(taskRequest.Payload.Span.Slice(start,
@@ -148,6 +156,7 @@ public static class TaskRequestExtensions
     processReplyCreateLargeTaskStateMachine.CompleteData();
     yield return new CreateTaskRequest
                  {
+                   CommunicationToken = token,
                    TaskPayload = new DataChunk
                                  {
                                    DataComplete = true,
@@ -159,6 +168,7 @@ public static class TaskRequestExtensions
       processReplyCreateLargeTaskStateMachine.CompleteRequest();
       yield return new CreateTaskRequest
                    {
+                     CommunicationToken = token,
                      InitTask = new InitTaskRequest
                                 {
                                   LastTask = true,

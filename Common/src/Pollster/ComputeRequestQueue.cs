@@ -53,8 +53,7 @@ public class ComputeRequestQueue
                    string        taskId,
                    TaskOptions   taskOptions,
                    ByteString?   payload,
-                   IList<string> expectedOutputKeys,
-                   string        socketPath)
+                   IList<string> expectedOutputKeys)
   {
     machine_.InitRequest();
     computeRequests_.Enqueue(new ProcessRequest.Types.ComputeRequest
@@ -78,7 +77,6 @@ public class ComputeRequestQueue
                                                {
                                                  expectedOutputKeys,
                                                },
-                                               AgentLocation = socketPath,
                                              },
                              });
   }

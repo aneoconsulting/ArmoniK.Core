@@ -22,10 +22,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Api.gRPC.V1.Worker;
+using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Injection.Options;
 
 using Grpc.Core;
 
@@ -36,15 +40,32 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Common.Stream.Worker;
 
 [PublicAPI]
-public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase
+public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase, IAsyncDisposable
 {
   private readonly ILoggerFactory               loggerFactory_;
   public           ILogger<WorkerStreamWrapper> logger_;
+  private readonly GrpcChannelProvider          channelProvider_;
+  private readonly ChannelBase                  channel_;
+  private readonly Agent.AgentClient            client_;
 
   public WorkerStreamWrapper(ILoggerFactory loggerFactory)
   {
     logger_        = loggerFactory.CreateLogger<WorkerStreamWrapper>();
     loggerFactory_ = loggerFactory;
+
+
+    logger_.LogDebug("Trying to create channel for {address}",
+                     "/cache/armonik_server.sock");
+
+    channelProvider_ = new GrpcChannelProvider(new GrpcChannel
+                                               {
+                                                 Address    = "/cache/armonik_server.sock",
+                                                 SocketType = GrpcSocketType.UnixSocket,
+                                               },
+                                               loggerFactory_.CreateLogger<GrpcChannelProvider>());
+    channel_ = channelProvider_.Get();
+
+    client_ = new Agent.AgentClient(channel_);
   }
 
   public sealed override async Task<ProcessReply> Process(IAsyncStreamReader<ProcessRequest> requestStream,
@@ -53,6 +74,7 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase
     Output output;
     {
       await using var taskHandler = await TaskHandler.Create(requestStream,
+                                                             client_,
                                                              loggerFactory_,
                                                              context.CancellationToken)
                                                      .ConfigureAwait(false);
@@ -80,4 +102,11 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase
                        {
                          Status = HealthCheckReply.Types.ServingStatus.Serving,
                        });
+
+  public async ValueTask DisposeAsync()
+  {
+    await channel_.ShutdownAsync().ConfigureAwait(false);
+    await channelProvider_.DisposeAsync()
+                          .ConfigureAwait(false);
+  }
 }

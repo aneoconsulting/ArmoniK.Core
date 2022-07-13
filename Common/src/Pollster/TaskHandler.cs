@@ -63,7 +63,7 @@ internal class TaskHandler : IAsyncDisposable
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private readonly string                                      ownerPodId_;
   private readonly IAgentHandler                               agentHandler_;
-  private readonly string                                      socketPath_;
+  private readonly string                                      token;
   private          Agent?                                      agent_;
 
   public TaskHandler(ISessionTable          sessionTable,
@@ -78,7 +78,6 @@ internal class TaskHandler : IAsyncDisposable
                      string                 ownerPodId,
                      ActivitySource         activitySource,
                      IAgentHandler          agentHandler,
-                     string                 socketPath,
                      ILogger                logger)
   {
     sessionTable_          = sessionTable;
@@ -93,9 +92,10 @@ internal class TaskHandler : IAsyncDisposable
     activitySource_        = activitySource;
     agentHandler_          = agentHandler;
     logger_                = logger;
-    socketPath_            = socketPath;
     ownerPodId_            = ownerPodId;
     taskData_              = null;
+    token = Guid.NewGuid()
+                .ToString();
   }
 
   /// <summary>
@@ -371,7 +371,6 @@ internal class TaskHandler : IAsyncDisposable
     }
 
     computeRequestStream_ = await dataPrefetcher_.PrefetchDataAsync(taskData_,
-                                                                    socketPath_,
                                                                     cancellationToken)
                                                  .ConfigureAwait(false);
   }
@@ -399,11 +398,12 @@ internal class TaskHandler : IAsyncDisposable
                        objectStorageFactory_,
                        taskData_.SessionId,
                        taskData_.TaskId,
+                       token,
                        logger_);
 
     // In theory we could create the server duriing dependencies checking and activate it only now
     await agentHandler_.Start(agent_,
-                              "",
+                              token,
                               logger_,
                               cancellationToken)
                        .ConfigureAwait(false);
@@ -424,7 +424,8 @@ internal class TaskHandler : IAsyncDisposable
     {
       await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
                                                  {
-                                                   Compute = computeRequest,
+                                                   Compute            = computeRequest,
+                                                   CommunicationToken = token,
                                                  })
                                 .ConfigureAwait(false);
     }

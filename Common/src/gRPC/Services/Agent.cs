@@ -52,6 +52,7 @@ public class Agent : IAgent, IDisposable
   private readonly IObjectStorage                                                  resourcesStorage_;
   private          string?                                                         sessionId_;
   private          string?                                                         taskId_;
+  private readonly string                                                          token_;
 
   /// <summary>
   /// Initializes a new instance of the <see cref="Agent"/>
@@ -60,11 +61,13 @@ public class Agent : IAgent, IDisposable
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="sessionId">Id of the session</param>
   /// <param name="taskId">Id of the task</param>
+  /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public Agent(ISubmitter            submitter,
                IObjectStorageFactory objectStorageFactory,
                string                sessionId,
                string                taskId,
+               string                token,
                ILogger               logger)
   {
     submitter_        = submitter;
@@ -73,6 +76,7 @@ public class Agent : IAgent, IDisposable
     createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority)>();
     sessionId_        = sessionId;
     taskId_           = taskId;
+    token_            = token;
   }
 
   public async Task FinalizeTaskCreation(CancellationToken cancellationToken)
@@ -112,6 +116,25 @@ public class Agent : IAgent, IDisposable
     await foreach (var request in requestStream.ReadAllAsync(cancellationToken: cancellationToken)
                                                .ConfigureAwait(false))
     {
+      // todo : check if using validator can do the job ?
+      if (string.IsNullOrEmpty(request.CommunicationToken))
+      {
+        return new CreateTaskReply
+               {
+                 CommunicationToken = request.CommunicationToken,
+                 Error              = "Missing communication token",
+               };
+      }
+
+      if (request.CommunicationToken != token_)
+      {
+        return new CreateTaskReply
+               {
+                 CommunicationToken = request.CommunicationToken,
+                 Error              = "Wrong communication token",
+               };
+      }
+
       switch (request.TypeCase)
       {
         case CreateTaskRequest.TypeOneofCase.InitRequest:
@@ -221,6 +244,30 @@ public class Agent : IAgent, IDisposable
     using var _ = logger_.BeginNamedScope(nameof(GetCommonData),
                                           ("taskId", taskId_)!,
                                           ("sessionId", sessionId_)!);
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      await responseStream.WriteAsync(new DataReply
+                                      {
+                                        CommunicationToken = request.CommunicationToken,
+                                        Error              = "Missing communication token",
+                                      },
+                                      cancellationToken)
+                          .ConfigureAwait(false);
+      return;
+    }
+
+    if (request.CommunicationToken != token_)
+    {
+      await responseStream.WriteAsync(new DataReply
+                                      {
+                                        CommunicationToken = request.CommunicationToken,
+                                        Error              = "Wrong communication token",
+                                      },
+                                      cancellationToken)
+                          .ConfigureAwait(false);
+      return;
+    }
+
     await responseStream.WriteAsync(new DataReply
                                     {
                                       Error = "Common data are not supported yet",
@@ -236,6 +283,31 @@ public class Agent : IAgent, IDisposable
     using var _ = logger_.BeginNamedScope(nameof(GetDirectData),
                                           ("taskId", taskId_)!,
                                           ("sessionId", sessionId_)!);
+
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      await responseStream.WriteAsync(new DataReply
+                                      {
+                                        CommunicationToken = request.CommunicationToken,
+                                        Error              = "Missing communication token",
+                                      },
+                                      cancellationToken)
+                          .ConfigureAwait(false);
+      return;
+    }
+
+    if (request.CommunicationToken != token_)
+    {
+      await responseStream.WriteAsync(new DataReply
+                                      {
+                                        CommunicationToken = request.CommunicationToken,
+                                        Error              = "Wrong communication token",
+                                      },
+                                      cancellationToken)
+                          .ConfigureAwait(false);
+      return;
+    }
+
     await responseStream.WriteAsync(new DataReply
                                     {
                                       Error = "Direct data are not supported yet",
@@ -251,6 +323,31 @@ public class Agent : IAgent, IDisposable
     using var _ = logger_.BeginNamedScope(nameof(GetResourceData),
                                           ("taskId", taskId_)!,
                                           ("sessionId", sessionId_)!);
+
+    if (string.IsNullOrEmpty(request.CommunicationToken))
+    {
+      await responseStream.WriteAsync(new DataReply
+                                      {
+                                        CommunicationToken = request.CommunicationToken,
+                                        Error              = "Missing communication token",
+                                      },
+                                      cancellationToken)
+                          .ConfigureAwait(false);
+      return;
+    }
+
+    if (request.CommunicationToken != token_)
+    {
+      await responseStream.WriteAsync(new DataReply
+                                      {
+                                        CommunicationToken = request.CommunicationToken,
+                                        Error              = "Wrong communication token",
+                                      },
+                                      cancellationToken)
+                          .ConfigureAwait(false);
+      return;
+    }
+
     IAsyncEnumerable<byte[]> bytes;
     try
     {
@@ -335,6 +432,24 @@ public class Agent : IAgent, IDisposable
     await foreach (var request in requestStream.ReadAllAsync(cancellationToken)
                                                .ConfigureAwait(false))
     {
+      if (string.IsNullOrEmpty(request.CommunicationToken))
+      {
+        return new ResultReply
+               {
+                 CommunicationToken = request.CommunicationToken,
+                 Error              = "Missing communication token",
+               };
+      }
+
+      if (request.CommunicationToken != token_)
+      {
+        return new ResultReply
+               {
+                 CommunicationToken = request.CommunicationToken,
+                 Error              = "Wrong communication token",
+               };
+      }
+
       switch (request.TypeCase)
       {
         case Result.TypeOneofCase.Init:

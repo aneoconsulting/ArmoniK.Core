@@ -31,8 +31,6 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Api.gRPC.V1.Worker;
-using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.StateMachines;
 
 using Google.Protobuf;
@@ -90,21 +88,22 @@ public class TaskHandler : ITaskHandler
 
   private bool isInitialized_;
 
-  private          byte[]?              payload_;
-  private          string?              sessionId_;
-  private          string?              taskId_;
-  private          TaskOptions?         taskOptions_;
-  private          Agent.AgentClient?   client_;
-  private          ChannelBase?         channel_;
-  private readonly AutomaticCounter     counter_ = new();
-  private          GrpcChannelProvider? channelProvider_;
+  private          byte[]?           payload_;
+  private          string?           sessionId_;
+  private          string?           taskId_;
+  private          TaskOptions?      taskOptions_;
+  private readonly Agent.AgentClient client_;
+  private readonly AutomaticCounter  counter_ = new();
+  private          string?           token_;
 
 
   private TaskHandler(IAsyncStreamReader<ProcessRequest> requestStream,
+                      Agent.AgentClient                  client,
                       CancellationToken                  cancellationToken,
                       ILoggerFactory                     loggerFactory)
   {
     requestStream_     = requestStream;
+    client_            = client;
     cancellationToken_ = cancellationToken;
     loggerFactory_     = loggerFactory;
     logger_            = loggerFactory.CreateLogger<TaskHandler>();
@@ -117,6 +116,9 @@ public class TaskHandler : ITaskHandler
   /// <inheritdoc />
   public string TaskId
     => taskId_ ?? throw TaskHandlerException(nameof(TaskId));
+
+  public string Token
+    => token_ ?? throw TaskHandlerException(nameof(Token));
 
   /// <inheritdoc />
   public TaskOptions TaskOptions
@@ -143,9 +145,10 @@ public class TaskHandler : ITaskHandler
                                      TaskOptions?             taskOptions = null)
   {
     using var counter = counter_.GetCounter();
-    var       stream  = client_!.CreateTask();
+    var       stream  = client_.CreateTask();
 
     foreach (var createLargeTaskRequest in tasks.ToRequestStream(taskOptions,
+                                                                 Token,
                                                                  Configuration!.DataChunkMaxSize))
     {
       await stream.RequestStream.WriteAsync(createLargeTaskRequest,
@@ -180,12 +183,13 @@ public class TaskHandler : ITaskHandler
 
     var fsm = new ProcessReplyResultStateMachine(logger_);
 
-    var stream = client_!.SendResult();
+    var stream = client_.SendResult();
 
     fsm.InitKey();
 
     await stream.RequestStream.WriteAsync(new Result
                                           {
+                                            CommunicationToken = Token,
                                             Init = new InitKeyedDataStream
                                                    {
                                                      Key = key,
@@ -203,6 +207,7 @@ public class TaskHandler : ITaskHandler
       fsm.AddDataChunk();
       await stream.RequestStream.WriteAsync(new Result
                                             {
+                                              CommunicationToken = Token,
                                               Data = new DataChunk
                                                      {
                                                        Data = ByteString.CopyFrom(data.AsMemory()
@@ -219,6 +224,7 @@ public class TaskHandler : ITaskHandler
     fsm.CompleteData();
     await stream.RequestStream.WriteAsync(new Result
                                           {
+                                            CommunicationToken = Token,
                                             Data = new DataChunk
                                                    {
                                                      DataComplete = true,
@@ -230,6 +236,7 @@ public class TaskHandler : ITaskHandler
     fsm.CompleteRequest();
     await stream.RequestStream.WriteAsync(new Result
                                           {
+                                            CommunicationToken = Token,
                                             Init = new InitKeyedDataStream
                                                    {
                                                      LastResult = true,
@@ -247,10 +254,12 @@ public class TaskHandler : ITaskHandler
   }
 
   public static async Task<TaskHandler> Create(IAsyncStreamReader<ProcessRequest> requestStream,
+                                               Agent.AgentClient                  agentClient,
                                                ILoggerFactory                     loggerFactory,
                                                CancellationToken                  cancellationToken)
   {
     var output = new TaskHandler(requestStream,
+                                 agentClient,
                                  cancellationToken,
                                  loggerFactory);
     await output.Init()
@@ -279,19 +288,9 @@ public class TaskHandler : ITaskHandler
     taskOptions_     = initRequest.TaskOptions;
     expectedResults_ = initRequest.ExpectedOutputKeys;
     Configuration    = initRequest.Configuration;
+    token_           = requestStream_.Current.CommunicationToken;
 
-    logger_.LogDebug("Trying to create channel for {address}",
-                     initRequest.AgentLocation);
 
-    channelProvider_ = new GrpcChannelProvider(new GrpcChannel
-                                               {
-                                                 Address    = initRequest.AgentLocation,
-                                                 SocketType = GrpcSocketType.UnixSocket,
-                                               },
-                                               loggerFactory_.CreateLogger<GrpcChannelProvider>());
-    channel_ = channelProvider_.Get();
-
-    client_ = new Agent.AgentClient(channel_);
 
     if (initRequest.Payload.DataComplete)
     {
@@ -432,11 +431,6 @@ public class TaskHandler : ITaskHandler
       logger_.LogWarning("At least one request to the agent is running");
     }
 
-    await (channel_?.ShutdownAsync()!).ConfigureAwait(false);
-    if (channelProvider_ != null)
-    {
-      await channelProvider_.DisposeAsync()
-                            .ConfigureAwait(false);
-    }
+
   }
 }
