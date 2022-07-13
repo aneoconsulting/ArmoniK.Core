@@ -424,13 +424,12 @@ public class TaskHandler : ITaskHandler
          ? new InvalidOperationException($"Error in initalization: {argumentName} is null")
          : new InvalidOperationException("");
 
-  public async ValueTask DisposeAsync()
+  public ValueTask DisposeAsync()
   {
     if (!counter_.IsZero)
     {
       logger_.LogWarning("At least one request to the agent is running");
     }
-
-
+    return ValueTask.CompletedTask;
   }
 }
