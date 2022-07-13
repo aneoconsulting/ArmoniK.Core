@@ -24,22 +24,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Auth.Authentication
-{
-  public interface IAuthenticationSource : IInitializable
-  {
-    public Task<UserIdentity?> GetIdentityAsync(string            cn,
-                                                string            fingerprint,
-                                                CancellationToken cancellationToken);
+namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
-    public Task<UserIdentity?> GetIdentityFromIdAsync(string            id,
-                                                      CancellationToken cancellationToken);
-
-    public Task<UserIdentity?> GetIdentityFromNameAsync(string            username,
-                                                        CancellationToken cancellationToken);
-  }
-}
+public record UserIdentityResult(string        UserId,
+                                 string        Username,
+                                 IList<string> Roles,
+                                 IList<string> Permissions);

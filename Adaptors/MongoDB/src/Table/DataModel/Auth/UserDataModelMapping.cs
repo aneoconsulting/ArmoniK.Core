@@ -70,6 +70,7 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
                             new CreateIndexOptions
                             {
                               Name = nameof(usernameIndex),
+                              Unique = true,
                             }),
                       };
     await collection.Indexes.CreateManyAsync(sessionHandle,

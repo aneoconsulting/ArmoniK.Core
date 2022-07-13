@@ -25,9 +25,11 @@
 
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
@@ -38,7 +40,6 @@ namespace ArmoniK.Core.Common.Auth.Authentication
 {
   public class AuthenticatorOptions : AuthenticationSchemeOptions
   {
-
     public const string SectionName = nameof(AuthenticatorOptions);
 
     public void CopyFrom(AuthenticatorOptions o)
@@ -49,7 +50,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication
       ImpersonationWithUsername = o.ImpersonationWithUsername;
     }
 
-    public string? CNHeader { get; set; }
+    public string? CNHeader          { get; set; }
     public string? FingerprintHeader { get; set; }
 
     public string? ImpersonationHeader       { get; set; }
@@ -66,41 +67,41 @@ namespace ArmoniK.Core.Common.Auth.Authentication
     private readonly bool                   impersonationWithUsername_;
 
     public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,
-                         ILoggerFactory loggerFactory,
-                         UrlEncoder encoder,
-                         ISystemClock clock,
-                         IAuthenticationSource authSource)
+                         ILoggerFactory                        loggerFactory,
+                         UrlEncoder                            encoder,
+                         ISystemClock                          clock,
+                         IAuthenticationSource                 authSource)
       : base(options,
              loggerFactory,
              encoder,
              clock)
     {
-      fingerprintHeader_ = options.CurrentValue.FingerprintHeader ?? throw new ArmoniKException($"{AuthenticatorOptions.SectionName}.FingerprintHeader is not configured");
-      cnHeader_ = options.CurrentValue.CNHeader ?? throw new ArmoniKException($"{AuthenticatorOptions.SectionName}.CNHeader is not configured");
-      impersonationHeader_ = options.CurrentValue.ImpersonationHeader;
+      fingerprintHeader_ = options.CurrentValue.FingerprintHeader ??
+                           throw new ArmoniKException($"{AuthenticatorOptions.SectionName}.FingerprintHeader is not configured");
+      cnHeader_                  = options.CurrentValue.CNHeader ?? throw new ArmoniKException($"{AuthenticatorOptions.SectionName}.CNHeader is not configured");
+      impersonationHeader_       = options.CurrentValue.ImpersonationHeader;
       impersonationWithUsername_ = options.CurrentValue.ImpersonationWithUsername ?? false;
-      
+
       authSource_ = authSource;
-      logger_ = loggerFactory.CreateLogger<Authenticator>();
+      logger_     = loggerFactory.CreateLogger<Authenticator>();
     }
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-      ClaimsIdentity? identity;
+      UserIdentity? identity;
       if (Request.Headers.TryGetValue(cnHeader_,
                                       out var cns) && Request.Headers.TryGetValue(fingerprintHeader_,
                                                                                   out var fingerprints))
       {
-
-        var cn = cns.First();
+        var cn          = cns.First();
         var fingerprint = fingerprints.First();
         logger_.LogDebug("Authenticating request with CN {CN} and fingerprint {Fingerprint}",
                          cn,
                          fingerprint);
         identity = await authSource_.GetIdentityAsync(cn,
-                                                          fingerprint,
-                                                          new CancellationToken(false))
-                                        .ConfigureAwait(false);
+                                                      fingerprint,
+                                                      new CancellationToken(false))
+                                    .ConfigureAwait(false);
         if (identity == null)
         {
           return AuthenticateResult.Fail("Unrecognized user certificate");
@@ -111,27 +112,35 @@ namespace ArmoniK.Core.Common.Auth.Authentication
         return AuthenticateResult.Fail("Missing Certificate Headers");
       }
 
-      if (impersonationHeader_ != null && Request.Headers.TryGetValue(impersonationHeader_, out var imps))
+      if (impersonationHeader_ != null && Request.Headers.TryGetValue(impersonationHeader_,
+                                                                      out var imps) && !string.IsNullOrWhiteSpace(imps.First()))
       {
         if (identity.HasClaim(c => c.Type == Permissions.General.Impersonate.Claim.Type))
         {
+          //Get all roles that can be impersonnated
+          var impersonnatableRoles = identity.Claims.Where(c => c.Type == Permissions.General.Impersonate.Claim.Type)
+                                             .Select(c => c.Value);
+          
           if (impersonationWithUsername_)
           {
             identity = await authSource_.GetIdentityFromNameAsync(imps.First(),
-                                                          new CancellationToken(false))
+                                                                  new CancellationToken(false))
                                         .ConfigureAwait(false);
           }
           else
           {
             identity = await authSource_.GetIdentityFromIdAsync(imps.First(),
-                                                                  new CancellationToken(false))
+                                                                new CancellationToken(false))
                                         .ConfigureAwait(false);
           }
-          
-
           if (identity == null)
           {
             return AuthenticateResult.Fail("User being impersonated doesn't exist");
+          }
+
+          if (!identity.Roles.All(str => impersonnatableRoles.Contains(str)))
+          {
+            return AuthenticateResult.Fail("Certificate doesn't allow to impersonate the specified user (insufficient roles)");
           }
         }
         else
@@ -140,7 +149,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication
         }
       }
 
-      var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity),
+      var ticket = new AuthenticationTicket(identity,
                                             Scheme.Name);
       return AuthenticateResult.Success(ticket);
     }

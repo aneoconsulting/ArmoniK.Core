@@ -24,22 +24,34 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Auth.Authentication
+using ArmoniK.Core.Common.Auth.Authorization;
+
+namespace ArmoniK.Core.Common.Auth.Authentication;
+
+public class UserIdentity : ClaimsPrincipal
 {
-  public interface IAuthenticationSource : IInitializable
+  public string              UserName { get; set; }
+  public IEnumerable<string> Roles    { get; set; }
+
+  public IEnumerable<Permissions.Permission> Permissions { get; set; }
+
+  public string UserId { get; set; }
+
+
+  public UserIdentity(string userId, string userName, IEnumerable<string> roles, IEnumerable<Permissions.Permission> permissions) : base(new ClaimsIdentity(permissions.Select(perm => perm.Claim)))
   {
-    public Task<UserIdentity?> GetIdentityAsync(string            cn,
-                                                string            fingerprint,
-                                                CancellationToken cancellationToken);
-
-    public Task<UserIdentity?> GetIdentityFromIdAsync(string            id,
-                                                      CancellationToken cancellationToken);
-
-    public Task<UserIdentity?> GetIdentityFromNameAsync(string            username,
-                                                        CancellationToken cancellationToken);
+    UserId      = userId;
+    UserName    = userName;
+    Roles       = roles;
+    Permissions = permissions;
   }
+
+
+
+  public override bool IsInRole(string role) => Roles.Contains(role);
+
+  public override UserIdentity Clone() => new(UserId, UserName, Roles.ToList(), Permissions.Select(p=> new Permissions.Permission(p.Prefix, p.Name, p.Suffix)).ToList());
 }
