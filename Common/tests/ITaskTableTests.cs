@@ -947,7 +947,7 @@ public class TaskTableTestBase
       var taskToRetry = await TaskTable.ReadTaskAsync("TaskFailedId", CancellationToken.None)
         .ConfigureAwait(false);
 
-      var expectedNewId = taskToRetry.TaskId + $"###{taskToRetry.RetryOfIds.Count + 1}";
+      var expectedNewId = taskToRetry.RetryBaseId + $"###{taskToRetry.RetryOfIds.Count + 1}";
 
       var newTaskId = await TaskTable.RetryTask(taskToRetry, CancellationToken.None)
         .ConfigureAwait(false);
@@ -970,7 +970,7 @@ public class TaskTableTestBase
         var retriedTask = await TaskTable.ReadTaskAsync(newTaskId, CancellationToken.None)
           .ConfigureAwait(false);
 
-        Assert.AreEqual("TaskFailedId", retriedTask.PayloadId);
+        Assert.AreEqual(taskToRetry.PayloadId, retriedTask.PayloadId);
 
         taskToRetry = retriedTask;
       }
