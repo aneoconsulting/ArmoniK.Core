@@ -482,7 +482,7 @@ public class TaskTable : ITaskTable
   public Task<string> RetryTask(TaskData          taskData,
                            CancellationToken cancellationToken)
   {
-    var newTaskId = taskData.TaskId + $"###{taskData.RetryOfIds.Count + 1}";
+    var newTaskId = taskData.RetryBaseId + $"###{taskData.RetryOfIds.Count + 1}";
     var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)
                             {
                               taskData.TaskId,
@@ -494,6 +494,7 @@ public class TaskTable : ITaskTable
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
                                    taskData.ExpectedOutputIds,
+                                   taskData.RetryBaseId,
                                    newTaskRetryOfIds,
                                    TaskStatus.Creating,
                                    "",
