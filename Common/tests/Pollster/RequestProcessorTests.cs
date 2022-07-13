@@ -86,6 +86,7 @@ public class RequestProcessorTest
   private const string                      Dependency1  = "Dependency1";
   private const string                      Dependency2  = "Dependency2";
   private const string                      PodId        = "PodId";
+  private const string                      PayloadId    = "PayloadId";
 
 
   [SetUp]
@@ -194,6 +195,7 @@ public class RequestProcessorTest
                              new TaskData(SessionId,
                                           Task1,
                                           PodId,
+                                          PayloadId,
                                           new[]
                                           {
                                             ParentTaskId,
@@ -223,6 +225,7 @@ public class RequestProcessorTest
                              new TaskData(SessionId,
                                           Task2,
                                           PodId,
+                                          PayloadId,
                                           new[]
                                           {
                                             ParentTaskId,

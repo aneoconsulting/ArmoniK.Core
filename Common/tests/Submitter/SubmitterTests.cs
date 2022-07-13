@@ -225,6 +225,7 @@ public class SubmitterTests
     var taskdata = new TaskData(SessionId,
                                 TaskCompletedId,
                                 "OwnerPodId",
+                                "PayloadId",
                                 new List<string>(),
                                 new List<string>(),
                                 new List<string>

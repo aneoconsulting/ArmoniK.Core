@@ -55,6 +55,7 @@ public class TaskTableTestBase
                               new TaskData("SessionId",
                                            "TaskCompletedId",
                                            "OwnerPodId",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -81,6 +82,7 @@ public class TaskTableTestBase
                               new TaskData("SessionId",
                                            "TaskCreatingId",
                                            "OwnerPodId",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -107,6 +109,7 @@ public class TaskTableTestBase
                               new TaskData("SessionId",
                                            "TaskProcessingId",
                                            "OwnerPodId",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -133,6 +136,7 @@ public class TaskTableTestBase
                               new TaskData("SessionId",
                                            "TaskAnotherProcessingId",
                                            "OwnerPodId",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -159,6 +163,7 @@ public class TaskTableTestBase
                               new TaskData("SessionId",
                                            "TaskSubmittedId",
                                            "",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -185,6 +190,7 @@ public class TaskTableTestBase
                               new TaskData("SessionId",
                                            "TaskFailedId",
                                            "OwnerPodId",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",

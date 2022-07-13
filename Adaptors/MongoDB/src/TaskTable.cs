@@ -644,7 +644,7 @@ public class TaskTable : ITaskTable
     var newTaskData = new TaskData(taskData.SessionId,
                                    newTaskId,
                                    "",
-                                   newTaskRetryOfIds.First(),
+                                   taskData.PayloadId,
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
                                    taskData.ExpectedOutputIds,
