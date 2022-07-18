@@ -115,9 +115,11 @@ public class DataPrefetcherTest
     const string output1      = "Output1";
     const string dependency1  = "Dependency1";
     const string podId        = "PodId";
+    const string payloadId = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -132,16 +134,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -273,9 +269,11 @@ public class DataPrefetcherTest
     const string output1 = "Output1";
     const string dependency1 = "Dependency1";
     const string podId = "PodId";
+    const string payloadId = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -290,16 +288,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -364,9 +356,11 @@ public class DataPrefetcherTest
     const string output1 = "Output1";
     const string dependency1 = "Dependency1";
     const string podId = "PodId";
+    const string payloadId = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -381,16 +375,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -455,9 +443,11 @@ public class DataPrefetcherTest
     const string output1 = "Output1";
     const string dependency1 = "Dependency1";
     const string podId = "PodId";
+    const string payloadId = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -472,16 +462,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -541,9 +525,11 @@ public class DataPrefetcherTest
     const string dependency1  = "Dependency1";
     const string dependency2  = "Dependency2";
     const string podId        = "PodId";
+    const string payloadId    = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -559,16 +545,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -628,9 +608,11 @@ public class DataPrefetcherTest
     const string dependency1 = "Dependency1";
     const string dependency2 = "Dependency2";
     const string podId = "PodId";
+    const string payloadId = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -646,16 +628,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)

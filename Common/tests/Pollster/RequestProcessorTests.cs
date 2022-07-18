@@ -86,6 +86,7 @@ public class RequestProcessorTest
   private const string                      Dependency1  = "Dependency1";
   private const string                      Dependency2  = "Dependency2";
   private const string                      PodId        = "PodId";
+  private const string                      PayloadId    = "PayloadId";
 
 
   [SetUp]
@@ -194,6 +195,7 @@ public class RequestProcessorTest
                              new TaskData(SessionId,
                                           Task1,
                                           PodId,
+                                          PayloadId,
                                           new[]
                                           {
                                             ParentTaskId,
@@ -208,21 +210,16 @@ public class RequestProcessorTest
                                           },
                                           Array.Empty<string>(),
                                           TaskStatus.Submitted,
-                                          "",
                                           new TaskOptions(new Dictionary<string, string>(),
                                                           TimeSpan.FromSeconds(100),
                                                           5,
                                                           1),
-                                          DateTime.Now,
-                                          DateTime.Now + TimeSpan.FromSeconds(1),
-                                          null,
-                                          null,
-                                          DateTime.Now,
                                           new Output(true,
                                                      "")),
                              new TaskData(SessionId,
                                           Task2,
                                           PodId,
+                                          PayloadId,
                                           new[]
                                           {
                                             ParentTaskId,
@@ -237,16 +234,10 @@ public class RequestProcessorTest
                                           },
                                           Array.Empty<string>(),
                                           TaskStatus.Creating,
-                                          "",
                                           new TaskOptions(new Dictionary<string, string>(),
                                                           TimeSpan.FromSeconds(100),
                                                           5,
                                                           1),
-                                          DateTime.Now,
-                                          null,
-                                          null,
-                                          null,
-                                          DateTime.Now,
                                           new Output(false,
                                                      "")),
                            });
