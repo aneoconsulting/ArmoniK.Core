@@ -635,7 +635,7 @@ public class TaskTable : ITaskTable
 
     var taskCollection = taskCollectionProvider_.Get();
 
-    var newTaskId = taskData.RetryBaseId + $"###{taskData.RetryOfIds.Count + 1}";
+    var newTaskId = taskData.InitialTaskId + $"###{taskData.RetryOfIds.Count + 1}";
 
     var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)
                             {
@@ -648,7 +648,7 @@ public class TaskTable : ITaskTable
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
                                    taskData.ExpectedOutputIds,
-                                   taskData.RetryBaseId,
+                                   taskData.InitialTaskId,
                                    newTaskRetryOfIds,
                                    TaskStatus.Creating,
                                    "",
