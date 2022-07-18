@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Stream.Worker;
 
 using Google.Protobuf;
@@ -44,8 +45,10 @@ namespace ArmoniK.Samples.HtcMock.Server;
 
 public class SampleComputerService : WorkerStreamWrapper
 {
-  public SampleComputerService(ILoggerFactory loggerFactory)
-    : base(loggerFactory)
+  public SampleComputerService(ILoggerFactory      loggerFactory,
+                               GrpcChannelProvider provider)
+    : base(loggerFactory,
+           provider)
   {
     logger_ = loggerFactory.CreateLogger<SampleComputerService>();
   }

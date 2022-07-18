@@ -44,11 +44,11 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase, IAsyncD
 {
   private readonly ILoggerFactory               loggerFactory_;
   public           ILogger<WorkerStreamWrapper> logger_;
-  private readonly GrpcChannelProvider          channelProvider_;
   private readonly ChannelBase                  channel_;
   private readonly Agent.AgentClient            client_;
 
-  public WorkerStreamWrapper(ILoggerFactory loggerFactory)
+  public WorkerStreamWrapper(ILoggerFactory loggerFactory,
+                             GrpcChannelProvider provider)
   {
     logger_        = loggerFactory.CreateLogger<WorkerStreamWrapper>();
     loggerFactory_ = loggerFactory;
@@ -57,13 +57,7 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase, IAsyncD
     logger_.LogDebug("Trying to create channel for {address}",
                      "/cache/armonik_agent.sock");
 
-    channelProvider_ = new GrpcChannelProvider(new GrpcChannel
-                                               {
-                                                 Address    = "/cache/armonik_agent.sock",
-                                                 SocketType = GrpcSocketType.UnixSocket,
-                                               },
-                                               loggerFactory_.CreateLogger<GrpcChannelProvider>());
-    channel_ = channelProvider_.Get();
+    channel_ = provider.Get();
 
     client_ = new Agent.AgentClient(channel_);
   }
@@ -106,7 +100,5 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase, IAsyncD
   public async ValueTask DisposeAsync()
   {
     await channel_.ShutdownAsync().ConfigureAwait(false);
-    await channelProvider_.DisposeAsync()
-                          .ConfigureAwait(false);
   }
 }

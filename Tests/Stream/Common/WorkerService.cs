@@ -25,6 +25,7 @@
 using System.Security.Cryptography;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Stream.Worker;
 
 using Google.Protobuf;
@@ -35,8 +36,10 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 
 public class WorkerService : WorkerStreamWrapper
 {
-  public WorkerService(ILoggerFactory loggerFactory)
-    : base(loggerFactory)
+  public WorkerService(ILoggerFactory      loggerFactory,
+                       GrpcChannelProvider provider)
+    : base(loggerFactory,
+           provider)
   {
   }
 
