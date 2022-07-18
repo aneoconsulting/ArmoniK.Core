@@ -129,7 +129,6 @@ internal class BsonSerializerTest
                            },
                            Array.Empty<string>(),
                            TaskStatus.Completed,
-                           "",
                            new Core.Common.Storage.TaskOptions(new Dictionary<string, string>
                                                                {
                                                                  {
@@ -142,11 +141,6 @@ internal class BsonSerializerTest
                                                                TimeSpan.FromSeconds(200),
                                                                5,
                                                                1),
-                           DateTime.Now,
-                           DateTime.Now + TimeSpan.FromSeconds(1),
-                           DateTime.Now + TimeSpan.FromSeconds(10),
-                           DateTime.Now + TimeSpan.FromSeconds(20),
-                           DateTime.Now,
                            new Output(true,
                                       ""));
 

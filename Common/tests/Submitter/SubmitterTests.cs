@@ -234,13 +234,7 @@ public class SubmitterTests
                                 },
                                 new List<string>(),
                                 TaskStatus.Completed,
-                                "",
                                 defaultTaskOptions,
-                                DateTime.UtcNow,
-                                DateTime.MinValue,
-                                DateTime.MinValue,
-                                DateTime.UtcNow,
-                                DateTime.UtcNow,
                                 new Storage.Output(false,
                                                    ""));
 

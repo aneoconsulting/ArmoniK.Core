@@ -70,13 +70,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -116,13 +110,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -170,13 +158,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -223,13 +205,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -277,13 +253,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -331,13 +301,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -384,13 +348,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -437,13 +395,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -491,13 +443,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -545,13 +491,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -592,13 +532,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -640,13 +574,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -687,13 +615,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
@@ -735,13 +657,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             "",
                              default,
-                             DateTime.Now,
-                             DateTime.Now + TimeSpan.FromSeconds(1),
-                             DateTime.Now + TimeSpan.FromSeconds(10),
-                             DateTime.Now + TimeSpan.FromSeconds(20),
-                             DateTime.Now,
                              new Output(true,
                                         ""));
 
