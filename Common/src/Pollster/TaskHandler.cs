@@ -401,7 +401,7 @@ internal class TaskHandler : IAsyncDisposable
                        token,
                        logger_);
 
-    // In theory we could create the server duriing dependencies checking and activate it only now
+    // In theory we could create the server during dependencies checking and activate it only now
     await agentHandler_.Start(agent_,
                               token,
                               logger_,

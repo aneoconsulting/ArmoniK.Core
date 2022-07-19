@@ -26,8 +26,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Worker;
-
 using Grpc.Core;
 
 namespace ArmoniK.Core.Common.Utils;
