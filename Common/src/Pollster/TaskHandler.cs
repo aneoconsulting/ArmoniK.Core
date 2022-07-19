@@ -383,6 +383,7 @@ internal class TaskHandler : IAsyncDisposable
   /// Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
+  /// <exception cref="ArmoniKException">worker pipe is not initialized</exception>
   public async Task ExecuteTask(CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope("TaskExecution",
@@ -449,7 +450,7 @@ internal class TaskHandler : IAsyncDisposable
 
     if (workerStreamHandler_.Pipe == null || taskData_ == null || agent_ == null)
     {
-      throw new ArgumentNullException();
+      throw new NullReferenceException();
     }
 
     try
