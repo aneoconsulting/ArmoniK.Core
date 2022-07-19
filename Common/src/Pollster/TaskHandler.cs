@@ -429,6 +429,9 @@ internal class TaskHandler : IAsyncDisposable
                                                  })
                                 .ConfigureAwait(false);
     }
+
+    await workerStreamHandler_.Pipe.CompleteAsync()
+                              .ConfigureAwait(false);
   }
 
   /// <summary>
@@ -463,8 +466,7 @@ internal class TaskHandler : IAsyncDisposable
     // at this point worker requests should have ended
     try
     {
-      await workerStreamHandler_.Pipe.CompleteAsync()
-                                .ConfigureAwait(false);
+
 
       if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
       {

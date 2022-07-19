@@ -145,7 +145,7 @@ public class TaskHandler : ITaskHandler
                                      TaskOptions?             taskOptions = null)
   {
     using var counter = counter_.GetCounter();
-    var       stream  = client_.CreateTask();
+    using var stream  = client_.CreateTask();
 
     foreach (var createLargeTaskRequest in tasks.ToRequestStream(taskOptions,
                                                                  Token,
@@ -155,6 +155,9 @@ public class TaskHandler : ITaskHandler
                                             CancellationToken.None)
                   .ConfigureAwait(false);
     }
+
+    await stream.RequestStream.CompleteAsync()
+                .ConfigureAwait(false);
 
     var reply = await stream.ResponseAsync.ConfigureAwait(false);
     if (reply.DataCase == CreateTaskReply.DataOneofCase.NonSuccessfullIds)
@@ -183,7 +186,7 @@ public class TaskHandler : ITaskHandler
 
     var fsm = new ProcessReplyResultStateMachine(logger_);
 
-    var stream = client_.SendResult();
+    using var stream = client_.SendResult();
 
     fsm.InitKey();
 
@@ -243,6 +246,9 @@ public class TaskHandler : ITaskHandler
                                                    },
                                           },
                                           CancellationToken.None)
+                .ConfigureAwait(false);
+
+    await stream.RequestStream.CompleteAsync()
                 .ConfigureAwait(false);
 
     var reply = await stream.ResponseAsync.ConfigureAwait(false);
