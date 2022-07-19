@@ -196,6 +196,7 @@ public class Submitter : ISubmitter
     await taskTable_.CreateTasks(requests.Select(request => new TaskData(sessionId,
                                                                          request.Id,
                                                                          "",
+                                                                         request.Id,
                                                                          parentTaskIds,
                                                                          request.DataDependencies.ToList(),
                                                                          request.ExpectedOutputKeys.ToList(),
