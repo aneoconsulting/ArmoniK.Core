@@ -50,7 +50,7 @@ public static class SubmitterClientExt
     var serviceConfiguration = await client.GetServiceConfigurationAsync(new Empty(),
                                                                          cancellationToken: cancellationToken);
 
-    var stream = client.CreateLargeTasks(cancellationToken: cancellationToken);
+    using var stream = client.CreateLargeTasks(cancellationToken: cancellationToken);
 
     foreach (var createLargeTaskRequest in taskRequests.ToRequestStream(sessionId,
                                                                         taskOptions,
@@ -60,6 +60,9 @@ public static class SubmitterClientExt
                                             CancellationToken.None)
                   .ConfigureAwait(false);
     }
+
+    await stream.RequestStream.CompleteAsync()
+                .ConfigureAwait(false);
 
     return await stream.ResponseAsync.ConfigureAwait(false);
   }
