@@ -452,21 +452,20 @@ internal class TaskHandler : IAsyncDisposable
       throw new ArgumentNullException();
     }
 
-    logger_.LogDebug("Waiting for task output");
-    var reply = await workerStreamHandler_.Pipe.ReadAsync(cancellationToken)
-                                          .ConfigureAwait(false);
-
-    logger_.LogDebug("Stop agent server");
-    // todo fixme: Add stop to the server in Dispose in case of error
-    await agentHandler_.Stop(CancellationToken.None)
-                       .ConfigureAwait(false);
-
-    logger_.LogInformation("Process task output of type {type}",
-                           reply.Output.TypeCase);
-    // at this point worker requests should have ended
     try
     {
+      // at this point worker requests should have ended
+      logger_.LogDebug("Waiting for task output");
+      var reply = await workerStreamHandler_.Pipe.ReadAsync(cancellationToken)
+                                            .ConfigureAwait(false);
 
+      logger_.LogDebug("Stop agent server");
+      // todo fixme: Add stop to the server in Dispose in case of error
+      await agentHandler_.Stop(CancellationToken.None)
+                         .ConfigureAwait(false);
+
+      logger_.LogInformation("Process task output of type {type}",
+                             reply.Output.TypeCase);
 
       if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
       {
@@ -475,6 +474,13 @@ internal class TaskHandler : IAsyncDisposable
         await agent_.FinalizeTaskCreation(CancellationToken.None)
                     .ConfigureAwait(false);
       }
+
+      await submitter_.CompleteTaskAsync(taskData_,
+                                         false,
+                                         reply.Output,
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
+      messageHandler_.Status = QueueMessageStatus.Processed;
 
     }
     catch (RpcException e)
@@ -511,17 +517,8 @@ internal class TaskHandler : IAsyncDisposable
                                          CancellationToken.None)
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Processed;
-
-      logger_.LogDebug("End Task Epilog");
       return;
     }
-
-    await submitter_.CompleteTaskAsync(taskData_,
-                                       false,
-                                       reply.Output,
-                                       CancellationToken.None)
-                    .ConfigureAwait(false);
-    messageHandler_.Status = QueueMessageStatus.Processed;
 
     logger_.LogDebug("End Task Processing");
   }
