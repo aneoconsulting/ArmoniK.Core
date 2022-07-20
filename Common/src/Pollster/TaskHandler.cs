@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -56,14 +56,13 @@ public class TaskHandler : IAsyncDisposable
   private readonly ISubmitter                                  submitter_;
   private readonly DataPrefetcher                              dataPrefetcher_;
   private readonly IWorkerStreamHandler                        workerStreamHandler_;
-  private readonly IObjectStorageFactory                       objectStorageFactory_;
   private readonly ActivitySource                              activitySource_;
   private readonly ILogger                                     logger_;
   private          TaskData?                                   taskData_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private readonly string                                      ownerPodId_;
   private readonly IAgentHandler                               agentHandler_;
-  public readonly  string                                      Token;
+  private readonly string                                      token_;
   private          IAgent?                                     agent_;
 
   public TaskHandler(ISessionTable          sessionTable,
@@ -72,7 +71,6 @@ public class TaskHandler : IAsyncDisposable
                      ISubmitter             submitter,
                      DataPrefetcher         dataPrefetcher,
                      IWorkerStreamHandler   workerStreamHandler,
-                     IObjectStorageFactory  objectStorageFactory,
                      IQueueMessageHandler   messageHandler,
                      ITaskProcessingChecker taskProcessingChecker,
                      string                 ownerPodId,
@@ -88,13 +86,12 @@ public class TaskHandler : IAsyncDisposable
     submitter_             = submitter;
     dataPrefetcher_        = dataPrefetcher;
     workerStreamHandler_   = workerStreamHandler;
-    objectStorageFactory_  = objectStorageFactory;
     activitySource_        = activitySource;
     agentHandler_          = agentHandler;
     logger_                = logger;
     ownerPodId_            = ownerPodId;
     taskData_              = null;
-    Token = Guid.NewGuid()
+    token_ = Guid.NewGuid()
                 .ToString();
   }
 
@@ -340,17 +337,15 @@ public class TaskHandler : IAsyncDisposable
   }
 
   /// <summary>
-  /// Get the task id and session id of the acquired task
+  /// Get the task id of the acquired task
   /// </summary>
   /// <returns>
-  /// A tuple of strings representing the acquired task id and the session id or null if there is no task acquired
+  /// A string representing the acquired task id
   /// </returns>
-  public (string taskId, string sessionId)? GetAcquiredTask()
-  {
-    return taskData_ != null
-             ? (taskData_.TaskId, taskData_.SessionId)
-             : null;
-  }
+  public string GetAcquiredTask()
+    => taskData_ != null
+         ? taskData_.TaskId
+         : throw new ArmoniKException("TaskData should not be null after successful acquisition");
 
   /// <summary>
   /// Preprocessing (including the data prefetching) of the acquired task
@@ -397,7 +392,7 @@ public class TaskHandler : IAsyncDisposable
     logger_.LogDebug("Create agent server to receive requests from worker");
 
     // In theory we could create the server during dependencies checking and activate it only now
-    agent_ = await agentHandler_.Start(Token,
+    agent_ = await agentHandler_.Start(token_,
                                        logger_,
                                        taskData_.SessionId,
                                        taskData_.TaskId,
@@ -421,7 +416,7 @@ public class TaskHandler : IAsyncDisposable
       await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
                                                  {
                                                    Compute            = computeRequest,
-                                                   CommunicationToken = Token,
+                                                   CommunicationToken = token_,
                                                  })
                                 .ConfigureAwait(false);
     }

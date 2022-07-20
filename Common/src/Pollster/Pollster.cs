@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -27,7 +27,6 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
@@ -159,7 +158,6 @@ public class Pollster
                                                           submitter_,
                                                           dataPrefetcher_,
                                                           workerStreamHandler_,
-                                                          objectStorageFactory_,
                                                           message,
                                                           taskProcessingChecker_,
                                                           ownerPodId_,
@@ -172,20 +170,7 @@ public class Pollster
 
             if (precondition)
             {
-              var acquiredTask = taskHandler.GetAcquiredTask();
-              if (acquiredTask == null)
-              {
-                throw new ArmoniKException("Acquired task should not be null after successful acquisition");
-              }
-
-              TaskProcessing = acquiredTask.Value.taskId;
-
-              using var agent = new Agent(submitter_,
-                                          objectStorageFactory_,
-                                          acquiredTask.Value.sessionId,
-                                          acquiredTask.Value.taskId,
-                                          taskHandler.Token,
-                                          logger_);
+              TaskProcessing = taskHandler.GetAcquiredTask();
 
               await taskHandler.PreProcessing(combinedCts.Token)
                                .ConfigureAwait(false);
