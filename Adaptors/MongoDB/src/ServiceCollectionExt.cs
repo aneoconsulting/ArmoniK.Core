@@ -238,7 +238,7 @@ public static class ServiceCollectionExt
                                                                     ILogger                 logger)
   {
     services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
-    services.AddTransient<IAuthenticationSource, AuthenticationSource>();
+    services.AddTransient<IAuthenticationTable, AuthenticationTable>();
     return services;
   }
 

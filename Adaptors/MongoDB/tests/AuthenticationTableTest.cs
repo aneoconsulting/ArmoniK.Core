@@ -39,7 +39,7 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
-public class AuthenticationSourceTest : AuthSourceTestBase
+public class AuthenticationTableTest : AuthSourceTestBase
 {
   public override void TearDown()
   {
@@ -88,7 +88,7 @@ public class AuthenticationSourceTest : AuthSourceTestBase
                                                    ValidateOnBuild = true,
                                                  });
 
-    AuthenticationSource = provider.GetRequiredService<IAuthenticationSource>();
+    AuthenticationTable = provider.GetRequiredService<IAuthenticationTable>();
     RunTests             = true;
   }
 }

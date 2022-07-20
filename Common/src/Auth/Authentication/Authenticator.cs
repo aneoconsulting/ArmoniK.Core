@@ -62,14 +62,14 @@ namespace ArmoniK.Core.Common.Auth.Authentication
     private readonly string                 cnHeader_;
     private readonly string                 fingerprintHeader_;
     private readonly string?                impersonationHeader_;
-    private readonly IAuthenticationSource  authSource_;
+    private readonly IAuthenticationTable  authTable_;
     private readonly bool                   impersonationWithUsername_;
 
     public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,
                          ILoggerFactory                        loggerFactory,
                          UrlEncoder                            encoder,
                          ISystemClock                          clock,
-                         IAuthenticationSource                 authSource)
+                         IAuthenticationTable                 authTable)
       : base(options,
              loggerFactory,
              encoder,
@@ -81,7 +81,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication
       impersonationHeader_       = options.CurrentValue.ImpersonationHeader;
       impersonationWithUsername_ = options.CurrentValue.ImpersonationWithUsername ?? false;
 
-      authSource_ = authSource;
+      authTable_ = authTable;
       logger_     = loggerFactory.CreateLogger<Authenticator>();
     }
 
@@ -97,7 +97,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication
         logger_.LogDebug("Authenticating request with CN {CN} and fingerprint {Fingerprint}",
                          cn,
                          fingerprint);
-        identity = await authSource_.GetIdentityAsync(cn,
+        identity = await authTable_.GetIdentityAsync(cn,
                                                       fingerprint,
                                                       new CancellationToken(false))
                                     .ConfigureAwait(false);
@@ -123,13 +123,13 @@ namespace ArmoniK.Core.Common.Auth.Authentication
 
           if (impersonationWithUsername_)
           {
-            identity = await authSource_.GetIdentityFromNameAsync(imps.First(),
+            identity = await authTable_.GetIdentityFromNameAsync(imps.First(),
                                                                   new CancellationToken(false))
                                         .ConfigureAwait(false);
           }
           else
           {
-            identity = await authSource_.GetIdentityFromIdAsync(imps.First(),
+            identity = await authTable_.GetIdentityFromIdAsync(imps.First(),
                                                                 new CancellationToken(false))
                                         .ConfigureAwait(false);
           }

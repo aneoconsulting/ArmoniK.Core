@@ -34,11 +34,6 @@ namespace ArmoniK.Core.Common.Tests.Auth;
 [TestFixture]
 public class PermissionTest
 {
-  [SetUp]
-  void SetUp()
-  {
-  }
-
   [TestCase("testprefix:testname:testsuffix",
             "testprefix",
             "testname",

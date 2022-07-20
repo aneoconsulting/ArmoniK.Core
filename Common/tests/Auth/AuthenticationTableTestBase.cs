@@ -158,15 +158,15 @@ namespace ArmoniK.Core.Common.Tests.Auth
     public void SetUp()
     {
       GetAuthSource();
-      AuthenticationSource.AddRoles(Roles);
-      AuthenticationSource.AddUsers(Users);
-      AuthenticationSource.AddCertificates(Auths);
+      AuthenticationTable.AddRoles(Roles);
+      AuthenticationTable.AddUsers(Users);
+      AuthenticationTable.AddCertificates(Auths);
     }
 
     [TearDown]
     public virtual void TearDown()
     {
-      AuthenticationSource = null;
+      AuthenticationTable = null;
       RunTests             = false;
     }
 
@@ -176,14 +176,14 @@ namespace ArmoniK.Core.Common.Tests.Auth
 
 
     /* Interface to test */
-    protected IAuthenticationSource AuthenticationSource;
+    protected IAuthenticationTable AuthenticationTable;
 
     /* Boolean to control that tests are executed in
      * an instance of this class */
     protected bool RunTests;
 
     /* Function be override so it returns the suitable instance
-   * of AuthenticationSource to the corresponding interface implementation */
+   * of AuthenticationTable to the corresponding interface implementation */
     public virtual void GetAuthSource()
     {
     }
@@ -210,7 +210,10 @@ namespace ArmoniK.Core.Common.Tests.Auth
                                                              string fingerprint,
                                                              int    userid)
     {
-      var ident = AuthenticationSource.GetIdentityAsync(cn,
+      if (!RunTests) 
+        return;
+
+      var ident = AuthenticationTable.GetIdentityAsync(cn,
                                                         fingerprint,
                                                         CancellationToken.None)
                                       .Result;
@@ -229,7 +232,10 @@ namespace ArmoniK.Core.Common.Tests.Auth
     public void GetIdentityFromCnAndFingerprintShouldFail(string cn,
                                                           string fingerprint)
     {
-      Assert.IsNull(AuthenticationSource.GetIdentityAsync(cn,
+      if (!RunTests)
+        return;
+
+      Assert.IsNull(AuthenticationTable.GetIdentityAsync(cn,
                                                           fingerprint,
                                                           CancellationToken.None)
                                         .Result);
@@ -241,7 +247,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
     public void GetIdentityFromIdShouldSucceed(int    id,
                                                string username)
     {
-      var ident = AuthenticationSource.GetIdentityFromIdAsync(Users[id]
+      if (!RunTests)
+        return;
+      var ident = AuthenticationTable.GetIdentityFromIdAsync(Users[id]
                                                                 .UserId,
                                                               CancellationToken.None)
                                       .Result;
@@ -256,7 +264,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
     [TestCase("UserIdDontExist")]
     public void GetIdentityFromIdShouldFail(string id)
     {
-      Assert.IsNull(AuthenticationSource.GetIdentityFromIdAsync(id,
+      if (!RunTests)
+        return;
+      Assert.IsNull(AuthenticationTable.GetIdentityFromIdAsync(id,
                                                                 CancellationToken.None)
                                         .Result);
     }
@@ -267,7 +277,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
     public void GetIdentityFromNameShouldSucceed(string name,
                                                  int    id)
     {
-      var identity = AuthenticationSource.GetIdentityFromNameAsync(name,
+      if (!RunTests)
+        return;
+      var identity = AuthenticationTable.GetIdentityFromNameAsync(name,
                                                                    CancellationToken.None)
                                          .Result;
       Assert.NotNull(identity);
@@ -281,7 +293,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
     [TestCase("UserDontExist")]
     public void GetIdentityFromNameShouldFail(string name)
     {
-      Assert.IsNull(AuthenticationSource.GetIdentityFromNameAsync(name,
+      if (!RunTests)
+        return;
+      Assert.IsNull(AuthenticationTable.GetIdentityFromNameAsync(name,
                                                                   CancellationToken.None)
                                         .Result);
     }
@@ -299,7 +313,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
                                        string rolename,
                                        bool   hasRole)
     {
-      var identity = AuthenticationSource.GetIdentityFromNameAsync(username,
+      if (!RunTests)
+        return;
+      var identity = AuthenticationTable.GetIdentityFromNameAsync(username,
                                                                    CancellationToken.None)
                                          .Result;
       Assert.NotNull(identity);
@@ -322,7 +338,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
                                         string claim,
                                         bool   hasClaim)
     {
-      var identity = AuthenticationSource.GetIdentityFromNameAsync(username,
+      if (!RunTests)
+        return;
+      var identity = AuthenticationTable.GetIdentityFromNameAsync(username,
                                                                    CancellationToken.None)
                                          .Result;
       var expected = new Permissions.Permission(claim).Claim;
@@ -334,7 +352,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
     [TestCaseSource(nameof(Users))]
     public void UserHasAllClaimsOfItsRoles(UserData user)
     {
-      var identity = AuthenticationSource.GetIdentityFromIdAsync(user.UserId,
+      if (!RunTests)
+        return;
+      var identity = AuthenticationTable.GetIdentityFromIdAsync(user.UserId,
                                                                  CancellationToken.None)
                                          .Result;
       Assert.NotNull(identity);

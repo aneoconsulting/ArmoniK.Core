@@ -47,7 +47,7 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
-public class AuthenticationSource : IAuthenticationSource
+public class AuthenticationTable : IAuthenticationTable
 {
   private readonly ActivitySource                                          activitySource_;
   private readonly MongoCollectionProvider<AuthData, AuthDataModelMapping> authCollectionProvider_;
@@ -59,11 +59,11 @@ public class AuthenticationSource : IAuthenticationSource
   private PipelineDefinition<UserData, UserIdentityResult> userToIdentityPipeline_;
   private PipelineDefinition<AuthData, UserIdentityResult> authToIdentityPipeline_;
 
-  public AuthenticationSource(SessionProvider                                         sessionProvider,
+  public AuthenticationTable(SessionProvider                                         sessionProvider,
                               MongoCollectionProvider<UserData, UserDataModelMapping> userCollectionProvider,
                               MongoCollectionProvider<AuthData, AuthDataModelMapping> authCollectionProvider,
                               MongoCollectionProvider<RoleData, RoleDataModelMapping> roleCollectionProvider,
-                              ILogger<AuthenticationSource>                           logger,
+                              ILogger<AuthenticationTable>                           logger,
                               ActivitySource                                          activitySource)
   {
     sessionProvider_        = sessionProvider;
@@ -212,11 +212,6 @@ public class AuthenticationSource : IAuthenticationSource
                      checkIfValid,
                      replaceroot,
                    }.Concat(userToIdentityPipeline.Stages);
-    foreach (var pipelineStageDefinition in pipeline)
-    {
-      Console.WriteLine(pipelineStageDefinition.ToString());
-    }
-
     authToIdentityPipeline_ = new PipelineStagePipelineDefinition<AuthData, UserIdentityResult>(pipeline);
     return authToIdentityPipeline_;
   }

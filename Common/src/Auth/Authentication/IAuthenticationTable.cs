@@ -29,7 +29,7 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Auth.Authentication
 {
-  public interface IAuthenticationSource : IInitializable
+  public interface IAuthenticationTable : IInitializable
   {
     public Task<UserIdentity?> GetIdentityAsync(string            cn,
                                                 string            fingerprint,
