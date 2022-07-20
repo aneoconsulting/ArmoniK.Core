@@ -17,6 +17,7 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,7 +32,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// <summary>
 /// Interface for implementing methods for the agent gRPC service that receives requests from the worker
 /// </summary>
-public interface IAgent
+public interface IAgent : IDisposable
 {
   /// <summary>
   /// Finalize child task creation after the parent task succeeds

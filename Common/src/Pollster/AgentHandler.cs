@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
@@ -43,6 +44,8 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public class AgentHandler : IAgentHandler, IAsyncDisposable
 {
+  private readonly ISubmitter            submitter_;
+  private readonly IObjectStorageFactory objectStorageFactory_;
   private readonly ILogger<AgentHandler> logger_;
   private readonly WebApplication        app_;
   private readonly GrpcAgentService      service_;
@@ -52,12 +55,18 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   /// </summary>
   /// <param name="loggerInit">Logger initializer used to configure the loggers needed by the worker</param>
   /// <param name="computePlanOptions">Options needed for the creation of the servers</param>
+  /// <param name="submitter">Interface to manage tasks</param>
+  /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public AgentHandler(LoggerInit            loggerInit,
                       ComputePlan           computePlanOptions,
+                      ISubmitter            submitter,
+                      IObjectStorageFactory objectStorageFactory,
                       ILogger<AgentHandler> logger)
   {
-    logger_ = logger;
+    submitter_            = submitter;
+    objectStorageFactory_ = objectStorageFactory;
+    logger_               = logger;
 
     try
     {
@@ -96,18 +105,25 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     }
   }
 
-  public async Task Start(IAgent            agent,
-                          string            token,
-                          ILogger           logger,
-                          CancellationToken cancellationToken)
+  public async Task<IAgent> Start(string            token,
+                                  ILogger           logger,
+                                  string            sessionId,
+                                  string            taskId,
+                                  CancellationToken cancellationToken)
   {
     try
     {
-      // this code stays there intentionally as a remainder on how to start the server when needed
-      //await app_.StartAsync(CancellationToken.None)
-      //          .ConfigureAwait(false);
+      var agent = new Agent(submitter_,
+                            objectStorageFactory_,
+                            sessionId,
+                            taskId,
+                            token,
+                            logger);
+
       await service_.Start(agent)
                     .ConfigureAwait(false);
+
+      return agent;
     }
     catch (Exception e)
     {
@@ -123,11 +139,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
     {
       await service_.Stop()
                     .ConfigureAwait(false);
-      // this code stays there intentionally as a remainder on how to stop the server when needed
-      //await app_.StopAsync(cancellationToken)
-      //          .ConfigureAwait(false);
-
-      //app_.Lifetime.StopApplication();
     }
     catch (Exception e)
     {

@@ -43,15 +43,17 @@ public interface IAgentHandler
   /// <summary>
   /// Starts the handler
   /// </summary>
-  /// <param name="agent">Agent that will be populated with requests from the worker</param>
   /// <param name="token">Token that can be used to differentiate running tasks</param>
   /// <param name="logger">Logger that may be injected into the handler that embed preconfigured scopes</param>
+  /// <param name="taskId"></param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <param name="sessionId"></param>
   /// <returns>
   /// Task representing the asynchronous execution of the method
   /// </returns>
-  Task Start(IAgent            agent,
-             string            token,
-             ILogger           logger,
-             CancellationToken cancellationToken);
+  Task<IAgent> Start(string            token,
+                     ILogger           logger,
+                     string            sessionId,
+                     string            taskId,
+                     CancellationToken cancellationToken);
 }

@@ -44,7 +44,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// <summary>
 /// Represents the internal processing requests received by the agent. Provides methods to process those requests
 /// </summary>
-public class Agent : IAgent, IDisposable
+public class Agent : IAgent
 {
   private readonly ISubmitter                                                      submitter_;
   private readonly ILogger                                                         logger_;

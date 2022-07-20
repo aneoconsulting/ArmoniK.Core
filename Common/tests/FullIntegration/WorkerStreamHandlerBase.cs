@@ -42,7 +42,7 @@ public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
   protected WorkerStreamHandlerBase()
   {
     TaskList         = new List<Task>();
-    ChannelAsyncPipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
+    ChannelAsyncPipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>(new ProcessReply());
   }
 
   public ValueTask<bool> Check(HealthCheckTag tag)

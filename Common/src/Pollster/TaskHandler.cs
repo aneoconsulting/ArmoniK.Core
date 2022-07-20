@@ -46,7 +46,7 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-internal class TaskHandler : IAsyncDisposable
+public class TaskHandler : IAsyncDisposable
 {
   private readonly ISessionTable                               sessionTable_;
   private readonly ITaskTable                                  taskTable_;
@@ -63,8 +63,8 @@ internal class TaskHandler : IAsyncDisposable
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private readonly string                                      ownerPodId_;
   private readonly IAgentHandler                               agentHandler_;
-  private readonly string                                      token;
-  private          Agent?                                      agent_;
+  public readonly  string                                      Token;
+  private          IAgent?                                     agent_;
 
   public TaskHandler(ISessionTable          sessionTable,
                      ITaskTable             taskTable,
@@ -94,7 +94,7 @@ internal class TaskHandler : IAsyncDisposable
     logger_                = logger;
     ownerPodId_            = ownerPodId;
     taskData_              = null;
-    token = Guid.NewGuid()
+    Token = Guid.NewGuid()
                 .ToString();
   }
 
@@ -340,16 +340,16 @@ internal class TaskHandler : IAsyncDisposable
   }
 
   /// <summary>
-  /// Get the task id of the acquired task
+  /// Get the task id and session id of the acquired task
   /// </summary>
   /// <returns>
-  /// A string representing the acquired task id or null if there is no task acquired
+  /// A tuple of strings representing the acquired task id and the session id or null if there is no task acquired
   /// </returns>
-  public string GetAcquiredTask()
+  public (string taskId, string sessionId)? GetAcquiredTask()
   {
     return taskData_ != null
-             ? taskData_.TaskId
-             : "";
+             ? (taskData_.TaskId, taskData_.SessionId)
+             : null;
   }
 
   /// <summary>
@@ -378,6 +378,7 @@ internal class TaskHandler : IAsyncDisposable
   /// <summary>
   /// Execution of the acquired task on the worker
   /// </summary>
+  /// <param name="agent">Agent that will be used to keep track of the requests of the worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   /// Task representing the asynchronous execution of the method
@@ -395,19 +396,13 @@ internal class TaskHandler : IAsyncDisposable
 
     logger_.LogDebug("Create agent server to receive requests from worker");
 
-    agent_ = new Agent(submitter_,
-                       objectStorageFactory_,
-                       taskData_.SessionId,
-                       taskData_.TaskId,
-                       token,
-                       logger_);
-
     // In theory we could create the server during dependencies checking and activate it only now
-    await agentHandler_.Start(agent_,
-                              token,
-                              logger_,
-                              cancellationToken)
-                       .ConfigureAwait(false);
+    agent_ = await agentHandler_.Start(Token,
+                                       logger_,
+                                       taskData_.SessionId,
+                                       taskData_.TaskId,
+                                       cancellationToken)
+                                .ConfigureAwait(false);
 
     logger_.LogInformation("Start processing task");
     await submitter_.StartTask(taskData_.TaskId,
@@ -426,7 +421,7 @@ internal class TaskHandler : IAsyncDisposable
       await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
                                                  {
                                                    Compute            = computeRequest,
-                                                   CommunicationToken = token,
+                                                   CommunicationToken = Token,
                                                  })
                                 .ConfigureAwait(false);
     }

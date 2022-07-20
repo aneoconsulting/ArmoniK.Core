@@ -27,6 +27,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
@@ -171,7 +172,21 @@ public class Pollster
 
             if (precondition)
             {
-              TaskProcessing = taskHandler.GetAcquiredTask();
+              var acquiredTask = taskHandler.GetAcquiredTask();
+              if (acquiredTask == null)
+              {
+                throw new ArmoniKException("Acquired task should not be null after successful acquisition");
+              }
+
+              TaskProcessing = acquiredTask.Value.taskId;
+
+              using var agent = new Agent(submitter_,
+                                          objectStorageFactory_,
+                                          acquiredTask.Value.sessionId,
+                                          acquiredTask.Value.taskId,
+                                          taskHandler.Token,
+                                          logger_);
+
               await taskHandler.PreProcessing(combinedCts.Token)
                                .ConfigureAwait(false);
 
