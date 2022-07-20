@@ -30,6 +30,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Stream.Client;
 using ArmoniK.Core.Common.Utils;

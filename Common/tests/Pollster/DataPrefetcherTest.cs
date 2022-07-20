@@ -30,6 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
@@ -263,7 +264,7 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
     const string taskId = "TaskId";
     const string output1 = "Output1";
@@ -350,7 +351,7 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
     const string taskId = "TaskId";
     const string output1 = "Output1";
@@ -437,7 +438,7 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
     const string taskId = "TaskId";
     const string output1 = "Output1";
@@ -601,7 +602,7 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
     const string taskId = "TaskId";
     const string output1 = "Output1";

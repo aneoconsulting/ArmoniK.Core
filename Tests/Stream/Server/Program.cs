@@ -25,6 +25,8 @@
 using System;
 using System.IO;
 
+using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 
 using Microsoft.AspNetCore.Builder;
@@ -42,14 +44,10 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Server;
 
 public static class Program
 {
-  private static readonly string SocketPath = "/cache/armonik.sock";
-
   public static int Main(string[] args)
   {
     try
     {
-      Log.Information("Starting web host");
-
       var builder = WebApplication.CreateBuilder(args);
 
       builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
@@ -58,6 +56,13 @@ public static class Program
                           false)
              .AddEnvironmentVariables()
              .AddCommandLine(args);
+
+      var computePlanOptions = builder.Configuration.GetSection(ComputePlan.SettingSection)
+                                      .Get<ComputePlan>();
+      if (computePlanOptions.WorkerChannel == null)
+      {
+        throw new Exception("WorkerChannel Should not be null");
+      }
 
       Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
                                             .WriteTo.Console(new CompactJsonFormatter())
@@ -69,22 +74,13 @@ public static class Program
 
       builder.Host.UseSerilog(Log.Logger);
 
-      builder.WebHost.ConfigureKestrel(options =>
-                                       {
-                                         if (File.Exists(SocketPath))
-                                         {
-                                           File.Delete(SocketPath);
-                                         }
-
-                                         options.ListenUnixSocket(SocketPath,
-                                                                  listenOptions =>
-                                                                  {
-                                                                    listenOptions.Protocols = HttpProtocols.Http2;
-                                                                  });
-                                       });
+      builder.WebHost.ConfigureKestrel(options => options.ListenUnixSocket(computePlanOptions.WorkerChannel.Address,
+                                                                           listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
 
       builder.Services.AddSingleton<ApplicationLifeTimeManager>()
-             .AddSingleton(sp => loggerFactory)
+             .AddSingleton(_ => loggerFactory)
+             .AddSingleton<GrpcChannelProvider>()
+             .AddSingleton(computePlanOptions.AgentChannel)
              .AddLogging()
              .AddGrpc(options => options.MaxReceiveMessageSize = null);
 

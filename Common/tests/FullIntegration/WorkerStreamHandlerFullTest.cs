@@ -23,15 +23,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Storage;
 
 using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.FullIntegration;
 
@@ -50,14 +49,14 @@ public class WorkerStreamHandlerFullTest : WorkerStreamHandlerBase
                           //  Console.WriteLine(requests.Current);
                           //}
 
-                          Console.WriteLine(await ChannelAsyncPipe.Reverse.Reader.FirstAsync(cancellationToken: cancellationToken)
+                          Console.WriteLine(await ChannelAsyncPipe.Reverse.ReadAsync(cancellationToken)
                                                                   .ConfigureAwait(false));
 
                           await ChannelAsyncPipe.Reverse.WriteAsync(new ProcessReply
                                                                     {
                                                                       Output = new Output
                                                                                {
-                                                                                 Ok     = new Empty(),
+                                                                                 Ok = new Empty(),
                                                                                },
                                                                     })
                                                 .ConfigureAwait(false);
@@ -68,5 +67,4 @@ public class WorkerStreamHandlerFullTest : WorkerStreamHandlerBase
     TaskList.Add(task);
     task.Start();
   }
-
 }

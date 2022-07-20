@@ -23,11 +23,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Injection.Options;
@@ -38,18 +38,18 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
-using WorkerClient = ArmoniK.Api.gRPC.V1.Worker.WorkerClient;
+using WorkerClient = ArmoniK.Api.gRPC.V1.Worker.Worker.WorkerClient;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
-  private readonly GrpcChannelProvider          channelProvider_;
-  private readonly InitWorker                   optionsInitWorker_;
-  private readonly ILogger<WorkerStreamHandler> logger_;
-  private          WorkerClient?                workerClient_;
-  private          bool                         isInitialized_;
+  private readonly GrpcChannelProvider                                     channelProvider_;
+  private readonly InitWorker                                              optionsInitWorker_;
+  private readonly ILogger<WorkerStreamHandler>                            logger_;
+  private          WorkerClient?                                           workerClient_;
+  private          bool                                                    isInitialized_;
+  private          AsyncClientStreamingCall<ProcessRequest, ProcessReply>? stream_;
 
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
                              InitWorker                   optionsInitWorker,
@@ -58,11 +58,6 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     channelProvider_   = channelProvider;
     optionsInitWorker_ = optionsInitWorker;
     logger_            = logger;
-  }
-
-  public Queue<ComputeRequest> WorkerReturn()
-  {
-    return new Queue<ComputeRequest>();
   }
 
   public void StartTaskProcessing(TaskData          taskData,
@@ -81,11 +76,9 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       throw new ArmoniKException($"Failed to recuperate Stream for {taskData.TaskId}");
     }
 
-    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream_.ResponseStream,
+    Pipe = new GrpcAsyncPipe<ProcessReply, ProcessRequest>(stream_.ResponseAsync,
                                                            stream_.RequestStream);
   }
-
-  private AsyncDuplexStreamingCall<ProcessRequest, ProcessReply>? stream_;
 
   public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 

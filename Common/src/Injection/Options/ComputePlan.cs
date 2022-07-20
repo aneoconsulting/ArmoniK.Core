@@ -31,7 +31,15 @@ public class ComputePlan
 {
   public const string SettingSection = nameof(ComputePlan);
 
-  public GrpcChannel? GrpcChannel { get; set; }
+  /// <summary>
+  /// Channel used by the Agent to send tasks to the Worker
+  /// </summary>
+  public GrpcChannel? WorkerChannel { get; set; }
+
+  /// <summary>
+  /// Channel used by the Worker to send requests to the Agent
+  /// </summary>
+  public GrpcChannel? AgentChannel { get; set; }
 
   public int MessageBatchSize { get; set; }
 }

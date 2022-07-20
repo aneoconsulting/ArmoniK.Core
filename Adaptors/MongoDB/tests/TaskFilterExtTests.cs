@@ -25,6 +25,7 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Common.Storage;
 

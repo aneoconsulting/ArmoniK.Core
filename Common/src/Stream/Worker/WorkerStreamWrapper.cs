@@ -26,6 +26,10 @@ using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Agent;
+using ArmoniK.Api.gRPC.V1.Worker;
+using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Injection.Options;
 
 using Grpc.Core;
 
@@ -36,49 +40,50 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Common.Stream.Worker;
 
 [PublicAPI]
-public class WorkerStreamWrapper : Api.gRPC.V1.Worker.WorkerBase
+public class WorkerStreamWrapper : Api.gRPC.V1.Worker.Worker.WorkerBase, IAsyncDisposable
 {
   private readonly ILoggerFactory               loggerFactory_;
   public           ILogger<WorkerStreamWrapper> logger_;
+  private readonly ChannelBase                  channel_;
+  private readonly Agent.AgentClient            client_;
 
-  public WorkerStreamWrapper(ILoggerFactory loggerFactory)
+  public WorkerStreamWrapper(ILoggerFactory loggerFactory,
+                             GrpcChannelProvider provider)
   {
     logger_        = loggerFactory.CreateLogger<WorkerStreamWrapper>();
     loggerFactory_ = loggerFactory;
+
+
+    logger_.LogDebug("Trying to create channel for {address}",
+                     "/cache/armonik_agent.sock");
+
+    channel_ = provider.Get();
+
+    client_ = new Agent.AgentClient(channel_);
   }
 
-  /// <inheritdoc />
-  public sealed override async Task Process(IAsyncStreamReader<ProcessRequest> requestStream,
-                                            IServerStreamWriter<ProcessReply>  responseStream,
-                                            ServerCallContext                  context)
+  public sealed override async Task<ProcessReply> Process(IAsyncStreamReader<ProcessRequest> requestStream,
+                                                          ServerCallContext                  context)
   {
-    var taskHandler = await TaskHandler.Create(requestStream,
-                                               responseStream,
-                                               new Configuration
-                                               {
-                                                 DataChunkMaxSize = 50 * 1024,
-                                               },
-                                               loggerFactory_.CreateLogger<TaskHandler>(),
-                                               context.CancellationToken)
-                                       .ConfigureAwait(false);
-
-    using var _ = logger_.BeginNamedScope("Execute task",
-                                          ("taskId", taskHandler.TaskId),
-                                          ("sessionId", taskHandler.SessionId));
-    logger_.LogDebug("Execute Process");
-    var output = await Process(taskHandler)
-                   .ConfigureAwait(false);
-
-    await responseStream.WriteAsync(new ProcessReply
-                                    {
-                                      Output = output,
-                                    })
-                        .ConfigureAwait(false);
-    if (await requestStream.MoveNext(context.CancellationToken)
-                           .ConfigureAwait(false))
+    Output output;
     {
-      throw new InvalidOperationException("The request stream is expected to be finished.");
+      await using var taskHandler = await TaskHandler.Create(requestStream,
+                                                             client_,
+                                                             loggerFactory_,
+                                                             context.CancellationToken)
+                                                     .ConfigureAwait(false);
+
+      using var _ = logger_.BeginNamedScope("Execute task",
+                                            ("taskId", taskHandler.TaskId),
+                                            ("sessionId", taskHandler.SessionId));
+      logger_.LogDebug("Execute Process");
+      output = await Process(taskHandler)
+                 .ConfigureAwait(false);
     }
+    return new ProcessReply
+           {
+             Output = output,
+           };
   }
 
   public virtual Task<Output> Process(ITaskHandler taskHandler)
@@ -91,4 +96,9 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.WorkerBase
                        {
                          Status = HealthCheckReply.Types.ServingStatus.Serving,
                        });
+
+  public async ValueTask DisposeAsync()
+  {
+    await channel_.ShutdownAsync().ConfigureAwait(false);
+  }
 }

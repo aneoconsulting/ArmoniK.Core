@@ -30,11 +30,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+
+using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
@@ -58,8 +61,10 @@ internal class TaskHandler : IAsyncDisposable
   private readonly ILogger                                     logger_;
   private          TaskData?                                   taskData_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
-  private          Task?                                       processResult_;
-  private          string                                      ownerPodId_;
+  private readonly string                                      ownerPodId_;
+  private readonly IAgentHandler                               agentHandler_;
+  private readonly string                                      token;
+  private          Agent?                                      agent_;
 
   public TaskHandler(ISessionTable          sessionTable,
                      ITaskTable             taskTable,
@@ -72,6 +77,7 @@ internal class TaskHandler : IAsyncDisposable
                      ITaskProcessingChecker taskProcessingChecker,
                      string                 ownerPodId,
                      ActivitySource         activitySource,
+                     IAgentHandler          agentHandler,
                      ILogger                logger)
   {
     sessionTable_          = sessionTable;
@@ -84,9 +90,12 @@ internal class TaskHandler : IAsyncDisposable
     workerStreamHandler_   = workerStreamHandler;
     objectStorageFactory_  = objectStorageFactory;
     activitySource_        = activitySource;
+    agentHandler_          = agentHandler;
     logger_                = logger;
     ownerPodId_            = ownerPodId;
     taskData_              = null;
+    token = Guid.NewGuid()
+                .ToString();
   }
 
   /// <summary>
@@ -103,6 +112,7 @@ internal class TaskHandler : IAsyncDisposable
     using var _ = logger_.BeginNamedScope("Acquiring task",
                                           ("taskId", messageHandler_.TaskId));
 
+    logger_.LogInformation("Acquire task");
     try
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
@@ -373,6 +383,7 @@ internal class TaskHandler : IAsyncDisposable
   /// Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
+  /// <exception cref="ArmoniKException">worker pipe is not initialized</exception>
   public async Task ExecuteTask(CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope("TaskExecution",
@@ -382,18 +393,46 @@ internal class TaskHandler : IAsyncDisposable
       throw new NullReferenceException();
     }
 
-    logger_.LogDebug("Start a new Task to process the messageHandler");
-    using var requestProcessor = new RequestProcessor(workerStreamHandler_,
-                                                      objectStorageFactory_,
-                                                      logger_,
-                                                      submitter_,
-                                                      activitySource_);
+    logger_.LogDebug("Create agent server to receive requests from worker");
 
-    processResult_ = await requestProcessor.ProcessAsync(messageHandler_,
-                                                         taskData_,
-                                                         computeRequestStream_,
-                                                         cancellationToken)
-                                           .ConfigureAwait(false);
+    agent_ = new Agent(submitter_,
+                       objectStorageFactory_,
+                       taskData_.SessionId,
+                       taskData_.TaskId,
+                       token,
+                       logger_);
+
+    // In theory we could create the server during dependencies checking and activate it only now
+    await agentHandler_.Start(agent_,
+                              token,
+                              logger_,
+                              cancellationToken)
+                       .ConfigureAwait(false);
+
+    logger_.LogInformation("Start processing task");
+    await submitter_.StartTask(taskData_.TaskId,
+                               cancellationToken)
+                    .ConfigureAwait(false);
+
+    workerStreamHandler_.StartTaskProcessing(taskData_,
+                                             cancellationToken);
+    if (workerStreamHandler_.Pipe is null)
+    {
+      throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
+    }
+
+    while (computeRequestStream_.TryDequeue(out var computeRequest))
+    {
+      await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
+                                                 {
+                                                   Compute            = computeRequest,
+                                                   CommunicationToken = token,
+                                                 })
+                                .ConfigureAwait(false);
+    }
+
+    await workerStreamHandler_.Pipe.CompleteAsync()
+                              .ConfigureAwait(false);
   }
 
   /// <summary>
@@ -408,21 +447,95 @@ internal class TaskHandler : IAsyncDisposable
   {
     using var _ = logger_.BeginNamedScope("PostProcessing",
                                           ("taskId", messageHandler_.TaskId));
-    if (processResult_ == null)
+
+    if (workerStreamHandler_.Pipe == null || taskData_ == null || agent_ == null)
     {
       throw new NullReferenceException();
     }
 
-    await processResult_.WaitAsync(cancellationToken)
-                        .ConfigureAwait(false);
+    try
+    {
+      // at this point worker requests should have ended
+      logger_.LogDebug("Waiting for task output");
+      var reply = await workerStreamHandler_.Pipe.ReadAsync(cancellationToken)
+                                            .ConfigureAwait(false);
+
+      logger_.LogDebug("Stop agent server");
+      // todo fixme: Add stop to the server in Dispose in case of error
+      await agentHandler_.Stop(CancellationToken.None)
+                         .ConfigureAwait(false);
+
+      logger_.LogInformation("Process task output of type {type}",
+                             reply.Output.TypeCase);
+
+      if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
+      {
+
+        logger_.LogDebug("Complete processing of the request");
+        await agent_.FinalizeTaskCreation(CancellationToken.None)
+                    .ConfigureAwait(false);
+      }
+
+      await submitter_.CompleteTaskAsync(taskData_,
+                                         false,
+                                         reply.Output,
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
+      messageHandler_.Status = QueueMessageStatus.Processed;
+
+    }
+    catch (RpcException e)
+    {
+      logger_.LogError(e,
+                       "Error while computing task, retrying task");
+      await submitter_.CompleteTaskAsync(taskData_,
+                                         true,
+                                         new Output
+                                         {
+                                           Error = new Output.Types.Error
+                                                   {
+                                                     Details = e.Message,
+                                                   },
+                                         },
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
+      messageHandler_.Status = QueueMessageStatus.Cancelled;
+      return;
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while finalizing task processing");
+      await submitter_.CompleteTaskAsync(taskData_,
+                                         false,
+                                         new Output
+                                         {
+                                           Error = new Output.Types.Error
+                                                   {
+                                                     Details = e.Message,
+                                                   },
+                                         },
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
+      messageHandler_.Status = QueueMessageStatus.Processed;
+      return;
+    }
+
+    logger_.LogDebug("End Task Processing");
   }
+
 
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
     using var _ = logger_.BeginNamedScope("DisposeAsync",
                                           ("taskId", messageHandler_.TaskId));
+
+    logger_.LogDebug("MessageHandler status is {status}",
+                     messageHandler_.Status);
     await messageHandler_.DisposeAsync()
                          .ConfigureAwait(false);
+
+    agent_?.Dispose();
   }
 }

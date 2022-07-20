@@ -27,6 +27,7 @@ using System.IO;
 using System.Threading;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Utils;
 

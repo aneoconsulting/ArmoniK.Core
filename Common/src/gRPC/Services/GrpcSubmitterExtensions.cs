@@ -34,8 +34,8 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public static class GrpcSubmitterExtensions
 {
-  public static async IAsyncEnumerable<TaskRequest> BuildRequests(this                     IAsyncEnumerator<CreateLargeTaskRequest> enumerator,
-                                                                  [EnumeratorCancellation] CancellationToken                        cancellationToken)
+  public static async IAsyncEnumerable<TaskRequest> BuildRequests(this                     IAsyncEnumerator<Api.gRPC.V1.Submitter.CreateLargeTaskRequest> enumerator,
+                                                                  [EnumeratorCancellation] CancellationToken                                  cancellationToken)
   {
     var           id                 = string.Empty;
     IList<string> expectedOutputKeys = Array.Empty<string>();
@@ -47,7 +47,7 @@ public static class GrpcSubmitterExtensions
     {
       switch (enumerator.Current.TypeCase)
       {
-        case CreateLargeTaskRequest.TypeOneofCase.InitTask:
+        case Api.gRPC.V1.Submitter.CreateLargeTaskRequest.TypeOneofCase.InitTask:
           if (!string.IsNullOrEmpty(id) || dataDependencies.Any() || expectedOutputKeys.Any() || chunks.Any())
           {
             throw new InvalidOperationException();
@@ -69,7 +69,7 @@ public static class GrpcSubmitterExtensions
           }
 
           break;
-        case CreateLargeTaskRequest.TypeOneofCase.TaskPayload:
+        case Api.gRPC.V1.Submitter.CreateLargeTaskRequest.TypeOneofCase.TaskPayload:
           if (string.IsNullOrEmpty(id) || !expectedOutputKeys.Any())
           {
             throw new InvalidOperationException();
@@ -97,8 +97,8 @@ public static class GrpcSubmitterExtensions
           }
 
           break;
-        case CreateLargeTaskRequest.TypeOneofCase.InitRequest:
-        case CreateLargeTaskRequest.TypeOneofCase.None:
+        case Api.gRPC.V1.Submitter.CreateLargeTaskRequest.TypeOneofCase.InitRequest:
+        case Api.gRPC.V1.Submitter.CreateLargeTaskRequest.TypeOneofCase.None:
         default:
           throw new InvalidOperationException();
       }

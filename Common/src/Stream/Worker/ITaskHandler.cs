@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -32,7 +33,7 @@ using JetBrains.Annotations;
 namespace ArmoniK.Core.Common.Stream.Worker;
 
 [PublicAPI]
-public interface ITaskHandler
+public interface ITaskHandler : IAsyncDisposable
 {
   /// <summary>
   ///   Id of the session this task belongs to.
@@ -47,7 +48,7 @@ public interface ITaskHandler
   /// <summary>
   ///   List of options provided when submitting the task.
   /// </summary>
-  IReadOnlyDictionary<string, string> TaskOptions { get; }
+  TaskOptions TaskOptions { get; }
 
   /// <summary>
   ///   The data provided when submitting the task.
@@ -67,7 +68,7 @@ public interface ITaskHandler
   /// <summary>
   ///   The configuration parameters for the interaction with ArmoniK.
   /// </summary>
-  Configuration Configuration { get; }
+  Configuration? Configuration { get; }
 
   /// <summary>
   ///   This method allows to create subtasks.

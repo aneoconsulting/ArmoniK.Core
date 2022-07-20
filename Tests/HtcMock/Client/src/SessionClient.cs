@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Stream.Client;
 

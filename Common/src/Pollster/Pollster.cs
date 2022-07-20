@@ -54,9 +54,9 @@ public class Pollster
   private readonly ITaskTable               taskTable_;
   private readonly ITaskProcessingChecker   taskProcessingChecker_;
   private readonly IWorkerStreamHandler     workerStreamHandler_;
+  private readonly IAgentHandler            agentHandler_;
   public           string                   TaskProcessing;
   private readonly string                   ownerPodId_;
-
 
   public Pollster(IQueueStorage            queueStorage,
                   DataPrefetcher           dataPrefetcher,
@@ -70,7 +70,8 @@ public class Pollster
                   ISessionTable            sessionTable,
                   ITaskTable               taskTable,
                   ITaskProcessingChecker   taskProcessingChecker,
-                  IWorkerStreamHandler     workerStreamHandler)
+                  IWorkerStreamHandler     workerStreamHandler,
+                  IAgentHandler            agentHandler)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -91,9 +92,9 @@ public class Pollster
     taskTable_             = taskTable;
     taskProcessingChecker_ = taskProcessingChecker;
     workerStreamHandler_   = workerStreamHandler;
+    agentHandler_          = agentHandler;
     TaskProcessing         = "";
     ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
-
   }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -162,6 +163,7 @@ public class Pollster
                                                           taskProcessingChecker_,
                                                           ownerPodId_,
                                                           activitySource_,
+                                                          agentHandler_,
                                                           logger_);
 
             var precondition = await taskHandler.AcquireTask(combinedCts.Token)
@@ -176,7 +178,7 @@ public class Pollster
               await taskHandler.ExecuteTask(combinedCts.Token)
                                .ConfigureAwait(false);
 
-              logger_.LogDebug("CompleteProcessing task processing");
+              logger_.LogDebug("Complete task processing");
 
               await taskHandler.PostProcessing(combinedCts.Token)
                                .ConfigureAwait(false);

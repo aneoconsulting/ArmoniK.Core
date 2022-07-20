@@ -25,6 +25,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Injection.Options;
 
@@ -40,19 +41,22 @@ using GrpcChannel = ArmoniK.Core.Common.Injection.Options.GrpcChannel;
 namespace ArmoniK.Core.Common.gRPC;
 
 [UsedImplicitly]
-public class GrpcChannelProvider
+public class GrpcChannelProvider : IAsyncDisposable
 {
   private readonly GrpcChannel                  options_;
   private readonly ILogger<GrpcChannelProvider> logger_;
   private readonly string                       address_;
+  private          Socket?                      socket_;
+  private          NetworkStream?               networkStream_;
 
-  // ReSharper disable once SuggestBaseTypeForParameterInConstructor
   public GrpcChannelProvider(GrpcChannel                  options,
                              ILogger<GrpcChannelProvider> logger)
   {
-    options_       = options;
-    logger_        = logger;
-    address_       = options_.Address ?? throw new InvalidOperationException();
+    options_ = options;
+    logger_  = logger;
+    address_ = options_.Address ?? throw new InvalidOperationException();
+    logger.LogDebug("Channel created for address : {address}",
+                    address_);
   }
 
   private static ChannelBase BuildWebGrpcChannel(string  address,
@@ -62,8 +66,8 @@ public class GrpcChannelProvider
     return Grpc.Net.Client.GrpcChannel.ForAddress(address);
   }
 
-  private static ChannelBase BuildUnixSocketGrpcChannel(string  address,
-                                                        ILogger logger)
+  private ChannelBase BuildUnixSocketGrpcChannel(string  address,
+                                                 ILogger logger)
   {
     using var _ = logger.LogFunction();
 
@@ -74,21 +78,22 @@ public class GrpcChannelProvider
                                ConnectCallback = async (_,
                                                         cancellationToken) =>
                                                  {
-                                                   var socket = new Socket(AddressFamily.Unix,
-                                                                           SocketType.Stream,
-                                                                           ProtocolType.Unspecified);
+                                                   socket_ = new Socket(AddressFamily.Unix,
+                                                                        SocketType.Stream,
+                                                                        ProtocolType.Unspecified);
 
                                                    try
                                                    {
-                                                     await socket.ConnectAsync(udsEndPoint,
-                                                                               cancellationToken)
-                                                                 .ConfigureAwait(false);
-                                                     return new NetworkStream(socket,
-                                                                              true);
+                                                     await socket_.ConnectAsync(udsEndPoint,
+                                                                                cancellationToken)
+                                                                  .ConfigureAwait(false);
+                                                     networkStream_ = new NetworkStream(socket_,
+                                                                                        true);
+                                                     return networkStream_;
                                                    }
                                                    catch
                                                    {
-                                                     socket.Dispose();
+                                                     socket_.Dispose();
                                                      throw;
                                                    }
                                                  },
@@ -113,6 +118,17 @@ public class GrpcChannelProvider
                                           logger_);
       default:
         throw new InvalidOperationException();
+    }
+  }
+
+  public async ValueTask DisposeAsync()
+  {
+    socket_?.Close();
+    socket_?.Dispose();
+    if (networkStream_ != null)
+    {
+      await networkStream_.DisposeAsync()
+                          .ConfigureAwait(false);
     }
   }
 }

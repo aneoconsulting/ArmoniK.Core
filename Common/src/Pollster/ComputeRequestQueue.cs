@@ -25,6 +25,7 @@
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.StateMachines;
 
 using Google.Protobuf;
@@ -47,12 +48,12 @@ public class ComputeRequestQueue
     machine_         = new ComputeRequestStateMachine(logger_);
   }
 
-  public void Init(int                         dataChunkMaxSize,
-                   string                      sessionId,
-                   string                      taskId,
-                   IDictionary<string, string> taskOptions,
-                   ByteString?                 payload,
-                   IList<string>               expectedOutputKeys)
+  public void Init(int           dataChunkMaxSize,
+                   string        sessionId,
+                   string        taskId,
+                   TaskOptions   taskOptions,
+                   ByteString?   payload,
+                   IList<string> expectedOutputKeys)
   {
     machine_.InitRequest();
     computeRequests_.Enqueue(new ProcessRequest.Types.ComputeRequest
@@ -65,10 +66,7 @@ public class ComputeRequestQueue
                                                                },
                                                TaskId    = taskId,
                                                SessionId = sessionId,
-                                               TaskOptions =
-                                               {
-                                                 taskOptions,
-                                               },
+                                               TaskOptions = taskOptions,
                                                Payload = payload is not null
                                                            ? new DataChunk
                                                              {

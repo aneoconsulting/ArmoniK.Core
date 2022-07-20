@@ -80,10 +80,10 @@ public static class ServiceCollectionExt
 
     var computePlanOptions = computePlanComponent.Get<ComputePlan>();
 
-    if (computePlanOptions.GrpcChannel is not null)
+    if (computePlanOptions.WorkerChannel is not null)
     {
       services.AddSingleton(computePlanOptions)
-              .AddSingleton(computePlanOptions.GrpcChannel)
+              .AddSingleton(computePlanOptions.WorkerChannel)
               .AddOption<Components>(configuration,
                                      Components.SettingSection)
               .AddOption<InitWorker>(configuration,
