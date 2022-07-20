@@ -154,8 +154,7 @@ public class TaskHandlerTest
 
     Assert.IsTrue(acquired);
     Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTask()
-                                       ?.taskId);
+                    testServiceProvider.TaskHandler.GetAcquiredTask());
   }
 
   [Test]
