@@ -34,26 +34,26 @@ public class SimpleAgent : IAgent
     => Task.CompletedTask;
 
   public Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
-                                          CancellationToken cancellationToken)
+                                          CancellationToken                     cancellationToken)
     => Task.FromResult(new CreateTaskReply());
 
-  public Task GetCommonData(DataRequest request,
+  public Task GetCommonData(DataRequest                    request,
                             IServerStreamWriter<DataReply> responseStream,
-                            CancellationToken cancellationToken)
+                            CancellationToken              cancellationToken)
     => throw new NotImplementedException();
 
-  public Task GetDirectData(DataRequest request,
+  public Task GetDirectData(DataRequest                    request,
                             IServerStreamWriter<DataReply> responseStream,
-                            CancellationToken cancellationToken)
+                            CancellationToken              cancellationToken)
     => throw new NotImplementedException();
 
-  public Task GetResourceData(DataRequest request,
+  public Task GetResourceData(DataRequest                    request,
                               IServerStreamWriter<DataReply> responseStream,
-                              CancellationToken cancellationToken)
+                              CancellationToken              cancellationToken)
     => throw new NotImplementedException();
 
   public Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,
-                                      CancellationToken cancellationToken)
+                                      CancellationToken          cancellationToken)
     => Task.FromResult(new ResultReply());
 
   public void Dispose()

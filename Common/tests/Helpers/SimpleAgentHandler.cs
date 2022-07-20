@@ -34,10 +34,10 @@ public class SimpleAgentHandler : IAgentHandler
   public Task Stop(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task<IAgent> Start(string token,
-                            ILogger logger,
-                            string sessionId,
-                            string taskId,
+  public Task<IAgent> Start(string            token,
+                            ILogger           logger,
+                            string            sessionId,
+                            string            taskId,
                             CancellationToken cancellationToken)
   {
     Agent = new SimpleAgent();

@@ -82,7 +82,7 @@ public class TaskHandlerTest
                                                                 mockQueueMessageHandler.Object);
 
     var acquired = await testServiceProvider.TaskHandler.AcquireTask(CancellationToken.None)
-                             .ConfigureAwait(false);
+                                            .ConfigureAwait(false);
 
     Assert.IsFalse(acquired);
   }
@@ -154,26 +154,27 @@ public class TaskHandlerTest
 
     Assert.IsTrue(acquired);
     Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTask()?.taskId);
+                    testServiceProvider.TaskHandler.GetAcquiredTask()
+                                       ?.taskId);
   }
 
   [Test]
   public async Task AcquireNotReadyTaskShouldFail()
   {
     var sessionId = "sessionId";
-    var taskId = "TaskId";
+    var taskId    = "TaskId";
 
     var sqmh = new SimpleQueueMessageHandler
-    {
-      CancellationToken = CancellationToken.None,
-      TaskId = taskId,
-      Status = QueueMessageStatus.Waiting,
-      MessageId = Guid.NewGuid()
+               {
+                 CancellationToken = CancellationToken.None,
+                 TaskId            = taskId,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
                                  .ToString(),
-    };
+               };
 
     var mockStreamHandler = new Mock<IWorkerStreamHandler>();
-    var mockAgentHandler = new Mock<IAgentHandler>();
+    var mockAgentHandler  = new Mock<IAgentHandler>();
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
                                                                 sqmh);
@@ -197,8 +198,8 @@ public class TaskHandlerTest
                                                       new Api.gRPC.V1.TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                        MaxRetries = 2,
-                                                        Priority = 1,
+                                                        MaxRetries  = 2,
+                                                        Priority    = 1,
                                                       },
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
@@ -208,8 +209,8 @@ public class TaskHandlerTest
                                                                                new Api.gRPC.V1.TaskOptions
                                                                                {
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                                 MaxRetries = 2,
-                                                                                 Priority = 1,
+                                                                                 MaxRetries  = 2,
+                                                                                 Priority    = 1,
                                                                                },
                                                                                taskRequests.ToAsyncEnumerable(),
                                                                                CancellationToken.None)
@@ -233,16 +234,16 @@ public class TaskHandlerTest
   public async Task ExecuteTaskShouldSucceed()
   {
     var sessionId = "sessionId";
-    var taskId = "TaskId";
+    var taskId    = "TaskId";
 
     var sqmh = new SimpleQueueMessageHandler
-    {
-      CancellationToken = CancellationToken.None,
-      TaskId = taskId,
-      Status = QueueMessageStatus.Waiting,
-      MessageId = Guid.NewGuid()
+               {
+                 CancellationToken = CancellationToken.None,
+                 TaskId            = taskId,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
                                  .ToString(),
-    };
+               };
 
     var sh = new SimpleWorkerStreamHandler();
 
@@ -267,8 +268,8 @@ public class TaskHandlerTest
                                                       new Api.gRPC.V1.TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                        MaxRetries = 2,
-                                                        Priority = 1,
+                                                        MaxRetries  = 2,
+                                                        Priority    = 1,
                                                       },
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
@@ -278,8 +279,8 @@ public class TaskHandlerTest
                                                                                new Api.gRPC.V1.TaskOptions
                                                                                {
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                                 MaxRetries = 2,
-                                                                                 Priority = 1,
+                                                                                 MaxRetries  = 2,
+                                                                                 Priority    = 1,
                                                                                },
                                                                                taskRequests.ToAsyncEnumerable(),
                                                                                CancellationToken.None)
@@ -320,16 +321,16 @@ public class TaskHandlerTest
   public async Task ExecuteTaskWithResultsShouldSucceed()
   {
     var sessionId = "sessionId";
-    var taskId = "TaskId";
+    var taskId    = "TaskId";
 
     var sqmh = new SimpleQueueMessageHandler
-    {
-      CancellationToken = CancellationToken.None,
-      TaskId = taskId,
-      Status = QueueMessageStatus.Waiting,
-      MessageId = Guid.NewGuid()
+               {
+                 CancellationToken = CancellationToken.None,
+                 TaskId            = taskId,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
                                  .ToString(),
-    };
+               };
 
     var sh = new SimpleWorkerStreamHandler();
 
@@ -354,8 +355,8 @@ public class TaskHandlerTest
                                                       new Api.gRPC.V1.TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                        MaxRetries = 2,
-                                                        Priority = 1,
+                                                        MaxRetries  = 2,
+                                                        Priority    = 1,
                                                       },
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
@@ -365,8 +366,8 @@ public class TaskHandlerTest
                                                                                new Api.gRPC.V1.TaskOptions
                                                                                {
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                                 MaxRetries = 2,
-                                                                                 Priority = 1,
+                                                                                 MaxRetries  = 2,
+                                                                                 Priority    = 1,
                                                                                },
                                                                                taskRequests.ToAsyncEnumerable(),
                                                                                CancellationToken.None)
@@ -392,18 +393,18 @@ public class TaskHandlerTest
 
 
     var taskStreamReader = new TestHelperAsyncStreamReader<CreateTaskRequest>(new[]
-                                                                          {
-                                                                            new CreateTaskRequest(),
-                                                                          });
+                                                                              {
+                                                                                new CreateTaskRequest(),
+                                                                              });
     await agentHandler.Agent.CreateTask(taskStreamReader,
                                         CancellationToken.None)
                       .ConfigureAwait(false);
 
 
     var resultStreamReader = new TestHelperAsyncStreamReader<Result>(new[]
-                                                                          {
-                                                                            new Result(),
-                                                                          });
+                                                                     {
+                                                                       new Result(),
+                                                                     });
     await agentHandler.Agent.SendResult(resultStreamReader,
                                         CancellationToken.None)
                       .ConfigureAwait(false);
