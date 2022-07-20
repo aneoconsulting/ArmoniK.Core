@@ -31,7 +31,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using System.Linq;
-using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,7 +117,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication
         if (identity.HasClaim(c => c.Type == Permissions.General.Impersonate.Claim.Type))
         {
           //Get all roles that can be impersonnated
-          var impersonnatableRoles = identity.Claims.Where(c => c.Type == Permissions.General.Impersonate.Claim.Type)
+          var impersonatableRoles = identity.Claims.Where(c => c.Type == Permissions.General.Impersonate.Claim.Type)
                                              .Select(c => c.Value);
           
           if (impersonationWithUsername_)
@@ -138,7 +137,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication
             return AuthenticateResult.Fail("User being impersonated doesn't exist");
           }
 
-          if (!identity.Roles.All(str => impersonnatableRoles.Contains(str)))
+          if (!identity.Roles.All(str => impersonatableRoles.Contains(str)))
           {
             return AuthenticateResult.Fail("Certificate doesn't allow to impersonate the specified user (insufficient roles)");
           }

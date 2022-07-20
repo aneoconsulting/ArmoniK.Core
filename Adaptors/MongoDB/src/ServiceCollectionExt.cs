@@ -28,6 +28,7 @@ using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Auth;
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -232,13 +233,22 @@ public static class ServiceCollectionExt
   }
 
   [PublicAPI]
-  public static IServiceCollection AddClientSubmitterAuthentication(this IServiceCollection services,
+  public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
                                                                     ConfigurationManager    configuration,
                                                                     ILogger                 logger)
   {
     services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
-    services.AddTransient<IAuthenticationSource, AuthenticationSource>()
-            .AddOption<AuthenticatorOptions>(configuration,
+    services.AddTransient<IAuthenticationSource, AuthenticationSource>();
+    services.AddTransient<IMongoDataModelMapping<UserIdentityResult>, UserIdentityModelMapping>();
+    return services;
+  }
+
+  [PublicAPI]
+  public static IServiceCollection AddClientSubmitterAuthenticationService(this IServiceCollection services,
+                                                                    ConfigurationManager    configuration,
+                                                                    ILogger                 logger)
+  {
+    services.AddOption<AuthenticatorOptions>(configuration,
                                              AuthenticatorOptions.SectionName, out var authenticatorOptions);
     services.AddAuthentication()
             .AddScheme<AuthenticatorOptions, Authenticator>("SubmitterAuthenticationScheme", o => o.CopyFrom(authenticatorOptions));

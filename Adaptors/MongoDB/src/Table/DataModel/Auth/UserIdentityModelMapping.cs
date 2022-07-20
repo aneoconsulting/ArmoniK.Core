@@ -23,12 +23,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
 
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
@@ -39,9 +42,10 @@ public class UserIdentityModelMapping : IMongoDataModelMapping<UserIdentityResul
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(UserIdentityResult)))
     {
+      Console.WriteLine("REGISTER");
       BsonClassMap.RegisterClassMap<UserIdentityResult>(cm =>
                                                         {
-                                                          cm.MapIdProperty(nameof(UserIdentityResult.UserId))
+                                                          cm.MapIdProperty(t => t.Id)
                                                             .SetIsRequired(true);
                                                           cm.MapProperty(nameof(UserIdentityResult.Username))
                                                             .SetIsRequired(true);
@@ -50,7 +54,7 @@ public class UserIdentityModelMapping : IMongoDataModelMapping<UserIdentityResul
                                                           cm.MapProperty(nameof(UserIdentityResult.Permissions))
                                                             .SetIsRequired(true);
                                                           cm.SetIgnoreExtraElements(true);
-                                                          cm.MapCreator(model => new UserIdentityResult(model.UserId,
+                                                          cm.MapCreator(model => new UserIdentityResult(model.Id,
                                                                                                         model.Username,
                                                                                                         model.Roles,
                                                                                                         model.Permissions));
@@ -64,6 +68,5 @@ public class UserIdentityModelMapping : IMongoDataModelMapping<UserIdentityResul
   public async Task InitializeIndexesAsync(IClientSessionHandle                 sessionHandle,
                                      IMongoCollection<UserIdentityResult> collection)
   {
-
   }
 }

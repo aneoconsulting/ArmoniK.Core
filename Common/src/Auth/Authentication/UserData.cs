@@ -25,8 +25,8 @@
 
 using System.Collections.Generic;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
+namespace ArmoniK.Core.Common.Auth.Authentication;
 
 public record UserData(string        UserId,
                        string        Username,
-                       IList<string> Roles);
+                       string[] Roles);

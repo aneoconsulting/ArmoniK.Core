@@ -117,8 +117,10 @@ public static class Program
 
       if (!string.IsNullOrEmpty(builder.Configuration["ARMONIK_AUTH"]))
       {
-        builder.Services.AddClientSubmitterAuthentication(builder.Configuration,
+        builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration,
                                                  logger.GetLogger());
+        builder.Services.AddClientSubmitterAuthenticationService(builder.Configuration,
+                                                                 logger.GetLogger());
         builder.Services.AddClientSubmitterAuthorization(builder.Configuration,
                                                 logger.GetLogger());
       }

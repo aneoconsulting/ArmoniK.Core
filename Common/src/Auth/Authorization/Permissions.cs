@@ -92,22 +92,22 @@ namespace ArmoniK.Core.Common.Auth.Authorization
       return new Permission(actionName);
     }
 
-    public static readonly char   Separator = ':';
-    public static readonly string Admin     = "admin";
-    public static readonly string Default   = "default";
+    public const char   Separator = ':';
+    public const string AdminScope     = "*";
+    public const string Default   = "";
 
     public static readonly Permission None = new("", "");
 
     public static class General
     {
-      public static readonly string     Prefix                  = "general";
+      public const string     Prefix                  = "general";
       public static readonly Permission GetServiceConfiguration = new(Prefix, nameof(GetServiceConfiguration));
       public static readonly Permission Impersonate             = new(Prefix, nameof(Impersonate));
     }
     
     public static class Session
     {
-      public static readonly string Prefix        = "session";
+      public const string Prefix        = "session";
       public static readonly Permission CancelSession = new(Prefix, nameof(CancelSession));
       public static readonly Permission CreateSession = new(Prefix, nameof(CreateSession));
       public static readonly Permission ListSessions  = new(Prefix, nameof(ListSessions));

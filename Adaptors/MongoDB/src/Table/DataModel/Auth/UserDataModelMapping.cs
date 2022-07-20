@@ -27,8 +27,11 @@ using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Common.Auth.Authentication;
 
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
@@ -40,6 +43,7 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(UserData)))
     {
+      Console.WriteLine("Register userdata");
       BsonClassMap.RegisterClassMap<UserData>(cm =>
                                               {
                                                 cm.MapIdProperty(nameof(UserData.UserId))

@@ -41,5 +41,11 @@ namespace ArmoniK.Core.Common.Auth.Authentication
 
     public Task<UserIdentity?> GetIdentityFromNameAsync(string            username,
                                                         CancellationToken cancellationToken);
+
+    public void AddRoles(IList<RoleData> roles);
+
+    public void AddUsers(IList<UserData> users);
+
+    public void AddCertificates(IList<AuthData> certificates);
   }
 }
