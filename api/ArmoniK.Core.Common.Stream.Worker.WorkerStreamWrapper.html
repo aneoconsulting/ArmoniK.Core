@@ -82,28 +82,32 @@
       <div class="level2"><a class="xref" href="ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.html">WorkerService</a></div>
       <div class="level2"><a class="xref" href="ArmoniK.Samples.HtcMock.Server.SampleComputerService.html">SampleComputerService</a></div>
   </div>
+  <div class="implements">
+    <h5>Implements</h5>
+    <div><span class="xref">IAsyncDisposable</span></div>
+  </div>
   <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Stream.Worker.html">ArmoniK.Core.Common.Stream.Worker</a></h6>
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class WorkerStreamWrapper : Worker.WorkerBase</code></pre>
+    <pre><code class="lang-csharp hljs">public class WorkerStreamWrapper : Worker.Worker.WorkerBase</code></pre>
   </div>
   <h3 id="constructors">Constructors
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper__ctor_ILoggerFactory_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.%23ctor(ILoggerFactory)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper__ctor_ILoggerFactory_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.%23ctor(ILoggerFactory%2CArmoniK.Core.Common.gRPC.GrpcChannelProvider)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L44">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L50">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper__ctor_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper__ctor_ILoggerFactory_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.#ctor(ILoggerFactory)">WorkerStreamWrapper(ILoggerFactory)</h4>
+  <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper__ctor_ILoggerFactory_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.#ctor(ILoggerFactory,ArmoniK.Core.Common.gRPC.GrpcChannelProvider)">WorkerStreamWrapper(ILoggerFactory, GrpcChannelProvider)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public WorkerStreamWrapper(ILoggerFactory loggerFactory)</code></pre>
+    <pre><code class="lang-csharp hljs">public WorkerStreamWrapper(ILoggerFactory loggerFactory, GrpcChannelProvider provider)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -120,6 +124,11 @@
         <td><span class="parametername">loggerFactory</span></td>
         <td></td>
       </tr>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.gRPC.GrpcChannelProvider.html">GrpcChannelProvider</a></td>
+        <td><span class="parametername">provider</span></td>
+        <td></td>
+      </tr>
     </tbody>
   </table>
   <h3 id="fields">Fields
@@ -129,7 +138,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_logger_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.logger_%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L42">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L46">View Source</a>
   </span>
   <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_logger_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.logger_">logger_</h4>
   <div class="markdown level1 summary"></div>
@@ -157,10 +166,40 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_DisposeAsync.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.DisposeAsync%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L100">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_DisposeAsync_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.DisposeAsync*"></a>
+  <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_DisposeAsync" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.DisposeAsync">DisposeAsync()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public async ValueTask DisposeAsync()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">ValueTask</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_HealthCheck_Empty_ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.HealthCheck(Empty%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L88">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L93">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_HealthCheck_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.HealthCheck*"></a>
   <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_HealthCheck_Empty_ServerCallContext_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.HealthCheck(Empty,ServerCallContext)">HealthCheck(Empty, ServerCallContext)</h4>
@@ -212,7 +251,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_ArmoniK_Core_Common_Stream_Worker_ITaskHandler_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L84">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L89">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process*"></a>
   <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_ArmoniK_Core_Common_Stream_Worker_ITaskHandler_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)">Process(ITaskHandler)</h4>
@@ -256,18 +295,18 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_IAsyncStreamReader_ProcessRequest__IServerStreamWriter_ProcessReply__ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader%7BProcessRequest%7D%2CIServerStreamWriter%7BProcessReply%7D%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_IAsyncStreamReader_ProcessRequest__ServerCallContext_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader%7BProcessRequest%7D%2CServerCallContext)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L51">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L65">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process*"></a>
-  <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_IAsyncStreamReader_ProcessRequest__IServerStreamWriter_ProcessReply__ServerCallContext_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader{ProcessRequest},IServerStreamWriter{ProcessReply},ServerCallContext)">Process(IAsyncStreamReader&lt;ProcessRequest&gt;, IServerStreamWriter&lt;ProcessReply&gt;, ServerCallContext)</h4>
+  <h4 id="ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_IAsyncStreamReader_ProcessRequest__ServerCallContext_" data-uid="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader{ProcessRequest},ServerCallContext)">Process(IAsyncStreamReader&lt;ProcessRequest&gt;, ServerCallContext)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public sealed override async Task Process(IAsyncStreamReader&lt;ProcessRequest&gt; requestStream, IServerStreamWriter&lt;ProcessReply&gt; responseStream, ServerCallContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">public sealed override async Task&lt;ProcessReply&gt; Process(IAsyncStreamReader&lt;ProcessRequest&gt; requestStream, ServerCallContext context)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -282,11 +321,6 @@
       <tr>
         <td><span class="xref">IAsyncStreamReader</span>&lt;<span class="xref">ProcessRequest</span>&gt;</td>
         <td><span class="parametername">requestStream</span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><span class="xref">IServerStreamWriter</span>&lt;<span class="xref">ProcessReply</span>&gt;</td>
-        <td><span class="parametername">responseStream</span></td>
         <td></td>
       </tr>
       <tr>
@@ -306,11 +340,15 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Task</span></td>
+        <td><span class="xref">Task</span>&lt;<span class="xref">ProcessReply</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
   </table>
+  <h3 id="implements">Implements</h3>
+  <div>
+      <span class="xref">IAsyncDisposable</span>
+  </div>
 </article>
           </div>
           
@@ -322,7 +360,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L38" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/WorkerStreamWrapper.cs/#L42" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

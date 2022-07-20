@@ -84,7 +84,7 @@
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
   <h5 id="ArmoniK_Core_Common_gRPC_GrpcChannelProvider_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class GrpcChannelProvider : object</code></pre>
+    <pre><code class="lang-csharp hljs">public class GrpcChannelProvider : IAsyncDisposable</code></pre>
   </div>
   <h3 id="constructors">Constructors
   </h3>
@@ -93,7 +93,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_GrpcChannelProvider__ctor_ArmoniK_Core_Common_Injection_Options_GrpcChannel_ILogger_ArmoniK_Core_Common_gRPC_GrpcChannelProvider__.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.GrpcChannelProvider.%23ctor(ArmoniK.Core.Common.Injection.Options.GrpcChannel%2CILogger%7BArmoniK.Core.Common.gRPC.GrpcChannelProvider%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/GrpcChannelProvider.cs/#L50">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/GrpcChannelProvider.cs/#L52">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_GrpcChannelProvider__ctor_" data-uid="ArmoniK.Core.Common.gRPC.GrpcChannelProvider.#ctor*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_GrpcChannelProvider__ctor_ArmoniK_Core_Common_Injection_Options_GrpcChannel_ILogger_ArmoniK_Core_Common_gRPC_GrpcChannelProvider__" data-uid="ArmoniK.Core.Common.gRPC.GrpcChannelProvider.#ctor(ArmoniK.Core.Common.Injection.Options.GrpcChannel,ILogger{ArmoniK.Core.Common.gRPC.GrpcChannelProvider})">GrpcChannelProvider(GrpcChannel, ILogger&lt;GrpcChannelProvider&gt;)</h4>
@@ -129,10 +129,40 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_GrpcChannelProvider_DisposeAsync.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.GrpcChannelProvider.DisposeAsync%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/GrpcChannelProvider.cs/#L124">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_gRPC_GrpcChannelProvider_DisposeAsync_" data-uid="ArmoniK.Core.Common.gRPC.GrpcChannelProvider.DisposeAsync*"></a>
+  <h4 id="ArmoniK_Core_Common_gRPC_GrpcChannelProvider_DisposeAsync" data-uid="ArmoniK.Core.Common.gRPC.GrpcChannelProvider.DisposeAsync">DisposeAsync()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public async ValueTask DisposeAsync()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">ValueTask</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_GrpcChannelProvider_Get.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Get%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/GrpcChannelProvider.cs/#L104">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/GrpcChannelProvider.cs/#L109">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_GrpcChannelProvider_Get_" data-uid="ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Get*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_GrpcChannelProvider_Get" data-uid="ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Get">Get()</h4>
@@ -168,7 +198,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_GrpcChannelProvider.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.GrpcChannelProvider%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/GrpcChannelProvider.cs/#L42" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/GrpcChannelProvider.cs/#L43" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

@@ -90,18 +90,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_IEnumerable_TaskRequest__System_Nullable_TaskOptions__System_Int32_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable%7BTaskRequest%7D%2CSystem.Nullable%7BTaskOptions%7D%2CSystem.Int32)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_IEnumerable_TaskRequest__System_Nullable_TaskOptions__System_String_System_Int32_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable%7BTaskRequest%7D%2CSystem.Nullable%7BTaskOptions%7D%2CSystem.String%2CSystem.Int32)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/TaskRequestExtensions.cs/#L43">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/TaskRequestExtensions.cs/#L44">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_" data-uid="ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream*"></a>
-  <h4 id="ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_IEnumerable_TaskRequest__System_Nullable_TaskOptions__System_Int32_" data-uid="ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable{TaskRequest},System.Nullable{TaskOptions},System.Int32)">ToRequestStream(IEnumerable&lt;TaskRequest&gt;, Nullable&lt;TaskOptions&gt;, Int32)</h4>
+  <h4 id="ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_IEnumerable_TaskRequest__System_Nullable_TaskOptions__System_String_System_Int32_" data-uid="ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable{TaskRequest},System.Nullable{TaskOptions},System.String,System.Int32)">ToRequestStream(IEnumerable&lt;TaskRequest&gt;, Nullable&lt;TaskOptions&gt;, String, Int32)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static IEnumerable&lt;ProcessReply.Types.CreateLargeTaskRequest&gt; ToRequestStream(this IEnumerable&lt;TaskRequest&gt; taskRequests, TaskOptions? taskOptions, int chunkMaxSize)</code></pre>
+    <pre><code class="lang-csharp hljs">public static IEnumerable&lt;CreateTaskRequest&gt; ToRequestStream(this IEnumerable&lt;TaskRequest&gt; taskRequests, TaskOptions? taskOptions, string token, int chunkMaxSize)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -124,6 +124,11 @@
         <td></td>
       </tr>
       <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">token</span></td>
+        <td></td>
+      </tr>
+      <tr>
         <td><span class="xref">System.Int32</span></td>
         <td><span class="parametername">chunkMaxSize</span></td>
         <td></td>
@@ -140,25 +145,25 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">IEnumerable</span>&lt;<span class="xref">ProcessReply.Types.CreateLargeTaskRequest</span>&gt;</td>
+        <td><span class="xref">IEnumerable</span>&lt;<span class="xref">CreateTaskRequest</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_TaskRequest_System_Boolean_System_Int32_ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest%2CSystem.Boolean%2CSystem.Int32%2CArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_TaskRequest_System_Boolean_System_String_System_Int32_ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest%2CSystem.Boolean%2CSystem.String%2CSystem.Int32%2CArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/TaskRequestExtensions.cs/#L102">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/TaskRequestExtensions.cs/#L108">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_" data-uid="ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream*"></a>
-  <h4 id="ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_TaskRequest_System_Boolean_System_Int32_ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_" data-uid="ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest,System.Boolean,System.Int32,ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)">ToRequestStream(TaskRequest, Boolean, Int32, ProcessReplyCreateLargeTaskStateMachine)</h4>
+  <h4 id="ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_TaskRequest_System_Boolean_System_String_System_Int32_ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_" data-uid="ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest,System.Boolean,System.String,System.Int32,ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)">ToRequestStream(TaskRequest, Boolean, String, Int32, ProcessReplyCreateLargeTaskStateMachine)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static IEnumerable&lt;ProcessReply.Types.CreateLargeTaskRequest&gt; ToRequestStream(this TaskRequest taskRequest, bool isLast, int chunkMaxSize, ProcessReplyCreateLargeTaskStateMachine processReplyCreateLargeTaskStateMachine)</code></pre>
+    <pre><code class="lang-csharp hljs">public static IEnumerable&lt;CreateTaskRequest&gt; ToRequestStream(this TaskRequest taskRequest, bool isLast, string token, int chunkMaxSize, ProcessReplyCreateLargeTaskStateMachine processReplyCreateLargeTaskStateMachine)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -178,6 +183,11 @@
       <tr>
         <td><span class="xref">System.Boolean</span></td>
         <td><span class="parametername">isLast</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">token</span></td>
         <td></td>
       </tr>
       <tr>
@@ -202,7 +212,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">IEnumerable</span>&lt;<span class="xref">ProcessReply.Types.CreateLargeTaskRequest</span>&gt;</td>
+        <td><span class="xref">IEnumerable</span>&lt;<span class="xref">CreateTaskRequest</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -218,7 +228,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/TaskRequestExtensions.cs/#L40" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Stream/Worker/TaskRequestExtensions.cs/#L41" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

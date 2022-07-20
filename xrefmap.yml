@@ -7,51 +7,6 @@ references:
   commentId: N:ArmoniK.Api.gRPC.V1
   fullName: ArmoniK.Api.gRPC.V1
   nameWithType: ArmoniK.Api.gRPC.V1
-- uid: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest
-  name: CreateLargeTaskRequest
-  href: api/ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.html
-  commentId: T:ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest
-  fullName: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest
-  nameWithType: CreateLargeTaskRequest
-- uid: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitRequest(ILogger,System.String)
-  name: GetInitRequest(ILogger, String)
-  href: api/ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.html#ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest_GetInitRequest_ILogger_System_String_
-  commentId: M:ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitRequest(ILogger,System.String)
-  fullName: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitRequest(ILogger, System.String)
-  nameWithType: CreateLargeTaskRequest.GetInitRequest(ILogger, String)
-- uid: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitRequest*
-  name: GetInitRequest
-  href: api/ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.html#ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest_GetInitRequest_
-  commentId: Overload:ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitRequest
-  isSpec: "True"
-  fullName: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitRequest
-  nameWithType: CreateLargeTaskRequest.GetInitRequest
-- uid: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitTask(ILogger,System.String)
-  name: GetInitTask(ILogger, String)
-  href: api/ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.html#ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest_GetInitTask_ILogger_System_String_
-  commentId: M:ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitTask(ILogger,System.String)
-  fullName: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitTask(ILogger, System.String)
-  nameWithType: CreateLargeTaskRequest.GetInitTask(ILogger, String)
-- uid: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitTask*
-  name: GetInitTask
-  href: api/ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.html#ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest_GetInitTask_
-  commentId: Overload:ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitTask
-  isSpec: "True"
-  fullName: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetInitTask
-  nameWithType: CreateLargeTaskRequest.GetInitTask
-- uid: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetTaskPayload(ILogger,System.String)
-  name: GetTaskPayload(ILogger, String)
-  href: api/ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.html#ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest_GetTaskPayload_ILogger_System_String_
-  commentId: M:ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetTaskPayload(ILogger,System.String)
-  fullName: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetTaskPayload(ILogger, System.String)
-  nameWithType: CreateLargeTaskRequest.GetTaskPayload(ILogger, String)
-- uid: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetTaskPayload*
-  name: GetTaskPayload
-  href: api/ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.html#ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest_GetTaskPayload_
-  commentId: Overload:ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetTaskPayload
-  isSpec: "True"
-  fullName: ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest.GetTaskPayload
-  nameWithType: CreateLargeTaskRequest.GetTaskPayload
 - uid: ArmoniK.Api.gRPC.V1.PayloadConfiguration
   name: PayloadConfiguration
   href: api/ArmoniK.Api.gRPC.V1.PayloadConfiguration.html
@@ -4437,6 +4392,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.GrpcChannelProvider
   nameWithType: GrpcChannelProvider.GrpcChannelProvider
+- uid: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.DisposeAsync
+  name: DisposeAsync()
+  href: api/ArmoniK.Core.Common.gRPC.GrpcChannelProvider.html#ArmoniK_Core_Common_gRPC_GrpcChannelProvider_DisposeAsync
+  commentId: M:ArmoniK.Core.Common.gRPC.GrpcChannelProvider.DisposeAsync
+  fullName: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.DisposeAsync()
+  nameWithType: GrpcChannelProvider.DisposeAsync()
+- uid: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.DisposeAsync*
+  name: DisposeAsync
+  href: api/ArmoniK.Core.Common.gRPC.GrpcChannelProvider.html#ArmoniK_Core_Common_gRPC_GrpcChannelProvider_DisposeAsync_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.GrpcChannelProvider.DisposeAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.DisposeAsync
+  nameWithType: GrpcChannelProvider.DisposeAsync
 - uid: ArmoniK.Core.Common.gRPC.GrpcChannelProvider.Get
   name: Get()
   href: api/ArmoniK.Core.Common.gRPC.GrpcChannelProvider.html#ArmoniK_Core_Common_gRPC_GrpcChannelProvider_Get
@@ -4568,21 +4536,258 @@ references:
   commentId: N:ArmoniK.Core.Common.gRPC.Services
   fullName: ArmoniK.Core.Common.gRPC.Services
   nameWithType: ArmoniK.Core.Common.gRPC.Services
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent
+  name: Agent
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Services.Agent
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent
+  nameWithType: Agent
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.IObjectStorageFactory,System.String,System.String,System.String,ILogger)
+  name: Agent(ISubmitter, IObjectStorageFactory, String, String, String, ILogger)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent__ctor_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_IObjectStorageFactory_System_String_System_String_System_String_ILogger_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Agent.#ctor(ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.IObjectStorageFactory,System.String,System.String,System.String,ILogger)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.Agent(ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.IObjectStorageFactory, System.String, System.String, System.String, ILogger)
+  nameWithType: Agent.Agent(ISubmitter, IObjectStorageFactory, String, String, String, ILogger)
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.#ctor*
+  name: Agent
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Agent.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.Agent
+  nameWithType: Agent.Agent
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.CreateTask(IAsyncStreamReader{CreateTaskRequest},CancellationToken)
+  name: CreateTask(IAsyncStreamReader<CreateTaskRequest>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_CreateTask_IAsyncStreamReader_CreateTaskRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Agent.CreateTask(IAsyncStreamReader{CreateTaskRequest},CancellationToken)
+  name.vb: CreateTask(IAsyncStreamReader(Of CreateTaskRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.CreateTask(IAsyncStreamReader<CreateTaskRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Agent.CreateTask(IAsyncStreamReader(Of CreateTaskRequest), CancellationToken)
+  nameWithType: Agent.CreateTask(IAsyncStreamReader<CreateTaskRequest>, CancellationToken)
+  nameWithType.vb: Agent.CreateTask(IAsyncStreamReader(Of CreateTaskRequest), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.CreateTask*
+  name: CreateTask
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_CreateTask_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Agent.CreateTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.CreateTask
+  nameWithType: Agent.CreateTask
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_Dispose
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Agent.Dispose
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.Dispose()
+  nameWithType: Agent.Dispose()
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Agent.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.Dispose
+  nameWithType: Agent.Dispose
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.FinalizeTaskCreation(CancellationToken)
+  name: FinalizeTaskCreation(CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_FinalizeTaskCreation_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Agent.FinalizeTaskCreation(CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.FinalizeTaskCreation(CancellationToken)
+  nameWithType: Agent.FinalizeTaskCreation(CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.FinalizeTaskCreation*
+  name: FinalizeTaskCreation
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_FinalizeTaskCreation_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Agent.FinalizeTaskCreation
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.FinalizeTaskCreation
+  nameWithType: Agent.FinalizeTaskCreation
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.GetCommonData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name: GetCommonData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_GetCommonData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Agent.GetCommonData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name.vb: GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.GetCommonData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Agent.GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  nameWithType: Agent.GetCommonData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  nameWithType.vb: Agent.GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.GetCommonData*
+  name: GetCommonData
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_GetCommonData_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Agent.GetCommonData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.GetCommonData
+  nameWithType: Agent.GetCommonData
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.GetDirectData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name: GetDirectData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_GetDirectData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Agent.GetDirectData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name.vb: GetDirectData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.GetDirectData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Agent.GetDirectData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  nameWithType: Agent.GetDirectData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  nameWithType.vb: Agent.GetDirectData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.GetDirectData*
+  name: GetDirectData
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_GetDirectData_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Agent.GetDirectData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.GetDirectData
+  nameWithType: Agent.GetDirectData
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.GetResourceData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name: GetResourceData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_GetResourceData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Agent.GetResourceData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name.vb: GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.GetResourceData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Agent.GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  nameWithType: Agent.GetResourceData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  nameWithType.vb: Agent.GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.GetResourceData*
+  name: GetResourceData
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_GetResourceData_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Agent.GetResourceData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.GetResourceData
+  nameWithType: Agent.GetResourceData
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},CancellationToken)
+  name: SendResult(IAsyncStreamReader<Agent.Result>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_SendResult_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_Agent_Result__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Agent.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},CancellationToken)
+  name.vb: SendResult(IAsyncStreamReader(Of Agent.Result), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.SendResult(IAsyncStreamReader<ArmoniK.Api.gRPC.V1.Agent.Result>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Agent.SendResult(IAsyncStreamReader(Of ArmoniK.Api.gRPC.V1.Agent.Result), CancellationToken)
+  nameWithType: Agent.SendResult(IAsyncStreamReader<Agent.Result>, CancellationToken)
+  nameWithType.vb: Agent.SendResult(IAsyncStreamReader(Of Agent.Result), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Agent.SendResult*
+  name: SendResult
+  href: api/ArmoniK.Core.Common.gRPC.Services.Agent.html#ArmoniK_Core_Common_gRPC_Services_Agent_SendResult_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.Agent.SendResult
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.Agent.SendResult
+  nameWithType: Agent.SendResult
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService
+  name: GrpcAgentService
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService
+  nameWithType: GrpcAgentService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.#ctor(ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcAgentService})
+  name: GrpcAgentService(ILogger<GrpcAgentService>)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService__ctor_ILogger_ArmoniK_Core_Common_gRPC_Services_GrpcAgentService__
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.#ctor(ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcAgentService})
+  name.vb: GrpcAgentService(ILogger(Of GrpcAgentService))
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GrpcAgentService(ILogger<ArmoniK.Core.Common.gRPC.Services.GrpcAgentService>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GrpcAgentService(ILogger(Of ArmoniK.Core.Common.gRPC.Services.GrpcAgentService))
+  nameWithType: GrpcAgentService.GrpcAgentService(ILogger<GrpcAgentService>)
+  nameWithType.vb: GrpcAgentService.GrpcAgentService(ILogger(Of GrpcAgentService))
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.#ctor*
+  name: GrpcAgentService
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GrpcAgentService
+  nameWithType: GrpcAgentService.GrpcAgentService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.CreateTask(IAsyncStreamReader{CreateTaskRequest},ServerCallContext)
+  name: CreateTask(IAsyncStreamReader<CreateTaskRequest>, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_CreateTask_IAsyncStreamReader_CreateTaskRequest__ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.CreateTask(IAsyncStreamReader{CreateTaskRequest},ServerCallContext)
+  name.vb: CreateTask(IAsyncStreamReader(Of CreateTaskRequest), ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.CreateTask(IAsyncStreamReader<CreateTaskRequest>, ServerCallContext)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.CreateTask(IAsyncStreamReader(Of CreateTaskRequest), ServerCallContext)
+  nameWithType: GrpcAgentService.CreateTask(IAsyncStreamReader<CreateTaskRequest>, ServerCallContext)
+  nameWithType.vb: GrpcAgentService.CreateTask(IAsyncStreamReader(Of CreateTaskRequest), ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.CreateTask*
+  name: CreateTask
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_CreateTask_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.CreateTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.CreateTask
+  nameWithType: GrpcAgentService.CreateTask
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetCommonData(DataRequest,IServerStreamWriter{DataReply},ServerCallContext)
+  name: GetCommonData(DataRequest, IServerStreamWriter<DataReply>, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_GetCommonData_DataRequest_IServerStreamWriter_DataReply__ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetCommonData(DataRequest,IServerStreamWriter{DataReply},ServerCallContext)
+  name.vb: GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetCommonData(DataRequest, IServerStreamWriter<DataReply>, ServerCallContext)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), ServerCallContext)
+  nameWithType: GrpcAgentService.GetCommonData(DataRequest, IServerStreamWriter<DataReply>, ServerCallContext)
+  nameWithType.vb: GrpcAgentService.GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetCommonData*
+  name: GetCommonData
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_GetCommonData_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetCommonData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetCommonData
+  nameWithType: GrpcAgentService.GetCommonData
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetResourceData(DataRequest,IServerStreamWriter{DataReply},ServerCallContext)
+  name: GetResourceData(DataRequest, IServerStreamWriter<DataReply>, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_GetResourceData_DataRequest_IServerStreamWriter_DataReply__ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetResourceData(DataRequest,IServerStreamWriter{DataReply},ServerCallContext)
+  name.vb: GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetResourceData(DataRequest, IServerStreamWriter<DataReply>, ServerCallContext)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), ServerCallContext)
+  nameWithType: GrpcAgentService.GetResourceData(DataRequest, IServerStreamWriter<DataReply>, ServerCallContext)
+  nameWithType.vb: GrpcAgentService.GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetResourceData*
+  name: GetResourceData
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_GetResourceData_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetResourceData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetResourceData
+  nameWithType: GrpcAgentService.GetResourceData
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},ServerCallContext)
+  name: SendResult(IAsyncStreamReader<Agent.Result>, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_SendResult_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_Agent_Result__ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},ServerCallContext)
+  name.vb: SendResult(IAsyncStreamReader(Of Agent.Result), ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader<ArmoniK.Api.gRPC.V1.Agent.Result>, ServerCallContext)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader(Of ArmoniK.Api.gRPC.V1.Agent.Result), ServerCallContext)
+  nameWithType: GrpcAgentService.SendResult(IAsyncStreamReader<Agent.Result>, ServerCallContext)
+  nameWithType.vb: GrpcAgentService.SendResult(IAsyncStreamReader(Of Agent.Result), ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult*
+  name: SendResult
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_SendResult_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult
+  nameWithType: GrpcAgentService.SendResult
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Start(ArmoniK.Core.Common.gRPC.Services.IAgent)
+  name: Start(IAgent)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_Start_ArmoniK_Core_Common_gRPC_Services_IAgent_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Start(ArmoniK.Core.Common.gRPC.Services.IAgent)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Start(ArmoniK.Core.Common.gRPC.Services.IAgent)
+  nameWithType: GrpcAgentService.Start(IAgent)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Start*
+  name: Start
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_Start_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Start
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Start
+  nameWithType: GrpcAgentService.Start
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Stop
+  name: Stop()
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_Stop
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Stop
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Stop()
+  nameWithType: GrpcAgentService.Stop()
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Stop*
+  name: Stop
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_Stop_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Stop
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Stop
+  nameWithType: GrpcAgentService.Stop
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions
   name: GrpcSubmitterExtensions
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.html
   commentId: T:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions
   nameWithType: GrpcSubmitterExtensions
-- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator{ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest},CancellationToken)
-  name: BuildRequests(IAsyncEnumerator<CreateLargeTaskRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterExtensions_BuildRequests_IAsyncEnumerator_ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator{ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest},CancellationToken)
-  name.vb: BuildRequests(IAsyncEnumerator(Of CreateLargeTaskRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator<ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator(Of ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest), CancellationToken)
-  nameWithType: GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator<CreateLargeTaskRequest>, CancellationToken)
-  nameWithType.vb: GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator(Of CreateLargeTaskRequest), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator{ArmoniK.Api.gRPC.V1.Submitter.CreateLargeTaskRequest},CancellationToken)
+  name: BuildRequests(IAsyncEnumerator<Submitter.CreateLargeTaskRequest>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterExtensions_BuildRequests_IAsyncEnumerator_ArmoniK_Api_gRPC_V1_Submitter_CreateLargeTaskRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator{ArmoniK.Api.gRPC.V1.Submitter.CreateLargeTaskRequest},CancellationToken)
+  name.vb: BuildRequests(IAsyncEnumerator(Of Submitter.CreateLargeTaskRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator<ArmoniK.Api.gRPC.V1.Submitter.CreateLargeTaskRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator(Of ArmoniK.Api.gRPC.V1.Submitter.CreateLargeTaskRequest), CancellationToken)
+  nameWithType: GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator<Submitter.CreateLargeTaskRequest>, CancellationToken)
+  nameWithType.vb: GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator(Of Submitter.CreateLargeTaskRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests*
   name: BuildRequests
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterExtensions_BuildRequests_
@@ -4651,13 +4856,13 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CountTasks
   nameWithType: GrpcSubmitterService.CountTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest},ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader{CreateLargeTaskRequest},ServerCallContext)
   name: CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest>, ServerCallContext)
-  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateLargeTasks_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_CreateLargeTaskRequest__ServerCallContext_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest},ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_CreateLargeTasks_IAsyncStreamReader_CreateLargeTaskRequest__ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader{CreateLargeTaskRequest},ServerCallContext)
   name.vb: CreateLargeTasks(IAsyncStreamReader(Of CreateLargeTaskRequest), ServerCallContext)
-  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader<ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest>, ServerCallContext)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader(Of ArmoniK.Api.gRPC.V1.CreateLargeTaskRequest), ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest>, ServerCallContext)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader(Of CreateLargeTaskRequest), ServerCallContext)
   nameWithType: GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest>, ServerCallContext)
   nameWithType.vb: GrpcSubmitterService.CreateLargeTasks(IAsyncStreamReader(Of CreateLargeTaskRequest), ServerCallContext)
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.CreateLargeTasks*
@@ -4813,6 +5018,105 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.WaitForCompletion
   nameWithType: GrpcSubmitterService.WaitForCompletion
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent
+  name: IAgent
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Services.IAgent
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent
+  nameWithType: IAgent
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.CreateTask(IAsyncStreamReader{CreateTaskRequest},CancellationToken)
+  name: CreateTask(IAsyncStreamReader<CreateTaskRequest>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_CreateTask_IAsyncStreamReader_CreateTaskRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.IAgent.CreateTask(IAsyncStreamReader{CreateTaskRequest},CancellationToken)
+  name.vb: CreateTask(IAsyncStreamReader(Of CreateTaskRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.CreateTask(IAsyncStreamReader<CreateTaskRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.IAgent.CreateTask(IAsyncStreamReader(Of CreateTaskRequest), CancellationToken)
+  nameWithType: IAgent.CreateTask(IAsyncStreamReader<CreateTaskRequest>, CancellationToken)
+  nameWithType.vb: IAgent.CreateTask(IAsyncStreamReader(Of CreateTaskRequest), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.CreateTask*
+  name: CreateTask
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_CreateTask_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.IAgent.CreateTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.CreateTask
+  nameWithType: IAgent.CreateTask
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.FinalizeTaskCreation(CancellationToken)
+  name: FinalizeTaskCreation(CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_FinalizeTaskCreation_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.IAgent.FinalizeTaskCreation(CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.FinalizeTaskCreation(CancellationToken)
+  nameWithType: IAgent.FinalizeTaskCreation(CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.FinalizeTaskCreation*
+  name: FinalizeTaskCreation
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_FinalizeTaskCreation_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.IAgent.FinalizeTaskCreation
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.FinalizeTaskCreation
+  nameWithType: IAgent.FinalizeTaskCreation
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.GetCommonData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name: GetCommonData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_GetCommonData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.IAgent.GetCommonData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name.vb: GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.GetCommonData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.IAgent.GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  nameWithType: IAgent.GetCommonData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  nameWithType.vb: IAgent.GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.GetCommonData*
+  name: GetCommonData
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_GetCommonData_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.IAgent.GetCommonData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.GetCommonData
+  nameWithType: IAgent.GetCommonData
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.GetDirectData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name: GetDirectData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_GetDirectData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.IAgent.GetDirectData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name.vb: GetDirectData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.GetDirectData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.IAgent.GetDirectData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  nameWithType: IAgent.GetDirectData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  nameWithType.vb: IAgent.GetDirectData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.GetDirectData*
+  name: GetDirectData
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_GetDirectData_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.IAgent.GetDirectData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.GetDirectData
+  nameWithType: IAgent.GetDirectData
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name: GetResourceData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_GetResourceData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name.vb: GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  nameWithType: IAgent.GetResourceData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  nameWithType.vb: IAgent.GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData*
+  name: GetResourceData
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_GetResourceData_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData
+  nameWithType: IAgent.GetResourceData
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},CancellationToken)
+  name: SendResult(IAsyncStreamReader<Agent.Result>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_SendResult_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_Agent_Result__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},CancellationToken)
+  name.vb: SendResult(IAsyncStreamReader(Of Agent.Result), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader<ArmoniK.Api.gRPC.V1.Agent.Result>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader(Of ArmoniK.Api.gRPC.V1.Agent.Result), CancellationToken)
+  nameWithType: IAgent.SendResult(IAsyncStreamReader<Agent.Result>, CancellationToken)
+  nameWithType.vb: IAgent.SendResult(IAsyncStreamReader(Of Agent.Result), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult*
+  name: SendResult
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_SendResult_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult
+  nameWithType: IAgent.SendResult
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter
   name: ISubmitter
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html
@@ -5770,19 +6074,19 @@ references:
   commentId: T:ArmoniK.Core.Common.Injection.Options.ComputePlan
   fullName: ArmoniK.Core.Common.Injection.Options.ComputePlan
   nameWithType: ComputePlan
-- uid: ArmoniK.Core.Common.Injection.Options.ComputePlan.GrpcChannel
-  name: GrpcChannel
-  href: api/ArmoniK.Core.Common.Injection.Options.ComputePlan.html#ArmoniK_Core_Common_Injection_Options_ComputePlan_GrpcChannel
-  commentId: P:ArmoniK.Core.Common.Injection.Options.ComputePlan.GrpcChannel
-  fullName: ArmoniK.Core.Common.Injection.Options.ComputePlan.GrpcChannel
-  nameWithType: ComputePlan.GrpcChannel
-- uid: ArmoniK.Core.Common.Injection.Options.ComputePlan.GrpcChannel*
-  name: GrpcChannel
-  href: api/ArmoniK.Core.Common.Injection.Options.ComputePlan.html#ArmoniK_Core_Common_Injection_Options_ComputePlan_GrpcChannel_
-  commentId: Overload:ArmoniK.Core.Common.Injection.Options.ComputePlan.GrpcChannel
+- uid: ArmoniK.Core.Common.Injection.Options.ComputePlan.AgentChannel
+  name: AgentChannel
+  href: api/ArmoniK.Core.Common.Injection.Options.ComputePlan.html#ArmoniK_Core_Common_Injection_Options_ComputePlan_AgentChannel
+  commentId: P:ArmoniK.Core.Common.Injection.Options.ComputePlan.AgentChannel
+  fullName: ArmoniK.Core.Common.Injection.Options.ComputePlan.AgentChannel
+  nameWithType: ComputePlan.AgentChannel
+- uid: ArmoniK.Core.Common.Injection.Options.ComputePlan.AgentChannel*
+  name: AgentChannel
+  href: api/ArmoniK.Core.Common.Injection.Options.ComputePlan.html#ArmoniK_Core_Common_Injection_Options_ComputePlan_AgentChannel_
+  commentId: Overload:ArmoniK.Core.Common.Injection.Options.ComputePlan.AgentChannel
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Injection.Options.ComputePlan.GrpcChannel
-  nameWithType: ComputePlan.GrpcChannel
+  fullName: ArmoniK.Core.Common.Injection.Options.ComputePlan.AgentChannel
+  nameWithType: ComputePlan.AgentChannel
 - uid: ArmoniK.Core.Common.Injection.Options.ComputePlan.MessageBatchSize
   name: MessageBatchSize
   href: api/ArmoniK.Core.Common.Injection.Options.ComputePlan.html#ArmoniK_Core_Common_Injection_Options_ComputePlan_MessageBatchSize
@@ -5802,6 +6106,19 @@ references:
   commentId: F:ArmoniK.Core.Common.Injection.Options.ComputePlan.SettingSection
   fullName: ArmoniK.Core.Common.Injection.Options.ComputePlan.SettingSection
   nameWithType: ComputePlan.SettingSection
+- uid: ArmoniK.Core.Common.Injection.Options.ComputePlan.WorkerChannel
+  name: WorkerChannel
+  href: api/ArmoniK.Core.Common.Injection.Options.ComputePlan.html#ArmoniK_Core_Common_Injection_Options_ComputePlan_WorkerChannel
+  commentId: P:ArmoniK.Core.Common.Injection.Options.ComputePlan.WorkerChannel
+  fullName: ArmoniK.Core.Common.Injection.Options.ComputePlan.WorkerChannel
+  nameWithType: ComputePlan.WorkerChannel
+- uid: ArmoniK.Core.Common.Injection.Options.ComputePlan.WorkerChannel*
+  name: WorkerChannel
+  href: api/ArmoniK.Core.Common.Injection.Options.ComputePlan.html#ArmoniK_Core_Common_Injection_Options_ComputePlan_WorkerChannel_
+  commentId: Overload:ArmoniK.Core.Common.Injection.Options.ComputePlan.WorkerChannel
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Injection.Options.ComputePlan.WorkerChannel
+  nameWithType: ComputePlan.WorkerChannel
 - uid: ArmoniK.Core.Common.Injection.Options.GrpcChannel
   name: GrpcChannel
   href: api/ArmoniK.Core.Common.Injection.Options.GrpcChannel.html
@@ -5821,12 +6138,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Injection.Options.GrpcChannel.Address
   nameWithType: GrpcChannel.Address
-- uid: ArmoniK.Core.Common.Injection.Options.GrpcChannel.SettingSection
-  name: SettingSection
-  href: api/ArmoniK.Core.Common.Injection.Options.GrpcChannel.html#ArmoniK_Core_Common_Injection_Options_GrpcChannel_SettingSection
-  commentId: F:ArmoniK.Core.Common.Injection.Options.GrpcChannel.SettingSection
-  fullName: ArmoniK.Core.Common.Injection.Options.GrpcChannel.SettingSection
-  nameWithType: GrpcChannel.SettingSection
 - uid: ArmoniK.Core.Common.Injection.Options.GrpcChannel.SocketType
   name: SocketType
   href: api/ArmoniK.Core.Common.Injection.Options.GrpcChannel.html#ArmoniK_Core_Common_Injection_Options_GrpcChannel_SocketType
@@ -6200,93 +6511,67 @@ references:
   commentId: N:ArmoniK.Core.Common.Pollster
   fullName: ArmoniK.Core.Common.Pollster
   nameWithType: ArmoniK.Core.Common.Pollster
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor
-  name: CommonDataRequestProcessor
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html
-  commentId: T:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor
-  nameWithType: CommonDataRequestProcessor
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
-  name: CommonDataRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor__ctor_ArmoniK_Core_Common_Storage_IObjectStorage_ArmoniK_Core_Common_Utils_IAsyncPipe_ProcessReply_ProcessRequest__ILogger_
-  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
-  name.vb: CommonDataRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CommonDataRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
-  fullName.vb: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CommonDataRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
-  nameWithType: CommonDataRequestProcessor.CommonDataRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
-  nameWithType.vb: CommonDataRequestProcessor.CommonDataRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.#ctor*
-  name: CommonDataRequestProcessor
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.#ctor
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler
+  name: AgentHandler
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html
+  commentId: T:ArmoniK.Core.Common.Pollster.AgentHandler
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler
+  nameWithType: AgentHandler
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler.#ctor(ArmoniK.Core.Common.Utils.LoggerInit,ArmoniK.Core.Common.Injection.Options.ComputePlan,ILogger{ArmoniK.Core.Common.Pollster.AgentHandler})
+  name: AgentHandler(LoggerInit, ComputePlan, ILogger<AgentHandler>)
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler__ctor_ArmoniK_Core_Common_Utils_LoggerInit_ArmoniK_Core_Common_Injection_Options_ComputePlan_ILogger_ArmoniK_Core_Common_Pollster_AgentHandler__
+  commentId: M:ArmoniK.Core.Common.Pollster.AgentHandler.#ctor(ArmoniK.Core.Common.Utils.LoggerInit,ArmoniK.Core.Common.Injection.Options.ComputePlan,ILogger{ArmoniK.Core.Common.Pollster.AgentHandler})
+  name.vb: AgentHandler(LoggerInit, ComputePlan, ILogger(Of AgentHandler))
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.AgentHandler(ArmoniK.Core.Common.Utils.LoggerInit, ArmoniK.Core.Common.Injection.Options.ComputePlan, ILogger<ArmoniK.Core.Common.Pollster.AgentHandler>)
+  fullName.vb: ArmoniK.Core.Common.Pollster.AgentHandler.AgentHandler(ArmoniK.Core.Common.Utils.LoggerInit, ArmoniK.Core.Common.Injection.Options.ComputePlan, ILogger(Of ArmoniK.Core.Common.Pollster.AgentHandler))
+  nameWithType: AgentHandler.AgentHandler(LoggerInit, ComputePlan, ILogger<AgentHandler>)
+  nameWithType.vb: AgentHandler.AgentHandler(LoggerInit, ComputePlan, ILogger(Of AgentHandler))
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler.#ctor*
+  name: AgentHandler
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.AgentHandler.#ctor
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CommonDataRequestProcessor
-  nameWithType: CommonDataRequestProcessor.CommonDataRequestProcessor
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
-  name: AddProcessReply(ProcessReply, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_AddProcessReply_ProcessReply_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
-  nameWithType: CommonDataRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply*
-  name: AddProcessReply
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_AddProcessReply_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.AgentHandler
+  nameWithType: AgentHandler.AgentHandler
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler.DisposeAsync
+  name: DisposeAsync()
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler_DisposeAsync
+  commentId: M:ArmoniK.Core.Common.Pollster.AgentHandler.DisposeAsync
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.DisposeAsync()
+  nameWithType: AgentHandler.DisposeAsync()
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler.DisposeAsync*
+  name: DisposeAsync
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler_DisposeAsync_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.AgentHandler.DisposeAsync
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.AddProcessReply
-  nameWithType: CommonDataRequestProcessor.AddProcessReply
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel
-  name: Cancel()
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_Cancel
-  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel()
-  nameWithType: CommonDataRequestProcessor.Cancel()
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel*
-  name: Cancel
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_Cancel_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.DisposeAsync
+  nameWithType: AgentHandler.DisposeAsync
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent,System.String,Microsoft.Extensions.Logging.ILogger,CancellationToken)
+  name: Start(IAgent, String, Microsoft.Extensions.Logging.ILogger, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler_Start_ArmoniK_Core_Common_gRPC_Services_IAgent_System_String_Microsoft_Extensions_Logging_ILogger_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.AgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent,System.String,Microsoft.Extensions.Logging.ILogger,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent, System.String, Microsoft.Extensions.Logging.ILogger, CancellationToken)
+  nameWithType: AgentHandler.Start(IAgent, String, Microsoft.Extensions.Logging.ILogger, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler.Start*
+  name: Start
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler_Start_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.AgentHandler.Start
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.Cancel
-  nameWithType: CommonDataRequestProcessor.Cancel
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing(CancellationToken)
-  name: CompleteProcessing(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_CompleteProcessing_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing(CancellationToken)
-  nameWithType: CommonDataRequestProcessor.CompleteProcessing(CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing*
-  name: CompleteProcessing
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_CompleteProcessing_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.Start
+  nameWithType: AgentHandler.Start
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler.Stop(CancellationToken)
+  name: Stop(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler_Stop_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.AgentHandler.Stop(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.Stop(CancellationToken)
+  nameWithType: AgentHandler.Stop(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler.Stop*
+  name: Stop
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler_Stop_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.AgentHandler.Stop
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.CompleteProcessing
-  nameWithType: CommonDataRequestProcessor.CompleteProcessing
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete
-  name: IsComplete()
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_IsComplete
-  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete()
-  nameWithType: CommonDataRequestProcessor.IsComplete()
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete*
-  name: IsComplete
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_IsComplete_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.IsComplete
-  nameWithType: CommonDataRequestProcessor.IsComplete
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
-  name: WaitForResponseCompletion(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_WaitForResponseCompletion_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
-  nameWithType: CommonDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion*
-  name: WaitForResponseCompletion
-  href: api/ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_CommonDataRequestProcessor_WaitForResponseCompletion_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.CommonDataRequestProcessor.WaitForResponseCompletion
-  nameWithType: CommonDataRequestProcessor.WaitForResponseCompletion
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.Stop
+  nameWithType: AgentHandler.Stop
 - uid: ArmoniK.Core.Common.Pollster.ComputeRequestQueue
   name: ComputeRequestQueue
   href: api/ArmoniK.Core.Common.Pollster.ComputeRequestQueue.html
@@ -6371,15 +6656,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.ComputeRequestQueue.GetQueue
   nameWithType: ComputeRequestQueue.GetQueue
-- uid: ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init(System.Int32,System.String,System.String,IDictionary{System.String,System.String},System.Nullable{ByteString},IList{System.String})
-  name: Init(Int32, String, String, IDictionary<String, String>, Nullable<ByteString>, IList<String>)
-  href: api/ArmoniK.Core.Common.Pollster.ComputeRequestQueue.html#ArmoniK_Core_Common_Pollster_ComputeRequestQueue_Init_System_Int32_System_String_System_String_IDictionary_System_String_System_String__System_Nullable_ByteString__IList_System_String__
-  commentId: M:ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init(System.Int32,System.String,System.String,IDictionary{System.String,System.String},System.Nullable{ByteString},IList{System.String})
-  name.vb: Init(Int32, String, String, IDictionary(Of String, String), Nullable(Of ByteString), IList(Of String))
-  fullName: ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init(System.Int32, System.String, System.String, IDictionary<System.String, System.String>, System.Nullable<ByteString>, IList<System.String>)
-  fullName.vb: ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init(System.Int32, System.String, System.String, IDictionary(Of System.String, System.String), System.Nullable(Of ByteString), IList(Of System.String))
-  nameWithType: ComputeRequestQueue.Init(Int32, String, String, IDictionary<String, String>, Nullable<ByteString>, IList<String>)
-  nameWithType.vb: ComputeRequestQueue.Init(Int32, String, String, IDictionary(Of String, String), Nullable(Of ByteString), IList(Of String))
+- uid: ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init(System.Int32,System.String,System.String,TaskOptions,System.Nullable{ByteString},IList{System.String})
+  name: Init(Int32, String, String, TaskOptions, Nullable<ByteString>, IList<String>)
+  href: api/ArmoniK.Core.Common.Pollster.ComputeRequestQueue.html#ArmoniK_Core_Common_Pollster_ComputeRequestQueue_Init_System_Int32_System_String_System_String_TaskOptions_System_Nullable_ByteString__IList_System_String__
+  commentId: M:ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init(System.Int32,System.String,System.String,TaskOptions,System.Nullable{ByteString},IList{System.String})
+  name.vb: Init(Int32, String, String, TaskOptions, Nullable(Of ByteString), IList(Of String))
+  fullName: ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init(System.Int32, System.String, System.String, TaskOptions, System.Nullable<ByteString>, IList<System.String>)
+  fullName.vb: ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init(System.Int32, System.String, System.String, TaskOptions, System.Nullable(Of ByteString), IList(Of System.String))
+  nameWithType: ComputeRequestQueue.Init(Int32, String, String, TaskOptions, Nullable<ByteString>, IList<String>)
+  nameWithType.vb: ComputeRequestQueue.Init(Int32, String, String, TaskOptions, Nullable(Of ByteString), IList(Of String))
 - uid: ArmoniK.Core.Common.Pollster.ComputeRequestQueue.Init*
   name: Init
   href: api/ArmoniK.Core.Common.Pollster.ComputeRequestQueue.html#ArmoniK_Core_Common_Pollster_ComputeRequestQueue_Init_
@@ -6461,179 +6746,53 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.DataPrefetcher.PrefetchDataAsync
   nameWithType: DataPrefetcher.PrefetchDataAsync
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor
-  name: DirectDataRequestProcessor
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html
-  commentId: T:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor
-  nameWithType: DirectDataRequestProcessor
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
-  name: DirectDataRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor__ctor_ArmoniK_Core_Common_Storage_IObjectStorage_ArmoniK_Core_Common_Utils_IAsyncPipe_ProcessReply_ProcessRequest__ILogger_
-  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
-  name.vb: DirectDataRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.DirectDataRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
-  fullName.vb: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.DirectDataRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
-  nameWithType: DirectDataRequestProcessor.DirectDataRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
-  nameWithType.vb: DirectDataRequestProcessor.DirectDataRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.#ctor*
-  name: DirectDataRequestProcessor
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.#ctor
+- uid: ArmoniK.Core.Common.Pollster.IAgentHandler
+  name: IAgentHandler
+  href: api/ArmoniK.Core.Common.Pollster.IAgentHandler.html
+  commentId: T:ArmoniK.Core.Common.Pollster.IAgentHandler
+  fullName: ArmoniK.Core.Common.Pollster.IAgentHandler
+  nameWithType: IAgentHandler
+- uid: ArmoniK.Core.Common.Pollster.IAgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent,System.String,ILogger,CancellationToken)
+  name: Start(IAgent, String, ILogger, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.IAgentHandler.html#ArmoniK_Core_Common_Pollster_IAgentHandler_Start_ArmoniK_Core_Common_gRPC_Services_IAgent_System_String_ILogger_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.IAgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent,System.String,ILogger,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.IAgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent, System.String, ILogger, CancellationToken)
+  nameWithType: IAgentHandler.Start(IAgent, String, ILogger, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.IAgentHandler.Start*
+  name: Start
+  href: api/ArmoniK.Core.Common.Pollster.IAgentHandler.html#ArmoniK_Core_Common_Pollster_IAgentHandler_Start_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.IAgentHandler.Start
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.DirectDataRequestProcessor
-  nameWithType: DirectDataRequestProcessor.DirectDataRequestProcessor
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
-  name: AddProcessReply(ProcessReply, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_AddProcessReply_ProcessReply_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
-  nameWithType: DirectDataRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply*
-  name: AddProcessReply
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_AddProcessReply_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply
+  fullName: ArmoniK.Core.Common.Pollster.IAgentHandler.Start
+  nameWithType: IAgentHandler.Start
+- uid: ArmoniK.Core.Common.Pollster.IAgentHandler.Stop(CancellationToken)
+  name: Stop(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.IAgentHandler.html#ArmoniK_Core_Common_Pollster_IAgentHandler_Stop_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.IAgentHandler.Stop(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.IAgentHandler.Stop(CancellationToken)
+  nameWithType: IAgentHandler.Stop(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.IAgentHandler.Stop*
+  name: Stop
+  href: api/ArmoniK.Core.Common.Pollster.IAgentHandler.html#ArmoniK_Core_Common_Pollster_IAgentHandler_Stop_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.IAgentHandler.Stop
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.AddProcessReply
-  nameWithType: DirectDataRequestProcessor.AddProcessReply
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel
-  name: Cancel()
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_Cancel
-  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel()
-  nameWithType: DirectDataRequestProcessor.Cancel()
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel*
-  name: Cancel
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_Cancel_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.Cancel
-  nameWithType: DirectDataRequestProcessor.Cancel
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing(CancellationToken)
-  name: CompleteProcessing(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_CompleteProcessing_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing(CancellationToken)
-  nameWithType: DirectDataRequestProcessor.CompleteProcessing(CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing*
-  name: CompleteProcessing
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_CompleteProcessing_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.CompleteProcessing
-  nameWithType: DirectDataRequestProcessor.CompleteProcessing
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete
-  name: IsComplete()
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_IsComplete
-  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete()
-  nameWithType: DirectDataRequestProcessor.IsComplete()
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete*
-  name: IsComplete
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_IsComplete_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.IsComplete
-  nameWithType: DirectDataRequestProcessor.IsComplete
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
-  name: WaitForResponseCompletion(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_WaitForResponseCompletion_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
-  nameWithType: DirectDataRequestProcessor.WaitForResponseCompletion(CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion*
-  name: WaitForResponseCompletion
-  href: api/ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.html#ArmoniK_Core_Common_Pollster_DirectDataRequestProcessor_WaitForResponseCompletion_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.DirectDataRequestProcessor.WaitForResponseCompletion
-  nameWithType: DirectDataRequestProcessor.WaitForResponseCompletion
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor
-  name: IProcessReplyProcessor
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html
-  commentId: T:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor
-  nameWithType: IProcessReplyProcessor
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply(ProcessReply,CancellationToken)
-  name: AddProcessReply(ProcessReply, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_AddProcessReply_ProcessReply_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply(ProcessReply,CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply(ProcessReply, CancellationToken)
-  nameWithType: IProcessReplyProcessor.AddProcessReply(ProcessReply, CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply*
-  name: AddProcessReply
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_AddProcessReply_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.AddProcessReply
-  nameWithType: IProcessReplyProcessor.AddProcessReply
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel
-  name: Cancel()
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_Cancel
-  commentId: M:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel()
-  nameWithType: IProcessReplyProcessor.Cancel()
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel*
-  name: Cancel
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_Cancel_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.Cancel
-  nameWithType: IProcessReplyProcessor.Cancel
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing(CancellationToken)
-  name: CompleteProcessing(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_CompleteProcessing_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing(CancellationToken)
-  nameWithType: IProcessReplyProcessor.CompleteProcessing(CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing*
-  name: CompleteProcessing
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_CompleteProcessing_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.CompleteProcessing
-  nameWithType: IProcessReplyProcessor.CompleteProcessing
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete
-  name: IsComplete()
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_IsComplete
-  commentId: M:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete()
-  nameWithType: IProcessReplyProcessor.IsComplete()
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete*
-  name: IsComplete
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_IsComplete_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.IsComplete
-  nameWithType: IProcessReplyProcessor.IsComplete
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion(CancellationToken)
-  name: WaitForResponseCompletion(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_WaitForResponseCompletion_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion(CancellationToken)
-  nameWithType: IProcessReplyProcessor.WaitForResponseCompletion(CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion*
-  name: WaitForResponseCompletion
-  href: api/ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.html#ArmoniK_Core_Common_Pollster_IProcessReplyProcessor_WaitForResponseCompletion_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.IProcessReplyProcessor.WaitForResponseCompletion
-  nameWithType: IProcessReplyProcessor.WaitForResponseCompletion
+  fullName: ArmoniK.Core.Common.Pollster.IAgentHandler.Stop
+  nameWithType: IAgentHandler.Stop
 - uid: ArmoniK.Core.Common.Pollster.Pollster
   name: Pollster
   href: api/ArmoniK.Core.Common.Pollster.Pollster.html
   commentId: T:ArmoniK.Core.Common.Pollster.Pollster
   fullName: ArmoniK.Core.Common.Pollster.Pollster
   nameWithType: Pollster
-- uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  name: Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler)
-  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_ArmoniK_Core_Common_Storage_IQueueStorage_ArmoniK_Core_Common_Pollster_DataPrefetcher_ArmoniK_Core_Common_Injection_Options_ComputePlan_IHostApplicationLifetime_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_Storage_IObjectStorageFactory_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_
-  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  name.vb: Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler)
-  fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  fullName.vb: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler)
-  nameWithType: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler)
-  nameWithType.vb: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler)
+- uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler)
+  name: Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_ArmoniK_Core_Common_Storage_IQueueStorage_ArmoniK_Core_Common_Pollster_DataPrefetcher_ArmoniK_Core_Common_Injection_Options_ComputePlan_IHostApplicationLifetime_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_Storage_IObjectStorageFactory_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_
+  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Injection.Options.ComputePlan,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler)
+  name.vb: Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler)
+  fullName.vb: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Injection.Options.ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler)
+  nameWithType: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+  nameWithType.vb: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlan, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
 - uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor*
   name: Pollster
   href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_
@@ -6673,141 +6832,6 @@ references:
   commentId: F:ArmoniK.Core.Common.Pollster.Pollster.TaskProcessing
   fullName: ArmoniK.Core.Common.Pollster.Pollster.TaskProcessing
   nameWithType: Pollster.TaskProcessing
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor
-  name: RequestProcessor
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html
-  commentId: T:ArmoniK.Core.Common.Pollster.RequestProcessor
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor
-  nameWithType: RequestProcessor
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ActivitySource)
-  name: RequestProcessor(IWorkerStreamHandler, IObjectStorageFactory, ILogger, ISubmitter, ActivitySource)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ILogger_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ActivitySource_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ActivitySource)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.RequestProcessor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ActivitySource)
-  nameWithType: RequestProcessor.RequestProcessor(IWorkerStreamHandler, IObjectStorageFactory, ILogger, ISubmitter, ActivitySource)
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.#ctor*
-  name: RequestProcessor
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.RequestProcessor.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.RequestProcessor
-  nameWithType: RequestProcessor.RequestProcessor
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.Dispose
-  name: Dispose()
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_Dispose
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.Dispose
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.Dispose()
-  nameWithType: RequestProcessor.Dispose()
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.Dispose*
-  name: Dispose
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_Dispose_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.RequestProcessor.Dispose
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.Dispose
-  nameWithType: RequestProcessor.Dispose
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Storage.TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
-  name: ProcessAsync(IQueueMessageHandler, TaskData, Queue<ProcessRequest.Types.ComputeRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProcessAsync_ArmoniK_Core_Common_Storage_IQueueMessageHandler_ArmoniK_Core_Common_Storage_TaskData_Queue_ArmoniK_Api_gRPC_V1_ProcessRequest_Types_ComputeRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Storage.TaskData,Queue{ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest},CancellationToken)
-  name.vb: ProcessAsync(IQueueMessageHandler, TaskData, Queue(Of ProcessRequest.Types.ComputeRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler, ArmoniK.Core.Common.Storage.TaskData, Queue<ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync(ArmoniK.Core.Common.Storage.IQueueMessageHandler, ArmoniK.Core.Common.Storage.TaskData, Queue(Of ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest), CancellationToken)
-  nameWithType: RequestProcessor.ProcessAsync(IQueueMessageHandler, TaskData, Queue<ProcessRequest.Types.ComputeRequest>, CancellationToken)
-  nameWithType.vb: RequestProcessor.ProcessAsync(IQueueMessageHandler, TaskData, Queue(Of ProcessRequest.Types.ComputeRequest), CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync*
-  name: ProcessAsync
-  href: api/ArmoniK.Core.Common.Pollster.RequestProcessor.html#ArmoniK_Core_Common_Pollster_RequestProcessor_ProcessAsync_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.RequestProcessor.ProcessAsync
-  nameWithType: RequestProcessor.ProcessAsync
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor
-  name: ResourceRequestProcessor
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html
-  commentId: T:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor
-  nameWithType: ResourceRequestProcessor
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
-  name: ResourceRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor__ctor_ArmoniK_Core_Common_Storage_IObjectStorage_ArmoniK_Core_Common_Utils_IAsyncPipe_ProcessReply_ProcessRequest__ILogger_
-  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.#ctor(ArmoniK.Core.Common.Storage.IObjectStorage,ArmoniK.Core.Common.Utils.IAsyncPipe{ProcessReply,ProcessRequest},ILogger)
-  name.vb: ResourceRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.ResourceRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
-  fullName.vb: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.ResourceRequestProcessor(ArmoniK.Core.Common.Storage.IObjectStorage, ArmoniK.Core.Common.Utils.IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
-  nameWithType: ResourceRequestProcessor.ResourceRequestProcessor(IObjectStorage, IAsyncPipe<ProcessReply, ProcessRequest>, ILogger)
-  nameWithType.vb: ResourceRequestProcessor.ResourceRequestProcessor(IObjectStorage, IAsyncPipe(Of ProcessReply, ProcessRequest), ILogger)
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.#ctor*
-  name: ResourceRequestProcessor
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.ResourceRequestProcessor
-  nameWithType: ResourceRequestProcessor.ResourceRequestProcessor
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
-  name: AddProcessReply(ProcessReply, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_AddProcessReply_ProcessReply_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply(ProcessReply,CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
-  nameWithType: ResourceRequestProcessor.AddProcessReply(ProcessReply, CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply*
-  name: AddProcessReply
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_AddProcessReply_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.AddProcessReply
-  nameWithType: ResourceRequestProcessor.AddProcessReply
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel
-  name: Cancel()
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_Cancel
-  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel()
-  nameWithType: ResourceRequestProcessor.Cancel()
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel*
-  name: Cancel
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_Cancel_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.Cancel
-  nameWithType: ResourceRequestProcessor.Cancel
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing(CancellationToken)
-  name: CompleteProcessing(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_CompleteProcessing_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing(CancellationToken)
-  nameWithType: ResourceRequestProcessor.CompleteProcessing(CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing*
-  name: CompleteProcessing
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_CompleteProcessing_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.CompleteProcessing
-  nameWithType: ResourceRequestProcessor.CompleteProcessing
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete
-  name: IsComplete()
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_IsComplete
-  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete()
-  nameWithType: ResourceRequestProcessor.IsComplete()
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete*
-  name: IsComplete
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_IsComplete_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.IsComplete
-  nameWithType: ResourceRequestProcessor.IsComplete
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion(CancellationToken)
-  name: WaitForResponseCompletion(CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_WaitForResponseCompletion_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion(CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion(CancellationToken)
-  nameWithType: ResourceRequestProcessor.WaitForResponseCompletion(CancellationToken)
-- uid: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion*
-  name: WaitForResponseCompletion
-  href: api/ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.html#ArmoniK_Core_Common_Pollster_ResourceRequestProcessor_WaitForResponseCompletion_
-  commentId: Overload:ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Pollster.ResourceRequestProcessor.WaitForResponseCompletion
-  nameWithType: ResourceRequestProcessor.WaitForResponseCompletion
 - uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker
   name: ArmoniK.Core.Common.Pollster.TaskProcessingChecker
   href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.html
@@ -10290,19 +10314,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.StartTaskProcessing
   nameWithType: IWorkerStreamHandler.StartTaskProcessing
-- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerReturn
-  name: WorkerReturn()
-  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerReturn
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerReturn
-  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerReturn()
-  nameWithType: IWorkerStreamHandler.WorkerReturn()
-- uid: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerReturn*
-  name: WorkerReturn
-  href: api/ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_WorkerReturn_
-  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerReturn
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler.WorkerReturn
-  nameWithType: IWorkerStreamHandler.WorkerReturn
 - uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler
   name: TaskHandler
   href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html
@@ -10322,15 +10333,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Configuration
   nameWithType: TaskHandler.Configuration
-- uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Create(IAsyncStreamReader{ProcessRequest},IServerStreamWriter{ProcessReply},Configuration,ILogger{ArmoniK.Core.Common.Stream.Worker.TaskHandler},CancellationToken)
-  name: Create(IAsyncStreamReader<ProcessRequest>, IServerStreamWriter<ProcessReply>, Configuration, ILogger<TaskHandler>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_Create_IAsyncStreamReader_ProcessRequest__IServerStreamWriter_ProcessReply__Configuration_ILogger_ArmoniK_Core_Common_Stream_Worker_TaskHandler__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.TaskHandler.Create(IAsyncStreamReader{ProcessRequest},IServerStreamWriter{ProcessReply},Configuration,ILogger{ArmoniK.Core.Common.Stream.Worker.TaskHandler},CancellationToken)
-  name.vb: Create(IAsyncStreamReader(Of ProcessRequest), IServerStreamWriter(Of ProcessReply), Configuration, ILogger(Of TaskHandler), CancellationToken)
-  fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Create(IAsyncStreamReader<ProcessRequest>, IServerStreamWriter<ProcessReply>, Configuration, ILogger<ArmoniK.Core.Common.Stream.Worker.TaskHandler>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Create(IAsyncStreamReader(Of ProcessRequest), IServerStreamWriter(Of ProcessReply), Configuration, ILogger(Of ArmoniK.Core.Common.Stream.Worker.TaskHandler), CancellationToken)
-  nameWithType: TaskHandler.Create(IAsyncStreamReader<ProcessRequest>, IServerStreamWriter<ProcessReply>, Configuration, ILogger<TaskHandler>, CancellationToken)
-  nameWithType.vb: TaskHandler.Create(IAsyncStreamReader(Of ProcessRequest), IServerStreamWriter(Of ProcessReply), Configuration, ILogger(Of TaskHandler), CancellationToken)
+- uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Create(IAsyncStreamReader{ProcessRequest},Agent.AgentClient,ILoggerFactory,CancellationToken)
+  name: Create(IAsyncStreamReader<ProcessRequest>, Agent.AgentClient, ILoggerFactory, CancellationToken)
+  href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_Create_IAsyncStreamReader_ProcessRequest__Agent_AgentClient_ILoggerFactory_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.TaskHandler.Create(IAsyncStreamReader{ProcessRequest},Agent.AgentClient,ILoggerFactory,CancellationToken)
+  name.vb: Create(IAsyncStreamReader(Of ProcessRequest), Agent.AgentClient, ILoggerFactory, CancellationToken)
+  fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Create(IAsyncStreamReader<ProcessRequest>, Agent.AgentClient, ILoggerFactory, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Create(IAsyncStreamReader(Of ProcessRequest), Agent.AgentClient, ILoggerFactory, CancellationToken)
+  nameWithType: TaskHandler.Create(IAsyncStreamReader<ProcessRequest>, Agent.AgentClient, ILoggerFactory, CancellationToken)
+  nameWithType.vb: TaskHandler.Create(IAsyncStreamReader(Of ProcessRequest), Agent.AgentClient, ILoggerFactory, CancellationToken)
 - uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Create*
   name: Create
   href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_Create_
@@ -10367,6 +10378,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.DataDependencies
   nameWithType: TaskHandler.DataDependencies
+- uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.DisposeAsync
+  name: DisposeAsync()
+  href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_DisposeAsync
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.TaskHandler.DisposeAsync
+  fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.DisposeAsync()
+  nameWithType: TaskHandler.DisposeAsync()
+- uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.DisposeAsync*
+  name: DisposeAsync
+  href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_DisposeAsync_
+  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.TaskHandler.DisposeAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.DisposeAsync
+  nameWithType: TaskHandler.DisposeAsync
 - uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.ExpectedResults
   name: ExpectedResults
   href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_ExpectedResults
@@ -10380,19 +10404,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.ExpectedResults
   nameWithType: TaskHandler.ExpectedResults
-- uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Init
-  name: Init()
-  href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_Init
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.TaskHandler.Init
-  fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Init()
-  nameWithType: TaskHandler.Init()
-- uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Init*
-  name: Init
-  href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_Init_
-  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.TaskHandler.Init
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Init
-  nameWithType: TaskHandler.Init
 - uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Payload
   name: Payload
   href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_Payload
@@ -10500,27 +10511,40 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.TaskOptions
   nameWithType: TaskHandler.TaskOptions
+- uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Token
+  name: Token
+  href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_Token
+  commentId: P:ArmoniK.Core.Common.Stream.Worker.TaskHandler.Token
+  fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Token
+  nameWithType: TaskHandler.Token
+- uid: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Token*
+  name: Token
+  href: api/ArmoniK.Core.Common.Stream.Worker.TaskHandler.html#ArmoniK_Core_Common_Stream_Worker_TaskHandler_Token_
+  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.TaskHandler.Token
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Stream.Worker.TaskHandler.Token
+  nameWithType: TaskHandler.Token
 - uid: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions
   name: TaskRequestExtensions
   href: api/ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.html
   commentId: T:ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions
   fullName: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions
   nameWithType: TaskRequestExtensions
-- uid: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable{TaskRequest},System.Nullable{TaskOptions},System.Int32)
-  name: ToRequestStream(IEnumerable<TaskRequest>, Nullable<TaskOptions>, Int32)
-  href: api/ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.html#ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_IEnumerable_TaskRequest__System_Nullable_TaskOptions__System_Int32_
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable{TaskRequest},System.Nullable{TaskOptions},System.Int32)
-  name.vb: ToRequestStream(IEnumerable(Of TaskRequest), Nullable(Of TaskOptions), Int32)
-  fullName: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable<TaskRequest>, System.Nullable<TaskOptions>, System.Int32)
-  fullName.vb: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable(Of TaskRequest), System.Nullable(Of TaskOptions), System.Int32)
-  nameWithType: TaskRequestExtensions.ToRequestStream(IEnumerable<TaskRequest>, Nullable<TaskOptions>, Int32)
-  nameWithType.vb: TaskRequestExtensions.ToRequestStream(IEnumerable(Of TaskRequest), Nullable(Of TaskOptions), Int32)
-- uid: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest,System.Boolean,System.Int32,ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)
-  name: ToRequestStream(TaskRequest, Boolean, Int32, ProcessReplyCreateLargeTaskStateMachine)
-  href: api/ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.html#ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_TaskRequest_System_Boolean_System_Int32_ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest,System.Boolean,System.Int32,ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)
-  fullName: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest, System.Boolean, System.Int32, ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)
-  nameWithType: TaskRequestExtensions.ToRequestStream(TaskRequest, Boolean, Int32, ProcessReplyCreateLargeTaskStateMachine)
+- uid: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable{TaskRequest},System.Nullable{TaskOptions},System.String,System.Int32)
+  name: ToRequestStream(IEnumerable<TaskRequest>, Nullable<TaskOptions>, String, Int32)
+  href: api/ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.html#ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_IEnumerable_TaskRequest__System_Nullable_TaskOptions__System_String_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable{TaskRequest},System.Nullable{TaskOptions},System.String,System.Int32)
+  name.vb: ToRequestStream(IEnumerable(Of TaskRequest), Nullable(Of TaskOptions), String, Int32)
+  fullName: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable<TaskRequest>, System.Nullable<TaskOptions>, System.String, System.Int32)
+  fullName.vb: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(IEnumerable(Of TaskRequest), System.Nullable(Of TaskOptions), System.String, System.Int32)
+  nameWithType: TaskRequestExtensions.ToRequestStream(IEnumerable<TaskRequest>, Nullable<TaskOptions>, String, Int32)
+  nameWithType.vb: TaskRequestExtensions.ToRequestStream(IEnumerable(Of TaskRequest), Nullable(Of TaskOptions), String, Int32)
+- uid: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest,System.Boolean,System.String,System.Int32,ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)
+  name: ToRequestStream(TaskRequest, Boolean, String, Int32, ProcessReplyCreateLargeTaskStateMachine)
+  href: api/ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.html#ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_TaskRequest_System_Boolean_System_String_System_Int32_ArmoniK_Core_Common_StateMachines_ProcessReplyCreateLargeTaskStateMachine_
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest,System.Boolean,System.String,System.Int32,ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)
+  fullName: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream(TaskRequest, System.Boolean, System.String, System.Int32, ArmoniK.Core.Common.StateMachines.ProcessReplyCreateLargeTaskStateMachine)
+  nameWithType: TaskRequestExtensions.ToRequestStream(TaskRequest, Boolean, String, Int32, ProcessReplyCreateLargeTaskStateMachine)
 - uid: ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.ToRequestStream*
   name: ToRequestStream
   href: api/ArmoniK.Core.Common.Stream.Worker.TaskRequestExtensions.html#ArmoniK_Core_Common_Stream_Worker_TaskRequestExtensions_ToRequestStream_
@@ -10615,31 +10639,18 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.StartTaskProcessing
   nameWithType: WorkerStreamHandler.StartTaskProcessing
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerReturn
-  name: WorkerReturn()
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_WorkerReturn
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerReturn
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerReturn()
-  nameWithType: WorkerStreamHandler.WorkerReturn()
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerReturn*
-  name: WorkerReturn
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamHandler_WorkerReturn_
-  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerReturn
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamHandler.WorkerReturn
-  nameWithType: WorkerStreamHandler.WorkerReturn
 - uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper
   name: WorkerStreamWrapper
   href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html
   commentId: T:ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper
   fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper
   nameWithType: WorkerStreamWrapper
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.#ctor(ILoggerFactory)
-  name: WorkerStreamWrapper(ILoggerFactory)
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper__ctor_ILoggerFactory_
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.#ctor(ILoggerFactory)
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.WorkerStreamWrapper(ILoggerFactory)
-  nameWithType: WorkerStreamWrapper.WorkerStreamWrapper(ILoggerFactory)
+- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.#ctor(ILoggerFactory,ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
+  name: WorkerStreamWrapper(ILoggerFactory, GrpcChannelProvider)
+  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper__ctor_ILoggerFactory_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.#ctor(ILoggerFactory,ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
+  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.WorkerStreamWrapper(ILoggerFactory, ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
+  nameWithType: WorkerStreamWrapper.WorkerStreamWrapper(ILoggerFactory, GrpcChannelProvider)
 - uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.#ctor*
   name: WorkerStreamWrapper
   href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper__ctor_
@@ -10647,6 +10658,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.WorkerStreamWrapper
   nameWithType: WorkerStreamWrapper.WorkerStreamWrapper
+- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.DisposeAsync
+  name: DisposeAsync()
+  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_DisposeAsync
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.DisposeAsync
+  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.DisposeAsync()
+  nameWithType: WorkerStreamWrapper.DisposeAsync()
+- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.DisposeAsync*
+  name: DisposeAsync
+  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_DisposeAsync_
+  commentId: Overload:ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.DisposeAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.DisposeAsync
+  nameWithType: WorkerStreamWrapper.DisposeAsync
 - uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.HealthCheck(Empty,ServerCallContext)
   name: HealthCheck(Empty, ServerCallContext)
   href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_HealthCheck_Empty_ServerCallContext_
@@ -10672,15 +10696,15 @@ references:
   commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)
   fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)
   nameWithType: WorkerStreamWrapper.Process(ITaskHandler)
-- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader{ProcessRequest},IServerStreamWriter{ProcessReply},ServerCallContext)
-  name: Process(IAsyncStreamReader<ProcessRequest>, IServerStreamWriter<ProcessReply>, ServerCallContext)
-  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_IAsyncStreamReader_ProcessRequest__IServerStreamWriter_ProcessReply__ServerCallContext_
-  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader{ProcessRequest},IServerStreamWriter{ProcessReply},ServerCallContext)
-  name.vb: Process(IAsyncStreamReader(Of ProcessRequest), IServerStreamWriter(Of ProcessReply), ServerCallContext)
-  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader<ProcessRequest>, IServerStreamWriter<ProcessReply>, ServerCallContext)
-  fullName.vb: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader(Of ProcessRequest), IServerStreamWriter(Of ProcessReply), ServerCallContext)
-  nameWithType: WorkerStreamWrapper.Process(IAsyncStreamReader<ProcessRequest>, IServerStreamWriter<ProcessReply>, ServerCallContext)
-  nameWithType.vb: WorkerStreamWrapper.Process(IAsyncStreamReader(Of ProcessRequest), IServerStreamWriter(Of ProcessReply), ServerCallContext)
+- uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader{ProcessRequest},ServerCallContext)
+  name: Process(IAsyncStreamReader<ProcessRequest>, ServerCallContext)
+  href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_IAsyncStreamReader_ProcessRequest__ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader{ProcessRequest},ServerCallContext)
+  name.vb: Process(IAsyncStreamReader(Of ProcessRequest), ServerCallContext)
+  fullName: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader<ProcessRequest>, ServerCallContext)
+  fullName.vb: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader(Of ProcessRequest), ServerCallContext)
+  nameWithType: WorkerStreamWrapper.Process(IAsyncStreamReader<ProcessRequest>, ServerCallContext)
+  nameWithType.vb: WorkerStreamWrapper.Process(IAsyncStreamReader(Of ProcessRequest), ServerCallContext)
 - uid: ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process*
   name: Process
   href: api/ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_
@@ -11369,23 +11393,23 @@ references:
   fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync
   nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.CompleteAsync
   nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync
-- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reader
-  name: Reader
-  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_Reader
-  commentId: P:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reader
-  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reader
-  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reader
-  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reader
-  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reader
-- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reader*
-  name: Reader
-  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_Reader_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reader
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.ReadAsync(CancellationToken)
+  name: ReadAsync(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_ReadAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.ReadAsync(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.ReadAsync(CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ReadAsync(CancellationToken)
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.ReadAsync(CancellationToken)
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ReadAsync(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.ReadAsync*
+  name: ReadAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_ReadAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.ReadAsync
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reader
-  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reader
-  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.Reader
-  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).Reader
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.ReadAsync
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ReadAsync
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.ReadAsync
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ReadAsync
 - uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.Reverse
   name: Reverse
   href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2_Reverse
@@ -11983,96 +12007,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.TearDown
   nameWithType: DataPrefetcherTest.TearDown
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest
-  name: RequestProcessorTest
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html
-  commentId: T:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest
-  nameWithType: RequestProcessorTest
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List{ProcessReply},ProcessRequest)
-  name: IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>, ProcessRequest)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncNonImplemented_List_ProcessReply__ProcessRequest_
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List{ProcessReply},ProcessRequest)
-  name.vb: IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply), ProcessRequest)
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>, ProcessRequest)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply), ProcessRequest)
-  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List<ProcessReply>, ProcessRequest)
-  nameWithType.vb: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented(List(Of ProcessReply), ProcessRequest)
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented*
-  name: IntegrationProcessInternalsAsyncNonImplemented
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncNonImplemented_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented
-  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncNonImplemented
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List{ProcessReply},ProcessRequest)
-  name: IntegrationProcessInternalsAsyncTest(List<ProcessReply>, ProcessRequest)
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncTest_List_ProcessReply__ProcessRequest_
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List{ProcessReply},ProcessRequest)
-  name.vb: IntegrationProcessInternalsAsyncTest(List(Of ProcessReply), ProcessRequest)
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List<ProcessReply>, ProcessRequest)
-  fullName.vb: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List(Of ProcessReply), ProcessRequest)
-  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List<ProcessReply>, ProcessRequest)
-  nameWithType.vb: RequestProcessorTest.IntegrationProcessInternalsAsyncTest(List(Of ProcessReply), ProcessRequest)
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest*
-  name: IntegrationProcessInternalsAsyncTest
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncTest_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncTest
-  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncTest
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream
-  name: IntegrationProcessInternalsAsyncThrowsOnBadStream()
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncThrowsOnBadStream
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream()
-  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream()
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream*
-  name: IntegrationProcessInternalsAsyncThrowsOnBadStream
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncThrowsOnBadStream_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream
-  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2
-  name: IntegrationProcessInternalsAsyncThrowsOnBadStream2()
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncThrowsOnBadStream2
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2()
-  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2()
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2*
-  name: IntegrationProcessInternalsAsyncThrowsOnBadStream2
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_IntegrationProcessInternalsAsyncThrowsOnBadStream2_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2
-  nameWithType: RequestProcessorTest.IntegrationProcessInternalsAsyncThrowsOnBadStream2
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.SetUp
-  name: SetUp()
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_SetUp
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.SetUp
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.SetUp()
-  nameWithType: RequestProcessorTest.SetUp()
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.SetUp*
-  name: SetUp
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_SetUp_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.SetUp
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.SetUp
-  nameWithType: RequestProcessorTest.SetUp
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.TearDown
-  name: TearDown()
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_TearDown
-  commentId: M:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.TearDown
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.TearDown()
-  nameWithType: RequestProcessorTest.TearDown()
-- uid: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.TearDown*
-  name: TearDown
-  href: api/ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.html#ArmoniK_Core_Common_Tests_Pollster_RequestProcessorTest_TearDown_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.TearDown
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Pollster.RequestProcessorTest.TearDown
-  nameWithType: RequestProcessorTest.TearDown
 - uid: ArmoniK.Core.Common.Tests.ResultTableTestBase
   name: ResultTableTestBase
   href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html
@@ -13198,57 +13132,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyResultStateMachineTest.TwoInitRequestsShouldFail
   nameWithType: ProcessReplyResultStateMachineTest.TwoInitRequestsShouldFail
-- uid: ArmoniK.Core.Common.Tests.Stream
-  name: ArmoniK.Core.Common.Tests.Stream
-  href: api/ArmoniK.Core.Common.Tests.Stream.html
-  commentId: N:ArmoniK.Core.Common.Tests.Stream
-  fullName: ArmoniK.Core.Common.Tests.Stream
-  nameWithType: ArmoniK.Core.Common.Tests.Stream
-- uid: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest
-  name: TaskHandlerTest
-  href: api/ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.html
-  commentId: T:ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest
-  fullName: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest
-  nameWithType: TaskHandlerTest
-- uid: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.EmptyPayloadAndOneDependency
-  name: EmptyPayloadAndOneDependency()
-  href: api/ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Stream_TaskHandlerTest_EmptyPayloadAndOneDependency
-  commentId: M:ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.EmptyPayloadAndOneDependency
-  fullName: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.EmptyPayloadAndOneDependency()
-  nameWithType: TaskHandlerTest.EmptyPayloadAndOneDependency()
-- uid: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.EmptyPayloadAndOneDependency*
-  name: EmptyPayloadAndOneDependency
-  href: api/ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Stream_TaskHandlerTest_EmptyPayloadAndOneDependency_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.EmptyPayloadAndOneDependency
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.EmptyPayloadAndOneDependency
-  nameWithType: TaskHandlerTest.EmptyPayloadAndOneDependency
-- uid: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.SetUp
-  name: SetUp()
-  href: api/ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Stream_TaskHandlerTest_SetUp
-  commentId: M:ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.SetUp
-  fullName: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.SetUp()
-  nameWithType: TaskHandlerTest.SetUp()
-- uid: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.SetUp*
-  name: SetUp
-  href: api/ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Stream_TaskHandlerTest_SetUp_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.SetUp
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.SetUp
-  nameWithType: TaskHandlerTest.SetUp
-- uid: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.TearDown
-  name: TearDown()
-  href: api/ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Stream_TaskHandlerTest_TearDown
-  commentId: M:ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.TearDown
-  fullName: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.TearDown()
-  nameWithType: TaskHandlerTest.TearDown()
-- uid: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.TearDown*
-  name: TearDown
-  href: api/ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Stream_TaskHandlerTest_TearDown_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.TearDown
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Stream.TaskHandlerTest.TearDown
-  nameWithType: TaskHandlerTest.TearDown
 - uid: ArmoniK.Core.Common.Tests.Submitter
   name: ArmoniK.Core.Common.Tests.Submitter
   href: api/ArmoniK.Core.Common.Tests.Submitter.html
@@ -15198,23 +15081,23 @@ references:
   fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync
   nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.CompleteAsync
   nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).CompleteAsync
-- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.Reader
-  name: Reader
-  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_Reader
-  commentId: P:ArmoniK.Core.Common.Utils.IAsyncPipe`2.Reader
-  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.Reader
-  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).Reader
-  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.Reader
-  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).Reader
-- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.Reader*
-  name: Reader
-  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_Reader_
-  commentId: Overload:ArmoniK.Core.Common.Utils.IAsyncPipe`2.Reader
+- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.ReadAsync(CancellationToken)
+  name: ReadAsync(CancellationToken)
+  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_ReadAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Utils.IAsyncPipe`2.ReadAsync(CancellationToken)
+  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.ReadAsync(CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).ReadAsync(CancellationToken)
+  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.ReadAsync(CancellationToken)
+  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).ReadAsync(CancellationToken)
+- uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.ReadAsync*
+  name: ReadAsync
+  href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_ReadAsync_
+  commentId: Overload:ArmoniK.Core.Common.Utils.IAsyncPipe`2.ReadAsync
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.Reader
-  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).Reader
-  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.Reader
-  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).Reader
+  fullName: ArmoniK.Core.Common.Utils.IAsyncPipe<TReadMessage, TWriteMessage>.ReadAsync
+  fullName.vb: ArmoniK.Core.Common.Utils.IAsyncPipe(Of TReadMessage, TWriteMessage).ReadAsync
+  nameWithType: IAsyncPipe<TReadMessage, TWriteMessage>.ReadAsync
+  nameWithType.vb: IAsyncPipe(Of TReadMessage, TWriteMessage).ReadAsync
 - uid: ArmoniK.Core.Common.Utils.IAsyncPipe`2.WriteAsync(`1)
   name: WriteAsync(TWriteMessage)
   href: api/ArmoniK.Core.Common.Utils.IAsyncPipe-2.html#ArmoniK_Core_Common_Utils_IAsyncPipe_2_WriteAsync__1_
@@ -16399,12 +16282,12 @@ references:
   commentId: T:ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService
   fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService
   nameWithType: WorkerService
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.#ctor(ILoggerFactory)
-  name: WorkerService(ILoggerFactory)
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Common_WorkerService__ctor_ILoggerFactory_
-  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.#ctor(ILoggerFactory)
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.WorkerService(ILoggerFactory)
-  nameWithType: WorkerService.WorkerService(ILoggerFactory)
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.#ctor(ILoggerFactory,ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
+  name: WorkerService(ILoggerFactory, GrpcChannelProvider)
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Common_WorkerService__ctor_ILoggerFactory_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_
+  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.#ctor(ILoggerFactory,ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.WorkerService(ILoggerFactory, ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
+  nameWithType: WorkerService.WorkerService(ILoggerFactory, GrpcChannelProvider)
 - uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.#ctor*
   name: WorkerService
   href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Common.WorkerService.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Common_WorkerService__ctor_
@@ -16861,12 +16744,12 @@ references:
   commentId: T:ArmoniK.Samples.HtcMock.Server.SampleComputerService
   fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService
   nameWithType: SampleComputerService
-- uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory)
-  name: SampleComputerService(ILoggerFactory)
-  href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html#ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_ILoggerFactory_
-  commentId: M:ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory)
-  fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService.SampleComputerService(ILoggerFactory)
-  nameWithType: SampleComputerService.SampleComputerService(ILoggerFactory)
+- uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory,ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
+  name: SampleComputerService(ILoggerFactory, GrpcChannelProvider)
+  href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html#ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_ILoggerFactory_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_
+  commentId: M:ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory,ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
+  fullName: ArmoniK.Samples.HtcMock.Server.SampleComputerService.SampleComputerService(ILoggerFactory, ArmoniK.Core.Common.gRPC.GrpcChannelProvider)
+  nameWithType: SampleComputerService.SampleComputerService(ILoggerFactory, GrpcChannelProvider)
 - uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor*
   name: SampleComputerService
   href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html#ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_

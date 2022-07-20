@@ -81,16 +81,23 @@
     <div class="level1"><a class="xref" href="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html">WorkerStreamWrapper</a></div>
     <div class="level2"><span class="xref">SampleComputerService</span></div>
   </div>
+  <div class="implements">
+    <h5>Implements</h5>
+    <div><span class="xref">IAsyncDisposable</span></div>
+  </div>
   <div class="inheritedMembers">
     <h5>Inherited Members</h5>
     <div>
       <a class="xref" href="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_logger_">WorkerStreamWrapper.logger_</a>
     </div>
     <div>
-      <span class="xref">ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader&lt;&gt;, IServerStreamWriter&lt;&gt;, ServerCallContext)</span>
+      <span class="xref">ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.Process(IAsyncStreamReader&lt;&gt;, ServerCallContext)</span>
     </div>
     <div>
       <a class="xref" href="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_HealthCheck_Empty_ServerCallContext_">WorkerStreamWrapper.HealthCheck(Empty, ServerCallContext)</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_DisposeAsync">WorkerStreamWrapper.DisposeAsync()</a>
     </div>
   </div>
   <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Samples.HtcMock.Server.html">ArmoniK.Samples.HtcMock.Server</a></h6>
@@ -103,18 +110,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_ILoggerFactory_.md&amp;value=---%0Auid%3A%20ArmoniK.Samples.HtcMock.Server.SampleComputerService.%23ctor(ILoggerFactory)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_ILoggerFactory_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_.md&amp;value=---%0Auid%3A%20ArmoniK.Samples.HtcMock.Server.SampleComputerService.%23ctor(ILoggerFactory%2CArmoniK.Core.Common.gRPC.GrpcChannelProvider)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Tests/HtcMock/Server/src/SampleComputerService.cs/#L47">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Tests/HtcMock/Server/src/SampleComputerService.cs/#L48">View Source</a>
   </span>
   <a id="ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_" data-uid="ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor*"></a>
-  <h4 id="ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_ILoggerFactory_" data-uid="ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory)">SampleComputerService(ILoggerFactory)</h4>
+  <h4 id="ArmoniK_Samples_HtcMock_Server_SampleComputerService__ctor_ILoggerFactory_ArmoniK_Core_Common_gRPC_GrpcChannelProvider_" data-uid="ArmoniK.Samples.HtcMock.Server.SampleComputerService.#ctor(ILoggerFactory,ArmoniK.Core.Common.gRPC.GrpcChannelProvider)">SampleComputerService(ILoggerFactory, GrpcChannelProvider)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public SampleComputerService(ILoggerFactory loggerFactory)</code></pre>
+    <pre><code class="lang-csharp hljs">public SampleComputerService(ILoggerFactory loggerFactory, GrpcChannelProvider provider)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -131,6 +138,11 @@
         <td><span class="parametername">loggerFactory</span></td>
         <td></td>
       </tr>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.gRPC.GrpcChannelProvider.html">GrpcChannelProvider</a></td>
+        <td><span class="parametername">provider</span></td>
+        <td></td>
+      </tr>
     </tbody>
   </table>
   <h3 id="methods">Methods
@@ -140,7 +152,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Samples_HtcMock_Server_SampleComputerService_Process_ArmoniK_Core_Common_Stream_Worker_ITaskHandler_.md&amp;value=---%0Auid%3A%20ArmoniK.Samples.HtcMock.Server.SampleComputerService.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Tests/HtcMock/Server/src/SampleComputerService.cs/#L53">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Tests/HtcMock/Server/src/SampleComputerService.cs/#L56">View Source</a>
   </span>
   <a id="ArmoniK_Samples_HtcMock_Server_SampleComputerService_Process_" data-uid="ArmoniK.Samples.HtcMock.Server.SampleComputerService.Process*"></a>
   <h4 id="ArmoniK_Samples_HtcMock_Server_SampleComputerService_Process_ArmoniK_Core_Common_Stream_Worker_ITaskHandler_" data-uid="ArmoniK.Samples.HtcMock.Server.SampleComputerService.Process(ArmoniK.Core.Common.Stream.Worker.ITaskHandler)">Process(ITaskHandler)</h4>
@@ -184,6 +196,10 @@
   </table>
   <h5 class="overrides">Overrides</h5>
   <div><a class="xref" href="ArmoniK.Core.Common.Stream.Worker.WorkerStreamWrapper.html#ArmoniK_Core_Common_Stream_Worker_WorkerStreamWrapper_Process_ArmoniK_Core_Common_Stream_Worker_ITaskHandler_">WorkerStreamWrapper.Process(ITaskHandler)</a></div>
+  <h3 id="implements">Implements</h3>
+  <div>
+      <span class="xref">IAsyncDisposable</span>
+  </div>
 </article>
           </div>
           
@@ -195,7 +211,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Samples_HtcMock_Server_SampleComputerService.md&amp;value=---%0Auid%3A%20ArmoniK.Samples.HtcMock.Server.SampleComputerService%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Tests/HtcMock/Server/src/SampleComputerService.cs/#L45" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Tests/HtcMock/Server/src/SampleComputerService.cs/#L46" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>
