@@ -42,35 +42,46 @@ public class PermissionTest
   [TestCase("testprefix:testname:testsuffix",
             "testprefix",
             "testname",
-            "testsuffix"),
-  TestCase("prefix:name", "prefix", "name", null)]
+            "testsuffix"), TestCase("prefix:name",
+                                    "prefix",
+                                    "name",
+                                    null)]
   public void PermissionFromStringShouldMatch(string             actionName,
                                               [CanBeNull] string prefix,
                                               [CanBeNull] string name,
                                               [CanBeNull] string suffix)
   {
     var perm = new Permissions.Permission(actionName);
-    Assert.AreEqual(perm.Prefix, prefix);
-    Assert.AreEqual(perm.Name, name);
-    Assert.AreEqual(perm.Suffix, suffix);
+    Assert.AreEqual(perm.Prefix,
+                    prefix);
+    Assert.AreEqual(perm.Name,
+                    name);
+    Assert.AreEqual(perm.Suffix,
+                    suffix);
   }
 
-  [TestCase("prefix:name:suffix", "prefix:name", "suffix"),
-  TestCase("prefix:name", "prefix:name", Permissions.Default)]
+  [TestCase("prefix:name:suffix",
+            "prefix:name",
+            "suffix"), TestCase("prefix:name",
+                                "prefix:name",
+                                Permissions.Default)]
   public void PermissionToClaimShouldMatch(string actionName,
                                            string claimType,
                                            string claimValue)
   {
     var perm = new Permissions.Permission(actionName);
-    Assert.AreEqual(perm.Claim.Type, claimType);
-    Assert.AreEqual(perm.Claim.Value, claimValue);
+    Assert.AreEqual(perm.Claim.Type,
+                    claimType);
+    Assert.AreEqual(perm.Claim.Value,
+                    claimValue);
   }
+
   [Test]
   public void PermissionCreationShouldThrow()
   {
     Assert.NotNull(Assert.Catch(() =>
-                 {
-                   var _ = new Permissions.Permission("testprefix");
-                 }));
+                                {
+                                  var _ = new Permissions.Permission("testprefix");
+                                }));
   }
 }

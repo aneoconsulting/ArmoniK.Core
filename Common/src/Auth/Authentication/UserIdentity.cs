@@ -41,7 +41,11 @@ public class UserIdentity : ClaimsPrincipal
   public string UserId { get; set; }
 
 
-  public UserIdentity(string userId, string userName, IEnumerable<string> roles, IEnumerable<Permissions.Permission> permissions) : base(new ClaimsIdentity(permissions.Select(perm => perm.Claim)))
+  public UserIdentity(string                              userId,
+                      string                              userName,
+                      IEnumerable<string>                 roles,
+                      IEnumerable<Permissions.Permission> permissions)
+    : base(new ClaimsIdentity(permissions.Select(perm => perm.Claim)))
   {
     UserId      = userId;
     UserName    = userName;
@@ -50,8 +54,15 @@ public class UserIdentity : ClaimsPrincipal
   }
 
 
+  public override bool IsInRole(string role)
+    => Roles.Contains(role);
 
-  public override bool IsInRole(string role) => Roles.Contains(role);
-
-  public override UserIdentity Clone() => new(UserId, UserName, Roles.ToList(), Permissions.Select(p=> new Permissions.Permission(p.Prefix, p.Name, p.Suffix)).ToList());
+  public override UserIdentity Clone()
+    => new(UserId,
+           UserName,
+           Roles.ToList(),
+           Permissions.Select(p => new Permissions.Permission(p.Prefix,
+                                                              p.Name,
+                                                              p.Suffix))
+                      .ToList());
 }

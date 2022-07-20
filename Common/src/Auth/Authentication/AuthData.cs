@@ -25,5 +25,8 @@
 
 namespace ArmoniK.Core.Common.Auth.Authentication
 {
-  public record AuthData(string AuthId, string UserId, string CN, string Fingerprint);
+  public record AuthData(string AuthId,
+                         string UserId,
+                         string CN,
+                         string Fingerprint);
 }

@@ -23,28 +23,29 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
+
+[BsonIgnoreExtraElements]
 public record UserIdentityResult([property: BsonId] string Id,
                                  string                    Username,
                                  IEnumerable<string>       Roles,
                                  IEnumerable<string>       Permissions);
 
+[BsonIgnoreExtraElements]
 public record AuthDataAfterLookup([property: BsonId] string AuthId,
                                   string                    UserId,
                                   string                    CN,
                                   string                    Fingerprint,
                                   IEnumerable<UserData>     UserData);
 
+[BsonIgnoreExtraElements]
 public record UserDataAfterLookup([property: BsonId] string                UserId,
                                   string                Username,
                                   IEnumerable<RoleData> Roles);

@@ -23,14 +23,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
 
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
@@ -68,7 +67,7 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
                                      IMongoCollection<AuthData> collection)
   {
     var fingerprintIndex = Builders<AuthData>.IndexKeys.Ascending(model => model.Fingerprint);
-    var cnIndex          = Builders<AuthData>.IndexKeys.Hashed(model => model.CN);
+    var cnIndex          = Builders<AuthData>.IndexKeys.Ascending(model => model.CN);
     var compoundIndex    = Builders<AuthData>.IndexKeys.Combine(cnIndex, fingerprintIndex);
     var userIndex        = Builders<AuthData>.IndexKeys.Hashed(model => model.UserId);
 

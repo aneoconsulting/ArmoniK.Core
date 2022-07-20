@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
 using ArmoniK.Api.gRPC.V1;
@@ -87,9 +88,9 @@ internal class BsonSerializerTest
                                  .ToUniversalTime(),
                          new[]
                          {
-                           (byte)1,
-                           (byte)2,
-                           (byte)3,
+                           (byte) 1,
+                           (byte) 2,
+                           (byte) 3,
                          });
 
     var serialized = rdm.ToBson();
@@ -198,12 +199,17 @@ internal class BsonSerializerTest
     var deserialized = BsonSerializer.Deserialize<UserData>(serialized);
 
     Assert.IsNotNull(deserialized);
-    Assert.AreEqual(udm.UserId, deserialized.UserId);
-    Assert.AreEqual(udm.Username, deserialized.Username);
+    Assert.AreEqual(udm.UserId,
+                    deserialized.UserId);
+    Assert.AreEqual(udm.Username,
+                    deserialized.Username);
     Assert.IsNotNull(deserialized.Roles);
-    Assert.AreEqual(udm.Roles.Length, deserialized.Roles.Length);
-    Assert.AreEqual(udm.Roles[0], deserialized.Roles[0]);
-    Assert.AreEqual(udm.Roles[1], deserialized.Roles[1]);
+    Assert.AreEqual(udm.Roles.Length,
+                    deserialized.Roles.Length);
+    Assert.AreEqual(udm.Roles[0],
+                    deserialized.Roles[0]);
+    Assert.AreEqual(udm.Roles[1],
+                    deserialized.Roles[1]);
   }
 
   [Test]
@@ -239,16 +245,23 @@ internal class BsonSerializerTest
   {
     var adm = new AuthData("AuthId",
                            "UserId",
-                           "CN", "Fingerprint");
+                           "CN",
+                           "Fingerprint");
     var serialized = adm.ToBson();
+
+    Console.WriteLine(adm.ToBsonDocument());
 
     var deserialized = BsonSerializer.Deserialize<AuthData>(serialized);
 
     Assert.IsNotNull(deserialized);
-    Assert.AreEqual(adm.AuthId, deserialized.AuthId);
-    Assert.AreEqual(adm.UserId, deserialized.UserId);
-    Assert.AreEqual(adm.CN, deserialized.CN);
-    Assert.AreEqual(adm.Fingerprint, deserialized.Fingerprint);
+    Assert.AreEqual(adm.AuthId,
+                    deserialized.AuthId);
+    Assert.AreEqual(adm.UserId,
+                    deserialized.UserId);
+    Assert.AreEqual(adm.CN,
+                    deserialized.CN);
+    Assert.AreEqual(adm.Fingerprint,
+                    deserialized.Fingerprint);
   }
 
   [Test]
@@ -259,26 +272,30 @@ internal class BsonSerializerTest
                                       new[]
                                       {
                                         "RoleName1",
-                                        "RoleName2"
+                                        "RoleName2",
                                       },
                                       new[]
                                       {
                                         "Permission1:test",
-                                        "Permission2:test:*"
+                                        "Permission2:test:*",
                                       });
     var serialized   = uirm.ToBson();
     var deserialized = BsonSerializer.Deserialize<UserIdentityResult>(serialized);
     Assert.IsNotNull(deserialized);
-    Assert.AreEqual(uirm.Id, deserialized.Id);
-    Assert.AreEqual(uirm.Username, deserialized.Username);
+    Assert.AreEqual(uirm.Id,
+                    deserialized.Id);
+    Assert.AreEqual(uirm.Username,
+                    deserialized.Username);
     Assert.IsNotNull(deserialized.Roles);
-    /*Assert.AreEqual(uirm.Roles.Length, deserialized.Roles.Length);
-    Assert.AreEqual(uirm.Roles[0],     deserialized.Roles[0]);
-    Assert.AreEqual(uirm.Roles[1],     deserialized.Roles[1]);
+    Assert.AreEqual(uirm.Roles.Count(),
+                    deserialized.Roles.Count());
+    Assert.IsTrue(uirm.Roles.ToList()
+                      .All(s => deserialized.Roles.Contains(s)));
     Assert.IsNotNull(deserialized.Permissions);
-    Assert.AreEqual(uirm.Permissions.Length, deserialized.Permissions.Length);
-    Assert.AreEqual(uirm.Permissions[0],    deserialized.Permissions[0]);
-    Assert.AreEqual(uirm.Permissions[1],    deserialized.Permissions[1]);*/
+    Assert.AreEqual(uirm.Permissions.Count(),
+                    deserialized.Permissions.Count());
+    Assert.IsTrue(uirm.Permissions.ToList()
+                      .All(s => deserialized.Permissions.Contains(s)));
   }
 
   [Test]
@@ -304,8 +321,4 @@ internal class BsonSerializerTest
   [Test]
   public void InitializeAuthDataModelMapping()
     => _ = new AuthDataModelMapping();
-
-  [Test]
-  public void InitializeUserIdentityModelMapping()
-    => _ = new UserIdentityModelMapping();
 }

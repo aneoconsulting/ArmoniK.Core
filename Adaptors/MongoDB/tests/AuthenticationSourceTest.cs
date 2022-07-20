@@ -27,7 +27,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Auth;
 
 using Microsoft.Extensions.Configuration;
@@ -79,7 +78,7 @@ public class AuthenticationSourceTest : AuthSourceTestBase
     services.AddMongoStorages(configuration,
                               logger);
     services.AddClientSubmitterAuthenticationStorage(configuration,
-                                              logger);
+                                                     logger);
     services.AddSingleton(ActivitySource);
     services.AddTransient<IMongoClient>(serviceProvider => client_);
     services.AddLogging();
@@ -90,6 +89,6 @@ public class AuthenticationSourceTest : AuthSourceTestBase
                                                  });
 
     AuthenticationSource = provider.GetRequiredService<IAuthenticationSource>();
-    RunTests  = true;
+    RunTests             = true;
   }
 }

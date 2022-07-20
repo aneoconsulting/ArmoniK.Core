@@ -23,14 +23,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
-
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Common;
@@ -42,9 +34,16 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -55,11 +54,10 @@ public class AuthenticationSource : IAuthenticationSource
   private readonly MongoCollectionProvider<RoleData, RoleDataModelMapping> roleCollectionProvider_;
   private readonly SessionProvider                                         sessionProvider_;
   private readonly MongoCollectionProvider<UserData, UserDataModelMapping> userCollectionProvider_;
-  private static   UserIdentityModelMapping                                mapping_;
   private          bool                                                    isInitialized_;
 
-  private readonly PipelineDefinition<UserData, UserIdentityResult>      userToIdentityPipeline_;
-  private readonly PipelineDefinition<AuthData, UserIdentityResult>      authToIdentityPipeline_;
+  private PipelineDefinition<UserData, UserIdentityResult> userToIdentityPipeline_;
+  private PipelineDefinition<AuthData, UserIdentityResult> authToIdentityPipeline_;
 
   public AuthenticationSource(SessionProvider                                         sessionProvider,
                               MongoCollectionProvider<UserData, UserDataModelMapping> userCollectionProvider,
@@ -73,10 +71,8 @@ public class AuthenticationSource : IAuthenticationSource
     roleCollectionProvider_ = roleCollectionProvider;
     authCollectionProvider_ = authCollectionProvider;
 
-    Logger                  = logger;
-    activitySource_         = activitySource;
-    userToIdentityPipeline_ = CreateUserToIdentityPipeline();
-    authToIdentityPipeline_ = CreateAuthToIdentityPipeline(userToIdentityPipeline_);
+    Logger          = logger;
+    activitySource_ = activitySource;
   }
 
   public ILogger Logger { get; }
@@ -101,26 +97,29 @@ public class AuthenticationSource : IAuthenticationSource
   }
 
   [ItemCanBeNull]
-  private static async Task<UserIdentity> GetIdentityFromPipeline<TCollectionDataType>(IClientSessionHandle sessionHandle, IMongoCollection<TCollectionDataType> collection, PipelineDefinition<TCollectionDataType, UserIdentityResult> pipeline, Expression<Func<TCollectionDataType, bool>> matchingFunctions, CancellationToken cancellationToken)
+  private async Task<UserIdentity> GetIdentityFromPipeline<TCollectionDataType>(IClientSessionHandle                                        sessionHandle,
+                                                                                IMongoCollection<TCollectionDataType>                       collection,
+                                                                                PipelineDefinition<TCollectionDataType, UserIdentityResult> pipeline,
+                                                                                Expression<Func<TCollectionDataType, bool>>                 matchingFunctions,
+                                                                                CancellationToken                                           cancellationToken)
   {
-    var res = await collection.AggregateAsync(sessionHandle,
-                                                  new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserIdentityResult>(PipelineStageDefinitionBuilder
-                                                                                                                                                       .Match(matchingFunctions),
-                                                                                                                                                     pipeline),
-                                                  new AggregateOptions(),
-                                                  cancellationToken)
-                                  .ConfigureAwait(false);
-    if(res.Current == null) return null;
-    await foreach (var ident in res.Current.ToAsyncEnumerable()
-                                   .WithCancellation(cancellationToken)
-                                   .ConfigureAwait(false))
-    {
-      return new UserIdentity(ident.Id,
-                              ident.Username,
-                              ident.Roles,
-                              ident.Permissions.Select(str => new Permissions.Permission(str)));
-    }
-    return null;
+    var pipe =
+      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserIdentityResult>(PipelineStageDefinitionBuilder.Match(matchingFunctions),
+                                                                                                         pipeline);
+
+    var res = await (await collection.AggregateAsync(sessionHandle,
+                                                     pipe,
+                                                     new AggregateOptions(),
+                                                     cancellationToken)
+                                     .ConfigureAwait(false)).FirstOrDefaultAsync(cancellationToken)
+                                                            .ConfigureAwait(false);
+
+    return res != null
+             ? new UserIdentity(res.Id,
+                                res.Username,
+                                res.Roles,
+                                res.Permissions.Select(str => new Permissions.Permission(str)))
+             : null;
   }
 
   public async Task<UserIdentity> GetIdentityAsync(string            cn,
@@ -132,7 +131,7 @@ public class AuthenticationSource : IAuthenticationSource
     var       sessionHandle  = sessionProvider_.Get();
     return await GetIdentityFromPipeline(sessionHandle,
                                          authCollection,
-                                         authToIdentityPipeline_,
+                                         GetAuthToIdentityPipeline(),
                                          auth => auth.CN == cn && auth.Fingerprint == fingerprint,
                                          cancellationToken)
              .ConfigureAwait(false);
@@ -144,195 +143,73 @@ public class AuthenticationSource : IAuthenticationSource
     using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromIdAsync)}");
     var       userCollection = userCollectionProvider_.Get();
     var       sessionHandle  = sessionProvider_.Get();
-    /*var query2 = userCollectionProvider_.Get()
-                                        .AsQueryable()
-                                        .Where(u => u.UserId == id)
-                                        .SelectMany(u=>u.Roles, (data,
-                                                                                            s) => new {Id = data.UserId, data.Username, Role = s})
-                                        .GroupJoin(roleCollectionProvider_.Get()
-                                                                          .AsQueryable(),
-                                                   ru => ru.Role,
-                                                   r => r.RoleId,
-                                                   (ru,
-                                                    roles) => new UserIdentityResult(ru.Id,
-                                                                                     ru.Username,
-                                                                                     roles.Select(r => r.RoleName)
-                                                                                          .ToArray(),
-                                                                                     roles.SelectMany(r => r.Permissions)
-                                                                                          .Distinct()
-                                                                                          .ToArray()));*/
 
-    IMongoQueryable<RoleData> inner = roleCollectionProvider_.Get()
-                                                             .AsQueryable();
-    var query3 = userCollectionProvider_.Get()
-                                        .AsQueryable()
-                                        .Where(u => u.UserId == id)
-                                        .Select(u => new UserIdentityResult(u.UserId,
-                                                                            u.Username,
-                                                                            u.Roles.GroupJoin(inner,
-                                                                                              s => s,
-                                                                                              r => r.RoleId,
-                                                                                              (s,
-                                                                                               datas) => datas.First())
-                                                                             .Select(r => r.RoleName)
-                                                                             .ToArray(),
-                                                                            u.Roles.GroupJoin(inner,
-                                                                                              s => s,
-                                                                                              r => r.RoleId,
-                                                                                              (s,
-                                                                                               datas) => datas.First())
-                                                                             .SelectMany(r => r.Permissions)
-                                                                             .Distinct()
-                                                                             .ToArray()));
-    //Console.WriteLine(((IMongoQueryable<UserData>)query2).ToJson());
-    try
-    {
-      var result = await query3.ToAsyncEnumerable().FirstAsync(cancellationToken).ConfigureAwait(false);
-      return null; /*new UserIdentity(result.Id,
-                                   result.Username,
-                                   result.Roles,
-                                   result.Permissions.Select(p => new Permissions.Permission(p)));*/
-    }
-    catch (InvalidOperationException e)
-    {
-      Console.WriteLine($"invalid {e}");
-      return null;
-    }
-    catch (ArgumentNullException e)
-    {
-      Console.WriteLine($"null {e}");
-      return null;
-    }
-
-    /*return await GetIdentityFromPipeline(sessionHandle,
+    return await GetIdentityFromPipeline(sessionHandle,
                                          userCollection,
-                                         userToIdentityPipeline_,
+                                         GetUserToIdentityPipeline(),
                                          user => user.UserId == id,
                                          cancellationToken)
              .ConfigureAwait(false);
-    */
   }
 
   public async Task<UserIdentity> GetIdentityFromNameAsync(string            username,
                                                            CancellationToken cancellationToken)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromIdAsync)}");
+    using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromNameAsync)}");
     var       userCollection = userCollectionProvider_.Get();
     var       sessionHandle  = sessionProvider_.Get();
     return await GetIdentityFromPipeline(sessionHandle,
                                          userCollection,
-                                         userToIdentityPipeline_,
+                                         GetUserToIdentityPipeline(),
                                          user => user.Username == username,
                                          cancellationToken)
              .ConfigureAwait(false);
   }
 
 
-  private PipelineDefinition<UserData, UserIdentityResult> CreateUserToIdentityPipeline()
+  private PipelineDefinition<UserData, UserIdentityResult> GetUserToIdentityPipeline()
   {
+    if (userToIdentityPipeline_ != null)
+      return userToIdentityPipeline_;
     var lookup = PipelineStageDefinitionBuilder.Lookup<UserData, RoleData, UserDataAfterLookup>(roleCollectionProvider_.Get(),
                                                                                                 u => u.Roles,
                                                                                                 r => r.RoleId,
                                                                                                 ual => ual.Roles);
-    var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, UserIdentityResult>(ual => new(ual.UserId,
-                                                                                                                     ual.Username,
-                                                                                                                     ual.Roles.Select(r => r.RoleName),
-                                                                                                                     ual.Roles
-                                                                                                                        .Aggregate<RoleData,
-                                                                                                                          IEnumerable<string>>(new HashSet<string>(),
-                                                                                                                                               (set,
-                                                                                                                                                data)
-                                                                                                                                                 => set
-                                                                                                                                                   .Union(data
-                                                                                                                                                            .Permissions))));
-
-    
-    /*var query =
-      from u in userCollectionProvider_.Get()
-                                       .AsQueryable()
-      join r in roleCollectionProvider_.Get() on u.Roles equals r.RoleId into UserData 
-      select new UserIdentityResult(u.UserId,
-                                    u.Username, UserData.Roles.Select(r=>r.RoleName),
-                                    UserData.Aggregate<RoleData, ISet<string>, IList<string>>(new HashSet<string>(),
-                                                                                              (cur,
-                                                                                               r) =>
-                                                                                              {
-                                                                                                cur.UnionWith(r.Permissions);
-                                                                                                return cur;
-                                                                                              }, s => s.ToList()));
-                  */
+    var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, UserIdentityResult>(ual => new UserIdentityResult(ual.UserId,
+                                                                                                                                        ual.Username,
+                                                                                                                                        ual.Roles.Select(r => r.RoleName),
+                                                                                                                                        ual.Roles
+                                                                                                                                           .Aggregate<RoleData,
+                                                                                                                                             IEnumerable<string>>(new HashSet<string>(),
+                                                                                                                                                                  (set,
+                                                                                                                                                                   data)
+                                                                                                                                                                    => set
+                                                                                                                                                                      .Union(data
+                                                                                                                                                                               .Permissions))));
     var pipeline = new IPipelineStageDefinition[]
                    {
                      lookup,
                      projectionStage,
                    };
-    return new PipelineStagePipelineDefinition<UserData, UserIdentityResult>(pipeline);
-    //return null;
+    userToIdentityPipeline_ = new PipelineStagePipelineDefinition<UserData, UserIdentityResult>(pipeline);
+    return userToIdentityPipeline_;
   }
-  /*=> new BsonDocument[]
-     {
-       new("$lookup",
-             new BsonDocument
-             {
-               {
-                 "from", roleCollectionProvider_.Get()
-                                                .CollectionNamespace.CollectionName
-               },
-               {
-                 "localField", nameof(UserData.Roles)
-               },
-               {
-                 "foreignField", "_id"
-               },
-               {
-                 "as", nameof(UserData.Roles)
-               },
-             }),
-         new("$project",
-             new BsonDocument
-             {
-               {
-                 nameof(UserIdentityResult.Username), $"${nameof(UserData.Username)}"
-               },
-               {
-                 nameof(UserData), "$$REMOVE"
-               },
-               {
-                 nameof(UserIdentityResult.Roles), $"${nameof(UserData.Roles)}.{nameof(RoleData.RoleName)}"
-               },
-               {
-                 nameof(UserIdentityResult.Permissions), new BsonDocument("$reduce",
-                                                                          new BsonDocument
-                                                                          {
-                                                                            {
-                                                                              "input", $"${nameof(UserData.Roles)}.{nameof(RoleData.Permissions)}"
-                                                                            },
-                                                                            {
-                                                                              "initialValue", new BsonArray()
-                                                                            },
-                                                                            {
-                                                                              "in", new BsonDocument("$setUnion",
-                                                                                                     new BsonArray
-                                                                                                     {
-                                                                                                       "$$this",
-                                                                                                       "$$value",
-                                                                                                     })
-                                                                            },
-                                                                          })
-               },
-             })
-       };*/
 
-  private PipelineDefinition<AuthData, UserIdentityResult> CreateAuthToIdentityPipeline(PipelineDefinition<UserData, UserIdentityResult> userToIdentityPipeline)
+  private PipelineDefinition<AuthData, UserIdentityResult> GetAuthToIdentityPipeline()
   {
+    if (authToIdentityPipeline_ != null)
+      return authToIdentityPipeline_;
+    var userToIdentityPipeline = GetUserToIdentityPipeline();
     var lookup = PipelineStageDefinitionBuilder.Lookup<AuthData, UserData, AuthDataAfterLookup>(userCollectionProvider_.Get(),
                                                                                                 a => a.UserId,
                                                                                                 u => u.UserId,
                                                                                                 aal => aal.UserData);
-    var replaceroot = PipelineStageDefinitionBuilder.ReplaceRoot<AuthDataAfterLookup, UserData>(doc => doc.UserData.First());
+    var checkIfValid = PipelineStageDefinitionBuilder.Match<AuthDataAfterLookup>(doc => doc.UserData.Any());
+    var replaceroot  = PipelineStageDefinitionBuilder.ReplaceRoot<AuthDataAfterLookup, UserData>(doc => doc.UserData.First());
     var pipeline = new IPipelineStageDefinition[]
                    {
                      lookup,
+                     checkIfValid,
                      replaceroot,
                    }.Concat(userToIdentityPipeline.Stages);
     foreach (var pipelineStageDefinition in pipeline)
@@ -340,7 +217,8 @@ public class AuthenticationSource : IAuthenticationSource
       Console.WriteLine(pipelineStageDefinition.ToString());
     }
 
-    return new PipelineStagePipelineDefinition<AuthData, UserIdentityResult>(pipeline);
+    authToIdentityPipeline_ = new PipelineStagePipelineDefinition<AuthData, UserIdentityResult>(pipeline);
+    return authToIdentityPipeline_;
   }
 
   public void AddRoles(IList<RoleData> roles)
@@ -363,6 +241,7 @@ public class AuthenticationSource : IAuthenticationSource
   {
     var authCollection = authCollectionProvider_.Get();
     var sessionHandle  = sessionProvider_.Get();
-    authCollection.InsertMany(sessionHandle, certificates);
+    authCollection.InsertMany(sessionHandle,
+                              certificates);
   }
 }

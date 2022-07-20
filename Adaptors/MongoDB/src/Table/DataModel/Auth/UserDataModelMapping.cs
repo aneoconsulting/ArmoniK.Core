@@ -43,7 +43,6 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(UserData)))
     {
-      Console.WriteLine("Register userdata");
       BsonClassMap.RegisterClassMap<UserData>(cm =>
                                               {
                                                 cm.MapIdProperty(nameof(UserData.UserId))
@@ -66,7 +65,7 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                      IMongoCollection<UserData> collection)
   {
-    var usernameIndex = Builders<UserData>.IndexKeys.Hashed(model => model.Username);
+    var usernameIndex = Builders<UserData>.IndexKeys.Text(model => model.Username);
 
     var indexModels = new CreateIndexModel<UserData>[]
                       {

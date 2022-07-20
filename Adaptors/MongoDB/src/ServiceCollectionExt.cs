@@ -239,7 +239,6 @@ public static class ServiceCollectionExt
   {
     services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
     services.AddTransient<IAuthenticationSource, AuthenticationSource>();
-    services.AddTransient<IMongoDataModelMapping<UserIdentityResult>, UserIdentityModelMapping>();
     return services;
   }
 

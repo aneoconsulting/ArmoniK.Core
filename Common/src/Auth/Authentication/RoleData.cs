@@ -27,6 +27,6 @@ using System.Collections.Generic;
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
-public record RoleData(string RoleId,
-                       string RoleName, 
+public record RoleData(string   RoleId,
+                       string   RoleName,
                        string[] Permissions);

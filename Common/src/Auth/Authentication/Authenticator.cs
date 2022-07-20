@@ -112,14 +112,15 @@ namespace ArmoniK.Core.Common.Auth.Authentication
       }
 
       if (impersonationHeader_ != null && Request.Headers.TryGetValue(impersonationHeader_,
-                                                                      out var imps) && !string.IsNullOrWhiteSpace(imps.First()))
+                                                                                                                   out var imps) &&
+          !string.IsNullOrWhiteSpace(imps.First()))
       {
         if (identity.HasClaim(c => c.Type == Permissions.General.Impersonate.Claim.Type))
         {
           //Get all roles that can be impersonnated
           var impersonatableRoles = identity.Claims.Where(c => c.Type == Permissions.General.Impersonate.Claim.Type)
-                                             .Select(c => c.Value);
-          
+                                            .Select(c => c.Value);
+
           if (impersonationWithUsername_)
           {
             identity = await authSource_.GetIdentityFromNameAsync(imps.First(),
@@ -132,6 +133,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication
                                                                 new CancellationToken(false))
                                         .ConfigureAwait(false);
           }
+
           if (identity == null)
           {
             return AuthenticateResult.Fail("User being impersonated doesn't exist");
