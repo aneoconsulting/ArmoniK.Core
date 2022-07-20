@@ -23,12 +23,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Authorization;
 
 namespace ArmoniK.Core.Common.Auth.Authorization
@@ -37,7 +31,7 @@ namespace ArmoniK.Core.Common.Auth.Authorization
   {
     public const string PolicyPrefix = "RequiresPermission:";
 
-    public RequiresPermissionAttribute(Permissions.Permission permission) => Permission = permission;
+    public RequiresPermissionAttribute(string category, string function) => Permission = new Permissions.Permission(category, function);
 
     public Permissions.Permission Permission
     {

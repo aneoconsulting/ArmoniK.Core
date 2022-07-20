@@ -24,6 +24,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 
 namespace ArmoniK.Core.Common.Auth.Authorization
@@ -92,27 +93,15 @@ namespace ArmoniK.Core.Common.Auth.Authorization
       return new Permission(actionName);
     }
 
-    public const char   Separator = ':';
-    public const string AdminScope     = "*";
-    public const string Default   = "";
+    public const char   Separator  = ':';
+    public const string AdminScope = "*";
+    public const string Default    = "";
+    public const string General    = "general";
+    public const string Session    = "session";
+    public const string Task       = "task";
+    public const string Result     = "result";
 
-    public static readonly Permission None = new("", "");
-
-    public static class General
-    {
-      public const string     Prefix                  = "general";
-      public static readonly Permission GetServiceConfiguration = new(Prefix, nameof(GetServiceConfiguration));
-      public static readonly Permission Impersonate             = new(Prefix, nameof(Impersonate));
-    }
-    
-    public static class Session
-    {
-      public const string Prefix        = "session";
-      public static readonly Permission CancelSession = new(Prefix, nameof(CancelSession));
-      public static readonly Permission CreateSession = new(Prefix, nameof(CreateSession));
-      public static readonly Permission ListSessions  = new(Prefix, nameof(ListSessions));
-    }
-
-    //TODO TO BE COMPLETED
+    public static readonly Permission Impersonate = new(General, nameof(Impersonate));
+    public static readonly Permission None        = new("", "");
   }
 }

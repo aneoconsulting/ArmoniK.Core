@@ -115,10 +115,10 @@ namespace ArmoniK.Core.Common.Auth.Authentication
                                                                                                                    out var imps) &&
           !string.IsNullOrWhiteSpace(imps.First()))
       {
-        if (identity.HasClaim(c => c.Type == Permissions.General.Impersonate.Claim.Type))
+        if (identity.HasClaim(c => c.Type == Permissions.Impersonate.Claim.Type))
         {
           //Get all roles that can be impersonnated
-          var impersonatableRoles = identity.Claims.Where(c => c.Type == Permissions.General.Impersonate.Claim.Type)
+          var impersonatableRoles = identity.Claims.Where(c => c.Type == Permissions.Impersonate.Claim.Type)
                                             .Select(c => c.Value);
 
           if (impersonationWithUsername_)

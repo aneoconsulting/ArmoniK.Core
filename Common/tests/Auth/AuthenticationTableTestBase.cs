@@ -31,8 +31,6 @@ using System.Threading;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 
-using MongoDB.Driver;
-
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests.Auth
