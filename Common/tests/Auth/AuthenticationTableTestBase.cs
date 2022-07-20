@@ -158,9 +158,13 @@ namespace ArmoniK.Core.Common.Tests.Auth
     public void SetUp()
     {
       GetAuthSource();
-      AuthenticationTable.AddRoles(Roles);
-      AuthenticationTable.AddUsers(Users);
-      AuthenticationTable.AddCertificates(Auths);
+      if (RunTests)
+      {
+        AuthenticationTable.AddRoles(Roles);
+        AuthenticationTable.AddUsers(Users);
+        AuthenticationTable.AddCertificates(Auths);
+      }
+      
     }
 
     [TearDown]
