@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -25,7 +25,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.46.0" />
-    <PackageReference Include="ArmoniK.Api.Worker" Version="3.0.0-jgmigrate.63.331297f" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.0.0-jgmigrate.72.c8101e2" />
   </ItemGroup>
 
   <ItemGroup>
