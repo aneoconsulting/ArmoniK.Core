@@ -6517,15 +6517,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Pollster.AgentHandler
   fullName: ArmoniK.Core.Common.Pollster.AgentHandler
   nameWithType: AgentHandler
-- uid: ArmoniK.Core.Common.Pollster.AgentHandler.#ctor(ArmoniK.Core.Common.Utils.LoggerInit,ArmoniK.Core.Common.Injection.Options.ComputePlan,ILogger{ArmoniK.Core.Common.Pollster.AgentHandler})
-  name: AgentHandler(LoggerInit, ComputePlan, ILogger<AgentHandler>)
-  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler__ctor_ArmoniK_Core_Common_Utils_LoggerInit_ArmoniK_Core_Common_Injection_Options_ComputePlan_ILogger_ArmoniK_Core_Common_Pollster_AgentHandler__
-  commentId: M:ArmoniK.Core.Common.Pollster.AgentHandler.#ctor(ArmoniK.Core.Common.Utils.LoggerInit,ArmoniK.Core.Common.Injection.Options.ComputePlan,ILogger{ArmoniK.Core.Common.Pollster.AgentHandler})
-  name.vb: AgentHandler(LoggerInit, ComputePlan, ILogger(Of AgentHandler))
-  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.AgentHandler(ArmoniK.Core.Common.Utils.LoggerInit, ArmoniK.Core.Common.Injection.Options.ComputePlan, ILogger<ArmoniK.Core.Common.Pollster.AgentHandler>)
-  fullName.vb: ArmoniK.Core.Common.Pollster.AgentHandler.AgentHandler(ArmoniK.Core.Common.Utils.LoggerInit, ArmoniK.Core.Common.Injection.Options.ComputePlan, ILogger(Of ArmoniK.Core.Common.Pollster.AgentHandler))
-  nameWithType: AgentHandler.AgentHandler(LoggerInit, ComputePlan, ILogger<AgentHandler>)
-  nameWithType.vb: AgentHandler.AgentHandler(LoggerInit, ComputePlan, ILogger(Of AgentHandler))
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler.#ctor(ArmoniK.Core.Common.Utils.LoggerInit,ArmoniK.Core.Common.Injection.Options.ComputePlan,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.Pollster.AgentHandler})
+  name: AgentHandler(LoggerInit, ComputePlan, ISubmitter, IObjectStorageFactory, ILogger<AgentHandler>)
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler__ctor_ArmoniK_Core_Common_Utils_LoggerInit_ArmoniK_Core_Common_Injection_Options_ComputePlan_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ILogger_ArmoniK_Core_Common_Pollster_AgentHandler__
+  commentId: M:ArmoniK.Core.Common.Pollster.AgentHandler.#ctor(ArmoniK.Core.Common.Utils.LoggerInit,ArmoniK.Core.Common.Injection.Options.ComputePlan,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.Pollster.AgentHandler})
+  name.vb: AgentHandler(LoggerInit, ComputePlan, ISubmitter, IObjectStorageFactory, ILogger(Of AgentHandler))
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.AgentHandler(ArmoniK.Core.Common.Utils.LoggerInit, ArmoniK.Core.Common.Injection.Options.ComputePlan, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger<ArmoniK.Core.Common.Pollster.AgentHandler>)
+  fullName.vb: ArmoniK.Core.Common.Pollster.AgentHandler.AgentHandler(ArmoniK.Core.Common.Utils.LoggerInit, ArmoniK.Core.Common.Injection.Options.ComputePlan, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger(Of ArmoniK.Core.Common.Pollster.AgentHandler))
+  nameWithType: AgentHandler.AgentHandler(LoggerInit, ComputePlan, ISubmitter, IObjectStorageFactory, ILogger<AgentHandler>)
+  nameWithType.vb: AgentHandler.AgentHandler(LoggerInit, ComputePlan, ISubmitter, IObjectStorageFactory, ILogger(Of AgentHandler))
 - uid: ArmoniK.Core.Common.Pollster.AgentHandler.#ctor*
   name: AgentHandler
   href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler__ctor_
@@ -6546,12 +6546,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Pollster.AgentHandler.DisposeAsync
   nameWithType: AgentHandler.DisposeAsync
-- uid: ArmoniK.Core.Common.Pollster.AgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent,System.String,Microsoft.Extensions.Logging.ILogger,CancellationToken)
-  name: Start(IAgent, String, Microsoft.Extensions.Logging.ILogger, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler_Start_ArmoniK_Core_Common_gRPC_Services_IAgent_System_String_Microsoft_Extensions_Logging_ILogger_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.AgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent,System.String,Microsoft.Extensions.Logging.ILogger,CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent, System.String, Microsoft.Extensions.Logging.ILogger, CancellationToken)
-  nameWithType: AgentHandler.Start(IAgent, String, Microsoft.Extensions.Logging.ILogger, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.AgentHandler.Start(System.String,Microsoft.Extensions.Logging.ILogger,System.String,System.String,CancellationToken)
+  name: Start(String, Microsoft.Extensions.Logging.ILogger, String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler_Start_System_String_Microsoft_Extensions_Logging_ILogger_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.AgentHandler.Start(System.String,Microsoft.Extensions.Logging.ILogger,System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.AgentHandler.Start(System.String, Microsoft.Extensions.Logging.ILogger, System.String, System.String, CancellationToken)
+  nameWithType: AgentHandler.Start(String, Microsoft.Extensions.Logging.ILogger, String, String, CancellationToken)
 - uid: ArmoniK.Core.Common.Pollster.AgentHandler.Start*
   name: Start
   href: api/ArmoniK.Core.Common.Pollster.AgentHandler.html#ArmoniK_Core_Common_Pollster_AgentHandler_Start_
@@ -6752,12 +6752,12 @@ references:
   commentId: T:ArmoniK.Core.Common.Pollster.IAgentHandler
   fullName: ArmoniK.Core.Common.Pollster.IAgentHandler
   nameWithType: IAgentHandler
-- uid: ArmoniK.Core.Common.Pollster.IAgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent,System.String,ILogger,CancellationToken)
-  name: Start(IAgent, String, ILogger, CancellationToken)
-  href: api/ArmoniK.Core.Common.Pollster.IAgentHandler.html#ArmoniK_Core_Common_Pollster_IAgentHandler_Start_ArmoniK_Core_Common_gRPC_Services_IAgent_System_String_ILogger_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Pollster.IAgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent,System.String,ILogger,CancellationToken)
-  fullName: ArmoniK.Core.Common.Pollster.IAgentHandler.Start(ArmoniK.Core.Common.gRPC.Services.IAgent, System.String, ILogger, CancellationToken)
-  nameWithType: IAgentHandler.Start(IAgent, String, ILogger, CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.IAgentHandler.Start(System.String,ILogger,System.String,System.String,CancellationToken)
+  name: Start(String, ILogger, String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.IAgentHandler.html#ArmoniK_Core_Common_Pollster_IAgentHandler_Start_System_String_ILogger_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.IAgentHandler.Start(System.String,ILogger,System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.IAgentHandler.Start(System.String, ILogger, System.String, System.String, CancellationToken)
+  nameWithType: IAgentHandler.Start(String, ILogger, String, String, CancellationToken)
 - uid: ArmoniK.Core.Common.Pollster.IAgentHandler.Start*
   name: Start
   href: api/ArmoniK.Core.Common.Pollster.IAgentHandler.html#ArmoniK_Core_Common_Pollster_IAgentHandler_Start_
@@ -6832,6 +6832,103 @@ references:
   commentId: F:ArmoniK.Core.Common.Pollster.Pollster.TaskProcessing
   fullName: ArmoniK.Core.Common.Pollster.Pollster.TaskProcessing
   nameWithType: Pollster.TaskProcessing
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler
+  name: TaskHandler
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html
+  commentId: T:ArmoniK.Core.Common.Pollster.TaskHandler
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler
+  nameWithType: TaskHandler
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,System.String,ActivitySource,ArmoniK.Core.Common.Pollster.IAgentHandler,ILogger)
+  name: TaskHandler(ISessionTable, ITaskTable, IResultTable, ISubmitter, DataPrefetcher, IWorkerStreamHandler, IQueueMessageHandler, ITaskProcessingChecker, String, ActivitySource, IAgentHandler, ILogger)
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler__ctor_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Pollster_DataPrefetcher_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Storage_IQueueMessageHandler_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_System_String_ActivitySource_ArmoniK_Core_Common_Pollster_IAgentHandler_ILogger_
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Pollster.DataPrefetcher,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,System.String,ActivitySource,ArmoniK.Core.Common.Pollster.IAgentHandler,ILogger)
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.TaskHandler(ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Pollster.DataPrefetcher, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Storage.IQueueMessageHandler, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, System.String, ActivitySource, ArmoniK.Core.Common.Pollster.IAgentHandler, ILogger)
+  nameWithType: TaskHandler.TaskHandler(ISessionTable, ITaskTable, IResultTable, ISubmitter, DataPrefetcher, IWorkerStreamHandler, IQueueMessageHandler, ITaskProcessingChecker, String, ActivitySource, IAgentHandler, ILogger)
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.#ctor*
+  name: TaskHandler
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskHandler.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.TaskHandler
+  nameWithType: TaskHandler.TaskHandler
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask(CancellationToken)
+  name: AcquireTask(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_AcquireTask_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask(CancellationToken)
+  nameWithType: TaskHandler.AcquireTask(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask*
+  name: AcquireTask
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_AcquireTask_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.AcquireTask
+  nameWithType: TaskHandler.AcquireTask
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.DisposeAsync
+  name: DisposeAsync()
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_DisposeAsync
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.DisposeAsync
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.DisposeAsync()
+  nameWithType: TaskHandler.DisposeAsync()
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.DisposeAsync*
+  name: DisposeAsync
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_DisposeAsync_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskHandler.DisposeAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.DisposeAsync
+  nameWithType: TaskHandler.DisposeAsync
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask(CancellationToken)
+  name: ExecuteTask(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_ExecuteTask_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask(CancellationToken)
+  nameWithType: TaskHandler.ExecuteTask(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask*
+  name: ExecuteTask
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_ExecuteTask_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.ExecuteTask
+  nameWithType: TaskHandler.ExecuteTask
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.GetAcquiredTask
+  name: GetAcquiredTask()
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_GetAcquiredTask
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.GetAcquiredTask
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.GetAcquiredTask()
+  nameWithType: TaskHandler.GetAcquiredTask()
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.GetAcquiredTask*
+  name: GetAcquiredTask
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_GetAcquiredTask_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskHandler.GetAcquiredTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.GetAcquiredTask
+  nameWithType: TaskHandler.GetAcquiredTask
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing(CancellationToken)
+  name: PostProcessing(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_PostProcessing_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing(CancellationToken)
+  nameWithType: TaskHandler.PostProcessing(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing*
+  name: PostProcessing
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_PostProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.PostProcessing
+  nameWithType: TaskHandler.PostProcessing
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing(CancellationToken)
+  name: PreProcessing(CancellationToken)
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_PreProcessing_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing(CancellationToken)
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing(CancellationToken)
+  nameWithType: TaskHandler.PreProcessing(CancellationToken)
+- uid: ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing*
+  name: PreProcessing
+  href: api/ArmoniK.Core.Common.Pollster.TaskHandler.html#ArmoniK_Core_Common_Pollster_TaskHandler_PreProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Pollster.TaskHandler.PreProcessing
+  nameWithType: TaskHandler.PreProcessing
 - uid: ArmoniK.Core.Common.Pollster.TaskProcessingChecker
   name: ArmoniK.Core.Common.Pollster.TaskProcessingChecker
   href: api/ArmoniK.Core.Common.Pollster.TaskProcessingChecker.html
@@ -11359,14 +11456,14 @@ references:
   fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage)
   nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>
   nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage)
-- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.#ctor
-  name: ChannelAsyncPipe()
-  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2__ctor
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.#ctor
-  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.ChannelAsyncPipe()
-  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ChannelAsyncPipe()
-  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.ChannelAsyncPipe()
-  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ChannelAsyncPipe()
+- uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.#ctor(`0)
+  name: ChannelAsyncPipe(TReadMessage)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2__ctor__0_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.#ctor(`0)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe<TReadMessage, TWriteMessage>.ChannelAsyncPipe(TReadMessage)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ChannelAsyncPipe(TReadMessage)
+  nameWithType: ChannelAsyncPipe<TReadMessage, TWriteMessage>.ChannelAsyncPipe(TReadMessage)
+  nameWithType.vb: ChannelAsyncPipe(Of TReadMessage, TWriteMessage).ChannelAsyncPipe(TReadMessage)
 - uid: ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe`2.#ctor*
   name: ChannelAsyncPipe
   href: api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html#ArmoniK_Core_Common_Tests_Helpers_ChannelAsyncPipe_2__ctor_
@@ -11517,6 +11614,298 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.Helpers.LogMessage
   fullName: ArmoniK.Core.Common.Tests.Helpers.LogMessage
   nameWithType: LogMessage
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent
+  name: SimpleAgent
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent
+  nameWithType: SimpleAgent
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.CreateTask(IAsyncStreamReader{CreateTaskRequest},CancellationToken)
+  name: CreateTask(IAsyncStreamReader<CreateTaskRequest>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_CreateTask_IAsyncStreamReader_CreateTaskRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.CreateTask(IAsyncStreamReader{CreateTaskRequest},CancellationToken)
+  name.vb: CreateTask(IAsyncStreamReader(Of CreateTaskRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.CreateTask(IAsyncStreamReader<CreateTaskRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.CreateTask(IAsyncStreamReader(Of CreateTaskRequest), CancellationToken)
+  nameWithType: SimpleAgent.CreateTask(IAsyncStreamReader<CreateTaskRequest>, CancellationToken)
+  nameWithType.vb: SimpleAgent.CreateTask(IAsyncStreamReader(Of CreateTaskRequest), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.CreateTask*
+  name: CreateTask
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_CreateTask_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.CreateTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.CreateTask
+  nameWithType: SimpleAgent.CreateTask
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_Dispose
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.Dispose
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.Dispose()
+  nameWithType: SimpleAgent.Dispose()
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.Dispose
+  nameWithType: SimpleAgent.Dispose
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.FinalizeTaskCreation(CancellationToken)
+  name: FinalizeTaskCreation(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_FinalizeTaskCreation_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.FinalizeTaskCreation(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.FinalizeTaskCreation(CancellationToken)
+  nameWithType: SimpleAgent.FinalizeTaskCreation(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.FinalizeTaskCreation*
+  name: FinalizeTaskCreation
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_FinalizeTaskCreation_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.FinalizeTaskCreation
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.FinalizeTaskCreation
+  nameWithType: SimpleAgent.FinalizeTaskCreation
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetCommonData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name: GetCommonData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetCommonData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetCommonData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name.vb: GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetCommonData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  nameWithType: SimpleAgent.GetCommonData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  nameWithType.vb: SimpleAgent.GetCommonData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetCommonData*
+  name: GetCommonData
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetCommonData_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetCommonData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetCommonData
+  nameWithType: SimpleAgent.GetCommonData
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetDirectData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name: GetDirectData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetDirectData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetDirectData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name.vb: GetDirectData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetDirectData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetDirectData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  nameWithType: SimpleAgent.GetDirectData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  nameWithType.vb: SimpleAgent.GetDirectData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetDirectData*
+  name: GetDirectData
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetDirectData_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetDirectData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetDirectData
+  nameWithType: SimpleAgent.GetDirectData
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetResourceData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name: GetResourceData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetResourceData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetResourceData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)
+  name.vb: GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetResourceData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+  nameWithType: SimpleAgent.GetResourceData(DataRequest, IServerStreamWriter<DataReply>, CancellationToken)
+  nameWithType.vb: SimpleAgent.GetResourceData(DataRequest, IServerStreamWriter(Of DataReply), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetResourceData*
+  name: GetResourceData
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetResourceData_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetResourceData
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetResourceData
+  nameWithType: SimpleAgent.GetResourceData
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.SendResult(IAsyncStreamReader{Result},CancellationToken)
+  name: SendResult(IAsyncStreamReader<Result>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_SendResult_IAsyncStreamReader_Result__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.SendResult(IAsyncStreamReader{Result},CancellationToken)
+  name.vb: SendResult(IAsyncStreamReader(Of Result), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.SendResult(IAsyncStreamReader<Result>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.SendResult(IAsyncStreamReader(Of Result), CancellationToken)
+  nameWithType: SimpleAgent.SendResult(IAsyncStreamReader<Result>, CancellationToken)
+  nameWithType.vb: SimpleAgent.SendResult(IAsyncStreamReader(Of Result), CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.SendResult*
+  name: SendResult
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_SendResult_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.SendResult
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.SendResult
+  nameWithType: SimpleAgent.SendResult
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler
+  name: SimpleAgentHandler
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler
+  nameWithType: SimpleAgentHandler
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Agent
+  name: Agent
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Agent
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Agent
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Agent
+  nameWithType: SimpleAgentHandler.Agent
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start(System.String,ILogger,System.String,System.String,CancellationToken)
+  name: Start(String, ILogger, String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Start_System_String_ILogger_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start(System.String,ILogger,System.String,System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start(System.String, ILogger, System.String, System.String, CancellationToken)
+  nameWithType: SimpleAgentHandler.Start(String, ILogger, String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start*
+  name: Start
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Start_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start
+  nameWithType: SimpleAgentHandler.Start
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Stop(CancellationToken)
+  name: Stop(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Stop_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Stop(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Stop(CancellationToken)
+  nameWithType: SimpleAgentHandler.Stop(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Stop*
+  name: Stop
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Stop_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Stop
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Stop
+  nameWithType: SimpleAgentHandler.Stop
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler
+  name: SimpleQueueMessageHandler
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler
+  nameWithType: SimpleQueueMessageHandler
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.CancellationToken
+  name: CancellationToken
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleQueueMessageHandler_CancellationToken
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.CancellationToken
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.CancellationToken
+  nameWithType: SimpleQueueMessageHandler.CancellationToken
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.CancellationToken*
+  name: CancellationToken
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleQueueMessageHandler_CancellationToken_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.CancellationToken
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.CancellationToken
+  nameWithType: SimpleQueueMessageHandler.CancellationToken
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.DisposeAsync
+  name: DisposeAsync()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleQueueMessageHandler_DisposeAsync
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.DisposeAsync
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.DisposeAsync()
+  nameWithType: SimpleQueueMessageHandler.DisposeAsync()
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.DisposeAsync*
+  name: DisposeAsync
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleQueueMessageHandler_DisposeAsync_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.DisposeAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.DisposeAsync
+  nameWithType: SimpleQueueMessageHandler.DisposeAsync
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.MessageId
+  name: MessageId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleQueueMessageHandler_MessageId
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.MessageId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.MessageId
+  nameWithType: SimpleQueueMessageHandler.MessageId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.MessageId*
+  name: MessageId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleQueueMessageHandler_MessageId_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.MessageId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.MessageId
+  nameWithType: SimpleQueueMessageHandler.MessageId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleQueueMessageHandler_Status
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.Status
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.Status
+  nameWithType: SimpleQueueMessageHandler.Status
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleQueueMessageHandler_Status_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.Status
+  nameWithType: SimpleQueueMessageHandler.Status
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.TaskId
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleQueueMessageHandler_TaskId
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.TaskId
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.TaskId
+  nameWithType: SimpleQueueMessageHandler.TaskId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.TaskId*
+  name: TaskId
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleQueueMessageHandler_TaskId_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.TaskId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.TaskId
+  nameWithType: SimpleQueueMessageHandler.TaskId
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler
+  name: SimpleWorkerStreamHandler
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler
+  nameWithType: SimpleWorkerStreamHandler
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleWorkerStreamHandler_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: SimpleWorkerStreamHandler.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Check*
+  name: Check
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleWorkerStreamHandler_Check_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Check
+  nameWithType: SimpleWorkerStreamHandler.Check
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleWorkerStreamHandler_Dispose
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Dispose
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Dispose()
+  nameWithType: SimpleWorkerStreamHandler.Dispose()
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleWorkerStreamHandler_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Dispose
+  nameWithType: SimpleWorkerStreamHandler.Dispose
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleWorkerStreamHandler_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Init(CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Init(CancellationToken)
+  nameWithType: SimpleWorkerStreamHandler.Init(CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Init*
+  name: Init
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleWorkerStreamHandler_Init_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Init
+  nameWithType: SimpleWorkerStreamHandler.Init
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Pipe
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleWorkerStreamHandler_Pipe
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Pipe
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Pipe
+  nameWithType: SimpleWorkerStreamHandler.Pipe
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Pipe*
+  name: Pipe
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleWorkerStreamHandler_Pipe_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Pipe
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.Pipe
+  nameWithType: SimpleWorkerStreamHandler.Pipe
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  name: StartTaskProcessing(TaskData, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleWorkerStreamHandler_StartTaskProcessing_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.StartTaskProcessing(ArmoniK.Core.Common.Storage.TaskData, CancellationToken)
+  nameWithType: SimpleWorkerStreamHandler.StartTaskProcessing(TaskData, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.StartTaskProcessing*
+  name: StartTaskProcessing
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html#ArmoniK_Core_Common_Tests_Helpers_SimpleWorkerStreamHandler_StartTaskProcessing_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.StartTaskProcessing
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.StartTaskProcessing
+  nameWithType: SimpleWorkerStreamHandler.StartTaskProcessing
 - uid: ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider
   name: TestPollingAgentProvider
   href: api/ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.html
@@ -11756,6 +12145,56 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.WriteResponseHeadersAsyncCore
   nameWithType: TestServerCallContext.WriteResponseHeadersAsyncCore
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider
+  name: TestTaskHandlerProvider
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html
+  commentId: T:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider
+  nameWithType: TestTaskHandlerProvider
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler)
+  name: TestTaskHandlerProvider(IWorkerStreamHandler, IAgentHandler, IQueueMessageHandler)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider__ctor_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_ArmoniK_Core_Common_Storage_IQueueMessageHandler_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler,ArmoniK.Core.Common.Storage.IQueueMessageHandler)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TestTaskHandlerProvider(ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler, ArmoniK.Core.Common.Storage.IQueueMessageHandler)
+  nameWithType: TestTaskHandlerProvider.TestTaskHandlerProvider(IWorkerStreamHandler, IAgentHandler, IQueueMessageHandler)
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor*
+  name: TestTaskHandlerProvider
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TestTaskHandlerProvider
+  nameWithType: TestTaskHandlerProvider.TestTaskHandlerProvider
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Dispose
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Dispose
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Dispose()
+  nameWithType: TestTaskHandlerProvider.Dispose()
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Dispose
+  nameWithType: TestTaskHandlerProvider.Dispose
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Submitter
+  name: Submitter
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Submitter
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Submitter
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Submitter
+  nameWithType: TestTaskHandlerProvider.Submitter
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskHandler
+  name: TaskHandler
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_TaskHandler
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskHandler
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskHandler
+  nameWithType: TestTaskHandlerProvider.TaskHandler
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskTable
+  name: TaskTable
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_TaskTable
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskTable
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskTable
+  nameWithType: TestTaskHandlerProvider.TaskTable
 - uid: ArmoniK.Core.Common.Tests.ObjectStorageTestBase
   name: ObjectStorageTestBase
   href: api/ArmoniK.Core.Common.Tests.ObjectStorageTestBase.html
@@ -12007,6 +12446,116 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.TearDown
   nameWithType: DataPrefetcherTest.TearDown
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest
+  name: TaskHandlerTest
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest
+  nameWithType: TaskHandlerTest
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireNotReadyTaskShouldFail
+  name: AcquireNotReadyTaskShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireNotReadyTaskShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireNotReadyTaskShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireNotReadyTaskShouldFail()
+  nameWithType: TaskHandlerTest.AcquireNotReadyTaskShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireNotReadyTaskShouldFail*
+  name: AcquireNotReadyTaskShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireNotReadyTaskShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireNotReadyTaskShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireNotReadyTaskShouldFail
+  nameWithType: TaskHandlerTest.AcquireNotReadyTaskShouldFail
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldFail
+  name: AcquireTaskShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireTaskShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldFail()
+  nameWithType: TaskHandlerTest.AcquireTaskShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldFail*
+  name: AcquireTaskShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireTaskShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldFail
+  nameWithType: TaskHandlerTest.AcquireTaskShouldFail
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldSucceed
+  name: AcquireTaskShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireTaskShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldSucceed()
+  nameWithType: TaskHandlerTest.AcquireTaskShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldSucceed*
+  name: AcquireTaskShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_AcquireTaskShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.AcquireTaskShouldSucceed
+  nameWithType: TaskHandlerTest.AcquireTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed
+  name: ExecuteTaskShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed()
+  nameWithType: TaskHandlerTest.ExecuteTaskShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed*
+  name: ExecuteTaskShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskShouldSucceed
+  nameWithType: TaskHandlerTest.ExecuteTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed
+  name: ExecuteTaskWithResultsShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithResultsShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed()
+  nameWithType: TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed*
+  name: ExecuteTaskWithResultsShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_ExecuteTaskWithResultsShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed
+  nameWithType: TaskHandlerTest.ExecuteTaskWithResultsShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.InitializeTaskHandler
+  name: InitializeTaskHandler()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_InitializeTaskHandler
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.InitializeTaskHandler
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.InitializeTaskHandler()
+  nameWithType: TaskHandlerTest.InitializeTaskHandler()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.InitializeTaskHandler*
+  name: InitializeTaskHandler
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_InitializeTaskHandler_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.InitializeTaskHandler
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.InitializeTaskHandler
+  nameWithType: TaskHandlerTest.InitializeTaskHandler
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_SetUp
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.SetUp
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.SetUp()
+  nameWithType: TaskHandlerTest.SetUp()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_SetUp_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.SetUp
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.SetUp
+  nameWithType: TaskHandlerTest.SetUp
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TearDown
+  commentId: M:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TearDown
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TearDown()
+  nameWithType: TaskHandlerTest.TearDown()
+- uid: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html#ArmoniK_Core_Common_Tests_Pollster_TaskHandlerTest_TearDown_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.TearDown
+  nameWithType: TaskHandlerTest.TearDown
 - uid: ArmoniK.Core.Common.Tests.ResultTableTestBase
   name: ResultTableTestBase
   href: api/ArmoniK.Core.Common.Tests.ResultTableTestBase.html

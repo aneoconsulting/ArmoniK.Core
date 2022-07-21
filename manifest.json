@@ -1125,7 +1125,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.AgentHandler.html",
-          "hash": "/Lmc/nfqpcdFDxyzrqCG45ROQ7yZ7wuh99jgK3inKh0="
+          "hash": "d0KABHhDIdqQ0/Ya6/782o4oXxu2ATbsaQL1+dHvVYk="
         }
       },
       "is_incremental": false,
@@ -1161,7 +1161,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.IAgentHandler.html",
-          "hash": "wxjblihCxgS1WBH8fmNn6aLrAFi0QJrG/CErxDs3Bz8="
+          "hash": "CppPZNRGFALqtUEBWqH43JPfj4ZSy3o6kKsdjDlp6tE="
         }
       },
       "is_incremental": false,
@@ -1174,6 +1174,18 @@
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.Pollster.html",
           "hash": "S95Mr2OUuLMWc++kqZ6IgIR8rWDnObbLlaOLUXjRWVM="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Pollster.TaskHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Pollster.TaskHandler.html",
+          "hash": "Oe9TI8zts3Y5WOq+AqE1KXEc+6e/UhZ5Q81NmLjUCgI="
         }
       },
       "is_incremental": false,
@@ -1221,7 +1233,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Pollster.html",
-          "hash": "UI4RqSVjr9D4wI8lqegZkENZ17IOrpcUdBClZCO4vT8="
+          "hash": "DMld2CqyKKnn3wC1pXuie0EXmlKUz3sRYKaaETQW+l0="
         }
       },
       "is_incremental": false,
@@ -1917,7 +1929,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.ChannelAsyncPipe-2.html",
-          "hash": "/oOboSz8OVsqKOgI9dISooIjTDIKL2z1F6BIgqo2Ges="
+          "hash": "zJ2xKOMTsKPiMY6QwlWiTJPFzC2zDvAgd32QQonIX/E="
         }
       },
       "is_incremental": false,
@@ -1949,6 +1961,54 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.html",
+          "hash": "2O/CixH1D70rynSIhv6SFls4UaMODjCZ+Z78BMDJEZI="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.html",
+          "hash": "p2ucOR9DRU08W54givatWfj2AES1X0pCH0b4Ur2k+dQ="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleQueueMessageHandler.html",
+          "hash": "E6E9CGqRDuzGWYcZ4HjwGR5dFwxja3riAq34JgoxWK4="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.html",
+          "hash": "XFkPlj8XiJZq1rZqn3B5XzDfrJW5wahZBJEPLlIud5o="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.TestPollingAgentProvider.yml",
       "output": {
         ".html": {
@@ -1973,11 +2033,23 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html",
+          "hash": "U3gbeDaU0klBCXbtHDrODWtd0TG1DB0FdrcaZUGPOC0="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.yml",
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.html",
-          "hash": "n5/TE9HqRAtkgPfIZl8dRJEnrg7VZL999uyY6bIsxHg="
+          "hash": "pH4ajIIEmWxDvDmhB7p/quNIiBr8P/96jKYFZEYJtNY="
         }
       },
       "is_incremental": false,
@@ -2009,11 +2081,23 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.TaskHandlerTest.html",
+          "hash": "HDb36mG4zQNHXbO+jSvDlAKP1SgudapVbOJI+EPHI60="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.yml",
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.html",
-          "hash": "DSciyEEzSV+mxugXneFBJTaIKV671m0PqVILSTRH5VY="
+          "hash": "xf65GkZQXYney4zfGxOOflLabU3cVVfO+XzsgsIQL28="
         }
       },
       "is_incremental": false,
@@ -2421,7 +2505,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.gRPC.Services.IAgent.html",
-          "hash": "lUOWVap1CEE7O5bnr5b11xQX7HcHhFzNLtrWbSTVTf4="
+          "hash": "Q/NPzp3HjSRl1j5PJRep6Em5JNPbJyI2UD/Smk0gc8c="
         }
       },
       "is_incremental": false,
@@ -3117,7 +3201,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "Ldsfu9Ziwqec2DS+Zmwt249AmYHfQ/VDdXb3QJUGTJI="
+          "hash": "v7lsI+Pxc33JIclnMUhUBSysFg6j5NMGmySHN7aUVwc="
         }
       },
       "is_incremental": false,
@@ -3204,7 +3288,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 258,
+          "total_file_count": 265,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {

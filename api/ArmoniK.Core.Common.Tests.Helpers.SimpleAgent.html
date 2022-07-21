@@ -5,10 +5,10 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Interface IAgent
+    <title>Class SimpleAgent
    </title>
     <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Interface IAgent
+    <meta name="title" content="Class SimpleAgent
    ">
     <meta name="generator" content="docfx 2.59.3.0">
     
@@ -68,37 +68,45 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent">
+            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent">
   
   
-  <h1 id="ArmoniK_Core_Common_gRPC_Services_IAgent" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent" class="text-break">Interface IAgent
+  <h1 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent" class="text-break">Class SimpleAgent
   </h1>
-  <div class="markdown level0 summary"><p>Interface for implementing methods for the agent gRPC service that receives requests from the worker</p>
-</div>
+  <div class="markdown level0 summary"></div>
   <div class="markdown level0 conceptual"></div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.gRPC.Services.html">ArmoniK.Core.Common.gRPC.Services</a></h6>
-  <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
-  <h5 id="ArmoniK_Core_Common_gRPC_Services_IAgent_syntax">Syntax</h5>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level1"><span class="xref">SimpleAgent</span></div>
+  </div>
+  <div class="implements">
+    <h5>Implements</h5>
+    <div><a class="xref" href="ArmoniK.Core.Common.gRPC.Services.IAgent.html">IAgent</a></div>
+    <div><span class="xref">IDisposable</span></div>
+  </div>
+  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Tests.Helpers.html">ArmoniK.Core.Common.Tests.Helpers</a></h6>
+  <h6><strong>Assembly</strong>: ArmoniK.Core.Common.Tests.dll</h6>
+  <h5 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public interface IAgent</code></pre>
+    <pre><code class="lang-csharp hljs">public class SimpleAgent : object, IAgent</code></pre>
   </div>
   <h3 id="methods">Methods
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_IAgent_CreateTask_IAsyncStreamReader_CreateTaskRequest__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.IAgent.CreateTask(IAsyncStreamReader%7BCreateTaskRequest%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_CreateTask_IAsyncStreamReader_CreateTaskRequest__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.CreateTask(IAsyncStreamReader%7BCreateTaskRequest%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/IAgent.cs/#L54">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/tests/Helpers/SimpleAgent.cs/#L36">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Common_gRPC_Services_IAgent_CreateTask_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.CreateTask*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_IAgent_CreateTask_IAsyncStreamReader_CreateTaskRequest__CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.CreateTask(IAsyncStreamReader{CreateTaskRequest},CancellationToken)">CreateTask(IAsyncStreamReader&lt;CreateTaskRequest&gt;, CancellationToken)</h4>
-  <div class="markdown level1 summary"><p>Process requests for creating child tasks</p>
-</div>
+  <a id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_CreateTask_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.CreateTask*"></a>
+  <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_CreateTask_IAsyncStreamReader_CreateTaskRequest__CancellationToken_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.CreateTask(IAsyncStreamReader{CreateTaskRequest},CancellationToken)">CreateTask(IAsyncStreamReader&lt;CreateTaskRequest&gt;, CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;CreateTaskReply&gt; CreateTask(IAsyncStreamReader&lt;CreateTaskRequest&gt; requestStream, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;CreateTaskReply&gt; CreateTask(IAsyncStreamReader&lt;CreateTaskRequest&gt; requestStream, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -113,14 +121,12 @@
       <tr>
         <td><span class="xref">IAsyncStreamReader</span>&lt;<span class="xref">CreateTaskRequest</span>&gt;</td>
         <td><span class="parametername">requestStream</span></td>
-        <td><p>Collection of requests that represents the child tasks</p>
-</td>
+        <td></td>
       </tr>
       <tr>
         <td><span class="xref">CancellationToken</span></td>
         <td><span class="parametername">cancellationToken</span></td>
-        <td><p>Token used to cancel the execution of the method</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
@@ -135,26 +141,39 @@
     <tbody>
       <tr>
         <td><span class="xref">Task</span>&lt;<span class="xref">CreateTaskReply</span>&gt;</td>
-        <td><p>Reply sent to the worker describing the status of the child task creation</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_IAgent_FinalizeTaskCreation_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.IAgent.FinalizeTaskCreation(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_Dispose.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.Dispose%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/IAgent.cs/#L44">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/tests/Helpers/SimpleAgent.cs/#L59">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Common_gRPC_Services_IAgent_FinalizeTaskCreation_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.FinalizeTaskCreation*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_IAgent_FinalizeTaskCreation_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.FinalizeTaskCreation(CancellationToken)">FinalizeTaskCreation(CancellationToken)</h4>
-  <div class="markdown level1 summary"><p>Finalize child task creation after the parent task succeeds</p>
-</div>
+  <a id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_Dispose_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.Dispose*"></a>
+  <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_Dispose" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.Dispose">Dispose()</h4>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task FinalizeTaskCreation(CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_FinalizeTaskCreation_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.FinalizeTaskCreation(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/tests/Helpers/SimpleAgent.cs/#L33">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_FinalizeTaskCreation_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.FinalizeTaskCreation*"></a>
+  <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_FinalizeTaskCreation_CancellationToken_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.FinalizeTaskCreation(CancellationToken)">FinalizeTaskCreation(CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task FinalizeTaskCreation(CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -169,8 +188,7 @@
       <tr>
         <td><span class="xref">CancellationToken</span></td>
         <td><span class="parametername">cancellationToken</span></td>
-        <td><p>Token used to cancel the execution of the method</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
@@ -185,26 +203,24 @@
     <tbody>
       <tr>
         <td><span class="xref">Task</span></td>
-        <td><p>Task representing the asynchronous execution of the method</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_IAgent_GetCommonData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.IAgent.GetCommonData(DataRequest%2CIServerStreamWriter%7BDataReply%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetCommonData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetCommonData(DataRequest%2CIServerStreamWriter%7BDataReply%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/IAgent.cs/#L66">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/tests/Helpers/SimpleAgent.cs/#L40">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Common_gRPC_Services_IAgent_GetCommonData_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.GetCommonData*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_IAgent_GetCommonData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.GetCommonData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)">GetCommonData(DataRequest, IServerStreamWriter&lt;DataReply&gt;, CancellationToken)</h4>
-  <div class="markdown level1 summary"><p>Get Common data from data storage</p>
-</div>
+  <a id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetCommonData_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetCommonData*"></a>
+  <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetCommonData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetCommonData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)">GetCommonData(DataRequest, IServerStreamWriter&lt;DataReply&gt;, CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task GetCommonData(DataRequest request, IServerStreamWriter&lt;DataReply&gt; responseStream, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task GetCommonData(DataRequest request, IServerStreamWriter&lt;DataReply&gt; responseStream, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -219,20 +235,17 @@
       <tr>
         <td><span class="xref">DataRequest</span></td>
         <td><span class="parametername">request</span></td>
-        <td><p>Request specifying the data to retrieve</p>
-</td>
+        <td></td>
       </tr>
       <tr>
         <td><span class="xref">IServerStreamWriter</span>&lt;<span class="xref">DataReply</span>&gt;</td>
         <td><span class="parametername">responseStream</span></td>
-        <td><p>Response containing the data that will be sent to the worker</p>
-</td>
+        <td></td>
       </tr>
       <tr>
         <td><span class="xref">CancellationToken</span></td>
         <td><span class="parametername">cancellationToken</span></td>
-        <td><p>Token used to cancel the execution of the method</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
@@ -247,26 +260,24 @@
     <tbody>
       <tr>
         <td><span class="xref">Task</span></td>
-        <td><p>Task representing the asynchronous execution of the method</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_IAgent_GetDirectData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.IAgent.GetDirectData(DataRequest%2CIServerStreamWriter%7BDataReply%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetDirectData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetDirectData(DataRequest%2CIServerStreamWriter%7BDataReply%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/IAgent.cs/#L79">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/tests/Helpers/SimpleAgent.cs/#L45">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Common_gRPC_Services_IAgent_GetDirectData_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.GetDirectData*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_IAgent_GetDirectData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.GetDirectData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)">GetDirectData(DataRequest, IServerStreamWriter&lt;DataReply&gt;, CancellationToken)</h4>
-  <div class="markdown level1 summary"><p>Get Direct data from user</p>
-</div>
+  <a id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetDirectData_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetDirectData*"></a>
+  <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetDirectData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetDirectData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)">GetDirectData(DataRequest, IServerStreamWriter&lt;DataReply&gt;, CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task GetDirectData(DataRequest request, IServerStreamWriter&lt;DataReply&gt; responseStream, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task GetDirectData(DataRequest request, IServerStreamWriter&lt;DataReply&gt; responseStream, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -281,20 +292,17 @@
       <tr>
         <td><span class="xref">DataRequest</span></td>
         <td><span class="parametername">request</span></td>
-        <td><p>Request specifying the data to retrieve</p>
-</td>
+        <td></td>
       </tr>
       <tr>
         <td><span class="xref">IServerStreamWriter</span>&lt;<span class="xref">DataReply</span>&gt;</td>
         <td><span class="parametername">responseStream</span></td>
-        <td><p>Response containing the data that will be sent to the worker</p>
-</td>
+        <td></td>
       </tr>
       <tr>
         <td><span class="xref">CancellationToken</span></td>
         <td><span class="parametername">cancellationToken</span></td>
-        <td><p>Token used to cancel the execution of the method</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
@@ -309,26 +317,24 @@
     <tbody>
       <tr>
         <td><span class="xref">Task</span></td>
-        <td><p>Task representing the asynchronous execution of the method</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_IAgent_GetResourceData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData(DataRequest%2CIServerStreamWriter%7BDataReply%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetResourceData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetResourceData(DataRequest%2CIServerStreamWriter%7BDataReply%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/IAgent.cs/#L92">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/tests/Helpers/SimpleAgent.cs/#L50">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Common_gRPC_Services_IAgent_GetResourceData_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_IAgent_GetResourceData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)">GetResourceData(DataRequest, IServerStreamWriter&lt;DataReply&gt;, CancellationToken)</h4>
-  <div class="markdown level1 summary"><p>Get Resource data from data storage</p>
-</div>
+  <a id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetResourceData_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetResourceData*"></a>
+  <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_GetResourceData_DataRequest_IServerStreamWriter_DataReply__CancellationToken_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.GetResourceData(DataRequest,IServerStreamWriter{DataReply},CancellationToken)">GetResourceData(DataRequest, IServerStreamWriter&lt;DataReply&gt;, CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task GetResourceData(DataRequest request, IServerStreamWriter&lt;DataReply&gt; responseStream, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task GetResourceData(DataRequest request, IServerStreamWriter&lt;DataReply&gt; responseStream, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -343,20 +349,17 @@
       <tr>
         <td><span class="xref">DataRequest</span></td>
         <td><span class="parametername">request</span></td>
-        <td><p>Request specifying the data to retrieve</p>
-</td>
+        <td></td>
       </tr>
       <tr>
         <td><span class="xref">IServerStreamWriter</span>&lt;<span class="xref">DataReply</span>&gt;</td>
         <td><span class="parametername">responseStream</span></td>
-        <td><p>Response containing the data that will be sent to the worker</p>
-</td>
+        <td></td>
       </tr>
       <tr>
         <td><span class="xref">CancellationToken</span></td>
         <td><span class="parametername">cancellationToken</span></td>
-        <td><p>Token used to cancel the execution of the method</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
@@ -371,26 +374,24 @@
     <tbody>
       <tr>
         <td><span class="xref">Task</span></td>
-        <td><p>Task representing the asynchronous execution of the method</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_IAgent_SendResult_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_Agent_Result__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader%7BArmoniK.Api.gRPC.V1.Agent.Result%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_SendResult_IAsyncStreamReader_Result__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.SendResult(IAsyncStreamReader%7BResult%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/IAgent.cs/#L104">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/tests/Helpers/SimpleAgent.cs/#L55">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Common_gRPC_Services_IAgent_SendResult_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_IAgent_SendResult_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_Agent_Result__CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},CancellationToken)">SendResult(IAsyncStreamReader&lt;Agent.Result&gt;, CancellationToken)</h4>
-  <div class="markdown level1 summary"><p>Put the results created in the task into data storage and mark them as available in data table</p>
-</div>
+  <a id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_SendResult_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.SendResult*"></a>
+  <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgent_SendResult_IAsyncStreamReader_Result__CancellationToken_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgent.SendResult(IAsyncStreamReader{Result},CancellationToken)">SendResult(IAsyncStreamReader&lt;Result&gt;, CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;ResultReply&gt; SendResult(IAsyncStreamReader&lt;Agent.Result&gt; requestStream, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;ResultReply&gt; SendResult(IAsyncStreamReader&lt;Result&gt; requestStream, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -403,16 +404,14 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">IAsyncStreamReader</span>&lt;<span class="xref">ArmoniK.Api.gRPC.V1.Agent.Result</span>&gt;</td>
+        <td><span class="xref">IAsyncStreamReader</span>&lt;<span class="xref">Result</span>&gt;</td>
         <td><span class="parametername">requestStream</span></td>
-        <td><p>Requests containing the results</p>
-</td>
+        <td></td>
       </tr>
       <tr>
         <td><span class="xref">CancellationToken</span></td>
         <td><span class="parametername">cancellationToken</span></td>
-        <td><p>Token used to cancel the execution of the method</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
@@ -427,11 +426,17 @@
     <tbody>
       <tr>
         <td><span class="xref">Task</span>&lt;<span class="xref">ResultReply</span>&gt;</td>
-        <td><p>Reply sent to the worker describing the status of the execution of the received requests</p>
-</td>
+        <td></td>
       </tr>
     </tbody>
   </table>
+  <h3 id="implements">Implements</h3>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.gRPC.Services.IAgent.html">IAgent</a>
+  </div>
+  <div>
+      <span class="xref">IDisposable</span>
+  </div>
 </article>
           </div>
           
@@ -440,10 +445,10 @@
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_IAgent.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.IAgent%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgent.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgent%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/gRPC/Services/IAgent.cs/#L35" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/tests/Helpers/SimpleAgent.cs/#L31" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>
