@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,12 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-// 
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// but WITHOUT ANY WARRANTY
 
 using System;
 using System.Collections.Generic;
@@ -28,6 +23,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Worker.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -52,17 +48,17 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestPollingAgentProvider : IDisposable
 {
-  private readonly MongoDbRunner runner_;
-  private readonly IMongoClient client_;
-  private const string DatabaseName = "ArmoniK_TestDB";
-  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.FullIntegration");
-  private readonly IResultTable resultTable_;
-  private readonly ITaskTable taskTable_;
-  private readonly ISessionTable sessionTable_;
-  public readonly ISubmitter Submitter;
-  private readonly LoggerFactory loggerFactory_;
-  private readonly WebApplication app;
-  private readonly Common.Pollster.Pollster pollster_;
+  private readonly        MongoDbRunner            runner_;
+  private readonly        IMongoClient             client_;
+  private const           string                   DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource           ActivitySource = new("ArmoniK.Core.Common.Tests.FullIntegration");
+  private readonly        IResultTable             resultTable_;
+  private readonly        ITaskTable               taskTable_;
+  private readonly        ISessionTable            sessionTable_;
+  public readonly         ISubmitter               Submitter;
+  private readonly        LoggerFactory            loggerFactory_;
+  private readonly        WebApplication           app;
+  private readonly        Common.Pollster.Pollster pollster_;
 
 
   public TestPollingAgentProvider(IWorkerStreamHandler workerStreamHandler)
@@ -82,14 +78,16 @@ public class TestPollingAgentProvider : IDisposable
                                                    "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
                                                  },
                                                  {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}", DatabaseName
+                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
+                                                   DatabaseName
                                                  },
                                                  {
                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
                                                    "00:00:10"
                                                  },
                                                  {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}", "14000"
+                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
+                                                   "14000"
                                                  },
                                                  {
                                                    $"{ComputePlan.SettingSection}:{nameof(ComputePlan.MessageBatchSize)}", "1"
@@ -118,19 +116,20 @@ public class TestPollingAgentProvider : IDisposable
            .AddSingleton(workerStreamHandler);
 
     var computePlanComponent = builder.Configuration.GetSection(ComputePlan.SettingSection);
-    var computePlanOptions = computePlanComponent.Get<ComputePlan>();
+    var computePlanOptions   = computePlanComponent.Get<ComputePlan>();
 
     builder.Services.AddSingleton(computePlanOptions);
 
     app = builder.Build();
 
-    resultTable_ = app.Services.GetRequiredService<IResultTable>();
-    taskTable_ = app.Services.GetRequiredService<ITaskTable>();
+    resultTable_  = app.Services.GetRequiredService<IResultTable>();
+    taskTable_    = app.Services.GetRequiredService<ITaskTable>();
     sessionTable_ = app.Services.GetRequiredService<ISessionTable>();
-    Submitter = app.Services.GetRequiredService<ISubmitter>();
-    pollster_ = app.Services.GetRequiredService<Common.Pollster.Pollster>();
+    Submitter     = app.Services.GetRequiredService<ISubmitter>();
+    pollster_     = app.Services.GetRequiredService<Common.Pollster.Pollster>();
 
-    sessionTable_.Init(CancellationToken.None).Wait();
+    sessionTable_.Init(CancellationToken.None)
+                 .Wait();
 
     pollsterRunningTask = Task.Factory.StartNew(() => pollster_.MainLoop(pollsterCancellationTokenSource_.Token),
                                                 TaskCreationOptions.LongRunning);

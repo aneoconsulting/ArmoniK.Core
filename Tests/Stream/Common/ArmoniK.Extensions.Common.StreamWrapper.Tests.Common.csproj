@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -9,9 +9,5 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
-	
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
-  </ItemGroup>
-
+  
 </Project>

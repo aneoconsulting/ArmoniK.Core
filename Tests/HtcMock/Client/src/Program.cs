@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,23 +15,15 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-// 
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// but WITHOUT ANY WARRANTY
 
 using System;
 using System.IO;
 using System.Threading;
 
-using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.Client.Options;
+using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Common.Injection;
-using ArmoniK.Core.Common.Utils;
-
-using Grpc.Net.Client;
 
 using Htc.Mock.Core;
 
@@ -55,8 +47,7 @@ internal class Program
 
     Console.WriteLine("Hello Mock V3!");
 
-    var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-                                            .AddEnvironmentVariables();
+    var builder       = new ConfigurationBuilder().AddEnvironmentVariables();
     var configuration = builder.Build();
     Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration)
                                           .Enrich.FromLogContext()
@@ -65,7 +56,8 @@ internal class Program
 
     var factory = new LoggerFactory().AddSerilog();
 
-    var options        = configuration.GetRequiredValue<ArmoniK.Core.Common.Options.GrpcClient>(Core.Common.Options.GrpcClient.SettingSection);
+    var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
+                               .Get<GrpcClient>();
     var optionsHtcMock = new Options.HtcMock();
     configuration.GetSection(Options.HtcMock.SettingSection)
                  .Bind(optionsHtcMock);

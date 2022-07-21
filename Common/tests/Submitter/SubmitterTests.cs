@@ -15,12 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-// 
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// but WITHOUT ANY WARRANTY
 
 using System;
 using System.Collections.Generic;
@@ -32,11 +27,11 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.Worker.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
@@ -209,8 +204,6 @@ public class SubmitterTests
                                          SessionId,
                                          CancellationToken.None)
                    .ConfigureAwait(false);
-
-
   }
 
   private static async Task InitSubmitterCompleteTask(ISubmitter        submitter,
@@ -457,7 +450,6 @@ public class SubmitterTests
                                                                               },
                                                                               writer,
                                                                               CancellationToken.None));
-
   }
 
   [Test]

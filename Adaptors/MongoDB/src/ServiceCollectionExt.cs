@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,16 +15,12 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-// 
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// but WITHOUT ANY WARRANTY
 
 using System;
 using System.Security.Cryptography.X509Certificates;
 
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Common;

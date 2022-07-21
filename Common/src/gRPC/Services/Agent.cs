@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
-//
-// Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.
+// 
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -8,12 +8,12 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY
 
@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
@@ -39,7 +40,6 @@ using Microsoft.Extensions.Logging;
 using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
-
 
 /// <summary>
 /// Represents the internal processing requests received by the agent. Provides methods to process those requests
@@ -148,7 +148,6 @@ public class Agent : IAgent
                                                                                      taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
                                                                                      cancellationToken)
                                                                         .ConfigureAwait(false));
-
                                     },
                                     cancellationToken);
 
@@ -411,7 +410,6 @@ public class Agent : IAgent
                                     },
                                     cancellationToken)
                         .ConfigureAwait(false);
-
   }
 
   public async Task<ResultReply> SendResult(IAsyncStreamReader<Result> requestStream,

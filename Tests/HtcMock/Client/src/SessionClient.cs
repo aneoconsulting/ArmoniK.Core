@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,22 +15,16 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-// 
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// but WITHOUT ANY WARRANTY
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Stream.Client;
 
 using Google.Protobuf;
 
@@ -66,7 +60,6 @@ public class SessionClient : ISessionClient
 
   public byte[] GetResult(string id)
   {
-    using var _ = logger_.LogFunction(id);
     var resultRequest = new ResultRequest
                         {
                           Key     = id,
@@ -109,7 +102,6 @@ public class SessionClient : ISessionClient
 
   public Task WaitSubtasksCompletion(string id)
   {
-    using var _ = logger_.LogFunction(id);
     client_.WaitForCompletion(new WaitRequest
                               {
                                 Filter = new TaskFilter
@@ -130,7 +122,6 @@ public class SessionClient : ISessionClient
 
   public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
   {
-    using var _ = logger_.LogFunction();
     logger_.LogDebug("payload with dependencies {len}",
                      payloadsWithDependencies.Count());
     var taskRequests = new List<TaskRequest>();

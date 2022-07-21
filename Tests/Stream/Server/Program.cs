@@ -15,112 +15,20 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-// 
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// but WITHOUT ANY WARRANTY
 
-using System;
-using System.IO;
-
-using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
-using Serilog;
-using Serilog.Formatting.Compact;
 
 namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Server;
 
 public static class Program
 {
-  public static int Main(string[] args)
+  public static void Main(string[] args)
   {
-    try
-    {
-      var builder = WebApplication.CreateBuilder(args);
-
-      builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
-             .AddJsonFile("appsettings.json",
-                          true,
-                          false)
-             .AddEnvironmentVariables()
-             .AddCommandLine(args);
-
-      var computePlanOptions = builder.Configuration.GetSection(ComputePlan.SettingSection)
-                                      .Get<ComputePlan>();
-      if (computePlanOptions.WorkerChannel == null)
-      {
-        throw new Exception("WorkerChannel Should not be null");
-      }
-
-      Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
-                                            .WriteTo.Console(new CompactJsonFormatter())
-                                            .Enrich.FromLogContext()
-                                            .CreateLogger();
-
-      var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger));
-      var logger        = loggerFactory.CreateLogger("root");
-
-      builder.Host.UseSerilog(Log.Logger);
-
-      builder.WebHost.ConfigureKestrel(options => options.ListenUnixSocket(computePlanOptions.WorkerChannel.Address,
-                                                                           listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
-
-      builder.Services.AddSingleton<ApplicationLifeTimeManager>()
-             .AddSingleton(_ => loggerFactory)
-             .AddSingleton<GrpcChannelProvider>()
-             .AddSingleton(computePlanOptions.AgentChannel)
-             .AddLogging()
-             .AddGrpc(options => options.MaxReceiveMessageSize = null);
-
-
-      var app = builder.Build();
-
-      if (app.Environment.IsDevelopment())
-      {
-        app.UseDeveloperExceptionPage();
-      }
-
-      app.UseSerilogRequestLogging();
-
-      app.UseRouting();
-
-
-      app.UseEndpoints(endpoints =>
-                       {
-                         endpoints.MapGrpcService<WorkerService>();
-
-                         if (app.Environment.IsDevelopment())
-                         {
-                           endpoints.MapGrpcReflectionService();
-                           logger.LogInformation("Grpc Reflection Activated");
-                         }
-                       });
-
-      app.Run();
-
-      return 0;
-    }
-    catch (Exception ex)
-    {
-      Log.Fatal(ex,
-                "Host terminated unexpectedly");
-      return 1;
-    }
-    finally
-    {
-      Log.CloseAndFlush();
-    }
+    var app = WorkerServer.Create<WorkerService>();
+    app.Run();
   }
 }
