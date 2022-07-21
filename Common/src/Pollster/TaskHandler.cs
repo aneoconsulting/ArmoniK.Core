@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -46,7 +46,7 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Pollster;
 
-internal class TaskHandler : IAsyncDisposable
+public class TaskHandler : IAsyncDisposable
 {
   private readonly ISessionTable                               sessionTable_;
   private readonly ITaskTable                                  taskTable_;
@@ -56,15 +56,14 @@ internal class TaskHandler : IAsyncDisposable
   private readonly ISubmitter                                  submitter_;
   private readonly DataPrefetcher                              dataPrefetcher_;
   private readonly IWorkerStreamHandler                        workerStreamHandler_;
-  private readonly IObjectStorageFactory                       objectStorageFactory_;
   private readonly ActivitySource                              activitySource_;
   private readonly ILogger                                     logger_;
   private          TaskData?                                   taskData_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private readonly string                                      ownerPodId_;
   private readonly IAgentHandler                               agentHandler_;
-  private readonly string                                      token;
-  private          Agent?                                      agent_;
+  private readonly string                                      token_;
+  private          IAgent?                                     agent_;
 
   public TaskHandler(ISessionTable          sessionTable,
                      ITaskTable             taskTable,
@@ -72,7 +71,6 @@ internal class TaskHandler : IAsyncDisposable
                      ISubmitter             submitter,
                      DataPrefetcher         dataPrefetcher,
                      IWorkerStreamHandler   workerStreamHandler,
-                     IObjectStorageFactory  objectStorageFactory,
                      IQueueMessageHandler   messageHandler,
                      ITaskProcessingChecker taskProcessingChecker,
                      string                 ownerPodId,
@@ -88,13 +86,12 @@ internal class TaskHandler : IAsyncDisposable
     submitter_             = submitter;
     dataPrefetcher_        = dataPrefetcher;
     workerStreamHandler_   = workerStreamHandler;
-    objectStorageFactory_  = objectStorageFactory;
     activitySource_        = activitySource;
     agentHandler_          = agentHandler;
     logger_                = logger;
     ownerPodId_            = ownerPodId;
     taskData_              = null;
-    token = Guid.NewGuid()
+    token_ = Guid.NewGuid()
                 .ToString();
   }
 
@@ -343,14 +340,12 @@ internal class TaskHandler : IAsyncDisposable
   /// Get the task id of the acquired task
   /// </summary>
   /// <returns>
-  /// A string representing the acquired task id or null if there is no task acquired
+  /// A string representing the acquired task id
   /// </returns>
   public string GetAcquiredTask()
-  {
-    return taskData_ != null
-             ? taskData_.TaskId
-             : "";
-  }
+    => taskData_ != null
+         ? taskData_.TaskId
+         : throw new ArmoniKException("TaskData should not be null after successful acquisition");
 
   /// <summary>
   /// Preprocessing (including the data prefetching) of the acquired task
@@ -378,6 +373,7 @@ internal class TaskHandler : IAsyncDisposable
   /// <summary>
   /// Execution of the acquired task on the worker
   /// </summary>
+  /// <param name="agent">Agent that will be used to keep track of the requests of the worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   /// Task representing the asynchronous execution of the method
@@ -395,19 +391,13 @@ internal class TaskHandler : IAsyncDisposable
 
     logger_.LogDebug("Create agent server to receive requests from worker");
 
-    agent_ = new Agent(submitter_,
-                       objectStorageFactory_,
-                       taskData_.SessionId,
-                       taskData_.TaskId,
-                       token,
-                       logger_);
-
     // In theory we could create the server during dependencies checking and activate it only now
-    await agentHandler_.Start(agent_,
-                              token,
-                              logger_,
-                              cancellationToken)
-                       .ConfigureAwait(false);
+    agent_ = await agentHandler_.Start(token_,
+                                       logger_,
+                                       taskData_.SessionId,
+                                       taskData_.TaskId,
+                                       cancellationToken)
+                                .ConfigureAwait(false);
 
     logger_.LogInformation("Start processing task");
     await submitter_.StartTask(taskData_.TaskId,
@@ -426,7 +416,7 @@ internal class TaskHandler : IAsyncDisposable
       await workerStreamHandler_.Pipe.WriteAsync(new ProcessRequest
                                                  {
                                                    Compute            = computeRequest,
-                                                   CommunicationToken = token,
+                                                   CommunicationToken = token_,
                                                  })
                                 .ConfigureAwait(false);
     }
