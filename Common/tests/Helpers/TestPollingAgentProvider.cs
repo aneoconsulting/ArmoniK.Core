@@ -95,7 +95,7 @@ public class TestPollingAgentProvider : IDisposable
                                                    "14000"
                                                  },
                                                  {
-                                                   $"{ComputePlan.SettingSection}:{nameof(ComputePlan.MessageBatchSize)}", "1"
+                                                   $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
                                                  },
                                                };
 
@@ -120,8 +120,8 @@ public class TestPollingAgentProvider : IDisposable
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
            .AddSingleton(workerStreamHandler);
 
-    var computePlanComponent = builder.Configuration.GetSection(ComputePlan.SettingSection);
-    var computePlanOptions   = computePlanComponent.Get<ComputePlan>();
+    var computePlanComponent = builder.Configuration.GetSection(ComputePlane.SettingSection);
+    var computePlanOptions   = computePlanComponent.Get<ComputePlane>();
 
     builder.Services.AddSingleton(computePlanOptions);
 

@@ -66,7 +66,7 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public AgentHandler(LoggerInit            loggerInit,
-                      ComputePlan           computePlanOptions,
+                      ComputePlane          computePlanOptions,
                       ISubmitter            submitter,
                       IObjectStorageFactory objectStorageFactory,
                       ILogger<AgentHandler> logger)
