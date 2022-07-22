@@ -115,15 +115,12 @@ public static class Program
                                         });
       }
 
-      if (!string.IsNullOrEmpty(builder.Configuration["ARMONIK_AUTH"]))
-      {
-        builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration,
-                                                 logger.GetLogger());
-        builder.Services.AddClientSubmitterAuthenticationService(builder.Configuration,
-                                                                 logger.GetLogger());
-        builder.Services.AddClientSubmitterAuthorization(builder.Configuration,
+      builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration,
+                                                 logger.GetLogger()); 
+      builder.Services.AddClientSubmitterAuthenticationService(builder.Configuration,
+                                                                                                                               logger.GetLogger());
+      builder.Services.AddClientSubmitterAuthorization(builder.Configuration,
                                                 logger.GetLogger());
-      }
 
       builder.WebHost.UseKestrel(options => options.ListenAnyIP(1080,
                                                                 listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
@@ -137,7 +134,11 @@ public static class Program
 
       app.UseSerilogRequestLogging();
 
+      app.UseAuthentication();
+
       app.UseRouting();
+
+      app.UseAuthorization();
 
       app.MapGrpcService<GrpcSubmitterService>();
 

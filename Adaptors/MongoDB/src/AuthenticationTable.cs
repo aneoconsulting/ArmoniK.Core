@@ -27,15 +27,12 @@ using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
 
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 using System;
 using System.Collections.Generic;
@@ -44,6 +41,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+
+using MongoDB.Bson.Serialization;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -56,15 +55,39 @@ public class AuthenticationTable : IAuthenticationTable
   private readonly MongoCollectionProvider<UserData, UserDataModelMapping> userCollectionProvider_;
   private          bool                                                    isInitialized_;
 
-  private PipelineDefinition<UserData, UserIdentityResult> userToIdentityPipeline_;
-  private PipelineDefinition<AuthData, UserIdentityResult> authToIdentityPipeline_;
+  private PipelineDefinition<UserData, UserAuthenticationResult> userToIdentityPipeline_;
+  private PipelineDefinition<AuthData, UserAuthenticationResult> authToIdentityPipeline_;
+
+  static AuthenticationTable()
+  {
+    if (!BsonClassMap.IsClassMapRegistered(typeof(UserAuthenticationResult)))
+    {
+      BsonClassMap.RegisterClassMap<UserAuthenticationResult>(cm =>
+                                                              {
+                                                                cm.MapIdProperty(nameof(UserAuthenticationResult.Id))
+                                                                  .SetIsRequired(true);
+                                                                cm.MapProperty(nameof(UserAuthenticationResult.Username))
+                                                                  .SetIsRequired(true);
+                                                                cm.MapProperty(nameof(UserAuthenticationResult.Roles))
+                                                                  .SetIgnoreIfDefault(true)
+                                                                  .SetDefaultValue(Array.Empty<string>());
+                                                                cm.MapProperty(nameof(UserAuthenticationResult.Permissions))
+                                                                  .SetIgnoreIfDefault(true)
+                                                                  .SetDefaultValue(Array.Empty<string>());
+                                                                cm.MapCreator(model => new UserAuthenticationResult(model.Id,
+                                                                                                                    model.Username,
+                                                                                                                    model.Roles,
+                                                                                                                    model.Permissions));
+                                                              });
+    }
+  }
 
   public AuthenticationTable(SessionProvider                                         sessionProvider,
-                              MongoCollectionProvider<UserData, UserDataModelMapping> userCollectionProvider,
-                              MongoCollectionProvider<AuthData, AuthDataModelMapping> authCollectionProvider,
-                              MongoCollectionProvider<RoleData, RoleDataModelMapping> roleCollectionProvider,
-                              ILogger<AuthenticationTable>                           logger,
-                              ActivitySource                                          activitySource)
+                             MongoCollectionProvider<UserData, UserDataModelMapping> userCollectionProvider,
+                             MongoCollectionProvider<AuthData, AuthDataModelMapping> authCollectionProvider,
+                             MongoCollectionProvider<RoleData, RoleDataModelMapping> roleCollectionProvider,
+                             ILogger<AuthenticationTable>                            logger,
+                             ActivitySource                                          activitySource)
   {
     sessionProvider_        = sessionProvider;
     userCollectionProvider_ = userCollectionProvider;
@@ -97,34 +120,28 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   [ItemCanBeNull]
-  private async Task<UserIdentity> GetIdentityFromPipeline<TCollectionDataType>(IClientSessionHandle                                        sessionHandle,
-                                                                                IMongoCollection<TCollectionDataType>                       collection,
-                                                                                PipelineDefinition<TCollectionDataType, UserIdentityResult> pipeline,
-                                                                                Expression<Func<TCollectionDataType, bool>>                 matchingFunctions,
-                                                                                CancellationToken                                           cancellationToken)
+  private async Task<UserAuthenticationResult> GetIdentityFromPipeline<TCollectionDataType>(IClientSessionHandle sessionHandle,
+                                                                                            IMongoCollection<TCollectionDataType> collection,
+                                                                                            PipelineDefinition<TCollectionDataType, UserAuthenticationResult> pipeline,
+                                                                                            Expression<Func<TCollectionDataType, bool>> matchingFunctions,
+                                                                                            CancellationToken cancellationToken)
   {
     var pipe =
-      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserIdentityResult>(PipelineStageDefinitionBuilder.Match(matchingFunctions),
-                                                                                                         pipeline);
+      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserAuthenticationResult>(PipelineStageDefinitionBuilder.Match(matchingFunctions),
+                                                                                                               pipeline);
 
-    var res = await (await collection.AggregateAsync(sessionHandle,
-                                                     pipe,
-                                                     new AggregateOptions(),
-                                                     cancellationToken)
-                                     .ConfigureAwait(false)).FirstOrDefaultAsync(cancellationToken)
-                                                            .ConfigureAwait(false);
-
-    return res != null
-             ? new UserIdentity(res.Id,
-                                res.Username,
-                                res.Roles,
-                                res.Permissions.Select(str => new Permissions.Permission(str)))
-             : null;
+    return await collection.AggregateAsync(sessionHandle,
+                                           pipe,
+                                           new AggregateOptions(),
+                                           cancellationToken)
+                           .ContinueWith(task => task.Result.FirstOrDefault(),
+                                         cancellationToken)
+                           .ConfigureAwait(false);
   }
 
-  public async Task<UserIdentity> GetIdentityAsync(string            cn,
-                                                   string            fingerprint,
-                                                   CancellationToken cancellationToken)
+  public async Task<UserAuthenticationResult> GetIdentityAsync(string            cn,
+                                                               string            fingerprint,
+                                                               CancellationToken cancellationToken)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityAsync)}");
     var       authCollection = authCollectionProvider_.Get();
@@ -137,8 +154,8 @@ public class AuthenticationTable : IAuthenticationTable
              .ConfigureAwait(false);
   }
 
-  public async Task<UserIdentity> GetIdentityFromIdAsync(string            id,
-                                                         CancellationToken cancellationToken)
+  public async Task<UserAuthenticationResult> GetIdentityFromIdAsync(string            id,
+                                                                     CancellationToken cancellationToken)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromIdAsync)}");
     var       userCollection = userCollectionProvider_.Get();
@@ -152,8 +169,8 @@ public class AuthenticationTable : IAuthenticationTable
              .ConfigureAwait(false);
   }
 
-  public async Task<UserIdentity> GetIdentityFromNameAsync(string            username,
-                                                           CancellationToken cancellationToken)
+  public async Task<UserAuthenticationResult> GetIdentityFromNameAsync(string            username,
+                                                                       CancellationToken cancellationToken)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromNameAsync)}");
     var       userCollection = userCollectionProvider_.Get();
@@ -167,7 +184,7 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
 
-  private PipelineDefinition<UserData, UserIdentityResult> GetUserToIdentityPipeline()
+  private PipelineDefinition<UserData, UserAuthenticationResult> GetUserToIdentityPipeline()
   {
     if (userToIdentityPipeline_ != null)
       return userToIdentityPipeline_;
@@ -175,27 +192,33 @@ public class AuthenticationTable : IAuthenticationTable
                                                                                                 u => u.Roles,
                                                                                                 r => r.RoleId,
                                                                                                 ual => ual.Roles);
-    var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, UserIdentityResult>(ual => new UserIdentityResult(ual.UserId,
-                                                                                                                                        ual.Username,
-                                                                                                                                        ual.Roles.Select(r => r.RoleName),
-                                                                                                                                        ual.Roles
-                                                                                                                                           .Aggregate<RoleData,
-                                                                                                                                             IEnumerable<string>>(new HashSet<string>(),
-                                                                                                                                                                  (set,
-                                                                                                                                                                   data)
-                                                                                                                                                                    => set
-                                                                                                                                                                      .Union(data
-                                                                                                                                                                               .Permissions))));
+    var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, UserAuthenticationResult>(ual => new UserAuthenticationResult(ual.UserId,
+                                                                                                                                                    ual.Username,
+                                                                                                                                                    ual.Roles
+                                                                                                                                                       .Select(r => r
+                                                                                                                                                                 .RoleName),
+                                                                                                                                                    ual.Roles
+                                                                                                                                                       .Aggregate<
+                                                                                                                                                         RoleData,
+                                                                                                                                                         IEnumerable<
+                                                                                                                                                           string>>(new
+                                                                                                                                                                      HashSet
+                                                                                                                                                                      <string>(),
+                                                                                                                                                                    (set,
+                                                                                                                                                                     data)
+                                                                                                                                                                      => set
+                                                                                                                                                                        .Union(data
+                                                                                                                                                                                 .Permissions))));
     var pipeline = new IPipelineStageDefinition[]
                    {
                      lookup,
                      projectionStage,
                    };
-    userToIdentityPipeline_ = new PipelineStagePipelineDefinition<UserData, UserIdentityResult>(pipeline);
+    userToIdentityPipeline_ = new PipelineStagePipelineDefinition<UserData, UserAuthenticationResult>(pipeline);
     return userToIdentityPipeline_;
   }
 
-  private PipelineDefinition<AuthData, UserIdentityResult> GetAuthToIdentityPipeline()
+  private PipelineDefinition<AuthData, UserAuthenticationResult> GetAuthToIdentityPipeline()
   {
     if (authToIdentityPipeline_ != null)
       return authToIdentityPipeline_;
@@ -212,7 +235,7 @@ public class AuthenticationTable : IAuthenticationTable
                      checkIfValid,
                      replaceroot,
                    }.Concat(userToIdentityPipeline.Stages);
-    authToIdentityPipeline_ = new PipelineStagePipelineDefinition<AuthData, UserIdentityResult>(pipeline);
+    authToIdentityPipeline_ = new PipelineStagePipelineDefinition<AuthData, UserAuthenticationResult>(pipeline);
     return authToIdentityPipeline_;
   }
 

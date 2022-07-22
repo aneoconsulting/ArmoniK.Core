@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Net;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography.X509Certificates;
 
@@ -39,6 +40,7 @@ using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -237,8 +239,12 @@ public static class ServiceCollectionExt
                                                                     ConfigurationManager    configuration,
                                                                     ILogger                 logger)
   {
-    services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
-    services.AddTransient<IAuthenticationTable, AuthenticationTable>();
+    var components = configuration.GetSection(Components.SettingSection);
+    if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
+    {
+      services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
+      services.AddTransient<IAuthenticationTable, AuthenticationTable>();
+    }
     return services;
   }
 
@@ -250,8 +256,10 @@ public static class ServiceCollectionExt
     services.AddOption<AuthenticatorOptions>(configuration,
                                              AuthenticatorOptions.SectionName, out var authenticatorOptions);
     services.AddAuthentication()
-            .AddScheme<AuthenticatorOptions, Authenticator>("SubmitterAuthenticationScheme", o => o.CopyFrom(authenticatorOptions));
-    return services;
+              .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
+                                                              o => o.CopyFrom(authenticatorOptions));
+
+      return services;
   }
 
   [PublicAPI]

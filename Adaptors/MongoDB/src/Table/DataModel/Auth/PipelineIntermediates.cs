@@ -31,13 +31,6 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
-
-[BsonIgnoreExtraElements]
-public record UserIdentityResult([property: BsonId] string Id,
-                                 string                    Username,
-                                 IEnumerable<string>       Roles,
-                                 IEnumerable<string>       Permissions);
-
 [BsonIgnoreExtraElements]
 public record AuthDataAfterLookup([property: BsonId] string AuthId,
                                   string                    UserId,

@@ -35,4 +35,6 @@ public class Components
   public string? QueueStorage  { get; set; }
   public string? LeaseProvider { get; set; }
   public string? ObjectStorage { get; set; }
+
+  public string? AuthenticationStorage { get; set; }
 }

@@ -8,7 +8,6 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-//   D. Brasseur       <dbrasseur@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -23,38 +22,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-
-using ArmoniK.Core.Common.Auth.Authorization;
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
-public class UserIdentity : ClaimsPrincipal
+public record UserAuthenticationResult(string              Id,
+                                       string              Username,
+                                       IEnumerable<string> Roles,
+                                       IEnumerable<string> Permissions)
 {
-  public string              UserName { get; set; }
-  public IEnumerable<string> Roles    { get; set; }
-
-  public IEnumerable<Permissions.Permission> Permissions { get; set; }
-
-  public string UserId { get; set; }
-
-
-  public UserIdentity(UserAuthenticationResult userAuth,
-                      string?                             authenticationType)
-    : base(new ClaimsIdentity(userAuth.Permissions.Select(perm => new Permissions.Permission(perm).Claim), authenticationType))
+  public UserAuthenticationResult()
+    : this("",
+           "",
+           Array.Empty<string>(),
+           Array.Empty<string>())
   {
-    UserId      = userAuth.Id;
-    UserName    = userAuth.Username;
-    Roles       = userAuth.Roles;
-    Permissions = userAuth.Permissions.Select(perm => new Permissions.Permission(perm));
+
   }
-
-
-  public override bool IsInRole(string role)
-    => Roles.Contains(role);
-
-  public override UserIdentity Clone()
-    => new(new UserAuthenticationResult(UserId, UserName, Roles.ToList(), Permissions.Select(perm => perm.ToString())), Identity?.AuthenticationType);
 }

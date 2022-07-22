@@ -265,9 +265,9 @@ internal class BsonSerializerTest
   }
 
   [Test]
-  public void SerializeUserIdentityResult()
+  public void SerializeUserAuthenticationResult()
   {
-    var uirm = new UserIdentityResult("Id",
+    var uirm = new UserAuthenticationResult("Id",
                                       "Username",
                                       new[]
                                       {
@@ -280,7 +280,7 @@ internal class BsonSerializerTest
                                         "Permission2:test:*",
                                       });
     var serialized   = uirm.ToBson();
-    var deserialized = BsonSerializer.Deserialize<UserIdentityResult>(serialized);
+    var deserialized = BsonSerializer.Deserialize<UserAuthenticationResult>(serialized);
     Assert.IsNotNull(deserialized);
     Assert.AreEqual(uirm.Id,
                     deserialized.Id);

@@ -26,21 +26,21 @@
 using System;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Auth.Authentication;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Common.Auth.Authorization
 {
   public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
   {
-
-    private readonly AuthenticationScheme authScheme_;
-
-    public AuthorizationPolicyProvider(AuthenticationScheme scheme)
+    private bool bypass_;
+    public AuthorizationPolicyProvider(IOptionsMonitor<AuthenticatorOptions> options)
     {
-      authScheme_ = scheme;
+      bypass_ = options.CurrentValue.Bypass ?? false;
     }
-
     public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
     {
       if (!policyName.StartsWith(RequiresPermissionAttribute.PolicyPrefix))
@@ -49,15 +49,17 @@ namespace ArmoniK.Core.Common.Auth.Authorization
       }
 
       var permission = Permissions.Parse(policyName[RequiresPermissionAttribute.PolicyPrefix.Length..]);
+      if (bypass_)
+        return GetDefaultPolicyAsync()!;
       return Task.FromResult<AuthorizationPolicy?>(
-                                                   new AuthorizationPolicyBuilder(authScheme_.Name).RequireClaim(permission.ToBasePermission())
+                                                   new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireClaim(permission.ToBasePermission())
                                                      .Build());
 
     }
 
     public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
-      => Task.FromResult(new AuthorizationPolicyBuilder(authScheme_.Name).RequireAuthenticatedUser()
-                                                                         .Build());
+      => Task.FromResult(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAuthenticatedUser()
+                                                                                 .Build());
 
     public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
       => Task.FromResult<AuthorizationPolicy?>(null);

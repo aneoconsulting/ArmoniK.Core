@@ -31,15 +31,15 @@ namespace ArmoniK.Core.Common.Auth.Authentication
 {
   public interface IAuthenticationTable : IInitializable
   {
-    public Task<UserIdentity?> GetIdentityAsync(string            cn,
-                                                string            fingerprint,
-                                                CancellationToken cancellationToken);
+    public Task<UserAuthenticationResult?> GetIdentityAsync(string            cn,
+                                                         string            fingerprint,
+                                                         CancellationToken cancellationToken);
 
-    public Task<UserIdentity?> GetIdentityFromIdAsync(string            id,
-                                                      CancellationToken cancellationToken);
+    public Task<UserAuthenticationResult?> GetIdentityFromIdAsync(string            id,
+                                                               CancellationToken cancellationToken);
 
-    public Task<UserIdentity?> GetIdentityFromNameAsync(string            username,
-                                                        CancellationToken cancellationToken);
+    public Task<UserAuthenticationResult?> GetIdentityFromNameAsync(string            username,
+                                                                 CancellationToken cancellationToken);
 
     public void AddRoles(IList<RoleData> roles);
 

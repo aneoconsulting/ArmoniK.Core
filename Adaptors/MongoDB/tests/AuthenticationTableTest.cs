@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Tests.Auth;
 
 using Microsoft.Extensions.Configuration;
@@ -63,6 +64,9 @@ public class AuthenticationTableTest : AuthSourceTestBase
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string> minimalConfig = new()
                                                {
+                                                 {
+                                                   $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}", "ArmoniK.Adapters.MongoDB.AuthenticationTable"
+                                                 },
                                                  {
                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
                                                  },

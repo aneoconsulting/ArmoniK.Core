@@ -222,7 +222,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
       Assert.NotNull(ident);
       Assert.AreEqual(Users[userid]
                         .UserId,
-                      ident.UserId);
+                      ident.Id);
     }
 
     [TestCase("CNUser6",
@@ -258,9 +258,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
       Assert.NotNull(ident);
       Assert.AreEqual(Users[id]
                         .UserId,
-                      ident.UserId);
+                      ident.Id);
       Assert.AreEqual(username,
-                      ident.UserName);
+                      ident.Username);
     }
 
     [TestCase("UserIdDontExist")]
@@ -286,10 +286,10 @@ namespace ArmoniK.Core.Common.Tests.Auth
                                          .Result;
       Assert.NotNull(identity);
       Assert.AreEqual(name,
-                      identity.UserName);
+                      identity.Username);
       Assert.AreEqual(Users[id]
                         .UserId,
-                      identity.UserId);
+                      identity.Id);
     }
 
     [TestCase("UserDontExist")]
@@ -321,7 +321,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
                                                                    CancellationToken.None)
                                          .Result;
       Assert.NotNull(identity);
-      Assert.AreEqual(identity.IsInRole(rolename),
+      Assert.AreEqual(identity.Roles.Contains(rolename),
                       hasRole);
     }
 
@@ -347,7 +347,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
                                          .Result;
       var expected = new Permissions.Permission(claim).Claim;
       Assert.NotNull(identity);
-      Assert.AreEqual(identity.HasClaim(c => c.Type == expected.Type && (expected.Value != null || c.Value == expected.Value)),
+      Assert.AreEqual(identity.Permissions.Select(perm => new Permissions.Permission(perm).Claim).Any(c => c.Type == expected.Type && (expected.Value != null || c.Value == expected.Value)),
                       hasClaim);
     }
 
@@ -365,7 +365,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
                         .All(p =>
                              {
                                var expected = new Permissions.Permission(p).Claim;
-                               return identity.HasClaim(c => c.Type == expected.Type && c.Value == expected.Value);
+                               return identity.Permissions.Select(perm => new Permissions.Permission(perm).Claim)
+                                              .Any(c => c.Type == expected.Type && c.Value == expected.Value);
                              }));
     }
   }
