@@ -117,7 +117,7 @@ public static class Program
 
       builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration,
                                                  logger.GetLogger()); 
-      builder.Services.AddClientSubmitterAuthenticationService(builder.Configuration,
+      builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
                                                                                                                                logger.GetLogger());
       builder.Services.AddClientSubmitterAuthorization(builder.Configuration,
                                                 logger.GetLogger());

@@ -162,7 +162,6 @@ namespace ArmoniK.Core.Common.Tests.Auth
         AuthenticationTable.AddUsers(Users);
         AuthenticationTable.AddCertificates(Auths);
       }
-      
     }
 
     [TearDown]

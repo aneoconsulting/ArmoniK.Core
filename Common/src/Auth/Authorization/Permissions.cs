@@ -25,7 +25,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
+
+using ArmoniK.Core.Common.gRPC.Services;
 
 namespace ArmoniK.Core.Common.Auth.Authorization
 {
@@ -101,7 +105,11 @@ namespace ArmoniK.Core.Common.Auth.Authorization
     public const string Task       = "task";
     public const string Result     = "result";
 
-    public static readonly Permission Impersonate = new(General, nameof(Impersonate));
-    public static readonly Permission None        = new("", "");
+    public static readonly Permission       Impersonate    = new(General, nameof(Impersonate));
+    public static readonly Permission       None           = new("", "");
+    public static readonly List<Permission> PermissionList = typeof(GrpcSubmitterService).GetMethods()
+                                                                                         .SelectMany(mInfo => mInfo.GetCustomAttributes<RequiresPermissionAttribute>())
+                                                                                         .Select(a=>a.Permission)
+                                                                                         .ToList();
   }
 }
