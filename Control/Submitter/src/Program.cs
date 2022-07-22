@@ -114,11 +114,9 @@ public static class Program
       }
 
       builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration,
-                                                 logger.GetLogger()); 
+                                                 logger.GetLogger());
       builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
-                                                                                                                               logger.GetLogger());
-      builder.Services.AddClientSubmitterAuthorization(builder.Configuration,
-                                                logger.GetLogger());
+                                                      logger.GetLogger());
 
       builder.WebHost.UseKestrel(options => options.ListenAnyIP(1080,
                                                                 listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
