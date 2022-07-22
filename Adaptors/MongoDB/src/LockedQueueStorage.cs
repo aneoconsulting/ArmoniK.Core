@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -29,6 +29,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Adapters.MongoDB.Queue;
@@ -119,8 +120,8 @@ public class LockedQueueStorage : ILockedQueueStorage
   public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
                                                                 [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction();
-    var queueCollection = queueCollectionProvider_.Get();
+    using var _               = logger_.LogFunction();
+    var       queueCollection = queueCollectionProvider_.Get();
 
     var nbPulledMessage = 0;
 
@@ -172,8 +173,8 @@ public class LockedQueueStorage : ILockedQueueStorage
   public async Task MessageProcessedAsync(string            id,
                                           CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(id);
-    var queueCollection = queueCollectionProvider_.Get();
+    using var _               = logger_.LogFunction(id);
+    var       queueCollection = queueCollectionProvider_.Get();
 
     await queueCollection.FindOneAndDeleteAsync(qmm => qmm.MessageId == id && qmm.OwnerId == ownerId_,
                                                 cancellationToken: cancellationToken)
@@ -184,8 +185,8 @@ public class LockedQueueStorage : ILockedQueueStorage
   public async Task<bool> RenewDeadlineAsync(string            id,
                                              CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(id);
-    var queueCollection = queueCollectionProvider_.Get();
+    using var _               = logger_.LogFunction(id);
+    var       queueCollection = queueCollectionProvider_.Get();
 
     var updateDefinition = Builders<QueueMessageModelMapping>.Update.Set(qmdm => qmdm.OwnedUntil,
                                                                          DateTime.UtcNow + LockRefreshExtension);
@@ -207,8 +208,8 @@ public class LockedQueueStorage : ILockedQueueStorage
                                          int                 priority          = 1,
                                          CancellationToken   cancellationToken = default)
   {
-    using var _ = logger_.LogFunction();
-    var queueCollection = queueCollectionProvider_.Get();
+    using var _               = logger_.LogFunction();
+    var       queueCollection = queueCollectionProvider_.Get();
 
     var qmms = messages.Select(message => new QueueMessageModelMapping
                                           {
@@ -226,8 +227,8 @@ public class LockedQueueStorage : ILockedQueueStorage
   public async Task RequeueMessageAsync(string            id,
                                         CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(id);
-    var queueCollection = queueCollectionProvider_.Get();
+    using var _               = logger_.LogFunction(id);
+    var       queueCollection = queueCollectionProvider_.Get();
 
     var updateDefinition = Builders<QueueMessageModelMapping>.Update.Unset(qmm => qmm.OwnerId)
                                                              .Unset(qmdm => qmdm.OwnedUntil)
@@ -244,8 +245,8 @@ public class LockedQueueStorage : ILockedQueueStorage
   public async Task MessageRejectedAsync(string            id,
                                          CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction(id);
-    var queueCollection = queueCollectionProvider_.Get();
+    using var _               = logger_.LogFunction(id);
+    var       queueCollection = queueCollectionProvider_.Get();
 
     await queueCollection.FindOneAndDeleteAsync(qmm => qmm.MessageId == id,
                                                 cancellationToken: cancellationToken)
@@ -256,8 +257,8 @@ public class LockedQueueStorage : ILockedQueueStorage
   public async Task ReleaseMessageAsync(string            id,
                                         CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction(id);
-    var queueCollection = queueCollectionProvider_.Get();
+    using var _               = logger_.LogFunction(id);
+    var       queueCollection = queueCollectionProvider_.Get();
 
     var updateDefinition = Builders<QueueMessageModelMapping>.Update.Unset(qmdm => qmdm.OwnedUntil);
 

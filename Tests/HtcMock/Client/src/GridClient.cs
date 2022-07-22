@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -25,7 +25,7 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common;
+using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -55,7 +55,6 @@ public class GridClient : IGridClient
 
   public ISessionClient CreateSession()
   {
-    using var _ = logger_.LogFunction();
     var sessionId = Guid.NewGuid()
                         .ToString();
     var createSessionRequest = new CreateSessionRequest

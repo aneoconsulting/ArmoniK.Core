@@ -23,26 +23,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 
-using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
-using Grpc.Core;
-
 using JetBrains.Annotations;
-
-using ComputeRequest = ArmoniK.Api.gRPC.V1.ProcessRequest.Types.ComputeRequest;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
 
 [PublicAPI]
 public interface IWorkerStreamHandler : IInitializable, IDisposable
 {
-  public Queue<ComputeRequest> WorkerReturn();
-
   public void StartTaskProcessing(TaskData          taskData,
                                   CancellationToken cancellationToken);
 

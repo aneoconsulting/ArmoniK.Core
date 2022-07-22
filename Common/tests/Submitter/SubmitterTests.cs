@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -31,11 +31,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.Worker.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
@@ -109,7 +110,7 @@ public class SubmitterTests
                                                    "14000"
                                                  },
                                                  {
-                                                   $"{ComputePlan.SettingSection}:{nameof(ComputePlan.MessageBatchSize)}", "1"
+                                                   $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
                                                  },
                                                };
 
@@ -208,8 +209,6 @@ public class SubmitterTests
                                          SessionId,
                                          CancellationToken.None)
                    .ConfigureAwait(false);
-
-
   }
 
   private static async Task InitSubmitterCompleteTask(ISubmitter        submitter,
@@ -225,6 +224,7 @@ public class SubmitterTests
     var taskdata = new TaskData(SessionId,
                                 TaskCompletedId,
                                 "OwnerPodId",
+                                "PayloadId",
                                 new List<string>(),
                                 new List<string>(),
                                 new List<string>
@@ -233,13 +233,7 @@ public class SubmitterTests
                                 },
                                 new List<string>(),
                                 TaskStatus.Completed,
-                                "",
                                 defaultTaskOptions,
-                                DateTime.UtcNow,
-                                DateTime.MinValue,
-                                DateTime.MinValue,
-                                DateTime.UtcNow,
-                                DateTime.UtcNow,
                                 new Storage.Output(false,
                                                    ""));
 
@@ -461,7 +455,6 @@ public class SubmitterTests
                                                                               },
                                                                               writer,
                                                                               CancellationToken.None));
-
   }
 
   [Test]

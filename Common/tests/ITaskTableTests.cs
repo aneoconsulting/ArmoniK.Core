@@ -29,6 +29,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
@@ -55,6 +56,7 @@ public class TaskTableTestBase
                               new TaskData("SessionId",
                                            "TaskCompletedId",
                                            "OwnerPodId",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -69,18 +71,13 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Completed,
-                                           "",
                                            default,
-                                           DateTime.Now,
-                                           DateTime.Now + TimeSpan.FromSeconds(1),
-                                           DateTime.Now + TimeSpan.FromSeconds(10),
-                                           DateTime.Now + TimeSpan.FromSeconds(20),
-                                           DateTime.Now,
                                            new Output(true,
                                                       "")),
                               new TaskData("SessionId",
                                            "TaskCreatingId",
                                            "OwnerPodId",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -95,18 +92,13 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Creating,
-                                           "",
                                            default,
-                                           DateTime.Now,
-                                           null,
-                                           null,
-                                           null,
-                                           DateTime.Now,
                                            new Output(false,
                                                       "")),
                               new TaskData("SessionId",
                                            "TaskProcessingId",
                                            "OwnerPodId",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -121,18 +113,13 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Processing,
-                                           "",
                                            default,
-                                           DateTime.Now,
-                                           DateTime.Now + TimeSpan.FromSeconds(1),
-                                           DateTime.Now + TimeSpan.FromSeconds(10),
-                                           null,
-                                           DateTime.Now,
                                            new Output(false,
                                                       "")),
                               new TaskData("SessionId",
                                            "TaskAnotherProcessingId",
                                            "OwnerPodId",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -147,18 +134,13 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Processing,
-                                           "",
                                            default,
-                                           DateTime.Now,
-                                           DateTime.Now + TimeSpan.FromSeconds(1),
-                                           DateTime.Now + TimeSpan.FromSeconds(10),
-                                           null,
-                                           DateTime.Now,
                                            new Output(false,
                                                       "")),
                               new TaskData("SessionId",
                                            "TaskSubmittedId",
                                            "",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -173,18 +155,13 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Submitted,
-                                           "",
                                            default,
-                                           DateTime.Now,
-                                           DateTime.Now + TimeSpan.FromSeconds(1),
-                                           null,
-                                           null,
-                                           DateTime.Now,
                                            new Output(false,
                                                       "")),
                               new TaskData("SessionId",
                                            "TaskFailedId",
                                            "OwnerPodId",
+                                           "PayloadId",
                                            new[]
                                            {
                                              "parent1",
@@ -199,13 +176,7 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Failed,
-                                           "",
                                            default,
-                                           DateTime.Now,
-                                           DateTime.Now + TimeSpan.FromSeconds(1),
-                                           DateTime.Now + TimeSpan.FromSeconds(10),
-                                           DateTime.Now + TimeSpan.FromSeconds(100),
-                                           DateTime.Now,
                                            new Output(false,
                                                       "sad task")),
                             })
@@ -930,6 +901,44 @@ public class TaskTableTestBase
 
       Assert.AreEqual(1,
                       taskList.Count);
+    }
+  }
+
+  [Test]
+  public async Task RetryTaskShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var taskToRetry = await TaskTable.ReadTaskAsync("TaskFailedId", CancellationToken.None)
+        .ConfigureAwait(false);
+
+      var expectedNewId = taskToRetry.InitialTaskId + $"###{taskToRetry.RetryOfIds.Count + 1}";
+
+      var newTaskId = await TaskTable.RetryTask(taskToRetry, CancellationToken.None)
+        .ConfigureAwait(false);
+
+      Assert.AreEqual(expectedNewId, newTaskId);
+    }
+  }
+
+  [Test]
+  public async Task PayloadIdAfterRetryShouldBeCorrect()
+  {
+    if (RunTests)
+    {
+      var taskToRetry = await TaskTable.ReadTaskAsync("TaskFailedId", CancellationToken.None).ConfigureAwait(false);
+      for (var i = 0; i < 3; i++)
+      {
+        var newTaskId = await TaskTable.RetryTask(taskToRetry, CancellationToken.None)
+          .ConfigureAwait(false);
+
+        var retriedTask = await TaskTable.ReadTaskAsync(newTaskId, CancellationToken.None)
+          .ConfigureAwait(false);
+
+        Assert.AreEqual(taskToRetry.PayloadId, retriedTask.PayloadId);
+
+        taskToRetry = retriedTask;
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -27,8 +27,9 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Worker.Options;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
@@ -54,13 +55,13 @@ public class Pollster
   private readonly ITaskTable               taskTable_;
   private readonly ITaskProcessingChecker   taskProcessingChecker_;
   private readonly IWorkerStreamHandler     workerStreamHandler_;
+  private readonly IAgentHandler            agentHandler_;
   public           string                   TaskProcessing;
   private readonly string                   ownerPodId_;
 
-
   public Pollster(IQueueStorage            queueStorage,
                   DataPrefetcher           dataPrefetcher,
-                  ComputePlan              options,
+                  ComputePlane             options,
                   IHostApplicationLifetime lifeTime,
                   ActivitySource           activitySource,
                   ILogger<Pollster>        logger,
@@ -70,12 +71,13 @@ public class Pollster
                   ISessionTable            sessionTable,
                   ITaskTable               taskTable,
                   ITaskProcessingChecker   taskProcessingChecker,
-                  IWorkerStreamHandler     workerStreamHandler)
+                  IWorkerStreamHandler     workerStreamHandler,
+                  IAgentHandler            agentHandler)
   {
     if (options.MessageBatchSize < 1)
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
+                                            $"The minimum value for {nameof(ComputePlane.MessageBatchSize)} is 1.");
     }
 
     logger_                = logger;
@@ -91,9 +93,9 @@ public class Pollster
     taskTable_             = taskTable;
     taskProcessingChecker_ = taskProcessingChecker;
     workerStreamHandler_   = workerStreamHandler;
+    agentHandler_          = agentHandler;
     TaskProcessing         = "";
     ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
-
   }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -157,11 +159,11 @@ public class Pollster
                                                           submitter_,
                                                           dataPrefetcher_,
                                                           workerStreamHandler_,
-                                                          objectStorageFactory_,
                                                           message,
                                                           taskProcessingChecker_,
                                                           ownerPodId_,
                                                           activitySource_,
+                                                          agentHandler_,
                                                           logger_);
 
             var precondition = await taskHandler.AcquireTask(combinedCts.Token)
@@ -170,13 +172,14 @@ public class Pollster
             if (precondition)
             {
               TaskProcessing = taskHandler.GetAcquiredTask();
+
               await taskHandler.PreProcessing(combinedCts.Token)
                                .ConfigureAwait(false);
 
               await taskHandler.ExecuteTask(combinedCts.Token)
                                .ConfigureAwait(false);
 
-              logger_.LogDebug("CompleteProcessing task processing");
+              logger_.LogDebug("Complete task processing");
 
               await taskHandler.PostProcessing(combinedCts.Token)
                                .ConfigureAwait(false);

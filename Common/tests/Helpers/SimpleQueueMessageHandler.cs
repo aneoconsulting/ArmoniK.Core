@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,17 +15,22 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-// 
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// but WITHOUT ANY WARRANTY
 
-namespace ArmoniK.Core.Common.Injection.Options;
+using System.Threading;
+using System.Threading.Tasks;
 
-public enum GrpcSocketType
+using ArmoniK.Core.Common.Storage;
+
+namespace ArmoniK.Core.Common.Tests.Helpers;
+
+public class SimpleQueueMessageHandler : IQueueMessageHandler
 {
-  Web,
-  UnixSocket,
+  public ValueTask DisposeAsync()
+    => ValueTask.CompletedTask;
+
+  public CancellationToken CancellationToken { get; set; }
+  public string MessageId { get; set; }
+  public string TaskId { get; set; }
+  public QueueMessageStatus Status { get; set; }
 }

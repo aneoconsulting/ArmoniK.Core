@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -32,6 +32,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -52,9 +54,9 @@ public class TaskTable : ITaskTable
                    ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskId,
                    ILogger<TaskTable>                                    logger)
   {
-    taskId2TaskData_  = task2TaskData;
-    session2TaskIds_  = session2TaskId;
-    Logger            = logger;
+    taskId2TaskData_ = task2TaskData;
+    session2TaskIds_ = session2TaskId;
+    Logger           = logger;
   }
 
   public TimeSpan PollingDelayMax { get; set; }
@@ -306,8 +308,8 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public Task SetTaskCanceledAsync(string taskId,
-                                  CancellationToken cancellationToken)
+  public Task SetTaskCanceledAsync(string            taskId,
+                                   CancellationToken cancellationToken)
   {
     using var _ = Logger.LogFunction();
 
@@ -335,18 +337,18 @@ public class TaskTable : ITaskTable
                                    }
 
                                    return data with
-                                   {
-                                     Status = TaskStatus.Canceled,
-                                     Output = taskOutput,
-                                   };
+                                          {
+                                            Status = TaskStatus.Canceled,
+                                            Output = taskOutput,
+                                          };
                                  });
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
   public Task<bool> SetTaskErrorAsync(string            taskId,
-                                string            errorDetail,
-                                CancellationToken cancellationToken)
+                                      string            errorDetail,
+                                      CancellationToken cancellationToken)
   {
     using var _ = Logger.LogFunction();
 
@@ -480,9 +482,9 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public Task<string> RetryTask(TaskData          taskData,
-                           CancellationToken cancellationToken)
+                                CancellationToken cancellationToken)
   {
-    var newTaskId = taskData.TaskId + $"###{taskData.RetryOfIds.Count + 1}";
+    var newTaskId = taskData.InitialTaskId + $"###{taskData.RetryOfIds.Count + 1}";
     var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)
                             {
                               taskData.TaskId,
@@ -490,9 +492,11 @@ public class TaskTable : ITaskTable
     var newTaskData = new TaskData(taskData.SessionId,
                                    newTaskId,
                                    "",
+                                   taskData.PayloadId,
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
                                    taskData.ExpectedOutputIds,
+                                   taskData.InitialTaskId,
                                    newTaskRetryOfIds,
                                    TaskStatus.Creating,
                                    "",
@@ -539,7 +543,7 @@ public class TaskTable : ITaskTable
     => ValueTask.FromResult(true);
 
   private bool UpdateAndCheckTaskStatus(string     id,
-                                       TaskStatus status)
+                                        TaskStatus status)
   {
     if (!taskId2TaskData_.ContainsKey(id))
     {
@@ -579,7 +583,6 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-
                                    if (data.Status != TaskStatus.Creating)
                                    {
                                      return data;
@@ -594,5 +597,4 @@ public class TaskTable : ITaskTable
                                  });
     return updated;
   }
-
 }

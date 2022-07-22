@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
@@ -32,10 +33,14 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class ChannelAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMessage, TWriteMessage>
 {
-  private readonly Channel<TReadMessage> readerChannel_ = Channel.CreateUnbounded<TReadMessage>();
+  private readonly TReadMessage           message_;
+  private readonly Channel<TReadMessage>  readerChannel_ = Channel.CreateUnbounded<TReadMessage>();
   private readonly Channel<TWriteMessage> writerChannel_ = Channel.CreateUnbounded<TWriteMessage>();
 
-  public ChannelAsyncPipe() { }
+  public ChannelAsyncPipe(TReadMessage message)
+  {
+    message_ = message;
+  }
 
   private ChannelAsyncPipe(Channel<TReadMessage> readerChannel,
                            Channel<TWriteMessage> writerChannel)
@@ -44,8 +49,8 @@ public class ChannelAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMes
     writerChannel_ = writerChannel;
   }
 
-  public IAsyncEnumerable<TReadMessage> Reader
-    => readerChannel_.Reader.ReadAllAsync();
+  public Task<TReadMessage> ReadAsync(CancellationToken cancellationToken)
+    => Task.FromResult(message_);
 
   public async Task WriteAsync(TWriteMessage message)
     => await writerChannel_.Writer.WriteAsync(message)

@@ -30,6 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
@@ -115,9 +116,11 @@ public class DataPrefetcherTest
     const string output1      = "Output1";
     const string dependency1  = "Dependency1";
     const string podId        = "PodId";
+    const string payloadId = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -132,16 +135,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -267,15 +264,17 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
     const string taskId = "TaskId";
     const string output1 = "Output1";
     const string dependency1 = "Dependency1";
     const string podId = "PodId";
+    const string payloadId = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -290,16 +289,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -358,15 +351,17 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
     const string taskId = "TaskId";
     const string output1 = "Output1";
     const string dependency1 = "Dependency1";
     const string podId = "PodId";
+    const string payloadId = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -381,16 +376,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -449,15 +438,17 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
     const string taskId = "TaskId";
     const string output1 = "Output1";
     const string dependency1 = "Dependency1";
     const string podId = "PodId";
+    const string payloadId = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -472,16 +463,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -541,9 +526,11 @@ public class DataPrefetcherTest
     const string dependency1  = "Dependency1";
     const string dependency2  = "Dependency2";
     const string podId        = "PodId";
+    const string payloadId    = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -559,16 +546,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -621,16 +602,18 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    const string sessionId = "SessionId";
+    const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
     const string taskId = "TaskId";
     const string output1 = "Output1";
     const string dependency1 = "Dependency1";
     const string dependency2 = "Dependency2";
     const string podId = "PodId";
+    const string payloadId = "PayloadId";
     var res = await dataPrefetcher.PrefetchDataAsync(new TaskData(sessionId,
                                                                   taskId,
                                                                   podId,
+                                                                  payloadId,
                                                                   new[]
                                                                   {
                                                                     parentTaskId,
@@ -646,16 +629,10 @@ public class DataPrefetcherTest
                                                                   },
                                                                   Array.Empty<string>(),
                                                                   TaskStatus.Submitted,
-                                                                  "",
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1),
-                                                                  DateTime.Now,
-                                                                  DateTime.Now + TimeSpan.FromSeconds(1),
-                                                                  null,
-                                                                  null,
-                                                                  DateTime.Now,
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)

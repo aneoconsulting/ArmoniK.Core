@@ -47,7 +47,6 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry.Trace;
 
 using Serilog;
-using Serilog.Formatting.Compact;
 
 namespace ArmoniK.Core.Compute.PollingAgent;
 
@@ -57,19 +56,19 @@ public static class Program
 
   public static int Main(string[] args)
   {
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
+           .AddJsonFile("appsettings.json",
+                        true,
+                        false)
+           .AddEnvironmentVariables()
+           .AddCommandLine(args);
+
+    var logger = new LoggerInit(builder.Configuration);
+
     try
     {
-      var builder = WebApplication.CreateBuilder(args);
-
-      builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
-             .AddJsonFile("appsettings.json",
-                          true,
-                          false)
-             .AddEnvironmentVariables()
-             .AddCommandLine(args);
-
-      var logger = new LoggerInit(builder.Configuration);
-
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
       builder.Services.AddLogging(logger.Configure)
@@ -82,7 +81,9 @@ public static class Program
                        logger.GetLogger())
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>()
+             .AddSingleton(logger)
              .AddSingleton<ISubmitter, Submitter>()
+             .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
              .AddHttpClient();
@@ -148,13 +149,15 @@ public static class Program
                                           () => Task.FromResult(app.Services.GetRequiredService<Pollster>()
                                                                    .TaskProcessing));
                        });
+
       app.Run();
       return 0;
     }
     catch (Exception ex)
     {
-      Log.Fatal(ex,
-                "Host terminated unexpectedly");
+      logger.GetLogger()
+            .LogCritical(ex,
+                         "Host terminated unexpectedly");
       return 1;
     }
     finally
