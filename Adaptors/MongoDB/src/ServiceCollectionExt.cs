@@ -29,20 +29,22 @@ using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
-using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
-using MongoDB.Driver.Core.Events;
 using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -224,5 +226,32 @@ public static class ServiceCollectionExt
                     mongoOptions.DataRetention);
 
     return services;
+  }
+
+  [PublicAPI]
+  public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
+                                                                    ConfigurationManager    configuration,
+                                                                    ILogger                 logger)
+  {
+    var components = configuration.GetSection(Components.SettingSection);
+    if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
+    {
+      services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
+      services.AddTransient<IAuthenticationTable, AuthenticationTable>();
+    }
+    return services;
+  }
+
+  [PublicAPI]
+  public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
+                                                                    ConfigurationManager    configuration,
+                                                                    ILogger                 logger)
+  {
+    services.Configure<AuthenticatorOptions>(configuration.GetSection(AuthenticatorOptions.SectionName));
+    services.AddAuthentication()
+              .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
+                                                              o => {});
+    services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
+      return services;
   }
 }

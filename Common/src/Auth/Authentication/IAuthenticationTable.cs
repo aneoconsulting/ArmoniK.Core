@@ -8,6 +8,7 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
+//   D. Brasseur       <dbrasseur@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -22,19 +23,28 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Injection.Options;
-
-[PublicAPI]
-public class Components
+namespace ArmoniK.Core.Common.Auth.Authentication
 {
-  public const string SettingSection = nameof(Components);
+  public interface IAuthenticationTable : IInitializable
+  {
+    public Task<UserAuthenticationResult?> GetIdentityAsync(string            cn,
+                                                         string            fingerprint,
+                                                         CancellationToken cancellationToken);
 
-  public string? TableStorage  { get; set; }
-  public string? QueueStorage  { get; set; }
-  public string? LeaseProvider { get; set; }
-  public string? ObjectStorage { get; set; }
+    public Task<UserAuthenticationResult?> GetIdentityFromIdAsync(string            id,
+                                                               CancellationToken cancellationToken);
 
-  public string? AuthenticationStorage { get; set; }
+    public Task<UserAuthenticationResult?> GetIdentityFromNameAsync(string            username,
+                                                                 CancellationToken cancellationToken);
+
+    public void AddRoles(IList<RoleData> roles);
+
+    public void AddUsers(IList<UserData> users);
+
+    public void AddCertificates(IList<AuthData> certificates);
+  }
 }

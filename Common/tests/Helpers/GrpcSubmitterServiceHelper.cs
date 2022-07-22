@@ -23,18 +23,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Tests.Auth;
 
 using Grpc.Net.Client;
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+
+using Moq;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -56,7 +65,16 @@ public class GrpcSubmitterServiceHelper : IDisposable
     builder.Services.AddSingleton(loggerFactory_)
            .AddSingleton(submitter)
            .AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
-           .AddLogging()
+           .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(new List<MockIdentity>()))
+           .Configure<AuthenticatorOptions>(o =>
+                                            {
+                                              o.Bypass            = true;
+                                            })
+           .AddAuthentication()
+           .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName, _ => {});
+    builder.Services.AddLogging()
+           .AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
+           .AddAuthorization()
            .ValidateGrpcRequests()
            .AddGrpc();
 
@@ -64,6 +82,8 @@ public class GrpcSubmitterServiceHelper : IDisposable
 
     app_ = builder.Build();
     app_.UseRouting();
+    app_.UseAuthentication();
+    app_.UseAuthorization();
     app_.MapGrpcService<GrpcSubmitterService>();
   }
 

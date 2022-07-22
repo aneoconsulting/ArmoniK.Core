@@ -28,15 +28,19 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 
 using Grpc.Core;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBase
 {
   private readonly ISubmitter                    submitter_;
@@ -51,6 +55,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
 
   /// <inheritdoc />
+  
+  [RequiresPermission(Permissions.General, nameof(GetServiceConfiguration))]
   public override async Task<Configuration> GetServiceConfiguration(Empty             request,
                                                               ServerCallContext context)
   {
@@ -76,6 +82,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  [RequiresPermission(Permissions.Session, nameof(CancelSession))]
   public override async Task<Empty> CancelSession(Session           request,
                                                   ServerCallContext context)
   {
@@ -110,6 +117,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  [RequiresPermission(Permissions.Task, nameof(CancelTasks))]
   public override async Task<Empty> CancelTasks(TaskFilter        request,
                                                 ServerCallContext context)
   {
@@ -139,6 +147,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   }
 
   /// <inheritdoc />
+  [RequiresPermission(Permissions.Session, nameof(CreateSession))]
   public override Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
                                                          ServerCallContext    context)
   {
@@ -164,6 +173,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  [RequiresPermission(Permissions.Task, nameof(CreateSmallTasks))]
   public override async Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request,
                                                                ServerCallContext      context)
   {
@@ -213,6 +223,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
 
   /// <inheritdoc />
+  [RequiresPermission(Permissions.Task, nameof(CreateLargeTasks))]
   public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream,
                                                                ServerCallContext                          context)
   {
@@ -279,6 +290,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   }
 
   /// <inheritdoc />
+  [RequiresPermission(Permissions.Task, nameof(CountTasks))]
   public override Task<Count> CountTasks(TaskFilter        request,
                                          ServerCallContext context)
   {
@@ -304,6 +316,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   }
 
   /// <inheritdoc />
+  [RequiresPermission(Permissions.Result, nameof(TryGetResultStream))]
   public override async Task TryGetResultStream(ResultRequest                    request,
                                           IServerStreamWriter<ResultReply> responseStream,
                                           ServerCallContext                context)
@@ -353,6 +366,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   }
 
   /// <inheritdoc />
+  [RequiresPermission(Permissions.Task, nameof(WaitForCompletion))]
   public override Task<Count> WaitForCompletion(WaitRequest       request,
                                                 ServerCallContext context)
   {
@@ -384,6 +398,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  [RequiresPermission(Permissions.Task, nameof(TryGetTaskOutput))]
   public override Task<Output> TryGetTaskOutput(ResultRequest     request,
                                                 ServerCallContext context)
   {
@@ -423,6 +438,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  [RequiresPermission(Permissions.Result, nameof(WaitForAvailability))]
   public override Task<AvailabilityReply> WaitForAvailability(ResultRequest     request,
                                                               ServerCallContext context)
   {
@@ -461,6 +477,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  [RequiresPermission(Permissions.Task, nameof(GetTaskStatus))]
   public override Task<GetTaskStatusReply> GetTaskStatus(GetTaskStatusRequest request,
                                                          ServerCallContext    context)
   {
@@ -492,6 +509,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  [RequiresPermission(Permissions.Result, nameof(GetResultStatus))]
   public override Task<GetResultStatusReply> GetResultStatus(GetResultStatusRequest request,
                                                              ServerCallContext      context)
   {
@@ -523,6 +541,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  [RequiresPermission(Permissions.Task, nameof(ListTasks))]
   public override Task<TaskIdList> ListTasks(TaskFilter        request,
                                              ServerCallContext context)
   {
@@ -554,6 +573,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  [RequiresPermission(Permissions.Session, nameof(ListSessions))]
   public override Task<SessionIdList> ListSessions(SessionFilter     request,
                                                  ServerCallContext context)
   {
