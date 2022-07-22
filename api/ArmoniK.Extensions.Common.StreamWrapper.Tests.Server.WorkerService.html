@@ -5,10 +5,10 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class GrpcChannel
+    <title>Class WorkerService
    </title>
     <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class GrpcChannel
+    <meta name="title" content="Class WorkerService
    ">
     <meta name="generator" content="docfx 2.59.3.0">
     
@@ -68,72 +68,98 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Common.Injection.Options.GrpcChannel">
+            <article class="content wrap" id="_content" data-uid="ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService">
   
   
-  <h1 id="ArmoniK_Core_Common_Injection_Options_GrpcChannel" data-uid="ArmoniK.Core.Common.Injection.Options.GrpcChannel" class="text-break">Class GrpcChannel
+  <h1 id="ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_WorkerService" data-uid="ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService" class="text-break">Class WorkerService
   </h1>
   <div class="markdown level0 summary"></div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
     <div class="level0"><span class="xref">System.Object</span></div>
-    <div class="level1"><span class="xref">GrpcChannel</span></div>
+    <div class="level1"><span class="xref">WorkerService</span></div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Common.Injection.Options.html">ArmoniK.Core.Common.Injection.Options</a></h6>
-  <h6><strong>Assembly</strong>: ArmoniK.Core.Common.dll</h6>
-  <h5 id="ArmoniK_Core_Common_Injection_Options_GrpcChannel_syntax">Syntax</h5>
+  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.html">ArmoniK.Extensions.Common.StreamWrapper.Tests.Server</a></h6>
+  <h6><strong>Assembly</strong>: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.dll</h6>
+  <h5 id="ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_WorkerService_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class GrpcChannel : object</code></pre>
+    <pre><code class="lang-csharp hljs">public class WorkerService : WorkerStreamWrapper</code></pre>
   </div>
-  <h3 id="properties">Properties
+  <h3 id="constructors">Constructors
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Injection_Options_GrpcChannel_Address.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Injection.Options.GrpcChannel.Address%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_WorkerService__ctor_ILoggerFactory_GrpcChannelProvider_.md&amp;value=---%0Auid%3A%20ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService.%23ctor(ILoggerFactory%2CGrpcChannelProvider)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Injection/Options/GrpcChannel.cs/#L32">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Tests/Stream/Server/WorkerService.cs/#L43">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Common_Injection_Options_GrpcChannel_Address_" data-uid="ArmoniK.Core.Common.Injection.Options.GrpcChannel.Address*"></a>
-  <h4 id="ArmoniK_Core_Common_Injection_Options_GrpcChannel_Address" data-uid="ArmoniK.Core.Common.Injection.Options.GrpcChannel.Address">Address</h4>
+  <a id="ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_WorkerService__ctor_" data-uid="ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService.#ctor*"></a>
+  <h4 id="ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_WorkerService__ctor_ILoggerFactory_GrpcChannelProvider_" data-uid="ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService.#ctor(ILoggerFactory,GrpcChannelProvider)">WorkerService(ILoggerFactory, GrpcChannelProvider)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public string? Address { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public WorkerService(ILoggerFactory loggerFactory, GrpcChannelProvider provider)</code></pre>
   </div>
-  <h5 class="propertyValue">Property Value</h5>
+  <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
     <thead>
       <tr>
         <th>Type</th>
+        <th>Name</th>
         <th>Description</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="xref">ILoggerFactory</span></td>
+        <td><span class="parametername">loggerFactory</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">GrpcChannelProvider</span></td>
+        <td><span class="parametername">provider</span></td>
         <td></td>
       </tr>
     </tbody>
   </table>
+  <h3 id="methods">Methods
+  </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Injection_Options_GrpcChannel_SocketType.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Injection.Options.GrpcChannel.SocketType%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_WorkerService_Process_ITaskHandler_.md&amp;value=---%0Auid%3A%20ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService.Process(ITaskHandler)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Injection/Options/GrpcChannel.cs/#L34">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Tests/Stream/Server/WorkerService.cs/#L50">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Common_Injection_Options_GrpcChannel_SocketType_" data-uid="ArmoniK.Core.Common.Injection.Options.GrpcChannel.SocketType*"></a>
-  <h4 id="ArmoniK_Core_Common_Injection_Options_GrpcChannel_SocketType" data-uid="ArmoniK.Core.Common.Injection.Options.GrpcChannel.SocketType">SocketType</h4>
+  <a id="ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_WorkerService_Process_" data-uid="ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService.Process*"></a>
+  <h4 id="ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_WorkerService_Process_ITaskHandler_" data-uid="ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService.Process(ITaskHandler)">Process(ITaskHandler)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public GrpcSocketType SocketType { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public override async Task&lt;Output&gt; Process(ITaskHandler taskHandler)</code></pre>
   </div>
-  <h5 class="propertyValue">Property Value</h5>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">ITaskHandler</span></td>
+        <td><span class="parametername">taskHandler</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
   <table class="table table-bordered table-striped table-condensed">
     <thead>
       <tr>
@@ -143,7 +169,7 @@
     </thead>
     <tbody>
       <tr>
-        <td><a class="xref" href="ArmoniK.Core.Common.Injection.Options.GrpcSocketType.html">GrpcSocketType</a></td>
+        <td><span class="xref">Task</span>&lt;<span class="xref">Output</span>&gt;</td>
         <td></td>
       </tr>
     </tbody>
@@ -156,10 +182,10 @@
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Core_Common_Injection_Options_GrpcChannel.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Injection.Options.GrpcChannel%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/master/apiSpec/new?filename=ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_WorkerService.md&amp;value=---%0Auid%3A%20ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Common/src/Injection/Options/GrpcChannel.cs/#L29" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/master/Tests/Stream/Server/WorkerService.cs/#L41" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>
