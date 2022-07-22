@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
@@ -92,7 +93,7 @@ public class TaskHandler : IAsyncDisposable
     ownerPodId_            = ownerPodId;
     taskData_              = null;
     token_ = Guid.NewGuid()
-                .ToString();
+                 .ToString();
   }
 
   /// <summary>
@@ -460,7 +461,6 @@ public class TaskHandler : IAsyncDisposable
 
       if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
       {
-
         logger_.LogDebug("Complete processing of the request");
         await agent_.FinalizeTaskCreation(CancellationToken.None)
                     .ConfigureAwait(false);
@@ -472,7 +472,6 @@ public class TaskHandler : IAsyncDisposable
                                          CancellationToken.None)
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Processed;
-
     }
     catch (RpcException e)
     {

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -29,6 +29,8 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Worker.Options;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Object;
 using ArmoniK.Core.Common;
@@ -80,8 +82,8 @@ public class ObjectStorage : IObjectStorage
                                      IAsyncEnumerable<byte[]> valueChunks,
                                      CancellationToken        cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var objectCollection = objectCollectionProvider_.Get();
+    using var _                = logger_.LogFunction(objectStorageName_ + key);
+    var       objectCollection = objectCollectionProvider_.Get();
 
     var taskList = new List<Task>();
 
@@ -113,8 +115,8 @@ public class ObjectStorage : IObjectStorage
                                      IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                      CancellationToken                      cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var objectCollection = objectCollectionProvider_.Get();
+    using var _                = logger_.LogFunction(objectStorageName_ + key);
+    var       objectCollection = objectCollectionProvider_.Get();
 
     var taskList = new List<Task>();
 
@@ -145,9 +147,9 @@ public class ObjectStorage : IObjectStorage
   async IAsyncEnumerable<byte[]> IObjectStorage.GetValuesAsync(string                                     key,
                                                                [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var sessionHandle = sessionProvider_.Get();
-    var objectCollection = objectCollectionProvider_.Get();
+    using var _                = logger_.LogFunction(objectStorageName_ + key);
+    var       sessionHandle    = sessionProvider_.Get();
+    var       objectCollection = objectCollectionProvider_.Get();
 
     var throwException = true;
     await foreach (var chunk in objectCollection.AsQueryable(sessionHandle)
@@ -172,8 +174,8 @@ public class ObjectStorage : IObjectStorage
   public async Task<bool> TryDeleteAsync(string            key,
                                          CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
-    var objectCollection = objectCollectionProvider_.Get();
+    using var _                = logger_.LogFunction(objectStorageName_ + key);
+    var       objectCollection = objectCollectionProvider_.Get();
 
     var res = await objectCollection.DeleteManyAsync(odm => odm.Key == objectStorageName_ + key,
                                                      cancellationToken)
@@ -184,9 +186,9 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public async IAsyncEnumerable<string> ListKeysAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction();
-    var sessionHandle = sessionProvider_.Get();
-    var objectCollection = objectCollectionProvider_.Get();
+    using var _                = logger_.LogFunction();
+    var       sessionHandle    = sessionProvider_.Get();
+    var       objectCollection = objectCollectionProvider_.Get();
 
     await foreach (var key in objectCollection.AsQueryable(sessionHandle)
                                               .Where(odm => odm.ChunkIdx == 0)

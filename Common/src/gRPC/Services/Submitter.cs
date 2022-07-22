@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -31,6 +31,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.Worker.Options;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
@@ -82,7 +84,8 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public Task StartTask(string            taskId,
                         CancellationToken cancellationToken = default)
-    => taskTable_.StartTask(taskId, cancellationToken);
+    => taskTable_.StartTask(taskId,
+                            cancellationToken);
 
   /// <inheritdoc />
   public Task<Configuration> GetServiceConfiguration(Empty             request,
@@ -112,7 +115,6 @@ public class Submitter : ISubmitter
                     .ConfigureAwait(false);
 
     await sessionCancelTask.ConfigureAwait(false);
-
   }
 
   /// <inheritdoc />
@@ -306,7 +308,6 @@ public class Submitter : ISubmitter
 
     if (result.Status != ResultStatus.Completed)
     {
-
       var taskData = await taskTable_.ReadTaskAsync(result.OwnerTaskId,
                                                     cancellationToken)
                                      .ConfigureAwait(false);
@@ -381,7 +382,6 @@ public class Submitter : ISubmitter
                                     },
                                     CancellationToken.None)
                         .ConfigureAwait(false);
-
   }
 
   public async Task<Count> WaitForCompletion(WaitRequest       request,
@@ -528,7 +528,6 @@ public class Submitter : ISubmitter
       // TODO FIXME: nothing will resubmit the task if there is a crash there
       if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
       {
-
         logger_.LogWarning("Resubmit {task}",
                            taskData.TaskId);
 
@@ -601,7 +600,7 @@ public class Submitter : ISubmitter
           var taskData = await taskTable_.ReadTaskAsync(result.OwnerTaskId,
                                                         contextCancellationToken)
                                          .ConfigureAwait(false);
-          
+
           return new AvailabilityReply
                  {
                    Error = new TaskError
@@ -639,7 +638,7 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatusAsync)}");
     return new GetTaskStatusReply
            {
-              IdStatuses =
+             IdStatuses =
              {
                await taskTable_.GetTaskStatus(request.TaskIds.ToList(),
                                               contextCancellationToken)
@@ -680,7 +679,7 @@ public class Submitter : ISubmitter
 
   /// <inheritdoc />
   public async Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
-                                               CancellationToken contextCancellationToken)
+                                                     CancellationToken contextCancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       idList   = new SessionIdList();
@@ -699,9 +698,9 @@ public class Submitter : ISubmitter
 
 
   private async Task ChangeResultOwnership(string                           session,
-                                          string                           parentTaskId,
-                                          IEnumerable<Storage.TaskRequest> requests,
-                                          CancellationToken                cancellationToken = default)
+                                           string                           parentTaskId,
+                                           IEnumerable<Storage.TaskRequest> requests,
+                                           CancellationToken                cancellationToken = default)
   {
     using var _        = logger_.LogFunction($"{session}.{parentTaskId}");
     using var activity = activitySource_.StartActivity($"{nameof(ChangeResultOwnership)}");

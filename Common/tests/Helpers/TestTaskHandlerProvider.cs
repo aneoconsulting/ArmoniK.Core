@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Worker.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -59,15 +60,17 @@ public class TestTaskHandlerProvider : IDisposable
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
   private readonly        IResultTable   resultTable_;
-  public readonly        ITaskTable     TaskTable;
+  public readonly         ITaskTable     TaskTable;
   private readonly        ISessionTable  sessionTable_;
-  public  readonly        ISubmitter     Submitter;
+  public readonly         ISubmitter     Submitter;
   private readonly        LoggerFactory  loggerFactory_;
   private readonly        WebApplication app_;
   public readonly         TaskHandler    TaskHandler;
 
 
-  public TestTaskHandlerProvider(IWorkerStreamHandler workerStreamHandler, IAgentHandler agentHandler, IQueueMessageHandler queueStorage)
+  public TestTaskHandlerProvider(IWorkerStreamHandler workerStreamHandler,
+                                 IAgentHandler        agentHandler,
+                                 IQueueMessageHandler queueStorage)
   {
     var logger = NullLogger.Instance;
     runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
@@ -84,17 +87,19 @@ public class TestTaskHandlerProvider : IDisposable
                                                    "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
                                                  },
                                                  {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}", DatabaseName
+                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
+                                                   DatabaseName
                                                  },
                                                  {
                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
                                                    "00:00:10"
                                                  },
                                                  {
-                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}", "14000"
+                                                   $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
+                                                   "14000"
                                                  },
                                                  {
-                                                   $"{ComputePlan.SettingSection}:{nameof(ComputePlan.MessageBatchSize)}", "1"
+                                                   $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
                                                  },
                                                };
 
@@ -123,20 +128,21 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton(agentHandler)
            .AddSingleton(queueStorage);
 
-    var computePlanComponent = builder.Configuration.GetSection(ComputePlan.SettingSection);
-    var computePlanOptions = computePlanComponent.Get<ComputePlan>();
+    var computePlanComponent = builder.Configuration.GetSection(ComputePlane.SettingSection);
+    var computePlanOptions   = computePlanComponent.Get<ComputePlane>();
 
     builder.Services.AddSingleton(computePlanOptions);
 
     app_ = builder.Build();
 
-    resultTable_ = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable = app_.Services.GetRequiredService<ITaskTable>();
+    resultTable_  = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable     = app_.Services.GetRequiredService<ITaskTable>();
     sessionTable_ = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter = app_.Services.GetRequiredService<ISubmitter>();
-    TaskHandler = app_.Services.GetRequiredService<TaskHandler>();
+    Submitter     = app_.Services.GetRequiredService<ISubmitter>();
+    TaskHandler   = app_.Services.GetRequiredService<TaskHandler>();
 
-    sessionTable_.Init(CancellationToken.None).Wait();
+    sessionTable_.Init(CancellationToken.None)
+                 .Wait();
   }
 
   public void Dispose()

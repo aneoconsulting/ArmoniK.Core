@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Injection.Options;
@@ -38,8 +39,6 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using WorkerClient = ArmoniK.Api.gRPC.V1.Worker.Worker.WorkerClient;
-
 namespace ArmoniK.Core.Common.Stream.Worker;
 
 public class WorkerStreamHandler : IWorkerStreamHandler
@@ -47,7 +46,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   private readonly GrpcChannelProvider                                     channelProvider_;
   private readonly InitWorker                                              optionsInitWorker_;
   private readonly ILogger<WorkerStreamHandler>                            logger_;
-  private          WorkerClient?                                           workerClient_;
+  private          Api.gRPC.V1.Worker.Worker.WorkerClient?                 workerClient_;
   private          bool                                                    isInitialized_;
   private          AsyncClientStreamingCall<ProcessRequest, ProcessReply>? stream_;
 
@@ -94,7 +93,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       try
       {
         var channel = channelProvider_.Get();
-        workerClient_ = new WorkerClient(channel);
+        workerClient_ = new Api.gRPC.V1.Worker.Worker.WorkerClient(channel);
         var reply = workerClient_.HealthCheck(new Empty(),
                                               cancellationToken: cancellationToken);
         if (reply.Status != HealthCheckReply.Types.ServingStatus.Serving)

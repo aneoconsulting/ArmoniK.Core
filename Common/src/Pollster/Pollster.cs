@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -27,8 +27,9 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Worker.Options;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
@@ -60,7 +61,7 @@ public class Pollster
 
   public Pollster(IQueueStorage            queueStorage,
                   DataPrefetcher           dataPrefetcher,
-                  ComputePlan              options,
+                  ComputePlane             options,
                   IHostApplicationLifetime lifeTime,
                   ActivitySource           activitySource,
                   ILogger<Pollster>        logger,
@@ -76,7 +77,7 @@ public class Pollster
     if (options.MessageBatchSize < 1)
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
+                                            $"The minimum value for {nameof(ComputePlane.MessageBatchSize)} is 1.");
     }
 
     logger_                = logger;

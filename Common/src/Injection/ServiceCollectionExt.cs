@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -24,6 +24,8 @@
 
 using System;
 
+using ArmoniK.Api.Worker.Options;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Injection.Options;
@@ -72,13 +74,13 @@ public static class ServiceCollectionExt
   public static IServiceCollection AddArmoniKWorkerConnection(this IServiceCollection services,
                                                               IConfiguration          configuration)
   {
-    var computePlanComponent = configuration.GetSection(ComputePlan.SettingSection);
+    var computePlanComponent = configuration.GetSection(ComputePlane.SettingSection);
     if (!computePlanComponent.Exists())
     {
       return services;
     }
 
-    var computePlanOptions = computePlanComponent.Get<ComputePlan>();
+    var computePlanOptions = computePlanComponent.Get<ComputePlane>();
 
     if (computePlanOptions.WorkerChannel is not null)
     {
