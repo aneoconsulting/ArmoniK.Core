@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Client" Version="3.0.0-jgmigrate.80.301baf2" />
+    <PackageReference Include="ArmoniK.Api.Client" Version="3.0.0-jgmigrate.81.e1930f1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />

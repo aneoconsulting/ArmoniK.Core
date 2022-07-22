@@ -110,7 +110,7 @@ public class SubmitterTests
                                                    "14000"
                                                  },
                                                  {
-                                                   $"{ComputePlan.SettingSection}:{nameof(ComputePlan.MessageBatchSize)}", "1"
+                                                   $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
                                                  },
                                                };
 

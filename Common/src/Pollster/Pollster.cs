@@ -61,7 +61,7 @@ public class Pollster
 
   public Pollster(IQueueStorage            queueStorage,
                   DataPrefetcher           dataPrefetcher,
-                  ComputePlan              options,
+                  ComputePlane             options,
                   IHostApplicationLifetime lifeTime,
                   ActivitySource           activitySource,
                   ILogger<Pollster>        logger,
@@ -77,7 +77,7 @@ public class Pollster
     if (options.MessageBatchSize < 1)
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
+                                            $"The minimum value for {nameof(ComputePlane.MessageBatchSize)} is 1.");
     }
 
     logger_                = logger;

@@ -74,13 +74,13 @@ public static class ServiceCollectionExt
   public static IServiceCollection AddArmoniKWorkerConnection(this IServiceCollection services,
                                                               IConfiguration          configuration)
   {
-    var computePlanComponent = configuration.GetSection(ComputePlan.SettingSection);
+    var computePlanComponent = configuration.GetSection(ComputePlane.SettingSection);
     if (!computePlanComponent.Exists())
     {
       return services;
     }
 
-    var computePlanOptions = computePlanComponent.Get<ComputePlan>();
+    var computePlanOptions = computePlanComponent.Get<ComputePlane>();
 
     if (computePlanOptions.WorkerChannel is not null)
     {
