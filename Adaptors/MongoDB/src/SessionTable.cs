@@ -72,6 +72,7 @@ public class SessionTable : ISessionTable
 
   [PublicAPI]
   public async Task SetSessionDataAsync(string                          rootSessionId,
+                                        IEnumerable<string>             partitionIds,
                                         Core.Common.Storage.TaskOptions defaultOptions,
                                         CancellationToken               cancellationToken = default)
   {
@@ -82,6 +83,7 @@ public class SessionTable : ISessionTable
 
     SessionData data = new(rootSessionId,
                            SessionStatus.Running,
+                           partitionIds.ToList(),
                            defaultOptions);
 
     await sessionCollection.InsertOneAsync(data,

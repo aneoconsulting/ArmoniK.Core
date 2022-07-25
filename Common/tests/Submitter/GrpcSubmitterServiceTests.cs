@@ -711,6 +711,7 @@ public class GrpcSubmitterServiceTests
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<string>(),
+                                                             It.IsAny<IList<string>>(),
                                                              It.IsAny<TaskOptions>(),
                                                              CancellationToken.None))
                  .Returns(() => Task.FromResult(new CreateSessionReply
@@ -740,6 +741,7 @@ public class GrpcSubmitterServiceTests
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<string>(),
+                                                             It.IsAny<IList<string>>(),
                                                              It.IsAny<TaskOptions>(),
                                                              CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
@@ -773,6 +775,7 @@ public class GrpcSubmitterServiceTests
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.CreateSession(It.IsAny<string>(),
+                                                             It.IsAny<IList<string>>(),
                                                              It.IsAny<TaskOptions>(),
                                                              CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
@@ -787,7 +790,11 @@ public class GrpcSubmitterServiceTests
       await service.CreateSession(new CreateSessionRequest
                                   {
                                     Id                = "SessionID",
-                                    DefaultTaskOption = new TaskOptions(),
+                                    PartitionIds      = {"part1", "part2"},
+                                    DefaultTaskOption = new TaskOptions
+                                                        {
+                                                          PartitionId = "part1",
+                                                        },
                                   },
                                   TestServerCallContext.Create())
                    .ConfigureAwait(false);

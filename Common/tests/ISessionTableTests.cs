@@ -51,11 +51,13 @@ public class SessionTableTestBase
     if (RunTests)
     {
       SessionTable.SetSessionDataAsync(RootSessionId,
+                                       new [] { "part1", "part2" },
                                        new TaskOptions
                                        {
                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
                                          MaxRetries = 2,
                                          Priority = 1,
+                                         PartitionId = "part1",
                                        },
                                        CancellationToken.None)
                   .Wait();

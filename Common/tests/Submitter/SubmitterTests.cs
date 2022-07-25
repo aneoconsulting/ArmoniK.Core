@@ -158,9 +158,11 @@ public class SubmitterTests
                                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
                                MaxRetries  = 2,
                                Priority    = 1,
+                               PartitionId = "part1",
                              };
 
     await submitter.CreateSession(SessionId,
+                                  new[] {"part1", "part2"},
                                   defaultTaskOptions,
                                   token)
                    .ConfigureAwait(false);

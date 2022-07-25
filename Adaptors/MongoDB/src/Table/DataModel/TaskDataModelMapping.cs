@@ -126,10 +126,13 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                       .SetIsRequired(true);
                                                    map.MapProperty(nameof(TaskOptions.Priority))
                                                       .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.PartitionId))
+                                                      .SetIsRequired(true);
                                                    map.MapCreator(options => new TaskOptions(options.Options,
                                                                                              options.MaxDuration,
                                                                                              options.MaxRetries,
-                                                                                             options.Priority));
+                                                                                             options.Priority,
+                                                                                             options.PartitionId));
                                                  });
     }
   }
@@ -150,6 +153,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
     var submittedIndex = Builders<TaskData>.IndexKeys.Ascending(model => model.SubmittedDate);
     var startIndex     = Builders<TaskData>.IndexKeys.Ascending(model => model.StartDate);
     var endIndex       = Builders<TaskData>.IndexKeys.Ascending(model => model.EndDate);
+    var partitionIndex = Builders<TaskData>.IndexKeys.Hashed(model => model.Options.PartitionId);
     var statusIndex    = Builders<TaskData>.IndexKeys.Hashed(model => model.Status);
 
     var indexModels = new CreateIndexModel<TaskData>[]
@@ -183,6 +187,11 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                             new CreateIndexOptions
                             {
                               Name = nameof(endIndex),
+                            }),
+                        new(partitionIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(partitionIndex),
                             }),
                         new(statusIndex,
                             new CreateIndexOptions

@@ -55,6 +55,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                                                           model.Status,
                                                                                           model.CreationDate,
                                                                                           model.CancellationDate,
+                                                                                          model.PartitionIds,
                                                                                           model.Options));
                                                  });
     }
@@ -71,10 +72,13 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                       .SetIsRequired(true);
                                                    map.MapProperty(nameof(TaskOptions.Priority))
                                                       .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.PartitionId))
+                                                      .SetIsRequired(true);
                                                    map.MapCreator(options => new TaskOptions(options.Options,
                                                                                              options.MaxDuration,
                                                                                              options.MaxRetries,
-                                                                                             options.Priority));
+                                                                                             options.Priority,
+                                                                                             options.PartitionId));
                                                  });
     }
   }
@@ -88,6 +92,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                            IMongoCollection<SessionData> collection)
   {
     var statusIndex       = Builders<SessionData>.IndexKeys.Hashed(model => model.Status);
+    var partitionIndex    = Builders<SessionData>.IndexKeys.Hashed(model => model.Options.PartitionId);
     var creationIndex     = Builders<SessionData>.IndexKeys.Ascending(model => model.CreationDate);
     var cancellationIndex = Builders<SessionData>.IndexKeys.Ascending(model => model.CancellationDate);
 
@@ -97,6 +102,11 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                             new CreateIndexOptions
                             {
                               Name = nameof(statusIndex),
+                            }),
+                        new(partitionIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(partitionIndex),
                             }),
                         new(creationIndex,
                             new CreateIndexOptions

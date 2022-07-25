@@ -32,7 +32,8 @@ namespace ArmoniK.Core.Common.Storage;
 public record TaskOptions(IDictionary<string, string> Options,
                           TimeSpan                    MaxDuration,
                           int                         MaxRetries,
-                          int                         Priority)
+                          int                         Priority,
+                          string                      PartitionId)
 {
   public static implicit operator Api.gRPC.V1.TaskOptions(TaskOptions taskOption)
     => new()
@@ -40,6 +41,7 @@ public record TaskOptions(IDictionary<string, string> Options,
          MaxDuration = Duration.FromTimeSpan(taskOption.MaxDuration),
          MaxRetries  = taskOption.MaxRetries,
          Priority    = taskOption.Priority,
+         PartitionId = taskOption.PartitionId,
          Options =
          {
            taskOption.Options,
@@ -50,5 +52,6 @@ public record TaskOptions(IDictionary<string, string> Options,
     => new(taskOption.Options,
            taskOption.MaxDuration.ToTimeSpan(),
            taskOption.MaxRetries,
-           taskOption.Priority);
+           taskOption.Priority,
+           taskOption.PartitionId);
 }

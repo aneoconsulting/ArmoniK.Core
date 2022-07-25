@@ -219,6 +219,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                         submitter => submitter.CountTasks(It.IsAny<TaskFilter>(),
                                                           It.IsAny<CancellationToken>()),
                         submitter => submitter.CreateSession(It.IsAny<string>(),
+                                                             It.IsAny<IList<string>>(),
                                                              It.IsAny<TaskOptions>(),
                                                              It.IsAny<CancellationToken>()),
                         submitter => submitter.CreateTasks(It.IsAny<string>(),

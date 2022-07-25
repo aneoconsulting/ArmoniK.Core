@@ -22,12 +22,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+
 using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
 public record SessionData(string                     SessionId,
                           SessionStatus              Status,
+                          IList<string>              PartitionIds,
                           Common.Storage.TaskOptions Options) : Common.Storage.SessionData(SessionId,
                                                                                            Status,
+                                                                                           PartitionIds,
                                                                                            Options);

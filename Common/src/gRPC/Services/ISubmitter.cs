@@ -55,9 +55,10 @@ public interface ISubmitter
   Task<Count> CountTasks(TaskFilter        request,
                          CancellationToken cancellationToken);
 
-  Task<CreateSessionReply> CreateSession(string            sessionId,
-                                         TaskOptions       defaultTaskOptions,
-                                         CancellationToken cancellationToken);
+  Task<CreateSessionReply> CreateSession(string              sessionId,
+                                         IEnumerable<string> partitionIds,
+                                         TaskOptions         defaultTaskOptions,
+                                         CancellationToken   cancellationToken);
 
   Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(string                        sessionId,
                                                                               string                        parentTaskId,

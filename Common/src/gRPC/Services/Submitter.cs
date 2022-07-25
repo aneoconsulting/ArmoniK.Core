@@ -266,14 +266,16 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateSessionReply> CreateSession(string            sessionId,
-                                                      TaskOptions       defaultTaskOptions,
-                                                      CancellationToken cancellationToken)
+  public async Task<CreateSessionReply> CreateSession(string              sessionId,
+                                                      IEnumerable<string> partitionIds,
+                                                      TaskOptions         defaultTaskOptions,
+                                                      CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
       await sessionTable_.SetSessionDataAsync(sessionId,
+                                              partitionIds,
                                               defaultTaskOptions,
                                               cancellationToken)
                          .ConfigureAwait(false);
