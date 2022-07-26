@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -70,6 +70,18 @@ public class SessionTable : ISessionTable
                                     partitionIds.ToList(),
                                     defaultOptions));
     return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public Task<SessionData> GetSession(string            sessionId,
+                                      CancellationToken cancellationToken = default)
+  {
+    if (!storage_.ContainsKey(sessionId))
+    {
+      throw new SessionNotFoundException($"Key '{sessionId}' not found");
+    }
+
+    return Task.FromResult(storage_[sessionId]);
   }
 
   /// <inheritdoc />

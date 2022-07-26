@@ -92,6 +92,33 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
+  public async Task<SessionData> GetSession(string            sessionId,
+                                            CancellationToken cancellationToken = default)
+  {
+    using var _ = Logger.LogFunction(sessionId);
+    using var activity = activitySource_.StartActivity($"{nameof(GetSession)}");
+    activity?.SetTag($"{nameof(GetSession)}_sessionId",
+                     sessionId);
+    var sessionHandle = sessionProvider_.Get();
+    var sessionCollection = sessionCollectionProvider_.Get();
+
+
+    try
+    {
+      return await sessionCollection.AsQueryable(sessionHandle)
+                                    .Where(sdm => sdm.SessionId == sessionId)
+                                    .SingleAsync(cancellationToken)
+                                    .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException e)
+    {
+      throw new SessionNotFoundException($"Key '{sessionId}' not found",
+                                         e);
+    }
+  }
+
+
+  /// <inheritdoc />
   public async Task<bool> IsSessionCancelledAsync(string            sessionId,
                                                   CancellationToken cancellationToken = default)
   {

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -57,6 +57,18 @@ public interface ISessionTable : IInitializable
                            IEnumerable<string> partitionIds,
                            TaskOptions         defaultOptions,
                            CancellationToken   cancellationToken = default);
+
+  /// <summary>
+  /// Set metadata for a new session
+  /// </summary>
+  /// <param name="rootSessionId">Id for the new session</param>
+  /// <param name="defaultOptions">Default metadata for the tasks to be created in this session</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// Task representing the asynchronous execution of the method
+  /// </returns>
+  Task<SessionData> GetSession(string            sessionId,
+                               CancellationToken cancellationToken = default);
 
   /// <summary>
   ///  Query a session status to check if it is canceled

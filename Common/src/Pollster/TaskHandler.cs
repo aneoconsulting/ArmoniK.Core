@@ -60,6 +60,7 @@ public class TaskHandler : IAsyncDisposable
   private readonly ActivitySource                              activitySource_;
   private readonly ILogger                                     logger_;
   private          TaskData?                                   taskData_;
+  private          SessionData?                                sessionData_;
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private readonly string                                      ownerPodId_;
   private readonly IAgentHandler                               agentHandler_;
@@ -92,6 +93,7 @@ public class TaskHandler : IAsyncDisposable
     logger_                = logger;
     ownerPodId_            = ownerPodId;
     taskData_              = null;
+    sessionData_           = null;
     token_ = Guid.NewGuid()
                  .ToString();
   }
@@ -236,9 +238,10 @@ public class TaskHandler : IAsyncDisposable
         }
       }
 
-      var isSessionCancelled = await sessionTable_.IsSessionCancelledAsync(taskData_.SessionId,
-                                                                           cancellationToken)
-                                                  .ConfigureAwait(false);
+      sessionData_ = await sessionTable_.GetSession(taskData_.SessionId,
+                                                    cancellationToken)
+                                        .ConfigureAwait(false);
+      var isSessionCancelled = sessionData_.Status == SessionStatus.Canceled;
 
       if (isSessionCancelled && taskData_.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.Error))
       {
