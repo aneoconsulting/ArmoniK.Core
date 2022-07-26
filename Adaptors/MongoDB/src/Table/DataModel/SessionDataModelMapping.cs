@@ -44,6 +44,8 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.Status))
                                                      .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.PartitionIds))
+                                                     .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.Options))
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.CreationDate))
