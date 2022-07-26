@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -35,6 +35,8 @@ using ArmoniK.Core.Common.Tests.Auth;
 
 using Grpc.Net.Client;
 
+using JetBrains.Annotations;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -50,12 +52,15 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 public class GrpcSubmitterServiceHelper : IDisposable
 {
   private readonly WebApplication     app_;
+  [CanBeNull]
   private          TestServer         server_;
+  [CanBeNull]
   private          HttpMessageHandler handler_;
   private readonly ILoggerFactory     loggerFactory_;
+  [CanBeNull]
   private          GrpcChannel        channel_;
 
-  public GrpcSubmitterServiceHelper(ISubmitter submitter)
+  public GrpcSubmitterServiceHelper(ISubmitter submitter, List<MockIdentity> authIdentities, AuthenticatorOptions authOptions)
   {
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
@@ -65,11 +70,8 @@ public class GrpcSubmitterServiceHelper : IDisposable
     builder.Services.AddSingleton(loggerFactory_)
            .AddSingleton(submitter)
            .AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
-           .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(new List<MockIdentity>()))
-           .Configure<AuthenticatorOptions>(o =>
-                                            {
-                                              o.Bypass            = true;
-                                            })
+           .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(authIdentities))
+           .Configure<AuthenticatorOptions>(o=> o.CopyFrom(authOptions))
            .AddAuthentication()
            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName, _ => {});
     builder.Services.AddLogging()
@@ -87,38 +89,69 @@ public class GrpcSubmitterServiceHelper : IDisposable
     app_.MapGrpcService<GrpcSubmitterService>();
   }
 
-  public async Task<GrpcChannel> CreateChannel()
-  {    
+  public GrpcSubmitterServiceHelper(ISubmitter submitter)
+    : this(submitter, new List<MockIdentity>(),
+           AuthenticatorOptions.DefaultNoAuth)
+  {
 
-    
+  }
+
+  public async Task StartServer()
+  {
     await app_.StartAsync()
-             .ConfigureAwait(false);
+              .ConfigureAwait(false);
 
     server_  = app_.GetTestServer();
-    handler_ = server_.CreateHandler();
+    handler_ ??= server_.CreateHandler();
+   
+  }
+
+  public async Task<GrpcChannel> CreateChannel()
+  {
+
+    if (handler_ == null)
+    {
+      await StartServer()
+        .ConfigureAwait(false);
+    }
 
     channel_ = GrpcChannel.ForAddress("http://localhost",
-                                         new GrpcChannelOptions
-                                         {
-                                           LoggerFactory = loggerFactory_,
-                                           HttpHandler   = handler_,
-                                         });
+                                      new GrpcChannelOptions
+                                      {
+                                        LoggerFactory = loggerFactory_,
+                                        HttpHandler   = handler_,
+                                      });
 
     return channel_;
+  }
+
+  public async Task DeleteChannel()
+  {
+    if (channel_ == null)
+      return;
+    await channel_.ShutdownAsync()
+                  .ConfigureAwait(false);
+    channel_.Dispose();
+    channel_ = null;
   }
 
   public async Task StopServer()
   {
     await app_.StopAsync()
               .ConfigureAwait(false);
+    handler_?.Dispose();
+    handler_ = null;
   }
 
   public void Dispose()
   {
     app_.DisposeAsync().GetAwaiter().GetResult();
-    server_.Dispose();
-    handler_.Dispose();
-    channel_.Dispose();
+    server_?.Dispose();
+    server_ = null;
+    handler_?.Dispose();
+    handler_ = null;
+    channel_?.Dispose();
+    channel_ = null;
     GC.SuppressFinalize(this);
   }
 }

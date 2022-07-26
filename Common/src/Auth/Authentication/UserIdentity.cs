@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -23,6 +23,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -49,6 +50,14 @@ public class UserIdentity : ClaimsPrincipal
     UserName    = userAuth.Username;
     Roles       = userAuth.Roles;
     Permissions = userAuth.Permissions.Select(perm => new Permissions.Permission(perm));
+  }
+
+  public UserIdentity(UserAuthenticationResult userAuth)
+  {
+    UserId      = userAuth.Id;
+    UserName    = userAuth.Username;
+    Roles       = Array.Empty<string>();
+    Permissions = Array.Empty<Permissions.Permission>();
   }
 
 

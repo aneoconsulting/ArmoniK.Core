@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,12 +22,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 
@@ -42,7 +39,7 @@ public class MockIdentity : UserIdentity
 {
   public record MockCertificate(string CN,
                                 string Fingerprint);
-  private readonly IEnumerable<MockCertificate> certificates_;
+  public readonly IEnumerable<MockCertificate> Certificates;
   public MockIdentity(string                              userId,
                       string                              username,
                       IEnumerable<MockCertificate>        certificates,
@@ -50,12 +47,12 @@ public class MockIdentity : UserIdentity
                       IEnumerable<Permissions.Permission> permissions, 
                       [CanBeNull] string                  authenticationType) : base(new UserAuthenticationResult(userId, username, roles, permissions.Select(perm=>perm.ToString())), authenticationType)
   {
-    certificates_ = certificates;
+    Certificates = certificates;
   }
 
   public bool HasCertificate(string cn,
                                  string fingerprint)
-    => certificates_.Any(t => t.CN == cn && t.Fingerprint == fingerprint);
+    => Certificates.Any(t => t.CN == cn && t.Fingerprint == fingerprint);
 
   public UserAuthenticationResult ToUserAuthenticationResult()
   {

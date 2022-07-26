@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -26,6 +26,7 @@
 using System;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Auth.Authentication;
 
 using Microsoft.AspNetCore.Authentication;
@@ -36,26 +37,37 @@ namespace ArmoniK.Core.Common.Auth.Authorization
 {
   public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
   {
-    private bool bypass_;
+    private readonly bool requireAuthentication_;
+    private readonly bool requireAuthorization_;
     public AuthorizationPolicyProvider(IOptionsMonitor<AuthenticatorOptions> options)
     {
-      bypass_ = options.CurrentValue.Bypass ?? false;
+      requireAuthentication_ = options.CurrentValue.RequireAuthentication ?? true;
+      requireAuthorization_  = options.CurrentValue.RequireAuthorization  ?? true;
     }
     public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
     {
-      if (!policyName.StartsWith(RequiresPermissionAttribute.PolicyPrefix))
-      {
-        return Task.FromResult<AuthorizationPolicy?>(null);
-      }
+      // If authentication is disabled, no check is required
+      if (!requireAuthentication_)
+        return GetAlwaysTruePolicyAsync()!;
 
-      var permission = Permissions.Parse(policyName[RequiresPermissionAttribute.PolicyPrefix.Length..]);
-      if (bypass_)
+      // If authorization is disabled, only check for an authenticated user
+      if (!requireAuthorization_)
         return GetDefaultPolicyAsync()!;
+
+      // If the policy name doesn't match ours, ignore
+      if (!policyName.StartsWith(RequiresPermissionAttribute.PolicyPrefix))
+        return GetFallbackPolicyAsync();
+
+      // Require the authenticated user to have the right permission type
+      var permission = Permissions.Parse(policyName[RequiresPermissionAttribute.PolicyPrefix.Length..]);
       return Task.FromResult<AuthorizationPolicy?>(
-                                                   new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireClaim(permission.ToBasePermission())
-                                                     .Build());
+                                                   new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAuthenticatedUser().RequireClaim(permission.ToBasePermission())
+                                                                                                           .Build());
 
     }
+
+    public Task<AuthorizationPolicy> GetAlwaysTruePolicyAsync()
+      => Task.FromResult(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAssertion(_=>true).Build());
 
     public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
       => Task.FromResult(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAuthenticatedUser()
