@@ -122,16 +122,16 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
 
   public async Task<IAgent> Start(string            token,
                                   ILogger           logger,
-                                  string            sessionId,
-                                  string            taskId,
+                                  SessionData       sessionData,
+                                  TaskData          taskData,
                                   CancellationToken cancellationToken)
   {
     try
     {
       var agent = new Agent(submitter_,
                             objectStorageFactory_,
-                            sessionId,
-                            taskId,
+                            sessionData,
+                            taskData,
                             token,
                             logger);
 

@@ -388,7 +388,7 @@ public class TaskHandler : IAsyncDisposable
   {
     using var _ = logger_.BeginNamedScope("TaskExecution",
                                           ("taskId", messageHandler_.TaskId));
-    if (computeRequestStream_ == null || taskData_ == null)
+    if (computeRequestStream_ == null || taskData_ == null || sessionData_ == null)
     {
       throw new NullReferenceException();
     }
@@ -398,8 +398,8 @@ public class TaskHandler : IAsyncDisposable
     // In theory we could create the server during dependencies checking and activate it only now
     agent_ = await agentHandler_.Start(token_,
                                        logger_,
-                                       taskData_.SessionId,
-                                       taskData_.TaskId,
+                                       sessionData_,
+                                       taskData_,
                                        cancellationToken)
                                 .ConfigureAwait(false);
 
