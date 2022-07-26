@@ -147,7 +147,7 @@ public class Agent : IAgent
 
           completionTask = Task.Run(async () =>
                                     {
-                                      createdTasks_.Add(await submitter_.CreateTasks(sessionData_.SessionId!,
+                                      createdTasks_.Add(await submitter_.CreateTasks(sessionData_,
                                                                                      taskData_.TaskId!,
                                                                                      request.InitRequest.TaskOptions,
                                                                                      taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -54,4 +54,18 @@ public record TaskOptions(IDictionary<string, string> Options,
            taskOption.MaxRetries,
            taskOption.Priority,
            taskOption.PartitionId);
+
+  public static TaskOptions Merge(TaskOptions taskOption, TaskOptions defaultOption)
+  {
+    var options = new Dictionary<string, string>(defaultOption.Options);
+    foreach (var option in taskOption.Options)
+    {
+      options.Add(option.Key, option.Value);
+    }
+    return new(options,
+           taskOption.MaxDuration == TimeSpan.Zero ? taskOption.MaxDuration : defaultOption.MaxDuration,
+           taskOption.MaxRetries == 0 ? taskOption.MaxRetries : defaultOption.MaxRetries,
+           taskOption.Priority,
+           taskOption.PartitionId != string.Empty ? taskOption.PartitionId : defaultOption.PartitionId);
+  }
 }
