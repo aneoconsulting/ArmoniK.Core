@@ -168,7 +168,7 @@ public class Submitter : ISubmitter
       cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    options = ArmoniK.Core.Common.Storage.TaskOptions.Merge(options, sessionData.Options);
+    options = options != null ? ArmoniK.Core.Common.Storage.TaskOptions.Merge(options, sessionData.Options) : sessionData.Options;
 
     var partitionId = options.PartitionId;
     var availablePartitionIds = sessionData.PartitionIds ?? Array.Empty<string>();
@@ -297,8 +297,16 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
+      var partitionList = partitionIds.ToList();
+      if ((partitionList?.Count ?? 0) == 0)
+      {
+        partitionList = new List<string>{string.Empty};
+        // TODO: once partitions are fully integrated,
+        //   the default partition list should be replaced by an error
+        //throw new InvalidOperationException($"{nameof(partitionIds)} must not be empty or null");
+      }
       await sessionTable_.SetSessionDataAsync(sessionId,
-                                              partitionIds,
+                                              partitionList,
                                               defaultTaskOptions,
                                               cancellationToken)
                          .ConfigureAwait(false);
