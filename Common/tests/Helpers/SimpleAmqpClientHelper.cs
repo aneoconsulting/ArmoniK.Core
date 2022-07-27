@@ -22,35 +22,34 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-using ArmoniK.Core.Common.Tests.Helpers;
-
 using Microsoft.Extensions.Logging;
-
+using Amqp;
 using System;
+using System.Threading.Tasks;
 
-using Test.It.With.Amqp;
-using Test.It.With.Amqp091.Protocol;
+namespace ArmoniK.Core.Common.Tests.Helpers;
 
-namespace ArmoniK.Core.Adapters.Amqp.Tests;
-
-
-public class SimpleQueueServiceHelper : IDisposable
+public class SimpleAmqpClientHelper : IAsyncDisposable
 {
-  private AmqpTestFramework testFramework_;
   private readonly ILoggerFactory loggerFactory_;
+  private readonly Connection connection_;
+  public  Session        Session { get; }
 
-
-  public SimpleQueueServiceHelper()
+  public SimpleAmqpClientHelper()
   {
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
-    testFramework_ = AmqpTestFramework.InMemory(Amqp091.ProtocolResolver);
+
+    var address = new Address("amqp://guest:guest@localhost:5672");
+
+    connection_ = new Connection(address);
+    Session = new Session(connection_);
   }
 
-  public void Dispose()
+  public async ValueTask DisposeAsync()
   {
-    testFramework_.DisposeAsync().GetAwaiter();
+    await Session.CloseAsync().ConfigureAwait(false);
+    await connection_.CloseAsync().ConfigureAwait(false);
     GC.SuppressFinalize(this);
   }
 }
