@@ -158,19 +158,20 @@ public class Submitter : ISubmitter
                                                                                            IAsyncEnumerable<TaskRequest> taskRequests,
                                                                                            CancellationToken             cancellationToken)
   {
+    options = options != null ? ArmoniK.Core.Common.Storage.TaskOptions.Merge(options, sessionData.Options) : sessionData.Options;
+    var partitionId = options.PartitionId;
+
     using var logFunction = logger_.LogFunction(parentTaskId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
     using var sessionScope = logger_.BeginPropertyScope(("Session", sessionData.SessionId),
-                                                        ("TaskId", parentTaskId));
+                                                        ("TaskId", parentTaskId),
+                                                        ("PartitionId", options.PartitionId));
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
       cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    options = options != null ? ArmoniK.Core.Common.Storage.TaskOptions.Merge(options, sessionData.Options) : sessionData.Options;
-
-    var partitionId = options.PartitionId;
     var availablePartitionIds = sessionData.PartitionIds ?? Array.Empty<string>();
     if (!availablePartitionIds.Contains(partitionId))
     {
