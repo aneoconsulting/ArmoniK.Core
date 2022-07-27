@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
 
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
@@ -50,7 +51,7 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
                                                 cm.MapProperty(nameof(AuthData.CN))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(AuthData.Fingerprint))
-                                                  .SetIsRequired(true);
+                                                  .SetDefaultValue(BsonNull.Value);
                                                 cm.SetIgnoreExtraElements(true);
                                                 cm.MapCreator(model => new AuthData(model.AuthId,
                                                                                     model.UserId,
@@ -66,7 +67,7 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                      IMongoCollection<AuthData> collection)
   {
-    var fingerprintIndex = Builders<AuthData>.IndexKeys.Ascending(model => model.Fingerprint);
+    var fingerprintIndex = Builders<AuthData>.IndexKeys.Descending(model => model.Fingerprint);
     var cnIndex          = Builders<AuthData>.IndexKeys.Ascending(model => model.CN);
     var compoundIndex    = Builders<AuthData>.IndexKeys.Combine(cnIndex, fingerprintIndex);
     var userIndex        = Builders<AuthData>.IndexKeys.Hashed(model => model.UserId);

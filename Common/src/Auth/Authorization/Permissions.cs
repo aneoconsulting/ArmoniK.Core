@@ -24,7 +24,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
@@ -97,19 +97,35 @@ namespace ArmoniK.Core.Common.Auth.Authorization
       return new Permission(actionName);
     }
 
-    public const char   Separator  = ':';
-    public const string AdminScope = "*";
-    public const string Default    = "";
-    public const string General    = "general";
-    public const string Session    = "session";
-    public const string Task       = "task";
-    public const string Result     = "result";
+    private static ImmutableList<Permission> GetPermissionList()
+    {
+      var permissions = typeof(GrpcSubmitterService).GetMethods()
+                                                    .SelectMany(mInfo => mInfo.GetCustomAttributes<RequiresPermissionAttribute>())
+                                                    .Select(a=>a.Permission)
+                                                    .ToList();
+      permissions.Add(Impersonate);
+      return permissions.ToImmutableList();
 
-    public static readonly Permission       Impersonate    = new(General, nameof(Impersonate));
-    public static readonly Permission       None           = new("", "");
-    public static readonly List<Permission> PermissionList = typeof(GrpcSubmitterService).GetMethods()
-                                                                                         .SelectMany(mInfo => mInfo.GetCustomAttributes<RequiresPermissionAttribute>())
-                                                                                         .Select(a=>a.Permission)
-                                                                                         .ToList();
+    }
+
+    // Ownership permission scopes
+    public const string AllUsersScope = "all";
+    public const string SelfScope     = "self";
+    public const string Default       = "";
+
+    // Categories
+    public const string General       = "general";
+    public const string Session       = "session";
+    public const string Task          = "task";
+    public const string Result        = "result";
+    public const string Admin         = "admin";
+
+    // Base permissions
+    public static readonly Permission                Impersonate    = new(General, nameof(Impersonate));
+    public static readonly Permission                None           = new("", "");
+    public static readonly ImmutableList<Permission> PermissionList = GetPermissionList();
+
+    // Constants
+    public const char Separator = ':';
   }
 }

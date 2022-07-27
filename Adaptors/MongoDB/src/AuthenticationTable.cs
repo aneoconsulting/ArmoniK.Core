@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -149,7 +149,7 @@ public class AuthenticationTable : IAuthenticationTable
     return await GetIdentityFromPipeline(sessionHandle,
                                          authCollection,
                                          GetAuthToIdentityPipeline(),
-                                         auth => auth.CN == cn && auth.Fingerprint == fingerprint,
+                                         auth => auth.CN == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
                                          cancellationToken)
              .ConfigureAwait(false);
   }
@@ -223,6 +223,8 @@ public class AuthenticationTable : IAuthenticationTable
     if (authToIdentityPipeline_ != null)
       return authToIdentityPipeline_;
     var userToIdentityPipeline = GetUserToIdentityPipeline();
+    var sortByRelevance        = PipelineStageDefinitionBuilder.Sort(new SortDefinitionBuilder<AuthData>().Descending(authData => authData.Fingerprint));
+    var limit                  = PipelineStageDefinitionBuilder.Limit<AuthData>(1);
     var lookup = PipelineStageDefinitionBuilder.Lookup<AuthData, UserData, AuthDataAfterLookup>(userCollectionProvider_.Get(),
                                                                                                 a => a.UserId,
                                                                                                 u => u.UserId,
@@ -231,6 +233,8 @@ public class AuthenticationTable : IAuthenticationTable
     var replaceroot  = PipelineStageDefinitionBuilder.ReplaceRoot<AuthDataAfterLookup, UserData>(doc => doc.UserData.First());
     var pipeline = new IPipelineStageDefinition[]
                    {
+                     sortByRelevance,
+                     limit,
                      lookup,
                      checkIfValid,
                      replaceroot,

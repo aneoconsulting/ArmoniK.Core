@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -28,5 +28,5 @@ namespace ArmoniK.Core.Common.Auth.Authentication
   public record AuthData(string AuthId,
                          string UserId,
                          string CN,
-                         string Fingerprint);
+                         string? Fingerprint);
 }

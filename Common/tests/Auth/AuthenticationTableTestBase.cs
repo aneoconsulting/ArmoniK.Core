@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -55,7 +55,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
                     new[]
                     {
                       "category1:name1",
-                      "category1:name2:" + Permissions.AdminScope,
+                      "category1:name2:" + Permissions.AllUsersScope,
                       "category2:name4",
                     }),
                 new("RoleId3",
@@ -68,9 +68,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
                     }),
                 new("RoleId4",
                     "Role4",
-                    new string[]
-                    {
-                    }),
+                    Array.Empty<string>()),
               };
       Users = new List<UserData>
               {
@@ -109,9 +107,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
                     }),
                 new("UserId5",
                     "User5",
-                    new string[]
-                    {
-                    }),
+                    Array.Empty<string>()),
               };
       Auths = new List<AuthData>
               {
@@ -149,6 +145,16 @@ namespace ArmoniK.Core.Common.Tests.Auth
                       .UserId,
                     "CNUser2",
                     "Fingerprint7"),
+                new("AuthId8",
+                    Users[2]
+                      .UserId,
+                    "CNUserCommon",
+                    null),
+                new("AuthId9",
+                    Users[3]
+                      .UserId,
+                    "CNUser2",
+                    null),
               };
     }
 
@@ -168,7 +174,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
     public virtual void TearDown()
     {
       AuthenticationTable = null;
-      RunTests             = false;
+      RunTests            = false;
     }
 
     protected static List<RoleData> Roles;
@@ -207,17 +213,23 @@ namespace ArmoniK.Core.Common.Tests.Auth
     [TestCase("CNUser2",
               "Fingerprint7",
               1)]
+    [TestCase("CNUserCommon",
+              "FingerprintDontCare",
+              2)]
+    [TestCase("CNUser2",
+              "FingerprintDontCare",
+              3)]
     public void GetIdentityFromCnAndFingerprintShouldSucceed(string cn,
                                                              string fingerprint,
                                                              int    userid)
     {
-      if (!RunTests) 
+      if (!RunTests)
         return;
 
       var ident = AuthenticationTable.GetIdentityAsync(cn,
-                                                        fingerprint,
-                                                        CancellationToken.None)
-                                      .Result;
+                                                       fingerprint,
+                                                       CancellationToken.None)
+                                     .Result;
       Assert.NotNull(ident);
       Assert.AreEqual(Users[userid]
                         .UserId,
@@ -237,9 +249,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
         return;
 
       Assert.IsNull(AuthenticationTable.GetIdentityAsync(cn,
-                                                          fingerprint,
-                                                          CancellationToken.None)
-                                        .Result);
+                                                         fingerprint,
+                                                         CancellationToken.None)
+                                       .Result);
     }
 
     [TestCase(                                      0,
@@ -251,9 +263,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
       var ident = AuthenticationTable.GetIdentityFromIdAsync(Users[id]
-                                                                .UserId,
-                                                              CancellationToken.None)
-                                      .Result;
+                                                               .UserId,
+                                                             CancellationToken.None)
+                                     .Result;
       Assert.NotNull(ident);
       Assert.AreEqual(Users[id]
                         .UserId,
@@ -268,8 +280,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
       Assert.IsNull(AuthenticationTable.GetIdentityFromIdAsync(id,
-                                                                CancellationToken.None)
-                                        .Result);
+                                                               CancellationToken.None)
+                                       .Result);
     }
 
     [TestCase(                          "User1",
@@ -281,8 +293,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
       var identity = AuthenticationTable.GetIdentityFromNameAsync(name,
-                                                                   CancellationToken.None)
-                                         .Result;
+                                                                  CancellationToken.None)
+                                        .Result;
       Assert.NotNull(identity);
       Assert.AreEqual(name,
                       identity.Username);
@@ -297,8 +309,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
       Assert.IsNull(AuthenticationTable.GetIdentityFromNameAsync(name,
-                                                                  CancellationToken.None)
-                                        .Result);
+                                                                 CancellationToken.None)
+                                       .Result);
     }
 
     [TestCase("User1",
@@ -317,8 +329,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
       var identity = AuthenticationTable.GetIdentityFromNameAsync(username,
-                                                                   CancellationToken.None)
-                                         .Result;
+                                                                  CancellationToken.None)
+                                        .Result;
       Assert.NotNull(identity);
       Assert.AreEqual(identity.Roles.Contains(rolename),
                       hasRole);
@@ -333,7 +345,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
                                               false), TestCase("User2",
                                                                "category1:name2",
                                                                true), TestCase("User2",
-                                                                               "category1:name2:" + Permissions.AdminScope,
+                                                                               "category1:name2:" + Permissions.AllUsersScope,
                                                                                true)]
     public void UserHasClaimShouldMatch(string username,
                                         string claim,
@@ -342,11 +354,12 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
       var identity = AuthenticationTable.GetIdentityFromNameAsync(username,
-                                                                   CancellationToken.None)
-                                         .Result;
+                                                                  CancellationToken.None)
+                                        .Result;
       var expected = new Permissions.Permission(claim).Claim;
       Assert.NotNull(identity);
-      Assert.AreEqual(identity.Permissions.Select(perm => new Permissions.Permission(perm).Claim).Any(c => c.Type == expected.Type && (expected.Value != null || c.Value == expected.Value)),
+      Assert.AreEqual(identity.Permissions.Select(perm => new Permissions.Permission(perm).Claim)
+                              .Any(c => c.Type == expected.Type && (expected.Value != null || c.Value == expected.Value)),
                       hasClaim);
     }
 
@@ -356,8 +369,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
       var identity = AuthenticationTable.GetIdentityFromIdAsync(user.UserId,
-                                                                 CancellationToken.None)
-                                         .Result;
+                                                                CancellationToken.None)
+                                        .Result;
       Assert.NotNull(identity);
       Assert.IsTrue(user.Roles.SelectMany(id => Roles.Find(r => r.RoleId == id)
                                                      ?.Permissions ?? Array.Empty<string>())

@@ -39,6 +39,8 @@ using System.Threading.Tasks;
 
 using JetBrains.Annotations;
 
+using Microsoft.AspNetCore.Http;
+
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
 [PublicAPI]
@@ -48,21 +50,21 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
 
   public string? CNHeader          { get; set; }
   public string? FingerprintHeader { get; set; }
+  public string?   ImpersonationUsernameHeader { get; set; }
 
-  public string? ImpersonationHeader       { get; set; }
-  public bool?   ImpersonationWithUsername { get; set; }
+  public string? ImpersonationIdHeader { get; set; }
 
   public bool? RequireAuthentication { get; set; }
   public bool? RequireAuthorization  { get; set; }
 
   public void CopyFrom(AuthenticatorOptions other)
   {
-    CNHeader                  = other.CNHeader;
-    FingerprintHeader         = other.FingerprintHeader;
-    ImpersonationHeader       = other.ImpersonationHeader;
-    ImpersonationWithUsername = other.ImpersonationWithUsername;
-    RequireAuthentication     = other.RequireAuthentication;
-    RequireAuthorization      = other.RequireAuthorization;
+    CNHeader                    = other.CNHeader;
+    FingerprintHeader           = other.FingerprintHeader;
+    ImpersonationIdHeader       = other.ImpersonationIdHeader;
+    ImpersonationUsernameHeader = other.ImpersonationUsernameHeader;
+    RequireAuthentication       = other.RequireAuthentication;
+    RequireAuthorization        = other.RequireAuthorization;
   }
 
   public static readonly AuthenticatorOptions DefaultNoAuth = new()
@@ -75,8 +77,8 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
                                                  {
                                                    CNHeader = "X-Certificate-Client-CN",
                                                    FingerprintHeader = "X-Certificate-Client-Fingerprint",
-                                                   ImpersonationHeader = "X-Client-Impersonate",
-                                                   ImpersonationWithUsername = true,
+                                                   ImpersonationUsernameHeader = "X-Impersonate-Username",
+                                                   ImpersonationIdHeader = "X-Impersonate-Id",
                                                    RequireAuthentication = true,
                                                    RequireAuthorization = true,
                                                  };
@@ -89,9 +91,9 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   private readonly ILogger<Authenticator> logger_;
   private readonly string                 cnHeader_;
   private readonly string                 fingerprintHeader_;
-  private readonly string?                impersonationHeader_;
+  private readonly string?                impersonationUsernameHeader_;
+  private readonly string?                impersonationIdHeader_;
   private readonly IAuthenticationTable   authTable_;
-  private readonly bool                   impersonationWithUsername_;
   private readonly bool                   requireAuthentication_;
 
   public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,
@@ -112,8 +114,9 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     cnHeader_ = options.CurrentValue.CNHeader ?? (!requireAuthentication_
                                                     ? ""
                                                     : throw new ArmoniKException($"{AuthenticatorOptions.SectionName}.CNHeader is not configured"));
-    impersonationHeader_       = options.CurrentValue.ImpersonationHeader;
-    impersonationWithUsername_ = options.CurrentValue.ImpersonationWithUsername ?? false;
+
+    impersonationUsernameHeader_ = options.CurrentValue.ImpersonationUsernameHeader;
+    impersonationIdHeader_       = options.CurrentValue.ImpersonationIdHeader;
 
     authTable_ = authTable;
     logger_    = loggerFactory.CreateLogger<Authenticator>();
@@ -150,14 +153,16 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       return AuthenticateResult.Fail("Missing Certificate Headers");
     }
 
-    if (impersonationHeader_ != null
-        && Request.Headers.TryGetValue(impersonationHeader_, out var imps)
-        && !string.IsNullOrWhiteSpace(imps.First()))
+    var impersonationUsername = TryGetHeader(impersonationUsernameHeader_);
+    var impersonationId = TryGetHeader(impersonationIdHeader_);
+
+    if (impersonationId != null || impersonationUsername!= null)
     {
       if (identity.HasClaim(c => c.Type == Permissions.Impersonate.Claim.Type))
       {
-        identity = await GetImpersonationatedIdentity(identity,
-                                                      imps.First())
+        identity = await GetImpersonatedIdentityAsync(identity,
+                                                      impersonationId,
+                                                      impersonationUsername)
                      .ConfigureAwait(false);
 
         if (identity == null)
@@ -193,24 +198,23 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                             SchemeName);
   }
 
-  public async Task<UserIdentity?> GetImpersonationatedIdentity(UserIdentity baseIdentity,
-                                                                string       impersonnated)
+  public async Task<UserIdentity?> GetImpersonatedIdentityAsync(UserIdentity baseIdentity,
+                                                                string?      impersonationId, string? impersonationUsername)
   {
     // Get all roles that can be impersonated
     var impersonatableRoles = baseIdentity.Claims.Where(c => c.Type == Permissions.Impersonate.Claim.Type)
                                           .Select(c => c.Value);
-    UserAuthenticationResult? result;
-    // Impersonation can be done using the username or the userid
-    if (impersonationWithUsername_)
+    UserAuthenticationResult? result=null;
+    if (impersonationId != null)
     {
-      result = await authTable_.GetIdentityFromNameAsync(impersonnated,
-                                                         new CancellationToken(false))
+      result = await authTable_.GetIdentityFromIdAsync(impersonationId,
+                                                       new CancellationToken(false))
                                .ConfigureAwait(false);
     }
-    else
+    if (result == null && impersonationUsername != null)
     {
-      result = await authTable_.GetIdentityFromIdAsync(impersonnated,
-                                                       new CancellationToken(false))
+      result = await authTable_.GetIdentityFromNameAsync(impersonationUsername,
+                                                         new CancellationToken(false))
                                .ConfigureAwait(false);
     }
 
@@ -218,7 +222,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     if (result == null)
       return null;
 
-    // User exists and can be impersonnated according to the impersonation permissions of the base user
+    // User exists and can be impersonated according to the impersonation permissions of the base user
     if (result.Roles.All(str => impersonatableRoles.Contains(str)))
       return new UserIdentity(result,
                           SchemeName);
@@ -226,5 +230,16 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     // User exists but the base user doesn't have enough permissions to impersonate them
     return new UserIdentity(result);
 
+  }
+
+  private string? TryGetHeader(string? headerName)
+  {
+    if (headerName != null
+        && Request.Headers.TryGetValue(headerName, out var values)
+        && !string.IsNullOrWhiteSpace(values.First()))
+    {
+      return values.First();
+    }
+    return null;
   }
 }

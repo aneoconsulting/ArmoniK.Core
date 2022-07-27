@@ -28,6 +28,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,6 +38,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Tests.Helpers;
 
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
@@ -49,11 +51,57 @@ using SubmitterClient = ArmoniK.Api.gRPC.V1.Submitter.Submitter.SubmitterClient;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
 
-[TestFixture]
+[TestFixture(AuthenticationType.DefaultAuth)]
+[TestFixture(AuthenticationType.NoAuthorization)]
+[TestFixture(AuthenticationType.NoAuthentication)]
+[TestFixture(AuthenticationType.NoImpersonation)]
+[TestFixture(AuthenticationType.NoImpersonationNoAuthorization)]
 public class AuthenticationIntegrationTest
 {
+  public enum AuthenticationType
+  {
+    DefaultAuth,
+    NoAuthorization,
+    NoAuthentication,
+    NoImpersonation,
+    NoImpersonationNoAuthorization,
+  }
+
+  private AuthenticatorOptions options_;
+  private AuthenticationType   authType_;
+  public AuthenticationIntegrationTest(AuthenticationType type)
+  {
+    authType_ = type;
+    switch (type)
+    {
+      case AuthenticationType.DefaultAuth:
+        options_ = AuthenticatorOptions.Default;
+        break;
+      case AuthenticationType.NoAuthorization:
+        options_                      = AuthenticatorOptions.Default;
+        options_.RequireAuthorization = false;
+        break;
+      case AuthenticationType.NoImpersonation:
+        options_                             = AuthenticatorOptions.Default;
+        options_.ImpersonationIdHeader       = null;
+        options_.ImpersonationUsernameHeader = null;
+        break;
+      case AuthenticationType.NoImpersonationNoAuthorization:
+        options_                             = AuthenticatorOptions.Default;
+        options_.ImpersonationIdHeader       = null;
+        options_.ImpersonationUsernameHeader = null;
+        options_.RequireAuthorization       = false;
+        break;
+      case AuthenticationType.NoAuthentication:
+        options_ = AuthenticatorOptions.DefaultNoAuth;
+        break;
+      default:
+        throw new ArgumentException();
+    }
+  }
   public enum IdentityIndex
   {
+    DoesntExist    =-1,
     AllRights      = 0,
     NoRights       = 1,
     CanImpersonate = 2,
@@ -66,6 +114,13 @@ public class AuthenticationIntegrationTest
     AlwaysTrue,
     AlwaysFalse,
     AuthorizedForSome,
+  }
+
+  public enum ImpersonationType
+  {
+    ImpersonateId,
+    ImpersonateUsername,
+    NoImpersonate,
   }
 
   public const string AllRightsId       = "AllRightsId";
@@ -152,6 +207,7 @@ public class AuthenticationIntegrationTest
   }
 
   public static Metadata GetHeaders(IdentityIndex      index,
+                                    ImpersonationType impersonationType,
                                     [CanBeNull] string impersonate)
   {
     var headers = new Metadata();
@@ -167,10 +223,14 @@ public class AuthenticationIntegrationTest
                 Identities[(int)index]
                   .Certificates.FirstOrDefault(defaultCertificate)
                   .Fingerprint);
-    if (impersonate != null)
+    if (impersonationType == ImpersonationType.ImpersonateId)
     {
-      headers.Add(AuthenticatorOptions.Default.ImpersonationHeader!,
-                  impersonate);
+      headers.Add(AuthenticatorOptions.Default.ImpersonationIdHeader!,
+                  impersonate!);
+    }else if (impersonationType == ImpersonationType.ImpersonateUsername)
+    {
+      headers.Add(AuthenticatorOptions.Default.ImpersonationUsernameHeader!,
+                  impersonate!);
     }
 
     return headers;
@@ -178,13 +238,15 @@ public class AuthenticationIntegrationTest
 
   public static object[] GetArgs(object             obj,
                                  IdentityIndex      identityIndex,
-                                 [CanBeNull] string impersonnate)
+                                 ImpersonationType impersonationType,
+                                 [CanBeNull] string impersonate)
   {
     return new[]
            {
              obj,
              GetHeaders(identityIndex,
-                        impersonnate),
+                        impersonationType,
+                        impersonate),
              null,
              new CancellationToken(),
            };
@@ -203,6 +265,17 @@ public class AuthenticationIntegrationTest
                       };
     var idsrequest = new TaskFilter.Types.IdsRequest();
     idsrequest.Ids.Add(taskId);
+    var taskFilter = new TaskFilter
+                     {
+                       Task = idsrequest,
+                     };
+    var createSmallTasksRequest = new CreateSmallTaskRequest
+                                  {
+                                    SessionId   = sessionId,
+                                    TaskOptions = taskOptions
+                                  };
+    createSmallTasksRequest.TaskRequests.Add(new TaskRequest
+                                             {Id=taskId,Payload = ByteString.CopyFrom("payload", Encoding.ASCII)});
 
     // Parameters
     var parametersList = new List<object[]>
@@ -213,6 +286,7 @@ public class AuthenticationIntegrationTest
                          ResultType.AlwaysTrue,
                          StatusCode.OK,
                          null,
+                         ImpersonationType.NoImpersonate,
                        },
                        new object[]
                        {
@@ -220,6 +294,7 @@ public class AuthenticationIntegrationTest
                          ResultType.AlwaysFalse,
                          StatusCode.Unauthenticated,
                          "NoRightsUsername1",
+                         ImpersonationType.ImpersonateUsername,
                        },
                        new object[]
                        {
@@ -227,6 +302,7 @@ public class AuthenticationIntegrationTest
                          ResultType.AlwaysFalse,
                          StatusCode.PermissionDenied,
                          null,
+                         ImpersonationType.NoImpersonate,
                        },
                        new object[]
                        {
@@ -234,6 +310,15 @@ public class AuthenticationIntegrationTest
                          ResultType.AlwaysTrue,
                          StatusCode.OK,
                          AllRightsUsername,
+                         ImpersonationType.ImpersonateUsername,
+                       },
+                       new object[]
+                       {
+                         IdentityIndex.CanImpersonate,
+                         ResultType.AlwaysTrue,
+                         StatusCode.OK,
+                         AllRightsId,
+                         ImpersonationType.ImpersonateId,
                        },
                        new object[]
                        {
@@ -241,6 +326,7 @@ public class AuthenticationIntegrationTest
                          ResultType.AlwaysFalse,
                          StatusCode.Unauthenticated,
                          "NoRightsUsername1",
+                         ImpersonationType.ImpersonateUsername,
                        },
                        new object[]
                        {
@@ -248,6 +334,7 @@ public class AuthenticationIntegrationTest
                          ResultType.AlwaysFalse,
                          StatusCode.Unauthenticated,
                          null,
+                         ImpersonationType.NoImpersonate,
                        },
                        new object[]
                        {
@@ -255,35 +342,64 @@ public class AuthenticationIntegrationTest
                          ResultType.AuthorizedForSome,
                          StatusCode.PermissionDenied,
                          null,
+                         ImpersonationType.NoImpersonate,
+                       },
+                       new object[]
+                       {
+                         IdentityIndex.DoesntExist,
+                         ResultType.AlwaysFalse,
+                         StatusCode.Unauthenticated,
+                         null,
+                         ImpersonationType.NoImpersonate,
                        },
                      };
 
     // Generator
     foreach(var parameters in parametersList)
     {
-      var identityIndex = (IdentityIndex)parameters[0];
-      var    shouldSucceed = (ResultType)parameters[1];
-      var    statusCode    = (StatusCode)parameters[2];
-      var       impersonate   = (string)parameters[3];
-      yield return (nameof(SubmitterClient.CreateSession), identityIndex, impersonate, GetArgs(new CreateSessionRequest
+      var identityIndex     = (IdentityIndex)parameters[0];
+      var shouldSucceed     = (ResultType)parameters[1];
+      var statusCode        = (StatusCode)parameters[2];
+      var impersonate       = (string)parameters[3];
+      var impersonationType = (ImpersonationType) parameters[4];
+      yield return (nameof(SubmitterClient.CreateSession), identityIndex, impersonationType, impersonate, GetArgs(new CreateSessionRequest
                                                                                              {
                                                                                                Id                = sessionId,
                                                                                                DefaultTaskOption = taskOptions,
                                                                                              },
                                                                                              identityIndex,
+                                                                                             impersonationType,
                                                                                              impersonate), shouldSucceed, statusCode);
-      yield return (nameof(SubmitterClient.CancelSession), identityIndex, impersonate, GetArgs(new Session
-                                                                                             {
-                                                                                               Id = sessionId,
-                                                                                             },
-                                                                                             identityIndex,
-                                                                                             impersonate), shouldSucceed, statusCode);
-      yield return (nameof(SubmitterClient.CountTasks), identityIndex, impersonate, GetArgs(new TaskFilter
-                                                                                        {
-                                                                                          Task = idsrequest,
-                                                                                        },
-                                                                                        identityIndex,
-                                                                                        impersonate), shouldSucceed, statusCode);
+      yield return (nameof(SubmitterClient.CancelSession), identityIndex, impersonationType, impersonate, GetArgs(new Session
+                                                                                                                 {
+                                                                                                                   Id = sessionId,
+                                                                                                                 },
+                                                                                                                 identityIndex,
+                                                                                                                 impersonationType,
+                                                                                                                 impersonate), shouldSucceed, statusCode);
+      yield return (nameof(SubmitterClient.CountTasks), identityIndex, impersonationType, impersonate, GetArgs(taskFilter,
+                                                                                                              identityIndex,
+                                                                                                              impersonationType,
+                                                                                                              impersonate), shouldSucceed, statusCode);
+      yield return (nameof(SubmitterClient.CancelTasks), identityIndex, impersonationType, impersonate, GetArgs(taskFilter,
+                                                                                                               identityIndex,
+                                                                                                               impersonationType,
+                                                                                                               impersonate), shouldSucceed, statusCode);
+      yield return (nameof(SubmitterClient.CreateSmallTasks), identityIndex, impersonationType, impersonate, GetArgs(createSmallTasksRequest,
+                                                                                                                    identityIndex,
+                                                                                                                    impersonationType,
+                                                                                                                    impersonate), shouldSucceed, statusCode);
+      yield return (nameof(SubmitterClient.GetResultStatus), identityIndex, impersonationType, impersonate, GetArgs(new GetResultStatusRequest
+                                                                                                                   {
+                                                                                                                     SessionId = sessionId,
+                                                                                                                   },
+                                                                                                                   identityIndex,
+                                                                                                                   impersonationType,
+                                                                                                                   impersonate), shouldSucceed, statusCode);
+      yield return (nameof(SubmitterClient.ListTasks), identityIndex, impersonationType, impersonate, GetArgs(taskFilter,
+                                                                                                             identityIndex,
+                                                                                                             impersonationType,
+                                                                                                             impersonate), shouldSucceed, statusCode);
     }
     
   }
@@ -294,17 +410,45 @@ public class AuthenticationIntegrationTest
     var submitter = new SimpleSubmitter();
     helper_ = new GrpcSubmitterServiceHelper(submitter,
                                              Identities.ToList(),
-                                             AuthenticatorOptions.Default);
+                                             options_);
+  }
+
+  public void TransformResult(
+    (string method, IdentityIndex userIndex, ImpersonationType impersonationType, string impersonating, object[] args, ResultType shouldSucceed, StatusCode errorCode)
+      tuple, out int userIndex, out ResultType shouldSucceed, out StatusCode errorCode)
+  {
+    switch (authType_)
+    {
+      case AuthenticationType.NoAuthentication:
+        userIndex     = (int) tuple.userIndex;
+        shouldSucceed = ResultType.AlwaysTrue;
+        errorCode     = StatusCode.OK;
+        break;
+      case AuthenticationType.NoAuthorization:
+        userIndex = (int) tuple.userIndex;
+        shouldSucceed = tuple.shouldSucceed == ResultType.AlwaysTrue ? ResultType.AlwaysTrue : (tuple.errorCode == StatusCode.PermissionDenied || tuple.shouldSucceed == ResultType.AuthorizedForSome ? ResultType.AlwaysTrue : ResultType.AlwaysFalse);
+        errorCode = tuple.errorCode == StatusCode.Unauthenticated
+                      ? tuple.errorCode
+                      : StatusCode.OK;
+        break;
+      default:
+      case AuthenticationType.DefaultAuth:
+        userIndex     = (int)tuple.userIndex;
+        shouldSucceed = tuple.shouldSucceed;
+        errorCode     = tuple.errorCode;
+        break;
+    }
   }
 
   [TestCaseSource(nameof(GetTestCases))]
-  public async Task SubmitterServiceWithAuthShouldMatch(
-    (string method, IdentityIndex userIndex, string impersonating, object[] args, ResultType shouldSucceed, StatusCode errorCode) tuple)
+  public async Task AuthMatchesBehavior(
+    (string method, IdentityIndex userIndex, ImpersonationType impersonationType,string impersonating, object[] args, ResultType shouldSucceed, StatusCode errorCode) tuple)
   {
+    TransformResult(tuple, out var userIndex, out var shouldSucceed, out var errorCode);
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
     var client = new SubmitterClient(channel);
-    if (tuple.shouldSucceed == ResultType.AlwaysTrue || (tuple.shouldSucceed == ResultType.AuthorizedForSome && Identities[(int)tuple.userIndex]
+    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
                                                                                                                 .Permissions.Any(p => p.Name == tuple.method)))
     {
       Assert.DoesNotThrow(delegate
@@ -331,7 +475,7 @@ public class AuthenticationIntegrationTest
       Assert.IsNotNull(exception);
       Assert.IsNotNull(exception.InnerException);
       Assert.IsInstanceOf<RpcException>(exception.InnerException);
-      Assert.AreEqual(tuple.errorCode,
+      Assert.AreEqual(errorCode,
                       ((RpcException)(exception.InnerException)).StatusCode);
     }
 
