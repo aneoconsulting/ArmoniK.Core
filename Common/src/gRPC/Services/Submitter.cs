@@ -298,7 +298,7 @@ public class Submitter : ISubmitter
     try
     {
       var partitionList = partitionIds.ToList();
-      if ((partitionList?.Count ?? 0) == 0)
+      if (partitionList.Count == 0)
       {
         partitionList = new List<string>{string.Empty};
         // TODO: once partitions are fully integrated,
