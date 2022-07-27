@@ -238,8 +238,8 @@ public class TaskHandler : IAsyncDisposable
         }
       }
 
-      sessionData_ = await sessionTable_.GetSession(taskData_.SessionId,
-                                                    cancellationToken)
+      sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
+                                                         cancellationToken)
                                         .ConfigureAwait(false);
       var isSessionCancelled = sessionData_.Status == SessionStatus.Canceled;
 

@@ -92,12 +92,12 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public async Task<SessionData> GetSession(string            sessionId,
-                                            CancellationToken cancellationToken = default)
+  public async Task<SessionData> GetSessionAsync(string            sessionId,
+                                                 CancellationToken cancellationToken = default)
   {
     using var _ = Logger.LogFunction(sessionId);
-    using var activity = activitySource_.StartActivity($"{nameof(GetSession)}");
-    activity?.SetTag($"{nameof(GetSession)}_sessionId",
+    using var activity = activitySource_.StartActivity($"{nameof(GetSessionAsync)}");
+    activity?.SetTag($"{nameof(GetSessionAsync)}_sessionId",
                      sessionId);
     var sessionHandle = sessionProvider_.Get();
     var sessionCollection = sessionCollectionProvider_.Get();

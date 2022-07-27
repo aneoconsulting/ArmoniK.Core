@@ -59,16 +59,15 @@ public interface ISessionTable : IInitializable
                            CancellationToken   cancellationToken = default);
 
   /// <summary>
-  /// Set metadata for a new session
+  /// Get SessionData from sessionId
   /// </summary>
-  /// <param name="rootSessionId">Id for the new session</param>
-  /// <param name="defaultOptions">Default metadata for the tasks to be created in this session</param>
+  /// <param name="sessionId">Id of the session to get</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  /// Data of the session
   /// </returns>
-  Task<SessionData> GetSession(string            sessionId,
-                               CancellationToken cancellationToken = default);
+  Task<SessionData> GetSessionAsync(string            sessionId,
+                                    CancellationToken cancellationToken = default);
 
   /// <summary>
   ///  Query a session status to check if it is canceled

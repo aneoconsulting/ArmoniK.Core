@@ -73,8 +73,8 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public Task<SessionData> GetSession(string            sessionId,
-                                      CancellationToken cancellationToken = default)
+  public Task<SessionData> GetSessionAsync(string            sessionId,
+                                           CancellationToken cancellationToken = default)
   {
     if (!storage_.ContainsKey(sessionId))
     {

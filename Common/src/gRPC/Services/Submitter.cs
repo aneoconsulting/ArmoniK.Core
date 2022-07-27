@@ -140,8 +140,8 @@ public class Submitter : ISubmitter
                                                                                            IAsyncEnumerable<TaskRequest> taskRequests,
                                                                                            CancellationToken             cancellationToken)
   {
-    var sessionData = await sessionTable_.GetSession(sessionId,
-                                                     cancellationToken)
+    var sessionData = await sessionTable_.GetSessionAsync(sessionId,
+                                                          cancellationToken)
                                          .ConfigureAwait(false);
     return await this.CreateTasks(sessionData,
                                   parentTaskId,
