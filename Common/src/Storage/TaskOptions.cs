@@ -60,7 +60,7 @@ public record TaskOptions(IDictionary<string, string> Options,
     var options = new Dictionary<string, string>(defaultOption.Options);
     foreach (var option in taskOption.Options)
     {
-      options.Add(option.Key, option.Value);
+      options[option.Key] = option.Value;
     }
     return new(options,
            taskOption.MaxDuration == TimeSpan.Zero ? taskOption.MaxDuration : defaultOption.MaxDuration,
