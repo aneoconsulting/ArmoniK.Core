@@ -297,10 +297,10 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
-      var partitionList = partitionIds.ToList();
+      var partitionList = partitionIds.ToIList();
       if (partitionList.Count == 0)
       {
-        partitionList = new List<string>{string.Empty};
+        partitionList = new [] {string.Empty};
         // TODO: once partitions are fully integrated,
         //   the default partition list should be replaced by an error
         //throw new InvalidOperationException($"{nameof(partitionIds)} must not be empty or null");

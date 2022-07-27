@@ -39,6 +39,7 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using JetBrains.Annotations;
 
@@ -83,7 +84,7 @@ public class SessionTable : ISessionTable
 
     SessionData data = new(rootSessionId,
                            SessionStatus.Running,
-                           partitionIds.ToList(),
+                           partitionIds.ToIList(),
                            defaultOptions);
 
     await sessionCollection.InsertOneAsync(data,
