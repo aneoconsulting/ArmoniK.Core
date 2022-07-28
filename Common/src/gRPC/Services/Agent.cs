@@ -55,8 +55,8 @@ public class Agent : IAgent
   private readonly ILogger                                                         logger_;
   private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority)> createdTasks_;
   private readonly IObjectStorage                                                  resourcesStorage_;
-  private          SessionData                                                     sessionData_;
-  private          TaskData                                                        taskData_;
+  private readonly SessionData                                                     sessionData_;
+  private readonly TaskData                                                        taskData_;
   private readonly string                                                          token_;
 
   /// <summary>
