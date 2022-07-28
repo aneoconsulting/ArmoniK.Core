@@ -89,13 +89,9 @@ public class SessionTable : ISessionTable
   public Task<bool> IsSessionCancelledAsync(string            sessionId,
                                             CancellationToken cancellationToken = default)
   {
-    if (!storage_.ContainsKey(sessionId))
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found");
-    }
-
-    return Task.FromResult(storage_[sessionId]
-                             .Status == SessionStatus.Canceled);
+    return this.GetSessionAsync(sessionId,
+                                cancellationToken)
+               .Result.Status == SessionStatus.Canceled;
   }
 
   /// <inheritdoc />

@@ -127,23 +127,10 @@ public class SessionTable : ISessionTable
     using var activity = activitySource_.StartActivity($"{nameof(IsSessionCancelledAsync)}");
     activity?.SetTag($"{nameof(IsSessionCancelledAsync)}_sessionId",
                      sessionId);
-    var sessionHandle     = sessionProvider_.Get();
-    var sessionCollection = sessionCollectionProvider_.Get();
 
-
-    try
-    {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
-                                    .Select(sdm => sdm.Status   == SessionStatus.Canceled)
-                                    .SingleAsync(cancellationToken)
-                                    .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException e)
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found",
-                                         e);
-    }
+    return await this.GetSessionAsync(sessionId,
+                                      cancellationToken)
+                     .Status == SessionStatus.Canceled;
   }
 
   /// <inheritdoc />
