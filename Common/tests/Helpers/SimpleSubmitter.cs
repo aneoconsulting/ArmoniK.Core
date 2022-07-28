@@ -35,8 +35,6 @@ using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
-using MongoDB.Driver;
-
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.Storage.TaskRequest;

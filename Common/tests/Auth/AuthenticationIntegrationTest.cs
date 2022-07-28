@@ -28,6 +28,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,6 +50,7 @@ using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using SubmitterClient = ArmoniK.Api.gRPC.V1.Submitter.Submitter.SubmitterClient;
+using Type = Google.Protobuf.WellKnownTypes.Type;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
 
@@ -60,6 +62,125 @@ namespace ArmoniK.Core.Common.Tests.Auth;
 [NonParallelizable]
 public class AuthenticationIntegrationTest
 {
+  const          string                      sessionId = "MySession";
+  const          string                      taskId    = "MyTask";
+  const          string                      resultKey = "ResultKey";
+  private static TaskOptions                 taskOptions;
+  private static TaskFilter.Types.IdsRequest idsrequest;
+  private static TaskFilter                  taskFilter;
+  private static CreateSmallTaskRequest      createSmallTasksRequest;
+  private static CreateSessionRequest        createSessionRequest;
+  private static Session                     sessionRequest;
+  private static GetResultStatusRequest      getresultstatusrequest;
+  private static GetTaskStatusRequest        getTaskStatusRequest;
+  private static Empty                       empty;
+  private static SessionFilter               sessionFilter;
+  private static ResultRequest               resultRequest;
+  private static WaitRequest                 waitRequest;
+  private static CreateLargeTaskRequest      createLargeTaskRequest_init;
+  private static CreateLargeTaskRequest      createLargeTaskRequest_initTask;
+  private static CreateLargeTaskRequest      createLargeTaskRequest_payload;
+  private static CreateLargeTaskRequest      createLargeTaskRequest_payloadcomplete;
+  private static CreateLargeTaskRequest      createLargeTaskRequest_lastTask;
+  static AuthenticationIntegrationTest()
+  {
+    // Constants
+    
+    taskOptions = new TaskOptions
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
+                        MaxRetries  = 4,
+                        Priority    = 2,
+                      };
+    idsrequest = new TaskFilter.Types.IdsRequest();
+    idsrequest.Ids.Add(taskId);
+    taskFilter = new TaskFilter
+                     {
+                       Task = idsrequest,
+                     };
+    createSmallTasksRequest = new CreateSmallTaskRequest
+                                  {
+                                    SessionId   = sessionId,
+                                    TaskOptions = taskOptions
+                                  };
+    createSmallTasksRequest.TaskRequests.Add(new TaskRequest
+                                             {
+                                               Id = taskId,
+                                               Payload = ByteString.CopyFrom("payload",
+                                                                             Encoding.ASCII)
+                                             });
+    createSessionRequest = new CreateSessionRequest
+                               {
+                                 Id                = sessionId,
+                                 DefaultTaskOption = taskOptions,
+                               };
+    sessionRequest = new Session
+                         {
+                           Id = sessionId,
+                         };
+    getresultstatusrequest = new GetResultStatusRequest
+                                 {
+                                   SessionId = sessionId,
+                                 };
+    getTaskStatusRequest = new GetTaskStatusRequest();
+    getTaskStatusRequest.TaskIds.Add(taskId);
+    empty         = new Empty();
+    sessionFilter = new SessionFilter();
+    sessionFilter.Sessions.Add(sessionId);
+    resultRequest = new ResultRequest
+                        {
+                          Key     = resultKey,
+                          Session = sessionId,
+                        };
+    waitRequest = new WaitRequest
+                      {
+                        Filter = taskFilter,
+                        StopOnFirstTaskCancellation = true,
+                        StopOnFirstTaskError = true,
+                      };
+
+    createLargeTaskRequest_init = new CreateLargeTaskRequest();
+    createLargeTaskRequest_init.InitRequest = new CreateLargeTaskRequest.Types.InitRequest
+                                              {
+                                                SessionId   = sessionId,
+                                                TaskOptions = taskOptions,
+                                              };
+    var taskRequestHeader = new TaskRequestHeader
+                            {
+                              Id = taskId,
+                            };
+    taskRequestHeader.DataDependencies.Add("dependency");
+    taskRequestHeader.ExpectedOutputKeys.Add("outputKey");
+    createLargeTaskRequest_initTask = new CreateLargeTaskRequest
+                                      {
+                                        InitTask = new InitTaskRequest
+                                                   {
+                                                     Header = taskRequestHeader,
+                                                   },
+                                      };
+    createLargeTaskRequest_payload = new CreateLargeTaskRequest
+                                     {
+                                       TaskPayload = new DataChunk
+                                                     {
+                                                       Data = ByteString.CopyFrom("payload",
+                                                                                  Encoding.ASCII)
+                                                     }
+                                     };
+    createLargeTaskRequest_payloadcomplete = new CreateLargeTaskRequest
+                                             {
+                                               TaskPayload = new DataChunk
+                                                             {
+                                                               DataComplete = true,
+                                                             },
+                                             };
+    createLargeTaskRequest_lastTask = new CreateLargeTaskRequest
+                                      {
+                                        InitTask = new InitTaskRequest
+                                                   {
+                                                     LastTask = true,
+                                                   },
+                                      };
+  }
   public enum AuthenticationType
   {
     DefaultAuth,
@@ -122,6 +243,7 @@ public class AuthenticationIntegrationTest
     CanImpersonate = 2,
     NoCertificate  = 3,
     SomeRights     = 4,
+    OtherRights    = 5,
   }
 
   public enum ResultType
@@ -207,6 +329,20 @@ public class AuthenticationIntegrationTest
         },
         Permissions.PermissionList.Where((_,
                                           index) => index % 2 == 0),
+        Authenticator.SchemeName),
+    new("OtherRightsId",
+        "OtherRightsUsername",
+        new[]
+        {
+          new MockIdentity.MockCertificate("OtherRightsCN",
+                                           "OtherRightsFingerprint"),
+        },
+        new[]
+        {
+          "OtherRights",
+        },
+        Permissions.PermissionList.Where((_,
+                                          index) => index % 2 == 1),
         Authenticator.SchemeName),
   };
 
@@ -336,6 +472,14 @@ public class AuthenticationIntegrationTest
                                                     },
                                                     new object[]
                                                     {
+                                                      IdentityIndex.OtherRights,
+                                                      ResultType.AuthorizedForSome,
+                                                      StatusCode.PermissionDenied,
+                                                      IdentityIndex.OtherRights,
+                                                      ImpersonationType.NoImpersonate,
+                                                    },
+                                                    new object[]
+                                                    {
                                                       IdentityIndex.DoesntExist,
                                                       ResultType.AlwaysFalse,
                                                       StatusCode.Unauthenticated,
@@ -368,66 +512,28 @@ public class AuthenticationIntegrationTest
                                                     },
                                                   };
 
+  public static IEnumerable GetCases(List<(string, object)> methodsAndObjects)
+  {
+    // Generator
+    foreach (var parameters in parametersList_)
+    {
+      var identityIndex     = (IdentityIndex) parameters[0];
+      var shouldSucceed     = (ResultType) parameters[1];
+      var statusCode        = (StatusCode) parameters[2];
+      var impersonate       = (IdentityIndex) parameters[3];
+      var impersonationType = (ImpersonationType) parameters[4];
+      foreach (var methodAndObject in methodsAndObjects)
+      {
+        yield return (methodAndObject.Item1, identityIndex, impersonationType, impersonate, GetArgs(methodAndObject.Item2,
+                                                                                                    identityIndex,
+                                                                                                    impersonationType,
+                                                                                                    impersonate), shouldSucceed, statusCode);
+      }
+    }
+  }
+
   public static IEnumerable GetTestCases()
   {
-
-
-    // Constants
-    const string sessionId = "MySession";
-    const string taskId    = "MyTask";
-    const string resultKey = "ResultKey";
-    var taskOptions = new TaskOptions
-                      {
-                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
-                        MaxRetries  = 4,
-                        Priority    = 2,
-                      };
-    var idsrequest = new TaskFilter.Types.IdsRequest();
-    idsrequest.Ids.Add(taskId);
-    var taskFilter = new TaskFilter
-                     {
-                       Task = idsrequest,
-                     };
-    var createSmallTasksRequest = new CreateSmallTaskRequest
-                                  {
-                                    SessionId   = sessionId,
-                                    TaskOptions = taskOptions
-                                  };
-    createSmallTasksRequest.TaskRequests.Add(new TaskRequest
-                                             {
-                                               Id = taskId,
-                                               Payload = ByteString.CopyFrom("payload",
-                                                                             Encoding.ASCII)
-                                             });
-    var createSessionRequest = new CreateSessionRequest
-                               {
-                                 Id                = sessionId,
-                                 DefaultTaskOption = taskOptions,
-                               };
-    var sessionRequest = new Session
-                         {
-                           Id = sessionId,
-                         };
-    var getresultstatusrequest = new GetResultStatusRequest
-                                 {
-                                   SessionId = sessionId,
-                                 };
-    var getTaskStatusRequest = new GetTaskStatusRequest();
-    getTaskStatusRequest.TaskIds.Add(taskId);
-    var empty         = new Empty();
-    var sessionFilter = new SessionFilter();
-    sessionFilter.Sessions.Add(sessionId);
-    var resultRequest = new ResultRequest
-                        {
-                          Key     = resultKey,
-                          Session = sessionId,
-                        };
-    var waitRequest = new WaitRequest
-                      {
-                        Filter = taskFilter,
-                        StopOnFirstTaskCancellation = true,
-                        StopOnFirstTaskError = true,
-                      };
     var methodsAndObjects = new List<(string, object)>
                             {
                               (nameof(SubmitterClient.CancelSession), sessionRequest),
@@ -445,22 +551,39 @@ public class AuthenticationIntegrationTest
                               (nameof(SubmitterClient.WaitForCompletion), waitRequest),
                             };
 
-    // Generator
-    foreach (var parameters in parametersList_)
-    {
-      var identityIndex     = (IdentityIndex) parameters[0];
-      var shouldSucceed     = (ResultType) parameters[1];
-      var statusCode        = (StatusCode) parameters[2];
-      var impersonate       = (IdentityIndex) parameters[3];
-      var impersonationType = (ImpersonationType) parameters[4];
-      foreach (var methodAndObject in methodsAndObjects)
-      {
-        yield return (methodAndObject.Item1, identityIndex, impersonationType, impersonate, GetArgs(methodAndObject.Item2,
-                                                                                                    identityIndex,
-                                                                                                    impersonationType,
-                                                                                                    impersonate), shouldSucceed, statusCode);
-      }
-    }
+    return GetCases(methodsAndObjects);
+  }
+
+  public static IEnumerable GetAsyncTestCases()
+  {
+    var methodsAndObjects = new List<(string, object)>
+                            {
+                              (nameof(SubmitterClient.CancelSessionAsync), sessionRequest),
+                              (nameof(SubmitterClient.CancelTasksAsync), taskFilter),
+                              (nameof(SubmitterClient.CountTasksAsync), taskFilter),
+                              (nameof(SubmitterClient.CreateSessionAsync), createSessionRequest),
+                              (nameof(SubmitterClient.CreateSmallTasksAsync), createSmallTasksRequest),
+                              (nameof(SubmitterClient.GetResultStatusAsync), getresultstatusrequest),
+                              (nameof(SubmitterClient.GetServiceConfigurationAsync), empty),
+                              (nameof(SubmitterClient.GetTaskStatusAsync), getTaskStatusRequest),
+                              (nameof(SubmitterClient.ListSessionsAsync), sessionFilter),
+                              (nameof(SubmitterClient.ListTasksAsync), taskFilter),
+                              (nameof(SubmitterClient.TryGetTaskOutputAsync), resultRequest),
+                              (nameof(SubmitterClient.WaitForAvailabilityAsync), resultRequest),
+                              (nameof(SubmitterClient.WaitForCompletionAsync), waitRequest),
+                            };
+
+    return GetCases(methodsAndObjects);
+  }
+
+  public static IEnumerable GetCreateLargeTaskTestCases()
+  {
+    var methodsAndObjects = new List<(string, object)>
+                            {
+                              (nameof(SubmitterClient.CreateLargeTasks),null),
+                            };
+
+    return GetCases(methodsAndObjects);
   }
 
   [OneTimeSetUp]
@@ -585,7 +708,6 @@ public class AuthenticationIntegrationTest
                     out var userIndex,
                     out var shouldSucceed,
                     out var errorCode);
-    TestContext.Progress.WriteLine($"new expected {(IdentityIndex) userIndex} {shouldSucceed} {errorCode}");
     var channel = await helper_!.CreateChannel()
                                 .ConfigureAwait(false);
     var client = new SubmitterClient(channel);
@@ -623,4 +745,97 @@ public class AuthenticationIntegrationTest
     await helper_.DeleteChannel()
                  .ConfigureAwait(false);
   }
+
+  [TestCaseSource(nameof(GetAsyncTestCases))]
+  public async Task AsyncAuthMatchesBehavior((string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
+                                               errorCode) tuple)
+  {
+    TransformResult(tuple,
+                    out var userIndex,
+                    out var shouldSucceed,
+                    out var errorCode);
+    var channel = await helper_!.CreateChannel()
+                                .ConfigureAwait(false);
+    var client = new SubmitterClient(channel);
+    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
+                                                                                                    .Permissions.Any(p => p.Name+"Async" == tuple.method)))
+    {
+      Assert.DoesNotThrowAsync(delegate
+                               {
+                                 dynamic call = client.GetType()
+                                       .InvokeMember(tuple.method,
+                                                     BindingFlags.InvokeMethod,
+                                                     null,
+                                                     client,
+                                                     tuple.args)!;
+                                 var t = call.GetType();
+                                 return t.GetProperty("ResponseAsync").GetValue(call, null);
+                               });
+    }
+    else
+    {
+      var exception = Assert.CatchAsync(delegate
+                                   {
+                                     dynamic call = client.GetType()
+                                           .InvokeMember(tuple.method,
+                                                         BindingFlags.InvokeMethod,
+                                                         null,
+                                                         client,
+                                                         tuple.args)!;
+                                     var t = call.GetType();
+                                     return t.GetProperty("ResponseAsync").GetValue(call, null);
+
+                                   });
+      Assert.IsNotNull(exception);
+      Assert.IsInstanceOf<RpcException>(exception);
+      Assert.AreEqual(errorCode,
+                      ((RpcException) (exception)).StatusCode);
+    }
+  }
+
+  public async Task<CreateTaskReply> CreateLargeTask(AsyncClientStreamingCall<CreateLargeTaskRequest, CreateTaskReply> stream)
+  {
+    await stream.RequestStream.WriteAsync(createLargeTaskRequest_init)
+                .ConfigureAwait(false);
+    await stream.RequestStream.WriteAsync(createLargeTaskRequest_initTask)
+                .ConfigureAwait(false);
+    await stream.RequestStream.WriteAsync(createLargeTaskRequest_payload)
+                .ConfigureAwait(false);
+    await stream.RequestStream.WriteAsync(createLargeTaskRequest_payloadcomplete)
+                .ConfigureAwait(false);
+    await stream.RequestStream.WriteAsync(createLargeTaskRequest_lastTask)
+                .ConfigureAwait(false);
+    await stream.RequestStream.CompleteAsync()
+                .ConfigureAwait(false);
+    return await stream.ResponseAsync.ConfigureAwait(false);
+  }
+
+  [TestCaseSource(nameof(GetCreateLargeTaskTestCases))]
+  public async Task CreateLargeTasksAuthShouldMatch(
+    (string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
+      errorCode) tuple)
+  {
+    TransformResult(tuple,
+                    out var userIndex,
+                    out var shouldSucceed,
+                    out var errorCode);
+    var channel = await helper_!.CreateChannel()
+                                .ConfigureAwait(false);
+    var client = new SubmitterClient(channel);
+    
+    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
+                                                                                                    .Permissions.Any(p => p.Name == tuple.method)))
+    {
+      Assert.DoesNotThrowAsync(() => CreateLargeTask(client.CreateLargeTasks((Metadata) tuple.args[1])));
+    }
+    else
+    {
+      var exception = Assert.CatchAsync(() => CreateLargeTask(client.CreateLargeTasks((Metadata) tuple.args[1])));
+      Assert.IsNotNull(exception);
+      Assert.IsInstanceOf<RpcException>(exception);
+      Assert.AreEqual(errorCode,
+                      ((RpcException) (exception)).StatusCode);
+    }
+  }
+
 }

@@ -158,7 +158,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
               };
     }
 
-    [SetUp]
+    [OneTimeSetUp]
     public void SetUp()
     {
       GetAuthSource();
@@ -170,7 +170,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
       }
     }
 
-    [TearDown]
+    [OneTimeTearDown]
     public virtual void TearDown()
     {
       AuthenticationTable = null;
@@ -219,6 +219,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
     [TestCase("CNUser2",
               "FingerprintDontCare",
               3)]
+    [TestCase("CNUser2",
+              "Fingerprint3", 3)]
     public void GetIdentityFromCnAndFingerprintShouldSucceed(string cn,
                                                              string fingerprint,
                                                              int    userid)
@@ -240,8 +242,6 @@ namespace ArmoniK.Core.Common.Tests.Auth
               "Fingerprint6")]
     [TestCase("CNUser1",
               "Fingerprint2")]
-    [TestCase("CNUser2",
-              "Fingerprint3")]
     public void GetIdentityFromCnAndFingerprintShouldFail(string cn,
                                                           string fingerprint)
     {
