@@ -64,8 +64,8 @@ public class Agent : IAgent
   /// </summary>
   /// <param name="submitter">Interface to manage tasks</param>
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
-  /// <param name="sessionId">Id of the session</param>
-  /// <param name="taskId">Id of the task</param>
+  /// <param name="sessionData">Data of the session</param>
+  /// <param name="taskData">Data of the task</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public Agent(ISubmitter            submitter,
