@@ -195,4 +195,29 @@ public class QueueStorageTests
     await queueStorage.EnqueueMessagesAsync(testMessages, priority, CancellationToken.None)
       .ConfigureAwait(false);
   }
+
+  [Test]
+  public async Task PullAsyncAsyncSucceds()
+  {
+    await using var helper = new SimpleAmqpClientHelper();
+    var provider = new Mock<IProviderBase<Session>>();
+
+    provider.Setup(sp => sp.Get()).Returns(helper.Session);
+
+    var queueStorage = new QueueStorage(options_, provider.Object,
+                                          NullLogger<QueueStorage>.Instance);
+    await queueStorage.Init(CancellationToken.None)
+      .ConfigureAwait(false);
+
+    var priority = 1;
+    var testMessages = new[] { "msg1", "msg2", "msg3" };
+    await queueStorage.EnqueueMessagesAsync(testMessages, priority, CancellationToken.None)
+      .ConfigureAwait(false);
+
+    await foreach (var qm in queueStorage.PullAsync(3, CancellationToken.None)
+      .ConfigureAwait(false))
+    {
+      Assert.IsTrue(qm.Status == Common.Storage.QueueMessageStatus.Waiting);
+    }
+  }
 }
