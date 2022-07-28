@@ -89,9 +89,9 @@ public class SessionTable : ISessionTable
   public Task<bool> IsSessionCancelledAsync(string            sessionId,
                                             CancellationToken cancellationToken = default)
   {
-    return this.GetSessionAsync(sessionId,
-                                cancellationToken)
-               .Result.Status == SessionStatus.Canceled;
+    return Task.FromResult(this.GetSessionAsync(sessionId,
+                                                cancellationToken)
+                               .Result.Status == SessionStatus.Canceled);
   }
 
   /// <inheritdoc />

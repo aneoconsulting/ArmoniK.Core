@@ -128,9 +128,9 @@ public class SessionTable : ISessionTable
     activity?.SetTag($"{nameof(IsSessionCancelledAsync)}_sessionId",
                      sessionId);
 
-    return await this.GetSessionAsync(sessionId,
-                                      cancellationToken)
-                     .Status == SessionStatus.Canceled;
+    return (await this.GetSessionAsync(sessionId,
+                                       cancellationToken)
+                      .ConfigureAwait(false)).Status == SessionStatus.Canceled;
   }
 
   /// <inheritdoc />
