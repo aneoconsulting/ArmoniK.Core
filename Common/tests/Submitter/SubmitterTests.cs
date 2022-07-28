@@ -314,7 +314,7 @@ public class SubmitterTests
 
   [Test]
   [Ignore("Partitions not fully integrated yet")]
-  public async Task CreateSessionWithoutPartition()
+  public void CreateSessionWithoutPartition()
   {
     var defaultTaskOptions = new TaskOptions
                              {
