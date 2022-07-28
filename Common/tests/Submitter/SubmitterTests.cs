@@ -313,6 +313,7 @@ public class SubmitterTests
   }
 
   [Test]
+  [Ignore("Partitions not fully integrated yet")]
   public async Task CreateSessionWithoutPartition()
   {
     var defaultTaskOptions = new TaskOptions
@@ -323,19 +324,10 @@ public class SubmitterTests
                                PartitionId = "invalid",
                              };
 
-    /*
-    // TODO: Once partitions are fully integrated, creating a session without partition should fail
-    Assert.ThrowsAsync<InvalidOperationException>(() => await submitter_.CreateSession(SessionId,
-                                                        Array.Empty<string>(),
-                                                        defaultTaskOptions,
-                                                        CancellationToken.None));
-    */
-
-    await submitter_.CreateSession(SessionId,
-                                  Array.Empty<string>(),
-                                  defaultTaskOptions,
-                                  CancellationToken.None)
-                    .ConfigureAwait(false);
+    Assert.ThrowsAsync<InvalidOperationException>(() => submitter_.CreateSession(SessionId,
+                                                                                 Array.Empty<string>(),
+                                                                                 defaultTaskOptions,
+                                                                                 CancellationToken.None));
   }
 
   [Test]
