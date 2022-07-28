@@ -313,6 +313,32 @@ public class SubmitterTests
   }
 
   [Test]
+  public async Task CreateSessionWithoutPartition()
+  {
+    var defaultTaskOptions = new TaskOptions
+                             {
+                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                               MaxRetries  = 2,
+                               Priority    = 1,
+                               PartitionId = "invalid",
+                             };
+
+    /*
+    // TODO: Once partitions are fully integrated, creating a session without partition should fail
+    Assert.ThrowsAsync<InvalidOperationException>(() => await submitter_.CreateSession(SessionId,
+                                                        Array.Empty<string>(),
+                                                        defaultTaskOptions,
+                                                        CancellationToken.None));
+    */
+
+    await submitter_.CreateSession(SessionId,
+                                  Array.Empty<string>(),
+                                  defaultTaskOptions,
+                                  CancellationToken.None)
+                    .ConfigureAwait(false);
+  }
+
+  [Test]
   public async Task CreateTaskShouldSucceed()
   {
     await InitSubmitter(submitter_,
@@ -344,24 +370,18 @@ public class SubmitterTests
                                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
                                MaxRetries  = 2,
                                Priority    = 1,
-                               PartitionId = "part1",
+                               PartitionId = "invalid",
                              };
 
     await submitter_.CreateSession(SessionId,
-                                  new[] {"part1", "part2"},
+                                  new [] {"part1", "part2"},
                                   defaultTaskOptions,
                                   CancellationToken.None)
                     .ConfigureAwait(false);
 
     Assert.ThrowsAsync<InvalidOperationException>(() => submitter_.CreateTasks(SessionId,
                                                                                SessionId,
-                                                                               new TaskOptions
-                                                                               {
-                                                                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
-                                                                                 MaxRetries  = 0,
-                                                                                 Priority    = 0,
-                                                                                 PartitionId = "invalid",
-                                                                               },
+                                                                               defaultTaskOptions,
                                                                                new List<TaskRequest>
                                                                                {
                                                                                  new(TaskCreatingId,
