@@ -137,8 +137,10 @@ public class GrpcSubmitterServiceHelper : IDisposable
 
   public async Task StopServer()
   {
+    server_?.Dispose();
     await app_.StopAsync()
               .ConfigureAwait(false);
+    await app_.DisposeAsync().ConfigureAwait(false);
     handler_?.Dispose();
     handler_ = null;
   }
