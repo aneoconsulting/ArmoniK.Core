@@ -60,7 +60,7 @@ public class QueueStorageTests
       CaPath = "somePath",
       Scheme = "someScheme",
       CredentialsPath = "somePath",
-      MaxPriority = 21,
+      MaxPriority = 5,
       AllowHostMismatch = false
     };
   }
@@ -155,5 +155,44 @@ public class QueueStorageTests
      new QueueStorage(options_, provider.Object,
                                         NullLogger<QueueStorage>.Instance)
     );
+  }
+
+  [Test]
+  public async Task EnqueueMessagesAsyncThrowsOnTooBigPriority()
+  {
+    await using var helper = new SimpleAmqpClientHelper();
+    var provider = new Mock<IProviderBase<Session>>();
+
+    provider.Setup(sp => sp.Get()).Returns(helper.Session);
+
+    var queueStorage = new QueueStorage(options_, provider.Object,
+                                          NullLogger<QueueStorage>.Instance);
+    await queueStorage.Init(CancellationToken.None)
+      .ConfigureAwait(false);
+
+    var priority = 11; // InternalMaxPriority = 10
+    var testMessages = new[] { "msg1", "msg2", "msg3" };
+    Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await
+     queueStorage.EnqueueMessagesAsync(testMessages, priority, CancellationToken.None)
+      .ConfigureAwait(false));
+  }
+
+  [Test]
+  public async Task EnqueueMessagesAsyncSucceds()
+  {
+    await using var helper = new SimpleAmqpClientHelper();
+    var provider = new Mock<IProviderBase<Session>>();
+
+    provider.Setup(sp => sp.Get()).Returns(helper.Session);
+
+    var queueStorage = new QueueStorage(options_, provider.Object,
+                                          NullLogger<QueueStorage>.Instance);
+    await queueStorage.Init(CancellationToken.None)
+      .ConfigureAwait(false);
+
+    var priority = 3;
+    var testMessages = new[] { "msg1", "msg2", "msg3" };
+    await queueStorage.EnqueueMessagesAsync(testMessages, priority, CancellationToken.None)
+      .ConfigureAwait(false);
   }
 }

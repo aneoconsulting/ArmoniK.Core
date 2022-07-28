@@ -183,6 +183,12 @@ public class QueueStorage : IQueueStorage
                      priority / MaxInternalQueuePriority,
                      priority % MaxInternalQueuePriority);
 
+    if (priority > MaxPriority || priority > MaxInternalQueuePriority )
+    {
+      throw new ArgumentOutOfRangeException(nameof(priority),
+                                            $"Given priority is bigger than {nameof(MaxPriority)} or {nameof(MaxInternalQueuePriority)}");
+    }
+
     var sender = await senders_[priority / MaxInternalQueuePriority];
     await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
                                                               {
