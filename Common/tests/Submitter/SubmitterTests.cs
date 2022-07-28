@@ -337,6 +337,48 @@ public class SubmitterTests
   }
 
   [Test]
+  public async Task CreateTaskInvalidPartitionShouldFail()
+  {
+    var defaultTaskOptions = new TaskOptions
+                             {
+                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                               MaxRetries  = 2,
+                               Priority    = 1,
+                               PartitionId = "part1",
+                             };
+
+    await submitter_.CreateSession(SessionId,
+                                  new[] {"part1", "part2"},
+                                  defaultTaskOptions,
+                                  CancellationToken.None)
+                    .ConfigureAwait(false);
+
+    Assert.ThrowsAsync<InvalidOperationException>(() => submitter_.CreateTasks(SessionId,
+                                                                               SessionId,
+                                                                               new TaskOptions
+                                                                               {
+                                                                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
+                                                                                 MaxRetries  = 0,
+                                                                                 Priority    = 0,
+                                                                                 PartitionId = "invalid",
+                                                                               },
+                                                                               new List<TaskRequest>
+                                                                               {
+                                                                                 new(TaskCreatingId,
+                                                                                     new[]
+                                                                                     {
+                                                                                       ExpectedOutput1,
+                                                                                     },
+                                                                                     new List<string>(),
+                                                                                     new List<ReadOnlyMemory<byte>>
+                                                                                     {
+                                                                                       new(Encoding.ASCII.GetBytes("AAAA")),
+                                                                                     }.ToAsyncEnumerable()),
+                                                                               }.ToAsyncEnumerable(),
+                                                                               CancellationToken.None));
+  }
+
+  [Test]
   public async Task GetStatusShouldSucceed()
   {
     await InitSubmitter(submitter_,
