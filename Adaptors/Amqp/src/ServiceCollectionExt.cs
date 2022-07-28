@@ -105,9 +105,14 @@ public static class ServiceCollectionExt
       }
 
       var sessionProvider = new SessionProvider(amqpOptions,
-                                                logger);
+                                              logger);
 
-      serviceCollection.AddSingleton(sessionProvider);
+      // serviceCollection.AddSingleton(sessionProvider);
+
+      serviceCollection.AddSingleton<IProviderBase<Session>, SessionProvider>(sp =>
+        {
+          return sessionProvider;
+        });
 
       serviceCollection.AddSingleton<IQueueStorage, QueueStorage>();
 

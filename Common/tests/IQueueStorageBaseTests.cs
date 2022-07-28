@@ -24,11 +24,17 @@
 
 using Amqp;
 
+using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Common.Tests.Helpers;
+
+using Microsoft.Extensions.Logging.Abstractions;
+
+using Moq;
 
 using NUnit.Framework;
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Tests;
@@ -63,5 +69,36 @@ public class IQueueStorageBaseTests
       .ConfigureAwait(false);
 
     Assert.AreEqual(receiveMsg.Body, sendMsg.Body);
+  }
+
+  [Test]
+  public async Task CreateQueueStorageShouldSucceed()
+  {
+    await using var helper = new SimpleAmqpClientHelper();
+    var provider = new Mock<Injection.IProviderBase<Session>>();
+
+    provider.Setup( sp => sp.Get() ).Returns(helper.Session);
+
+    var options = new Adapters.Amqp.Options.Amqp()
+    { Host = "localhost", User = "guest",
+      Port = 5672, CaPath = "some", Scheme="some",
+      CredentialsPath = "some", MaxPriority = 1,
+      Password = "guest", AllowHostMismatch=false
+    };
+
+    var queueStorage = new QueueStorage(options, provider.Object,
+                                        NullLogger<QueueStorage>.Instance);
+    await queueStorage.Init(CancellationToken.None)
+      .ConfigureAwait(false);
+
+    var testMessages = new[] { "msg1", "msg2" , "msg3", "msg4" };
+
+    await queueStorage.EnqueueMessagesAsync(testMessages, 1, CancellationToken.None)
+      .ConfigureAwait(false);
+
+    await foreach (var qm in queueStorage.PullAsync(4, CancellationToken.None)
+                                                .ConfigureAwait(false))
+    {
+    }
   }
 }

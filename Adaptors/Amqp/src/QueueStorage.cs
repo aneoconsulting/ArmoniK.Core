@@ -35,6 +35,7 @@ using Amqp.Framing;
 
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -52,9 +53,9 @@ public class QueueStorage : IQueueStorage
 
   private bool isInitialized_;
 
-  public QueueStorage(Options.Amqp          options,
-                      SessionProvider       sessionProvider,
-                      ILogger<QueueStorage> logger)
+  public QueueStorage(Options.Amqp           options,
+                      IProviderBase<Session> sessionProvider,
+                      ILogger<QueueStorage>  logger)
   {
     if (string.IsNullOrEmpty(options.Host))
     {
