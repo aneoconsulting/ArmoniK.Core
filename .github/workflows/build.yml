@@ -159,6 +159,48 @@ jobs:
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
+  testsQueue:
+    strategy:
+      matrix:
+        projects:
+          - Adaptors/Amqp/tests
+        queue:
+          - activemqp:latest
+          - artemis:latest
+          - rabbitmq:latest
+        os:
+          - ubuntu-latest
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }}
+        submodules: true
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.x
+
+    - name: Run tests
+      uses: addnab/docker-run-action@v3
+      with:
+        image: ${{ matrix.queue }}
+        options: -p 0.0.0.0:5672:5672
+      run: |
+        cd ${{ matrix.projects }}
+        dotnet test --logger "trx;LogFileName=test-results.trx"
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Test - ${{ matrix.os }} ${{ matrix.projects }}
+        path: ${{ matrix.projects }}/TestResults/test-results.trx
+        reporter: dotnet-trx
+
   testsWinOnly:
     strategy:
       matrix:
@@ -206,6 +248,7 @@ jobs:
           - ./Adaptors/Memory/tests/ArmoniK.Core.Adapters.Memory.Tests.csproj
           - ./Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj
           - ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj
+          - ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.Amqp.Tests.csproj
           - ./Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj
           - ./Common/src/ArmoniK.Core.Common.csproj
           - ./Common/tests/ArmoniK.Core.Common.Tests.csproj
