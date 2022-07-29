@@ -165,9 +165,9 @@ jobs:
         projects:
           - Adaptors/Amqp/tests
         queue:
-          - activemqp:latest
-          - artemis:latest
-          - rabbitmq:latest
+          - activemqp
+          - artemis
+          - rabbitmq
         os:
           - ubuntu-latest
       fail-fast: false
@@ -187,7 +187,7 @@ jobs:
     - name: Run tests
       uses: addnab/docker-run-action@v3
       with:
-        image: ${{ matrix.queue }}
+        image: ${{ matrix.queue }}:latest
         options: -p 0.0.0.0:5672:5672
       run: |
         cd ${{ matrix.projects }}
@@ -197,7 +197,7 @@ jobs:
       uses: dorny/test-reporter@v1
       if: success() || failure()
       with:
-        name: Test - ${{ matrix.os }} ${{ matrix.projects }}
+        name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
 
