@@ -35,6 +35,7 @@ using Moq;
 using NUnit.Framework;
 
 using System;
+using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -43,15 +44,12 @@ namespace ArmoniK.Core.Adapters.Amqp.Tests;
 [TestFixture]
 public class QueueStorageTests
 {
-  public Options.Amqp options_;
+  private Options.Amqp options_;
+  public Options.Amqp Options_ { get => options_; set => options_ = value; }
 
-  [SetUp]
-  public void SetDefaultOptions()
+  private static Options.Amqp CreateDefaultOptions()
   {
-    /* These options are only to feed the QueueStorage constructor
-     * and they do not play any role in the how the connection is created,
-     * the later is defined in the  SimpleAmqpClientHelper class */
-    options_ = new Options.Amqp()
+    return new Options.Amqp()
     {
       Host = "localhost",
       User = "guest",
@@ -63,6 +61,15 @@ public class QueueStorageTests
       MaxPriority = 5,
       AllowHostMismatch = false
     };
+  }
+
+  [SetUp]
+  public void SetDefaultOptions()
+  {
+    /* These options are only to feed the QueueStorage constructor
+     * and they do not play any role in the how the connection is created,
+     * the later is defined in the  SimpleAmqpClientHelper class */
+    Options_ = CreateDefaultOptions();
   }
 
   [Test]
@@ -99,7 +106,7 @@ public class QueueStorageTests
 
     provider.Setup(sp => sp.Get()).Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(options_, provider.Object,
+    var queueStorage = new QueueStorage(Options_, provider.Object,
                                           NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
       .ConfigureAwait(false);
@@ -112,47 +119,53 @@ public class QueueStorageTests
       .ConfigureAwait(false));
   }
 
-  [Test]
-  public async Task CreateQueueStorageShouldSFailIfNoHostIsProvided()
+  public static IEnumerable TestCasesBadOptions
   {
-    await using var helper = new SimpleAmqpClientHelper();
-    var provider = new Mock<IProviderBase<Session>>();
+    get
+    {
+      var badHostOpt = CreateDefaultOptions();
+      badHostOpt.Host = "";
+      var badHost = new TestCaseData(badHostOpt);
+      badHost.SetArgDisplayNames("InvalidHost");
+      yield return badHost;
 
-    options_.Host = "";
-    provider.Setup(sp => sp.Get()).Returns(helper.Session);
+      var badUserOpt = CreateDefaultOptions();
+      badUserOpt.User = "";
+      var badUser = new TestCaseData(badUserOpt);
+      badUser.SetArgDisplayNames("InvalidUser");
+      yield return badUser;
 
-    Assert.Throws<ArgumentOutOfRangeException>(() =>
-     new QueueStorage(options_, provider.Object,
-                                        NullLogger<QueueStorage>.Instance)
-    );
+      var badPswdOpt = CreateDefaultOptions();
+      badPswdOpt.Password = "";
+      var badPswd = new TestCaseData(badPswdOpt);
+      badPswd.SetArgDisplayNames("InvalidPassword");
+      yield return badPswd;
+
+      var badPortOpt = CreateDefaultOptions();
+      badPortOpt.Port = 0;
+      var badPort = new TestCaseData(badPortOpt);
+      badPort.SetArgDisplayNames("InvalidPort");
+      yield return badPort;
+
+      var badPriorityOpt = CreateDefaultOptions();
+      badPriorityOpt.MaxPriority = 0;
+      var badPriority = new TestCaseData(badPriorityOpt);
+      badPriority.SetArgDisplayNames("InvalidMaxPriority");
+      yield return badPriority;
+    }
   }
 
-  [Test]
-  public async Task CreateQueueStorageShouldSFailIfNoPortDefined()
+
+  [TestCaseSource(nameof(TestCasesBadOptions))]
+  public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(Options.Amqp options)
   {
     await using var helper = new SimpleAmqpClientHelper();
     var provider = new Mock<IProviderBase<Session>>();
 
-    options_.Port = 0;
     provider.Setup(sp => sp.Get()).Returns(helper.Session);
 
     Assert.Throws<ArgumentOutOfRangeException>(() =>
-     new QueueStorage(options_, provider.Object,
-                                        NullLogger<QueueStorage>.Instance)
-    );
-  }
-
-  [Test]
-  public async Task CreateQueueStorageShouldSFailIfMaxPriorityLessThanOne()
-  {
-    await using var helper = new SimpleAmqpClientHelper();
-    var provider = new Mock<IProviderBase<Session>>();
-
-    options_.MaxPriority = 0;
-    provider.Setup(sp => sp.Get()).Returns(helper.Session);
-
-    Assert.Throws<ArgumentOutOfRangeException>(() =>
-     new QueueStorage(options_, provider.Object,
+     new QueueStorage(options, provider.Object,
                                         NullLogger<QueueStorage>.Instance)
     );
   }
@@ -165,7 +178,7 @@ public class QueueStorageTests
 
     provider.Setup(sp => sp.Get()).Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(options_, provider.Object,
+    var queueStorage = new QueueStorage(Options_, provider.Object,
                                           NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
       .ConfigureAwait(false);
@@ -185,7 +198,7 @@ public class QueueStorageTests
 
     provider.Setup(sp => sp.Get()).Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(options_, provider.Object,
+    var queueStorage = new QueueStorage(Options_, provider.Object,
                                           NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
       .ConfigureAwait(false);
@@ -204,7 +217,7 @@ public class QueueStorageTests
 
     provider.Setup(sp => sp.Get()).Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(options_, provider.Object,
+    var queueStorage = new QueueStorage(Options_, provider.Object,
                                           NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
       .ConfigureAwait(false);
