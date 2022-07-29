@@ -55,8 +55,8 @@ public class Agent : IAgent
   private readonly ILogger                                                         logger_;
   private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority)> createdTasks_;
   private readonly IObjectStorage                                                  resourcesStorage_;
-  private          string?                                                         sessionId_;
-  private          string?                                                         taskId_;
+  private readonly SessionData                                                     sessionData_;
+  private readonly TaskData                                                        taskData_;
   private readonly string                                                          token_;
 
   /// <summary>
@@ -64,14 +64,14 @@ public class Agent : IAgent
   /// </summary>
   /// <param name="submitter">Interface to manage tasks</param>
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
-  /// <param name="sessionId">Id of the session</param>
-  /// <param name="taskId">Id of the task</param>
+  /// <param name="sessionData">Data of the session</param>
+  /// <param name="taskData">Data of the task</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public Agent(ISubmitter            submitter,
                IObjectStorageFactory objectStorageFactory,
-               string                sessionId,
-               string                taskId,
+               SessionData           sessionData,
+               TaskData              taskData,
                string                token,
                ILogger               logger)
   {
@@ -79,16 +79,16 @@ public class Agent : IAgent
     logger_           = logger;
     resourcesStorage_ = objectStorageFactory.CreateResourcesStorage();
     createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority)>();
-    sessionId_        = sessionId;
-    taskId_           = taskId;
+    sessionData_      = sessionData;
+    taskData_         = taskData;
     token_            = token;
   }
 
   public async Task FinalizeTaskCreation(CancellationToken cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(FinalizeTaskCreation),
-                                          ("taskId", taskId_)!,
-                                          ("sessionId", sessionId_)!);
+                                          ("taskId", taskData_.TaskId)!,
+                                          ("sessionId", sessionData_.SessionId)!);
     if (createdTasks_ == null)
     {
       throw new ArmoniKException("Created tasks should not be null");
@@ -100,8 +100,8 @@ public class Agent : IAgent
     {
       await submitter_.FinalizeTaskCreation(createdTask.requests,
                                             createdTask.priority,
-                                            sessionId_!,
-                                            taskId_!,
+                                            sessionData_.SessionId!,
+                                            taskData_.TaskId!,
                                             cancellationToken)
                       .ConfigureAwait(false);
     }
@@ -116,8 +116,8 @@ public class Agent : IAgent
     var                            taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
 
     using var _ = logger_.BeginNamedScope(nameof(CreateTask),
-                                          ("taskId", taskId_)!,
-                                          ("sessionId", sessionId_)!);
+                                          ("taskId", taskData_.TaskId)!,
+                                          ("sessionId", sessionData_.SessionId)!);
     await foreach (var request in requestStream.ReadAllAsync(cancellationToken: cancellationToken)
                                                .ConfigureAwait(false))
     {
@@ -147,8 +147,8 @@ public class Agent : IAgent
 
           completionTask = Task.Run(async () =>
                                     {
-                                      createdTasks_.Add(await submitter_.CreateTasks(sessionId_!,
-                                                                                     taskId_!,
+                                      createdTasks_.Add(await submitter_.CreateTasks(sessionData_,
+                                                                                     taskData_.TaskId!,
                                                                                      request.InitRequest.TaskOptions,
                                                                                      taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
                                                                                      cancellationToken)
@@ -246,8 +246,8 @@ public class Agent : IAgent
                                   CancellationToken              cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetCommonData),
-                                          ("taskId", taskId_)!,
-                                          ("sessionId", sessionId_)!);
+                                          ("taskId", taskData_.TaskId)!,
+                                          ("sessionId", sessionData_.SessionId)!);
     if (string.IsNullOrEmpty(request.CommunicationToken))
     {
       await responseStream.WriteAsync(new DataReply
@@ -285,8 +285,8 @@ public class Agent : IAgent
                                   CancellationToken              cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetDirectData),
-                                          ("taskId", taskId_)!,
-                                          ("sessionId", sessionId_)!);
+                                          ("taskId", taskData_.TaskId)!,
+                                          ("sessionId", sessionData_.SessionId)!);
 
     if (string.IsNullOrEmpty(request.CommunicationToken))
     {
@@ -325,8 +325,8 @@ public class Agent : IAgent
                                     CancellationToken              cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(GetResourceData),
-                                          ("taskId", taskId_)!,
-                                          ("sessionId", sessionId_)!);
+                                          ("taskId", taskData_.TaskId)!,
+                                          ("sessionId", sessionData_.SessionId)!);
 
     if (string.IsNullOrEmpty(request.CommunicationToken))
     {
@@ -421,8 +421,8 @@ public class Agent : IAgent
                                             CancellationToken          cancellationToken)
   {
     using var _ = logger_.BeginNamedScope(nameof(SendResult),
-                                          ("taskId", taskId_)!,
-                                          ("sessionId", sessionId_)!);
+                                          ("taskId", taskData_.TaskId)!,
+                                          ("sessionId", sessionData_.SessionId)!);
 
     Task? completionTask = null;
     var   fsmResult      = new ProcessReplyResultStateMachine(logger_);
@@ -462,8 +462,8 @@ public class Agent : IAgent
               fsmResult.InitKey();
               completionTask = Task.Run(async () =>
                                         {
-                                          await submitter_.SetResult(sessionId_!,
-                                                                     taskId_!,
+                                          await submitter_.SetResult(sessionData_.SessionId!,
+                                                                     taskData_.TaskId!,
                                                                      request.Init.Key,
                                                                      chunksChannel.Reader.ReadAllAsync(cancellationToken),
                                                                      cancellationToken)

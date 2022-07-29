@@ -39,6 +39,7 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using JetBrains.Annotations;
 
@@ -72,6 +73,7 @@ public class SessionTable : ISessionTable
 
   [PublicAPI]
   public async Task SetSessionDataAsync(string                          rootSessionId,
+                                        IEnumerable<string>             partitionIds,
                                         Core.Common.Storage.TaskOptions defaultOptions,
                                         CancellationToken               cancellationToken = default)
   {
@@ -82,12 +84,40 @@ public class SessionTable : ISessionTable
 
     SessionData data = new(rootSessionId,
                            SessionStatus.Running,
+                           partitionIds.ToIList(),
                            defaultOptions);
 
     await sessionCollection.InsertOneAsync(data,
                                            cancellationToken: cancellationToken)
                            .ConfigureAwait(false);
   }
+
+  /// <inheritdoc />
+  public async Task<SessionData> GetSessionAsync(string            sessionId,
+                                                 CancellationToken cancellationToken = default)
+  {
+    using var _ = Logger.LogFunction(sessionId);
+    using var activity = activitySource_.StartActivity($"{nameof(GetSessionAsync)}");
+    activity?.SetTag($"{nameof(GetSessionAsync)}_sessionId",
+                     sessionId);
+    var sessionHandle = sessionProvider_.Get();
+    var sessionCollection = sessionCollectionProvider_.Get();
+
+
+    try
+    {
+      return await sessionCollection.AsQueryable(sessionHandle)
+                                    .Where(sdm => sdm.SessionId == sessionId)
+                                    .SingleAsync(cancellationToken)
+                                    .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException e)
+    {
+      throw new SessionNotFoundException($"Key '{sessionId}' not found",
+                                         e);
+    }
+  }
+
 
   /// <inheritdoc />
   public async Task<bool> IsSessionCancelledAsync(string            sessionId,
@@ -97,23 +127,10 @@ public class SessionTable : ISessionTable
     using var activity = activitySource_.StartActivity($"{nameof(IsSessionCancelledAsync)}");
     activity?.SetTag($"{nameof(IsSessionCancelledAsync)}_sessionId",
                      sessionId);
-    var sessionHandle     = sessionProvider_.Get();
-    var sessionCollection = sessionCollectionProvider_.Get();
 
-
-    try
-    {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
-                                    .Select(sdm => sdm.Status   == SessionStatus.Canceled)
-                                    .SingleAsync(cancellationToken)
-                                    .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException e)
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found",
-                                         e);
-    }
+    return (await this.GetSessionAsync(sessionId,
+                                       cancellationToken)
+                      .ConfigureAwait(false)).Status == SessionStatus.Canceled;
   }
 
   /// <inheritdoc />

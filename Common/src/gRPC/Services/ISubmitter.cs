@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -55,9 +55,16 @@ public interface ISubmitter
   Task<Count> CountTasks(TaskFilter        request,
                          CancellationToken cancellationToken);
 
-  Task<CreateSessionReply> CreateSession(string            sessionId,
-                                         TaskOptions       defaultTaskOptions,
-                                         CancellationToken cancellationToken);
+  Task<CreateSessionReply> CreateSession(string              sessionId,
+                                         IEnumerable<string> partitionIds,
+                                         TaskOptions         defaultTaskOptions,
+                                         CancellationToken   cancellationToken);
+
+  Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(SessionData                   sessionData,
+                                                                              string                        parentTaskId,
+                                                                              TaskOptions                   options,
+                                                                              IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                              CancellationToken             cancellationToken);
 
   Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(string                        sessionId,
                                                                               string                        parentTaskId,

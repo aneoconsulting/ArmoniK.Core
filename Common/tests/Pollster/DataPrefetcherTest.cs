@@ -138,7 +138,8 @@ public class DataPrefetcherTest
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
-                                                                                  1),
+                                                                                  1,
+                                                                                  "part1"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -292,7 +293,8 @@ public class DataPrefetcherTest
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
-                                                                                  1),
+                                                                                  1,
+                                                                                  "part1"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -379,7 +381,8 @@ public class DataPrefetcherTest
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
-                                                                                  1),
+                                                                                  1,
+                                                                                  "part1"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -466,7 +469,8 @@ public class DataPrefetcherTest
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
-                                                                                  1),
+                                                                                  1,
+                                                                                  "part1"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -549,7 +553,8 @@ public class DataPrefetcherTest
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
-                                                                                  1),
+                                                                                  1,
+                                                                                  "part1"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -632,7 +637,8 @@ public class DataPrefetcherTest
                                                                   new TaskOptions(new Dictionary<string, string>(),
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
-                                                                                  1),
+                                                                                  1,
+                                                                                  "part1"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)

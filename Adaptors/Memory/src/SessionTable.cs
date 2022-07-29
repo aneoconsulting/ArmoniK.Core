@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -34,6 +34,7 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -59,28 +60,38 @@ public class SessionTable : ISessionTable
     => Task.CompletedTask;
 
   /// <inheritdoc />
-  public Task SetSessionDataAsync(string            rootSessionId,
-                                  Common.Storage.TaskOptions       defaultOptions,
-                                  CancellationToken cancellationToken = default)
+  public Task SetSessionDataAsync(string                     rootSessionId,
+                                  IEnumerable<string>        partitionIds,
+                                  Common.Storage.TaskOptions defaultOptions,
+                                  CancellationToken          cancellationToken = default)
   {
     storage_.TryAdd(rootSessionId,
                     new SessionData(rootSessionId,
                                     SessionStatus.Running,
+                                    partitionIds.ToIList(),
                                     defaultOptions));
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public Task<bool> IsSessionCancelledAsync(string            sessionId,
-                                            CancellationToken cancellationToken = default)
+  public Task<SessionData> GetSessionAsync(string            sessionId,
+                                           CancellationToken cancellationToken = default)
   {
     if (!storage_.ContainsKey(sessionId))
     {
       throw new SessionNotFoundException($"Key '{sessionId}' not found");
     }
 
-    return Task.FromResult(storage_[sessionId]
-                             .Status == SessionStatus.Canceled);
+    return Task.FromResult(storage_[sessionId]);
+  }
+
+  /// <inheritdoc />
+  public Task<bool> IsSessionCancelledAsync(string            sessionId,
+                                            CancellationToken cancellationToken = default)
+  {
+    return Task.FromResult(this.GetSessionAsync(sessionId,
+                                                cancellationToken)
+                               .Result.Status == SessionStatus.Canceled);
   }
 
   /// <inheritdoc />

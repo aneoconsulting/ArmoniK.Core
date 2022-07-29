@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -32,7 +32,8 @@ namespace ArmoniK.Core.Common.Storage;
 public record TaskOptions(IDictionary<string, string> Options,
                           TimeSpan                    MaxDuration,
                           int                         MaxRetries,
-                          int                         Priority)
+                          int                         Priority,
+                          string                      PartitionId)
 {
   public static implicit operator Api.gRPC.V1.TaskOptions(TaskOptions taskOption)
     => new()
@@ -40,6 +41,7 @@ public record TaskOptions(IDictionary<string, string> Options,
          MaxDuration = Duration.FromTimeSpan(taskOption.MaxDuration),
          MaxRetries  = taskOption.MaxRetries,
          Priority    = taskOption.Priority,
+         PartitionId = taskOption.PartitionId,
          Options =
          {
            taskOption.Options,
@@ -50,5 +52,20 @@ public record TaskOptions(IDictionary<string, string> Options,
     => new(taskOption.Options,
            taskOption.MaxDuration.ToTimeSpan(),
            taskOption.MaxRetries,
-           taskOption.Priority);
+           taskOption.Priority,
+           taskOption.PartitionId);
+
+  public static TaskOptions Merge(TaskOptions taskOption, TaskOptions defaultOption)
+  {
+    var options = new Dictionary<string, string>(defaultOption.Options);
+    foreach (var option in taskOption.Options)
+    {
+      options[option.Key] = option.Value;
+    }
+    return new(options,
+           taskOption.MaxDuration == TimeSpan.Zero ? taskOption.MaxDuration : defaultOption.MaxDuration,
+           taskOption.MaxRetries == 0 ? taskOption.MaxRetries : defaultOption.MaxRetries,
+           taskOption.Priority,
+           taskOption.PartitionId != string.Empty ? taskOption.PartitionId : defaultOption.PartitionId);
+  }
 }

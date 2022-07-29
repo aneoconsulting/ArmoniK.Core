@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -145,6 +145,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     try
     {
       return submitter_.CreateSession(request.Id,
+                                      request.PartitionIds,
                                       request.DefaultTaskOption,
                                       context.CancellationToken);
     }
