@@ -519,6 +519,7 @@ jobs:
   canMerge:
     needs:
       - tests
+      - testsQueue
       - testsWinOnly
       - testHtcMockDC
       - testStreamDC
