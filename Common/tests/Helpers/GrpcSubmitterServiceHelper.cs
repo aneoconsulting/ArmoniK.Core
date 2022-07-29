@@ -33,6 +33,8 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Tests.Auth;
 
+using DnsClient;
+
 using Grpc.Net.Client;
 
 using JetBrains.Annotations;
@@ -60,10 +62,10 @@ public class GrpcSubmitterServiceHelper : IDisposable
   [CanBeNull]
   private          GrpcChannel        channel_;
 
-  public GrpcSubmitterServiceHelper(ISubmitter submitter, List<MockIdentity> authIdentities, AuthenticatorOptions authOptions)
+  public GrpcSubmitterServiceHelper(ISubmitter submitter, List<MockIdentity> authIdentities, AuthenticatorOptions authOptions, LogLevel loglevel)
   {
     loggerFactory_ = new LoggerFactory();
-    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
+    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(loglevel));
 
     var builder = WebApplication.CreateBuilder();
 
@@ -74,7 +76,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .Configure<AuthenticatorOptions>(o=> o.CopyFrom(authOptions))
            .AddAuthentication()
            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName, _ => {});
-    builder.Services.AddLogging()
+    builder.Services.AddLogging(build=>build.SetMinimumLevel(loglevel))
            .AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
            .AddAuthorization()
            .ValidateGrpcRequests()
@@ -91,7 +93,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
 
   public GrpcSubmitterServiceHelper(ISubmitter submitter)
     : this(submitter, new List<MockIdentity>(),
-           AuthenticatorOptions.DefaultNoAuth)
+           AuthenticatorOptions.DefaultNoAuth, LogLevel.Trace)
   {
 
   }

@@ -46,6 +46,10 @@ using Grpc.Core;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Logging;
+
+using MongoDB.Bson;
+
 using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
@@ -585,6 +589,15 @@ public class AuthenticationIntegrationTest
 
     return GetCases(methodsAndObjects);
   }
+  public static IEnumerable GetTryGetResultStreamTestCases()
+  {
+    var methodsAndObjects = new List<(string, object)>
+                            {
+                              (nameof(SubmitterClient.TryGetResultStream),null),
+                            };
+
+    return GetCases(methodsAndObjects);
+  }
 
   [OneTimeSetUp]
   public void BeforeAll()
@@ -592,7 +605,7 @@ public class AuthenticationIntegrationTest
     var submitter = new SimpleSubmitter();
     helper_ = new GrpcSubmitterServiceHelper(submitter,
                                              Identities.ToList(),
-                                             options_);
+                                             options_, LogLevel.Information);
   }
 
   [OneTimeTearDown]
@@ -795,19 +808,23 @@ public class AuthenticationIntegrationTest
 
   public async Task<CreateTaskReply> CreateLargeTask(AsyncClientStreamingCall<CreateLargeTaskRequest, CreateTaskReply> stream)
   {
+    Console.WriteLine("init");
     await stream.RequestStream.WriteAsync(createLargeTaskRequest_init)
                 .ConfigureAwait(false);
+    Console.WriteLine("initTask");
     await stream.RequestStream.WriteAsync(createLargeTaskRequest_initTask)
                 .ConfigureAwait(false);
+    Console.WriteLine("payload");
     await stream.RequestStream.WriteAsync(createLargeTaskRequest_payload)
                 .ConfigureAwait(false);
+    Console.WriteLine("payloadComplete");
     await stream.RequestStream.WriteAsync(createLargeTaskRequest_payloadcomplete)
                 .ConfigureAwait(false);
+    Console.WriteLine("lastTask");
     await stream.RequestStream.WriteAsync(createLargeTaskRequest_lastTask)
                 .ConfigureAwait(false);
-    await stream.RequestStream.CompleteAsync()
-                .ConfigureAwait(false);
-    return await stream.ResponseAsync.ConfigureAwait(false);
+    var reply = await stream.ResponseAsync.ConfigureAwait(false);
+    return reply;
   }
 
   [TestCaseSource(nameof(GetCreateLargeTaskTestCases))]
@@ -826,11 +843,50 @@ public class AuthenticationIntegrationTest
     if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
                                                                                                     .Permissions.Any(p => p.Name == tuple.method)))
     {
-      Assert.DoesNotThrowAsync(() => CreateLargeTask(client.CreateLargeTasks((Metadata) tuple.args[1])));
+      Assert.DoesNotThrowAsync(async () =>
+                               {
+                                 var stream = client.CreateLargeTasks((Metadata) tuple.args[1]);
+                                 await CreateLargeTask(stream).ConfigureAwait(false);
+                                 await stream.RequestStream.CompleteAsync()
+                                             .ConfigureAwait(false);
+                               });
     }
     else
     {
-      var exception = Assert.CatchAsync(() => CreateLargeTask(client.CreateLargeTasks((Metadata) tuple.args[1])));
+      var exception = Assert.CatchAsync(async () => {
+                                          var stream = client.CreateLargeTasks((Metadata) tuple.args[1]);
+                                          await CreateLargeTask(stream).ConfigureAwait(false);
+                                          await stream.RequestStream.CompleteAsync()
+                                                      .ConfigureAwait(false);
+                                        });
+      Assert.IsNotNull(exception);
+      Assert.IsInstanceOf<RpcException>(exception);
+      Assert.AreEqual(errorCode,
+                      ((RpcException) (exception)).StatusCode);
+    }
+  }
+
+  [TestCaseSource(nameof(GetTryGetResultStreamTestCases))]
+  public async Task TryGetResultStreamAuthShouldMatch(
+    (string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
+      errorCode) tuple)
+  {
+    TransformResult(tuple,
+                    out var userIndex,
+                    out var shouldSucceed,
+                    out var errorCode);
+    var channel = await helper_!.CreateChannel()
+                                .ConfigureAwait(false);
+    var client = new SubmitterClient(channel);
+    if (shouldSucceed == ResultType.AlwaysTrue || (shouldSucceed == ResultType.AuthorizedForSome && Identities[userIndex]
+                                                                                                    .Permissions.Any(p => p.Name == tuple.method)))
+    {
+      
+      Assert.DoesNotThrowAsync(() => client.TryGetResultStream(resultRequest, (Metadata)tuple.args[1]).ResponseStream.ReadAllAsync().ToListAsync().AsTask());
+    }
+    else
+    {
+      var exception = Assert.CatchAsync(() => client.TryGetResultStream(resultRequest, (Metadata)tuple.args[1]).ResponseStream.ReadAllAsync().ToListAsync().AsTask());
       Assert.IsNotNull(exception);
       Assert.IsInstanceOf<RpcException>(exception);
       Assert.AreEqual(errorCode,
