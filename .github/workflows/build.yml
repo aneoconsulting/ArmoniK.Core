@@ -185,10 +185,9 @@ jobs:
         dotnet-version: 6.x
 
     - name: Setup queue
-      uses: addnab/docker-run-action@v3
+      uses: isbang/compose-action@v1.1.0
       with:
-        image: ${{ matrix.queue }}:latest
-        options: -p 0.0.0.0:5672:5672
+        compose-file: "./docker-compose/queue-standalone/docker-compose.queue- ${{ matrix.queue }}.yml"
 
     - name: Run tests
       run: |
@@ -250,7 +249,7 @@ jobs:
           - ./Adaptors/Memory/tests/ArmoniK.Core.Adapters.Memory.Tests.csproj
           - ./Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj
           - ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.MongoDB.Tests.csproj
-          - ./Adaptors/MongoDB/tests/ArmoniK.Core.Adapters.Amqp.Tests.csproj
+          - ./Adaptors/Amqp/tests/ArmoniK.Core.Adapters.Amqp.Tests.csproj
           - ./Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj
           - ./Common/src/ArmoniK.Core.Common.csproj
           - ./Common/tests/ArmoniK.Core.Common.Tests.csproj

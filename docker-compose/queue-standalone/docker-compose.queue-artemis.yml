@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  queue:
+    image: vromero/activemq-artemis:2.6.1
+    environment:
+      ENABLE_JMX_EXPORTER: "true"
+      ARTEMIS_MIN_MEMORY: "1512M"
+      ARTEMIS_MAX_MEMORY: "2000M"
+      ARTEMIS_USERNAME: "guest"
+      ARTEMIS_PASSWORD: "guest"
+    ports:
+      - 5672:5672
+      - 8161:8161
