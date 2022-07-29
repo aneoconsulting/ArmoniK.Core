@@ -166,7 +166,6 @@ jobs:
           - Adaptors/Amqp/tests
         queue:
           - activemqp
-          - artemis
           - rabbitmq
         os:
           - ubuntu-latest
