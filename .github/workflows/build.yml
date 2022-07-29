@@ -184,11 +184,13 @@ jobs:
       with:
         dotnet-version: 6.x
 
-    - name: Run tests
+    - name: Setup queue
       uses: addnab/docker-run-action@v3
       with:
         image: ${{ matrix.queue }}:latest
         options: -p 0.0.0.0:5672:5672
+
+    - name: Run tests
       run: |
         cd ${{ matrix.projects }}
         dotnet test --logger "trx;LogFileName=test-results.trx"
