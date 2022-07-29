@@ -45,6 +45,7 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 public class SimpleSubmitter : ISubmitter
 {
   public Count DefaultCount;
+
   public SimpleSubmitter()
   {
     DefaultCount = new Count();
@@ -56,150 +57,137 @@ public class SimpleSubmitter : ISubmitter
     DefaultCount.Values.Add(statuscount);
   }
 
-  public async Task CancelSession(string            sessionId,
+  public Task CancelSession(string            sessionId,
                             CancellationToken cancellationToken)
-  {
+    => Task.CompletedTask;
 
-  }
+  public Task CancelTasks(TaskFilter        request,
+                          CancellationToken cancellationToken)
+    => Task.CompletedTask;
 
-  public async Task CancelTasks(TaskFilter        request,
+  public Task<Count> CountTasks(TaskFilter        request,
                                 CancellationToken cancellationToken)
-  {
+    => Task.FromResult(DefaultCount);
 
-  }
-
-  public async Task<Count> CountTasks(TaskFilter        request,
-                                      CancellationToken cancellationToken)
-  => DefaultCount;
-
-  public async Task<CreateSessionReply> CreateSession(string            sessionId,
-                                                      TaskOptions       defaultTaskOptions,
-                                                      CancellationToken cancellationToken)
-    => new()
-       {
-         Ok = new Empty(),
-       };
+  public Task<CreateSessionReply> CreateSession(string            sessionId,
+                                                TaskOptions       defaultTaskOptions,
+                                                CancellationToken cancellationToken)
+    => Task.FromResult(new CreateSessionReply
+                       {
+                         Ok = new Empty(),
+                       });
 
   public async Task<(IEnumerable<TaskRequest> requests, int priority)> CreateTasks(string                                      sessionId,
                                                                                    string                                      parentTaskId,
                                                                                    TaskOptions                                 options,
                                                                                    IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
                                                                                    CancellationToken                           cancellationToken)
-    => (await taskRequests.Select(r=> new TaskRequest(r.Id, r.ExpectedOutputKeys, r.DataDependencies)).ToArrayAsync(cancellationToken: cancellationToken).ConfigureAwait(false), 1);
+    => (await taskRequests.Select(r => new TaskRequest(r.Id,
+                                                       r.ExpectedOutputKeys,
+                                                       r.DataDependencies))
+                          .ToArrayAsync(cancellationToken: cancellationToken)
+                          .ConfigureAwait(false), 1);
 
-  public async Task FinalizeTaskCreation(IEnumerable<TaskRequest> requests,
+  public Task FinalizeTaskCreation(IEnumerable<TaskRequest> requests,
                                    int                      priority,
                                    string                   sessionId,
                                    string                   parentTaskId,
                                    CancellationToken        cancellationToken)
-  {
+    => Task.CompletedTask;
 
-  }
+  public Task StartTask(string            taskId,
+                        CancellationToken cancellationToken = default)
+    => Task.CompletedTask;
 
-  public async Task StartTask(string            taskId,
-                              CancellationToken cancellationToken = default)
-  {
+  public Task<Configuration> GetServiceConfiguration(Empty             request,
+                                                     CancellationToken cancellationToken)
+    => Task.FromResult(new Configuration
+                       {
+                         DataChunkMaxSize = 80000
+                       });
 
-  }
-
-  public async Task<Configuration> GetServiceConfiguration(Empty             request,
-                                                           CancellationToken cancellationToken)
-    => new(){DataChunkMaxSize = 80000};
-
-  public async Task TryGetResult(ResultRequest                    request,
+  public Task TryGetResult(ResultRequest                    request,
                            IServerStreamWriter<ResultReply> responseStream,
                            CancellationToken                cancellationToken)
-  {
-
-  }
+    => Task.CompletedTask;
 
   public async Task<Count> WaitForCompletion(WaitRequest       request,
                                              CancellationToken cancellationToken)
     => DefaultCount;
 
-  public async Task UpdateTaskStatusAsync(string            id,
-                                          TaskStatus        status,
-                                          CancellationToken cancellationToken = default)
-  {
+  public Task UpdateTaskStatusAsync(string            id,
+                                    TaskStatus        status,
+                                    CancellationToken cancellationToken = default)
+    => Task.CompletedTask;
 
-  }
-
-  public async Task CompleteTaskAsync(TaskData          taskData,
+  public Task CompleteTaskAsync(TaskData          taskData,
                                 bool              resubmit,
                                 Output            output,
                                 CancellationToken cancellationToken = default)
-  {
+    => Task.CompletedTask;
 
-  }
+  public Task<Output> TryGetTaskOutputAsync(ResultRequest     request,
+                                            CancellationToken contextCancellationToken)
+    => Task.FromResult(new Output
+                       {
+                         Ok = new Empty(),
+                       });
 
-  public async Task<Output> TryGetTaskOutputAsync(ResultRequest     request,
-                                                  CancellationToken contextCancellationToken)
-  {
-    return new Output
-           {
-             Ok = new Empty(),
-           };
-  }
-
-  public async Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
+  public Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                           CancellationToken contextCancellationToken)
-  {
-    return new AvailabilityReply
-           {
-             Ok = new Empty(),
-           };
-  }
+    => Task.FromResult(new AvailabilityReply
+                       {
+                         Ok = new Empty(),
+                       });
 
-  public async Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
-                                                           CancellationToken    contextCancellationToken)
-    => request.TaskIds.Aggregate(new GetTaskStatusReply(),
-                                 (tsr,
-                                  id) =>
-                                 {
-                                   tsr.IdStatuses.Add(new GetTaskStatusReply.Types.IdStatus()
-                                                      {
-                                                        Status = TaskStatus.Completed,
-                                                        TaskId = id,
-                                                      });
-                                   return tsr;
-                                 });
+  public Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
+                                                     CancellationToken    contextCancellationToken)
+    => Task.FromResult(request.TaskIds.Aggregate(new GetTaskStatusReply(),
+                                                 (tsr,
+                                                  id) =>
+                                                 {
+                                                   tsr.IdStatuses.Add(new GetTaskStatusReply.Types.IdStatus()
+                                                                      {
+                                                                        Status = TaskStatus.Completed,
+                                                                        TaskId = id,
+                                                                      });
+                                                   return tsr;
+                                                 }));
 
-  public async Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
-                                                               CancellationToken      contextCancellationToken)
-    => request.ResultIds.Aggregate(new GetResultStatusReply(),
-                                   (reply,
-                                    s) =>
-                                   {
-                                     reply.IdStatuses.Add(new GetResultStatusReply.Types.IdStatus()
-                                                          {
-                                                            ResultId = s,
-                                                            Status   = ResultStatus.Completed,
-                                                          });
-                                     return reply;
-                                   });
+  public Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
+                                                         CancellationToken      contextCancellationToken)
+    => Task.FromResult(request.ResultIds.Aggregate(new GetResultStatusReply(),
+                                                   (reply,
+                                                    s) =>
+                                                   {
+                                                     reply.IdStatuses.Add(new GetResultStatusReply.Types.IdStatus()
+                                                                          {
+                                                                            ResultId = s,
+                                                                            Status   = ResultStatus.Completed,
+                                                                          });
+                                                     return reply;
+                                                   }));
 
-  public async Task<TaskIdList> ListTasksAsync(TaskFilter        request,
-                                               CancellationToken contextCancellationToken)
+  public Task<TaskIdList> ListTasksAsync(TaskFilter        request,
+                                         CancellationToken contextCancellationToken)
   {
     var reply = new TaskIdList();
     reply.TaskIds.Add("taskId1");
-    return reply;
+    return Task.FromResult(reply);
   }
 
-  public async Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
-                                                     CancellationToken contextCancellationToken)
+  public Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
+                                               CancellationToken contextCancellationToken)
   {
     var reply = new SessionIdList();
     reply.SessionIds.Add("sessionId1");
-    return reply;
+    return Task.FromResult(reply);
   }
 
-  public async Task SetResult(string                                 sessionId,
-                              string                                 ownerTaskId,
-                              string                                 key,
-                              IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
-                              CancellationToken                      cancellationToken)
-  {
-
-  }
+  public Task SetResult(string                                 sessionId,
+                        string                                 ownerTaskId,
+                        string                                 key,
+                        IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
+                        CancellationToken                      cancellationToken)
+    => Task.CompletedTask;
 }

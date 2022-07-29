@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -28,39 +28,49 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 
-using JetBrains.Annotations;
-
 namespace ArmoniK.Core.Common.Tests.Auth;
 
 public class MockAuthenticationTable : IAuthenticationTable
 {
   private List<MockIdentity> identities_;
+
   public MockAuthenticationTable(List<MockIdentity> mockIdentities)
   {
     identities_ = mockIdentities;
   }
-  public ValueTask<bool> Check(HealthCheckTag tag)=>ValueTask.FromResult(true);
+
+  public ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(true);
 
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
   public Task<UserAuthenticationResult> GetIdentityAsync(string            cn,
-                                             string            fingerprint,
-                                             CancellationToken cancellationToken)
+                                                         string            fingerprint,
+                                                         CancellationToken cancellationToken)
     => Task.FromResult(identities_.Find(i => i.HasCertificate(cn,
-                                                                                        fingerprint))?.ToUserAuthenticationResult());
+                                                              fingerprint))
+                                  ?.ToUserAuthenticationResult());
 
   public Task<UserAuthenticationResult> GetIdentityFromIdAsync(string            id,
                                                                CancellationToken cancellationToken)
-    => Task.FromResult(identities_.Find(i => i.UserId == id)?.ToUserAuthenticationResult());
+    => Task.FromResult(identities_.Find(i => i.UserId == id)
+                                  ?.ToUserAuthenticationResult());
 
   public Task<UserAuthenticationResult> GetIdentityFromNameAsync(string            username,
                                                                  CancellationToken cancellationToken)
-    => Task.FromResult(identities_.Find(i => i.UserName == username)?.ToUserAuthenticationResult());
+    => Task.FromResult(identities_.Find(i => i.UserName == username)
+                                  ?.ToUserAuthenticationResult());
 
-  public void AddRoles(IList<RoleData> roles){}
+  public void AddRoles(IEnumerable<RoleData> roles)
+  {
+  }
 
-  public void AddUsers(IList<UserData> users){}
+  public void AddUsers(IEnumerable<UserData> users)
+  {
+  }
 
-  public void AddCertificates(IList<AuthData> certificates){}
+  public void AddCertificates(IEnumerable<AuthData> certificates)
+  {
+  }
 }

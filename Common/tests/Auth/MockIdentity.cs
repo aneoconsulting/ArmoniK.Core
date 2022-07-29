@@ -34,24 +34,30 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Common.Tests.Auth;
 
-
 public class MockIdentity : UserIdentity
 {
   public record MockCertificate(string CN,
                                 string Fingerprint);
+
   public readonly IEnumerable<MockCertificate> Certificates;
+
   public MockIdentity(string                              userId,
                       string                              username,
                       IEnumerable<MockCertificate>        certificates,
                       IEnumerable<string>                 roles,
-                      IEnumerable<Permissions.Permission> permissions, 
-                      [CanBeNull] string                  authenticationType) : base(new UserAuthenticationResult(userId, username, roles, permissions.Select(perm=>perm.ToString())), authenticationType)
+                      IEnumerable<Permissions.Permission> permissions,
+                      [CanBeNull] string                  authenticationType)
+    : base(new UserAuthenticationResult(userId,
+                                        username,
+                                        roles,
+                                        permissions.Select(perm => perm.ToString())),
+           authenticationType)
   {
     Certificates = certificates;
   }
 
   public bool HasCertificate(string cn,
-                                 string fingerprint)
+                             string fingerprint)
     => Certificates.Any(t => t.CN == cn && t.Fingerprint == fingerprint);
 
   public UserAuthenticationResult ToUserAuthenticationResult()
@@ -61,5 +67,4 @@ public class MockIdentity : UserIdentity
                                         Roles,
                                         Permissions.Select(perm => perm.ToString()));
   }
-
 }

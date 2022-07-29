@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -38,7 +38,6 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
 public class UserDataModelMapping : IMongoDataModelMapping<UserData>
 {
-
   static UserDataModelMapping()
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(UserData)))
@@ -59,21 +58,28 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
                                               });
     }
   }
+
   public string CollectionName
     => nameof(UserData);
 
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                     IMongoCollection<UserData> collection)
+                                           IMongoCollection<UserData> collection)
   {
     var usernameIndex = Builders<UserData>.IndexKeys.Text(model => model.Username);
+    var usernameIndexHashed = Builders<UserData>.IndexKeys.Hashed(model => model.Username);
 
     var indexModels = new CreateIndexModel<UserData>[]
                       {
                         new(usernameIndex,
                             new CreateIndexOptions
                             {
-                              Name = nameof(usernameIndex),
+                              Name   = nameof(usernameIndex),
                               Unique = true,
+                            }),
+                        new(usernameIndexHashed,
+                            new CreateIndexOptions
+                            {
+                              Name   = nameof(usernameIndexHashed)
                             }),
                       };
     await collection.Indexes.CreateManyAsync(sessionHandle,

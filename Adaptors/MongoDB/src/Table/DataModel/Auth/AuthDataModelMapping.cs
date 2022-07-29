@@ -37,7 +37,6 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
 public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
 {
-
   static AuthDataModelMapping()
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(AuthData)))
@@ -65,12 +64,13 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
     => nameof(AuthData);
 
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                     IMongoCollection<AuthData> collection)
+                                           IMongoCollection<AuthData> collection)
   {
     var fingerprintIndex = Builders<AuthData>.IndexKeys.Descending(model => model.Fingerprint);
     var cnIndex          = Builders<AuthData>.IndexKeys.Ascending(model => model.CN);
-    var compoundIndex    = Builders<AuthData>.IndexKeys.Combine(cnIndex, fingerprintIndex);
-    var userIndex        = Builders<AuthData>.IndexKeys.Hashed(model => model.UserId);
+    var compoundIndex = Builders<AuthData>.IndexKeys.Combine(cnIndex,
+                                                             fingerprintIndex);
+    var userIndex = Builders<AuthData>.IndexKeys.Hashed(model => model.UserId);
 
     var indexModels = new CreateIndexModel<AuthData>[]
                       {
@@ -87,7 +87,7 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
                         new(compoundIndex,
                             new CreateIndexOptions
                             {
-                              Name = nameof(compoundIndex),
+                              Name   = nameof(compoundIndex),
                               Unique = true,
                             }),
                         new(userIndex,

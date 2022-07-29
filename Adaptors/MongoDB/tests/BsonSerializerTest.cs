@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -25,8 +25,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
@@ -295,25 +293,44 @@ internal class BsonSerializerTest
 
   [Test]
   public void InitializeResultDataModelMapping()
-    => _ = new ResultDataModelMapping();
+  {
+    _ = new ResultDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(Result)));
+  }
 
   [Test]
   public void InitializeTaskDataModelMapping()
-    => _ = new TaskDataModelMapping();
+  {
+    _ = new TaskDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(TaskData)));
+  }
+
 
   [Test]
   public void InitializeSessionDataModelMapping()
-    => _ = new SessionDataModelMapping();
+  {
+    _ = new SessionDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(SessionData)));
+  }
 
   [Test]
   public void InitializeUserDataModelMapping()
-    => _ = new UserDataModelMapping();
+  {
+    _ = new UserDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(UserData)));
+  }
 
   [Test]
   public void InitializeRoleDataModelMapping()
-    => _ = new RoleDataModelMapping();
+  {
+    _ = new RoleDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(RoleData)));
+  }
 
   [Test]
   public void InitializeAuthDataModelMapping()
-    => _ = new AuthDataModelMapping();
+  {
+    _ = new AuthDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(AuthData)));
+  }
 }

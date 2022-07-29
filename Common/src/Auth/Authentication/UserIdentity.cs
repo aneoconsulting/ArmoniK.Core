@@ -35,28 +35,29 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 public class UserIdentity : ClaimsPrincipal
 {
   public string              UserName { get; set; }
-  public IEnumerable<string> Roles    { get; set; }
+  public HashSet<string> Roles    { get; set; }
 
-  public IEnumerable<Permissions.Permission> Permissions { get; set; }
+  public Permissions.Permission[] Permissions { get; set; }
 
   public string UserId { get; set; }
 
 
   public UserIdentity(UserAuthenticationResult userAuth,
-                      string?                             authenticationType)
-    : base(new ClaimsIdentity(userAuth.Permissions.Select(perm => new Permissions.Permission(perm).Claim), authenticationType))
+                      string?                  authenticationType)
+    : base(new ClaimsIdentity(userAuth.Permissions.Select(perm => new Permissions.Permission(perm).Claim),
+                              authenticationType))
   {
     UserId      = userAuth.Id;
     UserName    = userAuth.Username;
-    Roles       = userAuth.Roles;
-    Permissions = userAuth.Permissions.Select(perm => new Permissions.Permission(perm));
+    Roles       = new HashSet<string>(userAuth.Roles);
+    Permissions = userAuth.Permissions.Select(perm => new Permissions.Permission(perm)).ToArray();
   }
 
   public UserIdentity(UserAuthenticationResult userAuth)
   {
     UserId      = userAuth.Id;
     UserName    = userAuth.Username;
-    Roles       = Array.Empty<string>();
+    Roles       = new HashSet<string>();
     Permissions = Array.Empty<Permissions.Permission>();
   }
 
@@ -65,5 +66,9 @@ public class UserIdentity : ClaimsPrincipal
     => Roles.Contains(role);
 
   public override UserIdentity Clone()
-    => new(new UserAuthenticationResult(UserId, UserName, Roles.ToList(), Permissions.Select(perm => perm.ToString())), Identity?.AuthenticationType);
+    => new(new UserAuthenticationResult(UserId,
+                                        UserName,
+                                        Roles.ToList(),
+                                        Permissions.Select(perm => perm.ToString())),
+           Identity?.AuthenticationType);
 }

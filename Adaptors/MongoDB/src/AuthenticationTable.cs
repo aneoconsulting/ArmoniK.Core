@@ -120,11 +120,11 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   [ItemCanBeNull]
-  private async Task<UserAuthenticationResult> GetIdentityFromPipeline<TCollectionDataType>(IClientSessionHandle sessionHandle,
-                                                                                            IMongoCollection<TCollectionDataType> collection,
-                                                                                            PipelineDefinition<TCollectionDataType, UserAuthenticationResult> pipeline,
-                                                                                            Expression<Func<TCollectionDataType, bool>> matchingFunctions,
-                                                                                            CancellationToken cancellationToken)
+  private static async Task<UserAuthenticationResult> GetIdentityFromPipeline<TCollectionDataType>(IClientSessionHandle sessionHandle,
+                                                                                                   IMongoCollection<TCollectionDataType> collection,
+                                                                                                   PipelineDefinition<TCollectionDataType, UserAuthenticationResult> pipeline,
+                                                                                                   Expression<Func<TCollectionDataType, bool>> matchingFunctions,
+                                                                                                   CancellationToken cancellationToken)
   {
     var pipe =
       new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserAuthenticationResult>(PipelineStageDefinitionBuilder.Match(matchingFunctions),
@@ -226,9 +226,9 @@ public class AuthenticationTable : IAuthenticationTable
     var sortByRelevance        = PipelineStageDefinitionBuilder.Sort(new SortDefinitionBuilder<AuthData>().Descending(authData => authData.Fingerprint));
     var limit                  = PipelineStageDefinitionBuilder.Limit<AuthData>(1);
     var lookup = PipelineStageDefinitionBuilder.Lookup<AuthData, UserData, AuthDataAfterLookup>(userCollectionProvider_.Get(),
-                                                                                                a => a.UserId,
-                                                                                                u => u.UserId,
-                                                                                                aal => aal.UserData);
+                                                                                                auth => auth.UserId,
+                                                                                                user => user.UserId,
+                                                                                                authAfterLookup => authAfterLookup.UserData);
     var checkIfValid = PipelineStageDefinitionBuilder.Match<AuthDataAfterLookup>(doc => doc.UserData.Any());
     var replaceroot  = PipelineStageDefinitionBuilder.ReplaceRoot<AuthDataAfterLookup, UserData>(doc => doc.UserData.First());
     var pipeline = new IPipelineStageDefinition[]
@@ -243,7 +243,7 @@ public class AuthenticationTable : IAuthenticationTable
     return authToIdentityPipeline_;
   }
 
-  public void AddRoles(IList<RoleData> roles)
+  public void AddRoles(IEnumerable<RoleData> roles)
   {
     var roleCollection = roleCollectionProvider_.Get();
     var sessionHandle  = sessionProvider_.Get();
@@ -251,7 +251,7 @@ public class AuthenticationTable : IAuthenticationTable
                               roles);
   }
 
-  public void AddUsers(IList<UserData> users)
+  public void AddUsers(IEnumerable<UserData> users)
   {
     var userCollection = userCollectionProvider_.Get();
     var sessionHandle  = sessionProvider_.Get();
@@ -259,7 +259,7 @@ public class AuthenticationTable : IAuthenticationTable
                               users);
   }
 
-  public void AddCertificates(IList<AuthData> certificates)
+  public void AddCertificates(IEnumerable<AuthData> certificates)
   {
     var authCollection = authCollectionProvider_.Get();
     var sessionHandle  = sessionProvider_.Get();

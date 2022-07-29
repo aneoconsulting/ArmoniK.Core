@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -35,6 +35,5 @@ public class Components
   public string? QueueStorage  { get; set; }
   public string? LeaseProvider { get; set; }
   public string? ObjectStorage { get; set; }
-
   public string? AuthenticationStorage { get; set; }
 }

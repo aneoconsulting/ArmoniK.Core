@@ -229,8 +229,8 @@ public static class ServiceCollectionExt
 
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
-                                                                    ConfigurationManager    configuration,
-                                                                    ILogger                 logger)
+                                                                           ConfigurationManager    configuration,
+                                                                           ILogger                 logger)
   {
     var components = configuration.GetSection(Components.SettingSection);
     if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
@@ -238,19 +238,22 @@ public static class ServiceCollectionExt
       services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
       services.AddTransient<IAuthenticationTable, AuthenticationTable>();
     }
+
     return services;
   }
 
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
-                                                                    ConfigurationManager    configuration,
-                                                                    ILogger                 logger)
+                                                                  ConfigurationManager    configuration,
+                                                                  ILogger                 logger)
   {
     services.Configure<AuthenticatorOptions>(configuration.GetSection(AuthenticatorOptions.SectionName));
     services.AddAuthentication()
-              .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
-                                                              o => {});
+            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
+                                                            o =>
+                                                            {
+                                                            });
     services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
-      return services;
+    return services;
   }
 }

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -40,18 +40,18 @@ public class PermissionTest
             "testsuffix"), TestCase("prefix:name",
                                     "prefix",
                                     "name",
-                                    null)]
+                                    Permissions.Default)]
   public void PermissionFromStringShouldMatch(string             actionName,
                                               [CanBeNull] string prefix,
                                               [CanBeNull] string name,
                                               [CanBeNull] string suffix)
   {
     var perm = new Permissions.Permission(actionName);
-    Assert.AreEqual(perm.Prefix,
+    Assert.AreEqual(perm.Service,
                     prefix);
     Assert.AreEqual(perm.Name,
                     name);
-    Assert.AreEqual(perm.Suffix,
+    Assert.AreEqual(perm.Target,
                     suffix);
   }
 
@@ -71,12 +71,17 @@ public class PermissionTest
                     claimValue);
   }
 
-  [Test]
-  public void PermissionCreationShouldThrow()
+  [TestCase("")]
+  [TestCase("testprefix")]
+  [TestCase("testprefix:")]
+  [TestCase("testprefix::")]
+  [TestCase(":testprefix:")]
+  [TestCase("::testprefix")]
+  public void PermissionCreationShouldThrow(string actionstring)
   {
     Assert.NotNull(Assert.Catch(() =>
                                 {
-                                  var _ = new Permissions.Permission("testprefix");
+                                  var _ = new Permissions.Permission(actionstring);
                                 }));
   }
 }

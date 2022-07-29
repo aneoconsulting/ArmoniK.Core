@@ -36,9 +36,9 @@ using NUnit.Framework;
 namespace ArmoniK.Core.Common.Tests.Auth
 {
   [TestFixture]
-  public class AuthSourceTestBase
+  public class AuthenticationTableTestBase
   {
-    static AuthSourceTestBase()
+    static AuthenticationTableTestBase()
     {
       Roles = new List<RoleData>
               {
@@ -177,9 +177,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
       RunTests            = false;
     }
 
-    protected static List<RoleData> Roles;
-    protected static List<AuthData> Auths;
-    protected static List<UserData> Users;
+    private static readonly List<RoleData> Roles;
+    private static readonly List<AuthData> Auths;
+    private static readonly List<UserData> Users;
 
 
     /* Interface to test */
@@ -220,7 +220,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
               "FingerprintDontCare",
               3)]
     [TestCase("CNUser2",
-              "Fingerprint3", 3)]
+              "Fingerprint3",
+              3)]
     public void GetIdentityFromCnAndFingerprintShouldSucceed(string cn,
                                                              string fingerprint,
                                                              int    userid)

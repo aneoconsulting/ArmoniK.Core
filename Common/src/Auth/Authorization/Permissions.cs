@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -37,9 +37,9 @@ namespace ArmoniK.Core.Common.Auth.Authorization
   {
     public class Permission
     {
-      public readonly string  Prefix;
+      public readonly string  Service;
       public readonly string  Name;
-      public readonly string? Suffix;
+      public readonly string  Target;
       public readonly Claim   Claim;
 
       public Permission(string actionString)
@@ -50,36 +50,40 @@ namespace ArmoniK.Core.Common.Auth.Authorization
           throw new ArgumentOutOfRangeException("Wrong number of parts in action policy string " + actionString);
         }
 
-        Prefix = parts[0];
-        Name = parts[1];
-        Suffix = parts.Length == 3 ? parts[2] : null;
+        Service = string.IsNullOrWhiteSpace(parts[0]) ? throw new ArgumentException("Service of permission is null or whitespace") : parts[0];
+        Name    = string.IsNullOrWhiteSpace(parts[1]) ? throw new ArgumentException("Name of permission is null or whitespace") : parts[1];
+        Target = parts.Length == 3
+                   ? parts[2]
+                   : Default;
         Claim = new Claim(ToBasePermission(),
-                          Suffix ?? Default);
+                          Target);
       }
 
-      public Permission(string prefix,
-                    string name)
-        : this(prefix,
+      public Permission(string service,
+                        string name)
+        : this(service,
                name,
-               null){}
-
-      public Permission(string  prefix,
-                    string  name,
-                    string? suffix)
+               Default)
       {
-        Prefix = prefix;
-        Name = name;
-        Suffix = suffix;
+      }
+
+      public Permission(string  service,
+                        string  name,
+                        string? target)
+      {
+        Service = service;
+        Name   = name;
+        Target = target ?? Default;
         Claim = new Claim(ToBasePermission(),
-                          Suffix ?? Default);
+                          Target);
       }
 
       public override string ToString()
       {
         var action = ToBasePermission();
-        if (Suffix != null)
+        if (!string.IsNullOrEmpty(Target))
         {
-          action += Separator + Suffix;
+          action += Separator + Target;
         }
 
         return action;
@@ -87,9 +91,8 @@ namespace ArmoniK.Core.Common.Auth.Authorization
 
       public string ToBasePermission()
       {
-        return Prefix + Separator + Name;
+        return Service + Separator + Name;
       }
-       
     }
 
     public static Permission Parse(string actionName)
@@ -101,11 +104,10 @@ namespace ArmoniK.Core.Common.Auth.Authorization
     {
       var permissions = typeof(GrpcSubmitterService).GetMethods()
                                                     .SelectMany(mInfo => mInfo.GetCustomAttributes<RequiresPermissionAttribute>())
-                                                    .Select(a=>a.Permission)
+                                                    .Select(a => a.Permission)
                                                     .ToList();
       permissions.Add(Impersonate);
       return permissions.ToImmutableList();
-
     }
 
     // Ownership permission scopes
@@ -114,15 +116,19 @@ namespace ArmoniK.Core.Common.Auth.Authorization
     public const string Default       = "";
 
     // Categories
-    public const string General       = "general";
-    public const string Session       = "session";
-    public const string Task          = "task";
-    public const string Result        = "result";
-    public const string Admin         = "admin";
+    public const string General = "general";
+    public const string Session = "session";
+    public const string Task    = "task";
+    public const string Result  = "result";
+    public const string Admin   = "admin";
 
     // Base permissions
-    public static readonly Permission                Impersonate    = new(General, nameof(Impersonate));
-    public static readonly Permission                None           = new("", "");
+    public static readonly Permission Impersonate = new(General,
+                                                        nameof(Impersonate));
+
+    /*public static readonly Permission None = new("",
+                                                 "");*/
+
     public static readonly ImmutableList<Permission> PermissionList = GetPermissionList();
 
     // Constants

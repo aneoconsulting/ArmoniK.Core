@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -31,11 +31,17 @@ namespace ArmoniK.Core.Common.Auth.Authorization
   {
     public const string PolicyPrefix = "RequiresPermission:";
 
-    public RequiresPermissionAttribute(string category, string function) => Permission = new Permissions.Permission(category, function);
+    public RequiresPermissionAttribute(string category,
+                                       string function)
+      => Permission = new Permissions.Permission(category,
+                                                 function);
 
-    public Permissions.Permission Permission
+    public Permissions.Permission? Permission
     {
-      get => Policy != null ? Permissions.Parse(Policy[PolicyPrefix.Length..]) : Permissions.None;
+      get
+        => Policy != null
+             ? Permissions.Parse(Policy[PolicyPrefix.Length..])
+             : null;
       set => Policy = $"{PolicyPrefix}{value}";
     }
   }

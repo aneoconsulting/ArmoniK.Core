@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -40,7 +40,7 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
-public class AuthenticationTableTest : AuthSourceTestBase
+public class AuthenticationTableTest : AuthenticationTableTestBase
 {
   public override void TearDown()
   {

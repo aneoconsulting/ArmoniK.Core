@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -38,7 +38,6 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
 public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
 {
-
   static RoleDataModelMapping()
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(RoleData)))
@@ -59,21 +58,27 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
                                               });
     }
   }
+
   public string CollectionName
     => nameof(RoleData);
 
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                     IMongoCollection<RoleData> collection)
+                                           IMongoCollection<RoleData> collection)
   {
     var rolenameIndex = Builders<RoleData>.IndexKeys.Text(model => model.RoleName);
-
+    var rolenameIndexHashed = Builders<RoleData>.IndexKeys.Hashed(model => model.RoleName);
     var indexModels = new CreateIndexModel<RoleData>[]
                       {
                         new(rolenameIndex,
                             new CreateIndexOptions()
                             {
-                              Name = nameof(rolenameIndex),
+                              Name   = nameof(rolenameIndex),
                               Unique = true,
+                            }),
+                        new(rolenameIndexHashed,
+                            new CreateIndexOptions()
+                            {
+                              Name   = nameof(rolenameIndexHashed),
                             }),
                       };
 

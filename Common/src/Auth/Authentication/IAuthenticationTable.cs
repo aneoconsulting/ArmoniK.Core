@@ -32,19 +32,19 @@ namespace ArmoniK.Core.Common.Auth.Authentication
   public interface IAuthenticationTable : IInitializable
   {
     public Task<UserAuthenticationResult?> GetIdentityAsync(string            cn,
-                                                         string            fingerprint,
-                                                         CancellationToken cancellationToken);
+                                                            string            fingerprint,
+                                                            CancellationToken cancellationToken = default);
 
     public Task<UserAuthenticationResult?> GetIdentityFromIdAsync(string            id,
-                                                               CancellationToken cancellationToken);
+                                                                  CancellationToken cancellationToken = default);
 
     public Task<UserAuthenticationResult?> GetIdentityFromNameAsync(string            username,
-                                                                 CancellationToken cancellationToken);
+                                                                    CancellationToken cancellationToken = default);
 
-    public void AddRoles(IList<RoleData> roles);
+    public void AddRoles(IEnumerable<RoleData> roles);
 
-    public void AddUsers(IList<UserData> users);
+    public void AddUsers(IEnumerable<UserData> users);
 
-    public void AddCertificates(IList<AuthData> certificates);
+    public void AddCertificates(IEnumerable<AuthData> certificates);
   }
 }
