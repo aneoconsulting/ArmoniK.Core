@@ -97,7 +97,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Agent.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Agent%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/SimpleAgentHandler.cs/#L32">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/SimpleAgentHandler.cs/#L33">View Source</a>
   </span>
   <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Agent" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Agent">Agent</h4>
   <div class="markdown level1 summary"></div>
@@ -125,18 +125,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Start_System_String_ILogger_System_String_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start(System.String%2CILogger%2CSystem.String%2CSystem.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Start_System_String_ILogger_ArmoniK_Core_Common_Storage_SessionData_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start(System.String%2CILogger%2CArmoniK.Core.Common.Storage.SessionData%2CArmoniK.Core.Common.Storage.TaskData%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/SimpleAgentHandler.cs/#L37">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/SimpleAgentHandler.cs/#L38">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Start_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start*"></a>
-  <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Start_System_String_ILogger_System_String_System_String_CancellationToken_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start(System.String,ILogger,System.String,System.String,CancellationToken)">Start(String, ILogger, String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Start_System_String_ILogger_ArmoniK_Core_Common_Storage_SessionData_ArmoniK_Core_Common_Storage_TaskData_CancellationToken_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Start(System.String,ILogger,ArmoniK.Core.Common.Storage.SessionData,ArmoniK.Core.Common.Storage.TaskData,CancellationToken)">Start(String, ILogger, SessionData, TaskData, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;IAgent&gt; Start(string token, ILogger logger, string sessionId, string taskId, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;IAgent&gt; Start(string token, ILogger logger, SessionData sessionData, TaskData taskData, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -159,13 +159,13 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
-        <td><span class="parametername">sessionId</span></td>
+        <td><a class="xref" href="ArmoniK.Core.Common.Storage.SessionData.html">SessionData</a></td>
+        <td><span class="parametername">sessionData</span></td>
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">System.String</span></td>
-        <td><span class="parametername">taskId</span></td>
+        <td><a class="xref" href="ArmoniK.Core.Common.Storage.TaskData.html">TaskData</a></td>
+        <td><span class="parametername">taskData</span></td>
         <td></td>
       </tr>
       <tr>
@@ -195,7 +195,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Stop_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Stop(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/SimpleAgentHandler.cs/#L34">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/SimpleAgentHandler.cs/#L35">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Stop_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Stop*"></a>
   <h4 id="ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler_Stop_CancellationToken_" data-uid="ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler.Stop(CancellationToken)">Stop(CancellationToken)</h4>
@@ -252,7 +252,7 @@
                     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Tests_Helpers_SimpleAgentHandler.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Tests.Helpers.SimpleAgentHandler%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/SimpleAgentHandler.cs/#L30" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/tests/Helpers/SimpleAgentHandler.cs/#L31" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

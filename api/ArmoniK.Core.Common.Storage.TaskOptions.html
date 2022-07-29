@@ -94,18 +94,18 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskOptions__ctor_IDictionary_System_String_System_String__TimeSpan_System_Int32_System_Int32_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskOptions.%23ctor(IDictionary%7BSystem.String%2CSystem.String%7D%2CTimeSpan%2CSystem.Int32%2CSystem.Int32)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskOptions__ctor_IDictionary_System_String_System_String__TimeSpan_System_Int32_System_Int32_System_String_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskOptions.%23ctor(IDictionary%7BSystem.String%2CSystem.String%7D%2CTimeSpan%2CSystem.Int32%2CSystem.Int32%2CSystem.String)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskOptions.cs/#L32">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskOptions__ctor_" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.#ctor*"></a>
-  <h4 id="ArmoniK_Core_Common_Storage_TaskOptions__ctor_IDictionary_System_String_System_String__TimeSpan_System_Int32_System_Int32_" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32)">TaskOptions(IDictionary&lt;String, String&gt;, TimeSpan, Int32, Int32)</h4>
+  <h4 id="ArmoniK_Core_Common_Storage_TaskOptions__ctor_IDictionary_System_String_System_String__TimeSpan_System_Int32_System_Int32_System_String_" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32,System.String)">TaskOptions(IDictionary&lt;String, String&gt;, TimeSpan, Int32, Int32, String)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public TaskOptions(IDictionary&lt;string, string&gt; Options, TimeSpan MaxDuration, int MaxRetries, int Priority)</code></pre>
+    <pre><code class="lang-csharp hljs">public TaskOptions(IDictionary&lt;string, string&gt; Options, TimeSpan MaxDuration, int MaxRetries, int Priority, string PartitionId)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -135,6 +135,11 @@
       <tr>
         <td><span class="xref">System.Int32</span></td>
         <td><span class="parametername">Priority</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">PartitionId</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -233,6 +238,36 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskOptions_PartitionId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskOptions.PartitionId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskOptions.cs/#L36">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_TaskOptions_PartitionId_" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.PartitionId*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_TaskOptions_PartitionId" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.PartitionId">PartitionId</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string PartitionId { get; set; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskOptions_Priority.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskOptions.Priority%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
@@ -261,6 +296,60 @@
       </tr>
     </tbody>
   </table>
+  <h3 id="methods">Methods
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskOptions_Merge_ArmoniK_Core_Common_Storage_TaskOptions_ArmoniK_Core_Common_Storage_TaskOptions_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskOptions.Merge(ArmoniK.Core.Common.Storage.TaskOptions%2CArmoniK.Core.Common.Storage.TaskOptions)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskOptions.cs/#L58">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Common_Storage_TaskOptions_Merge_" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.Merge*"></a>
+  <h4 id="ArmoniK_Core_Common_Storage_TaskOptions_Merge_ArmoniK_Core_Common_Storage_TaskOptions_ArmoniK_Core_Common_Storage_TaskOptions_" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.Merge(ArmoniK.Core.Common.Storage.TaskOptions,ArmoniK.Core.Common.Storage.TaskOptions)">Merge(TaskOptions, TaskOptions)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TaskOptions Merge(TaskOptions taskOption, TaskOptions defaultOption)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.Storage.TaskOptions.html">TaskOptions</a></td>
+        <td><span class="parametername">taskOption</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.Storage.TaskOptions.html">TaskOptions</a></td>
+        <td><span class="parametername">defaultOption</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.Storage.TaskOptions.html">TaskOptions</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
   <h3 id="operators">Operators
   </h3>
   <span class="small pull-right mobile-hide">
@@ -268,7 +357,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskOptions_op_Implicit_ArmoniK_Api_gRPC_V1_TaskOptions__ArmoniK_Core_Common_Storage_TaskOptions.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit(ArmoniK.Api.gRPC.V1.TaskOptions)~ArmoniK.Core.Common.Storage.TaskOptions%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskOptions.cs/#L49">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskOptions.cs/#L51">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskOptions_op_Implicit_" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskOptions_op_Implicit_ArmoniK_Api_gRPC_V1_TaskOptions__ArmoniK_Core_Common_Storage_TaskOptions" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit(ArmoniK.Api.gRPC.V1.TaskOptions)~ArmoniK.Core.Common.Storage.TaskOptions">Implicit(TaskOptions to TaskOptions)</h4>
@@ -315,7 +404,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_Storage_TaskOptions_op_Implicit_ArmoniK_Core_Common_Storage_TaskOptions__ArmoniK_Api_gRPC_V1_TaskOptions.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit(ArmoniK.Core.Common.Storage.TaskOptions)~ArmoniK.Api.gRPC.V1.TaskOptions%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskOptions.cs/#L37">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/Storage/TaskOptions.cs/#L38">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_Storage_TaskOptions_op_Implicit_" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit*"></a>
   <h4 id="ArmoniK_Core_Common_Storage_TaskOptions_op_Implicit_ArmoniK_Core_Common_Storage_TaskOptions__ArmoniK_Api_gRPC_V1_TaskOptions" data-uid="ArmoniK.Core.Common.Storage.TaskOptions.op_Implicit(ArmoniK.Core.Common.Storage.TaskOptions)~ArmoniK.Api.gRPC.V1.TaskOptions">Implicit(TaskOptions to TaskOptions)</h4>
