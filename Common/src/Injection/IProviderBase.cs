@@ -22,40 +22,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Injection;
 
-public abstract class ProviderBase<T> : IProviderBase<T>, IHealthCheckProvider
+public interface IProviderBase<T>
 {
-  private readonly Func<Task<T>> builder_;
-  private          T?            object_;
-
-  protected ProviderBase(Func<Task<T>> builder)
-    => builder_ = builder;
-
-  public T Get()
-  {
-    // Double null check to avoid the lock once initialization is finished
-    if (object_ is not null)
-    {
-      return object_;
-    }
-
-    lock (this)
-    {
-      // can be simplified with Resharper :)
-      object_ = object_ is null
-                  ? builder_()
-                    .Result
-                  : object_;
-    }
-
-    return object_;
-  }
-
-  /// <inheritdoc />
-  public virtual ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(object_ is not null);
+  ValueTask<bool> Check(HealthCheckTag tag);
+  T               Get();
 }

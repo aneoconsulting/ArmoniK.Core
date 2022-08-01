@@ -25,37 +25,36 @@
 using System;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Injection;
+using Amqp;
 
-public abstract class ProviderBase<T> : IProviderBase<T>, IHealthCheckProvider
+using Microsoft.Extensions.Logging;
+
+namespace ArmoniK.Core.Common.Tests.Helpers;
+
+public class SimpleAmqpClientHelper : IAsyncDisposable
 {
-  private readonly Func<Task<T>> builder_;
-  private          T?            object_;
+  private readonly Connection     connection_;
+  private readonly ILoggerFactory loggerFactory_;
 
-  protected ProviderBase(Func<Task<T>> builder)
-    => builder_ = builder;
-
-  public T Get()
+  public SimpleAmqpClientHelper()
   {
-    // Double null check to avoid the lock once initialization is finished
-    if (object_ is not null)
-    {
-      return object_;
-    }
+    loggerFactory_ = new LoggerFactory();
+    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
 
-    lock (this)
-    {
-      // can be simplified with Resharper :)
-      object_ = object_ is null
-                  ? builder_()
-                    .Result
-                  : object_;
-    }
+    var address = new Address("amqp://guest:guest@localhost:5672");
 
-    return object_;
+    connection_ = new Connection(address);
+    Session     = new Session(connection_);
   }
 
-  /// <inheritdoc />
-  public virtual ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(object_ is not null);
+  public Session Session { get; }
+
+  public async ValueTask DisposeAsync()
+  {
+    await Session.CloseAsync()
+                 .ConfigureAwait(false);
+    await connection_.CloseAsync()
+                     .ConfigureAwait(false);
+    GC.SuppressFinalize(this);
+  }
 }
