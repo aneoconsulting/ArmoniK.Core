@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
-// 
-// Copyright (C) ANEO, 2021-2022. All rights reserved.
+//
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -8,27 +8,23 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-using System;
-using System.Security.Cryptography.X509Certificates;
 
 using Amqp;
 
 using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
@@ -40,14 +36,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using System;
+using System.Security.Cryptography.X509Certificates;
+
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public static class ServiceCollectionExt
 {
   [PublicAPI]
   public static IServiceCollection AddAmqp(this IServiceCollection serviceCollection,
-                                           ConfigurationManager    configuration,
-                                           ILogger                 logger)
+                                           ConfigurationManager configuration,
+                                           ILogger logger)
   {
     logger.LogInformation("Configure Amqp client");
 
@@ -82,7 +81,7 @@ public static class ServiceCollectionExt
 
       if (!string.IsNullOrEmpty(amqpOptions.CaPath))
       {
-        var localTrustStore       = new X509Store(StoreName.Root);
+        var localTrustStore = new X509Store(StoreName.Root);
         var certificateCollection = new X509Certificate2Collection();
         try
         {
@@ -104,13 +103,9 @@ public static class ServiceCollectionExt
         }
       }
 
-      var sessionProvider = new SessionProvider(amqpOptions,
-                                              logger);
+      var sessionProvider = new SessionProvider(amqpOptions, logger);
 
-      serviceCollection.AddSingleton<IProviderBase<Session>, SessionProvider>(sp =>
-        {
-          return sessionProvider;
-        });
+      serviceCollection.AddSingleton<IProviderBase<Session>, SessionProvider>(sp => sessionProvider);
 
       serviceCollection.AddSingleton<IQueueStorage, QueueStorage>();
 

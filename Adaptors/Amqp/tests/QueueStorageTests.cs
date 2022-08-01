@@ -171,7 +171,7 @@ public class QueueStorageTests
   }
 
   [Test]
-  public async Task EnqueueMessagesAsyncThrowsOnTooBigPriority()
+  public async Task EnqueueMessagesAsyncSucceedsIfTooBigPriority()
   {
     await using var helper = new SimpleAmqpClientHelper();
     var provider = new Mock<IProviderBase<Session>>();
@@ -183,11 +183,10 @@ public class QueueStorageTests
     await queueStorage.Init(CancellationToken.None)
       .ConfigureAwait(false);
 
-    var priority = 11; // InternalMaxPriority = 10
+    var priority = 15; // InternalMaxPriority = 10
     var testMessages = new[] { "msg1", "msg2", "msg3" };
-    Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await
-     queueStorage.EnqueueMessagesAsync(testMessages, priority, CancellationToken.None)
-      .ConfigureAwait(false));
+    await queueStorage.EnqueueMessagesAsync(testMessages, priority, CancellationToken.None)
+      .ConfigureAwait(false);
   }
 
   [Test]
