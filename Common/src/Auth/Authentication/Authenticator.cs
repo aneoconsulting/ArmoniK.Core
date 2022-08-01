@@ -34,12 +34,9 @@ using Microsoft.Extensions.Options;
 
 using System.Linq;
 using System.Text.Encodings.Web;
-using System.Threading;
 using System.Threading.Tasks;
 
 using JetBrains.Annotations;
-
-using Microsoft.AspNetCore.Http;
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 

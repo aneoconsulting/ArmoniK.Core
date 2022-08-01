@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Worker.Utils;
