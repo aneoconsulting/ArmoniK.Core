@@ -22,10 +22,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections;
+using System.Threading;
+using System.Threading.Tasks;
+
 using Amqp;
 
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Microsoft.Extensions.Logging.Abstractions;
@@ -34,63 +40,55 @@ using Moq;
 
 using NUnit.Framework;
 
-using System;
-using System.Collections;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace ArmoniK.Core.Adapters.Amqp.Tests;
 
 [TestFixture]
 public class QueueStorageTests
 {
-  private Options.Amqp options_;
-  public Options.Amqp Options_ { get => options_; set => options_ = value; }
+  public Options.Amqp Options_ { get; set; }
 
   private static Options.Amqp CreateDefaultOptions()
-  {
-    return new Options.Amqp()
-    {
-      Host = "localhost",
-      User = "guest",
-      Password = "guest",
-      Port = 5672,
-      CaPath = "somePath",
-      Scheme = "someScheme",
-      CredentialsPath = "somePath",
-      MaxPriority = 5,
-      AllowHostMismatch = false
-    };
-  }
+    => new Options.Amqp
+       {
+         Host              = "localhost",
+         User              = "guest",
+         Password          = "guest",
+         Port              = 5672,
+         CaPath            = "somePath",
+         Scheme            = "someScheme",
+         CredentialsPath   = "somePath",
+         MaxPriority       = 5,
+         AllowHostMismatch = false,
+       };
 
   [SetUp]
   public void SetDefaultOptions()
-  {
     /* These options are only to feed the QueueStorage constructor
      * and they do not play any role in the how the connection is created,
      * the later is defined in the  SimpleAmqpClientHelper class */
-    Options_ = CreateDefaultOptions();
-  }
+    => Options_ = CreateDefaultOptions();
 
   [Test]
   public async Task CreateQueueStorageShouldSucceed()
   {
-    await using var helper = new SimpleAmqpClientHelper();
-    var provider = new Mock<IProviderBase<Session>>();
+    await using var helper   = new SimpleAmqpClientHelper();
+    var             provider = new Mock<IProviderBase<Session>>();
 
-    provider.Setup(sp => sp.Get()).Returns(helper.Session);
+    provider.Setup(sp => sp.Get())
+            .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options_, provider.Object,
-                                          NullLogger<QueueStorage>.Instance);
+    var queueStorage = new QueueStorage(Options_,
+                                        provider.Object,
+                                        NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
-      .ConfigureAwait(false);
+                      .ConfigureAwait(false);
 
     Assert.IsTrue(await queueStorage.Check(HealthCheckTag.Liveness)
-      .ConfigureAwait(false));
+                                    .ConfigureAwait(false));
     Assert.IsTrue(await queueStorage.Check(HealthCheckTag.Readiness)
-      .ConfigureAwait(false));
+                                    .ConfigureAwait(false));
     Assert.IsTrue(await queueStorage.Check(HealthCheckTag.Startup)
-      .ConfigureAwait(false));
+                                    .ConfigureAwait(false));
   }
 
   public static IEnumerable TestCasesBadOptions
@@ -133,77 +131,105 @@ public class QueueStorageTests
   [TestCaseSource(nameof(TestCasesBadOptions))]
   public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(Options.Amqp options)
   {
-    await using var helper = new SimpleAmqpClientHelper();
-    var provider = new Mock<IProviderBase<Session>>();
+    await using var helper   = new SimpleAmqpClientHelper();
+    var             provider = new Mock<IProviderBase<Session>>();
 
-    provider.Setup(sp => sp.Get()).Returns(helper.Session);
+    provider.Setup(sp => sp.Get())
+            .Returns(helper.Session);
 
-    Assert.Throws<ArgumentOutOfRangeException>(() =>
-     new QueueStorage(options, provider.Object,
-                                        NullLogger<QueueStorage>.Instance)
-    );
+    Assert.Throws<ArgumentOutOfRangeException>(() => new QueueStorage(options,
+                                                                      provider.Object,
+                                                                      NullLogger<QueueStorage>.Instance));
   }
 
   [Test]
   public async Task EnqueueMessagesAsyncSucceedsIfTooBigPriority()
   {
-    await using var helper = new SimpleAmqpClientHelper();
-    var provider = new Mock<IProviderBase<Session>>();
+    await using var helper   = new SimpleAmqpClientHelper();
+    var             provider = new Mock<IProviderBase<Session>>();
 
-    provider.Setup(sp => sp.Get()).Returns(helper.Session);
+    provider.Setup(sp => sp.Get())
+            .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options_, provider.Object,
-                                          NullLogger<QueueStorage>.Instance);
+    var queueStorage = new QueueStorage(Options_,
+                                        provider.Object,
+                                        NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
-      .ConfigureAwait(false);
+                      .ConfigureAwait(false);
 
     var priority = 15; // InternalMaxPriority = 10
-    var testMessages = new[] { "msg1", "msg2", "msg3" };
-    await queueStorage.EnqueueMessagesAsync(testMessages, priority, CancellationToken.None)
-      .ConfigureAwait(false);
+    var testMessages = new[]
+                       {
+                         "msg1",
+                         "msg2",
+                         "msg3",
+                       };
+    await queueStorage.EnqueueMessagesAsync(testMessages,
+                                            priority,
+                                            CancellationToken.None)
+                      .ConfigureAwait(false);
   }
 
   [Test]
-  public async Task EnqueueMessagesAsyncSucceds()
+  public async Task EnqueueMessagesAsyncSucceeds()
   {
-    await using var helper = new SimpleAmqpClientHelper();
-    var provider = new Mock<IProviderBase<Session>>();
+    await using var helper   = new SimpleAmqpClientHelper();
+    var             provider = new Mock<IProviderBase<Session>>();
 
-    provider.Setup(sp => sp.Get()).Returns(helper.Session);
+    provider.Setup(sp => sp.Get())
+            .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options_, provider.Object,
-                                          NullLogger<QueueStorage>.Instance);
+    var queueStorage = new QueueStorage(Options_,
+                                        provider.Object,
+                                        NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
-      .ConfigureAwait(false);
+                      .ConfigureAwait(false);
 
     var priority = 3;
-    var testMessages = new[] { "msg1", "msg2", "msg3" };
-    await queueStorage.EnqueueMessagesAsync(testMessages, priority, CancellationToken.None)
-      .ConfigureAwait(false);
+    var testMessages = new[]
+                       {
+                         "msg1",
+                         "msg2",
+                         "msg3",
+                       };
+    await queueStorage.EnqueueMessagesAsync(testMessages,
+                                            priority,
+                                            CancellationToken.None)
+                      .ConfigureAwait(false);
   }
 
   [Test]
-  public async Task PullAsyncAsyncSucceds()
+  public async Task PullAsyncAsyncSucceeds()
   {
-    await using var helper = new SimpleAmqpClientHelper();
-    var provider = new Mock<IProviderBase<Session>>();
+    await using var helper   = new SimpleAmqpClientHelper();
+    var             provider = new Mock<IProviderBase<Session>>();
 
-    provider.Setup(sp => sp.Get()).Returns(helper.Session);
+    provider.Setup(sp => sp.Get())
+            .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options_, provider.Object,
-                                          NullLogger<QueueStorage>.Instance);
+    var queueStorage = new QueueStorage(Options_,
+                                        provider.Object,
+                                        NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
-      .ConfigureAwait(false);
+                      .ConfigureAwait(false);
 
     var priority = 1;
-    var testMessages = new[] { "msg1", "msg2", "msg3" };
-    await queueStorage.EnqueueMessagesAsync(testMessages, priority, CancellationToken.None)
-      .ConfigureAwait(false);
+    var testMessages = new[]
+                       {
+                         "msg1",
+                         "msg2",
+                         "msg3",
+                       };
+    await queueStorage.EnqueueMessagesAsync(testMessages,
+                                            priority,
+                                            CancellationToken.None)
+                      .ConfigureAwait(false);
 
-    await foreach (var qm in queueStorage.PullAsync(3, CancellationToken.None)
-      .ConfigureAwait(false))
+    await foreach (var qm in queueStorage.PullAsync(3,
+                                                    CancellationToken.None)
+                                         .ConfigureAwait(false))
     {
-      Assert.IsTrue(qm.Status == Common.Storage.QueueMessageStatus.Waiting);
+      Assert.IsTrue(qm.Status == QueueMessageStatus.Waiting);
     }
   }
 }

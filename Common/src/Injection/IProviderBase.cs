@@ -24,11 +24,10 @@
 
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Injection
+namespace ArmoniK.Core.Common.Injection;
+
+public interface IProviderBase<T>
 {
-  public interface IProviderBase<T>
-  {
-    ValueTask<bool> Check(HealthCheckTag tag);
-    T Get();
-  }
+  ValueTask<bool> Check(HealthCheckTag tag);
+  T               Get();
 }

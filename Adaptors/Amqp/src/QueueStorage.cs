@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 //
-// Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.
+// Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
 //   D. Dubuc          <ddubuc@aneo.fr>
@@ -22,6 +22,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
 using Amqp;
 using Amqp.Framing;
 
@@ -33,31 +41,23 @@ using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueStorage : IQueueStorage
 {
   private const int MaxInternalQueuePriority = 10;
 
-  private readonly ILogger<QueueStorage> logger_;
+  private readonly ILogger<QueueStorage>      logger_;
   private readonly AsyncLazy<IReceiverLink>[] receivers_;
-  private readonly AsyncLazy<ISenderLink>[] senders_;
+  private readonly AsyncLazy<ISenderLink>[]   senders_;
 
   private bool isInitialized_;
 
-  private int nbLinks_;
+  private readonly int nbLinks_;
 
-  public QueueStorage(Options.Amqp options,
+  public QueueStorage(Options.Amqp           options,
                       IProviderBase<Session> sessionProvider,
-                      ILogger<QueueStorage> logger)
+                      ILogger<QueueStorage>  logger)
   {
     if (string.IsNullOrEmpty(options.Host))
     {
@@ -91,7 +91,7 @@ public class QueueStorage : IQueueStorage
 
 
     MaxPriority = options.MaxPriority;
-    logger_ = logger;
+    logger_     = logger;
 
     nbLinks_ = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
 
@@ -115,7 +115,7 @@ public class QueueStorage : IQueueStorage
   {
     if (!isInitialized_)
     {
-      var senders = Task.WhenAll(senders_.Select(async lazy => await lazy));
+      var senders   = Task.WhenAll(senders_.Select(async lazy => await lazy));
       var receivers = Task.WhenAll(receivers_.Select(async lazy => await lazy));
       await Task.WhenAll(senders,
                          receivers)
@@ -132,11 +132,11 @@ public class QueueStorage : IQueueStorage
   public int MaxPriority { get; }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
                                                                 [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction();
-    var nbPulledMessage = 0;
+    using var _               = logger_.LogFunction();
+    var       nbPulledMessage = 0;
 
     while (nbPulledMessage < nbMessages)
     {
@@ -175,8 +175,8 @@ public class QueueStorage : IQueueStorage
 
   /// <inheritdoc />
   public async Task EnqueueMessagesAsync(IEnumerable<string> messages,
-                                         int priority = 1,
-                                         CancellationToken cancellationToken = default)
+                                         int                 priority          = 1,
+                                         CancellationToken   cancellationToken = default)
   {
     using var _ = logger_.LogFunction();
 
@@ -184,8 +184,12 @@ public class QueueStorage : IQueueStorage
      * is imposed via the restriction MaxPriority > 1. If a user tries to enqueue a message
      * with priority larger or equal than MaxInternalQueuePriority, we put that message in
      * the last queue and set its internal priority MaxInternalQueuePriority.*/
-    var whichQueue = (priority < MaxInternalQueuePriority) ? (priority / MaxInternalQueuePriority) : (nbLinks_ - 1);
-    var internalPriority = (priority < MaxInternalQueuePriority) ? (priority % MaxInternalQueuePriority) : MaxInternalQueuePriority;
+    var whichQueue = priority < MaxInternalQueuePriority
+                       ? priority / MaxInternalQueuePriority
+                       : nbLinks_ - 1;
+    var internalPriority = priority < MaxInternalQueuePriority
+                             ? priority % MaxInternalQueuePriority
+                             : MaxInternalQueuePriority;
 
     logger_.LogDebug("Priority is {priority} ; will use queue #{queueId} with internal priority {internal priority}",
                      priority,
@@ -194,13 +198,13 @@ public class QueueStorage : IQueueStorage
 
     var sender = await senders_[whichQueue];
     await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
-    {
-      Header = new Header
-      {
-        Priority = (byte)(internalPriority),
-      },
-      Properties = new Properties(),
-    })))
+                                                              {
+                                                                Header = new Header
+                                                                         {
+                                                                           Priority = (byte)internalPriority,
+                                                                         },
+                                                                Properties = new Properties(),
+                                                              })))
               .ConfigureAwait(false);
   }
 }

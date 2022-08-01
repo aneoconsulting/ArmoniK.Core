@@ -22,6 +22,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Security.Cryptography.X509Certificates;
+
 using Amqp;
 
 using ArmoniK.Api.Worker.Utils;
@@ -36,17 +39,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using System;
-using System.Security.Cryptography.X509Certificates;
-
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public static class ServiceCollectionExt
 {
   [PublicAPI]
   public static IServiceCollection AddAmqp(this IServiceCollection serviceCollection,
-                                           ConfigurationManager configuration,
-                                           ILogger logger)
+                                           ConfigurationManager    configuration,
+                                           ILogger                 logger)
   {
     logger.LogInformation("Configure Amqp client");
 
@@ -81,7 +81,7 @@ public static class ServiceCollectionExt
 
       if (!string.IsNullOrEmpty(amqpOptions.CaPath))
       {
-        var localTrustStore = new X509Store(StoreName.Root);
+        var localTrustStore       = new X509Store(StoreName.Root);
         var certificateCollection = new X509Certificate2Collection();
         try
         {
@@ -103,7 +103,8 @@ public static class ServiceCollectionExt
         }
       }
 
-      var sessionProvider = new SessionProvider(amqpOptions, logger);
+      var sessionProvider = new SessionProvider(amqpOptions,
+                                                logger);
 
       serviceCollection.AddSingleton<IProviderBase<Session>, SessionProvider>(sp => sessionProvider);
 
