@@ -104,7 +104,7 @@ namespace ArmoniK.Core.Common.Auth.Authorization
     {
       var permissions = typeof(GrpcSubmitterService).GetMethods()
                                                     .SelectMany(mInfo => mInfo.GetCustomAttributes<RequiresPermissionAttribute>())
-                                                    .Select(a => a.Permission)
+                                                    .Select(a => a.Permission!)
                                                     .ToList();
       permissions.Add(Impersonate);
       return permissions.ToImmutableList();
@@ -115,19 +115,13 @@ namespace ArmoniK.Core.Common.Auth.Authorization
     public const string SelfScope     = "self";
     public const string Default       = "";
 
-    // Categories
-    public const string General = "general";
-    public const string Session = "session";
-    public const string Task    = "task";
-    public const string Result  = "result";
-    public const string Admin   = "admin";
+    // Services
+    public const string General   = "General";
+    public const string Submitter = "Submitter";
 
     // Base permissions
     public static readonly Permission Impersonate = new(General,
                                                         nameof(Impersonate));
-
-    /*public static readonly Permission None = new("",
-                                                 "");*/
 
     public static readonly ImmutableList<Permission> PermissionList = GetPermissionList();
 

@@ -839,10 +839,10 @@ public class AuthenticationIntegrationTest
     (string method, IdentityIndex userIndex, ImpersonationType impersonationType, IdentityIndex impersonating, object[] args, ResultType shouldSucceed, StatusCode
       errorCode) tuple)
   {
-    /*if (authType_ == AuthenticationType.NoImpersonationNoAuthorization)
+    if (authType_ == AuthenticationType.NoImpersonationNoAuthorization)
     {
       Assert.Ignore("Somehow throws a RPCException but with OK Status in pipeline. Can't reproduce locally, both in windows and wsl");
-    }*/
+    }
 
     TransformResult(tuple,
                     out var userIndex,
