@@ -229,7 +229,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
 
-      var ident = AuthenticationTable.GetIdentityAsync(cn,
+      var ident = AuthenticationTable.GetIdentityFromCertificateAsync(cn,
                                                        fingerprint,
                                                        CancellationToken.None)
                                      .Result;
@@ -249,7 +249,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
 
-      Assert.IsNull(AuthenticationTable.GetIdentityAsync(cn,
+      Assert.IsNull(AuthenticationTable.GetIdentityFromCertificateAsync(cn,
                                                          fingerprint,
                                                          CancellationToken.None)
                                        .Result);
@@ -263,9 +263,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      var ident = AuthenticationTable.GetIdentityFromIdAsync(Users[id]
+      var ident = AuthenticationTable.GetIdentityFromUserAsync(Users[id]
                                                                .UserId,
-                                                             CancellationToken.None)
+                                                             null)
                                      .Result;
       Assert.NotNull(ident);
       Assert.AreEqual(Users[id]
@@ -280,8 +280,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      Assert.IsNull(AuthenticationTable.GetIdentityFromIdAsync(id,
-                                                               CancellationToken.None)
+      Assert.IsNull(AuthenticationTable.GetIdentityFromUserAsync(id,
+                                                                 null)
                                        .Result);
     }
 
@@ -293,8 +293,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      var identity = AuthenticationTable.GetIdentityFromNameAsync(name,
-                                                                  CancellationToken.None)
+      var identity = AuthenticationTable.GetIdentityFromUserAsync(null,
+                                                                  name)
                                         .Result;
       Assert.NotNull(identity);
       Assert.AreEqual(name,
@@ -309,8 +309,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      Assert.IsNull(AuthenticationTable.GetIdentityFromNameAsync(name,
-                                                                 CancellationToken.None)
+      Assert.IsNull(AuthenticationTable.GetIdentityFromUserAsync(null, name)
                                        .Result);
     }
 
@@ -329,8 +328,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      var identity = AuthenticationTable.GetIdentityFromNameAsync(username,
-                                                                  CancellationToken.None)
+      var identity = AuthenticationTable.GetIdentityFromUserAsync(null, username)
                                         .Result;
       Assert.NotNull(identity);
       Assert.AreEqual(identity.Roles.Contains(rolename),
@@ -354,7 +352,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      var identity = AuthenticationTable.GetIdentityFromNameAsync(username,
+      var identity = AuthenticationTable.GetIdentityFromUserAsync(null, username,
                                                                   CancellationToken.None)
                                         .Result;
       var expected = new Permissions.Permission(claim).Claim;
@@ -369,8 +367,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      var identity = AuthenticationTable.GetIdentityFromIdAsync(user.UserId,
-                                                                CancellationToken.None)
+      var identity = AuthenticationTable.GetIdentityFromUserAsync(user.UserId,
+                                                                null)
                                         .Result;
       Assert.NotNull(identity);
       Assert.IsTrue(user.Roles.SelectMany(id => Roles.Find(r => r.RoleId == id)

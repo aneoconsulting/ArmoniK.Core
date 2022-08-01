@@ -23,8 +23,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.ComponentModel;
-
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
 
@@ -33,6 +31,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using System.Linq;
+using System.Security.Authentication;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
@@ -136,7 +135,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     UserIdentity? identity;
     var           cn          = TryGetHeader(cnHeader_);
     var           fingerprint = TryGetHeader(fingerprintHeader_);
-    if (!string.IsNullOrEmpty(cn)&&!string.IsNullOrEmpty(fingerprint))
+    if (!string.IsNullOrEmpty(cn) && !string.IsNullOrEmpty(fingerprint))
     {
       identity = await GetIdentityFromCertificateAsync(cn,
                                                        fingerprint)
@@ -160,14 +159,16 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     {
       if (identity.HasClaim(c => c.Type == Permissions.Impersonate.Claim.Type))
       {
-        (identity, var message) = await GetImpersonatedIdentityAsync(identity!,
-                                                      impersonationId,
-                                                      impersonationUsername)
-                     .ConfigureAwait(false);
-
-        if (identity == null)
+        try
         {
-          return AuthenticateResult.Fail(message);
+          identity = await GetImpersonatedIdentityAsync(identity,
+                                                        impersonationId,
+                                                        impersonationUsername)
+                       .ConfigureAwait(false);
+        }
+        catch (AuthenticationException e)
+        {
+          return AuthenticateResult.Fail(e.Message);
         }
       }
       else
@@ -176,7 +177,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       }
     }
 
-    var ticket = new AuthenticationTicket(identity,
+    var ticket = new AuthenticationTicket(identity!,
                                           SchemeName);
     return AuthenticateResult.Success(ticket);
   }
@@ -187,7 +188,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     logger_.LogDebug("Authenticating request with CN {CN} and fingerprint {Fingerprint}",
                      cn,
                      fingerprint);
-    var result = await authTable_.GetIdentityAsync(cn,
+    var result = await authTable_.GetIdentityFromCertificateAsync(cn,
                                                    fingerprint)
                                  .ConfigureAwait(false);
 
@@ -199,7 +200,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                             SchemeName);
   }
 
-  public async Task<(UserIdentity?, string)> GetImpersonatedIdentityAsync(UserIdentity baseIdentity,
+  public async Task<UserIdentity?> GetImpersonatedIdentityAsync(UserIdentity baseIdentity,
                                                                           string?      impersonationId,
                                                                           string?      impersonationUsername)
   {
@@ -207,34 +208,27 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     var impersonatableRoles = baseIdentity.Claims.Where(c => c.Type == Permissions.Impersonate.Claim.Type)
                                           .Select(c => c.Value);
     UserAuthenticationResult? result = null;
-    if (impersonationId != null)
+    if (impersonationId != null || impersonationUsername != null)
     {
-      result = await authTable_.GetIdentityFromIdAsync(impersonationId)
-                               .ConfigureAwait(false);
-    }
-
-    if (result == null && impersonationUsername != null)
-    {
-      result = await authTable_.GetIdentityFromNameAsync(impersonationUsername)
+      result = await authTable_.GetIdentityFromUserAsync(impersonationId, impersonationUsername)
                                .ConfigureAwait(false);
     }
     
     if (result == null)
     {
-      return (null, "User being impersonated doesn't exist");
+      throw new AuthenticationException("User being impersonnated doesn't exist");
     }
       
 
     // User exists and can be impersonated according to the impersonation permissions of the base user
     if (result.Roles.All(str => impersonatableRoles.Contains(str)))
     {
-      return (new UserIdentity(result,
-                              SchemeName), "");
+      return new UserIdentity(result, SchemeName);
     }
       
 
     // User exists but the base user doesn't have enough permissions to impersonate them
-    return (null, "Certificate doesn't allow to impersonate the specified user (insufficient roles)");
+    throw new AuthenticationException("Certificate doesn't allow to impersonate the specified user (insufficient roles)");
   }
 
   private string? TryGetHeader(string headerName)

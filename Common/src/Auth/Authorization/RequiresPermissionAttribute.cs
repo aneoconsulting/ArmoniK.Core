@@ -36,13 +36,15 @@ namespace ArmoniK.Core.Common.Auth.Authorization
       => Permission = new Permissions.Permission(category,
                                                  function);
 
+    private Permissions.Permission? permission_;
     public Permissions.Permission? Permission
     {
-      get
-        => Policy != null
-             ? Permissions.Parse(Policy[PolicyPrefix.Length..])
-             : null;
-      set => Policy = $"{PolicyPrefix}{value}";
+      get => permission_;
+      set
+      {
+        Policy      = $"{PolicyPrefix}{value}";
+        permission_ = Permissions.Parse(Policy[PolicyPrefix.Length..]);
+      }
     }
   }
 }

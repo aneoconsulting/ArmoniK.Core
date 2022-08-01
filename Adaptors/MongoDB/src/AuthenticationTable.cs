@@ -42,6 +42,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Adapters.MongoDB.Table;
+
 using MongoDB.Bson.Serialization;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -139,11 +141,11 @@ public class AuthenticationTable : IAuthenticationTable
                            .ConfigureAwait(false);
   }
 
-  public async Task<UserAuthenticationResult> GetIdentityAsync(string            cn,
+  public async Task<UserAuthenticationResult> GetIdentityFromCertificateAsync(string            cn,
                                                                string            fingerprint,
-                                                               CancellationToken cancellationToken)
+                                                               CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityAsync)}");
+    using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromCertificateAsync)}");
     var       authCollection = authCollectionProvider_.Get();
     var       sessionHandle  = sessionProvider_.Get();
     return await GetIdentityFromPipeline(sessionHandle,
@@ -154,31 +156,31 @@ public class AuthenticationTable : IAuthenticationTable
              .ConfigureAwait(false);
   }
 
-  public async Task<UserAuthenticationResult> GetIdentityFromIdAsync(string            id,
-                                                                     CancellationToken cancellationToken)
+  public async Task<UserAuthenticationResult> GetIdentityFromUserAsync([CanBeNull] string id,
+                                                                       [CanBeNull]            string username,
+                                                                       CancellationToken  cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromIdAsync)}");
+    using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromUserAsync)}");
     var       userCollection = userCollectionProvider_.Get();
     var       sessionHandle  = sessionProvider_.Get();
+    Expression<Func<UserData, bool>> expression;
+    if (id != null)
+    {
+      expression = data => data.UserId == id;
+    }
+    else if(username != null)
+    {
+      expression = data => data.Username == username;
+    }
+    else
+    {
+      return null;
+    }
 
     return await GetIdentityFromPipeline(sessionHandle,
                                          userCollection,
                                          GetUserToIdentityPipeline(),
-                                         user => user.UserId == id,
-                                         cancellationToken)
-             .ConfigureAwait(false);
-  }
-
-  public async Task<UserAuthenticationResult> GetIdentityFromNameAsync(string            username,
-                                                                       CancellationToken cancellationToken)
-  {
-    using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromNameAsync)}");
-    var       userCollection = userCollectionProvider_.Get();
-    var       sessionHandle  = sessionProvider_.Get();
-    return await GetIdentityFromPipeline(sessionHandle,
-                                         userCollection,
-                                         GetUserToIdentityPipeline(),
-                                         user => user.Username == username,
+                                         expression,
                                          cancellationToken)
              .ConfigureAwait(false);
   }

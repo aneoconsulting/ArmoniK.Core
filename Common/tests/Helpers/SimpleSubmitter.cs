@@ -8,6 +8,7 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
+//   D. Brasseur       <dbrasseur@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -79,10 +80,10 @@ public class SimpleSubmitter : ISubmitter
                        });
 
   public async Task<(IEnumerable<TaskRequest> requests, int priority)> CreateTasks(SessionData                                 sessionData,
-                                                                             string                                      parentTaskId,
-                                                                             TaskOptions                                 options,
-                                                                             IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
-                                                                             CancellationToken                           cancellationToken)
+                                                                                   string                                      parentTaskId,
+                                                                                   TaskOptions                                 options,
+                                                                                   IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
+                                                                                   CancellationToken                           cancellationToken)
     => (await taskRequests.Select(r => new TaskRequest(r.Id,
                                                        r.ExpectedOutputKeys,
                                                        r.DataDependencies))
@@ -132,7 +133,7 @@ public class SimpleSubmitter : ISubmitter
     => Task.CompletedTask;
 
   public Task<Count> WaitForCompletion(WaitRequest       request,
-                                             CancellationToken cancellationToken)
+                                       CancellationToken cancellationToken)
     => Task.FromResult(DefaultCount);
 
   public Task UpdateTaskStatusAsync(string            id,

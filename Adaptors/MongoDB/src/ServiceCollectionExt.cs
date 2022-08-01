@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Worker.Utils;
@@ -248,13 +247,12 @@ public static class ServiceCollectionExt
                                                                   ConfigurationManager    configuration,
                                                                   ILogger                 logger)
   {
-    services.Configure<AuthenticatorOptions>(configuration.GetSection(AuthenticatorOptions.SectionName));
-    services.AddAuthentication()
+    services.Configure<AuthenticatorOptions>(configuration.GetSection(AuthenticatorOptions.SectionName))
+            .AddAuthentication()
             .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
-                                                            o =>
-                                                            {
-                                                            });
-    services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
+                                                            _ => { });
+    services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
+            .AddAuthorization();
     return services;
   }
 }
