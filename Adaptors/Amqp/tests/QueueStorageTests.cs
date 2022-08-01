@@ -73,32 +73,6 @@ public class QueueStorageTests
   }
 
   [Test]
-  public async Task SimpleBrokerTest()
-  {
-    var timeout = TimeSpan.FromMilliseconds(100);
-    await using var helper = new SimpleAmqpClientHelper();
-
-    var sender_ = new SenderLink(helper.Session, "sender-link", "q1");
-    var sendMsg = new Message("Hello AMQP!");
-    await sender_.SendAsync(sendMsg)
-      .ConfigureAwait(false);
-    Console.WriteLine("Sent " + sendMsg.Body.ToString());
-    await sender_.CloseAsync()
-      .ConfigureAwait(false);
-
-    var receiver_ = new ReceiverLink(helper.Session, "receiver-link", "q1");
-    Console.WriteLine("Receiver connected to broker.");
-    var receiveMsg = await receiver_.ReceiveAsync(timeout)
-      .ConfigureAwait(false);
-    Console.WriteLine("Received " + receiveMsg.Body.ToString());
-    receiver_.Accept(receiveMsg);
-    await receiver_.CloseAsync()
-      .ConfigureAwait(false);
-
-    Assert.AreEqual(receiveMsg.Body, sendMsg.Body);
-  }
-
-  [Test]
   public async Task CreateQueueStorageShouldSucceed()
   {
     await using var helper = new SimpleAmqpClientHelper();
