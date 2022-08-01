@@ -154,6 +154,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     try
     {
       return submitter_.CreateSession(request.Id,
+                                      request.PartitionIds,
                                       request.DefaultTaskOption,
                                       context.CancellationToken);
     }

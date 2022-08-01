@@ -158,9 +158,11 @@ public class SubmitterTests
                                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
                                MaxRetries  = 2,
                                Priority    = 1,
+                               PartitionId = "part1",
                              };
 
     await submitter.CreateSession(SessionId,
+                                  new[] {"part1", "part2"},
                                   defaultTaskOptions,
                                   token)
                    .ConfigureAwait(false);
@@ -311,6 +313,24 @@ public class SubmitterTests
   }
 
   [Test]
+  [Ignore("Partitions not fully integrated yet")]
+  public void CreateSessionWithoutPartition()
+  {
+    var defaultTaskOptions = new TaskOptions
+                             {
+                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                               MaxRetries  = 2,
+                               Priority    = 1,
+                               PartitionId = "invalid",
+                             };
+
+    Assert.ThrowsAsync<InvalidOperationException>(() => submitter_.CreateSession(SessionId,
+                                                                                 Array.Empty<string>(),
+                                                                                 defaultTaskOptions,
+                                                                                 CancellationToken.None));
+  }
+
+  [Test]
   public async Task CreateTaskShouldSucceed()
   {
     await InitSubmitter(submitter_,
@@ -332,6 +352,42 @@ public class SubmitterTests
 
     Assert.AreEqual(TaskCreatingId,
                     result.TaskIds.Single());
+  }
+
+  [Test]
+  public async Task CreateTaskInvalidPartitionShouldFail()
+  {
+    var defaultTaskOptions = new TaskOptions
+                             {
+                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                               MaxRetries  = 2,
+                               Priority    = 1,
+                               PartitionId = "invalid",
+                             };
+
+    await submitter_.CreateSession(SessionId,
+                                  new [] {"part1", "part2"},
+                                  defaultTaskOptions,
+                                  CancellationToken.None)
+                    .ConfigureAwait(false);
+
+    Assert.ThrowsAsync<InvalidOperationException>(() => submitter_.CreateTasks(SessionId,
+                                                                               SessionId,
+                                                                               defaultTaskOptions,
+                                                                               new List<TaskRequest>
+                                                                               {
+                                                                                 new(TaskCreatingId,
+                                                                                     new[]
+                                                                                     {
+                                                                                       ExpectedOutput1,
+                                                                                     },
+                                                                                     new List<string>(),
+                                                                                     new List<ReadOnlyMemory<byte>>
+                                                                                     {
+                                                                                       new(Encoding.ASCII.GetBytes("AAAA")),
+                                                                                     }.ToAsyncEnumerable()),
+                                                                               }.ToAsyncEnumerable(),
+                                                                               CancellationToken.None));
   }
 
   [Test]

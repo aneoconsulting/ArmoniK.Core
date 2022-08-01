@@ -133,7 +133,6 @@ public class Submitter : ISubmitter
                                  cancellationToken)
                     .ConfigureAwait(false);
   }
-
   /// <inheritdoc />
   public async Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(string                        sessionId,
                                                                                            string                        parentTaskId,
@@ -141,19 +140,44 @@ public class Submitter : ISubmitter
                                                                                            IAsyncEnumerable<TaskRequest> taskRequests,
                                                                                            CancellationToken             cancellationToken)
   {
+    var sessionData = await sessionTable_.GetSessionAsync(sessionId,
+                                                          cancellationToken)
+                                         .ConfigureAwait(false);
+    return await this.CreateTasks(sessionData,
+                                  parentTaskId,
+                                  options,
+                                  taskRequests,
+                                  cancellationToken)
+                     .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
+  public async Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(SessionData                   sessionData,
+                                                                                           string                        parentTaskId,
+                                                                                           TaskOptions                   options,
+                                                                                           IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                                           CancellationToken             cancellationToken)
+  {
+    options = options != null ? ArmoniK.Core.Common.Storage.TaskOptions.Merge(options, sessionData.Options) : sessionData.Options;
+    var partitionId = options.PartitionId;
+
     using var logFunction = logger_.LogFunction(parentTaskId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
-    using var sessionScope = logger_.BeginPropertyScope(("Session", sessionId),
-                                                        ("TaskId", parentTaskId));
+    using var sessionScope = logger_.BeginPropertyScope(("Session", sessionData.SessionId),
+                                                        ("TaskId", parentTaskId),
+                                                        ("PartitionId", options.PartitionId));
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
       cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    options ??= await sessionTable_.GetDefaultTaskOptionAsync(sessionId,
-                                                              cancellationToken)
-                                   .ConfigureAwait(false);
+    var availablePartitionIds = sessionData.PartitionIds ?? Array.Empty<string>();
+    if (!availablePartitionIds.Contains(partitionId))
+    {
+      throw new InvalidOperationException($"The session {sessionData.SessionId} is assigned to the partitions " +
+                                          $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {partitionId}");
+    }
 
     if (options.Priority >= lockedQueueStorage_.MaxPriority)
     {
@@ -174,7 +198,7 @@ public class Submitter : ISubmitter
       requests.Add(new Storage.TaskRequest(taskRequest.Id,
                                            taskRequest.ExpectedOutputKeys,
                                            taskRequest.DataDependencies));
-      payloadUploadTasks.Add(PayloadStorage(sessionId)
+      payloadUploadTasks.Add(PayloadStorage(sessionData.SessionId)
                                .AddOrUpdateAsync(taskRequest.Id,
                                                  taskRequest.PayloadChunks,
                                                  cancellationToken));
@@ -182,7 +206,7 @@ public class Submitter : ISubmitter
 
     var parentTaskIds = new List<string>();
 
-    if (!parentTaskId.Equals(sessionId))
+    if (!parentTaskId.Equals(sessionData.SessionId))
     {
       var res = await taskTable_.GetParentTaskIds(parentTaskId,
                                                   cancellationToken)
@@ -195,7 +219,7 @@ public class Submitter : ISubmitter
     await payloadUploadTasks.WhenAll()
                             .ConfigureAwait(false);
 
-    await taskTable_.CreateTasks(requests.Select(request => new TaskData(sessionId,
+    await taskTable_.CreateTasks(requests.Select(request => new TaskData(sessionData.SessionId,
                                                                          request.Id,
                                                                          "",
                                                                          request.Id,
@@ -266,14 +290,24 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateSessionReply> CreateSession(string            sessionId,
-                                                      TaskOptions       defaultTaskOptions,
-                                                      CancellationToken cancellationToken)
+  public async Task<CreateSessionReply> CreateSession(string              sessionId,
+                                                      IEnumerable<string> partitionIds,
+                                                      TaskOptions         defaultTaskOptions,
+                                                      CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
+      var partitionList = partitionIds.ToIList();
+      if (partitionList.Count == 0)
+      {
+        partitionList = new [] {string.Empty};
+        // TODO: once partitions are fully integrated,
+        //   the default partition list should be replaced by an error
+        //throw new InvalidOperationException($"{nameof(partitionIds)} must not be empty or null");
+      }
       await sessionTable_.SetSessionDataAsync(sessionId,
+                                              partitionList,
                                               defaultTaskOptions,
                                               cancellationToken)
                          .ConfigureAwait(false);

@@ -121,11 +121,13 @@ public class TaskHandlerTest
                                                    }.ToAsyncEnumerable()));
 
     await testServiceProvider.Submitter.CreateSession(sessionId,
+                                                      new[] {"part1", "part2"},
                                                       new Api.gRPC.V1.TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                         MaxRetries  = 2,
                                                         Priority    = 1,
+                                                        PartitionId = "part1",
                                                       },
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
@@ -137,6 +139,7 @@ public class TaskHandlerTest
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                                                  MaxRetries  = 2,
                                                                                  Priority    = 1,
+                                                                                 PartitionId = "part1",
                                                                                },
                                                                                taskRequests.ToAsyncEnumerable(),
                                                                                CancellationToken.None)
@@ -194,11 +197,13 @@ public class TaskHandlerTest
                                                    }.ToAsyncEnumerable()));
 
     await testServiceProvider.Submitter.CreateSession(sessionId,
+                                                      new[] {"part1", "part2"},
                                                       new Api.gRPC.V1.TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                         MaxRetries  = 2,
                                                         Priority    = 1,
+                                                        PartitionId = "part1",
                                                       },
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
@@ -210,6 +215,7 @@ public class TaskHandlerTest
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                                                  MaxRetries  = 2,
                                                                                  Priority    = 1,
+                                                                                 PartitionId = "part1",
                                                                                },
                                                                                taskRequests.ToAsyncEnumerable(),
                                                                                CancellationToken.None)
@@ -264,11 +270,13 @@ public class TaskHandlerTest
                                                    }.ToAsyncEnumerable()));
 
     await testServiceProvider.Submitter.CreateSession(sessionId,
+                                                      new[] {"part1", "part2"},
                                                       new Api.gRPC.V1.TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                         MaxRetries  = 2,
                                                         Priority    = 1,
+                                                        PartitionId = "part1",
                                                       },
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
@@ -280,6 +288,7 @@ public class TaskHandlerTest
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                                                  MaxRetries  = 2,
                                                                                  Priority    = 1,
+                                                                                 PartitionId = "part1",
                                                                                },
                                                                                taskRequests.ToAsyncEnumerable(),
                                                                                CancellationToken.None)
@@ -351,11 +360,13 @@ public class TaskHandlerTest
                                                    }.ToAsyncEnumerable()));
 
     await testServiceProvider.Submitter.CreateSession(sessionId,
+                                                      new[] {"part1", "part2"},
                                                       new Api.gRPC.V1.TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                         MaxRetries  = 2,
                                                         Priority    = 1,
+                                                        PartitionId = "part1",
                                                       },
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
@@ -367,6 +378,7 @@ public class TaskHandlerTest
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                                                  MaxRetries  = 2,
                                                                                  Priority    = 1,
+                                                                                 PartitionId = "part1",
                                                                                },
                                                                                taskRequests.ToAsyncEnumerable(),
                                                                                CancellationToken.None)
