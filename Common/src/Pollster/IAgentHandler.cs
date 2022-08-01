@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
 
@@ -53,7 +54,7 @@ public interface IAgentHandler
   /// </returns>
   Task<IAgent> Start(string            token,
                      ILogger           logger,
-                     string            sessionId,
-                     string            taskId,
+                     SessionData       sessionData,
+                     TaskData          taskData,
                      CancellationToken cancellationToken);
 }

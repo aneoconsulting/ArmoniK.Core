@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Pollster;
 
 using Microsoft.Extensions.Logging;
@@ -36,8 +37,8 @@ public class SimpleAgentHandler : IAgentHandler
 
   public Task<IAgent> Start(string            token,
                             ILogger           logger,
-                            string            sessionId,
-                            string            taskId,
+                            SessionData       sessionData,
+                            TaskData          taskData,
                             CancellationToken cancellationToken)
   {
     Agent = new SimpleAgent();

@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 
@@ -32,15 +33,18 @@ public record SessionData(string        SessionId,
                           SessionStatus Status,
                           DateTime      CreationDate,
                           DateTime?     CancellationDate,
+                          IList<string> PartitionIds,
                           TaskOptions   Options)
 {
   public SessionData(string        sessionId,
                      SessionStatus status,
+                     IList<string> partitionIds,
                      TaskOptions   options)
     : this(sessionId,
            status,
            DateTime.UtcNow,
            null,
+           partitionIds,
            options)
   {
   }
