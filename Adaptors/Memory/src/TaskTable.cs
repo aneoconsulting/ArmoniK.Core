@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -32,6 +32,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -52,9 +54,9 @@ public class TaskTable : ITaskTable
                    ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskId,
                    ILogger<TaskTable>                                    logger)
   {
-    taskId2TaskData_  = task2TaskData;
-    session2TaskIds_  = session2TaskId;
-    Logger            = logger;
+    taskId2TaskData_ = task2TaskData;
+    session2TaskIds_ = session2TaskId;
+    Logger           = logger;
   }
 
   public TimeSpan PollingDelayMax { get; set; }
@@ -268,15 +270,83 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task SetTaskSuccessAsync(string            taskId,
-                                        CancellationToken cancellationToken)
-    => await UpdateTaskStatusAsync(taskId,
-                                   TaskStatus.Completed,
-                                   cancellationToken)
-         .ConfigureAwait(false);
+  public Task SetTaskSuccessAsync(string            taskId,
+                                  CancellationToken cancellationToken)
+  {
+    using var _ = Logger.LogFunction();
+
+    var taskOutput = new Output(Error: "",
+                                Success: true);
+
+    Logger.LogInformation("update task {taskId} to status {status} with {output}",
+                          taskId,
+                          TaskStatus.Completed,
+                          taskOutput);
+
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    taskId2TaskData_.AddOrUpdate(taskId,
+                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 (_,
+                                  data) =>
+                                 {
+                                   if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   {
+                                     throw new ArmoniKException("Task already in a final status");
+                                   }
+
+                                   return data with
+                                          {
+                                            Status = TaskStatus.Completed,
+                                            Output = taskOutput,
+                                          };
+                                 });
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
-  public async Task SetTaskErrorAsync(string            taskId,
+  public Task SetTaskCanceledAsync(string            taskId,
+                                   CancellationToken cancellationToken)
+  {
+    using var _ = Logger.LogFunction();
+
+    var taskOutput = new Output(Error: "",
+                                Success: false);
+
+    Logger.LogInformation("update task {taskId} to status {status} with {output}",
+                          taskId,
+                          TaskStatus.Canceled,
+                          taskOutput);
+
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    taskId2TaskData_.AddOrUpdate(taskId,
+                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 (_,
+                                  data) =>
+                                 {
+                                   if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   {
+                                     throw new ArmoniKException("Task already in a final status");
+                                   }
+
+                                   return data with
+                                          {
+                                            Status = TaskStatus.Canceled,
+                                            Output = taskOutput,
+                                          };
+                                 });
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public Task<bool> SetTaskErrorAsync(string            taskId,
                                       string            errorDetail,
                                       CancellationToken cancellationToken)
   {
@@ -285,15 +355,34 @@ public class TaskTable : ITaskTable
     var taskOutput = new Output(Error: errorDetail,
                                 Success: false);
 
-    Logger.LogDebug("update task {taskId} to output {output}",
-                    taskId,
-                    taskOutput);
-    /* A Task that errors is conceptually a  completed task,
-     * the error is reported and detailed in its Output*/
-    await UpdateTaskStatusAsync(taskId,
-                                TaskStatus.Completed,
-                                cancellationToken)
-      .ConfigureAwait(false);
+    Logger.LogInformation("update task {taskId} to status {status} with {output}",
+                          taskId,
+                          TaskStatus.Error,
+                          taskOutput);
+
+    if (!taskId2TaskData_.ContainsKey(taskId))
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    var updated = true;
+    taskId2TaskData_.AddOrUpdate(taskId,
+                                 _ => throw new InvalidOperationException("The task does not exist."),
+                                 (_,
+                                  data) =>
+                                 {
+                                   if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   {
+                                     updated = false;
+                                   }
+
+                                   return data with
+                                          {
+                                            Status = TaskStatus.Error,
+                                            Output = taskOutput,
+                                          };
+                                 });
+    return Task.FromResult(updated);
   }
 
   /// <inheritdoc />
@@ -309,40 +398,60 @@ public class TaskTable : ITaskTable
                              .Output);
   }
 
-  public Task<bool> AcquireTask(string            taskId,
-                                CancellationToken cancellationToken = default)
+  /// <inheritdoc />
+  public Task<TaskData> AcquireTask(string            taskId,
+                                    string            ownerPodId,
+                                    CancellationToken cancellationToken = default)
   {
-    var updated = false;
-    taskId2TaskData_.AddOrUpdate(taskId,
-                                 _ => throw new InvalidOperationException("The task does not exist."),
-                                 (_,
-                                  data) =>
-                                 {
-                                   if (data.OwnerPodId != "")
-                                   {
-                                     return data;
-                                   }
+    return Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
+                                                        _ => throw new InvalidOperationException("The task does not exist."),
+                                                        (_,
+                                                         data) =>
+                                                        {
+                                                          if (data.OwnerPodId != "")
+                                                          {
+                                                            return data;
+                                                          }
 
-                                   updated = true;
-                                   return data with
-                                          {
-                                            OwnerPodId = Dns.GetHostName(),
-                                          };
-                                 });
-    return Task.FromResult(updated);
+                                                          return data with
+                                                                 {
+                                                                   OwnerPodId = ownerPodId,
+                                                                 };
+                                                        }));
   }
 
   /// <inheritdoc />
-  public Task<TaskStatus> GetTaskStatus(string            taskId,
-                                        CancellationToken cancellationToken = default)
+  public Task<TaskData> ReleaseTask(string            taskId,
+                                    string            ownerPodId,
+                                    CancellationToken cancellationToken = default)
   {
-    if (!taskId2TaskData_.ContainsKey(taskId))
-    {
-      throw new TaskNotFoundException($"Key '{taskId}' not found");
-    }
+    return Task.FromResult(taskId2TaskData_.AddOrUpdate(taskId,
+                                                        _ => throw new InvalidOperationException("The task does not exist."),
+                                                        (_,
+                                                         data) =>
+                                                        {
+                                                          if (data.OwnerPodId != ownerPodId)
+                                                          {
+                                                            return null;
+                                                          }
 
-    return Task.FromResult(taskId2TaskData_[taskId]
-                             .Status);
+                                                          return data with
+                                                                 {
+                                                                   OwnerPodId = "",
+                                                                 };
+                                                        }));
+  }
+
+  /// <inheritdoc />
+  public Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
+                                                                            CancellationToken   cancellationToken = default)
+  {
+    return Task.FromResult(taskId2TaskData_.Where(tdm => taskIds.Contains(tdm.Key))
+                                           .Select(model => new GetTaskStatusReply.Types.IdStatus
+                                                            {
+                                                              Status = model.Value.Status,
+                                                              TaskId = model.Value.TaskId,
+                                                            }));
   }
 
   /// <inheritdoc />
@@ -373,9 +482,9 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public Task<string> RetryTask(TaskData          taskData,
-                           CancellationToken cancellationToken)
+                                CancellationToken cancellationToken)
   {
-    var newTaskId = taskData.TaskId + $"###{taskData.RetryOfIds.Count + 1}";
+    var newTaskId = taskData.InitialTaskId + $"###{taskData.RetryOfIds.Count + 1}";
     var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)
                             {
                               taskData.TaskId,
@@ -383,18 +492,20 @@ public class TaskTable : ITaskTable
     var newTaskData = new TaskData(taskData.SessionId,
                                    newTaskId,
                                    "",
+                                   taskData.PayloadId,
                                    taskData.ParentTaskIds,
                                    taskData.DataDependencies,
                                    taskData.ExpectedOutputIds,
+                                   taskData.InitialTaskId,
                                    newTaskRetryOfIds,
                                    TaskStatus.Creating,
                                    "",
                                    taskData.Options,
                                    DateTime.UtcNow,
-                                   DateTime.MinValue,
-                                   DateTime.MinValue,
-                                   DateTime.MinValue,
-                                   DateTime.MinValue,
+                                   null,
+                                   null,
+                                   null,
+                                   null,
                                    new Output(false,
                                               ""));
 
@@ -432,7 +543,7 @@ public class TaskTable : ITaskTable
     => ValueTask.FromResult(true);
 
   private bool UpdateAndCheckTaskStatus(string     id,
-                                       TaskStatus status)
+                                        TaskStatus status)
   {
     if (!taskId2TaskData_.ContainsKey(id))
     {
@@ -472,7 +583,6 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-
                                    if (data.Status != TaskStatus.Creating)
                                    {
                                      return data;
@@ -487,5 +597,4 @@ public class TaskTable : ITaskTable
                                  });
     return updated;
   }
-
 }

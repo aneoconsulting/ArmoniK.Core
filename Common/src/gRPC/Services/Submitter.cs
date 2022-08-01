@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -30,6 +30,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.Worker.Options;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
@@ -81,40 +84,8 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public Task StartTask(string            taskId,
                         CancellationToken cancellationToken = default)
-    => taskTable_.StartTask(taskId, cancellationToken);
-
-  /// <inheritdoc />
-  public async Task<string?> ResubmitTask(TaskData          taskData,
-                                          CancellationToken cancellationToken = default)
-  {
-    logger_.LogWarning("Resubmit {Task}",
-                       taskData.TaskId);
-    if (taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
-    {
-      var newTaskId = await taskTable_.RetryTask(taskData,
-                                                 cancellationToken)
-                                      .ConfigureAwait(false);
-      await FinalizeTaskCreation(new List<Storage.TaskRequest>
-                                 {
-                                   new(taskData.TaskId,
-                                       taskData.ExpectedOutputIds,
-                                       taskData.DataDependencies),
-                                 },
-                                 taskData.Options.Priority,
-                                 taskData.SessionId,
-                                 taskData.TaskId,
-                                 cancellationToken)
-        .ConfigureAwait(false);
-
-      return newTaskId;
-    }
-
-    await UpdateTaskStatusAsync(taskData.TaskId,
-                                TaskStatus.Failed,
-                                cancellationToken)
-      .ConfigureAwait(false);
-    return null;
-  }
+    => taskTable_.StartTask(taskId,
+                            cancellationToken);
 
   /// <inheritdoc />
   public Task<Configuration> GetServiceConfiguration(Empty             request,
@@ -144,7 +115,6 @@ public class Submitter : ISubmitter
                     .ConfigureAwait(false);
 
     await sessionCancelTask.ConfigureAwait(false);
-
   }
 
   /// <inheritdoc />
@@ -163,7 +133,6 @@ public class Submitter : ISubmitter
                                  cancellationToken)
                     .ConfigureAwait(false);
   }
-
   /// <inheritdoc />
   public async Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(string                        sessionId,
                                                                                            string                        parentTaskId,
@@ -171,19 +140,44 @@ public class Submitter : ISubmitter
                                                                                            IAsyncEnumerable<TaskRequest> taskRequests,
                                                                                            CancellationToken             cancellationToken)
   {
+    var sessionData = await sessionTable_.GetSessionAsync(sessionId,
+                                                          cancellationToken)
+                                         .ConfigureAwait(false);
+    return await this.CreateTasks(sessionData,
+                                  parentTaskId,
+                                  options,
+                                  taskRequests,
+                                  cancellationToken)
+                     .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
+  public async Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(SessionData                   sessionData,
+                                                                                           string                        parentTaskId,
+                                                                                           TaskOptions                   options,
+                                                                                           IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                                           CancellationToken             cancellationToken)
+  {
+    options = options != null ? ArmoniK.Core.Common.Storage.TaskOptions.Merge(options, sessionData.Options) : sessionData.Options;
+    var partitionId = options.PartitionId;
+
     using var logFunction = logger_.LogFunction(parentTaskId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
-    using var sessionScope = logger_.BeginPropertyScope(("Session", sessionId),
-                                                        ("TaskId", parentTaskId));
+    using var sessionScope = logger_.BeginPropertyScope(("Session", sessionData.SessionId),
+                                                        ("TaskId", parentTaskId),
+                                                        ("PartitionId", options.PartitionId));
 
     if (logger_.IsEnabled(LogLevel.Trace))
     {
       cancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    options ??= await sessionTable_.GetDefaultTaskOptionAsync(sessionId,
-                                                              cancellationToken)
-                                   .ConfigureAwait(false);
+    var availablePartitionIds = sessionData.PartitionIds ?? Array.Empty<string>();
+    if (!availablePartitionIds.Contains(partitionId))
+    {
+      throw new InvalidOperationException($"The session {sessionData.SessionId} is assigned to the partitions " +
+                                          $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {partitionId}");
+    }
 
     if (options.Priority >= lockedQueueStorage_.MaxPriority)
     {
@@ -204,7 +198,7 @@ public class Submitter : ISubmitter
       requests.Add(new Storage.TaskRequest(taskRequest.Id,
                                            taskRequest.ExpectedOutputKeys,
                                            taskRequest.DataDependencies));
-      payloadUploadTasks.Add(PayloadStorage(sessionId)
+      payloadUploadTasks.Add(PayloadStorage(sessionData.SessionId)
                                .AddOrUpdateAsync(taskRequest.Id,
                                                  taskRequest.PayloadChunks,
                                                  cancellationToken));
@@ -212,7 +206,7 @@ public class Submitter : ISubmitter
 
     var parentTaskIds = new List<string>();
 
-    if (!parentTaskId.Equals(sessionId))
+    if (!parentTaskId.Equals(sessionData.SessionId))
     {
       var res = await taskTable_.GetParentTaskIds(parentTaskId,
                                                   cancellationToken)
@@ -225,9 +219,10 @@ public class Submitter : ISubmitter
     await payloadUploadTasks.WhenAll()
                             .ConfigureAwait(false);
 
-    await taskTable_.CreateTasks(requests.Select(request => new TaskData(sessionId,
+    await taskTable_.CreateTasks(requests.Select(request => new TaskData(sessionData.SessionId,
                                                                          request.Id,
                                                                          "",
+                                                                         request.Id,
                                                                          parentTaskIds,
                                                                          request.DataDependencies.ToList(),
                                                                          request.ExpectedOutputKeys.ToList(),
@@ -295,16 +290,26 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateSessionReply> CreateSession(string            sessionId,
-                                                      TaskOptions       defaultTaskOptions,
-                                                      CancellationToken cancellationToken)
+  public async Task<CreateSessionReply> CreateSession(string              sessionId,
+                                                      IEnumerable<string> partitionIds,
+                                                      TaskOptions         defaultTaskOptions,
+                                                      CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
-      await sessionTable_.CreateSessionAsync(sessionId,
-                                             defaultTaskOptions,
-                                             cancellationToken)
+      var partitionList = partitionIds.ToIList();
+      if (partitionList.Count == 0)
+      {
+        partitionList = new [] {string.Empty};
+        // TODO: once partitions are fully integrated,
+        //   the default partition list should be replaced by an error
+        //throw new InvalidOperationException($"{nameof(partitionIds)} must not be empty or null");
+      }
+      await sessionTable_.SetSessionDataAsync(sessionId,
+                                              partitionList,
+                                              defaultTaskOptions,
+                                              cancellationToken)
                          .ConfigureAwait(false);
       return new CreateSessionReply
              {
@@ -327,8 +332,6 @@ public class Submitter : ISubmitter
                                  IServerStreamWriter<ResultReply> responseStream,
                                  CancellationToken                cancellationToken)
   {
-
-    // TODO make it match API
     using var activity = activitySource_.StartActivity($"{nameof(TryGetResult)}");
     var       storage  = ResultStorage(request.Session);
 
@@ -336,6 +339,58 @@ public class Submitter : ISubmitter
                                               request.Key,
                                               cancellationToken)
                                    .ConfigureAwait(false);
+
+    if (result.Status != ResultStatus.Completed)
+    {
+      var taskData = await taskTable_.ReadTaskAsync(result.OwnerTaskId,
+                                                    cancellationToken)
+                                     .ConfigureAwait(false);
+
+      switch (taskData.Status)
+      {
+        case TaskStatus.Processed:
+        case TaskStatus.Completed:
+          break;
+        case TaskStatus.Error:
+        case TaskStatus.Failed:
+        case TaskStatus.Timeout:
+        case TaskStatus.Canceled:
+        case TaskStatus.Canceling:
+          await responseStream.WriteAsync(new ResultReply
+                                          {
+                                            Error = new TaskError
+                                                    {
+                                                      TaskId = taskData.TaskId,
+                                                      Errors =
+                                                      {
+                                                        new Error
+                                                        {
+                                                          Detail     = taskData.Output.Error,
+                                                          TaskStatus = taskData.Status,
+                                                        },
+                                                      },
+                                                    },
+                                          },
+                                          CancellationToken.None)
+                              .ConfigureAwait(false);
+          return;
+        case TaskStatus.Creating:
+        case TaskStatus.Submitted:
+        case TaskStatus.Dispatched:
+        case TaskStatus.Processing:
+          await responseStream.WriteAsync(new ResultReply
+                                          {
+                                            NotCompletedTask = taskData.TaskId,
+                                          },
+                                          CancellationToken.None)
+                              .ConfigureAwait(false);
+          return;
+
+        case TaskStatus.Unspecified:
+        default:
+          throw new ArgumentOutOfRangeException();
+      }
+    }
 
     await foreach (var chunk in storage.GetValuesAsync(request.Key,
                                                        cancellationToken)
@@ -361,7 +416,6 @@ public class Submitter : ISubmitter
                                     },
                                     CancellationToken.None)
                         .ConfigureAwait(false);
-
   }
 
   public async Task<Count> WaitForCompletion(WaitRequest       request,
@@ -426,6 +480,7 @@ public class Submitter : ISubmitter
             break;
           case TaskStatus.Error:
             notCompleted += count;
+            error        =  true;
             break;
           case TaskStatus.Unspecified:
             notCompleted += count;
@@ -477,7 +532,8 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task CompleteTaskAsync(string            id,
+  public async Task CompleteTaskAsync(TaskData          taskData,
+                                      bool              resubmit,
                                       Output            output,
                                       CancellationToken cancellationToken = default)
   {
@@ -487,16 +543,51 @@ public class Submitter : ISubmitter
 
     if (cOutput.Success)
     {
-      await taskTable_.SetTaskSuccessAsync(id,
+      await taskTable_.SetTaskSuccessAsync(taskData.TaskId,
                                            cancellationToken)
                       .ConfigureAwait(false);
     }
     else
     {
-      await taskTable_.SetTaskErrorAsync(id,
-                                         cOutput.Error,
-                                         cancellationToken)
-                      .ConfigureAwait(false);
+      // not done means that another pod put this task in error so we do not need to do it a second time
+      // so nothing to do
+      if (!await taskTable_.SetTaskErrorAsync(taskData.TaskId,
+                                              cOutput.Error,
+                                              cancellationToken)
+                           .ConfigureAwait(false))
+      {
+        return;
+      }
+
+      // TODO FIXME: nothing will resubmit the task if there is a crash there
+      if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
+      {
+        logger_.LogWarning("Resubmit {task}",
+                           taskData.TaskId);
+
+        var newTaskId = await taskTable_.RetryTask(taskData,
+                                                   cancellationToken)
+                                        .ConfigureAwait(false);
+
+        await FinalizeTaskCreation(new List<Storage.TaskRequest>
+                                   {
+                                     new(newTaskId,
+                                         taskData.ExpectedOutputIds,
+                                         taskData.DataDependencies),
+                                   },
+                                   taskData.Options.Priority,
+                                   taskData.SessionId,
+                                   taskData.TaskId,
+                                   cancellationToken)
+          .ConfigureAwait(false);
+      }
+      else
+      {
+        await resultTable_.AbortTaskResults(taskData.SessionId,
+                                            taskData.TaskId,
+                                            cancellationToken)
+                          .ConfigureAwait(false);
+      }
     }
   }
 
@@ -517,94 +608,93 @@ public class Submitter : ISubmitter
   {
     using var activity = activitySource_.StartActivity($"{nameof(WaitForAvailabilityAsync)}");
 
-    var result = await resultTable_.GetResult(request.Session,
-                                              request.Key,
-                                              contextCancellationToken)
-                                   .ConfigureAwait(false);
-
-    logger_.LogDebug("OwnerTaskId {OwnerTaskId}",
-                     result.OwnerTaskId);
-
-    var continueWaiting = true;
-
-    while (continueWaiting)
+    if (logger_.IsEnabled(LogLevel.Trace))
     {
-      var ownerId = result.OwnerTaskId;
-      var completion = await WaitForCompletion(new WaitRequest
-                                               {
-                                                 Filter = new TaskFilter
-                                                          {
-                                                            Task = new TaskFilter.Types.IdsRequest
-                                                                   {
-                                                                     Ids =
-                                                                     {
-                                                                       ownerId,
-                                                                     },
-                                                                   },
-                                                          },
-                                                 StopOnFirstTaskCancellation = true,
-                                                 StopOnFirstTaskError        = true,
-                                               },
-                                               contextCancellationToken)
-                         .ConfigureAwait(false);
-      if (completion.Values.Any(count => count.Status is TaskStatus.Failed or TaskStatus.Error))
-      {
-        return new AvailabilityReply
-               {
-                 Error = new TaskError
-                         {
-                           TaskId = ownerId,
-                         },
-               };
-      }
-
-      if (completion.Values.Any(count => count.Status is TaskStatus.Canceled or TaskStatus.Canceling))
-      {
-        return new AvailabilityReply
-               {
-                 NotCompletedTask = ownerId,
-               };
-      }
-
-      result = await resultTable_.GetResult(request.Session,
-                                            request.Key,
-                                            contextCancellationToken)
-                                 .ConfigureAwait(false);
-      logger_.LogDebug("OwnerTaskId {OwnerTaskId}",
-                       result.OwnerTaskId);
-      if (ownerId != result.OwnerTaskId)
-      {
-        continueWaiting = result.Status != ResultStatus.Completed;
-        if (continueWaiting)
-        {
-          await Task.Delay(150,
-                           contextCancellationToken)
-                    .ConfigureAwait(false);
-        }
-      }
-      else
-      {
-        continueWaiting = false;
-      }
+      contextCancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    var availabilityReply = new AvailabilityReply
-                            {
-                              Ok = new Empty(),
-                            };
-    return availabilityReply;
+    var currentPollingDelay = taskTable_.PollingDelayMin;
+    while (true)
+    {
+      var result = await resultTable_.GetResult(request.Session,
+                                                request.Key,
+                                                contextCancellationToken)
+                                     .ConfigureAwait(false);
+
+      switch (result.Status)
+      {
+        case ResultStatus.Completed:
+          return new AvailabilityReply
+                 {
+                   Ok = new Empty(),
+                 };
+        case ResultStatus.Created:
+          break;
+        case ResultStatus.Aborted:
+          var taskData = await taskTable_.ReadTaskAsync(result.OwnerTaskId,
+                                                        contextCancellationToken)
+                                         .ConfigureAwait(false);
+
+          return new AvailabilityReply
+                 {
+                   Error = new TaskError
+                           {
+                             TaskId = taskData.TaskId,
+                             Errors =
+                             {
+                               new Error
+                               {
+                                 Detail     = taskData.Output.Error,
+                                 TaskStatus = taskData.Status,
+                               },
+                             },
+                           },
+                 };
+        case ResultStatus.Unspecified:
+        default:
+          throw new ArgumentOutOfRangeException();
+      }
+
+      await Task.Delay(currentPollingDelay,
+                       contextCancellationToken)
+                .ConfigureAwait(false);
+      if (2 * currentPollingDelay < taskTable_.PollingDelayMax)
+      {
+        currentPollingDelay = 2 * currentPollingDelay;
+      }
+    }
   }
 
   /// <inheritdoc />
-  public async Task<GetStatusReply> GetStatusAsync(GetStatusrequest  request,
-                                                   CancellationToken contextCancellationToken)
+  public async Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
+                                                           CancellationToken    contextCancellationToken)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(GetStatusAsync)}");
-    return new GetStatusReply
+    using var activity = activitySource_.StartActivity($"{nameof(GetTaskStatusAsync)}");
+    return new GetTaskStatusReply
            {
-             Status = await taskTable_.GetTaskStatus(request.TaskId,
-                                                     contextCancellationToken)
-                                      .ConfigureAwait(false),
+             IdStatuses =
+             {
+               await taskTable_.GetTaskStatus(request.TaskIds.ToList(),
+                                              contextCancellationToken)
+                               .ConfigureAwait(false),
+             },
+           };
+  }
+
+  /// <inheritdoc />
+  public async Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
+                                                               CancellationToken      contextCancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(GetResultStatusAsync)}");
+    return new GetResultStatusReply
+           {
+             IdStatuses =
+             {
+               await resultTable_.GetResultStatus(request.ResultIds.ToList(),
+                                                  request.SessionId,
+                                                  contextCancellationToken)
+                                 .ConfigureAwait(false),
+             },
            };
   }
 
@@ -623,7 +713,7 @@ public class Submitter : ISubmitter
 
   /// <inheritdoc />
   public async Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
-                                               CancellationToken contextCancellationToken)
+                                                     CancellationToken contextCancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       idList   = new SessionIdList();
@@ -642,9 +732,9 @@ public class Submitter : ISubmitter
 
 
   private async Task ChangeResultOwnership(string                           session,
-                                          string                           parentTaskId,
-                                          IEnumerable<Storage.TaskRequest> requests,
-                                          CancellationToken                cancellationToken = default)
+                                           string                           parentTaskId,
+                                           IEnumerable<Storage.TaskRequest> requests,
+                                           CancellationToken                cancellationToken = default)
   {
     using var _        = logger_.LogFunction($"{session}.{parentTaskId}");
     using var activity = activitySource_.StartActivity($"{nameof(ChangeResultOwnership)}");
@@ -687,6 +777,27 @@ public class Submitter : ISubmitter
 
     await resultTable_.Create(taskDataModels.SelectMany(task => task.Result),
                               cancellationToken)
+                      .ConfigureAwait(false);
+  }
+
+  public async Task SetResult(string                                 sessionId,
+                              string                                 ownerTaskId,
+                              string                                 key,
+                              IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
+                              CancellationToken                      cancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
+    var       storage  = ResultStorage(sessionId);
+
+    await storage.AddOrUpdateAsync(key,
+                                   chunks,
+                                   cancellationToken)
+                 .ConfigureAwait(false);
+
+    await resultTable_.SetResult(sessionId,
+                                 ownerTaskId,
+                                 key,
+                                 cancellationToken)
                       .ConfigureAwait(false);
   }
 }

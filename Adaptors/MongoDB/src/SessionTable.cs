@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -31,12 +31,15 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using JetBrains.Annotations;
 
@@ -69,26 +72,52 @@ public class SessionTable : ISessionTable
 
 
   [PublicAPI]
-  public async Task CreateSessionDataAsync(string                          rootSessionId,
-                                           string                          parentTaskId,
-                                           Core.Common.Storage.TaskOptions defaultOptions,
-                                           CancellationToken               cancellationToken = default)
+  public async Task SetSessionDataAsync(string                          rootSessionId,
+                                        IEnumerable<string>             partitionIds,
+                                        Core.Common.Storage.TaskOptions defaultOptions,
+                                        CancellationToken               cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(CreateSessionDataAsync)}");
-    activity?.SetTag($"{nameof(CreateSessionDataAsync)}_sessionId",
+    using var activity = activitySource_.StartActivity($"{nameof(SetSessionDataAsync)}");
+    activity?.SetTag($"{nameof(SetSessionDataAsync)}_sessionId",
                      rootSessionId);
-    activity?.SetTag($"{nameof(CreateSessionDataAsync)}_parentTaskId",
-                     parentTaskId);
     var sessionCollection = sessionCollectionProvider_.Get();
 
     SessionData data = new(rootSessionId,
                            SessionStatus.Running,
+                           partitionIds.ToIList(),
                            defaultOptions);
 
     await sessionCollection.InsertOneAsync(data,
                                            cancellationToken: cancellationToken)
                            .ConfigureAwait(false);
   }
+
+  /// <inheritdoc />
+  public async Task<SessionData> GetSessionAsync(string            sessionId,
+                                                 CancellationToken cancellationToken = default)
+  {
+    using var _ = Logger.LogFunction(sessionId);
+    using var activity = activitySource_.StartActivity($"{nameof(GetSessionAsync)}");
+    activity?.SetTag($"{nameof(GetSessionAsync)}_sessionId",
+                     sessionId);
+    var sessionHandle = sessionProvider_.Get();
+    var sessionCollection = sessionCollectionProvider_.Get();
+
+
+    try
+    {
+      return await sessionCollection.AsQueryable(sessionHandle)
+                                    .Where(sdm => sdm.SessionId == sessionId)
+                                    .SingleAsync(cancellationToken)
+                                    .ConfigureAwait(false);
+    }
+    catch (InvalidOperationException e)
+    {
+      throw new SessionNotFoundException($"Key '{sessionId}' not found",
+                                         e);
+    }
+  }
+
 
   /// <inheritdoc />
   public async Task<bool> IsSessionCancelledAsync(string            sessionId,
@@ -98,23 +127,10 @@ public class SessionTable : ISessionTable
     using var activity = activitySource_.StartActivity($"{nameof(IsSessionCancelledAsync)}");
     activity?.SetTag($"{nameof(IsSessionCancelledAsync)}_sessionId",
                      sessionId);
-    var sessionHandle     = sessionProvider_.Get();
-    var sessionCollection = sessionCollectionProvider_.Get();
 
-
-    try
-    {
-      return await sessionCollection.AsQueryable(sessionHandle)
-                                    .Where(sdm => sdm.SessionId == sessionId)
-                                    .Select(sdm => sdm.Status   == SessionStatus.Canceled)
-                                    .SingleAsync(cancellationToken)
-                                    .ConfigureAwait(false);
-    }
-    catch (InvalidOperationException e)
-    {
-      throw new SessionNotFoundException($"Key '{sessionId}' not found",
-                                         e);
-    }
+    return (await this.GetSessionAsync(sessionId,
+                                       cancellationToken)
+                      .ConfigureAwait(false)).Status == SessionStatus.Canceled;
   }
 
   /// <inheritdoc />

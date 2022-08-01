@@ -22,7 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 
 using FluentValidation;
 
@@ -30,28 +30,62 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Common.gRPC.Validators;
 
+/// <summary>
+/// gRPC validator for <see cref="TaskFilter"/>
+/// </summary>
 [UsedImplicitly]
 public class TaskFilterValidator : AbstractValidator<TaskFilter>
 {
+  /// <summary>
+  /// Either filter on task id or session id.
+  /// The one selected should not be empty
+  /// Filter on Status is not mandatory but the one selected has to have at least one element
+  /// </summary>
   public TaskFilterValidator()
   {
     RuleFor(filter => filter.IdsCase)
       .NotEqual(TaskFilter.IdsOneofCase.None);
+
     RuleFor(filter => filter.Session)
       .NotNull()
       .NotEmpty()
+      .SetValidator(new IdsRequestValidator())
       .When(filter => filter.IdsCase == TaskFilter.IdsOneofCase.Session);
-    RuleFor(filter => filter.Session)
-      .Null()
-      .Empty()
-      .When(filter => filter.IdsCase == TaskFilter.IdsOneofCase.Task);
+    
     RuleFor(filter => filter.Task)
       .NotNull()
       .NotEmpty()
+      .SetValidator(new IdsRequestValidator())
       .When(filter => filter.IdsCase == TaskFilter.IdsOneofCase.Task);
-    RuleFor(filter => filter.Task)
-      .Null()
-      .Empty()
-      .When(filter => filter.IdsCase == TaskFilter.IdsOneofCase.Session);
+
+    RuleFor(filter => filter.Excluded)
+      .NotNull()
+      .NotEmpty()
+      .SetValidator(new StatusesRequestValidator())
+      .When(filter => filter.StatusesCase == TaskFilter.StatusesOneofCase.Excluded);
+
+    RuleFor(filter => filter.Included)
+      .NotNull()
+      .NotEmpty()
+      .SetValidator(new StatusesRequestValidator())
+      .When(filter => filter.StatusesCase == TaskFilter.StatusesOneofCase.Included);
+  }
+
+  private class IdsRequestValidator : AbstractValidator<TaskFilter.Types.IdsRequest>
+  {
+    public IdsRequestValidator()
+    {
+      RuleFor(r => r.Ids)
+        .NotEmpty();
+    }
+  }
+
+  private class StatusesRequestValidator : AbstractValidator<TaskFilter.Types.StatusesRequest>
+  {
+    public StatusesRequestValidator()
+    {
+      RuleFor(r => r.Statuses)
+        .NotEmpty();
+    }
   }
 }

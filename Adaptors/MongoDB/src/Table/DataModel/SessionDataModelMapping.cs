@@ -44,6 +44,8 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.Status))
                                                      .SetIsRequired(true);
+                                                   cm.MapProperty(nameof(SessionData.PartitionIds))
+                                                     .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.Options))
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.CreationDate))
@@ -55,6 +57,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                                                           model.Status,
                                                                                           model.CreationDate,
                                                                                           model.CancellationDate,
+                                                                                          model.PartitionIds,
                                                                                           model.Options));
                                                  });
     }
@@ -71,10 +74,13 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                       .SetIsRequired(true);
                                                    map.MapProperty(nameof(TaskOptions.Priority))
                                                       .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.PartitionId))
+                                                      .SetIsRequired(true);
                                                    map.MapCreator(options => new TaskOptions(options.Options,
                                                                                              options.MaxDuration,
                                                                                              options.MaxRetries,
-                                                                                             options.Priority));
+                                                                                             options.Priority,
+                                                                                             options.PartitionId));
                                                  });
     }
   }
@@ -84,9 +90,40 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
     => nameof(SessionData);
 
   /// <inheritdoc />
-  public Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
-                                     IMongoCollection<SessionData> collection)
+  public async Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
+                                           IMongoCollection<SessionData> collection)
   {
-    return Task.CompletedTask;
+    var statusIndex       = Builders<SessionData>.IndexKeys.Hashed(model => model.Status);
+    var partitionIndex    = Builders<SessionData>.IndexKeys.Hashed(model => model.Options.PartitionId);
+    var creationIndex     = Builders<SessionData>.IndexKeys.Ascending(model => model.CreationDate);
+    var cancellationIndex = Builders<SessionData>.IndexKeys.Ascending(model => model.CancellationDate);
+
+    var indexModels = new CreateIndexModel<SessionData>[]
+                      {
+                        new(statusIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(statusIndex),
+                            }),
+                        new(partitionIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(partitionIndex),
+                            }),
+                        new(creationIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(creationIndex),
+                            }),
+                        new(cancellationIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(cancellationIndex),
+                            }),
+                      };
+
+    await collection.Indexes.CreateManyAsync(sessionHandle,
+                                             indexModels)
+                    .ConfigureAwait(false);
   }
 }

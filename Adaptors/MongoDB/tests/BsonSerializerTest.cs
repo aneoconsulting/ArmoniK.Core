@@ -51,6 +51,7 @@ internal class BsonSerializerTest
   {
     var rdm = new SessionData("SessionId",
                               SessionStatus.Running,
+                              new [] {"part1", "part2"},
                               new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
@@ -64,6 +65,8 @@ internal class BsonSerializerTest
 
     Assert.AreEqual(rdm.SessionId,
                     deserialized.SessionId);
+    Assert.AreEqual(rdm.PartitionIds,
+                    deserialized.PartitionIds);
     Assert.IsNotNull(deserialized.Options);
     Assert.AreEqual(rdm.Options.MaxDuration,
                     deserialized.Options.MaxDuration);
@@ -114,6 +117,7 @@ internal class BsonSerializerTest
     var tdm = new TaskData("SessionId",
                            "TaskCompletedId",
                            "OwnerPodId",
+                           "PayloadId",
                            new[]
                            {
                              "parent1",
@@ -128,7 +132,6 @@ internal class BsonSerializerTest
                            },
                            Array.Empty<string>(),
                            TaskStatus.Completed,
-                           "",
                            new Core.Common.Storage.TaskOptions(new Dictionary<string, string>
                                                                {
                                                                  {
@@ -140,12 +143,8 @@ internal class BsonSerializerTest
                                                                },
                                                                TimeSpan.FromSeconds(200),
                                                                5,
-                                                               1),
-                           DateTime.Now,
-                           DateTime.Now + TimeSpan.FromSeconds(1),
-                           DateTime.Now + TimeSpan.FromSeconds(10),
-                           DateTime.Now + TimeSpan.FromSeconds(20),
-                           DateTime.Now,
+                                                               1,
+                                                               "part1"),
                            new Output(true,
                                       ""));
 
@@ -157,6 +156,8 @@ internal class BsonSerializerTest
     Assert.IsNotNull(deserialized.Options);
     Assert.AreEqual(tdm.Options.Priority,
                     deserialized.Options.Priority);
+    Assert.AreEqual(tdm.Options.PartitionId,
+                    deserialized.Options.PartitionId);
     Assert.IsNotNull(tdm.Options.Options);
     Assert.AreEqual(tdm.Options.Options["key1"],
                     deserialized.Options.Options["key1"]);

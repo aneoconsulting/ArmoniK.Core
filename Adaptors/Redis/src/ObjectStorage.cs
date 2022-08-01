@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -29,6 +29,8 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Worker.Options;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -46,6 +48,12 @@ public class ObjectStorage : IObjectStorage
   private readonly string                 objectStorageName_;
   private readonly IDatabaseAsync         redis_;
 
+  /// <summary>
+  /// <see cref="IObjectStorage"/> implementation for Redis
+  /// </summary>
+  /// <param name="redis">Connection to redis database</param>
+  /// <param name="objectStorageName">Name of the object storage used to differentiate them</param>
+  /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(IDatabaseAsync         redis,
                        string                 objectStorageName,
                        ILogger<ObjectStorage> logger)
@@ -134,9 +142,9 @@ public class ObjectStorage : IObjectStorage
     }
 
     foreach (var chunkTask in Enumerable.Range(0,
-                                                valuesCount)
-                                         .Select(index => redis_.StringGetAsync(objectStorageName_ + key + "_" + index))
-                                         .ToList())
+                                               valuesCount)
+                                        .Select(index => redis_.StringGetAsync(objectStorageName_ + key + "_" + index))
+                                        .ToList())
     {
       yield return await chunkTask.ConfigureAwait(false);
     }

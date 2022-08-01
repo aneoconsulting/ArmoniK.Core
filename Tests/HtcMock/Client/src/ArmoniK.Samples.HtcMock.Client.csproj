@@ -24,17 +24,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="ArmoniK.Api.Client" Version="3.0.0-SNAPSHOT.101.d9b6548" />
 	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
-	  <PackageReference Include="Serilog" Version="2.11.0" />
-	  <PackageReference Include="Serilog.Extensions.Hosting" Version="4.2.0" />
-	  <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
-	  <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
-	  <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="5.0.1" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
+    <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
 	  <PackageReference Include="Htc.Mock" Version="3.0.0-alpha11" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
+		<AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
 	</ItemGroup>
-
 </Project>

@@ -28,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Storage;
 
 using Output = ArmoniK.Api.gRPC.V1.Output;
@@ -54,15 +55,14 @@ class WorkerStreamHandlerErrorRetryTest : WorkerStreamHandlerBase
 
     var task = new Task(async () =>
                         {
-                          var request = await ChannelAsyncPipe.Reverse.Reader.FirstAsync(cancellationToken: cancellationToken)
-                                                   .ConfigureAwait(false);
+                          var request = await ChannelAsyncPipe.Reverse.ReadAsync(cancellationToken)
+                                                              .ConfigureAwait(false);
 
                           await ChannelAsyncPipe.Reverse.WriteAsync(new ProcessReply
                                                          {
                                                            Output = new Output
                                                                     {
                                                                       Ok     = new Empty(),
-                                                                      Status = TaskStatus.Completed,
                                                                     },
                                                          })
                                      .ConfigureAwait(false);

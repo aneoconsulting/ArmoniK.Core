@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -28,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -54,9 +55,16 @@ public interface ISubmitter
   Task<Count> CountTasks(TaskFilter        request,
                          CancellationToken cancellationToken);
 
-  Task<CreateSessionReply> CreateSession(string            sessionId,
-                                         TaskOptions       defaultTaskOptions,
-                                         CancellationToken cancellationToken);
+  Task<CreateSessionReply> CreateSession(string              sessionId,
+                                         IEnumerable<string> partitionIds,
+                                         TaskOptions         defaultTaskOptions,
+                                         CancellationToken   cancellationToken);
+
+  Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(SessionData                   sessionData,
+                                                                              string                        parentTaskId,
+                                                                              TaskOptions                   options,
+                                                                              IAsyncEnumerable<TaskRequest> taskRequests,
+                                                                              CancellationToken             cancellationToken);
 
   Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(string                        sessionId,
                                                                               string                        parentTaskId,
@@ -73,9 +81,6 @@ public interface ISubmitter
   Task StartTask(string            taskId,
                  CancellationToken cancellationToken = default);
 
-  Task<string?> ResubmitTask(TaskData          taskId,
-                             CancellationToken cancellationToken = default);
-
   Task<Configuration> GetServiceConfiguration(Empty             request,
                                               CancellationToken cancellationToken);
 
@@ -90,7 +95,8 @@ public interface ISubmitter
                              TaskStatus        status,
                              CancellationToken cancellationToken = default);
 
-  Task CompleteTaskAsync(string            id,
+  Task CompleteTaskAsync(TaskData          taskData,
+                         bool              resubmit,
                          Output            output,
                          CancellationToken cancellationToken = default);
 
@@ -100,12 +106,21 @@ public interface ISubmitter
   Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                    CancellationToken contextCancellationToken);
 
-  Task<GetStatusReply> GetStatusAsync(GetStatusrequest  request,
-                                      CancellationToken contextCancellationToken);
+  Task<GetTaskStatusReply> GetTaskStatusAsync(GetTaskStatusRequest request,
+                                              CancellationToken    contextCancellationToken);
+
+  Task<GetResultStatusReply> GetResultStatusAsync(GetResultStatusRequest request,
+                                                  CancellationToken      contextCancellationToken);
 
   Task<TaskIdList> ListTasksAsync(TaskFilter        request,
                                   CancellationToken contextCancellationToken);
 
   Task<SessionIdList> ListSessionsAsync(SessionFilter     request,
                                         CancellationToken contextCancellationToken);
+
+  Task SetResult(string                                 sessionId,
+                 string                                 ownerTaskId,
+                 string                                 key,
+                 IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
+                 CancellationToken                      cancellationToken);
 }

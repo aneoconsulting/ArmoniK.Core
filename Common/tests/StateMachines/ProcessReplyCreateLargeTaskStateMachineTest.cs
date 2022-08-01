@@ -136,6 +136,42 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   }
 
   [Test]
+  public void FSMShouldNotBeReusable()
+  {
+    sm_.InitRequest();
+
+    sm_.AddHeader();
+    sm_.AddDataChunk();
+    sm_.CompleteData();
+
+    sm_.AddHeader();
+    sm_.AddDataChunk();
+    sm_.CompleteData();
+
+    sm_.CompleteRequest();
+
+    Assert.Throws<InvalidOperationException>(() => sm_.InitRequest());
+  }
+
+  [Test]
+  public void FSMShouldNotBeReusable2()
+  {
+    sm_.InitRequest();
+
+    sm_.AddHeader();
+    sm_.AddDataChunk();
+    sm_.CompleteData();
+
+    sm_.AddHeader();
+    sm_.AddDataChunk();
+    sm_.CompleteData();
+
+    sm_.CompleteRequest();
+
+    Assert.Throws<InvalidOperationException>(() => sm_.AddHeader());
+  }
+
+  [Test]
   public void GenerateGraphShouldSucceed()
   {
     var str = sm_.GenerateGraph();

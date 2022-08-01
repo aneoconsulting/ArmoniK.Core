@@ -30,6 +30,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -52,11 +53,14 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public Task<bool> AreResultsAvailableAsync(string              sessionId,
-                                             IEnumerable<string> keys,
-                                             CancellationToken   cancellationToken = default)
-    => Task.FromResult(keys.All(key => results_[sessionId][key]
-                                  .Status == ResultStatus.Completed));
+  public Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
+                                                                       IEnumerable<string> keys,
+                                                                       CancellationToken   cancellationToken = default)
+    => Task.FromResult(results_[sessionId]
+                       .Where(model => keys.Contains(model.Value.Name))
+                       .GroupBy(model => model.Value.Status)
+                       .Select(models => new ResultStatusCount(models.Key,
+                                                               models.Count())));
 
   /// <inheritdoc />
   public Task ChangeResultOwnership(string                                                 sessionId,
@@ -190,6 +194,41 @@ public class ResultTable : IResultTable
                    Status = ResultStatus.Completed,
                  },
                  result);
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
+                                                                                string              sessionId,
+                                                                                CancellationToken   cancellationToken = default)
+  {
+    return Task.FromResult(results_[sessionId]
+                           .Where(model => ids.Contains(model.Key))
+                           .Select(model => new GetResultStatusReply.Types.IdStatus
+                                            {
+                                              ResultId = model.Value.Name,
+                                              Status   = model.Value.Status,
+                                            }));
+  }
+
+  /// <inheritdoc />
+  public Task AbortTaskResults(string            sessionId,
+                               string            ownerTaskId,
+                               CancellationToken cancellationToken = default)
+  {
+    foreach (var result in results_[sessionId]
+                           .Values.ToImmutableList()
+                           .Where(result => result.OwnerTaskId == ownerTaskId))
+    {
+      results_[result.SessionId]
+        .TryUpdate(result.Name,
+                   result with
+                   {
+                     Status = ResultStatus.Aborted,
+                   },
+                   result);
+    }
+
     return Task.CompletedTask;
   }
 

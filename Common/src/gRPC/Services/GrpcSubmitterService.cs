@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 
 using Grpc.Core;
@@ -36,7 +37,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
+public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBase
 {
   private readonly ISubmitter                    submitter_;
   private readonly ILogger<GrpcSubmitterService> logger_;
@@ -114,6 +115,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
   {
     try
     {
+      logger_.LogTrace("request received {request}",
+                       request);
       await submitter_.CancelTasks(request,
                                    context.CancellationToken)
                       .ConfigureAwait(false);
@@ -142,6 +145,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     try
     {
       return submitter_.CreateSession(request.Id,
+                                      request.PartitionIds,
                                       request.DefaultTaskOption,
                                       context.CancellationToken);
     }
@@ -458,32 +462,63 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.SubmitterBase
     }
   }
 
-  public override Task<GetStatusReply> GetStatus(GetStatusrequest  request,
-                                                 ServerCallContext context)
+  public override Task<GetTaskStatusReply> GetTaskStatus(GetTaskStatusRequest request,
+                                                         ServerCallContext    context)
   {
     try
     {
-      return submitter_.GetStatusAsync(request,
-                                       context.CancellationToken);
+      return submitter_.GetTaskStatusAsync(request,
+                                           context.CancellationToken);
     }
     catch (TaskNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting status");
+                         "Error while getting status");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting status");
+                         "Error while getting status");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while getting status");
+                         "Error while getting status");
+      throw new RpcException(new Status(StatusCode.Unknown,
+                                        "Unknown Exception, see Submitter logs"));
+    }
+  }
+
+  public override Task<GetResultStatusReply> GetResultStatus(GetResultStatusRequest request,
+                                                             ServerCallContext      context)
+  {
+    try
+    {
+      return submitter_.GetResultStatusAsync(request,
+                                             context.CancellationToken);
+    }
+    catch (ResultNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting status");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result not found"));
+    }
+    catch (ArmoniKException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting status");
+      throw new RpcException(new Status(StatusCode.Internal,
+                                        "Internal Armonik Exception, see Submitter logs"));
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while getting status");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }

@@ -28,6 +28,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -49,15 +50,16 @@ public class SessionTableTestBase
 
     if (RunTests)
     {
-      SessionTable.CreateSessionDataAsync(RootSessionId,
-                                          "TaskId",
-                                          new TaskOptions
-                                          {
-                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                            MaxRetries = 2,
-                                            Priority = 1,
-                                          },
-                                          CancellationToken.None)
+      SessionTable.SetSessionDataAsync(RootSessionId,
+                                       new [] { "part1", "part2" },
+                                       new TaskOptions
+                                       {
+                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                         MaxRetries = 2,
+                                         Priority = 1,
+                                         PartitionId = "part1",
+                                       },
+                                       CancellationToken.None)
                   .Wait();
     }
   }

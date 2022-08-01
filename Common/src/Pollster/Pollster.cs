@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -27,10 +27,13 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Worker.Options;
+using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -44,44 +47,55 @@ public class Pollster
   private readonly IHostApplicationLifetime lifeTime_;
   private readonly ILogger<Pollster>        logger_;
   private readonly int                      messageBatchSize_;
-  private readonly PreconditionChecker      preconditionChecker_;
   private readonly IQueueStorage            queueStorage_;
   private readonly IObjectStorageFactory    objectStorageFactory_;
   private readonly IResultTable             resultTable_;
   private readonly ISubmitter               submitter_;
+  private readonly ISessionTable            sessionTable_;
+  private readonly ITaskTable               taskTable_;
+  private readonly ITaskProcessingChecker   taskProcessingChecker_;
   private readonly IWorkerStreamHandler     workerStreamHandler_;
-
+  private readonly IAgentHandler            agentHandler_;
+  public           string                   TaskProcessing;
+  private readonly string                   ownerPodId_;
 
   public Pollster(IQueueStorage            queueStorage,
-                  PreconditionChecker      preconditionChecker,
                   DataPrefetcher           dataPrefetcher,
-                  ComputePlan              options,
+                  ComputePlane             options,
                   IHostApplicationLifetime lifeTime,
                   ActivitySource           activitySource,
                   ILogger<Pollster>        logger,
                   IObjectStorageFactory    objectStorageFactory,
                   IResultTable             resultTable,
                   ISubmitter               submitter,
-                  IWorkerStreamHandler     workerStreamHandler
-                  )
+                  ISessionTable            sessionTable,
+                  ITaskTable               taskTable,
+                  ITaskProcessingChecker   taskProcessingChecker,
+                  IWorkerStreamHandler     workerStreamHandler,
+                  IAgentHandler            agentHandler)
   {
     if (options.MessageBatchSize < 1)
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"The minimum value for {nameof(ComputePlan.MessageBatchSize)} is 1.");
+                                            $"The minimum value for {nameof(ComputePlane.MessageBatchSize)} is 1.");
     }
 
-    logger_               = logger;
-    activitySource_       = activitySource;
-    queueStorage_         = queueStorage;
-    lifeTime_             = lifeTime;
-    preconditionChecker_  = preconditionChecker;
-    dataPrefetcher_       = dataPrefetcher;
-    messageBatchSize_     = options.MessageBatchSize;
-    objectStorageFactory_ = objectStorageFactory;
-    resultTable_          = resultTable;
-    submitter_            = submitter;
-    workerStreamHandler_  = workerStreamHandler;
+    logger_                = logger;
+    activitySource_        = activitySource;
+    queueStorage_          = queueStorage;
+    lifeTime_              = lifeTime;
+    dataPrefetcher_        = dataPrefetcher;
+    messageBatchSize_      = options.MessageBatchSize;
+    objectStorageFactory_  = objectStorageFactory;
+    resultTable_           = resultTable;
+    submitter_             = submitter;
+    sessionTable_          = sessionTable;
+    taskTable_             = taskTable;
+    taskProcessingChecker_ = taskProcessingChecker;
+    workerStreamHandler_   = workerStreamHandler;
+    agentHandler_          = agentHandler;
+    TaskProcessing         = "";
+    ownerPodId_            = LocalIPv4.GetLocalIPv4Ethernet();
   }
 
   public async Task Init(CancellationToken cancellationToken)
@@ -90,14 +104,16 @@ public class Pollster
                        .ConfigureAwait(false);
     await dataPrefetcher_.Init(cancellationToken)
                          .ConfigureAwait(false);
-    await preconditionChecker_.Init(cancellationToken)
-                              .ConfigureAwait(false);
     await workerStreamHandler_.Init(cancellationToken)
                               .ConfigureAwait(false);
     await objectStorageFactory_.Init(cancellationToken)
                                .ConfigureAwait(false);
     await resultTable_.Init(cancellationToken)
                       .ConfigureAwait(false);
+    await sessionTable_.Init(cancellationToken)
+                       .ConfigureAwait(false);
+    await taskTable_.Init(cancellationToken)
+                    .ConfigureAwait(false);
   }
 
   public async Task MainLoop(CancellationToken cancellationToken)
@@ -120,11 +136,10 @@ public class Pollster
         await foreach (var message in messages.WithCancellation(cancellationToken)
                                               .ConfigureAwait(false))
         {
-          await using var msg = message;
-
           using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
                                                            ("messageHandler", message.MessageId),
                                                            ("taskId", message.TaskId));
+          TaskProcessing = "";
 
           using var activity = activitySource_.StartActivity("ProcessQueueMessage");
           activity?.SetBaggage("TaskId",
@@ -138,49 +153,46 @@ public class Pollster
                                                                             cancellationToken);
           try
           {
-            logger_.LogDebug("Loading task data");
+            await using var taskHandler = new TaskHandler(sessionTable_,
+                                                          taskTable_,
+                                                          resultTable_,
+                                                          submitter_,
+                                                          dataPrefetcher_,
+                                                          workerStreamHandler_,
+                                                          message,
+                                                          taskProcessingChecker_,
+                                                          ownerPodId_,
+                                                          activitySource_,
+                                                          agentHandler_,
+                                                          logger_);
 
-            var precondition = await preconditionChecker_.CheckPreconditionsAsync(message,
-                                                                                  cancellationToken)
-                                                         .ConfigureAwait(false);
+            var precondition = await taskHandler.AcquireTask(combinedCts.Token)
+                                                .ConfigureAwait(false);
 
-            if (precondition is not null)
+            if (precondition)
             {
-              var taskData = precondition;
+              TaskProcessing = taskHandler.GetAcquiredTask();
 
-              logger_.LogDebug("Start prefetch data");
-              var computeRequestStream = await dataPrefetcher_.PrefetchDataAsync(taskData,
-                                                                                 cancellationToken)
-                                                              .ConfigureAwait(false);
+              await taskHandler.PreProcessing(combinedCts.Token)
+                               .ConfigureAwait(false);
 
-              logger_.LogDebug("Start a new Task to process the messageHandler");
-              using var requestProcessor = new RequestProcessor(workerStreamHandler_,
-                                                                objectStorageFactory_,
-                                                                logger_,
-                                                                submitter_,
-                                                                resultTable_,
-                                                                activitySource_);
+              await taskHandler.ExecuteTask(combinedCts.Token)
+                               .ConfigureAwait(false);
 
-              var processResult = await requestProcessor.ProcessAsync(message,
-                                                                      taskData,
-                                                                      computeRequestStream,
-                                                                      cancellationToken)
-                                                        .ConfigureAwait(false);
+              logger_.LogDebug("Complete task processing");
 
-              logger_.LogDebug("CompleteProcessing task processing");
-
-
-              await processResult.ConfigureAwait(false);
+              await taskHandler.PostProcessing(combinedCts.Token)
+                               .ConfigureAwait(false);
 
               logger_.LogDebug("Task returned");
             }
           }
           catch (Exception e)
           {
-            logger_.LogWarning(e,
-                               "Error with messageHandler {messageId}",
-                               message.MessageId);
-            throw;
+            logger_.LogError(e,
+                             "Error with messageHandler {messageId}",
+                             message.MessageId);
+            combinedCts.Cancel();
           }
         }
       }

@@ -147,7 +147,8 @@ public class ComputeRequestStateMachine
 
     if (logger_.IsEnabled(LogLevel.Debug))
     {
-      machine_.OnTransitioned(t => logger_.LogDebug("OnTransitioned: {Source} -> {Destination}",
+      machine_.OnTransitioned(t => logger_.LogDebug("OnTransitioned {FSM}: {Source} -> {Destination}",
+                                                    nameof(ComputeRequestStateMachine),
                                                     t.Source,
                                                     t.Destination));
     }

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -24,54 +24,47 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.Worker.Utils;
+using ArmoniK.Api.Worker.Worker;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Stream.Worker;
 
 using Google.Protobuf;
+
+using Grpc.Core;
 
 using Htc.Mock.Core;
 
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-
-namespace ArmoniK.Samples.HtcMock.GridWorker;
+namespace ArmoniK.Samples.HtcMock.Server;
 
 public class SampleComputerService : WorkerStreamWrapper
 {
-  [SuppressMessage("CodeQuality",
-                   "IDE0052:Remove unread private members",
-                   Justification = "Used for side effects")]
-  private readonly ApplicationLifeTimeManager applicationLifeTime_;
-
-  private readonly ILoggerFactory loggerFactory_;
-
-  public SampleComputerService(ILoggerFactory             loggerFactory,
-                               ApplicationLifeTimeManager applicationLifeTime)
-    : base(loggerFactory)
+  public SampleComputerService(ILoggerFactory      loggerFactory,
+                               GrpcChannelProvider provider)
+    : base(loggerFactory,
+           provider)
   {
-    logger_              = loggerFactory.CreateLogger<SampleComputerService>();
-    loggerFactory_       = loggerFactory;
-    applicationLifeTime_ = applicationLifeTime;
+    logger_ = loggerFactory.CreateLogger<SampleComputerService>();
   }
 
   public override async Task<Output> Process(ITaskHandler taskHandler)
   {
     using var scopedLog = logger_.BeginNamedScope("Execute task",
-                                                  ("Session", taskHandler.SessionId),
+                                                  ("sessionId", taskHandler.SessionId),
                                                   ("taskId", taskHandler.TaskId));
     logger_.LogTrace("DataDependencies {DataDependencies}",
                      taskHandler.DataDependencies.Keys);
     logger_.LogTrace("ExpectedResults {ExpectedResults}",
                      taskHandler.ExpectedResults);
 
-    Output output;
     try
     {
       var (runConfiguration, request) = DataAdapter.ReadPayload(taskHandler.Payload);
@@ -94,12 +87,12 @@ public class SampleComputerService : WorkerStreamWrapper
       logger_.LogDebug("Inputs {input}",
                        inputs);
 
-      var fastCompute = bool.Parse(taskHandler.TaskOptions.GetValueOrDefault("FastCompute",
-                                                                             "true"));
-      var useLowMem = bool.Parse(taskHandler.TaskOptions.GetValueOrDefault("UseLowMem",
-                                                                           "true"));
-      var smallOutput = bool.Parse(taskHandler.TaskOptions.GetValueOrDefault("SmallOutput",
-                                                                             "true"));
+      var fastCompute = bool.Parse(taskHandler.TaskOptions.Options.GetValueOrDefault("FastCompute",
+                                                                                     "true"));
+      var useLowMem = bool.Parse(taskHandler.TaskOptions.Options.GetValueOrDefault("UseLowMem",
+                                                                                   "true"));
+      var smallOutput = bool.Parse(taskHandler.TaskOptions.Options.GetValueOrDefault("SmallOutput",
+                                                                                     "true"));
 
       logger_.LogDebug("Execute HtcMock request with FastCompute {FastCompute}, UseLowMem {UseLowMem} and SmallOutput {SmallOutput}",
                        fastCompute,
@@ -124,7 +117,7 @@ public class SampleComputerService : WorkerStreamWrapper
       }
       else
       {
-        var requests = res.SubRequests.GroupBy(r => r.Dependencies is null || r.Dependencies.Count == 0)
+        var requests = res.SubRequests.GroupBy(r => r.Dependencies.Count == 0)
                           .ToDictionary(g => g.Key,
                                         g => g);
         logger_.LogDebug("Will submit {count} new tasks",
@@ -134,7 +127,7 @@ public class SampleComputerService : WorkerStreamWrapper
         await taskHandler.CreateTasksAsync(readyRequests.Select(r =>
                                                                 {
                                                                   var taskId = taskHandler.SessionId + "%" + r.Id;
-                                                                  logger_.LogDebug("Create task {taskId}",
+                                                                  logger_.LogDebug("Create task {task}",
                                                                                    taskId);
                                                                   return new TaskRequest
                                                                          {
@@ -167,35 +160,75 @@ public class SampleComputerService : WorkerStreamWrapper
                                                },
                                                ExpectedOutputKeys =
                                                {
-                                                 taskHandler.TaskId,
+                                                 taskHandler.ExpectedResults,
                                                },
                                              },
                                            })
                          .ConfigureAwait(false);
       }
 
-      output = new Output
+      var taskError = taskHandler.TaskOptions.Options.GetValueOrDefault("TaskError",
+                                                                        string.Empty);
+
+      if (taskError != string.Empty && taskHandler.TaskId.EndsWith(taskError))
+      {
+        logger_.LogInformation("Return Deterministic Error Output");
+        return new Output
                {
-                 Ok     = new Empty(),
-                 Status = TaskStatus.Completed,
+                 Error = new Output.Types.Error
+                         {
+                           Details = "Deterministic Error",
+                         },
                };
+      }
+
+      var taskRpcException = taskHandler.TaskOptions.Options.GetValueOrDefault("TaskRpcException",
+                                                                               string.Empty);
+
+      if (taskRpcException != string.Empty && taskHandler.TaskId.EndsWith(taskRpcException))
+      {
+        throw new RpcException(new Status(StatusCode.Internal,
+                                          "Deterministic Exception"));
+      }
+
+      return new Output
+             {
+               Ok = new Empty(),
+             };
     }
+    catch (RpcException ex)
+    {
+      var taskRpcException = taskHandler.TaskOptions.Options.GetValueOrDefault("TaskRpcException",
+                                                                               string.Empty);
+      if (taskRpcException != string.Empty && taskHandler.TaskId.EndsWith(taskRpcException))
+      {
+        throw;
+      }
+
+      logger_.LogError(ex,
+                       "Error while computing task");
+
+      return new Output
+             {
+               Error = new Output.Types.Error
+                       {
+                         Details = ex.Message + ex.StackTrace,
+                       },
+             };
+    }
+
     catch (Exception ex)
     {
       logger_.LogError(ex,
                        "Error while computing task");
 
-      output = new Output
-               {
-                 Error = new Output.Types.Error
-                         {
-                           Details      = ex.Message + ex.StackTrace,
-                           KillSubTasks = true,
-                         },
-                 Status = TaskStatus.Error,
-               };
+      return new Output
+             {
+               Error = new Output.Types.Error
+                       {
+                         Details = ex.Message + ex.StackTrace,
+                       },
+             };
     }
-
-    return output;
   }
 }

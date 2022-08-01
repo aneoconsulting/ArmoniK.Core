@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
@@ -42,7 +42,7 @@ public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
   protected WorkerStreamHandlerBase()
   {
     TaskList         = new List<Task>();
-    ChannelAsyncPipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>();
+    ChannelAsyncPipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>(new ProcessReply());
   }
 
   public ValueTask<bool> Check(HealthCheckTag tag)

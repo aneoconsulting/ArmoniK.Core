@@ -23,13 +23,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Utils;
 
-public interface IAsyncPipe<out TReadMessage, in TWriteMessage>
+public interface IAsyncPipe<TReadMessage, in TWriteMessage>
 {
-  IAsyncEnumerable<TReadMessage> Reader { get; }
+  Task<TReadMessage> ReadAsync(CancellationToken cancellationToken);
 
   Task WriteAsync(TWriteMessage message);
 

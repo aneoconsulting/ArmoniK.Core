@@ -36,4 +36,8 @@
     <ProjectReference Include="..\..\Adaptors\MongoDB\src\ArmoniK.Core.Adapters.MongoDB.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+	<AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+  </ItemGroup>
+
 </Project>
