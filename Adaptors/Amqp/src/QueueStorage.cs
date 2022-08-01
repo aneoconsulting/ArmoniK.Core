@@ -47,13 +47,13 @@ public class QueueStorage : IQueueStorage
 {
   private const int MaxInternalQueuePriority = 10;
 
-  private readonly ILogger<QueueStorage>      logger_;
+  private readonly ILogger<QueueStorage> logger_;
+
+  private readonly int                        nbLinks_;
   private readonly AsyncLazy<IReceiverLink>[] receivers_;
   private readonly AsyncLazy<ISenderLink>[]   senders_;
 
   private bool isInitialized_;
-
-  private readonly int nbLinks_;
 
   public QueueStorage(Options.Amqp           options,
                       IProviderBase<Session> sessionProvider,

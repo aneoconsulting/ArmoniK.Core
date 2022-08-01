@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -23,12 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-
-using Amqp;
-using Amqp.Framing;
 
 using ArmoniK.Core.Common.Injection;
 
@@ -45,8 +39,9 @@ public class SessionProvider : ProviderBase<SessionAmqp>
     : base(async () =>
            {
              var session = new SessionAmqp(options,
-                                       logger);
-             await session.OpenConnection().ConfigureAwait(false);
+                                           logger);
+             await session.OpenConnection()
+                          .ConfigureAwait(false);
 
              return session;
            })
@@ -81,5 +76,4 @@ public class SessionProvider : ProviderBase<SessionAmqp>
                                       $"Contains a null or empty {nameof(options.Scheme)} field");
     }
   }
-
 }
