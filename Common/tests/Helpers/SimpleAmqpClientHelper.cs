@@ -22,18 +22,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Extensions.Logging;
-using Amqp;
 using System;
 using System.Threading.Tasks;
+
+using Amqp;
+
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleAmqpClientHelper : IAsyncDisposable
 {
+  private readonly Connection     connection_;
   private readonly ILoggerFactory loggerFactory_;
-  private readonly Connection connection_;
-  public  Session        Session { get; }
 
   public SimpleAmqpClientHelper()
   {
@@ -43,13 +44,17 @@ public class SimpleAmqpClientHelper : IAsyncDisposable
     var address = new Address("amqp://guest:guest@localhost:5672");
 
     connection_ = new Connection(address);
-    Session = new Session(connection_);
+    Session     = new Session(connection_);
   }
+
+  public Session Session { get; }
 
   public async ValueTask DisposeAsync()
   {
-    await Session.CloseAsync().ConfigureAwait(false);
-    await connection_.CloseAsync().ConfigureAwait(false);
+    await Session.CloseAsync()
+                 .ConfigureAwait(false);
+    await connection_.CloseAsync()
+                     .ConfigureAwait(false);
     GC.SuppressFinalize(this);
   }
 }
