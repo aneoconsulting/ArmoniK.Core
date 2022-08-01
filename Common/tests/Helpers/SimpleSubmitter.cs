@@ -69,6 +69,26 @@ public class SimpleSubmitter : ISubmitter
                                 CancellationToken cancellationToken)
     => Task.FromResult(DefaultCount);
 
+  public Task<CreateSessionReply> CreateSession(string              sessionId,
+                                                IEnumerable<string> partitionIds,
+                                                TaskOptions         defaultTaskOptions,
+                                                CancellationToken   cancellationToken)
+    => Task.FromResult(new CreateSessionReply
+                       {
+                         Ok = new Empty(),
+                       });
+
+  public async Task<(IEnumerable<TaskRequest> requests, int priority)> CreateTasks(SessionData                                 sessionData,
+                                                                             string                                      parentTaskId,
+                                                                             TaskOptions                                 options,
+                                                                             IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
+                                                                             CancellationToken                           cancellationToken)
+    => (await taskRequests.Select(r => new TaskRequest(r.Id,
+                                                       r.ExpectedOutputKeys,
+                                                       r.DataDependencies))
+                          .ToArrayAsync(cancellationToken: cancellationToken)
+                          .ConfigureAwait(false), 1);
+
   public Task<CreateSessionReply> CreateSession(string            sessionId,
                                                 TaskOptions       defaultTaskOptions,
                                                 CancellationToken cancellationToken)
@@ -111,9 +131,9 @@ public class SimpleSubmitter : ISubmitter
                            CancellationToken                cancellationToken)
     => Task.CompletedTask;
 
-  public async Task<Count> WaitForCompletion(WaitRequest       request,
+  public Task<Count> WaitForCompletion(WaitRequest       request,
                                              CancellationToken cancellationToken)
-    => DefaultCount;
+    => Task.FromResult(DefaultCount);
 
   public Task UpdateTaskStatusAsync(string            id,
                                     TaskStatus        status,
