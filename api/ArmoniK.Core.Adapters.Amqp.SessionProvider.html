@@ -83,6 +83,7 @@
   </div>
   <div class="implements">
     <h5>Implements</h5>
+    <div><a class="xref" href="ArmoniK.Core.Common.Injection.IProviderBase-1.html">IProviderBase</a>&lt;<span class="xref">Session</span>&gt;</div>
     <div><a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a></div>
   </div>
   <div class="inheritedMembers">
@@ -98,7 +99,7 @@
   <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.Amqp.dll</h6>
   <h5 id="ArmoniK_Core_Adapters_Amqp_SessionProvider_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class SessionProvider : ProviderBase&lt;Session&gt;, IHealthCheckProvider</code></pre>
+    <pre><code class="lang-csharp hljs">public class SessionProvider : ProviderBase&lt;Session&gt;, IProviderBase&lt;Session&gt;, IHealthCheckProvider</code></pre>
   </div>
   <h3 id="constructors">Constructors
   </h3>
@@ -140,6 +141,9 @@
     </tbody>
   </table>
   <h3 id="implements">Implements</h3>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.Injection.IProviderBase-1.html">IProviderBase&lt;T&gt;</a>
+  </div>
   <div>
       <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a>
   </div>
