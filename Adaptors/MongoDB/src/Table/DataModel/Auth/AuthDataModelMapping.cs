@@ -67,6 +67,7 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
                                            IMongoCollection<AuthData> collection)
   {
     var fingerprintIndex = Builders<AuthData>.IndexKeys.Descending(model => model.Fingerprint);
+    var fingerprintHashedIndex = Builders<AuthData>.IndexKeys.Hashed(model => model.Fingerprint);
     var cnIndex          = Builders<AuthData>.IndexKeys.Ascending(model => model.CN);
     var compoundIndex = Builders<AuthData>.IndexKeys.Combine(cnIndex,
                                                              fingerprintIndex);
@@ -78,6 +79,11 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
                             new CreateIndexOptions
                             {
                               Name = nameof(fingerprintIndex),
+                            }),
+                        new(fingerprintHashedIndex,
+                            new CreateIndexOptions
+                            {
+                              Name = nameof(fingerprintHashedIndex),
                             }),
                         new(cnIndex,
                             new CreateIndexOptions

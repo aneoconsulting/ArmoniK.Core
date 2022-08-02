@@ -46,7 +46,7 @@ public class MockIdentity : UserIdentity
                       IEnumerable<MockCertificate>        certificates,
                       IEnumerable<string>                 roles,
                       IEnumerable<Permissions.Permission> permissions,
-                      [CanBeNull] string                  authenticationType)
+                      string?                             authenticationType)
     : base(new UserAuthenticationResult(userId,
                                         username,
                                         roles,

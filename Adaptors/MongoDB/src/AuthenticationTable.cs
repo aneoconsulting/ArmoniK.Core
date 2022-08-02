@@ -28,8 +28,6 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
 
-using JetBrains.Annotations;
-
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -41,8 +39,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-
-using ArmoniK.Core.Adapters.MongoDB.Table;
 
 using MongoDB.Bson.Serialization;
 
@@ -57,8 +53,8 @@ public class AuthenticationTable : IAuthenticationTable
   private readonly MongoCollectionProvider<UserData, UserDataModelMapping> userCollectionProvider_;
   private          bool                                                    isInitialized_;
 
-  private PipelineDefinition<UserData, UserAuthenticationResult> userToIdentityPipeline_;
-  private PipelineDefinition<AuthData, UserAuthenticationResult> authToIdentityPipeline_;
+  private PipelineDefinition<UserData, UserAuthenticationResult>? userToIdentityPipeline_;
+  private PipelineDefinition<AuthData, UserAuthenticationResult>? authToIdentityPipeline_;
 
   static AuthenticationTable()
   {
@@ -121,12 +117,11 @@ public class AuthenticationTable : IAuthenticationTable
     return Task.CompletedTask;
   }
 
-  [ItemCanBeNull]
-  private static async Task<UserAuthenticationResult> GetIdentityFromPipeline<TCollectionDataType>(IClientSessionHandle sessionHandle,
-                                                                                                   IMongoCollection<TCollectionDataType> collection,
-                                                                                                   PipelineDefinition<TCollectionDataType, UserAuthenticationResult> pipeline,
-                                                                                                   Expression<Func<TCollectionDataType, bool>> matchingFunctions,
-                                                                                                   CancellationToken cancellationToken)
+  private static async Task<UserAuthenticationResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle sessionHandle,
+                                                                                                         IMongoCollection<TCollectionDataType> collection,
+                                                                                                         PipelineDefinition<TCollectionDataType, UserAuthenticationResult> pipeline,
+                                                                                                         Expression<Func<TCollectionDataType, bool>> matchingFunctions,
+                                                                                                         CancellationToken cancellationToken = default)
   {
     var pipe =
       new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserAuthenticationResult>(PipelineStageDefinitionBuilder.Match(matchingFunctions),
@@ -141,14 +136,14 @@ public class AuthenticationTable : IAuthenticationTable
                            .ConfigureAwait(false);
   }
 
-  public async Task<UserAuthenticationResult> GetIdentityFromCertificateAsync(string            cn,
+  public async Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
                                                                string            fingerprint,
                                                                CancellationToken cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromCertificateAsync)}");
     var       authCollection = authCollectionProvider_.Get();
     var       sessionHandle  = sessionProvider_.Get();
-    return await GetIdentityFromPipeline(sessionHandle,
+    return await GetIdentityFromPipelineAsync(sessionHandle,
                                          authCollection,
                                          GetAuthToIdentityPipeline(),
                                          auth => auth.CN == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
@@ -156,9 +151,9 @@ public class AuthenticationTable : IAuthenticationTable
              .ConfigureAwait(false);
   }
 
-  public async Task<UserAuthenticationResult> GetIdentityFromUserAsync([CanBeNull] string id,
-                                                                       [CanBeNull]            string username,
-                                                                       CancellationToken  cancellationToken = default)
+  public async Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,
+                                                                       string?            username,
+                                                                       CancellationToken cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromUserAsync)}");
     var       userCollection = userCollectionProvider_.Get();
@@ -177,7 +172,7 @@ public class AuthenticationTable : IAuthenticationTable
       return null;
     }
 
-    return await GetIdentityFromPipeline(sessionHandle,
+    return await GetIdentityFromPipelineAsync(sessionHandle,
                                          userCollection,
                                          GetUserToIdentityPipeline(),
                                          expression,
@@ -189,7 +184,9 @@ public class AuthenticationTable : IAuthenticationTable
   private PipelineDefinition<UserData, UserAuthenticationResult> GetUserToIdentityPipeline()
   {
     if (userToIdentityPipeline_ != null)
+    {
       return userToIdentityPipeline_;
+    }
     var lookup = PipelineStageDefinitionBuilder.Lookup<UserData, RoleData, UserDataAfterLookup>(roleCollectionProvider_.Get(),
                                                                                                 u => u.Roles,
                                                                                                 r => r.RoleId,
@@ -223,7 +220,9 @@ public class AuthenticationTable : IAuthenticationTable
   private PipelineDefinition<AuthData, UserAuthenticationResult> GetAuthToIdentityPipeline()
   {
     if (authToIdentityPipeline_ != null)
+    {
       return authToIdentityPipeline_;
+    }
     var userToIdentityPipeline = GetUserToIdentityPipeline();
     var sortByRelevance        = PipelineStageDefinitionBuilder.Sort(new SortDefinitionBuilder<AuthData>().Descending(authData => authData.Fingerprint));
     var limit                  = PipelineStageDefinitionBuilder.Limit<AuthData>(1);
@@ -232,14 +231,14 @@ public class AuthenticationTable : IAuthenticationTable
                                                                                                 user => user.UserId,
                                                                                                 authAfterLookup => authAfterLookup.UserData);
     var checkIfValid = PipelineStageDefinitionBuilder.Match<AuthDataAfterLookup>(doc => doc.UserData.Any());
-    var replaceroot  = PipelineStageDefinitionBuilder.ReplaceRoot<AuthDataAfterLookup, UserData>(doc => doc.UserData.First());
+    var replaceRoot  = PipelineStageDefinitionBuilder.ReplaceRoot<AuthDataAfterLookup, UserData>(doc => doc.UserData.First());
     var pipeline = new IPipelineStageDefinition[]
                    {
                      sortByRelevance,
                      limit,
                      lookup,
                      checkIfValid,
-                     replaceroot,
+                     replaceRoot,
                    }.Concat(userToIdentityPipeline.Stages);
     authToIdentityPipeline_ = new PipelineStagePipelineDefinition<AuthData, UserAuthenticationResult>(pipeline);
     return authToIdentityPipeline_;

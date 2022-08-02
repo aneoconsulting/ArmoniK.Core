@@ -41,10 +41,10 @@ public class PermissionTest
                                     "prefix",
                                     "name",
                                     Permissions.Default)]
-  public void PermissionFromStringShouldMatch(string             actionName,
-                                              [CanBeNull] string prefix,
-                                              [CanBeNull] string name,
-                                              [CanBeNull] string suffix)
+  public void PermissionFromStringShouldMatch(string  actionName,
+                                              string? prefix,
+                                              string? name,
+                                              string? suffix)
   {
     var perm = new Permissions.Permission(actionName);
     Assert.AreEqual(perm.Service,

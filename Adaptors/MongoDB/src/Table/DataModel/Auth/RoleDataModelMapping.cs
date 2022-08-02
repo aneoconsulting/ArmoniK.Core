@@ -65,7 +65,7 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                            IMongoCollection<RoleData> collection)
   {
-    var rolenameIndex = Builders<RoleData>.IndexKeys.Text(model => model.RoleName);
+    var rolenameIndex       = Builders<RoleData>.IndexKeys.Text(model => model.RoleName);
     var rolenameIndexHashed = Builders<RoleData>.IndexKeys.Hashed(model => model.RoleName);
     var indexModels = new CreateIndexModel<RoleData>[]
                       {
@@ -78,7 +78,7 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
                         new(rolenameIndexHashed,
                             new CreateIndexOptions()
                             {
-                              Name   = nameof(rolenameIndexHashed),
+                              Name = nameof(rolenameIndexHashed),
                             }),
                       };
 

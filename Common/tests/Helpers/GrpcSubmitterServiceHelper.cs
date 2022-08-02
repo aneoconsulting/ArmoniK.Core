@@ -33,34 +33,23 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Tests.Auth;
 
-using DnsClient;
-
 using Grpc.Net.Client;
 
-using JetBrains.Annotations;
-
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-
-using Moq;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class GrpcSubmitterServiceHelper : IDisposable
 {
   private readonly WebApplication     app_;
-  [CanBeNull]
-  private          TestServer         server_;
-  [CanBeNull]
-  private          HttpMessageHandler handler_;
+  private TestServer? server_;
+  private HttpMessageHandler? handler_;
   private readonly ILoggerFactory     loggerFactory_;
-  [CanBeNull]
-  private          GrpcChannel        channel_;
+  private GrpcChannel? channel_;
 
   public GrpcSubmitterServiceHelper(ISubmitter submitter, List<MockIdentity> authIdentities, AuthenticatorOptions authOptions, LogLevel loglevel)
   {

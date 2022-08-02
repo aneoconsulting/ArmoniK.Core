@@ -53,7 +53,11 @@ internal class BsonSerializerTest
   {
     var rdm = new SessionData("SessionId",
                               SessionStatus.Running,
-                              new [] {"part1", "part2"},
+                              new[]
+                              {
+                                "part1",
+                                "part2"
+                              },
                               new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
@@ -267,17 +271,17 @@ internal class BsonSerializerTest
   public void SerializeUserAuthenticationResult()
   {
     var uirm = new UserAuthenticationResult("Id",
-                                      "Username",
-                                      new[]
-                                      {
-                                        "RoleName1",
-                                        "RoleName2",
-                                      },
-                                      new[]
-                                      {
-                                        "Permission1:test",
-                                        "Permission2:test:*",
-                                      });
+                                            "Username",
+                                            new[]
+                                            {
+                                              "RoleName1",
+                                              "RoleName2",
+                                            },
+                                            new[]
+                                            {
+                                              "Permission1:test",
+                                              "Permission2:test:*",
+                                            });
     var serialized   = uirm.ToBson();
     var deserialized = BsonSerializer.Deserialize<UserAuthenticationResult>(serialized);
     Assert.IsNotNull(deserialized);

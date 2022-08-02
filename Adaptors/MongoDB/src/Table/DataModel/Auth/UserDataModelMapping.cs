@@ -65,7 +65,7 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                            IMongoCollection<UserData> collection)
   {
-    var usernameIndex = Builders<UserData>.IndexKeys.Text(model => model.Username);
+    var usernameIndex       = Builders<UserData>.IndexKeys.Text(model => model.Username);
     var usernameIndexHashed = Builders<UserData>.IndexKeys.Hashed(model => model.Username);
 
     var indexModels = new CreateIndexModel<UserData>[]
@@ -79,7 +79,7 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
                         new(usernameIndexHashed,
                             new CreateIndexOptions
                             {
-                              Name   = nameof(usernameIndexHashed)
+                              Name = nameof(usernameIndexHashed)
                             }),
                       };
     await collection.Indexes.CreateManyAsync(sessionHandle,

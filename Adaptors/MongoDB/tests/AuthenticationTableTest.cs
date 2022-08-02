@@ -65,7 +65,8 @@ public class AuthenticationTableTest : AuthenticationTableTestBase
     Dictionary<string, string> minimalConfig = new()
                                                {
                                                  {
-                                                   $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}", "ArmoniK.Adapters.MongoDB.AuthenticationTable"
+                                                   $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}",
+                                                   "ArmoniK.Adapters.MongoDB.AuthenticationTable"
                                                  },
                                                  {
                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
@@ -84,7 +85,7 @@ public class AuthenticationTableTest : AuthenticationTableTestBase
     services.AddClientSubmitterAuthenticationStorage(configuration,
                                                      logger);
     services.AddSingleton(ActivitySource);
-    services.AddTransient<IMongoClient>(serviceProvider => client_);
+    services.AddTransient<IMongoClient>(_ => client_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
@@ -93,6 +94,6 @@ public class AuthenticationTableTest : AuthenticationTableTestBase
                                                  });
 
     AuthenticationTable = provider.GetRequiredService<IAuthenticationTable>();
-    RunTests             = true;
+    RunTests            = true;
   }
 }

@@ -34,7 +34,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 
 public class UserIdentity : ClaimsPrincipal
 {
-  public string              UserName { get; set; }
+  public string          UserName { get; set; }
   public HashSet<string> Roles    { get; set; }
 
   public Permissions.Permission[] Permissions { get; set; }
@@ -47,10 +47,11 @@ public class UserIdentity : ClaimsPrincipal
     : base(new ClaimsIdentity(userAuth.Permissions.Select(perm => new Permissions.Permission(perm).Claim),
                               authenticationType))
   {
-    UserId      = userAuth.Id;
-    UserName    = userAuth.Username;
-    Roles       = new HashSet<string>(userAuth.Roles);
-    Permissions = userAuth.Permissions.Select(perm => new Permissions.Permission(perm)).ToArray();
+    UserId   = userAuth.Id;
+    UserName = userAuth.Username;
+    Roles    = new HashSet<string>(userAuth.Roles);
+    Permissions = userAuth.Permissions.Select(perm => new Permissions.Permission(perm))
+                          .ToArray();
   }
 
   public UserIdentity(UserAuthenticationResult userAuth)

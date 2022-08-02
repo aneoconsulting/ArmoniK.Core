@@ -46,8 +46,8 @@ public class MockAuthenticationTable : IAuthenticationTable
     => Task.CompletedTask;
 
   public Task<UserAuthenticationResult> GetIdentityFromCertificateAsync(string            cn,
-                                                         string            fingerprint,
-                                                         CancellationToken cancellationToken)
+                                                                        string            fingerprint,
+                                                                        CancellationToken cancellationToken)
     => Task.FromResult(identities_.Find(i => i.HasCertificate(cn,
                                                               fingerprint))
                                   ?.ToUserAuthenticationResult());
@@ -55,8 +55,10 @@ public class MockAuthenticationTable : IAuthenticationTable
   public Task<UserAuthenticationResult> GetIdentityFromUserAsync(string            id,
                                                                  string            username,
                                                                  CancellationToken cancellationToken)
-  => Task.FromResult(identities_.Find(i => id != null ? i.UserId == id : i.UserName == username)
-                               ?.ToUserAuthenticationResult());
+    => Task.FromResult(identities_.Find(i => id             != null
+                                               ? i.UserId   == id
+                                               : i.UserName == username)
+                                  ?.ToUserAuthenticationResult());
 
   public void AddRoles(IEnumerable<RoleData> roles)
   {

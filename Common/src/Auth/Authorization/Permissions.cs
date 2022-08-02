@@ -37,10 +37,10 @@ namespace ArmoniK.Core.Common.Auth.Authorization
   {
     public class Permission
     {
-      public readonly string  Service;
-      public readonly string  Name;
-      public readonly string  Target;
-      public readonly Claim   Claim;
+      public readonly string Service;
+      public readonly string Name;
+      public readonly string Target;
+      public readonly Claim  Claim;
 
       public Permission(string actionString)
       {
@@ -50,8 +50,12 @@ namespace ArmoniK.Core.Common.Auth.Authorization
           throw new ArgumentOutOfRangeException("Wrong number of parts in action policy string " + actionString);
         }
 
-        Service = string.IsNullOrWhiteSpace(parts[0]) ? throw new ArgumentException("Service of permission is null or whitespace") : parts[0];
-        Name    = string.IsNullOrWhiteSpace(parts[1]) ? throw new ArgumentException("Name of permission is null or whitespace") : parts[1];
+        Service = string.IsNullOrWhiteSpace(parts[0])
+                    ? throw new ArgumentException("Service of permission is null or whitespace")
+                    : parts[0];
+        Name = string.IsNullOrWhiteSpace(parts[1])
+                 ? throw new ArgumentException("Name of permission is null or whitespace")
+                 : parts[1];
         Target = parts.Length == 3
                    ? parts[2]
                    : Default;
@@ -72,8 +76,8 @@ namespace ArmoniK.Core.Common.Auth.Authorization
                         string? target)
       {
         Service = service;
-        Name   = name;
-        Target = target ?? Default;
+        Name    = name;
+        Target  = target ?? Default;
         Claim = new Claim(ToBasePermission(),
                           Target);
       }

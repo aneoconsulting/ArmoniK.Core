@@ -43,8 +43,6 @@ using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
-using JetBrains.Annotations;
-
 using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
@@ -153,34 +151,34 @@ public class AuthenticationIntegrationTest
     taskRequestHeader.DataDependencies.Add("dependency");
     taskRequestHeader.ExpectedOutputKeys.Add("outputKey");
     CreateLargeTaskRequestInitTask = new CreateLargeTaskRequest
-                                      {
-                                        InitTask = new InitTaskRequest
-                                                   {
-                                                     Header = taskRequestHeader,
-                                                   },
-                                      };
-    CreateLargeTaskRequestPayload = new CreateLargeTaskRequest
                                      {
-                                       TaskPayload = new DataChunk
-                                                     {
-                                                       Data = ByteString.CopyFrom("payload",
-                                                                                  Encoding.ASCII)
-                                                     }
+                                       InitTask = new InitTaskRequest
+                                                  {
+                                                    Header = taskRequestHeader,
+                                                  },
                                      };
+    CreateLargeTaskRequestPayload = new CreateLargeTaskRequest
+                                    {
+                                      TaskPayload = new DataChunk
+                                                    {
+                                                      Data = ByteString.CopyFrom("payload",
+                                                                                 Encoding.ASCII)
+                                                    }
+                                    };
     CreateLargeTaskRequestPayloadComplete = new CreateLargeTaskRequest
-                                             {
-                                               TaskPayload = new DataChunk
-                                                             {
-                                                               DataComplete = true,
-                                                             },
-                                             };
+                                            {
+                                              TaskPayload = new DataChunk
+                                                            {
+                                                              DataComplete = true,
+                                                            },
+                                            };
     CreateLargeTaskRequestLastTask = new CreateLargeTaskRequest
-                                      {
-                                        InitTask = new InitTaskRequest
-                                                   {
-                                                     LastTask = true,
-                                                   },
-                                      };
+                                     {
+                                       InitTask = new InitTaskRequest
+                                                  {
+                                                    LastTask = true,
+                                                  },
+                                     };
   }
 
   public enum AuthenticationType
@@ -192,11 +190,10 @@ public class AuthenticationIntegrationTest
     NoImpersonationNoAuthorization,
   }
 
-  [CanBeNull]
-  private GrpcSubmitterServiceHelper helper_;
+  private GrpcSubmitterServiceHelper? helper_;
 
-  private          AuthenticatorOptions options_;
-  private readonly AuthenticationType   authType_;
+  private          AuthenticatorOptions? options_;
+  private readonly AuthenticationType    authType_;
 
   public AuthenticationIntegrationTest(AuthenticationType type)
   {
@@ -227,7 +224,8 @@ public class AuthenticationIntegrationTest
         options_.CopyFrom(AuthenticatorOptions.DefaultNoAuth);
         break;
       default:
-        throw new ArgumentException("Invalid authentication type", nameof(type));
+        throw new ArgumentException("Invalid authentication type",
+                                    nameof(type));
     }
 
     TestContext.Progress.WriteLine(options_.ImpersonationUsernameHeader);
@@ -357,13 +355,13 @@ public class AuthenticationIntegrationTest
                                                               "Default");
     if ((int) index < -1)
       return headers;
-    headers.Add(AuthenticatorOptions.DefaultAuth.CNHeader!,
+    headers.Add(AuthenticatorOptions.DefaultAuth.CNHeader,
                 index == IdentityIndex.DoesntExist
                   ? "DoesntExistCN"
                   : Identities[(int) index]
                     .Certificates.FirstOrDefault(defaultCertificate)
                     .CN);
-    headers.Add(AuthenticatorOptions.DefaultAuth.FingerprintHeader!,
+    headers.Add(AuthenticatorOptions.DefaultAuth.FingerprintHeader,
                 index == IdentityIndex.DoesntExist
                   ? "DoesntExistFingerprint"
                   : Identities[(int) index]
@@ -371,7 +369,7 @@ public class AuthenticationIntegrationTest
                     .Fingerprint);
     if (impersonationType == ImpersonationType.ImpersonateId)
     {
-      headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationIdHeader!,
+      headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationIdHeader,
                   (int) impersonate < 0
                     ? "DoesntExist"
                     : Identities[(int) impersonate]
@@ -379,7 +377,7 @@ public class AuthenticationIntegrationTest
     }
     else if (impersonationType == ImpersonationType.ImpersonateUsername)
     {
-      headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationUsernameHeader!,
+      headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationUsernameHeader,
                   (int) impersonate < 0
                     ? "DoesntExist"
                     : Identities[(int) impersonate]
@@ -389,10 +387,10 @@ public class AuthenticationIntegrationTest
     return headers;
   }
 
-  public static object[] GetArgs(object            obj,
-                                 IdentityIndex     identityIndex,
-                                 ImpersonationType impersonationType,
-                                 IdentityIndex     impersonate)
+  public static object?[] GetArgs(object?           obj,
+                                  IdentityIndex     identityIndex,
+                                  ImpersonationType impersonationType,
+                                  IdentityIndex     impersonate)
   {
     return new[]
            {
@@ -407,114 +405,114 @@ public class AuthenticationIntegrationTest
 
   // Identities and expectations
   private static readonly List<object[]> ParametersList = new()
-                                                           {
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.AllRights,
-                                                               ResultType.AlwaysTrue,
-                                                               StatusCode.OK,
-                                                               IdentityIndex.AllRights,
-                                                               ImpersonationType.NoImpersonate,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.NoRights,
-                                                               ResultType.AlwaysFalse,
-                                                               StatusCode.Unauthenticated,
-                                                               IdentityIndex.AllRights,
-                                                               ImpersonationType.ImpersonateUsername,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.NoRights,
-                                                               ResultType.AlwaysFalse,
-                                                               StatusCode.PermissionDenied,
-                                                               IdentityIndex.NoRights,
-                                                               ImpersonationType.NoImpersonate,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.CanImpersonate,
-                                                               ResultType.AlwaysTrue,
-                                                               StatusCode.OK,
-                                                               IdentityIndex.AllRights,
-                                                               ImpersonationType.ImpersonateUsername,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.CanImpersonate,
-                                                               ResultType.AlwaysTrue,
-                                                               StatusCode.OK,
-                                                               IdentityIndex.AllRights,
-                                                               ImpersonationType.ImpersonateId,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.CanImpersonate,
-                                                               ResultType.AlwaysFalse,
-                                                               StatusCode.Unauthenticated,
-                                                               IdentityIndex.NoRights,
-                                                               ImpersonationType.ImpersonateUsername,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.NoCertificate,
-                                                               ResultType.AlwaysFalse,
-                                                               StatusCode.Unauthenticated,
-                                                               IdentityIndex.NoCertificate,
-                                                               ImpersonationType.NoImpersonate,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.SomeRights,
-                                                               ResultType.AuthorizedForSome,
-                                                               StatusCode.PermissionDenied,
-                                                               IdentityIndex.SomeRights,
-                                                               ImpersonationType.NoImpersonate,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.OtherRights,
-                                                               ResultType.AuthorizedForSome,
-                                                               StatusCode.PermissionDenied,
-                                                               IdentityIndex.OtherRights,
-                                                               ImpersonationType.NoImpersonate,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.DoesntExist,
-                                                               ResultType.AlwaysFalse,
-                                                               StatusCode.Unauthenticated,
-                                                               IdentityIndex.DoesntExist,
-                                                               ImpersonationType.NoImpersonate,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.CanImpersonate,
-                                                               ResultType.AlwaysFalse,
-                                                               StatusCode.Unauthenticated,
-                                                               IdentityIndex.DoesntExist,
-                                                               ImpersonationType.ImpersonateId,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.MissingHeaders,
-                                                               ResultType.AlwaysFalse,
-                                                               StatusCode.Unauthenticated,
-                                                               IdentityIndex.MissingHeaders,
-                                                               ImpersonationType.NoImpersonate,
-                                                             },
-                                                             new object[]
-                                                             {
-                                                               IdentityIndex.MissingHeaders,
-                                                               ResultType.AlwaysFalse,
-                                                               StatusCode.Unauthenticated,
-                                                               IdentityIndex.AllRights,
-                                                               ImpersonationType.ImpersonateId,
-                                                             },
-                                                           };
+                                                          {
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.AllRights,
+                                                              ResultType.AlwaysTrue,
+                                                              StatusCode.OK,
+                                                              IdentityIndex.AllRights,
+                                                              ImpersonationType.NoImpersonate,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.NoRights,
+                                                              ResultType.AlwaysFalse,
+                                                              StatusCode.Unauthenticated,
+                                                              IdentityIndex.AllRights,
+                                                              ImpersonationType.ImpersonateUsername,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.NoRights,
+                                                              ResultType.AlwaysFalse,
+                                                              StatusCode.PermissionDenied,
+                                                              IdentityIndex.NoRights,
+                                                              ImpersonationType.NoImpersonate,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.CanImpersonate,
+                                                              ResultType.AlwaysTrue,
+                                                              StatusCode.OK,
+                                                              IdentityIndex.AllRights,
+                                                              ImpersonationType.ImpersonateUsername,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.CanImpersonate,
+                                                              ResultType.AlwaysTrue,
+                                                              StatusCode.OK,
+                                                              IdentityIndex.AllRights,
+                                                              ImpersonationType.ImpersonateId,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.CanImpersonate,
+                                                              ResultType.AlwaysFalse,
+                                                              StatusCode.Unauthenticated,
+                                                              IdentityIndex.NoRights,
+                                                              ImpersonationType.ImpersonateUsername,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.NoCertificate,
+                                                              ResultType.AlwaysFalse,
+                                                              StatusCode.Unauthenticated,
+                                                              IdentityIndex.NoCertificate,
+                                                              ImpersonationType.NoImpersonate,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.SomeRights,
+                                                              ResultType.AuthorizedForSome,
+                                                              StatusCode.PermissionDenied,
+                                                              IdentityIndex.SomeRights,
+                                                              ImpersonationType.NoImpersonate,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.OtherRights,
+                                                              ResultType.AuthorizedForSome,
+                                                              StatusCode.PermissionDenied,
+                                                              IdentityIndex.OtherRights,
+                                                              ImpersonationType.NoImpersonate,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.DoesntExist,
+                                                              ResultType.AlwaysFalse,
+                                                              StatusCode.Unauthenticated,
+                                                              IdentityIndex.DoesntExist,
+                                                              ImpersonationType.NoImpersonate,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.CanImpersonate,
+                                                              ResultType.AlwaysFalse,
+                                                              StatusCode.Unauthenticated,
+                                                              IdentityIndex.DoesntExist,
+                                                              ImpersonationType.ImpersonateId,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.MissingHeaders,
+                                                              ResultType.AlwaysFalse,
+                                                              StatusCode.Unauthenticated,
+                                                              IdentityIndex.MissingHeaders,
+                                                              ImpersonationType.NoImpersonate,
+                                                            },
+                                                            new object[]
+                                                            {
+                                                              IdentityIndex.MissingHeaders,
+                                                              ResultType.AlwaysFalse,
+                                                              StatusCode.Unauthenticated,
+                                                              IdentityIndex.AllRights,
+                                                              ImpersonationType.ImpersonateId,
+                                                            },
+                                                          };
 
-  public static IEnumerable GetCases(List<(string, object)> methodsAndObjects)
+  public static IEnumerable GetCases(List<(string, object?)> methodsAndObjects)
   {
     // Generator
     foreach (var parameters in ParametersList)
@@ -536,7 +534,7 @@ public class AuthenticationIntegrationTest
 
   public static IEnumerable GetTestCases()
   {
-    var methodsAndObjects = new List<(string, object)>
+    var methodsAndObjects = new List<(string, object?)>
                             {
                               (nameof(SubmitterClient.CancelSession), SessionRequest),
                               (nameof(SubmitterClient.CancelTasks), TaskFilter),
@@ -558,7 +556,7 @@ public class AuthenticationIntegrationTest
 
   public static IEnumerable GetAsyncTestCases()
   {
-    var methodsAndObjects = new List<(string, object)>
+    var methodsAndObjects = new List<(string, object?)>
                             {
                               (nameof(SubmitterClient.CancelSessionAsync), SessionRequest),
                               (nameof(SubmitterClient.CancelTasksAsync), TaskFilter),
@@ -580,7 +578,7 @@ public class AuthenticationIntegrationTest
 
   public static IEnumerable GetCreateLargeTaskTestCases()
   {
-    var methodsAndObjects = new List<(string, object)>
+    var methodsAndObjects = new List<(string, object?)>
                             {
                               (nameof(SubmitterClient.CreateLargeTasks), null),
                             };
@@ -590,7 +588,7 @@ public class AuthenticationIntegrationTest
 
   public static IEnumerable GetTryGetResultStreamTestCases()
   {
-    var methodsAndObjects = new List<(string, object)>
+    var methodsAndObjects = new List<(string, object?)>
                             {
                               (nameof(SubmitterClient.TryGetResultStream), null),
                             };
@@ -604,7 +602,7 @@ public class AuthenticationIntegrationTest
     var submitter = new SimpleSubmitter();
     helper_ = new GrpcSubmitterServiceHelper(submitter,
                                              Identities.ToList(),
-                                             options_,
+                                             options_!,
                                              LogLevel.Information);
   }
 
@@ -753,10 +751,10 @@ public class AuthenticationIntegrationTest
                                                          tuple.args);
                                    });
       Assert.IsNotNull(exception);
-      Assert.IsNotNull(exception.InnerException);
+      Assert.IsNotNull(exception!.InnerException);
       Assert.IsInstanceOf<RpcException>(exception.InnerException);
       Assert.AreEqual(errorCode,
-                      ((RpcException) (exception.InnerException)).StatusCode);
+                      ((RpcException) exception.InnerException!).StatusCode);
     }
 
     await helper_.DeleteChannel()
@@ -810,7 +808,7 @@ public class AuthenticationIntegrationTest
       Assert.IsNotNull(exception);
       Assert.IsInstanceOf<RpcException>(exception);
       Assert.AreEqual(errorCode,
-                      ((RpcException) (exception)).StatusCode);
+                      ((RpcException) exception!).StatusCode);
     }
   }
 
@@ -877,7 +875,7 @@ public class AuthenticationIntegrationTest
       Assert.IsNotNull(exception);
       Assert.IsInstanceOf<RpcException>(exception);
       Assert.AreEqual(errorCode,
-                      ((RpcException) (exception)).StatusCode);
+                      ((RpcException) exception!).StatusCode);
     }
   }
 
@@ -912,7 +910,7 @@ public class AuthenticationIntegrationTest
       Assert.IsNotNull(exception);
       Assert.IsInstanceOf<RpcException>(exception);
       Assert.AreEqual(errorCode,
-                      ((RpcException) (exception)).StatusCode);
+                      ((RpcException) exception!).StatusCode);
     }
   }
 }

@@ -164,16 +164,15 @@ namespace ArmoniK.Core.Common.Tests.Auth
       GetAuthSource();
       if (RunTests)
       {
-        AuthenticationTable.AddRoles(Roles);
-        AuthenticationTable.AddUsers(Users);
-        AuthenticationTable.AddCertificates(Auths);
+        AuthenticationTable!.AddRoles(Roles);
+        AuthenticationTable!.AddUsers(Users);
+        AuthenticationTable!.AddCertificates(Auths);
       }
     }
 
     [OneTimeTearDown]
     public virtual void TearDown()
     {
-      AuthenticationTable = null;
       RunTests            = false;
     }
 
@@ -183,7 +182,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
 
 
     /* Interface to test */
-    protected IAuthenticationTable AuthenticationTable;
+    protected IAuthenticationTable? AuthenticationTable;
 
     /* Boolean to control that tests are executed in
      * an instance of this class */
@@ -229,14 +228,14 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
 
-      var ident = AuthenticationTable.GetIdentityFromCertificateAsync(cn,
-                                                       fingerprint,
-                                                       CancellationToken.None)
+      var ident = AuthenticationTable!.GetIdentityFromCertificateAsync(cn,
+                                                                      fingerprint,
+                                                                      CancellationToken.None)
                                      .Result;
       Assert.NotNull(ident);
       Assert.AreEqual(Users[userid]
                         .UserId,
-                      ident.Id);
+                      ident!.Id);
     }
 
     [TestCase("CNUser6",
@@ -249,9 +248,9 @@ namespace ArmoniK.Core.Common.Tests.Auth
       if (!RunTests)
         return;
 
-      Assert.IsNull(AuthenticationTable.GetIdentityFromCertificateAsync(cn,
-                                                         fingerprint,
-                                                         CancellationToken.None)
+      Assert.IsNull(AuthenticationTable!.GetIdentityFromCertificateAsync(cn,
+                                                                        fingerprint,
+                                                                        CancellationToken.None)
                                        .Result);
     }
 
@@ -263,14 +262,14 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      var ident = AuthenticationTable.GetIdentityFromUserAsync(Users[id]
-                                                               .UserId,
-                                                             null)
+      var ident = AuthenticationTable!.GetIdentityFromUserAsync(Users[id]
+                                                                 .UserId,
+                                                               null)
                                      .Result;
       Assert.NotNull(ident);
       Assert.AreEqual(Users[id]
                         .UserId,
-                      ident.Id);
+                      ident!.Id);
       Assert.AreEqual(username,
                       ident.Username);
     }
@@ -280,7 +279,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      Assert.IsNull(AuthenticationTable.GetIdentityFromUserAsync(id,
+      Assert.IsNull(AuthenticationTable!.GetIdentityFromUserAsync(id,
                                                                  null)
                                        .Result);
     }
@@ -293,12 +292,12 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      var identity = AuthenticationTable.GetIdentityFromUserAsync(null,
+      var identity = AuthenticationTable!.GetIdentityFromUserAsync(null,
                                                                   name)
                                         .Result;
       Assert.NotNull(identity);
       Assert.AreEqual(name,
-                      identity.Username);
+                      identity!.Username);
       Assert.AreEqual(Users[id]
                         .UserId,
                       identity.Id);
@@ -309,7 +308,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      Assert.IsNull(AuthenticationTable.GetIdentityFromUserAsync(null, name)
+      Assert.IsNull(AuthenticationTable!.GetIdentityFromUserAsync(null,
+                                                                 name)
                                        .Result);
     }
 
@@ -328,10 +328,11 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      var identity = AuthenticationTable.GetIdentityFromUserAsync(null, username)
+      var identity = AuthenticationTable!.GetIdentityFromUserAsync(null,
+                                                                  username)
                                         .Result;
       Assert.NotNull(identity);
-      Assert.AreEqual(identity.Roles.Contains(rolename),
+      Assert.AreEqual(identity!.Roles.Contains(rolename),
                       hasRole);
     }
 
@@ -352,13 +353,14 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      var identity = AuthenticationTable.GetIdentityFromUserAsync(null, username,
+      var identity = AuthenticationTable!.GetIdentityFromUserAsync(null,
+                                                                  username,
                                                                   CancellationToken.None)
                                         .Result;
       var expected = new Permissions.Permission(claim).Claim;
       Assert.NotNull(identity);
-      Assert.AreEqual(identity.Permissions.Select(perm => new Permissions.Permission(perm).Claim)
-                              .Any(c => c.Type == expected.Type && (expected.Value != null || c.Value == expected.Value)),
+      Assert.AreEqual(identity!.Permissions.Select(perm => new Permissions.Permission(perm).Claim)
+                              .Any(c => c.Type == expected.Type && (expected.Value == Permissions.Default || c.Value == expected.Value)),
                       hasClaim);
     }
 
@@ -367,8 +369,8 @@ namespace ArmoniK.Core.Common.Tests.Auth
     {
       if (!RunTests)
         return;
-      var identity = AuthenticationTable.GetIdentityFromUserAsync(user.UserId,
-                                                                null)
+      var identity = AuthenticationTable!.GetIdentityFromUserAsync(user.UserId,
+                                                                  null)
                                         .Result;
       Assert.NotNull(identity);
       Assert.IsTrue(user.Roles.SelectMany(id => Roles.Find(r => r.RoleId == id)
@@ -376,7 +378,7 @@ namespace ArmoniK.Core.Common.Tests.Auth
                         .All(p =>
                              {
                                var expected = new Permissions.Permission(p).Claim;
-                               return identity.Permissions.Select(perm => new Permissions.Permission(perm).Claim)
+                               return identity!.Permissions.Select(perm => new Permissions.Permission(perm).Claim)
                                               .Any(c => c.Type == expected.Type && c.Value == expected.Value);
                              }));
     }

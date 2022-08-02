@@ -37,6 +37,7 @@ namespace ArmoniK.Core.Common.Auth.Authorization
                                                  function);
 
     private Permissions.Permission? permission_;
+
     public Permissions.Permission? Permission
     {
       get => permission_;
