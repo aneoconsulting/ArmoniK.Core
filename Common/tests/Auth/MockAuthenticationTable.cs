@@ -32,7 +32,7 @@ namespace ArmoniK.Core.Common.Tests.Auth;
 
 public class MockAuthenticationTable : IAuthenticationTable
 {
-  private List<MockIdentity> identities_;
+  private readonly List<MockIdentity> identities_;
 
   public MockAuthenticationTable(List<MockIdentity> mockIdentities)
   {
@@ -45,15 +45,15 @@ public class MockAuthenticationTable : IAuthenticationTable
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task<UserAuthenticationResult> GetIdentityFromCertificateAsync(string            cn,
+  public Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
                                                                         string            fingerprint,
                                                                         CancellationToken cancellationToken)
     => Task.FromResult(identities_.Find(i => i.HasCertificate(cn,
                                                               fingerprint))
                                   ?.ToUserAuthenticationResult());
 
-  public Task<UserAuthenticationResult> GetIdentityFromUserAsync(string            id,
-                                                                 string            username,
+  public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?            id,
+                                                                 string?            username,
                                                                  CancellationToken cancellationToken)
     => Task.FromResult(identities_.Find(i => id             != null
                                                ? i.UserId   == id

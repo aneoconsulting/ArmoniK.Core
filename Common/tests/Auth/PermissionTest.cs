@@ -25,8 +25,6 @@
 
 using ArmoniK.Core.Common.Auth.Authorization;
 
-using JetBrains.Annotations;
-
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests.Auth;

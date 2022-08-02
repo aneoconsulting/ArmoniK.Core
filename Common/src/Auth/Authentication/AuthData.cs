@@ -23,10 +23,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Common.Auth.Authentication
-{
-  public record AuthData(string  AuthId,
-                         string  UserId,
-                         string  CN,
-                         string? Fingerprint);
-}
+namespace ArmoniK.Core.Common.Auth.Authentication;
+public record AuthData(string  AuthId,
+                       string  UserId,
+                       string  CN,
+                       string? Fingerprint);

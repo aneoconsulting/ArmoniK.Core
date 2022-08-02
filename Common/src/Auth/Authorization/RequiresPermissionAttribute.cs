@@ -25,27 +25,26 @@
 
 using Microsoft.AspNetCore.Authorization;
 
-namespace ArmoniK.Core.Common.Auth.Authorization
+namespace ArmoniK.Core.Common.Auth.Authorization;
+
+public class RequiresPermissionAttribute : AuthorizeAttribute
 {
-  public class RequiresPermissionAttribute : AuthorizeAttribute
+  public const string PolicyPrefix = "RequiresPermission:";
+
+  public RequiresPermissionAttribute(string category,
+                                     string function)
+    => Permission = new Permissions.Permission(category,
+                                               function);
+
+  private Permissions.Permission? permission_;
+
+  public Permissions.Permission? Permission
   {
-    public const string PolicyPrefix = "RequiresPermission:";
-
-    public RequiresPermissionAttribute(string category,
-                                       string function)
-      => Permission = new Permissions.Permission(category,
-                                                 function);
-
-    private Permissions.Permission? permission_;
-
-    public Permissions.Permission? Permission
+    get => permission_;
+    set
     {
-      get => permission_;
-      set
-      {
-        Policy      = $"{PolicyPrefix}{value}";
-        permission_ = Permissions.Parse(Policy[PolicyPrefix.Length..]);
-      }
+      Policy      = $"{PolicyPrefix}{value}";
+      permission_ = Permissions.Parse(Policy[PolicyPrefix.Length..]);
     }
   }
 }

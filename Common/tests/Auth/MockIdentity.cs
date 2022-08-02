@@ -28,10 +28,6 @@ using System.Linq;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 
-using DnsClient.Protocol;
-
-using JetBrains.Annotations;
-
 namespace ArmoniK.Core.Common.Tests.Auth;
 
 public class MockIdentity : UserIdentity

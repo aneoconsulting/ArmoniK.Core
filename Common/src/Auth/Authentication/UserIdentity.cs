@@ -54,15 +54,6 @@ public class UserIdentity : ClaimsPrincipal
                           .ToArray();
   }
 
-  public UserIdentity(UserAuthenticationResult userAuth)
-  {
-    UserId      = userAuth.Id;
-    UserName    = userAuth.Username;
-    Roles       = new HashSet<string>();
-    Permissions = Array.Empty<Permissions.Permission>();
-  }
-
-
   public override bool IsInRole(string role)
     => Roles.Contains(role);
 

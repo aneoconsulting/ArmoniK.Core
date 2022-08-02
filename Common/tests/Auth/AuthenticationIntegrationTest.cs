@@ -81,8 +81,6 @@ public class AuthenticationIntegrationTest
 
   static AuthenticationIntegrationTest()
   {
-    // Constants
-
     var taskOptions = new TaskOptions
                       {
                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),

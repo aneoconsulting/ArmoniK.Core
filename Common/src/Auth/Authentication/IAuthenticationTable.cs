@@ -27,22 +27,21 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Auth.Authentication
+namespace ArmoniK.Core.Common.Auth.Authentication;
+
+public interface IAuthenticationTable : IInitializable
 {
-  public interface IAuthenticationTable : IInitializable
-  {
-    public Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
-                                                                           string            fingerprint,
-                                                                           CancellationToken cancellationToken = default);
+  public Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
+                                                                         string            fingerprint,
+                                                                         CancellationToken cancellationToken = default);
 
-    public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,
-                                                                    string?           username,
-                                                                    CancellationToken cancellationToken = default);
+  public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,
+                                                                  string?           username,
+                                                                  CancellationToken cancellationToken = default);
 
-    public void AddRoles(IEnumerable<RoleData> roles);
+  public void AddRoles(IEnumerable<RoleData> roles);
 
-    public void AddUsers(IEnumerable<UserData> users);
+  public void AddUsers(IEnumerable<UserData> users);
 
-    public void AddCertificates(IEnumerable<AuthData> certificates);
-  }
+  public void AddCertificates(IEnumerable<AuthData> certificates);
 }
