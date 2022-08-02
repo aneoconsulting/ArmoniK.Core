@@ -52,6 +52,12 @@ public class SessionProvider : ProviderBase<SessionAmqp>
                                       $"Contains a null or empty {nameof(options.Host)} field");
     }
 
+    if (options.MaxRetries == 0)
+    {
+      throw new ArgumentNullException(nameof(options),
+                                      $"Contains a zero {nameof(options.MaxRetries)} field");
+    }
+
     if (options.Port == 0)
     {
       throw new ArgumentNullException(nameof(options),

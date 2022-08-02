@@ -40,5 +40,5 @@ public class Amqp
   public int    Port              { get; set; }
   public int    MaxPriority       { get; set; }
   public bool   AllowHostMismatch { get; set; }
-  public int    MaxRetry          { get; set; }
+  public int    MaxRetries        { get; set; }
 }

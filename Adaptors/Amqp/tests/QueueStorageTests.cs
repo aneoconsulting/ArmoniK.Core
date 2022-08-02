@@ -58,6 +58,7 @@ public class QueueStorageTests
          Scheme            = "someScheme",
          CredentialsPath   = "somePath",
          MaxPriority       = 5,
+         MaxRetries        = 5,
          AllowHostMismatch = false,
        };
 

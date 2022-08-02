@@ -83,6 +83,12 @@ public class QueueStorage : IQueueStorage
                                             $"{nameof(Options.Amqp.Port)} is not defined.");
     }
 
+    if (options.MaxRetries == 0)
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.Amqp.MaxRetries)} is not defined.");
+    }
+
     if (options.MaxPriority < 1)
     {
       throw new ArgumentOutOfRangeException(nameof(options),

@@ -46,7 +46,7 @@ public class SessionAmqp
   {
     Options           = options;
     Logger            = logger;
-    retriesReconnect_ = options.MaxRetry;
+    retriesReconnect_ = options.MaxRetries;
   }
 
   public Session      Session { get; set; }
@@ -71,18 +71,22 @@ public class SessionAmqp
 
   public async Task<SessionAmqp> OpenConnection()
   {
-    if (Session.SessionState != SessionState.Opened)
+    Logger.LogInformation("Opening session");
+    if (Session is not null && Session.SessionState == SessionState.Opened)
     {
+      Logger.LogInformation("A session is open; close it");
+
       await Session.CloseAsync()
                    .ConfigureAwait(false);
       if (retriesReconnect_ <= 0)
       {
-        throw new AmqpException(new Error($"After {Options.MaxRetry} retries. Fail to reconnect to Amqp"));
+        throw new AmqpException(new Error($"After {Options.MaxRetries} retries. Fail to reconnect to Amqp"));
       }
 
       --retriesReconnect_;
     }
 
+    Logger.LogInformation("Get address for session");
     var address = new Address(Options.Host,
                               Options.Port,
                               Options.User,
@@ -111,7 +115,7 @@ public class SessionAmqp
     }
 
     var retry = 0;
-    for(; retry < Options.MaxRetry; retry++)
+    for(; retry < Options.MaxRetries; retry++)
     {
       try
       {
@@ -130,10 +134,10 @@ public class SessionAmqp
       }
     }
 
-    if (retry == Options.MaxRetry)
+    if (retry == Options.MaxRetries)
     {
-      throw new ArgumentOutOfRangeException(nameof(Options.MaxRetry),
-                                             $"{nameof(Options.MaxRetry)} reached");
+      throw new ArgumentOutOfRangeException(nameof(Options.MaxRetries),
+                                             $"{nameof(Options.MaxRetries)} reached");
     }
 
     return this;
