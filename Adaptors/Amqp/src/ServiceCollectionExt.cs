@@ -25,8 +25,6 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-using Amqp;
-
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
@@ -36,7 +34,6 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
@@ -57,7 +54,6 @@ public static class ServiceCollectionExt
       serviceCollection.AddOption<Options.Amqp>(configuration,
                                                 Options.Amqp.SettingSection,
                                                 out var amqpOptions);
-
       using var _ = logger.BeginNamedScope("AMQP configuration",
                                            ("host", amqpOptions.Host),
                                            ("port", amqpOptions.Port));
@@ -106,7 +102,7 @@ public static class ServiceCollectionExt
       var sessionProvider = new SessionProvider(amqpOptions,
                                                 logger);
 
-      serviceCollection.AddSingleton<IProviderBase<SessionAmqp>, SessionProvider>(sp => sessionProvider);
+      serviceCollection.AddSingleton<ISessionAmqp, SessionAmqp>(sp => sessionProvider.Get());
 
       serviceCollection.AddSingleton<IQueueStorage, QueueStorage>();
 

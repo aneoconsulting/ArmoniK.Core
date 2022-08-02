@@ -27,10 +27,7 @@ using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Amqp;
-
 using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
@@ -45,11 +42,11 @@ namespace ArmoniK.Core.Adapters.Amqp.Tests;
 [TestFixture]
 public class QueueStorageTests
 {
-  public Options.Amqp Options_ { get; set; }
+  public Options.Amqp Options { get; set; }
 
   private static Options.Amqp CreateDefaultOptions()
-    => new Options.Amqp
-       {
+    => new()
+    {
          Host              = "localhost",
          User              = "guest",
          Password          = "guest",
@@ -67,18 +64,18 @@ public class QueueStorageTests
     /* These options are only to feed the QueueStorage constructor
      * and they do not play any role in the how the connection is created,
      * the later is defined in the  SimpleAmqpClientHelper class */
-    => Options_ = CreateDefaultOptions();
+    => Options = CreateDefaultOptions();
 
   [Test]
   public async Task CreateQueueStorageShouldSucceed()
   {
     await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IProviderBase<Session>>();
+    var             provider = new Mock<ISessionAmqp>();
 
-    provider.Setup(sp => sp.Get())
+    provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options_,
+    var queueStorage = new QueueStorage(Options,
                                         provider.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
@@ -125,17 +122,22 @@ public class QueueStorageTests
       var badPriority = new TestCaseData(badPriorityOpt);
       badPriority.SetArgDisplayNames("InvalidMaxPriority");
       yield return badPriority;
+
+      var badMaxRetryOpt = CreateDefaultOptions();
+      badMaxRetryOpt.MaxRetries = 0;
+      var badMaxRetry = new TestCaseData(badMaxRetryOpt);
+      badMaxRetry.SetArgDisplayNames("InvalidMaxRetry");
+      yield return badMaxRetry;
     }
   }
-
 
   [TestCaseSource(nameof(TestCasesBadOptions))]
   public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(Options.Amqp options)
   {
     await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IProviderBase<Session>>();
+    var             provider = new Mock<ISessionAmqp>();
 
-    provider.Setup(sp => sp.Get())
+    provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
     Assert.Throws<ArgumentOutOfRangeException>(() => new QueueStorage(options,
@@ -147,12 +149,12 @@ public class QueueStorageTests
   public async Task EnqueueMessagesAsyncSucceedsIfTooBigPriority()
   {
     await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IProviderBase<Session>>();
+    var             provider = new Mock<ISessionAmqp>();
 
-    provider.Setup(sp => sp.Get())
+    provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options_,
+    var queueStorage = new QueueStorage(Options,
                                         provider.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
@@ -175,12 +177,12 @@ public class QueueStorageTests
   public async Task EnqueueMessagesAsyncSucceeds()
   {
     await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IProviderBase<Session>>();
+    var             provider = new Mock<ISessionAmqp>();
 
-    provider.Setup(sp => sp.Get())
+    provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options_,
+    var queueStorage = new QueueStorage(Options,
                                         provider.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
@@ -203,12 +205,12 @@ public class QueueStorageTests
   public async Task PullAsyncAsyncSucceeds()
   {
     await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IProviderBase<Session>>();
+    var             provider = new Mock<ISessionAmqp>();
 
-    provider.Setup(sp => sp.Get())
+    provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options_,
+    var queueStorage = new QueueStorage(Options,
                                         provider.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)

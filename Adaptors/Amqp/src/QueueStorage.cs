@@ -55,9 +55,9 @@ public class QueueStorage : IQueueStorage
 
   private bool isInitialized_;
 
-  public QueueStorage(Options.Amqp           options,
-                      IProviderBase<Session> sessionProvider,
-                      ILogger<QueueStorage>  logger)
+  public QueueStorage(Options.Amqp          options,
+                      ISessionAmqp          sessionAmqp,
+                      ILogger<QueueStorage> logger)
   {
     if (string.IsNullOrEmpty(options.Host))
     {
@@ -103,14 +103,14 @@ public class QueueStorage : IQueueStorage
 
     senders_ = Enumerable.Range(0,
                                 nbLinks_)
-                         .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(sessionProvider.Get(),
+                         .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(sessionAmqp.Session,
                                                                                       $"SenderLink{i}",
                                                                                       $"q{i}")))
                          .ToArray();
 
     receivers_ = Enumerable.Range(0,
                                   nbLinks_)
-                           .Select(i => new AsyncLazy<IReceiverLink>(() => new ReceiverLink(sessionProvider.Get(),
+                           .Select(i => new AsyncLazy<IReceiverLink>(() => new ReceiverLink(sessionAmqp.Session,
                                                                                             $"ReceiverLink{i}",
                                                                                             $"q{i}")))
                            .ToArray();

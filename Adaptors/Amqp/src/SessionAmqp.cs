@@ -37,7 +37,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
-public class SessionAmqp
+public class SessionAmqp : ISessionAmqp
 {
   private int retriesReconnect_;
 
@@ -69,7 +69,7 @@ public class SessionAmqp
     }
   }
 
-  public async Task<SessionAmqp> OpenConnection()
+  public async Task<ISessionAmqp> OpenConnection()
   {
     Logger.LogInformation("Opening session");
     if (Session is not null && Session.SessionState == SessionState.Opened)
