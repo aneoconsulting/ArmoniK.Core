@@ -59,9 +59,11 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
     }
   }
 
+  /// <inheritdoc />
   public string CollectionName
     => nameof(RoleData);
 
+  /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                            IMongoCollection<RoleData> collection)
   {

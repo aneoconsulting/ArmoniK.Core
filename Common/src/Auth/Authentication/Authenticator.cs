@@ -65,12 +65,18 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
     RequireAuthorization        = other.RequireAuthorization;
   }
 
+  /// <summary>
+  /// Default options used when no authentication is required
+  /// </summary>
   public static readonly AuthenticatorOptions DefaultNoAuth = new()
                                                               {
                                                                 RequireAuthentication = false,
                                                                 RequireAuthorization  = false,
                                                               };
 
+  /// <summary>
+  /// Default options used when authentication and authorization are required
+  /// </summary>
   public static readonly AuthenticatorOptions DefaultAuth = new()
                                                             {
                                                               CNHeader                    = "X-Certificate-Client-CN",
@@ -81,6 +87,9 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
                                                               RequireAuthorization        = true,
                                                             };
 
+  /// <summary>
+  /// Default options, will prevent launch as a fail-dead as it requires a proper configuration
+  /// </summary>
   public static readonly AuthenticatorOptions Default = new();
 }
 
@@ -126,8 +135,14 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     logger_    = loggerFactory.CreateLogger<Authenticator>();
   }
 
+  /// <summary>
+  /// Function called by the Authentication middleware to get the authentication ticket for the user
+  /// </summary>
+  /// <returns></returns>
+  [UsedImplicitly]
   protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
   {
+    // Bypass if authentication is not required
     if (!requireAuthentication_)
     {
       return AuthenticateResult.Success(new AuthenticationTicket(new UserIdentity(new UserAuthenticationResult(),
@@ -157,9 +172,10 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
 
     var impersonationUsername = TryGetHeader(impersonationUsernameHeader_);
     var impersonationId       = TryGetHeader(impersonationIdHeader_);
-
+    // Only try to impersonate if at least one of the impersonation headers is set
     if (impersonationId != null || impersonationUsername != null)
     {
+      // Only users with the impersonate permission can impersonate
       if (identity.HasClaim(c => c.Type == Permissions.Impersonate.Claim.Type))
       {
         try
@@ -180,6 +196,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       }
     }
 
+    // Authentication hasn't been rejected, create the ticket and authenticate the user
     var ticket = new AuthenticationTicket(identity,
                                           SchemeName);
     return AuthenticateResult.Success(ticket);

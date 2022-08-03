@@ -40,10 +40,13 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
+using JetBrains.Annotations;
+
 using MongoDB.Bson.Serialization;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
+[PublicAPI]
 public class AuthenticationTable : IAuthenticationTable
 {
   private readonly ActivitySource                                          activitySource_;
@@ -117,14 +120,24 @@ public class AuthenticationTable : IAuthenticationTable
     return Task.CompletedTask;
   }
 
+  /// <summary>
+  /// Gets the user from the given collection by first matching the entry with the matchingFunction and then executing the given pipeline
+  /// </summary>
+  /// <typeparam name="TCollectionDataType">Type of data in the collection</typeparam>
+  /// <param name="sessionHandle">Session Handle</param>
+  /// <param name="collection">Collection to be used at the start of the pipeline</param>
+  /// <param name="pipeline">Pipeline to use</param>
+  /// <param name="matchingFunction">Filter to use in front of the pipeline</param>
+  /// <param name="cancellationToken">Cancellation token</param>
+  /// <returns>UserAuthenticationResult object containing the user information, roles and permissions. Null if the user has not been found</returns>
   private static async Task<UserAuthenticationResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle sessionHandle,
                                                                                                          IMongoCollection<TCollectionDataType> collection,
                                                                                                          PipelineDefinition<TCollectionDataType, UserAuthenticationResult> pipeline,
-                                                                                                         Expression<Func<TCollectionDataType, bool>> matchingFunctions,
+                                                                                                         Expression<Func<TCollectionDataType, bool>> matchingFunction,
                                                                                                          CancellationToken cancellationToken = default)
   {
     var pipe =
-      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserAuthenticationResult>(PipelineStageDefinitionBuilder.Match(matchingFunctions),
+      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserAuthenticationResult>(PipelineStageDefinitionBuilder.Match(matchingFunction),
                                                                                                                pipeline);
 
     return await collection.AggregateAsync(sessionHandle,
@@ -136,9 +149,10 @@ public class AuthenticationTable : IAuthenticationTable
                            .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
-                                                               string            fingerprint,
-                                                               CancellationToken cancellationToken = default)
+                                                                               string            fingerprint,
+                                                                               CancellationToken cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromCertificateAsync)}");
     var       authCollection = authCollectionProvider_.Get();
@@ -151,14 +165,16 @@ public class AuthenticationTable : IAuthenticationTable
              .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,
-                                                                       string?            username,
-                                                                       CancellationToken cancellationToken = default)
+                                                                        string?            username,
+                                                                        CancellationToken cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromUserAsync)}");
     var       userCollection = userCollectionProvider_.Get();
     var       sessionHandle  = sessionProvider_.Get();
     Expression<Func<UserData, bool>> expression;
+    // Id matching has priority
     if (id != null)
     {
       expression = data => data.UserId == id;
@@ -180,17 +196,46 @@ public class AuthenticationTable : IAuthenticationTable
              .ConfigureAwait(false);
   }
 
-
+  /// <summary>
+  /// Gets or generates the pipeline which uses the matched user information to get their roles and permissions
+  /// </summary>
+  /// <returns>The user to identity pipeline</returns>
   private PipelineDefinition<UserData, UserAuthenticationResult> GetUserToIdentityPipeline()
   {
     if (userToIdentityPipeline_ != null)
     {
       return userToIdentityPipeline_;
     }
+    // Get the RoleData for each of the roles of the UserData
     var lookup = PipelineStageDefinitionBuilder.Lookup<UserData, RoleData, UserDataAfterLookup>(roleCollectionProvider_.Get(),
                                                                                                 u => u.Roles,
                                                                                                 r => r.RoleId,
                                                                                                 ual => ual.Roles);
+    /* Projects the object into the identity containing:
+    - UserId : The database Id of the user
+    - UserName : The name of the User
+    - Roles : The names of the roles the user has
+    - Permissions : The list of permissions, extracted from the roles. Permissions are not repeated
+    Equivalent Bson Stage :
+    $project: {
+        Id: '$_id',
+        Username: '$Username',
+        Roles: '$Roles.RoleName',
+        Permissions: {
+            $reduce: {
+                input: '$Roles',
+                initialValue: [],
+                'in': {
+                    $setUnion: [
+                        '$$value',
+                        '$$this.Permissions'
+                    ]
+                }
+            }
+        },
+        _id: 0
+    }
+    */
     var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, UserAuthenticationResult>(ual => new UserAuthenticationResult(ual.UserId,
                                                                                                                                                     ual.Username,
                                                                                                                                                     ual.Roles
@@ -217,21 +262,37 @@ public class AuthenticationTable : IAuthenticationTable
     return userToIdentityPipeline_;
   }
 
+  /// <summary>
+  /// Gets or generates the pipeline which uses the matched certificates information to get the corresponding user, their role and their permissions
+  /// </summary>
+  /// <returns>The certificate to identity pipeline</returns>
   private PipelineDefinition<AuthData, UserAuthenticationResult> GetAuthToIdentityPipeline()
   {
     if (authToIdentityPipeline_ != null)
     {
       return authToIdentityPipeline_;
     }
-    var userToIdentityPipeline = GetUserToIdentityPipeline();
+    /*
+     When matching, either 1 or 2 certificates can be found. Either the database only has the CN and Fingerprint matching, or there is also a CN only entry.
+     When both are present, select the one which matches best (CN AND Fingerprint > CN only).
+     First sort by the Fingerprint in descending order (null fingerprint are push to the end)...
+    */
     var sortByRelevance        = PipelineStageDefinitionBuilder.Sort(new SortDefinitionBuilder<AuthData>().Descending(authData => authData.Fingerprint));
+    // ...then limit to 1 result, allowing to keep the best matching.
     var limit                  = PipelineStageDefinitionBuilder.Limit<AuthData>(1);
+
+    // Get the User corresponding to the UserId from the UserData collection and put it in the UserData field.
     var lookup = PipelineStageDefinitionBuilder.Lookup<AuthData, UserData, AuthDataAfterLookup>(userCollectionProvider_.Get(),
                                                                                                 auth => auth.UserId,
                                                                                                 user => user.UserId,
                                                                                                 authAfterLookup => authAfterLookup.UserData);
+    // If the UserId is invalid, the UserData field is an empty array. Stop if this is the case.
     var checkIfValid = PipelineStageDefinitionBuilder.Match<AuthDataAfterLookup>(doc => doc.UserData.Any());
+    // Replace the object with the UserData
     var replaceRoot  = PipelineStageDefinitionBuilder.ReplaceRoot<AuthDataAfterLookup, UserData>(doc => doc.UserData.First());
+
+    // Use the User to Identity pipeline to create identity from the UserData
+    var userToIdentityPipeline = GetUserToIdentityPipeline();
     var pipeline = new IPipelineStageDefinition[]
                    {
                      sortByRelevance,
@@ -244,6 +305,7 @@ public class AuthenticationTable : IAuthenticationTable
     return authToIdentityPipeline_;
   }
 
+  /// <inheritdoc />
   public void AddRoles(IEnumerable<RoleData> roles)
   {
     var roleCollection = roleCollectionProvider_.Get();
@@ -252,6 +314,7 @@ public class AuthenticationTable : IAuthenticationTable
                               roles);
   }
 
+  /// <inheritdoc />
   public void AddUsers(IEnumerable<UserData> users)
   {
     var userCollection = userCollectionProvider_.Get();
@@ -260,6 +323,7 @@ public class AuthenticationTable : IAuthenticationTable
                               users);
   }
 
+  /// <inheritdoc />
   public void AddCertificates(IEnumerable<AuthData> certificates)
   {
     var authCollection = authCollectionProvider_.Get();
