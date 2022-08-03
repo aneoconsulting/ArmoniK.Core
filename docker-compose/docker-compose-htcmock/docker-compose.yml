@@ -24,7 +24,7 @@ services:
       - Amqp__MaxPriority=10
       - Amqp__User=admin
       - Amqp__Password=admin
-      - Amqp__MaxRetry=5
+      - Amqp__MaxRetries=10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
     depends_on:
@@ -60,7 +60,7 @@ services:
       - Amqp__MaxPriority=10
       - Amqp__User=admin
       - Amqp__Password=admin
-      - Amqp__MaxRetry=5
+      - Amqp__MaxRetries=10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
     depends_on:
@@ -101,7 +101,7 @@ services:
       - Amqp__MaxPriority=10
       - Amqp__User=admin
       - Amqp__Password=admin
-      - Amqp__MaxRetry=5
+      - Amqp__MaxRetries=10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
     depends_on:
       - database
