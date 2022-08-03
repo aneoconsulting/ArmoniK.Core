@@ -8,6 +8,7 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
+//   D. Brasseur       <dbrasseur@aneo.fr>
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -22,18 +23,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+namespace ArmoniK.Core.Common.Auth.Authentication;
 
-namespace ArmoniK.Core.Common.Injection.Options;
-
-[PublicAPI]
-public class Components
-{
-  public const string SettingSection = nameof(Components);
-
-  public string? TableStorage  { get; set; }
-  public string? QueueStorage  { get; set; }
-  public string? LeaseProvider { get; set; }
-  public string? ObjectStorage { get; set; }
-  public string? AuthenticationStorage { get; set; }
-}
+public record UserData(string   UserId,
+                       string   Username,
+                       string[] Roles);

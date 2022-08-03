@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -23,14 +23,19 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Tests.Auth;
 
 using Grpc.Net.Client;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,23 +45,35 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class GrpcSubmitterServiceHelper : IDisposable
 {
-  private readonly WebApplication     app_;
-  private          TestServer         server_;
-  private          HttpMessageHandler handler_;
-  private readonly ILoggerFactory     loggerFactory_;
-  private          GrpcChannel        channel_;
+  private readonly WebApplication      app_;
+  private          TestServer?         server_;
+  private          HttpMessageHandler? handler_;
+  private readonly ILoggerFactory      loggerFactory_;
+  private          GrpcChannel?        channel_;
 
-  public GrpcSubmitterServiceHelper(ISubmitter submitter)
+  public GrpcSubmitterServiceHelper(ISubmitter           submitter,
+                                    List<MockIdentity>   authIdentities,
+                                    AuthenticatorOptions authOptions,
+                                    LogLevel             loglevel)
   {
     loggerFactory_ = new LoggerFactory();
-    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
+    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(loglevel));
 
     var builder = WebApplication.CreateBuilder();
 
     builder.Services.AddSingleton(loggerFactory_)
            .AddSingleton(submitter)
            .AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
-           .AddLogging()
+           .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(authIdentities))
+           .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
+           .AddAuthentication()
+           .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
+                                                           _ =>
+                                                           {
+                                                           });
+    builder.Services.AddLogging(build => build.SetMinimumLevel(loglevel))
+           .AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
+           .AddAuthorization()
            .ValidateGrpcRequests()
            .AddGrpc();
 
@@ -64,41 +81,78 @@ public class GrpcSubmitterServiceHelper : IDisposable
 
     app_ = builder.Build();
     app_.UseRouting();
+    app_.UseAuthentication();
+    app_.UseAuthorization();
     app_.MapGrpcService<GrpcSubmitterService>();
   }
 
-  public async Task<GrpcChannel> CreateChannel()
-  {    
+  public GrpcSubmitterServiceHelper(ISubmitter submitter)
+    : this(submitter,
+           new List<MockIdentity>(),
+           AuthenticatorOptions.DefaultNoAuth,
+           LogLevel.Trace)
+  {
+  }
 
-    
+  public async Task StartServer()
+  {
     await app_.StartAsync()
-             .ConfigureAwait(false);
+              .ConfigureAwait(false);
 
-    server_  = app_.GetTestServer();
-    handler_ = server_.CreateHandler();
+    server_  =   app_.GetTestServer();
+    handler_ ??= server_.CreateHandler();
+  }
+
+  public async Task<GrpcChannel> CreateChannel()
+  {
+    if (handler_ == null)
+    {
+      await StartServer()
+        .ConfigureAwait(false);
+    }
 
     channel_ = GrpcChannel.ForAddress("http://localhost",
-                                         new GrpcChannelOptions
-                                         {
-                                           LoggerFactory = loggerFactory_,
-                                           HttpHandler   = handler_,
-                                         });
+                                      new GrpcChannelOptions
+                                      {
+                                        LoggerFactory = loggerFactory_,
+                                        HttpHandler   = handler_,
+                                      });
 
     return channel_;
   }
 
+  public async Task DeleteChannel()
+  {
+    if (channel_ == null)
+      return;
+    await channel_.ShutdownAsync()
+                  .ConfigureAwait(false);
+    channel_.Dispose();
+    channel_ = null;
+  }
+
   public async Task StopServer()
   {
+    server_?.Dispose();
     await app_.StopAsync()
               .ConfigureAwait(false);
+    await app_.DisposeAsync()
+              .ConfigureAwait(false);
+    handler_?.Dispose();
+    handler_ = null;
   }
 
   public void Dispose()
   {
-    app_.DisposeAsync().GetAwaiter().GetResult();
-    server_.Dispose();
-    handler_.Dispose();
-    channel_.Dispose();
+    app_.DisposeAsync()
+        .GetAwaiter()
+        .GetResult();
+    server_?.Dispose();
+    server_ = null;
+    handler_?.Dispose();
+    handler_ = null;
+    channel_?.Dispose();
+    channel_ = null;
     GC.SuppressFinalize(this);
   }
 }
