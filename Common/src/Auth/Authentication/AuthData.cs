@@ -25,6 +25,13 @@
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
+/// <summary>
+/// Certificate(s) object in database
+/// </summary>
+/// <param name="AuthId">Unique Id of the entry</param>
+/// <param name="UserId">Id of the user this entry refers to</param>
+/// <param name="CN">Common Name of the certificate(s)</param>
+/// <param name="Fingerprint">fingerprint of the certificate. If null, this entry matches with all certificates having the matching Common Name</param>
 public record AuthData(string  AuthId,
                        string  UserId,
                        string  CN,
