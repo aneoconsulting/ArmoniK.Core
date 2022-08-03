@@ -139,9 +139,9 @@ public static class ServiceCollectionExt
                                 false,
                                 false);
 
-      services.AddOption(configuration,
-                         Options.MongoDB.SettingSection,
-                         out mongoOptions);
+      services.AddOption<Options.MongoDB>(configuration,
+                                          Options.MongoDB.SettingSection,
+                                          out mongoOptions);
 
       logger.LogTrace("Loaded mongodb credentials from file {path}",
                       mongoOptions.CredentialsPath);
@@ -175,7 +175,7 @@ public static class ServiceCollectionExt
       }
     }
 
-    string connectionString = null;
+    string connectionString;
     if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
     {
       var template = "mongodb://{0}:{1}/{2}";
@@ -250,7 +250,9 @@ public static class ServiceCollectionExt
     services.Configure<AuthenticatorOptions>(configuration.GetSection(AuthenticatorOptions.SectionName))
             .AddAuthentication()
             .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
-                                                            _ => { });
+                                                            _ =>
+                                                            {
+                                                            });
     services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
             .AddAuthorization();
     return services;

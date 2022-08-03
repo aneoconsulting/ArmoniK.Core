@@ -55,10 +55,10 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
 
   /// <inheritdoc />
-  
-  [RequiresPermission(Permissions.Submitter, nameof(GetServiceConfiguration))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(GetServiceConfiguration))]
   public override async Task<Configuration> GetServiceConfiguration(Empty             request,
-                                                              ServerCallContext context)
+                                                                    ServerCallContext context)
   {
     try
     {
@@ -69,26 +69,26 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting service configuration");
+                         "Error while getting service configuration");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while getting service configuration");
+                         "Error while getting service configuration");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
-  [RequiresPermission(Permissions.Submitter, nameof(CancelSession))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(CancelSession))]
   public override async Task<Empty> CancelSession(Session           request,
                                                   ServerCallContext context)
   {
     try
     {
-
       await submitter_.CancelSession(request.Id,
                                      context.CancellationToken)
                       .ConfigureAwait(false);
@@ -97,27 +97,28 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (SessionNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while canceling session");
+                         "Error while canceling session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while canceling session");
+                         "Error while canceling session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while canceling session");
+                         "Error while canceling session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
-  [RequiresPermission(Permissions.Submitter, nameof(CancelTasks))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(CancelTasks))]
   public override async Task<Empty> CancelTasks(TaskFilter        request,
                                                 ServerCallContext context)
   {
@@ -133,21 +134,22 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while canceling tasks");
+                         "Error while canceling tasks");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while canceling tasks");
+                         "Error while canceling tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter, nameof(CreateSession))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(CreateSession))]
   public override Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
                                                          ServerCallContext    context)
   {
@@ -161,20 +163,21 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while creating session");
+                         "Error while creating session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while creating session");
+                         "Error while creating session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
-  [RequiresPermission(Permissions.Submitter, nameof(CreateSmallTasks))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(CreateSmallTasks))]
   public override async Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request,
                                                                ServerCallContext      context)
   {
@@ -209,14 +212,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while creating tasks");
+                         "Error while creating tasks");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while creating tasks");
+                         "Error while creating tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
@@ -224,7 +227,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter, nameof(CreateLargeTasks))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(CreateLargeTasks))]
   public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream,
                                                                ServerCallContext                          context)
   {
@@ -271,27 +275,28 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while creating tasks");
+                         "Error while creating tasks");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (RpcException e)
     {
       logger_.LogWarning(e,
-                       "Error while creating tasks");
+                         "Error while creating tasks");
       throw;
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while creating tasks");
+                         "Error while creating tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter, nameof(CountTasks))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(CountTasks))]
   public override Task<Count> CountTasks(TaskFilter        request,
                                          ServerCallContext context)
   {
@@ -303,24 +308,25 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while counting tasks");
+                         "Error while counting tasks");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while counting tasks");
+                         "Error while counting tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter, nameof(TryGetResultStream))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(TryGetResultStream))]
   public override async Task TryGetResultStream(ResultRequest                    request,
-                                          IServerStreamWriter<ResultReply> responseStream,
-                                          ServerCallContext                context)
+                                                IServerStreamWriter<ResultReply> responseStream,
+                                                ServerCallContext                context)
   {
     try
     {
@@ -332,42 +338,43 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (TaskNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting results");
+                         "Error while getting results");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ResultNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting results");
+                         "Error while getting results");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result not found"));
     }
     catch (ObjectDataNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting results");
+                         "Error while getting results");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result data not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting results");
+                         "Error while getting results");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while getting results");
+                         "Error while getting results");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
   /// <inheritdoc />
-  [RequiresPermission(Permissions.Submitter, nameof(WaitForCompletion))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(WaitForCompletion))]
   public override Task<Count> WaitForCompletion(WaitRequest       request,
                                                 ServerCallContext context)
   {
@@ -379,67 +386,68 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (TaskNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while waiting for completion");
+                         "Error while waiting for completion");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while waiting for completion");
+                         "Error while waiting for completion");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while waiting for completion");
+                         "Error while waiting for completion");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
-  [RequiresPermission(Permissions.Submitter, nameof(TryGetTaskOutput))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(TryGetTaskOutput))]
   public override Task<Output> TryGetTaskOutput(ResultRequest     request,
                                                 ServerCallContext context)
   {
     try
     {
-
       return submitter_.TryGetTaskOutputAsync(request,
                                               context.CancellationToken);
     }
     catch (TaskNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting output");
+                         "Error while getting output");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ResultNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting output");
+                         "Error while getting output");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while getting output");
+                         "Error while getting output");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while getting output");
+                         "Error while getting output");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
-  [RequiresPermission(Permissions.Submitter, nameof(WaitForAvailability))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(WaitForAvailability))]
   public override Task<AvailabilityReply> WaitForAvailability(ResultRequest     request,
                                                               ServerCallContext context)
   {
@@ -451,34 +459,35 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (TaskNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while waiting for availability");
+                         "Error while waiting for availability");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ResultNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while waiting for availability");
+                         "Error while waiting for availability");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while waiting for availability");
+                         "Error while waiting for availability");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while waiting for availability");
+                         "Error while waiting for availability");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
-  [RequiresPermission(Permissions.Submitter, nameof(GetTaskStatus))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(GetTaskStatus))]
   public override Task<GetTaskStatusReply> GetTaskStatus(GetTaskStatusRequest request,
                                                          ServerCallContext    context)
   {
@@ -510,7 +519,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter, nameof(GetResultStatus))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(GetResultStatus))]
   public override Task<GetResultStatusReply> GetResultStatus(GetResultStatusRequest request,
                                                              ServerCallContext      context)
   {
@@ -542,7 +552,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
-  [RequiresPermission(Permissions.Submitter, nameof(ListTasks))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(ListTasks))]
   public override Task<TaskIdList> ListTasks(TaskFilter        request,
                                              ServerCallContext context)
   {
@@ -554,29 +565,30 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     catch (TaskNotFoundException e)
     {
       logger_.LogWarning(e,
-                       "Error while listing tasks");
+                         "Error while listing tasks");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Task not found"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                       "Error while listing tasks");
+                         "Error while listing tasks");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see Submitter logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                       "Error while listing tasks");
+                         "Error while listing tasks");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see Submitter logs"));
     }
   }
 
-  [RequiresPermission(Permissions.Submitter, nameof(ListSessions))]
+  [RequiresPermission(Permissions.Submitter,
+                      nameof(ListSessions))]
   public override Task<SessionIdList> ListSessions(SessionFilter     request,
-                                                 ServerCallContext context)
+                                                   ServerCallContext context)
   {
     try
     {

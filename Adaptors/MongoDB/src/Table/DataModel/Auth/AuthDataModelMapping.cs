@@ -66,9 +66,9 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                            IMongoCollection<AuthData> collection)
   {
-    var fingerprintIndex = Builders<AuthData>.IndexKeys.Descending(model => model.Fingerprint);
+    var fingerprintIndex       = Builders<AuthData>.IndexKeys.Descending(model => model.Fingerprint);
     var fingerprintHashedIndex = Builders<AuthData>.IndexKeys.Hashed(model => model.Fingerprint);
-    var cnIndex          = Builders<AuthData>.IndexKeys.Ascending(model => model.CN);
+    var cnIndex                = Builders<AuthData>.IndexKeys.Ascending(model => model.CN);
     var compoundIndex = Builders<AuthData>.IndexKeys.Combine(cnIndex,
                                                              fingerprintIndex);
     var userIndex = Builders<AuthData>.IndexKeys.Hashed(model => model.UserId);

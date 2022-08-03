@@ -24,6 +24,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
+
 public record AuthData(string  AuthId,
                        string  UserId,
                        string  CN,

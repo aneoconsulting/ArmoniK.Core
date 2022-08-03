@@ -254,9 +254,9 @@ public class AuthenticationTableTestBase
                                       .Result);
   }
 
-  [TestCase(                                                                            0,
-                                                                     "User1"), TestCase(1,
-                                                                                        "User2")]
+  [TestCase(                                      0,
+                               "User1"), TestCase(1,
+                                                  "User2")]
   public void GetIdentityFromIdShouldSucceed(int    id,
                                              string username)
   {
@@ -284,9 +284,9 @@ public class AuthenticationTableTestBase
                                       .Result);
   }
 
-  [TestCase(                                                    "User1",
-                                                   0), TestCase("User2",
-                                                                1)]
+  [TestCase(                          "User1",
+                         0), TestCase("User2",
+                                      1)]
   public void GetIdentityFromNameShouldSucceed(string name,
                                                int    id)
   {

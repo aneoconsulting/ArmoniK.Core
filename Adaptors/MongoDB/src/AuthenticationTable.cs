@@ -117,9 +117,10 @@ public class AuthenticationTable : IAuthenticationTable
     return Task.CompletedTask;
   }
 
-  private static async Task<UserAuthenticationResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle sessionHandle,
+  private static async Task<UserAuthenticationResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle                  sessionHandle,
                                                                                                          IMongoCollection<TCollectionDataType> collection,
-                                                                                                         PipelineDefinition<TCollectionDataType, UserAuthenticationResult> pipeline,
+                                                                                                         PipelineDefinition<TCollectionDataType,
+                                                                                                           UserAuthenticationResult> pipeline,
                                                                                                          Expression<Func<TCollectionDataType, bool>> matchingFunctions,
                                                                                                          CancellationToken cancellationToken = default)
   {
@@ -137,33 +138,33 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   public async Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
-                                                               string            fingerprint,
-                                                               CancellationToken cancellationToken = default)
+                                                                               string            fingerprint,
+                                                                               CancellationToken cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromCertificateAsync)}");
     var       authCollection = authCollectionProvider_.Get();
     var       sessionHandle  = sessionProvider_.Get();
     return await GetIdentityFromPipelineAsync(sessionHandle,
-                                         authCollection,
-                                         GetAuthToIdentityPipeline(),
-                                         auth => auth.CN == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
-                                         cancellationToken)
+                                              authCollection,
+                                              GetAuthToIdentityPipeline(),
+                                              auth => auth.CN == cn && (auth.Fingerprint == fingerprint || auth.Fingerprint == null),
+                                              cancellationToken)
              .ConfigureAwait(false);
   }
 
   public async Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,
-                                                                       string?            username,
-                                                                       CancellationToken cancellationToken = default)
+                                                                        string?           username,
+                                                                        CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromUserAsync)}");
-    var       userCollection = userCollectionProvider_.Get();
-    var       sessionHandle  = sessionProvider_.Get();
+    using var                        activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromUserAsync)}");
+    var                              userCollection = userCollectionProvider_.Get();
+    var                              sessionHandle  = sessionProvider_.Get();
     Expression<Func<UserData, bool>> expression;
     if (id != null)
     {
       expression = data => data.UserId == id;
     }
-    else if(username != null)
+    else if (username != null)
     {
       expression = data => data.Username == username;
     }
@@ -173,10 +174,10 @@ public class AuthenticationTable : IAuthenticationTable
     }
 
     return await GetIdentityFromPipelineAsync(sessionHandle,
-                                         userCollection,
-                                         GetUserToIdentityPipeline(),
-                                         expression,
-                                         cancellationToken)
+                                              userCollection,
+                                              GetUserToIdentityPipeline(),
+                                              expression,
+                                              cancellationToken)
              .ConfigureAwait(false);
   }
 
@@ -187,6 +188,7 @@ public class AuthenticationTable : IAuthenticationTable
     {
       return userToIdentityPipeline_;
     }
+
     var lookup = PipelineStageDefinitionBuilder.Lookup<UserData, RoleData, UserDataAfterLookup>(roleCollectionProvider_.Get(),
                                                                                                 u => u.Roles,
                                                                                                 r => r.RoleId,
@@ -223,6 +225,7 @@ public class AuthenticationTable : IAuthenticationTable
     {
       return authToIdentityPipeline_;
     }
+
     var userToIdentityPipeline = GetUserToIdentityPipeline();
     var sortByRelevance        = PipelineStageDefinitionBuilder.Sort(new SortDefinitionBuilder<AuthData>().Descending(authData => authData.Fingerprint));
     var limit                  = PipelineStageDefinitionBuilder.Limit<AuthData>(1);

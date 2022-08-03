@@ -45,13 +45,16 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class GrpcSubmitterServiceHelper : IDisposable
 {
-  private readonly WebApplication     app_;
-  private TestServer? server_;
-  private HttpMessageHandler? handler_;
-  private readonly ILoggerFactory     loggerFactory_;
-  private GrpcChannel? channel_;
+  private readonly WebApplication      app_;
+  private          TestServer?         server_;
+  private          HttpMessageHandler? handler_;
+  private readonly ILoggerFactory      loggerFactory_;
+  private          GrpcChannel?        channel_;
 
-  public GrpcSubmitterServiceHelper(ISubmitter submitter, List<MockIdentity> authIdentities, AuthenticatorOptions authOptions, LogLevel loglevel)
+  public GrpcSubmitterServiceHelper(ISubmitter           submitter,
+                                    List<MockIdentity>   authIdentities,
+                                    AuthenticatorOptions authOptions,
+                                    LogLevel             loglevel)
   {
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(loglevel));
@@ -62,10 +65,13 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddSingleton(submitter)
            .AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
            .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(authIdentities))
-           .Configure<AuthenticatorOptions>(o=> o.CopyFrom(authOptions))
+           .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
            .AddAuthentication()
-           .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName, _ => {});
-    builder.Services.AddLogging(build=>build.SetMinimumLevel(loglevel))
+           .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
+                                                           _ =>
+                                                           {
+                                                           });
+    builder.Services.AddLogging(build => build.SetMinimumLevel(loglevel))
            .AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
            .AddAuthorization()
            .ValidateGrpcRequests()
@@ -81,10 +87,11 @@ public class GrpcSubmitterServiceHelper : IDisposable
   }
 
   public GrpcSubmitterServiceHelper(ISubmitter submitter)
-    : this(submitter, new List<MockIdentity>(),
-           AuthenticatorOptions.DefaultNoAuth, LogLevel.Trace)
+    : this(submitter,
+           new List<MockIdentity>(),
+           AuthenticatorOptions.DefaultNoAuth,
+           LogLevel.Trace)
   {
-
   }
 
   public async Task StartServer()
@@ -92,14 +99,12 @@ public class GrpcSubmitterServiceHelper : IDisposable
     await app_.StartAsync()
               .ConfigureAwait(false);
 
-    server_  = app_.GetTestServer();
+    server_  =   app_.GetTestServer();
     handler_ ??= server_.CreateHandler();
-   
   }
 
   public async Task<GrpcChannel> CreateChannel()
   {
-
     if (handler_ == null)
     {
       await StartServer()
@@ -131,14 +136,17 @@ public class GrpcSubmitterServiceHelper : IDisposable
     server_?.Dispose();
     await app_.StopAsync()
               .ConfigureAwait(false);
-    await app_.DisposeAsync().ConfigureAwait(false);
+    await app_.DisposeAsync()
+              .ConfigureAwait(false);
     handler_?.Dispose();
     handler_ = null;
   }
 
   public void Dispose()
   {
-    app_.DisposeAsync().GetAwaiter().GetResult();
+    app_.DisposeAsync()
+        .GetAwaiter()
+        .GetResult();
     server_?.Dispose();
     server_ = null;
     handler_?.Dispose();
