@@ -38,8 +38,8 @@ namespace ArmoniK.Samples.HtcMock.Client;
 public class GridClient : IGridClient
 {
   private readonly Submitter.SubmitterClient client_;
-  private readonly Options.HtcMock           optionsHtcMock_;
   private readonly ILogger<GridClient>       logger_;
+  private readonly Options.HtcMock           optionsHtcMock_;
 
   public GridClient(Submitter.SubmitterClient client,
                     ILoggerFactory            loggerFactory,

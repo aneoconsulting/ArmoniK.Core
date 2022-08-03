@@ -137,6 +137,9 @@ public class QueueStorage : IQueueStorage
 
     public long Order { get; } = Interlocked.Increment(ref count_);
 
+    public SortedList<MessageHandler, MessageHandler>   Queues   { get; set; }
+    public ConcurrentDictionary<string, MessageHandler> Handlers { get; set; }
+
     /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
@@ -144,7 +147,7 @@ public class QueueStorage : IQueueStorage
       {
         case QueueMessageStatus.Postponed:
           if (!Handlers.TryRemove(TaskId,
-                                      out var handler))
+                                  out var handler))
           {
             throw new KeyNotFoundException();
           }
@@ -164,15 +167,15 @@ public class QueueStorage : IQueueStorage
                            };
 
           Queues.Add(newMessage,
-                      newMessage);
+                     newMessage);
           if (!Handlers.TryAdd(newMessage.TaskId,
-                                   newMessage))
+                               newMessage))
           {
             throw new InvalidOperationException("Duplicate messageId found.");
           }
 
           if (!Queues.Remove(handler,
-                              out _))
+                             out _))
           {
             throw new KeyNotFoundException();
           }
@@ -180,7 +183,7 @@ public class QueueStorage : IQueueStorage
           break;
         case QueueMessageStatus.Failed:
           if (!Handlers.TryRemove(TaskId,
-                                      out var failedHandler))
+                                  out var failedHandler))
           {
             throw new KeyNotFoundException();
           }
@@ -189,7 +192,7 @@ public class QueueStorage : IQueueStorage
           break;
         case QueueMessageStatus.Processed:
           if (!Handlers.TryRemove(TaskId,
-                                      out var processedHandler))
+                                  out var processedHandler))
           {
             throw new KeyNotFoundException();
           }
@@ -200,14 +203,15 @@ public class QueueStorage : IQueueStorage
           }
 
           if (!Queues.Remove(processedHandler,
-                              out _))
+                             out _))
           {
             throw new KeyNotFoundException();
           }
+
           break;
         case QueueMessageStatus.Poisonous:
           if (!Handlers.TryRemove(TaskId,
-                                      out var rejectedHandler))
+                                  out var rejectedHandler))
           {
             throw new KeyNotFoundException();
           }
@@ -218,10 +222,11 @@ public class QueueStorage : IQueueStorage
           }
 
           if (!Queues.Remove(rejectedHandler,
-                              out _))
+                             out _))
           {
             throw new KeyNotFoundException();
           }
+
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(Status),
@@ -246,9 +251,6 @@ public class QueueStorage : IQueueStorage
 
     /// <inheritdoc />
     public QueueMessageStatus Status { get; set; }
-
-    public SortedList<MessageHandler, MessageHandler>   Queues   { get; set; }
-    public ConcurrentDictionary<string, MessageHandler> Handlers { get; set; }
   }
 
   private class MessageComparer : IComparer<MessageHandler>

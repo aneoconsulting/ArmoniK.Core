@@ -33,25 +33,20 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestServerCallContext : ServerCallContext
 {
-  private readonly Metadata                   requestHeaders_;
-  private readonly CancellationToken          cancellationToken_;
-  private readonly Metadata                   responseTrailers_;
-  private readonly AuthContext                authContext_;
   private readonly Dictionary<object, object> userState_;
-  private          WriteOptions              writeOptions_;
-
-  public Metadata ResponseHeaders { get; private set; }
 
   private TestServerCallContext(Metadata          requestHeaders,
                                 CancellationToken cancellationToken)
   {
-    requestHeaders_    = requestHeaders;
-    cancellationToken_ = cancellationToken;
-    responseTrailers_  = new Metadata();
-    authContext_ = new AuthContext(string.Empty,
-                                   new Dictionary<string, List<AuthProperty>>());
+    RequestHeadersCore    = requestHeaders;
+    CancellationTokenCore = cancellationToken;
+    ResponseTrailersCore  = new Metadata();
+    AuthContextCore = new AuthContext(string.Empty,
+                                      new Dictionary<string, List<AuthProperty>>());
     userState_ = new Dictionary<object, object>();
   }
+
+  public Metadata ResponseHeaders { get; private set; }
 
   protected override string MethodCore
     => "MethodName";
@@ -64,30 +59,23 @@ public class TestServerCallContext : ServerCallContext
 
   protected override DateTime DeadlineCore { get; }
 
-  protected override Metadata RequestHeadersCore
-    => requestHeaders_;
+  protected override Metadata RequestHeadersCore { get; }
 
-  protected override CancellationToken CancellationTokenCore
-    => cancellationToken_;
+  protected override CancellationToken CancellationTokenCore { get; }
 
-  protected override Metadata ResponseTrailersCore
-    => responseTrailers_;
+  protected override Metadata ResponseTrailersCore { get; }
 
   protected override Status StatusCore { get; set; }
 
-  protected override WriteOptions WriteOptionsCore
-  {
-    get => writeOptions_;
-    set { writeOptions_ = value; }
-  }
+  protected override WriteOptions WriteOptionsCore { get; set; }
 
-  protected override AuthContext AuthContextCore
-    => authContext_;
+  protected override AuthContext AuthContextCore { get; }
+
+  protected override IDictionary<object, object> UserStateCore
+    => userState_;
 
   protected override ContextPropagationToken CreatePropagationTokenCore(ContextPropagationOptions options)
-  {
-    throw new NotImplementedException();
-  }
+    => throw new NotImplementedException();
 
   protected override Task WriteResponseHeadersAsyncCore(Metadata responseHeaders)
   {
@@ -100,13 +88,8 @@ public class TestServerCallContext : ServerCallContext
     return Task.CompletedTask;
   }
 
-  protected override IDictionary<object, object> UserStateCore
-    => userState_;
-
-  public static TestServerCallContext Create(Metadata         requestHeaders    = null,
+  public static TestServerCallContext Create(Metadata          requestHeaders    = null,
                                              CancellationToken cancellationToken = default)
-  {
-    return new TestServerCallContext(requestHeaders ?? new Metadata(),
-                                     cancellationToken);
-  }
+    => new(requestHeaders ?? new Metadata(),
+           cancellationToken);
 }

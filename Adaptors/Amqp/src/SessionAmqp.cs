@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Net.Http.Headers;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -53,21 +52,6 @@ public class SessionAmqp : ISessionAmqp
   public Options.Amqp Options { get; set; }
 
   public ILogger Logger { get; set; }
-
-  private static void OnCloseConnection(IAmqpObject sender,
-                                        Error?       error,
-                                        ILogger     logger)
-  {
-    if (error == null)
-    {
-      logger.LogInformation("AMQP Connection closed with no error");
-    }
-    else
-    {
-      logger.LogWarning("AMQP Connection closed with error: {0}",
-                        error.ToString());
-    }
-  }
 
   public async Task<ISessionAmqp> OpenConnection()
   {
@@ -115,7 +99,7 @@ public class SessionAmqp : ISessionAmqp
     }
 
     var retry = 0;
-    for(; retry < Options.MaxRetries; retry++)
+    for (; retry < Options.MaxRetries; retry++)
     {
       try
       {
@@ -161,5 +145,20 @@ public class SessionAmqp : ISessionAmqp
     return retriesReconnect_ <= 0
              ? HealthCheckResult.Unhealthy()
              : HealthCheckResult.Healthy();
+  }
+
+  private static void OnCloseConnection(IAmqpObject sender,
+                                        Error?      error,
+                                        ILogger     logger)
+  {
+    if (error == null)
+    {
+      logger.LogInformation("AMQP Connection closed with no error");
+    }
+    else
+    {
+      logger.LogWarning("AMQP Connection closed with error: {0}",
+                        error.ToString());
+    }
   }
 }

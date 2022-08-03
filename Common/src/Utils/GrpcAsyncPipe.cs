@@ -32,7 +32,7 @@ namespace ArmoniK.Core.Common.Utils;
 
 internal class GrpcAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMessage, TWriteMessage>
 {
-  private readonly Task<TReadMessage>                       response_;
+  private readonly Task<TReadMessage>                 response_;
   private readonly IClientStreamWriter<TWriteMessage> writer_;
 
   public GrpcAsyncPipe(Task<TReadMessage>                 response,

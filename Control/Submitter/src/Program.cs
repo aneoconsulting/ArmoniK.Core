@@ -31,7 +31,6 @@ using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Auth;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Utils;
@@ -114,7 +113,7 @@ public static class Program
       }
 
       builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration,
-                                                 logger.GetLogger());
+                                                               logger.GetLogger());
       builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
                                                       logger.GetLogger());
 

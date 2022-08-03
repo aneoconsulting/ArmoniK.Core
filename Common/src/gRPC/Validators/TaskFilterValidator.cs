@@ -31,15 +31,15 @@ using JetBrains.Annotations;
 namespace ArmoniK.Core.Common.gRPC.Validators;
 
 /// <summary>
-/// gRPC validator for <see cref="TaskFilter"/>
+///   gRPC validator for <see cref="TaskFilter" />
 /// </summary>
 [UsedImplicitly]
 public class TaskFilterValidator : AbstractValidator<TaskFilter>
 {
   /// <summary>
-  /// Either filter on task id or session id.
-  /// The one selected should not be empty
-  /// Filter on Status is not mandatory but the one selected has to have at least one element
+  ///   Either filter on task id or session id.
+  ///   The one selected should not be empty
+  ///   Filter on Status is not mandatory but the one selected has to have at least one element
   /// </summary>
   public TaskFilterValidator()
   {
@@ -51,7 +51,7 @@ public class TaskFilterValidator : AbstractValidator<TaskFilter>
       .NotEmpty()
       .SetValidator(new IdsRequestValidator())
       .When(filter => filter.IdsCase == TaskFilter.IdsOneofCase.Session);
-    
+
     RuleFor(filter => filter.Task)
       .NotNull()
       .NotEmpty()
@@ -74,18 +74,14 @@ public class TaskFilterValidator : AbstractValidator<TaskFilter>
   private class IdsRequestValidator : AbstractValidator<TaskFilter.Types.IdsRequest>
   {
     public IdsRequestValidator()
-    {
-      RuleFor(r => r.Ids)
+      => RuleFor(r => r.Ids)
         .NotEmpty();
-    }
   }
 
   private class StatusesRequestValidator : AbstractValidator<TaskFilter.Types.StatusesRequest>
   {
     public StatusesRequestValidator()
-    {
-      RuleFor(r => r.Statuses)
+      => RuleFor(r => r.Statuses)
         .NotEmpty();
-    }
   }
 }

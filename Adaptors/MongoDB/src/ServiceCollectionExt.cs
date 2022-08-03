@@ -139,9 +139,9 @@ public static class ServiceCollectionExt
                                 false,
                                 false);
 
-      services.AddOption<Options.MongoDB>(configuration,
-                                          Options.MongoDB.SettingSection,
-                                          out mongoOptions);
+      services.AddOption(configuration,
+                         Options.MongoDB.SettingSection,
+                         out mongoOptions);
 
       logger.LogTrace("Loaded mongodb credentials from file {path}",
                       mongoOptions.CredentialsPath);

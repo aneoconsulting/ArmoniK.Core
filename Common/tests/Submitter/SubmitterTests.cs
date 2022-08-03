@@ -55,7 +55,7 @@ using MongoDB.Driver;
 using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
-using Output = ArmoniK.Api.gRPC.V1.Output;
+using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
@@ -65,21 +65,6 @@ namespace ArmoniK.Core.Common.Tests.Submitter;
 [TestFixture]
 public class SubmitterTests
 {
-  private                 ISubmitter     submitter_;
-  private                 MongoDbRunner  runner_;
-  private                 MongoClient    client_;
-  private const           string         DatabaseName    = "ArmoniK_TestDB";
-  private const           string         SessionId       = "SessionId";
-  private const           string         TaskCreatingId  = "TaskCreatingId";
-  private const           string         TaskSubmittedId = "TaskSubmittedId";
-  private const           string         TaskCompletedId = "TaskCompeletedId";
-  private const           string         ExpectedOutput1 = "ExpectedOutput1";
-  private const           string         ExpectedOutput2 = "ExpectedOutput2";
-  private const           string         ExpectedOutput3 = "ExpectedOutput3";
-  private static readonly ActivitySource ActivitySource  = new("ArmoniK.Core.Common.Tests.Submitter");
-  private                 ISessionTable  sessionTable_;
-
-
   [SetUp]
   public void SetUp()
   {
@@ -150,6 +135,20 @@ public class SubmitterTests
     submitter_ = null;
   }
 
+  private                 ISubmitter     submitter_;
+  private                 MongoDbRunner  runner_;
+  private                 MongoClient    client_;
+  private const           string         DatabaseName    = "ArmoniK_TestDB";
+  private const           string         SessionId       = "SessionId";
+  private const           string         TaskCreatingId  = "TaskCreatingId";
+  private const           string         TaskSubmittedId = "TaskSubmittedId";
+  private const           string         TaskCompletedId = "TaskCompeletedId";
+  private const           string         ExpectedOutput1 = "ExpectedOutput1";
+  private const           string         ExpectedOutput2 = "ExpectedOutput2";
+  private const           string         ExpectedOutput3 = "ExpectedOutput3";
+  private static readonly ActivitySource ActivitySource  = new("ArmoniK.Core.Common.Tests.Submitter");
+  private                 ISessionTable  sessionTable_;
+
   private static async Task InitSubmitter(ISubmitter        submitter,
                                           CancellationToken token)
   {
@@ -162,7 +161,11 @@ public class SubmitterTests
                              };
 
     await submitter.CreateSession(SessionId,
-                                  new[] {"part1", "part2"},
+                                  new[]
+                                  {
+                                    "part1",
+                                    "part2",
+                                  },
                                   defaultTaskOptions,
                                   token)
                    .ConfigureAwait(false);
@@ -231,13 +234,13 @@ public class SubmitterTests
                                 new List<string>(),
                                 new List<string>
                                 {
-                                  ExpectedOutput3
+                                  ExpectedOutput3,
                                 },
                                 new List<string>(),
                                 TaskStatus.Completed,
                                 defaultTaskOptions,
-                                new Storage.Output(false,
-                                                   ""));
+                                new Output(false,
+                                           ""));
 
     var tuple = await submitter.CreateTasks(SessionId,
                                             SessionId,
@@ -282,7 +285,7 @@ public class SubmitterTests
 
     await submitter.CompleteTaskAsync(taskdata,
                                       true,
-                                      new Output
+                                      new Api.gRPC.V1.Output
                                       {
                                         Ok = new Empty(),
                                       },
@@ -366,9 +369,13 @@ public class SubmitterTests
                              };
 
     await submitter_.CreateSession(SessionId,
-                                  new [] {"part1", "part2"},
-                                  defaultTaskOptions,
-                                  CancellationToken.None)
+                                   new[]
+                                   {
+                                     "part1",
+                                     "part2",
+                                   },
+                                   defaultTaskOptions,
+                                   CancellationToken.None)
                     .ConfigureAwait(false);
 
     Assert.ThrowsAsync<InvalidOperationException>(() => submitter_.CreateTasks(SessionId,
@@ -423,7 +430,7 @@ public class SubmitterTests
                                                      {
                                                        TaskIds =
                                                        {
-                                                         TaskSubmittedId
+                                                         TaskSubmittedId,
                                                        },
                                                      },
                                                      CancellationToken.None)
@@ -589,7 +596,7 @@ public class SubmitterTests
                                                         CancellationToken.None)
                                  .ConfigureAwait(false);
 
-    Assert.AreEqual(Output.TypeOneofCase.Ok,
+    Assert.AreEqual(Api.gRPC.V1.Output.TypeOneofCase.Ok,
                     output.TypeCase);
   }
 

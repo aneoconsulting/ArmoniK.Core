@@ -28,18 +28,18 @@ using System.Threading.Tasks;
 namespace ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 
 /// <summary>
-/// Checker used to determine if tasks are running on other pods
+///   Checker used to determine if tasks are running on other pods
 /// </summary>
 public interface ITaskProcessingChecker
 {
   /// <summary>
-  /// Check if the task is running on the given pod
+  ///   Check if the task is running on the given pod
   /// </summary>
   /// <param name="taskId">id of the task to check</param>
   /// <param name="ownerPodId">Id of the pod which should execute the task</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// A bool representing whether or not the task is running on the pod
+  ///   A bool representing whether or not the task is running on the pod
   /// </returns>
   Task<bool> Check(string            taskId,
                    string            ownerPodId,

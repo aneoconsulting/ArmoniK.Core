@@ -41,7 +41,7 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Common.Pollster;
 
 /// <summary>
-/// Prefetch data needed to execute a task
+///   Prefetch data needed to execute a task
 /// </summary>
 public class DataPrefetcher : IInitializable
 {
@@ -52,7 +52,7 @@ public class DataPrefetcher : IInitializable
   private bool isInitialized_;
 
   /// <summary>
-  /// Create data prefetcher for tasks
+  ///   Create data prefetcher for tasks
   /// </summary>
   /// <param name="objectStorageFactory">Factory to create Object Storage</param>
   /// <param name="activitySource">Activity source for tracing</param>
@@ -82,20 +82,20 @@ public class DataPrefetcher : IInitializable
   }
 
   /// <summary>
-  /// Method used to prefetch data before executing a task
+  ///   Method used to prefetch data before executing a task
   /// </summary>
   /// <param name="taskData">Task metadata</param>
   /// <param name="socketPath">Path to the socket used for receiving the requests from the worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Queue containing the request containing the data for the task which can be sent to the worker
+  ///   Queue containing the request containing the data for the task which can be sent to the worker
   /// </returns>
   /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
   /// <exception cref="InvalidOperationException">invalid transition between states</exception>
   public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData          taskData,
                                                                                   CancellationToken cancellationToken)
   {
-    using var activity = activitySource_.StartActivity(nameof(PrefetchDataAsync));
+    using var activity = activitySource_.StartActivity();
 
     var resultStorage  = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
     var payloadStorage = objectStorageFactory_.CreatePayloadStorage(taskData.SessionId);

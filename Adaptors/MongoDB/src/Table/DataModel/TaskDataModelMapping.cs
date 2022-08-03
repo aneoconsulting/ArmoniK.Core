@@ -48,7 +48,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                 cm.MapProperty(nameof(TaskData.OwnerPodId))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.PayloadId))
-                                                  .SetIsRequired(true);  
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.ParentTaskIds))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.DataDependencies))
@@ -97,7 +97,6 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                                                     model.EndDate,
                                                                                     model.PodTtl,
                                                                                     model.Output));
-
                                               });
     }
 

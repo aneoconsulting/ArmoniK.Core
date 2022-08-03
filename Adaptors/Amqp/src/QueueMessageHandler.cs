@@ -30,7 +30,6 @@ using Amqp;
 using Amqp.Framing;
 
 using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;

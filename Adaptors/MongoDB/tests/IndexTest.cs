@@ -138,10 +138,10 @@ internal class IndexTest
   [Ignore("Cannot create combined indexes this way")]
   public void CombinedIndexCreationShouldSucceed()
   {
-    var db         = provider_.GetRequiredService<IMongoDatabase>();
-    var collection = db.GetCollection<TaskData>("Test");
-    var taskIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
-    var sessionIndex   = Builders<TaskData>.IndexKeys.Text(model => model.SessionId);
+    var db           = provider_.GetRequiredService<IMongoDatabase>();
+    var collection   = db.GetCollection<TaskData>("Test");
+    var taskIndex    = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
+    var sessionIndex = Builders<TaskData>.IndexKeys.Text(model => model.SessionId);
     var combine = Builders<TaskData>.IndexKeys.Combine(taskIndex,
                                                        sessionIndex);
 

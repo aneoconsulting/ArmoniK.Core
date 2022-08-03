@@ -49,13 +49,11 @@ public record Output(bool   Success,
   }
 
   public static implicit operator Output(Api.gRPC.V1.Output output)
-  {
-    return output.TypeCase switch
-           {
-             Api.gRPC.V1.Output.TypeOneofCase.Ok => new Output(true,
-                                                               ""),
-             _ => new Output(false,
-                             output.Error.Details),
-           };
-  }
+    => output.TypeCase switch
+       {
+         Api.gRPC.V1.Output.TypeOneofCase.Ok => new Output(true,
+                                                           ""),
+         _ => new Output(false,
+                         output.Error.Details),
+       };
 }

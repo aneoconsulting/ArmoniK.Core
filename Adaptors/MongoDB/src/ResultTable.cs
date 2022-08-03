@@ -104,7 +104,7 @@ public class ResultTable : IResultTable
                      sessionId);
     activity?.SetTag($"{nameof(GetResult)}_key",
                      key);
-    var sessionHandle = sessionProvider_.Get();
+    var sessionHandle    = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
     try
@@ -123,8 +123,8 @@ public class ResultTable : IResultTable
 
   /// <inheritdoc />
   public async Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
-                                                                            IEnumerable<string> keys,
-                                                                            CancellationToken   cancellationToken = default)
+                                                                             IEnumerable<string> keys,
+                                                                             CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(AreResultsAvailableAsync)}");
     activity?.SetTag($"{nameof(AreResultsAvailableAsync)}_sessionId",
@@ -257,10 +257,8 @@ public class ResultTable : IResultTable
                                                                                                                                            sessionId)),
                                                                                            Builders<Result>.Update.Set(model => model.OwnerTaskId,
                                                                                                                        r.NewTaskId))),
-
                                           cancellationToken: cancellationToken)
                           .ConfigureAwait(false);
-
   }
 
 
@@ -298,7 +296,7 @@ public class ResultTable : IResultTable
     using var activity = activitySource_.StartActivity($"{nameof(ListResultsAsync)}");
     activity?.SetTag($"{nameof(ListResultsAsync)}_sessionId",
                      sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    var sessionHandle    = sessionProvider_.Get();
     var resultCollection = resultCollectionProvider_.Get();
 
     await foreach (var result in resultCollection.AsQueryable(sessionHandle)
@@ -335,6 +333,7 @@ public class ResultTable : IResultTable
       resultCollectionProvider_.Get();
       isInitialized_ = true;
     }
+
     return Task.CompletedTask;
   }
 

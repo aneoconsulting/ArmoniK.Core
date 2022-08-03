@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Microsoft.Extensions.Logging;
@@ -34,24 +33,24 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
-/// Interface to manage the life cycle of a session
+///   Interface to manage the life cycle of a session
 /// </summary>
 public interface ISessionTable : IInitializable
 {
   /// <summary>
-  /// Logger for class ISessionTable
+  ///   Logger for class ISessionTable
   /// </summary>
   ILogger Logger { get; }
 
   /// <summary>
-  /// Set metadata for a new session
+  ///   Set metadata for a new session
   /// </summary>
   /// <param name="rootSessionId">Id for the new session</param>
   /// <param name="partitionIds">List of partitions allowed to be used during the session</param>
   /// <param name="defaultOptions">Default metadata for the tasks to be created in this session</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task SetSessionDataAsync(string              rootSessionId,
                            IEnumerable<string> partitionIds,
@@ -59,67 +58,67 @@ public interface ISessionTable : IInitializable
                            CancellationToken   cancellationToken = default);
 
   /// <summary>
-  /// Get SessionData from sessionId
+  ///   Get SessionData from sessionId
   /// </summary>
   /// <param name="sessionId">Id of the session to get</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Data of the session
+  ///   Data of the session
   /// </returns>
   Task<SessionData> GetSessionAsync(string            sessionId,
                                     CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///  Query a session status to check if it is canceled
+  ///   Query a session status to check if it is canceled
   /// </summary>
   /// <param name="sessionId">Id of the session to check</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Boolean representing the cancelation status of the session
+  ///   Boolean representing the cancelation status of the session
   /// </returns>
   Task<bool> IsSessionCancelledAsync(string            sessionId,
                                      CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Get default task metadata for a session given its id
+  ///   Get default task metadata for a session given its id
   /// </summary>
   /// <param name="sessionId">Id of the target session</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///  Default task metadata of this session
+  ///   Default task metadata of this session
   /// </returns>
   Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
                                               CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///  Cancel a session
+  ///   Cancel a session
   /// </summary>
   /// <param name="sessionId">Id of the session to cancel</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task CancelSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///  Delete a session
+  ///   Delete a session
   /// </summary>
   /// <param name="sessionId">Id of the session to delete</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task DeleteSessionAsync(string            sessionId,
                           CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// List all sessions matching a given filter
+  ///   List all sessions matching a given filter
   /// </summary>
   /// <param name="request">Session filter describing the sessions to be listed </param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Collection of sessions that matched the filter
+  ///   Collection of sessions that matched the filter
   /// </returns>
   IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     request,
                                              CancellationToken cancellationToken = default);

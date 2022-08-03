@@ -31,7 +31,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.Worker.Options;
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -133,6 +132,7 @@ public class Submitter : ISubmitter
                                  cancellationToken)
                     .ConfigureAwait(false);
   }
+
   /// <inheritdoc />
   public async Task<(IEnumerable<Storage.TaskRequest> requests, int priority)> CreateTasks(string                        sessionId,
                                                                                            string                        parentTaskId,
@@ -143,12 +143,12 @@ public class Submitter : ISubmitter
     var sessionData = await sessionTable_.GetSessionAsync(sessionId,
                                                           cancellationToken)
                                          .ConfigureAwait(false);
-    return await this.CreateTasks(sessionData,
-                                  parentTaskId,
-                                  options,
-                                  taskRequests,
-                                  cancellationToken)
-                     .ConfigureAwait(false);
+    return await CreateTasks(sessionData,
+                             parentTaskId,
+                             options,
+                             taskRequests,
+                             cancellationToken)
+             .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -158,7 +158,10 @@ public class Submitter : ISubmitter
                                                                                            IAsyncEnumerable<TaskRequest> taskRequests,
                                                                                            CancellationToken             cancellationToken)
   {
-    options = options != null ? ArmoniK.Core.Common.Storage.TaskOptions.Merge(options, sessionData.Options) : sessionData.Options;
+    options = options != null
+                ? Storage.TaskOptions.Merge(options,
+                                            sessionData.Options)
+                : sessionData.Options;
     var partitionId = options.PartitionId;
 
     using var logFunction = logger_.LogFunction(parentTaskId);
@@ -301,11 +304,15 @@ public class Submitter : ISubmitter
       var partitionList = partitionIds.ToIList();
       if (partitionList.Count == 0)
       {
-        partitionList = new [] {string.Empty};
+        partitionList = new[]
+                        {
+                          string.Empty,
+                        };
         // TODO: once partitions are fully integrated,
         //   the default partition list should be replaced by an error
         //throw new InvalidOperationException($"{nameof(partitionIds)} must not be empty or null");
       }
+
       await sessionTable_.SetSessionDataAsync(sessionId,
                                               partitionList,
                                               defaultTaskOptions,
@@ -493,7 +500,7 @@ public class Submitter : ISubmitter
         }
       }
 
-      if (notCompleted == 0 || request.StopOnFirstTaskError && error || request.StopOnFirstTaskCancellation && cancelled)
+      if (notCompleted == 0 || (request.StopOnFirstTaskError && error) || (request.StopOnFirstTaskCancellation && cancelled))
       {
         // ReSharper disable once PossibleMultipleEnumeration
         output.Values.AddRange(counts.Select(tuple => new StatusCount
@@ -724,6 +731,27 @@ public class Submitter : ISubmitter
     return idList;
   }
 
+  public async Task SetResult(string                                 sessionId,
+                              string                                 ownerTaskId,
+                              string                                 key,
+                              IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
+                              CancellationToken                      cancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
+    var       storage  = ResultStorage(sessionId);
+
+    await storage.AddOrUpdateAsync(key,
+                                   chunks,
+                                   cancellationToken)
+                 .ConfigureAwait(false);
+
+    await resultTable_.SetResult(sessionId,
+                                 ownerTaskId,
+                                 key,
+                                 cancellationToken)
+                      .ConfigureAwait(false);
+  }
+
   private IObjectStorage ResultStorage(string session)
     => objectStorageFactory_.CreateResultStorage(session);
 
@@ -777,27 +805,6 @@ public class Submitter : ISubmitter
 
     await resultTable_.Create(taskDataModels.SelectMany(task => task.Result),
                               cancellationToken)
-                      .ConfigureAwait(false);
-  }
-
-  public async Task SetResult(string                                 sessionId,
-                              string                                 ownerTaskId,
-                              string                                 key,
-                              IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
-                              CancellationToken                      cancellationToken)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
-    var       storage  = ResultStorage(sessionId);
-
-    await storage.AddOrUpdateAsync(key,
-                                   chunks,
-                                   cancellationToken)
-                 .ConfigureAwait(false);
-
-    await resultTable_.SetResult(sessionId,
-                                 ownerTaskId,
-                                 key,
-                                 cancellationToken)
                       .ConfigureAwait(false);
   }
 }

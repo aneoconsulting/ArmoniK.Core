@@ -32,9 +32,6 @@ namespace ArmoniK.Core.Common.Tests.Auth;
 
 public class MockIdentity : UserIdentity
 {
-  public record MockCertificate(string CN,
-                                string Fingerprint);
-
   public readonly IEnumerable<MockCertificate> Certificates;
 
   public MockIdentity(string                              userId,
@@ -48,19 +45,18 @@ public class MockIdentity : UserIdentity
                                         roles,
                                         permissions.Select(perm => perm.ToString())),
            authenticationType)
-  {
-    Certificates = certificates;
-  }
+    => Certificates = certificates;
 
   public bool HasCertificate(string cn,
                              string fingerprint)
     => Certificates.Any(t => t.CN == cn && t.Fingerprint == fingerprint);
 
   public UserAuthenticationResult ToUserAuthenticationResult()
-  {
-    return new UserAuthenticationResult(UserId,
-                                        UserName,
-                                        Roles,
-                                        Permissions.Select(perm => perm.ToString()));
-  }
+    => new(UserId,
+           UserName,
+           Roles,
+           Permissions.Select(perm => perm.ToString()));
+
+  public record MockCertificate(string CN,
+                                string Fingerprint);
 }

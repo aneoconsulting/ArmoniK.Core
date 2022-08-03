@@ -34,9 +34,7 @@ public class UmlMermaidGraphStyle : GraphStyleBase
 {
   /// <inheritdoc />
   public override string GetPrefix()
-  {
-    return "stateDiagram-v2\ndirection TB\n";
-  }
+    => "stateDiagram-v2\ndirection TB\n";
 
   /// <inheritdoc />
   public override string FormatOneCluster(SuperState stateInfo)
@@ -54,16 +52,19 @@ public class UmlMermaidGraphStyle : GraphStyleBase
   /// <inheritdoc />
   public override string FormatOneState(State state)
   {
-    if ((state.EntryActions.Count == 0) && (state.ExitActions.Count == 0))
+    if (state.EntryActions.Count == 0 && state.ExitActions.Count == 0)
+    {
       return $"{state.StateName}\n";
+    }
 
-    var          bld = new StringBuilder($"\nstate {state.StateName}{{\n");
+    var bld = new StringBuilder($"\nstate {state.StateName}{{\n");
 
-    List<string> es  = new List<string>();
-    es.AddRange(state.EntryActions.Select(act => "entry:"+act));
-    es.AddRange(state.ExitActions.Select(act => "exit:"+act));
+    var es = new List<string>();
+    es.AddRange(state.EntryActions.Select(act => "entry:" + act));
+    es.AddRange(state.ExitActions.Select(act => "exit:"   + act));
 
-    bld.Append(string.Join("\n", es));
+    bld.Append(string.Join("\n",
+                           es));
     bld.Append("\n}\n");
 
     return bld.ToString();
@@ -79,15 +80,19 @@ public class UmlMermaidGraphStyle : GraphStyleBase
     var bld = new StringBuilder(trigger ?? "");
 
     if (actions?.Count() > 0)
+    {
       bld.Append(" / " + string.Join(", ",
-                                   actions));
+                                     actions));
+    }
 
     if (guards.Any())
     {
       foreach (var info in guards)
       {
         if (bld.Length > 0)
+        {
           bld.Append(" ");
+        }
 
         bld.Append(info);
       }
@@ -101,14 +106,10 @@ public class UmlMermaidGraphStyle : GraphStyleBase
   /// <inheritdoc />
   public override string FormatOneDecisionNode(string nodeName,
                                                string label)
-  {
-    return $"{nodeName}:{label}\n";
-  }
+    => $"{nodeName}:{label}\n";
 
-  static string FormatOneLine(string fromNodeName,
-                                string toNodeName,
-                                string label)
-  {
-    return $"{fromNodeName} --> {toNodeName}:{label}\n";
-  }
+  private static string FormatOneLine(string fromNodeName,
+                                      string toNodeName,
+                                      string label)
+    => $"{fromNodeName} --> {toNodeName}:{label}\n";
 }

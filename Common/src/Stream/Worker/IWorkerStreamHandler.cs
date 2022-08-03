@@ -36,8 +36,8 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 [PublicAPI]
 public interface IWorkerStreamHandler : IInitializable, IDisposable
 {
+  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
+
   public void StartTaskProcessing(TaskData          taskData,
                                   CancellationToken cancellationToken);
-
-  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; }
 }

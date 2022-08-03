@@ -25,20 +25,16 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
 {
-  private          IAgent?                   agent_;
   private readonly ILogger<GrpcAgentService> logger_;
+  private          IAgent?                   agent_;
 
 
   public GrpcAgentService(ILogger<GrpcAgentService> logger)
-  {
-    logger_ = logger;
-  }
+    => logger_ = logger;
 
   public Task Start(IAgent agent)
   {
@@ -87,8 +83,6 @@ public class GrpcAgentService : Api.gRPC.V1.Agent.Agent.AgentBase
                                       })
                           .ConfigureAwait(false);
     }
-
-
   }
 
   public override async Task GetResourceData(DataRequest                    request,

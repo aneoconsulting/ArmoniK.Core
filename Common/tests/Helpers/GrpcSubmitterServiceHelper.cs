@@ -46,10 +46,10 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 public class GrpcSubmitterServiceHelper : IDisposable
 {
   private readonly WebApplication      app_;
-  private          TestServer?         server_;
-  private          HttpMessageHandler? handler_;
   private readonly ILoggerFactory      loggerFactory_;
   private          GrpcChannel?        channel_;
+  private          HttpMessageHandler? handler_;
+  private          TestServer?         server_;
 
   public GrpcSubmitterServiceHelper(ISubmitter           submitter,
                                     List<MockIdentity>   authIdentities,
@@ -94,6 +94,20 @@ public class GrpcSubmitterServiceHelper : IDisposable
   {
   }
 
+  public void Dispose()
+  {
+    app_.DisposeAsync()
+        .GetAwaiter()
+        .GetResult();
+    server_?.Dispose();
+    server_ = null;
+    handler_?.Dispose();
+    handler_ = null;
+    channel_?.Dispose();
+    channel_ = null;
+    GC.SuppressFinalize(this);
+  }
+
   public async Task StartServer()
   {
     await app_.StartAsync()
@@ -124,7 +138,10 @@ public class GrpcSubmitterServiceHelper : IDisposable
   public async Task DeleteChannel()
   {
     if (channel_ == null)
+    {
       return;
+    }
+
     await channel_.ShutdownAsync()
                   .ConfigureAwait(false);
     channel_.Dispose();
@@ -140,19 +157,5 @@ public class GrpcSubmitterServiceHelper : IDisposable
               .ConfigureAwait(false);
     handler_?.Dispose();
     handler_ = null;
-  }
-
-  public void Dispose()
-  {
-    app_.DisposeAsync()
-        .GetAwaiter()
-        .GetResult();
-    server_?.Dispose();
-    server_ = null;
-    handler_?.Dispose();
-    handler_ = null;
-    channel_?.Dispose();
-    channel_ = null;
-    GC.SuppressFinalize(this);
   }
 }

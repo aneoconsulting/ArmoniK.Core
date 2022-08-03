@@ -40,8 +40,6 @@ using Moq;
 using NUnit.Framework;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
-using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
-using TaskRequest = ArmoniK.Api.gRPC.V1.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.FullIntegration;
@@ -49,12 +47,9 @@ namespace ArmoniK.Core.Common.Tests.FullIntegration;
 [TestFixture]
 public class FullyIntegratedTest
 {
-  private GrpcSubmitterServiceHelper helper_;
-
   [SetUp]
   public void Setup()
   {
-
   }
 
   [TearDown]
@@ -62,17 +57,17 @@ public class FullyIntegratedTest
   {
     await helper_.StopServer()
                  .ConfigureAwait(false);
-    helper_              = null;
+    helper_ = null;
   }
 
-
+  private GrpcSubmitterServiceHelper helper_;
 
 
   [Test]
   [Ignore("Need to be reworked")]
   public async Task GetServiceConfigurationShouldSucceed()
   {
-    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
+    var       mockStreamHandler   = new Mock<IWorkerStreamHandler>();
     using var testServiceProvider = new TestPollingAgentProvider(mockStreamHandler.Object);
 
     helper_ = new GrpcSubmitterServiceHelper(testServiceProvider.Submitter);
@@ -119,17 +114,17 @@ public class FullyIntegratedTest
     taskRequest.ExpectedOutputKeys.Add(taskId);
 
     var taskCreationReply = client.CreateSmallTasks(new CreateSmallTaskRequest
-    {
-      SessionId = sessionId,
-      TaskOptions = taskOptions,
-      TaskRequests =
-                              {
-                                new[]
-                                {
-                                  taskRequest,
-                                },
-                              },
-    });
+                                                    {
+                                                      SessionId   = sessionId,
+                                                      TaskOptions = taskOptions,
+                                                      TaskRequests =
+                                                      {
+                                                        new[]
+                                                        {
+                                                          taskRequest,
+                                                        },
+                                                      },
+                                                    });
     Assert.AreEqual(CreateTaskReply.DataOneofCase.Successfull,
                     taskCreationReply.DataCase);
 
@@ -165,40 +160,40 @@ public class FullyIntegratedTest
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
     const string sessionId = "MySession";
-    const string taskId = "MyTask";
+    const string taskId    = "MyTask";
 
     var taskOptions = new TaskOptions
-    {
-      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
-      MaxRetries = 4,
-      Priority = 2,
-    };
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
+                        MaxRetries  = 4,
+                        Priority    = 2,
+                      };
     client.CreateSession(new CreateSessionRequest
-    {
-      Id = sessionId,
-      DefaultTaskOption = taskOptions,
-    });
+                         {
+                           Id                = sessionId,
+                           DefaultTaskOption = taskOptions,
+                         });
 
     var taskRequest = new TaskRequest
-    {
-      Id = taskId,
-      Payload = ByteString.CopyFromUtf8("taskPayload"),
-    };
+                      {
+                        Id      = taskId,
+                        Payload = ByteString.CopyFromUtf8("taskPayload"),
+                      };
 
     taskRequest.ExpectedOutputKeys.Add(taskId);
 
     var taskCreationReply = client.CreateSmallTasks(new CreateSmallTaskRequest
-    {
-      SessionId = sessionId,
-      TaskOptions = taskOptions,
-      TaskRequests =
-                              {
-                                new[]
-                                {
-                                  taskRequest,
-                                },
-                              },
-    });
+                                                    {
+                                                      SessionId   = sessionId,
+                                                      TaskOptions = taskOptions,
+                                                      TaskRequests =
+                                                      {
+                                                        new[]
+                                                        {
+                                                          taskRequest,
+                                                        },
+                                                      },
+                                                    });
     Assert.AreEqual(CreateTaskReply.DataOneofCase.Successfull,
                     taskCreationReply.DataCase);
 
@@ -221,7 +216,5 @@ public class FullyIntegratedTest
                     taskStatus.Count);
     Assert.AreEqual(TaskStatus.Completed,
                     taskStatus.Status);
-
-
   }
 }

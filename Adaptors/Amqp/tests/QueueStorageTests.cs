@@ -42,11 +42,18 @@ namespace ArmoniK.Core.Adapters.Amqp.Tests;
 [TestFixture]
 public class QueueStorageTests
 {
+  [SetUp]
+  public void SetDefaultOptions()
+    /* These options are only to feed the QueueStorage constructor
+     * and they do not play any role in the how the connection is created,
+     * the later is defined in the  SimpleAmqpClientHelper class */
+    => Options = CreateDefaultOptions();
+
   public Options.Amqp Options { get; set; }
 
   private static Options.Amqp CreateDefaultOptions()
     => new()
-    {
+       {
          Host              = "localhost",
          User              = "guest",
          Password          = "guest",
@@ -58,13 +65,6 @@ public class QueueStorageTests
          MaxRetries        = 5,
          AllowHostMismatch = false,
        };
-
-  [SetUp]
-  public void SetDefaultOptions()
-    /* These options are only to feed the QueueStorage constructor
-     * and they do not play any role in the how the connection is created,
-     * the later is defined in the  SimpleAmqpClientHelper class */
-    => Options = CreateDefaultOptions();
 
   [Test]
   public async Task CreateQueueStorageShouldSucceed()

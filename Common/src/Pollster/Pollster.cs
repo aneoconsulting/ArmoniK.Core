@@ -43,21 +43,21 @@ namespace ArmoniK.Core.Common.Pollster;
 public class Pollster
 {
   private readonly ActivitySource           activitySource_;
+  private readonly IAgentHandler            agentHandler_;
   private readonly DataPrefetcher           dataPrefetcher_;
   private readonly IHostApplicationLifetime lifeTime_;
   private readonly ILogger<Pollster>        logger_;
   private readonly int                      messageBatchSize_;
-  private readonly IQueueStorage            queueStorage_;
   private readonly IObjectStorageFactory    objectStorageFactory_;
-  private readonly IResultTable             resultTable_;
-  private readonly ISubmitter               submitter_;
-  private readonly ISessionTable            sessionTable_;
-  private readonly ITaskTable               taskTable_;
-  private readonly ITaskProcessingChecker   taskProcessingChecker_;
-  private readonly IWorkerStreamHandler     workerStreamHandler_;
-  private readonly IAgentHandler            agentHandler_;
-  public           string                   TaskProcessing;
   private readonly string                   ownerPodId_;
+  private readonly IQueueStorage            queueStorage_;
+  private readonly IResultTable             resultTable_;
+  private readonly ISessionTable            sessionTable_;
+  private readonly ISubmitter               submitter_;
+  private readonly ITaskProcessingChecker   taskProcessingChecker_;
+  private readonly ITaskTable               taskTable_;
+  private readonly IWorkerStreamHandler     workerStreamHandler_;
+  public           string                   TaskProcessing;
 
   public Pollster(IQueueStorage            queueStorage,
                   DataPrefetcher           dataPrefetcher,
