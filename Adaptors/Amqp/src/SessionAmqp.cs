@@ -32,8 +32,6 @@ using System.Threading.Tasks;
 using Amqp;
 using Amqp.Framing;
 
-using JetBrains.Annotations;
-
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -57,7 +55,7 @@ public class SessionAmqp : ISessionAmqp
   public ILogger Logger { get; set; }
 
   private static void OnCloseConnection(IAmqpObject sender,
-                                        [CanBeNull] Error      error,
+                                        Error?       error,
                                         ILogger     logger)
   {
     if (error == null)
