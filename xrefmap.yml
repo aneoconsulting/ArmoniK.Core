@@ -25,6 +25,77 @@ references:
   commentId: N:ArmoniK.Core.Adapters.Amqp
   fullName: ArmoniK.Core.Adapters.Amqp
   nameWithType: ArmoniK.Core.Adapters.Amqp
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp
+  name: ISessionAmqp
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html
+  commentId: T:ArmoniK.Core.Adapters.Amqp.ISessionAmqp
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp
+  nameWithType: ISessionAmqp
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Check
+  name: Check()
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html#ArmoniK_Core_Adapters_Amqp_ISessionAmqp_Check
+  commentId: M:ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Check
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Check()
+  nameWithType: ISessionAmqp.Check()
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html#ArmoniK_Core_Adapters_Amqp_ISessionAmqp_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Check
+  nameWithType: ISessionAmqp.Check
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Logger
+  name: Logger
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html#ArmoniK_Core_Adapters_Amqp_ISessionAmqp_Logger
+  commentId: P:ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Logger
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Logger
+  nameWithType: ISessionAmqp.Logger
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Logger*
+  name: Logger
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html#ArmoniK_Core_Adapters_Amqp_ISessionAmqp_Logger_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Logger
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Logger
+  nameWithType: ISessionAmqp.Logger
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.OpenConnection
+  name: OpenConnection()
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html#ArmoniK_Core_Adapters_Amqp_ISessionAmqp_OpenConnection
+  commentId: M:ArmoniK.Core.Adapters.Amqp.ISessionAmqp.OpenConnection
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.OpenConnection()
+  nameWithType: ISessionAmqp.OpenConnection()
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.OpenConnection*
+  name: OpenConnection
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html#ArmoniK_Core_Adapters_Amqp_ISessionAmqp_OpenConnection_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.ISessionAmqp.OpenConnection
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.OpenConnection
+  nameWithType: ISessionAmqp.OpenConnection
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Options
+  name: Options
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html#ArmoniK_Core_Adapters_Amqp_ISessionAmqp_Options
+  commentId: P:ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Options
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Options
+  nameWithType: ISessionAmqp.Options
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Options*
+  name: Options
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html#ArmoniK_Core_Adapters_Amqp_ISessionAmqp_Options_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Options
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Options
+  nameWithType: ISessionAmqp.Options
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Session
+  name: Session
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html#ArmoniK_Core_Adapters_Amqp_ISessionAmqp_Session
+  commentId: P:ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Session
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Session
+  nameWithType: ISessionAmqp.Session
+- uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Session*
+  name: Session
+  href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html#ArmoniK_Core_Adapters_Amqp_ISessionAmqp_Session_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Session
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.ISessionAmqp.Session
+  nameWithType: ISessionAmqp.Session
 - uid: ArmoniK.Core.Adapters.Amqp.Options
   name: ArmoniK.Core.Adapters.Amqp.Options
   href: api/ArmoniK.Core.Adapters.Amqp.Options.html
@@ -102,6 +173,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.Options.Amqp.MaxPriority
   nameWithType: Amqp.MaxPriority
+- uid: ArmoniK.Core.Adapters.Amqp.Options.Amqp.MaxRetries
+  name: MaxRetries
+  href: api/ArmoniK.Core.Adapters.Amqp.Options.Amqp.html#ArmoniK_Core_Adapters_Amqp_Options_Amqp_MaxRetries
+  commentId: P:ArmoniK.Core.Adapters.Amqp.Options.Amqp.MaxRetries
+  fullName: ArmoniK.Core.Adapters.Amqp.Options.Amqp.MaxRetries
+  nameWithType: Amqp.MaxRetries
+- uid: ArmoniK.Core.Adapters.Amqp.Options.Amqp.MaxRetries*
+  name: MaxRetries
+  href: api/ArmoniK.Core.Adapters.Amqp.Options.Amqp.html#ArmoniK_Core_Adapters_Amqp_Options_Amqp_MaxRetries_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Options.Amqp.MaxRetries
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.Options.Amqp.MaxRetries
+  nameWithType: Amqp.MaxRetries
 - uid: ArmoniK.Core.Adapters.Amqp.Options.Amqp.Password
   name: Password
   href: api/ArmoniK.Core.Adapters.Amqp.Options.Amqp.html#ArmoniK_Core_Adapters_Amqp_Options_Amqp_Password
@@ -250,15 +334,15 @@ references:
   commentId: T:ArmoniK.Core.Adapters.Amqp.QueueStorage
   fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage
   nameWithType: QueueStorage
-- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Common.Injection.IProviderBase{Session},ILogger{ArmoniK.Core.Adapters.Amqp.QueueStorage})
-  name: QueueStorage(Amqp, IProviderBase<Session>, ILogger<QueueStorage>)
-  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ArmoniK_Core_Common_Injection_IProviderBase_Session__ILogger_ArmoniK_Core_Adapters_Amqp_QueueStorage__
-  commentId: M:ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Common.Injection.IProviderBase{Session},ILogger{ArmoniK.Core.Adapters.Amqp.QueueStorage})
-  name.vb: QueueStorage(Amqp, IProviderBase(Of Session), ILogger(Of QueueStorage))
-  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.QueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Common.Injection.IProviderBase<Session>, ILogger<ArmoniK.Core.Adapters.Amqp.QueueStorage>)
-  fullName.vb: ArmoniK.Core.Adapters.Amqp.QueueStorage.QueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Common.Injection.IProviderBase(Of Session), ILogger(Of ArmoniK.Core.Adapters.Amqp.QueueStorage))
-  nameWithType: QueueStorage.QueueStorage(Amqp, IProviderBase<Session>, ILogger<QueueStorage>)
-  nameWithType.vb: QueueStorage.QueueStorage(Amqp, IProviderBase(Of Session), ILogger(Of QueueStorage))
+- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.ISessionAmqp,ILogger{ArmoniK.Core.Adapters.Amqp.QueueStorage})
+  name: QueueStorage(Amqp, ISessionAmqp, ILogger<QueueStorage>)
+  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ArmoniK_Core_Adapters_Amqp_ISessionAmqp_ILogger_ArmoniK_Core_Adapters_Amqp_QueueStorage__
+  commentId: M:ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.ISessionAmqp,ILogger{ArmoniK.Core.Adapters.Amqp.QueueStorage})
+  name.vb: QueueStorage(Amqp, ISessionAmqp, ILogger(Of QueueStorage))
+  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.QueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Adapters.Amqp.ISessionAmqp, ILogger<ArmoniK.Core.Adapters.Amqp.QueueStorage>)
+  fullName.vb: ArmoniK.Core.Adapters.Amqp.QueueStorage.QueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Adapters.Amqp.ISessionAmqp, ILogger(Of ArmoniK.Core.Adapters.Amqp.QueueStorage))
+  nameWithType: QueueStorage.QueueStorage(Amqp, ISessionAmqp, ILogger<QueueStorage>)
+  nameWithType.vb: QueueStorage.QueueStorage(Amqp, ISessionAmqp, ILogger(Of QueueStorage))
 - uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor*
   name: QueueStorage
   href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage__ctor_
@@ -353,6 +437,90 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.ServiceCollectionExt.AddAmqp
   nameWithType: ServiceCollectionExt.AddAmqp
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp
+  name: SessionAmqp
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html
+  commentId: T:ArmoniK.Core.Adapters.Amqp.SessionAmqp
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp
+  nameWithType: SessionAmqp
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
+  name: SessionAmqp(Amqp, ILogger)
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ILogger_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.SessionAmqp.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.SessionAmqp(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ILogger)
+  nameWithType: SessionAmqp.SessionAmqp(Amqp, ILogger)
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.#ctor*
+  name: SessionAmqp
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.SessionAmqp.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.SessionAmqp
+  nameWithType: SessionAmqp.SessionAmqp
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Check
+  name: Check()
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp_Check
+  commentId: M:ArmoniK.Core.Adapters.Amqp.SessionAmqp.Check
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Check()
+  nameWithType: SessionAmqp.Check()
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.SessionAmqp.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Check
+  nameWithType: SessionAmqp.Check
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Logger
+  name: Logger
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp_Logger
+  commentId: P:ArmoniK.Core.Adapters.Amqp.SessionAmqp.Logger
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Logger
+  nameWithType: SessionAmqp.Logger
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Logger*
+  name: Logger
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp_Logger_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.SessionAmqp.Logger
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Logger
+  nameWithType: SessionAmqp.Logger
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.OpenConnection
+  name: OpenConnection()
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp_OpenConnection
+  commentId: M:ArmoniK.Core.Adapters.Amqp.SessionAmqp.OpenConnection
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.OpenConnection()
+  nameWithType: SessionAmqp.OpenConnection()
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.OpenConnection*
+  name: OpenConnection
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp_OpenConnection_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.SessionAmqp.OpenConnection
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.OpenConnection
+  nameWithType: SessionAmqp.OpenConnection
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Options
+  name: Options
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp_Options
+  commentId: P:ArmoniK.Core.Adapters.Amqp.SessionAmqp.Options
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Options
+  nameWithType: SessionAmqp.Options
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Options*
+  name: Options
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp_Options_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.SessionAmqp.Options
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Options
+  nameWithType: SessionAmqp.Options
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Session
+  name: Session
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp_Session
+  commentId: P:ArmoniK.Core.Adapters.Amqp.SessionAmqp.Session
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Session
+  nameWithType: SessionAmqp.Session
+- uid: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Session*
+  name: Session
+  href: api/ArmoniK.Core.Adapters.Amqp.SessionAmqp.html#ArmoniK_Core_Adapters_Amqp_SessionAmqp_Session_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.SessionAmqp.Session
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Session
+  nameWithType: SessionAmqp.Session
 - uid: ArmoniK.Core.Adapters.Amqp.SessionProvider
   name: SessionProvider
   href: api/ArmoniK.Core.Adapters.Amqp.SessionProvider.html
@@ -436,19 +604,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceedsIfTooBigPriority
   nameWithType: QueueStorageTests.EnqueueMessagesAsyncSucceedsIfTooBigPriority
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options_
-  name: Options_
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
+  name: Options
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_Options
+  commentId: P:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
+  nameWithType: QueueStorageTests.Options
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options*
+  name: Options
   href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_Options_
-  commentId: P:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options_
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options_
-  nameWithType: QueueStorageTests.Options_
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options_*
-  name: Options_
-  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_Options__
-  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options_
-  nameWithType: QueueStorageTests.Options_
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
+  nameWithType: QueueStorageTests.Options
 - uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullAsyncAsyncSucceeds
   name: PullAsyncAsyncSucceeds()
   href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PullAsyncAsyncSucceeds
@@ -7483,49 +7651,6 @@ references:
   fullName.vb: ArmoniK.Core.Common.Injection.ConfigurationExt.GetRequiredValue(Of T)(IConfiguration, System.String)
   nameWithType: ConfigurationExt.GetRequiredValue<T>(IConfiguration, String)
   nameWithType.vb: ConfigurationExt.GetRequiredValue(Of T)(IConfiguration, String)
-- uid: ArmoniK.Core.Common.Injection.IProviderBase`1
-  name: IProviderBase<T>
-  href: api/ArmoniK.Core.Common.Injection.IProviderBase-1.html
-  commentId: T:ArmoniK.Core.Common.Injection.IProviderBase`1
-  name.vb: IProviderBase(Of T)
-  fullName: ArmoniK.Core.Common.Injection.IProviderBase<T>
-  fullName.vb: ArmoniK.Core.Common.Injection.IProviderBase(Of T)
-  nameWithType: IProviderBase<T>
-  nameWithType.vb: IProviderBase(Of T)
-- uid: ArmoniK.Core.Common.Injection.IProviderBase`1.Check(ArmoniK.Core.Common.HealthCheckTag)
-  name: Check(HealthCheckTag)
-  href: api/ArmoniK.Core.Common.Injection.IProviderBase-1.html#ArmoniK_Core_Common_Injection_IProviderBase_1_Check_ArmoniK_Core_Common_HealthCheckTag_
-  commentId: M:ArmoniK.Core.Common.Injection.IProviderBase`1.Check(ArmoniK.Core.Common.HealthCheckTag)
-  fullName: ArmoniK.Core.Common.Injection.IProviderBase<T>.Check(ArmoniK.Core.Common.HealthCheckTag)
-  fullName.vb: ArmoniK.Core.Common.Injection.IProviderBase(Of T).Check(ArmoniK.Core.Common.HealthCheckTag)
-  nameWithType: IProviderBase<T>.Check(HealthCheckTag)
-  nameWithType.vb: IProviderBase(Of T).Check(HealthCheckTag)
-- uid: ArmoniK.Core.Common.Injection.IProviderBase`1.Check*
-  name: Check
-  href: api/ArmoniK.Core.Common.Injection.IProviderBase-1.html#ArmoniK_Core_Common_Injection_IProviderBase_1_Check_
-  commentId: Overload:ArmoniK.Core.Common.Injection.IProviderBase`1.Check
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Injection.IProviderBase<T>.Check
-  fullName.vb: ArmoniK.Core.Common.Injection.IProviderBase(Of T).Check
-  nameWithType: IProviderBase<T>.Check
-  nameWithType.vb: IProviderBase(Of T).Check
-- uid: ArmoniK.Core.Common.Injection.IProviderBase`1.Get
-  name: Get()
-  href: api/ArmoniK.Core.Common.Injection.IProviderBase-1.html#ArmoniK_Core_Common_Injection_IProviderBase_1_Get
-  commentId: M:ArmoniK.Core.Common.Injection.IProviderBase`1.Get
-  fullName: ArmoniK.Core.Common.Injection.IProviderBase<T>.Get()
-  fullName.vb: ArmoniK.Core.Common.Injection.IProviderBase(Of T).Get()
-  nameWithType: IProviderBase<T>.Get()
-  nameWithType.vb: IProviderBase(Of T).Get()
-- uid: ArmoniK.Core.Common.Injection.IProviderBase`1.Get*
-  name: Get
-  href: api/ArmoniK.Core.Common.Injection.IProviderBase-1.html#ArmoniK_Core_Common_Injection_IProviderBase_1_Get_
-  commentId: Overload:ArmoniK.Core.Common.Injection.IProviderBase`1.Get
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Injection.IProviderBase<T>.Get
-  fullName.vb: ArmoniK.Core.Common.Injection.IProviderBase(Of T).Get
-  nameWithType: IProviderBase<T>.Get
-  nameWithType.vb: IProviderBase(Of T).Get
 - uid: ArmoniK.Core.Common.Injection.Options
   name: ArmoniK.Core.Common.Injection.Options
   href: api/ArmoniK.Core.Common.Injection.Options.html
