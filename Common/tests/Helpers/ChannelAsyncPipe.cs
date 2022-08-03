@@ -38,16 +38,18 @@ public class ChannelAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMes
   private readonly Channel<TWriteMessage> writerChannel_ = Channel.CreateUnbounded<TWriteMessage>();
 
   public ChannelAsyncPipe(TReadMessage message)
-  {
-    message_ = message;
-  }
+    => message_ = message;
 
-  private ChannelAsyncPipe(Channel<TReadMessage> readerChannel,
+  private ChannelAsyncPipe(Channel<TReadMessage>  readerChannel,
                            Channel<TWriteMessage> writerChannel)
   {
     readerChannel_ = readerChannel;
     writerChannel_ = writerChannel;
   }
+
+  public IAsyncPipe<TWriteMessage, TReadMessage> Reverse
+    => new ChannelAsyncPipe<TWriteMessage, TReadMessage>(writerChannel_,
+                                                         readerChannel_);
 
   public Task<TReadMessage> ReadAsync(CancellationToken cancellationToken)
     => Task.FromResult(message_);
@@ -70,8 +72,4 @@ public class ChannelAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMes
     writerChannel_.Writer.Complete();
     return Task.CompletedTask;
   }
-
-  public IAsyncPipe<TWriteMessage, TReadMessage> Reverse
-    => new ChannelAsyncPipe<TWriteMessage, TReadMessage>(writerChannel_,
-                                                         readerChannel_);
 }

@@ -243,7 +243,6 @@ public class TaskFilterValidatorTest
                         {
                           "test",
                         },
-
                       },
                Session = new TaskFilter.Types.IdsRequest
                          {

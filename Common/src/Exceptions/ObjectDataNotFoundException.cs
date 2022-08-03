@@ -40,14 +40,14 @@ public class ObjectDataNotFoundException : ArmoniKException
   }
 
   public ObjectDataNotFoundException(string    message,
-                                  Exception innerException)
+                                     Exception innerException)
     : base(message,
            innerException)
   {
   }
 
   protected ObjectDataNotFoundException(SerializationInfo info,
-                                     StreamingContext  context)
+                                        StreamingContext  context)
     : base(info,
            context)
   {

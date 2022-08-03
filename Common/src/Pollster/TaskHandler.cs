@@ -49,23 +49,23 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class TaskHandler : IAsyncDisposable
 {
-  private readonly ISessionTable                               sessionTable_;
-  private readonly ITaskTable                                  taskTable_;
-  private readonly IResultTable                                resultTable_;
-  private readonly IQueueMessageHandler                        messageHandler_;
-  private readonly ITaskProcessingChecker                      taskProcessingChecker_;
-  private readonly ISubmitter                                  submitter_;
-  private readonly DataPrefetcher                              dataPrefetcher_;
-  private readonly IWorkerStreamHandler                        workerStreamHandler_;
   private readonly ActivitySource                              activitySource_;
-  private readonly ILogger                                     logger_;
-  private          TaskData?                                   taskData_;
-  private          SessionData?                                sessionData_;
-  private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
-  private readonly string                                      ownerPodId_;
   private readonly IAgentHandler                               agentHandler_;
+  private readonly DataPrefetcher                              dataPrefetcher_;
+  private readonly ILogger                                     logger_;
+  private readonly IQueueMessageHandler                        messageHandler_;
+  private readonly string                                      ownerPodId_;
+  private readonly IResultTable                                resultTable_;
+  private readonly ISessionTable                               sessionTable_;
+  private readonly ISubmitter                                  submitter_;
+  private readonly ITaskProcessingChecker                      taskProcessingChecker_;
+  private readonly ITaskTable                                  taskTable_;
   private readonly string                                      token_;
+  private readonly IWorkerStreamHandler                        workerStreamHandler_;
   private          IAgent?                                     agent_;
+  private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
+  private          SessionData?                                sessionData_;
+  private          TaskData?                                   taskData_;
 
   public TaskHandler(ISessionTable          sessionTable,
                      ITaskTable             taskTable,
@@ -98,12 +98,27 @@ public class TaskHandler : IAsyncDisposable
                  .ToString();
   }
 
+
+  /// <inheritdoc />
+  public async ValueTask DisposeAsync()
+  {
+    using var _ = logger_.BeginNamedScope("DisposeAsync",
+                                          ("taskId", messageHandler_.TaskId));
+
+    logger_.LogDebug("MessageHandler status is {status}",
+                     messageHandler_.Status);
+    await messageHandler_.DisposeAsync()
+                         .ConfigureAwait(false);
+
+    agent_?.Dispose();
+  }
+
   /// <summary>
-  /// Acquisition of the task in the message given to the constructor
+  ///   Acquisition of the task in the message given to the constructor
   /// </summary>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Bool representing whether the task has been acquired
+  ///   Bool representing whether the task has been acquired
   /// </returns>
   /// <exception cref="ArgumentException">status of the task is not recognized</exception>
   public async Task<bool> AcquireTask(CancellationToken cancellationToken)
@@ -341,10 +356,10 @@ public class TaskHandler : IAsyncDisposable
   }
 
   /// <summary>
-  /// Get the task id of the acquired task
+  ///   Get the task id of the acquired task
   /// </summary>
   /// <returns>
-  /// A string representing the acquired task id
+  ///   A string representing the acquired task id
   /// </returns>
   public string GetAcquiredTask()
     => taskData_ != null
@@ -352,11 +367,11 @@ public class TaskHandler : IAsyncDisposable
          : throw new ArmoniKException("TaskData should not be null after successful acquisition");
 
   /// <summary>
-  /// Preprocessing (including the data prefetching) of the acquired task
+  ///   Preprocessing (including the data prefetching) of the acquired task
   /// </summary>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
   public async Task PreProcessing(CancellationToken cancellationToken)
@@ -375,12 +390,12 @@ public class TaskHandler : IAsyncDisposable
   }
 
   /// <summary>
-  /// Execution of the acquired task on the worker
+  ///   Execution of the acquired task on the worker
   /// </summary>
   /// <param name="agent">Agent that will be used to keep track of the requests of the worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
   /// <exception cref="ArmoniKException">worker pipe is not initialized</exception>
@@ -430,11 +445,11 @@ public class TaskHandler : IAsyncDisposable
   }
 
   /// <summary>
-  /// Post processing of the acquired task
+  ///   Post processing of the acquired task
   /// </summary>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
   public async Task PostProcessing(CancellationToken cancellationToken)
@@ -514,20 +529,5 @@ public class TaskHandler : IAsyncDisposable
     }
 
     logger_.LogDebug("End Task Processing");
-  }
-
-
-  /// <inheritdoc />
-  public async ValueTask DisposeAsync()
-  {
-    using var _ = logger_.BeginNamedScope("DisposeAsync",
-                                          ("taskId", messageHandler_.TaskId));
-
-    logger_.LogDebug("MessageHandler status is {status}",
-                     messageHandler_.Status);
-    await messageHandler_.DisposeAsync()
-                         .ConfigureAwait(false);
-
-    agent_?.Dispose();
   }
 }

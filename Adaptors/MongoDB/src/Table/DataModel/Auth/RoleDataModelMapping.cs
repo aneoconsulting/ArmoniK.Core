@@ -29,9 +29,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
 
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
@@ -70,13 +68,13 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
     var indexModels = new CreateIndexModel<RoleData>[]
                       {
                         new(rolenameIndex,
-                            new CreateIndexOptions()
+                            new CreateIndexOptions
                             {
                               Name   = nameof(rolenameIndex),
                               Unique = true,
                             }),
                         new(rolenameIndexHashed,
-                            new CreateIndexOptions()
+                            new CreateIndexOptions
                             {
                               Name = nameof(rolenameIndexHashed),
                             }),

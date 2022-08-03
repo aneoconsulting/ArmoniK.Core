@@ -27,7 +27,6 @@ using System.Threading.Tasks;
 
 using Grpc.Core;
 
-
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
 internal class TestHelperClientStreamWriter<T> : IClientStreamWriter<T>
@@ -44,9 +43,7 @@ internal class TestHelperClientStreamWriter<T> : IClientStreamWriter<T>
   }
 
   public Task CompleteAsync()
-  {
-    return Task.CompletedTask;
-  }
+    => Task.CompletedTask;
 
   public WriteOptions WriteOptions { get; set; }
 }

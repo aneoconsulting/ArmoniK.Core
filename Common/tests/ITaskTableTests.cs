@@ -28,7 +28,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -36,7 +35,6 @@ using ArmoniK.Core.Common.Utils;
 
 using NUnit.Framework;
 
-using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests;
@@ -223,7 +221,6 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-
       Assert.ThrowsAsync<TaskNotFoundException>(async () => await TaskTable.ReadTaskAsync("TaskDoNotExists",
                                                                                           CancellationToken.None)
                                                                            .ConfigureAwait(false));
@@ -601,7 +598,7 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var result = TaskTable.SetTaskCanceledAsync("TaskProcessingId",
-                                                 CancellationToken.None);
+                                                  CancellationToken.None);
       await result.ConfigureAwait(false);
 
       var resStatus = await TaskTable.GetTaskStatus(new[]
@@ -612,7 +609,7 @@ public class TaskTableTestBase
                                      .ConfigureAwait(false);
 
       Assert.IsTrue(result.IsCompletedSuccessfully && resStatus.Single()
-                                                  .Status == TaskStatus.Canceled);
+                                                               .Status == TaskStatus.Canceled);
     }
   }
 
@@ -737,9 +734,9 @@ public class TaskTableTestBase
       var hostname = LocalIPv4.GetLocalIPv4Ethernet();
 
       var result1 = await TaskTable.AcquireTask("TaskSubmittedId",
-                                               hostname,
-                                               CancellationToken.None)
-                                  .ConfigureAwait(false);
+                                                hostname,
+                                                CancellationToken.None)
+                                   .ConfigureAwait(false);
 
       Assert.AreEqual("TaskSubmittedId",
                       result1!.TaskId);
@@ -747,9 +744,9 @@ public class TaskTableTestBase
                       result1!.OwnerPodId);
 
       var result2 = await TaskTable.AcquireTask("TaskSubmittedId",
-                                           hostname,
-                                           CancellationToken.None)
-                              .ConfigureAwait(false);
+                                                hostname,
+                                                CancellationToken.None)
+                                   .ConfigureAwait(false);
       Assert.AreEqual(result1.Status,
                       result2.Status);
 
@@ -763,7 +760,6 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-
       var result = await TaskTable.AcquireTask("TaskFailedId",
                                                LocalIPv4.GetLocalIPv4Ethernet(),
                                                CancellationToken.None)
@@ -779,7 +775,6 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-
       var result = await TaskTable.FinalizeTaskCreation(new List<string>
                                                         {
                                                           "TaskCreatingId",
@@ -909,15 +904,18 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var taskToRetry = await TaskTable.ReadTaskAsync("TaskFailedId", CancellationToken.None)
-        .ConfigureAwait(false);
+      var taskToRetry = await TaskTable.ReadTaskAsync("TaskFailedId",
+                                                      CancellationToken.None)
+                                       .ConfigureAwait(false);
 
       var expectedNewId = taskToRetry.InitialTaskId + $"###{taskToRetry.RetryOfIds.Count + 1}";
 
-      var newTaskId = await TaskTable.RetryTask(taskToRetry, CancellationToken.None)
-        .ConfigureAwait(false);
+      var newTaskId = await TaskTable.RetryTask(taskToRetry,
+                                                CancellationToken.None)
+                                     .ConfigureAwait(false);
 
-      Assert.AreEqual(expectedNewId, newTaskId);
+      Assert.AreEqual(expectedNewId,
+                      newTaskId);
     }
   }
 
@@ -926,16 +924,21 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var taskToRetry = await TaskTable.ReadTaskAsync("TaskFailedId", CancellationToken.None).ConfigureAwait(false);
+      var taskToRetry = await TaskTable.ReadTaskAsync("TaskFailedId",
+                                                      CancellationToken.None)
+                                       .ConfigureAwait(false);
       for (var i = 0; i < 3; i++)
       {
-        var newTaskId = await TaskTable.RetryTask(taskToRetry, CancellationToken.None)
-          .ConfigureAwait(false);
+        var newTaskId = await TaskTable.RetryTask(taskToRetry,
+                                                  CancellationToken.None)
+                                       .ConfigureAwait(false);
 
-        var retriedTask = await TaskTable.ReadTaskAsync(newTaskId, CancellationToken.None)
-          .ConfigureAwait(false);
+        var retriedTask = await TaskTable.ReadTaskAsync(newTaskId,
+                                                        CancellationToken.None)
+                                         .ConfigureAwait(false);
 
-        Assert.AreEqual(taskToRetry.PayloadId, retriedTask.PayloadId);
+        Assert.AreEqual(taskToRetry.PayloadId,
+                        retriedTask.PayloadId);
 
         taskToRetry = retriedTask;
       }

@@ -35,6 +35,10 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
   protected ProviderBase(Func<Task<T>> builder)
     => builder_ = builder;
 
+  /// <inheritdoc />
+  public virtual ValueTask<bool> Check(HealthCheckTag tag)
+    => ValueTask.FromResult(object_ is not null);
+
   public T Get()
   {
     // Double null check to avoid the lock once initialization is finished
@@ -54,8 +58,4 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
 
     return object_;
   }
-
-  /// <inheritdoc />
-  public virtual ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(object_ is not null);
 }

@@ -127,5 +127,4 @@ public class ProcessReplyResultStateMachineTest
     Console.WriteLine(str);
     Assert.IsFalse(string.IsNullOrEmpty(str));
   }
-
 }

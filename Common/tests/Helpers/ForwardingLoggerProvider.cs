@@ -41,15 +41,11 @@ internal class ForwardingLoggerProvider : ILoggerProvider
   private readonly LogMessage logAction_;
 
   public ForwardingLoggerProvider(LogMessage logAction)
-  {
-    logAction_ = logAction;
-  }
+    => logAction_ = logAction;
 
   public ILogger CreateLogger(string categoryName)
-  {
-    return new ForwardingLogger(categoryName,
-                                logAction_);
-  }
+    => new ForwardingLogger(categoryName,
+                            logAction_);
 
   public void Dispose()
   {
@@ -68,29 +64,23 @@ internal class ForwardingLoggerProvider : ILoggerProvider
     }
 
     public IDisposable BeginScope<TState>(TState state)
-    {
-      return Disposable.Create(() =>
-                               {
-                               });
-    }
+      => Disposable.Create(() =>
+                           {
+                           });
 
     public bool IsEnabled(LogLevel logLevel)
-    {
-      return true;
-    }
+      => true;
 
     public void Log<TState>(LogLevel                        logLevel,
                             EventId                         eventId,
                             TState                          state,
                             Exception                       exception,
                             Func<TState, Exception, string> formatter)
-    {
-      logAction_(logLevel,
-                 categoryName_,
-                 eventId,
-                 formatter(state,
-                           exception),
-                 exception);
-    }
+      => logAction_(logLevel,
+                    categoryName_,
+                    eventId,
+                    formatter(state,
+                              exception),
+                    exception);
   }
 }

@@ -38,17 +38,19 @@ using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+
 namespace ArmoniK.Core.Adapters.Memory;
 
 public class SessionTable : ISessionTable
 {
   private readonly ConcurrentDictionary<string, SessionData> storage_;
 
-  public SessionTable(ConcurrentDictionary<string, SessionData>                          storage,
-                      ILogger<SessionTable>                                              logger)
+  public SessionTable(ConcurrentDictionary<string, SessionData> storage,
+                      ILogger<SessionTable>                     logger)
   {
-    storage_            = storage;
-    Logger              = logger;
+    storage_ = storage;
+    Logger   = logger;
   }
 
   /// <inheritdoc />
@@ -60,10 +62,10 @@ public class SessionTable : ISessionTable
     => Task.CompletedTask;
 
   /// <inheritdoc />
-  public Task SetSessionDataAsync(string                     rootSessionId,
-                                  IEnumerable<string>        partitionIds,
-                                  Common.Storage.TaskOptions defaultOptions,
-                                  CancellationToken          cancellationToken = default)
+  public Task SetSessionDataAsync(string              rootSessionId,
+                                  IEnumerable<string> partitionIds,
+                                  TaskOptions         defaultOptions,
+                                  CancellationToken   cancellationToken = default)
   {
     storage_.TryAdd(rootSessionId,
                     new SessionData(rootSessionId,
@@ -88,15 +90,13 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public Task<bool> IsSessionCancelledAsync(string            sessionId,
                                             CancellationToken cancellationToken = default)
-  {
-    return Task.FromResult(this.GetSessionAsync(sessionId,
-                                                cancellationToken)
-                               .Result.Status == SessionStatus.Canceled);
-  }
+    => Task.FromResult(GetSessionAsync(sessionId,
+                                       cancellationToken)
+                       .Result.Status == SessionStatus.Canceled);
 
   /// <inheritdoc />
-  public Task<Common.Storage.TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                                    CancellationToken cancellationToken = default)
+  public Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
+                                                     CancellationToken cancellationToken = default)
   {
     if (!storage_.ContainsKey(sessionId))
     {
@@ -109,7 +109,7 @@ public class SessionTable : ISessionTable
 
   /// <inheritdoc />
   public Task CancelSessionAsync(string            sessionId,
-                                       CancellationToken cancellationToken = default)
+                                 CancellationToken cancellationToken = default)
   {
     storage_.AddOrUpdate(sessionId,
                          _ => throw new SessionNotFoundException($"Key '{sessionId}' not found"),
@@ -120,6 +120,7 @@ public class SessionTable : ISessionTable
                            {
                              throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
                            }
+
                            return data with
                                   {
                                     Status = SessionStatus.Canceled,
@@ -132,14 +133,15 @@ public class SessionTable : ISessionTable
 
   /// <inheritdoc />
   public Task DeleteSessionAsync(string            sessionId,
-                                       CancellationToken cancellationToken = default)
+                                 CancellationToken cancellationToken = default)
   {
     if (!storage_.ContainsKey(sessionId))
     {
       throw new SessionNotFoundException($"No session with id '{sessionId}' found");
     }
 
-    storage_.Remove(sessionId, out _);
+    storage_.Remove(sessionId,
+                    out _);
     return Task.CompletedTask;
   }
 

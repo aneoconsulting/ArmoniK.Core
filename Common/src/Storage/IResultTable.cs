@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Microsoft.Extensions.Logging;
@@ -34,45 +33,37 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Common.Storage;
 
 /// <summary>
-/// Interface for managing results in database
+///   Interface for managing results in database
 /// </summary>
 public interface IResultTable : IInitializable
 {
   /// <summary>
-  /// Data structure to hold the results id and the new owner of the results in order to make batching easier
-  /// </summary>
-  /// <param name="Keys">Ids of the results that will change owner</param>
-  /// <param name="NewTaskId">Task id of the new owner</param>
-  public record ChangeResultOwnershipRequest(IEnumerable<string> Keys,
-                                             string              NewTaskId);
-
-  /// <summary>
-  /// Logger used to produce logs for this class
+  ///   Logger used to produce logs for this class
   /// </summary>
   public ILogger Logger { get; }
 
   /// <summary>
-  /// Check the status of the given results
+  ///   Check the status of the given results
   /// </summary>
   /// <param name="sessionId">Session id of the session using the results</param>
   /// <param name="keys">Ids of the results that will be checked</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// The number of results in each kind of status
+  ///   The number of results in each kind of status
   /// </returns>
   Task<IEnumerable<ResultStatusCount>> AreResultsAvailableAsync(string              sessionId,
                                                                 IEnumerable<string> keys,
                                                                 CancellationToken   cancellationToken = default);
 
   /// <summary>
-  /// Change ownership (in batch) of the results in the given request
+  ///   Change ownership (in batch) of the results in the given request
   /// </summary>
   /// <param name="sessionId">Session id of the session using the results</param>
   /// <param name="oldTaskId">Task Id of the previous owner</param>
   /// <param name="requests">Change ownership requests that will be executed</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task ChangeResultOwnership(string                                    sessionId,
                              string                                    oldTaskId,
@@ -80,66 +71,66 @@ public interface IResultTable : IInitializable
                              CancellationToken                         cancellationToken);
 
   /// <summary>
-  /// Inserts the given results in the database
+  ///   Inserts the given results in the database
   /// </summary>
   /// <param name="results">Results that will be inserted into the database</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task Create(IEnumerable<Result> results,
               CancellationToken   cancellationToken = default);
 
   /// <summary>
-  /// Delete the results from the database
+  ///   Delete the results from the database
   /// </summary>
   /// <param name="session">id of the session containing the result</param>
   /// <param name="key">id of the result to be deleted</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task DeleteResult(string            session,
                     string            key,
                     CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Delete all the results from a session
+  ///   Delete all the results from a session
   /// </summary>
   /// <param name="sessionId">id of the session containing the result</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task DeleteResults(string            sessionId,
                      CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Get the result from its id
+  ///   Get the result from its id
   /// </summary>
   /// <param name="sessionId">id of the session containing the result</param>
   /// <param name="key">id of the result to be retrieved</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Result metadata from the database
+  ///   Result metadata from the database
   /// </returns>
   Task<Result> GetResult(string            sessionId,
                          string            key,
                          CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// List results from a session
+  ///   List results from a session
   /// </summary>
   /// <param name="sessionId">id of the session containing the results</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// The ids of the results in the session
+  ///   The ids of the results in the session
   /// </returns>
   IAsyncEnumerable<string> ListResultsAsync(string            sessionId,
                                             CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Update result with small payload
+  ///   Update result with small payload
   /// </summary>
   /// <param name="sessionId">id of the session containing the results</param>
   /// <param name="ownerTaskId">id of the task owning the result</param>
@@ -147,7 +138,7 @@ public interface IResultTable : IInitializable
   /// <param name="smallPayload">payload data</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task SetResult(string            sessionId,
                  string            ownerTaskId,
@@ -156,14 +147,14 @@ public interface IResultTable : IInitializable
                  CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Update result
+  ///   Update result
   /// </summary>
   /// <param name="sessionId">id of the session containing the results</param>
   /// <param name="ownerTaskId">id of the task owning the result</param>
   /// <param name="key">id of the result to be modified</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task SetResult(string            sessionId,
                  string            ownerTaskId,
@@ -171,28 +162,36 @@ public interface IResultTable : IInitializable
                  CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Get the status of the given results
+  ///   Get the status of the given results
   /// </summary>
   /// <param name="ids">ids of the results</param>
   /// <param name="sessionId">id of the session containing the results</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// A map between the ids of the results found and their status
+  ///   A map between the ids of the results found and their status
   /// </returns>
   Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
                                                                          string              sessionId,
                                                                          CancellationToken   cancellationToken = default);
 
   /// <summary>
-  /// Abort the results of the given task
+  ///   Abort the results of the given task
   /// </summary>
   /// <param name="sessionId">id of the session containing the results</param>
   /// <param name="ownerTaskId">id of the task from which abort the results</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  /// Task representing the asynchronous execution of the method
+  ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task AbortTaskResults(string            sessionId,
                         string            ownerTaskId,
                         CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Data structure to hold the results id and the new owner of the results in order to make batching easier
+  /// </summary>
+  /// <param name="Keys">Ids of the results that will change owner</param>
+  /// <param name="NewTaskId">Task id of the new owner</param>
+  public record ChangeResultOwnershipRequest(IEnumerable<string> Keys,
+                                             string              NewTaskId);
 }

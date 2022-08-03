@@ -31,12 +31,12 @@ public class RequiresPermissionAttribute : AuthorizeAttribute
 {
   public const string PolicyPrefix = "RequiresPermission:";
 
+  private Permissions.Permission? permission_;
+
   public RequiresPermissionAttribute(string category,
                                      string function)
     => Permission = new Permissions.Permission(category,
                                                function);
-
-  private Permissions.Permission? permission_;
 
   public Permissions.Permission? Permission
   {

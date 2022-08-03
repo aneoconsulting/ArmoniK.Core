@@ -50,7 +50,7 @@ using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Enum = System.Enum;
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
-using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
+using TaskRequest = ArmoniK.Core.Common.Storage.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Submitter;
@@ -61,8 +61,6 @@ namespace ArmoniK.Core.Common.Tests.Submitter;
 [TestFixture]
 internal class IntegrationGrpcSubmitterServiceTest
 {
-  private GrpcSubmitterServiceHelper helper_;
-
   [SetUp]
   public void SetUp()
   {
@@ -81,6 +79,8 @@ internal class IntegrationGrpcSubmitterServiceTest
     helper_.Dispose();
   }
 
+  private GrpcSubmitterServiceHelper helper_;
+
   [Test]
   public async Task GetServiceConfigurationShouldSucceed()
   {
@@ -94,7 +94,7 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object);
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
-                                                                        .ConfigureAwait(false));
+                                                                                  .ConfigureAwait(false));
 
     var response = client.GetServiceConfiguration(new Empty());
 
@@ -165,7 +165,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                              It.IsAny<CancellationToken>()),
                         submitter => submitter.CancelTasks(It.IsAny<TaskFilter>(),
                                                            It.IsAny<CancellationToken>()),
-                        submitter => submitter.FinalizeTaskCreation(It.IsAny<IEnumerable<Storage.TaskRequest>>(),
+                        submitter => submitter.FinalizeTaskCreation(It.IsAny<IEnumerable<TaskRequest>>(),
                                                                     It.IsAny<int>(),
                                                                     It.IsAny<string>(),
                                                                     It.IsAny<string>(),
@@ -202,7 +202,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                 output,
                                                 null);
       }
-
     }
 
     return mockSubmitter.Object;
@@ -225,7 +224,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                         submitter => submitter.CreateTasks(It.IsAny<string>(),
                                                            It.IsAny<string>(),
                                                            It.IsAny<TaskOptions>(),
-                                                           It.IsAny<IAsyncEnumerable<TaskRequest>>(),
+                                                           It.IsAny<IAsyncEnumerable<gRPC.Services.TaskRequest>>(),
                                                            It.IsAny<CancellationToken>()),
 
                         submitter => submitter.WaitForCompletion(It.IsAny<WaitRequest>(),
@@ -886,5 +885,4 @@ internal class IntegrationGrpcSubmitterServiceTest
       }
     }
   }
-
 }

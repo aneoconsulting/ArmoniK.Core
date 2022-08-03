@@ -33,8 +33,8 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table;
 public static class ExpressionsBuilders
 {
   public static Expression<Func<TData, bool>> FieldFilterExpression<TData, TField>(Expression<Func<TData, TField>> expression,
-                                                                                 IList<TField>                   values,
-                                                                                 bool                            include = true)
+                                                                                   IList<TField>                   values,
+                                                                                   bool                            include = true)
   {
     var x = Expression.Parameter(typeof(TData),
                                  "model");
@@ -48,9 +48,9 @@ public static class ExpressionsBuilders
 
 
   public static Expression FieldFilterInternal<TData, TField>(Expression<Func<TData, TField>> expression,
-                                                       IList<TField>                          values,
-                                                       bool                                   include,
-                                                       Expression                             x)
+                                                              IList<TField>                   values,
+                                                              bool                            include,
+                                                              Expression                      x)
   {
     if (!values.Any())
     {
@@ -91,9 +91,9 @@ public static class ExpressionsBuilders
   }
 
   public static Expression FieldFilterInternal<TData, TField>(Expression<Func<TData, IEnumerable<TField>>> expression,
-                                                       IList<TField>                                       values,
-                                                       bool                                                include,
-                                                       Expression                                          x)
+                                                              IList<TField>                                values,
+                                                              bool                                         include,
+                                                              Expression                                   x)
   {
     if (!values.Any())
     {

@@ -47,6 +47,12 @@ public class HtcMockClient : IDisposable
     sessionClient_ = null;
   }
 
+  public void Dispose()
+  {
+    sessionClient_?.Dispose();
+    GC.SuppressFinalize(this);
+  }
+
   public bool Start(RunConfiguration runConfiguration)
   {
     logger_.LogInformation("Start new run with {configuration}",
@@ -59,12 +65,12 @@ public class HtcMockClient : IDisposable
                                                 logger_);
 
     var taskId = sessionClient_.SubmitTask(DataAdapter.BuildPayload(runConfiguration,
-                                                                   request));
+                                                                    request));
 
     logger_.LogInformation("Submitted root task {taskId}",
                            taskId);
     sessionClient_.WaitSubtasksCompletion(taskId)
-                 .Wait();
+                  .Wait();
 
     var result = Encoding.Default.GetString(sessionClient_.GetResult(taskId));
 
@@ -79,11 +85,5 @@ public class HtcMockClient : IDisposable
                        watch.Elapsed.TotalSeconds);
 
     return result.Equals($"1.{string.Join(".", shape)}");
-  }
-
-  public void Dispose()
-  {
-    sessionClient_?.Dispose();
-    GC.SuppressFinalize(this);
   }
 }

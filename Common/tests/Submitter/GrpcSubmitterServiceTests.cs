@@ -36,7 +36,6 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Google.Protobuf;
-using Google.Protobuf.Collections;
 
 using Grpc.Core;
 
@@ -789,8 +788,12 @@ public class GrpcSubmitterServiceTests
     {
       await service.CreateSession(new CreateSessionRequest
                                   {
-                                    Id                = "SessionID",
-                                    PartitionIds      = {"part1", "part2"},
+                                    Id = "SessionID",
+                                    PartitionIds =
+                                    {
+                                      "part1",
+                                      "part2",
+                                    },
                                     DefaultTaskOption = new TaskOptions
                                                         {
                                                           PartitionId = "part1",
@@ -970,7 +973,7 @@ public class GrpcSubmitterServiceTests
 
     var list = new List<CreateLargeTaskRequest>
                {
-                 new CreateLargeTaskRequest
+                 new()
                  {
                    InitRequest = new CreateLargeTaskRequest.Types.InitRequest
                                  {
@@ -1041,7 +1044,7 @@ public class GrpcSubmitterServiceTests
 
     var list = new List<CreateLargeTaskRequest>
                {
-                 new CreateLargeTaskRequest
+                 new()
                  {
                    InitRequest = new CreateLargeTaskRequest.Types.InitRequest
                                  {
@@ -1086,7 +1089,7 @@ public class GrpcSubmitterServiceTests
 
     var list = new List<CreateLargeTaskRequest>
                {
-                 new CreateLargeTaskRequest
+                 new()
                  {
                    InitRequest = new CreateLargeTaskRequest.Types.InitRequest
                                  {
@@ -1536,15 +1539,17 @@ public class GrpcSubmitterServiceTests
 
     var response = await service.GetTaskStatus(new GetTaskStatusRequest
                                                {
-                                                 TaskIds = {
-                                                            "TaskId",
-                                                          },
+                                                 TaskIds =
+                                                 {
+                                                   "TaskId",
+                                                 },
                                                },
                                                TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Completed,
-                    response.IdStatuses.Single().Status);
+                    response.IdStatuses.Single()
+                            .Status);
   }
 
   [Test]
@@ -1839,7 +1844,7 @@ public class GrpcSubmitterServiceTests
   {
     var mockSubmitter = new Mock<ISubmitter>();
     mockSubmitter.Setup(submitter => submitter.GetResultStatusAsync(It.IsAny<GetResultStatusRequest>(),
-                                                                  CancellationToken.None))
+                                                                    CancellationToken.None))
                  .Returns(() => Task.FromResult(new GetResultStatusReply
                                                 {
                                                   IdStatuses =
@@ -1858,18 +1863,17 @@ public class GrpcSubmitterServiceTests
     mockSubmitter.Verify();
 
     var response = await service.GetResultStatus(new GetResultStatusRequest
-                                               {
-                                                 ResultIds =
                                                  {
-                                                   "ResultId",
+                                                   ResultIds =
+                                                   {
+                                                     "ResultId",
+                                                   },
                                                  },
-                                               },
-                                               TestServerCallContext.Create())
+                                                 TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
     Assert.AreEqual(ResultStatus.Completed,
                     response.IdStatuses.Single()
                             .Status);
   }
-
 }

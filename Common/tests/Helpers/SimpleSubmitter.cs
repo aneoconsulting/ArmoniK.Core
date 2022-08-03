@@ -87,16 +87,8 @@ public class SimpleSubmitter : ISubmitter
     => (await taskRequests.Select(r => new TaskRequest(r.Id,
                                                        r.ExpectedOutputKeys,
                                                        r.DataDependencies))
-                          .ToArrayAsync(cancellationToken: cancellationToken)
+                          .ToArrayAsync(cancellationToken)
                           .ConfigureAwait(false), 1);
-
-  public Task<CreateSessionReply> CreateSession(string            sessionId,
-                                                TaskOptions       defaultTaskOptions,
-                                                CancellationToken cancellationToken)
-    => Task.FromResult(new CreateSessionReply
-                       {
-                         Ok = new Empty(),
-                       });
 
   public async Task<(IEnumerable<TaskRequest> requests, int priority)> CreateTasks(string                                      sessionId,
                                                                                    string                                      parentTaskId,
@@ -106,7 +98,7 @@ public class SimpleSubmitter : ISubmitter
     => (await taskRequests.Select(r => new TaskRequest(r.Id,
                                                        r.ExpectedOutputKeys,
                                                        r.DataDependencies))
-                          .ToArrayAsync(cancellationToken: cancellationToken)
+                          .ToArrayAsync(cancellationToken)
                           .ConfigureAwait(false), 1);
 
   public Task FinalizeTaskCreation(IEnumerable<TaskRequest> requests,
@@ -124,7 +116,7 @@ public class SimpleSubmitter : ISubmitter
                                                      CancellationToken cancellationToken)
     => Task.FromResult(new Configuration
                        {
-                         DataChunkMaxSize = 80000
+                         DataChunkMaxSize = 80000,
                        });
 
   public Task TryGetResult(ResultRequest                    request,
@@ -167,7 +159,7 @@ public class SimpleSubmitter : ISubmitter
                                                  (tsr,
                                                   id) =>
                                                  {
-                                                   tsr.IdStatuses.Add(new GetTaskStatusReply.Types.IdStatus()
+                                                   tsr.IdStatuses.Add(new GetTaskStatusReply.Types.IdStatus
                                                                       {
                                                                         Status = TaskStatus.Completed,
                                                                         TaskId = id,
@@ -181,7 +173,7 @@ public class SimpleSubmitter : ISubmitter
                                                    (reply,
                                                     s) =>
                                                    {
-                                                     reply.IdStatuses.Add(new GetResultStatusReply.Types.IdStatus()
+                                                     reply.IdStatuses.Add(new GetResultStatusReply.Types.IdStatus
                                                                           {
                                                                             ResultId = s,
                                                                             Status   = ResultStatus.Completed,
@@ -211,4 +203,12 @@ public class SimpleSubmitter : ISubmitter
                         IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
                         CancellationToken                      cancellationToken)
     => Task.CompletedTask;
+
+  public Task<CreateSessionReply> CreateSession(string            sessionId,
+                                                TaskOptions       defaultTaskOptions,
+                                                CancellationToken cancellationToken)
+    => Task.FromResult(new CreateSessionReply
+                       {
+                         Ok = new Empty(),
+                       });
 }

@@ -40,14 +40,14 @@ public class SessionNotFoundException : ArmoniKException
   }
 
   public SessionNotFoundException(string    message,
-                                    Exception innerException)
+                                  Exception innerException)
     : base(message,
            innerException)
   {
   }
 
   protected SessionNotFoundException(SerializationInfo info,
-                                       StreamingContext  context)
+                                     StreamingContext  context)
     : base(info,
            context)
   {

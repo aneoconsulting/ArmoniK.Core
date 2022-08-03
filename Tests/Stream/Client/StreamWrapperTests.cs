@@ -639,7 +639,9 @@ internal class StreamWrapperTests
                                                     });
 
     if (resultAvailability.Any(c => c != AvailabilityReply.TypeOneofCase.Ok))
+    {
       return -1;
+    }
 
     var resultList = taskRequestList.Select(async request =>
                                             {

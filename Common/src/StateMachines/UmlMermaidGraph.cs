@@ -28,18 +28,18 @@ using Stateless.Reflection;
 namespace ArmoniK.Core.Common.StateMachines;
 
 /// <summary>
-/// Class to generate a UML graph in mermaid format
+///   Class to generate a UML graph in mermaid format
 /// </summary>
 //
 public static class UmlMermaidGraph
 {
   /// <summary>
-  /// Generate a UML Mermaid graph from the state machine info
-  /// The current implementation will output a string whose last
-  /// three lines do not correspond to mermaid code and have to be
-  /// taken out explicitly. If the output string (OutputString) is to be used in
-  /// a markdown document, it's also necessary to enclose it in
-  /// proper mermaid markers. e.g., ```mermaid OutputString ```
+  ///   Generate a UML Mermaid graph from the state machine info
+  ///   The current implementation will output a string whose last
+  ///   three lines do not correspond to mermaid code and have to be
+  ///   taken out explicitly. If the output string (OutputString) is to be used in
+  ///   a markdown document, it's also necessary to enclose it in
+  ///   proper mermaid markers. e.g., ```mermaid OutputString ```
   /// </summary>
   /// <param name="machineInfo"></param>
   /// <returns></returns>

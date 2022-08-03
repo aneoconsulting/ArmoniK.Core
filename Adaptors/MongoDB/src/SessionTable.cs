@@ -48,6 +48,8 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+
 namespace ArmoniK.Core.Adapters.MongoDB;
 
 public class SessionTable : ISessionTable
@@ -72,10 +74,10 @@ public class SessionTable : ISessionTable
 
 
   [PublicAPI]
-  public async Task SetSessionDataAsync(string                          rootSessionId,
-                                        IEnumerable<string>             partitionIds,
-                                        Core.Common.Storage.TaskOptions defaultOptions,
-                                        CancellationToken               cancellationToken = default)
+  public async Task SetSessionDataAsync(string              rootSessionId,
+                                        IEnumerable<string> partitionIds,
+                                        TaskOptions         defaultOptions,
+                                        CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SetSessionDataAsync)}");
     activity?.SetTag($"{nameof(SetSessionDataAsync)}_sessionId",
@@ -96,11 +98,11 @@ public class SessionTable : ISessionTable
   public async Task<SessionData> GetSessionAsync(string            sessionId,
                                                  CancellationToken cancellationToken = default)
   {
-    using var _ = Logger.LogFunction(sessionId);
+    using var _        = Logger.LogFunction(sessionId);
     using var activity = activitySource_.StartActivity($"{nameof(GetSessionAsync)}");
     activity?.SetTag($"{nameof(GetSessionAsync)}_sessionId",
                      sessionId);
-    var sessionHandle = sessionProvider_.Get();
+    var sessionHandle     = sessionProvider_.Get();
     var sessionCollection = sessionCollectionProvider_.Get();
 
 
@@ -128,14 +130,14 @@ public class SessionTable : ISessionTable
     activity?.SetTag($"{nameof(IsSessionCancelledAsync)}_sessionId",
                      sessionId);
 
-    return (await this.GetSessionAsync(sessionId,
-                                       cancellationToken)
-                      .ConfigureAwait(false)).Status == SessionStatus.Canceled;
+    return (await GetSessionAsync(sessionId,
+                                  cancellationToken)
+              .ConfigureAwait(false)).Status == SessionStatus.Canceled;
   }
 
   /// <inheritdoc />
-  public async Task<Core.Common.Storage.TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
-                                                                               CancellationToken cancellationToken = default)
+  public async Task<TaskOptions> GetDefaultTaskOptionAsync(string            sessionId,
+                                                           CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(GetDefaultTaskOptionAsync)}");
     activity?.SetTag($"{nameof(GetDefaultTaskOptionAsync)}_sessionId",
