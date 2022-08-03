@@ -28,21 +28,22 @@ using System.Security.Cryptography.X509Certificates;
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
-using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
-using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
-using MongoDB.Driver.Core.Events;
 using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -138,9 +139,9 @@ public static class ServiceCollectionExt
                                 false,
                                 false);
 
-      services.AddOption(configuration,
-                         Options.MongoDB.SettingSection,
-                         out mongoOptions);
+      services.AddOption<Options.MongoDB>(configuration,
+                                          Options.MongoDB.SettingSection,
+                                          out mongoOptions);
 
       logger.LogTrace("Loaded mongodb credentials from file {path}",
                       mongoOptions.CredentialsPath);
@@ -174,7 +175,7 @@ public static class ServiceCollectionExt
       }
     }
 
-    string connectionString = null;
+    string connectionString;
     if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
     {
       var template = "mongodb://{0}:{1}/{2}";
@@ -223,6 +224,37 @@ public static class ServiceCollectionExt
                     nameof(mongoOptions.DataRetention),
                     mongoOptions.DataRetention);
 
+    return services;
+  }
+
+  [PublicAPI]
+  public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
+                                                                           ConfigurationManager    configuration,
+                                                                           ILogger                 logger)
+  {
+    var components = configuration.GetSection(Components.SettingSection);
+    if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
+    {
+      services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
+      services.AddTransient<IAuthenticationTable, AuthenticationTable>();
+    }
+
+    return services;
+  }
+
+  [PublicAPI]
+  public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
+                                                                  ConfigurationManager    configuration,
+                                                                  ILogger                 logger)
+  {
+    services.Configure<AuthenticatorOptions>(configuration.GetSection(AuthenticatorOptions.SectionName))
+            .AddAuthentication()
+            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
+                                                            _ =>
+                                                            {
+                                                            });
+    services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
+            .AddAuthorization();
     return services;
   }
 }

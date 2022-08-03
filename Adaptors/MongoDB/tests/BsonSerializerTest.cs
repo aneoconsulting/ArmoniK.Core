@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -28,6 +28,8 @@ using System.Linq;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
+using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Storage;
 
 using Google.Protobuf.WellKnownTypes;
@@ -51,7 +53,11 @@ internal class BsonSerializerTest
   {
     var rdm = new SessionData("SessionId",
                               SessionStatus.Running,
-                              new [] {"part1", "part2"},
+                              new[]
+                              {
+                                "part1",
+                                "part2"
+                              },
                               new TaskOptions
                               {
                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
@@ -87,9 +93,9 @@ internal class BsonSerializerTest
                                  .ToUniversalTime(),
                          new[]
                          {
-                           (byte)1,
-                           (byte)2,
-                           (byte)3,
+                           (byte) 1,
+                           (byte) 2,
+                           (byte) 3,
                          });
 
     var serialized = rdm.ToBson();
@@ -182,14 +188,159 @@ internal class BsonSerializerTest
   }
 
   [Test]
+  public void SerializeUserDataModel()
+  {
+    var udm = new UserData("UserId",
+                           "Username",
+                           new[]
+                           {
+                             "RoleId1",
+                             "RoleId2"
+                           });
+    var serialized = udm.ToBson();
+
+    var deserialized = BsonSerializer.Deserialize<UserData>(serialized);
+
+    Assert.IsNotNull(deserialized);
+    Assert.AreEqual(udm.UserId,
+                    deserialized.UserId);
+    Assert.AreEqual(udm.Username,
+                    deserialized.Username);
+    Assert.IsNotNull(deserialized.Roles);
+    Assert.AreEqual(udm.Roles.Length,
+                    deserialized.Roles.Length);
+    Assert.AreEqual(udm.Roles[0],
+                    deserialized.Roles[0]);
+    Assert.AreEqual(udm.Roles[1],
+                    deserialized.Roles[1]);
+  }
+
+  [Test]
+  public void SerializeRoleDataModel()
+  {
+    var rdm = new RoleData("RoleId",
+                           "RoleName",
+                           new[]
+                           {
+                             "cat1:name1",
+                             "cat2:name2:*",
+                           });
+    var serialized = rdm.ToBson();
+
+    var deserialized = BsonSerializer.Deserialize<RoleData>(serialized);
+
+    Assert.IsNotNull(deserialized);
+    Assert.AreEqual(rdm.RoleId,
+                    deserialized.RoleId);
+    Assert.AreEqual(rdm.RoleName,
+                    deserialized.RoleName);
+    Assert.IsNotNull(deserialized.Permissions);
+    Assert.AreEqual(rdm.Permissions.Length,
+                    deserialized.Permissions.Length);
+    Assert.AreEqual(rdm.Permissions[0],
+                    deserialized.Permissions[0]);
+    Assert.AreEqual(rdm.Permissions[1],
+                    deserialized.Permissions[1]);
+  }
+
+  [Test]
+  public void SerializeAuthDataModel()
+  {
+    var adm = new AuthData("AuthId",
+                           "UserId",
+                           "CN",
+                           "Fingerprint");
+    var serialized = adm.ToBson();
+
+    Console.WriteLine(adm.ToBsonDocument());
+
+    var deserialized = BsonSerializer.Deserialize<AuthData>(serialized);
+
+    Assert.IsNotNull(deserialized);
+    Assert.AreEqual(adm.AuthId,
+                    deserialized.AuthId);
+    Assert.AreEqual(adm.UserId,
+                    deserialized.UserId);
+    Assert.AreEqual(adm.CN,
+                    deserialized.CN);
+    Assert.AreEqual(adm.Fingerprint,
+                    deserialized.Fingerprint);
+  }
+
+  [Test]
+  public void SerializeUserAuthenticationResult()
+  {
+    var uirm = new UserAuthenticationResult("Id",
+                                            "Username",
+                                            new[]
+                                            {
+                                              "RoleName1",
+                                              "RoleName2",
+                                            },
+                                            new[]
+                                            {
+                                              "Permission1:test",
+                                              "Permission2:test:*",
+                                            });
+    var serialized   = uirm.ToBson();
+    var deserialized = BsonSerializer.Deserialize<UserAuthenticationResult>(serialized);
+    Assert.IsNotNull(deserialized);
+    Assert.AreEqual(uirm.Id,
+                    deserialized.Id);
+    Assert.AreEqual(uirm.Username,
+                    deserialized.Username);
+    Assert.IsNotNull(deserialized.Roles);
+    Assert.AreEqual(uirm.Roles.Count(),
+                    deserialized.Roles.Count());
+    Assert.IsTrue(uirm.Roles.ToList()
+                      .All(s => deserialized.Roles.Contains(s)));
+    Assert.IsNotNull(deserialized.Permissions);
+    Assert.AreEqual(uirm.Permissions.Count(),
+                    deserialized.Permissions.Count());
+    Assert.IsTrue(uirm.Permissions.ToList()
+                      .All(s => deserialized.Permissions.Contains(s)));
+  }
+
+  [Test]
   public void InitializeResultDataModelMapping()
-    => _ = new ResultDataModelMapping();
+  {
+    _ = new ResultDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(Result)));
+  }
 
   [Test]
   public void InitializeTaskDataModelMapping()
-    => _ = new TaskDataModelMapping();
+  {
+    _ = new TaskDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(TaskData)));
+  }
+
 
   [Test]
   public void InitializeSessionDataModelMapping()
-    => _ = new SessionDataModelMapping();
+  {
+    _ = new SessionDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(SessionData)));
+  }
+
+  [Test]
+  public void InitializeUserDataModelMapping()
+  {
+    _ = new UserDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(UserData)));
+  }
+
+  [Test]
+  public void InitializeRoleDataModelMapping()
+  {
+    _ = new RoleDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(RoleData)));
+  }
+
+  [Test]
+  public void InitializeAuthDataModelMapping()
+  {
+    _ = new AuthDataModelMapping();
+    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(AuthData)));
+  }
 }

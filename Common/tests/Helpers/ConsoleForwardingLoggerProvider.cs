@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -32,7 +32,7 @@ internal class ConsoleForwardingLoggerProvider : ILoggerProvider
 {
   private readonly ForwardingLoggerProvider provider_;
 
-  public ConsoleForwardingLoggerProvider()
+  public ConsoleForwardingLoggerProvider(LogLevel minLogLevel)
   {
     provider_ = new ForwardingLoggerProvider((logLevel,
                                               category,
@@ -40,9 +40,14 @@ internal class ConsoleForwardingLoggerProvider : ILoggerProvider
                                               message,
                                               exception) =>
                                              {
-                                               Console.WriteLine(logLevel + " => " + category + "\n" + message + "\n" + exception);
+                                               if (logLevel >= minLogLevel)
+                                               {
+                                                 Console.WriteLine(logLevel + " => " + category + "\n" + message + "\n" + exception);
+                                               }
                                              });
   }
+
+  public ConsoleForwardingLoggerProvider() : this(LogLevel.Trace){}
 
   public void Dispose()
     => provider_.Dispose();

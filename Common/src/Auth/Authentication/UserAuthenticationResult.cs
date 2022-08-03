@@ -22,18 +22,21 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using System;
+using System.Collections.Generic;
 
-namespace ArmoniK.Core.Common.Injection.Options;
+namespace ArmoniK.Core.Common.Auth.Authentication;
 
-[PublicAPI]
-public class Components
+public record UserAuthenticationResult(string              Id,
+                                       string              Username,
+                                       IEnumerable<string> Roles,
+                                       IEnumerable<string> Permissions)
 {
-  public const string SettingSection = nameof(Components);
-
-  public string? TableStorage  { get; set; }
-  public string? QueueStorage  { get; set; }
-  public string? LeaseProvider { get; set; }
-  public string? ObjectStorage { get; set; }
-  public string? AuthenticationStorage { get; set; }
+  public UserAuthenticationResult()
+    : this("",
+           "",
+           Array.Empty<string>(),
+           Array.Empty<string>())
+  {
+  }
 }
