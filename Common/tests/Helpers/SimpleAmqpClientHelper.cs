@@ -27,6 +27,8 @@ using System.Threading.Tasks;
 
 using Amqp;
 
+using ArmoniK.Core.Adapters.Amqp;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;

@@ -35,7 +35,6 @@ using Amqp.Framing;
 
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -47,17 +46,17 @@ public class QueueStorage : IQueueStorage
 {
   private const int MaxInternalQueuePriority = 10;
 
-  private readonly ILogger<QueueStorage>      logger_;
+  private readonly ILogger<QueueStorage> logger_;
+
+  private readonly int                        nbLinks_;
   private readonly AsyncLazy<IReceiverLink>[] receivers_;
   private readonly AsyncLazy<ISenderLink>[]   senders_;
 
   private bool isInitialized_;
 
-  private readonly int nbLinks_;
-
-  public QueueStorage(Options.Amqp           options,
-                      IProviderBase<Session> sessionProvider,
-                      ILogger<QueueStorage>  logger)
+  public QueueStorage(Options.Amqp          options,
+                      ISessionAmqp          sessionAmqp,
+                      ILogger<QueueStorage> logger)
   {
     if (string.IsNullOrEmpty(options.Host))
     {
@@ -83,6 +82,12 @@ public class QueueStorage : IQueueStorage
                                             $"{nameof(Options.Amqp.Port)} is not defined.");
     }
 
+    if (options.MaxRetries == 0)
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.Amqp.MaxRetries)} is not defined.");
+    }
+
     if (options.MaxPriority < 1)
     {
       throw new ArgumentOutOfRangeException(nameof(options),
@@ -97,14 +102,14 @@ public class QueueStorage : IQueueStorage
 
     senders_ = Enumerable.Range(0,
                                 nbLinks_)
-                         .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(sessionProvider.Get(),
+                         .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(sessionAmqp.Session,
                                                                                       $"SenderLink{i}",
                                                                                       $"q{i}")))
                          .ToArray();
 
     receivers_ = Enumerable.Range(0,
                                   nbLinks_)
-                           .Select(i => new AsyncLazy<IReceiverLink>(() => new ReceiverLink(sessionProvider.Get(),
+                           .Select(i => new AsyncLazy<IReceiverLink>(() => new ReceiverLink(sessionAmqp.Session,
                                                                                             $"ReceiverLink{i}",
                                                                                             $"q{i}")))
                            .ToArray();

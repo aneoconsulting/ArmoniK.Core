@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Injection;
 
-public abstract class ProviderBase<T> : IProviderBase<T>, IHealthCheckProvider
+public abstract class ProviderBase<T> : IHealthCheckProvider
 {
   private readonly Func<Task<T>> builder_;
   private          T?            object_;

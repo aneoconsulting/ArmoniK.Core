@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -23,11 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-
-using Amqp;
 
 using ArmoniK.Core.Common.Injection;
 
@@ -36,61 +31,17 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Adapters.Amqp;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class SessionProvider : ProviderBase<Session>
+public class SessionProvider : ProviderBase<SessionAmqp>
 {
   /// <inheritdoc />
   public SessionProvider(Options.Amqp options,
                          ILogger      logger)
     : base(async () =>
            {
-             var address = new Address(options.Host,
-                                       options.Port,
-                                       options.User,
-                                       options.Password,
-                                       scheme: options.Scheme);
-
-             var connectionFactory = new ConnectionFactory();
-             if (options.Scheme.Equals("AMQPS"))
-             {
-               connectionFactory.SSL.RemoteCertificateValidationCallback = delegate(object          sender,
-                                                                                    X509Certificate certificate,
-                                                                                    X509Chain       chain,
-                                                                                    SslPolicyErrors errors)
-                                                                           {
-                                                                             switch (errors)
-                                                                             {
-                                                                               case SslPolicyErrors.RemoteCertificateNameMismatch when options.AllowHostMismatch:
-                                                                               case SslPolicyErrors.None:
-                                                                                 return true;
-                                                                               default:
-                                                                                 logger.LogError("SSL error : {error}",
-                                                                                                 errors);
-                                                                                 return false;
-                                                                             }
-                                                                           };
-             }
-
-             Session session;
-
-             var retries = 1;
-             while (true)
-             {
-               try
-               {
-                 session = new Session(await connectionFactory.CreateAsync(address)
-                                                              .ConfigureAwait(false));
-                 break;
-               }
-               catch
-               {
-                 if (++retries == 6)
-                 {
-                   throw;
-                 }
-
-                 Thread.Sleep(1000 * retries);
-               }
-             }
+             var session = new SessionAmqp(options,
+                                           logger);
+             await session.OpenConnection()
+                          .ConfigureAwait(false);
 
              return session;
            })
@@ -99,6 +50,12 @@ public class SessionProvider : ProviderBase<Session>
     {
       throw new ArgumentNullException(nameof(options),
                                       $"Contains a null or empty {nameof(options.Host)} field");
+    }
+
+    if (options.MaxRetries == 0)
+    {
+      throw new ArgumentNullException(nameof(options),
+                                      $"Contains a zero {nameof(options.MaxRetries)} field");
     }
 
     if (options.Port == 0)
