@@ -130,6 +130,7 @@ public class SessionAmqp : ISessionAmqp
       }
       catch
       {
+        Logger.LogInformation("Retrying to create connection");
         Thread.Sleep(1000 * retry);
       }
     }
