@@ -6360,15 +6360,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.GetResourceData
   nameWithType: GrpcAgentService.GetResourceData
-- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},ServerCallContext)
-  name: SendResult(IAsyncStreamReader<Agent.Result>, ServerCallContext)
-  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_SendResult_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_Agent_Result__ServerCallContext_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},ServerCallContext)
-  name.vb: SendResult(IAsyncStreamReader(Of Agent.Result), ServerCallContext)
-  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader<ArmoniK.Api.gRPC.V1.Agent.Result>, ServerCallContext)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader(Of ArmoniK.Api.gRPC.V1.Agent.Result), ServerCallContext)
-  nameWithType: GrpcAgentService.SendResult(IAsyncStreamReader<Agent.Result>, ServerCallContext)
-  nameWithType.vb: GrpcAgentService.SendResult(IAsyncStreamReader(Of Agent.Result), ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader{Result},ServerCallContext)
+  name: SendResult(IAsyncStreamReader<Result>, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_SendResult_IAsyncStreamReader_Result__ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader{Result},ServerCallContext)
+  name.vb: SendResult(IAsyncStreamReader(Of Result), ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader<Result>, ServerCallContext)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult(IAsyncStreamReader(Of Result), ServerCallContext)
+  nameWithType: GrpcAgentService.SendResult(IAsyncStreamReader<Result>, ServerCallContext)
+  nameWithType.vb: GrpcAgentService.SendResult(IAsyncStreamReader(Of Result), ServerCallContext)
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.SendResult*
   name: SendResult
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.html#ArmoniK_Core_Common_gRPC_Services_GrpcAgentService_SendResult_
@@ -6408,15 +6408,15 @@ references:
   commentId: T:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions
   nameWithType: GrpcSubmitterExtensions
-- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator{ArmoniK.Api.gRPC.V1.Submitter.CreateLargeTaskRequest},CancellationToken)
-  name: BuildRequests(IAsyncEnumerator<Submitter.CreateLargeTaskRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterExtensions_BuildRequests_IAsyncEnumerator_ArmoniK_Api_gRPC_V1_Submitter_CreateLargeTaskRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator{ArmoniK.Api.gRPC.V1.Submitter.CreateLargeTaskRequest},CancellationToken)
-  name.vb: BuildRequests(IAsyncEnumerator(Of Submitter.CreateLargeTaskRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator<ArmoniK.Api.gRPC.V1.Submitter.CreateLargeTaskRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator(Of ArmoniK.Api.gRPC.V1.Submitter.CreateLargeTaskRequest), CancellationToken)
-  nameWithType: GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator<Submitter.CreateLargeTaskRequest>, CancellationToken)
-  nameWithType.vb: GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator(Of Submitter.CreateLargeTaskRequest), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator{CreateLargeTaskRequest},CancellationToken)
+  name: BuildRequests(IAsyncEnumerator<CreateLargeTaskRequest>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterExtensions_BuildRequests_IAsyncEnumerator_CreateLargeTaskRequest__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator{CreateLargeTaskRequest},CancellationToken)
+  name.vb: BuildRequests(IAsyncEnumerator(Of CreateLargeTaskRequest), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator<CreateLargeTaskRequest>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator(Of CreateLargeTaskRequest), CancellationToken)
+  nameWithType: GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator<CreateLargeTaskRequest>, CancellationToken)
+  nameWithType.vb: GrpcSubmitterExtensions.BuildRequests(IAsyncEnumerator(Of CreateLargeTaskRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.BuildRequests*
   name: BuildRequests
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterExtensions_BuildRequests_
@@ -6730,15 +6730,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.GetResourceData
   nameWithType: IAgent.GetResourceData
-- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},CancellationToken)
-  name: SendResult(IAsyncStreamReader<Agent.Result>, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_SendResult_IAsyncStreamReader_ArmoniK_Api_gRPC_V1_Agent_Result__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader{ArmoniK.Api.gRPC.V1.Agent.Result},CancellationToken)
-  name.vb: SendResult(IAsyncStreamReader(Of Agent.Result), CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader<ArmoniK.Api.gRPC.V1.Agent.Result>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader(Of ArmoniK.Api.gRPC.V1.Agent.Result), CancellationToken)
-  nameWithType: IAgent.SendResult(IAsyncStreamReader<Agent.Result>, CancellationToken)
-  nameWithType.vb: IAgent.SendResult(IAsyncStreamReader(Of Agent.Result), CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader{Result},CancellationToken)
+  name: SendResult(IAsyncStreamReader<Result>, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_SendResult_IAsyncStreamReader_Result__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader{Result},CancellationToken)
+  name.vb: SendResult(IAsyncStreamReader(Of Result), CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader<Result>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult(IAsyncStreamReader(Of Result), CancellationToken)
+  nameWithType: IAgent.SendResult(IAsyncStreamReader<Result>, CancellationToken)
+  nameWithType.vb: IAgent.SendResult(IAsyncStreamReader(Of Result), CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.IAgent.SendResult*
   name: SendResult
   href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html#ArmoniK_Core_Common_gRPC_Services_IAgent_SendResult_
