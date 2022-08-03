@@ -108,7 +108,6 @@ jobs:
         jb cleanupcode ArmoniK.Core.sln
 
     - name: Check Diff
-      continue-on-error: true
       run: |
         DIFF="$(git diff --name-only)"
 
