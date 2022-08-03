@@ -517,6 +517,7 @@ jobs:
 
   canMerge:
     needs:
+      - format
       - tests
       - testsQueue
       - testsWinOnly
