@@ -269,6 +269,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.html",
+          "hash": "M4MoJnKMooEXNB2xHICU7Zat/R7QsjJMeZkbsVY/UXg="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Common.IMongoDataModelMapping-1.yml",
       "output": {
         ".html": {
@@ -489,7 +501,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.ServiceCollectionExt.html",
-          "hash": "tzpYZRV/U0QWHrCHG6lL5CaWqg53c0nlUU1/h5a9J28="
+          "hash": "UlXRLPkvl8V1MVZBij8UzOGYwyKQyfznzgknTVwPu7M="
         }
       },
       "is_incremental": false,
@@ -502,6 +514,78 @@
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html",
           "hash": "64djCH+0r2PdmIV7f+uEc+EmChzGpj1L2DKysgDMZRI="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataAfterLookup.html",
+          "hash": "yo6zkv73RNaS2ejjulYuuEhn34WF4vc53GeeFHv4cyk="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataModelMapping.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataModelMapping.html",
+          "hash": "56sog+piRpiOxQwbkKjT+cvigmBtDnmqMGFabyebFBs="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.RoleDataModelMapping.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.RoleDataModelMapping.html",
+          "hash": "9m7IOkXil8NSC8oFZLyNVfehRjs3t8YE7qDvxLAEVa4="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataAfterLookup.html",
+          "hash": "A6c5aCqrmaTmPxk/LXdvkBeb1EZJ9bDILitwyqbEOSg="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataModelMapping.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataModelMapping.html",
+          "hash": "94lSJ6tsUPeFsV7o/OCxZXc/oK8+hEZNMkowgJTN5ZY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.html",
+          "hash": "im137pJC+OVgyqVq0Y2YTt+TaakvdSKuPXiTmCjUyT4="
         }
       },
       "is_incremental": false,
@@ -653,6 +737,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.AuthenticationTableTest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.AuthenticationTableTest.html",
+          "hash": "8AuHErCOF+CSZ7uxtZwIeyjeAXJCS1XrBnSOJG8r1Z8="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.ObjectStorageTests.yml",
       "output": {
         ".html": {
@@ -705,7 +801,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.html",
-          "hash": "KpeCXzVDHf3yknWbRHCh9A83X6VEOBzn9sbmSqfqHNg="
+          "hash": "0GWKZsKcb4GqxmrwMqgRCMQjQnxSwj1yFpjXBhuDhy8="
         }
       },
       "is_incremental": false,
@@ -717,7 +813,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.html",
-          "hash": "oo21MrMaCDZ6KAIX8E/OHgfYekY/2wMxbg0vZqz9Bko="
+          "hash": "ziepTcB/1TcMOUnh0uQCEaS9/H7Pri7moueL17cbirY="
         }
       },
       "is_incremental": false,
@@ -790,6 +886,174 @@
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Redis.html",
           "hash": "7wYKmxXMN4cUDiNkZZQpLXOD4sFVztxZXzVSS4iPxSU="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.AuthData.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.AuthData.html",
+          "hash": "1q2m4OP7ryF8KeZfjaHKPQeGRR19KM+x8mUhHNg8ueE="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.Authenticator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.Authenticator.html",
+          "hash": "nZLJPw4PJbqdDAvO27tzykM8cRdYPU8Zqg3QYQe5v2k="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.AuthenticatorOptions.html",
+          "hash": "AZ4vSsWmZU6ziph8Aq3txvI6uqJYHs8rvvknUxxWsfM="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable.html",
+          "hash": "EKlUWr1NmuRvuETsC8YBKcA4UKi1XRRXsOCUrqW/IT4="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.RoleData.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.RoleData.html",
+          "hash": "vEystn5EBahVdVKhElI/Ba3zXUM9/L54Z/pbxvl+CCA="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.UserAuthenticationResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.UserAuthenticationResult.html",
+          "hash": "/2O3jSyydi7NMvvuVGoyK8WgRmjO+ddq861Hsz37sYQ="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.UserData.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.UserData.html",
+          "hash": "gHdKTwTX167Fch3RnPEEHDXi2MNrRPOf3Tha08Km8gc="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.UserIdentity.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.UserIdentity.html",
+          "hash": "82rIhOtTO6dYo9+jCGcViTtobR7YdeJQlRCxsw5W00Y="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.html",
+          "hash": "Y0FJZ52qTHRVVo/5j4rlhezyzvgGZTgo4YB4Vfng1YY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authorization.AuthorizationPolicyProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authorization.AuthorizationPolicyProvider.html",
+          "hash": "1Rwq6Aok7Lk6NhAS54EhYVFiI7edzROrIuWme6d7zJM="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html",
+          "hash": "6MFcpHeIVDvbjtsbLeiVRGQLGnj8J6J66uo++2HCJYQ="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authorization.Permissions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html",
+          "hash": "CrnS+ceu/sYmhnlWOL6UjhdQkApPWC9v772/Z8o3Epk="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authorization.RequiresPermissionAttribute.html",
+          "hash": "vvr4RddcsuG5r6vz33vKK2VkfLoVCXq1sVBWREk0tpc="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authorization.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authorization.html",
+          "hash": "YB47Uzv8p0Zn/oFTQV50/vcI6FlubAOZaRct9Anoo7g="
         }
       },
       "is_incremental": false,
@@ -1005,7 +1269,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Injection.Options.Components.html",
-          "hash": "gC4u748a5NsdcQDSiNkpy7ibVeM6rla2s/zMvAspnx8="
+          "hash": "AzbU5L+7qREbeAG40/n0ro+kIzPJTtXlgO4X0MFKjzI="
         }
       },
       "is_incremental": false,
@@ -1721,6 +1985,138 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthenticationType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthenticationType.html",
+          "hash": "bhnt8g27jJ1uZzCZX1Y++BgRjCaRdkZViNSUnaSzxNk="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.IdentityIndex.html",
+          "hash": "1GdppGlVzLOEVOD7wNqt0wkDK0aOgldg2TUcj23G1/c="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ImpersonationType.html",
+          "hash": "qBMnKsYVinsla9i5E8GUyiT5doOys93QfRl2u64cMVQ="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.ResultType.html",
+          "hash": "uDWEfLWyCP4BjYwoefVaqKlzOv2J9sZR0cOnF4nZKL0="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html",
+          "hash": "Gu4gReiZ1CdcmX2hZr2lTASv9jgyDHcPoE+ZQABpa94="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationTableTestBase.html",
+          "hash": "nq0+gxOtMyQcziIe6MNrRTITDqTBjUGI1EdKPb0yjl8="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.MockAuthenticationTable.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.MockAuthenticationTable.html",
+          "hash": "x7W66IE8cM8qG05D7O9LXLHZMfUV5lBODsd/FtO1oSY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.MockIdentity.MockCertificate.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.MockIdentity.MockCertificate.html",
+          "hash": "wxWgm6uB6GEyxNr9sc1byOHY+UVFtMiGLnG5eCUJqxs="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.MockIdentity.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.MockIdentity.html",
+          "hash": "wWlpKSt4ithPxBEm1YWotV0JIAb815Q/unVKS8Mj0w4="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.PermissionTest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.PermissionTest.html",
+          "hash": "6Ce2KohU8lvtZc5XKdDJwMAKIOPeawt8Tt6mT/YnX1U="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.html",
+          "hash": "R26XNIdpYxqvUgCp10tbMPdH+3nw1ZU1hKc0Tb9SbOQ="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.CreateLargeTaskRequestValidatorTest.yml",
       "output": {
         ".html": {
@@ -1821,7 +2217,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.html",
-          "hash": "2Q0xBk40D0Tr/IoseYMvWn8hJgAtD+6ejkBpRzdBV4I="
+          "hash": "YyVyyBJwp91ua6w6vLaEDiKJU/fjvoIzpz4ojhz91LI="
         }
       },
       "is_incremental": false,
@@ -1889,6 +2285,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html",
+          "hash": "bRyyaS4ty/CABdxlOxYZctGrtQUg68M4Dsh11TWP/V0="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.SimpleWorkerStreamHandler.yml",
       "output": {
         ".html": {
@@ -1941,7 +2349,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.html",
-          "hash": "enrhVTxV2r3LIeEViFP93cLSMbNlkLMCyPwxZPUKHs0="
+          "hash": "IWoUS8TA/pilGm6I3KLUrMEK7wzGALWMXC30q7gfL68="
         }
       },
       "is_incremental": false,
@@ -2373,7 +2781,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html",
-          "hash": "HweG16ntEa8D+D/3zLoCEeLHartlUrvGGcPiRU0W4wA="
+          "hash": "gQUiwqK0d5NkUPu0+K3EcUqkefEy8QqFnWkcGgbPs7A="
         }
       },
       "is_incremental": false,
@@ -2733,7 +3141,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Control.Submitter.Program.html",
-          "hash": "eZDU17o0zhe1rpy6EbNKvPPzicMB1/t5S0mmuqEh4Gk="
+          "hash": "38Bpm74VKhhtjRbd4Bqo4SGmzJJa3mg2Nkqtwv7VutA="
         }
       },
       "is_incremental": false,
@@ -3045,7 +3453,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "VK8Ed1t/QVGgwYEd3FTHcbwy5Moh3l3u1j/EwQDASeg="
+          "hash": "WLHTduMMBm+39i3xrnY/MV9zouEAZlxxebEun/firqY="
         }
       },
       "is_incremental": false,
@@ -3132,7 +3540,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 252,
+          "total_file_count": 286,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {

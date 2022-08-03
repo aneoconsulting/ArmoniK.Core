@@ -1,0 +1,554 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Class AuthenticationTable
+   </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Class AuthenticationTable
+   ">
+    <meta name="generator" content="docfx 2.59.3.0">
+    
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles/docfx.vendor.css">
+    <link rel="stylesheet" href="../styles/docfx.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <meta property="docfx:navrel" content="../toc.html">
+    <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+              <a class="navbar-brand" href="../index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable">
+  
+  
+  <h1 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable" class="text-break">Class AuthenticationTable
+  </h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level1"><span class="xref">AuthenticationTable</span></div>
+  </div>
+  <div class="implements">
+    <h5>Implements</h5>
+    <div><a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable.html">IAuthenticationTable</a></div>
+    <div><a class="xref" href="ArmoniK.Core.Common.IInitializable.html">IInitializable</a></div>
+    <div><a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a></div>
+  </div>
+  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.MongoDB.html">ArmoniK.Core.Adapters.MongoDB</a></h6>
+  <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.MongoDB.dll</h6>
+  <h5 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class AuthenticationTable : object, IAuthenticationTable, IInitializable, IHealthCheckProvider</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_AuthenticationTable__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Auth_Authentication_UserData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_UserDataModelMapping__ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Auth_Authentication_AuthData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_AuthDataModelMapping__ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Auth_Authentication_RoleData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_RoleDataModelMapping__ILogger_ArmoniK_Core_Adapters_MongoDB_AuthenticationTable__ActivitySource_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.%23ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider%2CArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider%7BArmoniK.Core.Common.Auth.Authentication.UserData%2CArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataModelMapping%7D%2CArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider%7BArmoniK.Core.Common.Auth.Authentication.AuthData%2CArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataModelMapping%7D%2CArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider%7BArmoniK.Core.Common.Auth.Authentication.RoleData%2CArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.RoleDataModelMapping%7D%2CILogger%7BArmoniK.Core.Adapters.MongoDB.AuthenticationTable%7D%2CActivitySource)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/AuthenticationTable.cs/#L83">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable__ctor_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.#ctor*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Auth_Authentication_UserData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_UserDataModelMapping__ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Auth_Authentication_AuthData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_AuthDataModelMapping__ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Auth_Authentication_RoleData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_Auth_RoleDataModelMapping__ILogger_ArmoniK_Core_Adapters_MongoDB_AuthenticationTable__ActivitySource_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Auth.Authentication.UserData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataModelMapping},ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Auth.Authentication.AuthData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataModelMapping},ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Auth.Authentication.RoleData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.RoleDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.AuthenticationTable},ActivitySource)">AuthenticationTable(SessionProvider, MongoCollectionProvider&lt;UserData, UserDataModelMapping&gt;, MongoCollectionProvider&lt;AuthData, AuthDataModelMapping&gt;, MongoCollectionProvider&lt;RoleData, RoleDataModelMapping&gt;, ILogger&lt;AuthenticationTable&gt;, ActivitySource)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AuthenticationTable(SessionProvider sessionProvider, MongoCollectionProvider&lt;UserData, UserDataModelMapping&gt; userCollectionProvider, MongoCollectionProvider&lt;AuthData, AuthDataModelMapping&gt; authCollectionProvider, MongoCollectionProvider&lt;RoleData, RoleDataModelMapping&gt; roleCollectionProvider, ILogger&lt;AuthenticationTable&gt; logger, ActivitySource activitySource)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider.html">SessionProvider</a></td>
+        <td><span class="parametername">sessionProvider</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider-2.html">MongoCollectionProvider</a>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserData.html">UserData</a>, <a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataModelMapping.html">UserDataModelMapping</a>&gt;</td>
+        <td><span class="parametername">userCollectionProvider</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider-2.html">MongoCollectionProvider</a>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.AuthData.html">AuthData</a>, <a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.AuthDataModelMapping.html">AuthDataModelMapping</a>&gt;</td>
+        <td><span class="parametername">authCollectionProvider</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider-2.html">MongoCollectionProvider</a>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.RoleData.html">RoleData</a>, <a class="xref" href="ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.RoleDataModelMapping.html">RoleDataModelMapping</a>&gt;</td>
+        <td><span class="parametername">roleCollectionProvider</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">ILogger</span>&lt;<a class="xref" href="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.html">AuthenticationTable</a>&gt;</td>
+        <td><span class="parametername">logger</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">ActivitySource</span></td>
+        <td><span class="parametername">activitySource</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_Logger.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.Logger%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/AuthenticationTable.cs/#L99">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_Logger_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.Logger*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_Logger" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.Logger">Logger</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ILogger Logger { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">ILogger</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_AddCertificates_IEnumerable_ArmoniK_Core_Common_Auth_Authentication_AuthData__.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.AddCertificates(IEnumerable%7BArmoniK.Core.Common.Auth.Authentication.AuthData%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/AuthenticationTable.cs/#L266">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_AddCertificates_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.AddCertificates*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_AddCertificates_IEnumerable_ArmoniK_Core_Common_Auth_Authentication_AuthData__" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.AddCertificates(IEnumerable{ArmoniK.Core.Common.Auth.Authentication.AuthData})">AddCertificates(IEnumerable&lt;AuthData&gt;)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddCertificates(IEnumerable&lt;AuthData&gt; certificates)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.AuthData.html">AuthData</a>&gt;</td>
+        <td><span class="parametername">certificates</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_AddRoles_IEnumerable_ArmoniK_Core_Common_Auth_Authentication_RoleData__.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.AddRoles(IEnumerable%7BArmoniK.Core.Common.Auth.Authentication.RoleData%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/AuthenticationTable.cs/#L250">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_AddRoles_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.AddRoles*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_AddRoles_IEnumerable_ArmoniK_Core_Common_Auth_Authentication_RoleData__" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.AddRoles(IEnumerable{ArmoniK.Core.Common.Auth.Authentication.RoleData})">AddRoles(IEnumerable&lt;RoleData&gt;)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddRoles(IEnumerable&lt;RoleData&gt; roles)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.RoleData.html">RoleData</a>&gt;</td>
+        <td><span class="parametername">roles</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_AddUsers_IEnumerable_ArmoniK_Core_Common_Auth_Authentication_UserData__.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.AddUsers(IEnumerable%7BArmoniK.Core.Common.Auth.Authentication.UserData%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/AuthenticationTable.cs/#L258">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_AddUsers_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.AddUsers*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_AddUsers_IEnumerable_ArmoniK_Core_Common_Auth_Authentication_UserData__" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.AddUsers(IEnumerable{ArmoniK.Core.Common.Auth.Authentication.UserData})">AddUsers(IEnumerable&lt;UserData&gt;)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddUsers(IEnumerable&lt;UserData&gt; users)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserData.html">UserData</a>&gt;</td>
+        <td><span class="parametername">users</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_Check_ArmoniK_Core_Common_HealthCheckTag_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.Check(ArmoniK.Core.Common.HealthCheckTag)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/AuthenticationTable.cs/#L102">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_Check_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.Check*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_Check_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.Check(ArmoniK.Core.Common.HealthCheckTag)">Check(HealthCheckTag)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ValueTask&lt;bool&gt; Check(HealthCheckTag tag)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="ArmoniK.Core.Common.HealthCheckTag.html">HealthCheckTag</a></td>
+        <td><span class="parametername">tag</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">ValueTask</span>&lt;<span class="xref">System.Boolean</span>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_GetIdentityFromCertificateAsync_System_String_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.GetIdentityFromCertificateAsync(System.String%2CSystem.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/AuthenticationTable.cs/#L140">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_GetIdentityFromCertificateAsync_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.GetIdentityFromCertificateAsync*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_GetIdentityFromCertificateAsync_System_String_System_String_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.GetIdentityFromCertificateAsync(System.String,System.String,CancellationToken)">GetIdentityFromCertificateAsync(String, String, CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public async Task&lt;UserAuthenticationResult&gt; GetIdentityFromCertificateAsync(string cn, string fingerprint, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">cn</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">fingerprint</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserAuthenticationResult.html">UserAuthenticationResult</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_GetIdentityFromUserAsync_System_Nullable_System_String__System_Nullable_System_String__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.GetIdentityFromUserAsync(System.Nullable%7BSystem.String%7D%2CSystem.Nullable%7BSystem.String%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/AuthenticationTable.cs/#L155">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_GetIdentityFromUserAsync_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.GetIdentityFromUserAsync*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_GetIdentityFromUserAsync_System_Nullable_System_String__System_Nullable_System_String__CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.GetIdentityFromUserAsync(System.Nullable{System.String},System.Nullable{System.String},CancellationToken)">GetIdentityFromUserAsync(Nullable&lt;String&gt;, Nullable&lt;String&gt;, CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public async Task&lt;UserAuthenticationResult&gt; GetIdentityFromUserAsync(string? id, string? username, CancellationToken cancellationToken = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="parametername">id</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">System.String</span>&gt;</td>
+        <td><span class="parametername">username</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.UserAuthenticationResult.html">UserAuthenticationResult</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_Init_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.Init(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/AuthenticationTable.cs/#L106">View Source</a>
+  </span>
+  <a id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_Init_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.Init*"></a>
+  <h4 id="ArmoniK_Core_Adapters_MongoDB_AuthenticationTable_Init_CancellationToken_" data-uid="ArmoniK.Core.Adapters.MongoDB.AuthenticationTable.Init(CancellationToken)">Init(CancellationToken)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task Init(CancellationToken cancellationToken)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">Task</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="implements">Implements</h3>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.Auth.Authentication.IAuthenticationTable.html">IAuthenticationTable</a>
+  </div>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.IInitializable.html">IInitializable</a>
+  </div>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a>
+  </div>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_MongoDB_AuthenticationTable.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.MongoDB.AuthenticationTable%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                  </li>
+                  <li>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/MongoDB/src/AuthenticationTable.cs/#L47" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In This Article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <!-- Required styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+    <script type="text/javascript" src="../styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+    <!-- Load v9.1.3 of Mermaid -->
+    <!-- Hash obtained via https://www.srihash.org/ -->
+    <script type="text/javascript" src="https://unpkg.com/mermaid@9.1.3/dist/mermaid.min.js" integrity="sha384-LnGjpNDrP4cp7MIk4CpRa/lPNclrf839ryYVFx1T1mPSV3RGAZ7nlBa7pqcyGY/K" crossorigin="anonymous"></script>
+    <!-- Initialize Mermaid -->
+    <script>
+        mermaid.initialize({
+            startOnLoad: false
+        });
+        mermaid.init(undefined, ".lang-mermaid");
+    </script>  </body>
+</html>
