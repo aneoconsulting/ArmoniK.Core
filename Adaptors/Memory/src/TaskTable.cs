@@ -195,6 +195,24 @@ public class TaskTable : ITaskTable
              .ConfigureAwait(false);
 
   /// <inheritdoc />
+  public async Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(TaskFilter        filter,
+                                                                                    CancellationToken cancellationToken = default)
+    => await ListTasksAsync(filter,
+                            cancellationToken)
+             .Select(taskId => taskId2TaskData_[taskId])
+             .GroupBy(task => new
+                              {
+                                task.Options.PartitionId,
+                                task.Status,
+                              })
+             .SelectAwait(async grouping => new PartitionTaskStatusCount(grouping.Key.PartitionId,
+                                                                         grouping.Key.Status,
+                                                                         await grouping.CountAsync(cancellationToken)
+                                                                                       .ConfigureAwait(false)))
+             .ToListAsync(cancellationToken)
+             .ConfigureAwait(false);
+
+  /// <inheritdoc />
   public async Task<int> CountAllTasksAsync(TaskStatus        status,
                                             CancellationToken cancellationToken = default)
   {
