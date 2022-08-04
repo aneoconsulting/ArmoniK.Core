@@ -41,4 +41,5 @@ public class Amqp
   public int    MaxPriority       { get; set; }
   public bool   AllowHostMismatch { get; set; }
   public int    MaxRetries        { get; set; }
+  public int    LinkCredit        { get; set; }
 }

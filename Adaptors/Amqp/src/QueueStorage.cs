@@ -49,6 +49,7 @@ public class QueueStorage : IQueueStorage
   private readonly ILogger<QueueStorage> logger_;
 
   private readonly int                        nbLinks_;
+  private readonly int                        linkCredit_;
   private readonly AsyncLazy<IReceiverLink>[] receivers_;
   private readonly AsyncLazy<ISenderLink>[]   senders_;
 
@@ -94,11 +95,17 @@ public class QueueStorage : IQueueStorage
                                             $"Minimum value for {nameof(Options.Amqp.MaxPriority)} is 1.");
     }
 
+    if (options.LinkCredit < 1)
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"Minimum value for {nameof(Options.Amqp.LinkCredit)} is 1.");
+    }
 
     MaxPriority = options.MaxPriority;
     logger_     = logger;
 
-    nbLinks_ = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
+    linkCredit_ = options.LinkCredit;
+    nbLinks_    = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
 
     senders_ = Enumerable.Range(0,
                                 nbLinks_)
@@ -150,6 +157,8 @@ public class QueueStorage : IQueueStorage
       {
         cancellationToken.ThrowIfCancellationRequested();
         var receiver = await receivers_[i];
+        /* linkCredit_: the maximum number of messages the remote peer can send to the receiver */
+        receiver.SetCredit(linkCredit_, true);
         var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
         if (message is null)
