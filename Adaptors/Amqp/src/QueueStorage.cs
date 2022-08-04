@@ -44,12 +44,12 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueStorage : IQueueStorage
 {
-  private const int MaxInternalQueuePriority = 10;
+  private const    int MaxInternalQueuePriority = 10;
+  private readonly int linkCredit_;
 
   private readonly ILogger<QueueStorage> logger_;
 
   private readonly int                        nbLinks_;
-  private readonly int                        linkCredit_;
   private readonly AsyncLazy<IReceiverLink>[] receivers_;
   private readonly AsyncLazy<ISenderLink>[]   senders_;
 
@@ -158,7 +158,8 @@ public class QueueStorage : IQueueStorage
         cancellationToken.ThrowIfCancellationRequested();
         var receiver = await receivers_[i];
         /* linkCredit_: the maximum number of messages the remote peer can send to the receiver */
-        receiver.SetCredit(linkCredit_, true);
+        receiver.SetCredit(linkCredit_,
+                           true);
         var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
         if (message is null)
