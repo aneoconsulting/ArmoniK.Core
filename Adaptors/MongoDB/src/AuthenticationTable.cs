@@ -130,9 +130,10 @@ public class AuthenticationTable : IAuthenticationTable
   /// <param name="matchingFunction">Filter to use in front of the pipeline</param>
   /// <param name="cancellationToken">Cancellation token</param>
   /// <returns>UserAuthenticationResult object containing the user information, roles and permissions. Null if the user has not been found</returns>
-  private static async Task<UserAuthenticationResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle sessionHandle,
+  private static async Task<UserAuthenticationResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle                  sessionHandle,
                                                                                                          IMongoCollection<TCollectionDataType> collection,
-                                                                                                         PipelineDefinition<TCollectionDataType, UserAuthenticationResult> pipeline,
+                                                                                                         PipelineDefinition<TCollectionDataType,
+                                                                                                           UserAuthenticationResult> pipeline,
                                                                                                          Expression<Func<TCollectionDataType, bool>> matchingFunction,
                                                                                                          CancellationToken cancellationToken = default)
   {
@@ -167,7 +168,7 @@ public class AuthenticationTable : IAuthenticationTable
 
   /// <inheritdoc />
   public async Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,
-                                                                        string?            username,
+                                                                        string?           username,
                                                                         CancellationToken cancellationToken = default)
   {
     using var                        activity       = activitySource_.StartActivity($"{nameof(GetIdentityFromUserAsync)}");
@@ -206,6 +207,7 @@ public class AuthenticationTable : IAuthenticationTable
     {
       return userToIdentityPipeline_;
     }
+
     // Get the RoleData for each of the roles of the UserData
     var lookup = PipelineStageDefinitionBuilder.Lookup<UserData, RoleData, UserDataAfterLookup>(roleCollectionProvider_.Get(),
                                                                                                 u => u.Roles,
@@ -217,6 +219,7 @@ public class AuthenticationTable : IAuthenticationTable
     - Roles : The names of the roles the user has
     - Permissions : The list of permissions, extracted from the roles. Permissions are not repeated
     Equivalent Bson Stage :
+    @SONAR-IGNORE-START
     $project: {
         Id: '$_id',
         Username: '$Username',
@@ -235,6 +238,7 @@ public class AuthenticationTable : IAuthenticationTable
         },
         _id: 0
     }
+    @SONAR-IGNORE-END
     */
     var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, UserAuthenticationResult>(ual => new UserAuthenticationResult(ual.UserId,
                                                                                                                                                     ual.Username,
@@ -272,14 +276,15 @@ public class AuthenticationTable : IAuthenticationTable
     {
       return authToIdentityPipeline_;
     }
+
     /*
      When matching, either 1 or 2 certificates can be found. Either the database only has the CN and Fingerprint matching, or there is also a CN only entry.
      When both are present, select the one which matches best (CN AND Fingerprint > CN only).
      First sort by the Fingerprint in descending order (null fingerprint are push to the end)...
     */
-    var sortByRelevance        = PipelineStageDefinitionBuilder.Sort(new SortDefinitionBuilder<AuthData>().Descending(authData => authData.Fingerprint));
+    var sortByRelevance = PipelineStageDefinitionBuilder.Sort(new SortDefinitionBuilder<AuthData>().Descending(authData => authData.Fingerprint));
     // ...then limit to 1 result, allowing to keep the best matching.
-    var limit                  = PipelineStageDefinitionBuilder.Limit<AuthData>(1);
+    var limit = PipelineStageDefinitionBuilder.Limit<AuthData>(1);
 
     // Get the User corresponding to the UserId from the UserData collection and put it in the UserData field.
     var lookup = PipelineStageDefinitionBuilder.Lookup<AuthData, UserData, AuthDataAfterLookup>(userCollectionProvider_.Get(),
@@ -289,7 +294,7 @@ public class AuthenticationTable : IAuthenticationTable
     // If the UserId is invalid, the UserData field is an empty array. Stop if this is the case.
     var checkIfValid = PipelineStageDefinitionBuilder.Match<AuthDataAfterLookup>(doc => doc.UserData.Any());
     // Replace the object with the UserData
-    var replaceRoot  = PipelineStageDefinitionBuilder.ReplaceRoot<AuthDataAfterLookup, UserData>(doc => doc.UserData.First());
+    var replaceRoot = PipelineStageDefinitionBuilder.ReplaceRoot<AuthDataAfterLookup, UserData>(doc => doc.UserData.First());
 
     // Use the User to Identity pipeline to create identity from the UserData
     var userToIdentityPipeline = GetUserToIdentityPipeline();

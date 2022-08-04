@@ -35,6 +35,9 @@ namespace ArmoniK.Core.Common.Auth.Authorization;
 
 public static class Permissions
 {
+  /// <summary>
+  /// Class used to store a permission
+  /// </summary>
   public class Permission
   {
     public readonly string Service;
@@ -42,6 +45,15 @@ public static class Permissions
     public readonly string Target;
     public readonly Claim  Claim;
 
+    /// <summary>
+    /// Constructs the permission from a string with format :
+    /// Service:Name
+    /// or
+    /// Service:Name:Target
+    /// </summary>
+    /// <param name="actionString">String representation of the permission</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the string is not of the right format</exception>
+    /// <exception cref="ArgumentException">Thrown if Service or Name is null or whitespace</exception>
     public Permission(string actionString)
     {
       var parts = actionString.Split(Separator);
@@ -81,7 +93,7 @@ public static class Permissions
       Claim = new Claim(ToBasePermission(),
                         Target);
     }
-
+    
     public override string ToString()
     {
       var action = ToBasePermission();
@@ -93,17 +105,20 @@ public static class Permissions
       return action;
     }
 
+    /// <summary>
+    /// Base permission string of the permission (service:name)
+    /// </summary>
+    /// <returns>The base permission string of this permission, no target</returns>
     public string ToBasePermission()
     {
       return Service + Separator + Name;
     }
   }
 
-  public static Permission Parse(string actionName)
-  {
-    return new Permission(actionName);
-  }
-
+  /// <summary>
+  /// Gets the list of base permissions, generated from the endpoints
+  /// </summary>
+  /// <returns>List of base permissions</returns>
   private static ImmutableList<Permission> GetPermissionList()
   {
     var permissions = typeof(GrpcSubmitterService).GetMethods()
