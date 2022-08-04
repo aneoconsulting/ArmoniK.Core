@@ -147,7 +147,7 @@ public class QueueStorageTests
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    Assert.Throws<ArgumentOutOfRangeException>(() =>  new QueueStorage(options,
+    Assert.Throws<ArgumentOutOfRangeException>(() => new QueueStorage(options,
                                                                       provider.Object,
                                                                       NullLogger<QueueStorage>.Instance));
   }
