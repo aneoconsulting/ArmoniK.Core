@@ -33,7 +33,7 @@ using Microsoft.Extensions.Options;
 namespace ArmoniK.Core.Common.Auth.Authorization;
 
 /// <summary>
-/// Class used by the authorization middleware to generate the policy from its name and configuration
+///   Class used by the authorization middleware to generate the policy from its name and configuration
 /// </summary>
 public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
 {

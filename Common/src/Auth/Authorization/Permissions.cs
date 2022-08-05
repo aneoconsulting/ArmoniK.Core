@@ -65,7 +65,7 @@ public static class Permissions
   }
 
   /// <summary>
-  /// Class used to store a permission
+  ///   Class used to store a permission
   /// </summary>
   public class Permission
   {
@@ -75,10 +75,10 @@ public static class Permissions
     public readonly string Target;
 
     /// <summary>
-    /// Constructs the permission from a string with format :
-    /// Service:Name
-    /// or
-    /// Service:Name:Target
+    ///   Constructs the permission from a string with format :
+    ///   Service:Name
+    ///   or
+    ///   Service:Name:Target
     /// </summary>
     /// <param name="actionString">String representation of the permission</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if the string is not of the right format</exception>
@@ -122,7 +122,7 @@ public static class Permissions
       Claim = new Claim(ToBasePermission(),
                         Target);
     }
-    
+
     public override string ToString()
     {
       var action = ToBasePermission();
@@ -135,7 +135,7 @@ public static class Permissions
     }
 
     /// <summary>
-    /// Base permission string of the permission (service:name)
+    ///   Base permission string of the permission (service:name)
     /// </summary>
     /// <returns>The base permission string of this permission, no target</returns>
     public string ToBasePermission()

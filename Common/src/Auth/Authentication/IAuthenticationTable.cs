@@ -32,7 +32,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 public interface IAuthenticationTable : IInitializable
 {
   /// <summary>
-  /// Get the User authentication data from the database, based on the provided certificate
+  ///   Get the User authentication data from the database, based on the provided certificate
   /// </summary>
   /// <param name="cn">Common name of the certificate</param>
   /// <param name="fingerprint">Fingerprint of the certificate</param>
@@ -43,7 +43,8 @@ public interface IAuthenticationTable : IInitializable
                                                                          CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Get the User authentication data from the database, based on the id or username. If id is not null, will be used for matching, otherwise tries to match the username
+  ///   Get the User authentication data from the database, based on the id or username. If id is not null, will be used for
+  ///   matching, otherwise tries to match the username
   /// </summary>
   /// <param name="id">Id of the user</param>
   /// <param name="username">Username of the user</param>
@@ -54,19 +55,19 @@ public interface IAuthenticationTable : IInitializable
                                                                   CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Adds roles to the database
+  ///   Adds roles to the database
   /// </summary>
   /// <param name="roles">Roles to be added</param>
   public void AddRoles(IEnumerable<RoleData> roles);
 
   /// <summary>
-  /// Adds users to the database
+  ///   Adds users to the database
   /// </summary>
   /// <param name="users">Users to be added</param>
   public void AddUsers(IEnumerable<UserData> users);
 
   /// <summary>
-  /// Adds certificates to the database
+  ///   Adds certificates to the database
   /// </summary>
   /// <param name="certificates">Certificates to be added</param>
   public void AddCertificates(IEnumerable<AuthData> certificates);

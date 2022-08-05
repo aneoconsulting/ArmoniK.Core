@@ -26,7 +26,7 @@
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
 /// <summary>
-/// Role object in database
+///   Role object in database
 /// </summary>
 /// <param name="RoleId">Id of the role</param>
 /// <param name="RoleName">Name of the role</param>

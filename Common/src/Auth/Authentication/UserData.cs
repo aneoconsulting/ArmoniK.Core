@@ -26,7 +26,7 @@
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
 /// <summary>
-/// User object in database
+///   User object in database
 /// </summary>
 /// <param name="UserId">Id of the user</param>
 /// <param name="Username">Name of the user</param>

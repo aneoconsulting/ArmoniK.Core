@@ -45,6 +45,33 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
 {
   public const string SectionName = nameof(Authenticator);
 
+  /// <summary>
+  ///   Default options used when no authentication is required
+  /// </summary>
+  public static readonly AuthenticatorOptions DefaultNoAuth = new()
+                                                              {
+                                                                RequireAuthentication = false,
+                                                                RequireAuthorization  = false,
+                                                              };
+
+  /// <summary>
+  ///   Default options used when authentication and authorization are required
+  /// </summary>
+  public static readonly AuthenticatorOptions DefaultAuth = new()
+                                                            {
+                                                              CNHeader                    = "X-Certificate-Client-CN",
+                                                              FingerprintHeader           = "X-Certificate-Client-Fingerprint",
+                                                              ImpersonationUsernameHeader = "X-Impersonate-Username",
+                                                              ImpersonationIdHeader       = "X-Impersonate-Id",
+                                                              RequireAuthentication       = true,
+                                                              RequireAuthorization        = true,
+                                                            };
+
+  /// <summary>
+  ///   Default options, will prevent launch as a fail-dead as it requires a proper configuration
+  /// </summary>
+  public static readonly AuthenticatorOptions Default = new();
+
   // ReSharper disable once InconsistentNaming
   public string CNHeader                    { get; set; } = "";
   public string FingerprintHeader           { get; set; } = "";
@@ -64,33 +91,6 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
     RequireAuthentication       = other.RequireAuthentication;
     RequireAuthorization        = other.RequireAuthorization;
   }
-
-  /// <summary>
-  /// Default options used when no authentication is required
-  /// </summary>
-  public static readonly AuthenticatorOptions DefaultNoAuth = new()
-                                                              {
-                                                                RequireAuthentication = false,
-                                                                RequireAuthorization  = false,
-                                                              };
-
-  /// <summary>
-  /// Default options used when authentication and authorization are required
-  /// </summary>
-  public static readonly AuthenticatorOptions DefaultAuth = new()
-                                                            {
-                                                              CNHeader                    = "X-Certificate-Client-CN",
-                                                              FingerprintHeader           = "X-Certificate-Client-Fingerprint",
-                                                              ImpersonationUsernameHeader = "X-Impersonate-Username",
-                                                              ImpersonationIdHeader       = "X-Impersonate-Id",
-                                                              RequireAuthentication       = true,
-                                                              RequireAuthorization        = true,
-                                                            };
-
-  /// <summary>
-  /// Default options, will prevent launch as a fail-dead as it requires a proper configuration
-  /// </summary>
-  public static readonly AuthenticatorOptions Default = new();
 }
 
 public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
@@ -136,7 +136,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   }
 
   /// <summary>
-  /// Function called by the Authentication middleware to get the authentication ticket for the user
+  ///   Function called by the Authentication middleware to get the authentication ticket for the user
   /// </summary>
   /// <returns></returns>
   [UsedImplicitly]
@@ -203,12 +203,15 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   }
 
   /// <summary>
-  /// Get the UserIdentity from the CN and Fingerprint of a certificate
+  ///   Get the UserIdentity from the CN and Fingerprint of a certificate
   /// </summary>
   /// <param name="cn">Common name of the certificate</param>
   /// <param name="fingerprint">Fingerprint of the certificate</param>
   /// <param name="cancellationToken">Cancellation token</param>
-  /// <returns>A UserIdentity object which can be used in authentication, corresponding to the certificate. Null if it doesn't correspond to any user.</returns>
+  /// <returns>
+  ///   A UserIdentity object which can be used in authentication, corresponding to the certificate. Null if it
+  ///   doesn't correspond to any user.
+  /// </returns>
   public async Task<UserIdentity?> GetIdentityFromCertificateAsync(string            cn,
                                                                    string            fingerprint,
                                                                    CancellationToken cancellationToken = default)
@@ -231,16 +234,18 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   }
 
   /// <summary>
-  /// Get the UserIdentity attempting to be impersonated by the user
+  ///   Get the UserIdentity attempting to be impersonated by the user
   /// </summary>
   /// <param name="baseIdentity">UserIdentity trying to impersonate</param>
   /// <param name="impersonationId">Id of the user being impersonated</param>
   /// <param name="impersonationUsername">Username of the user being impersonated</param>
   /// <param name="cancellationToken">Cancellation token</param>
   /// <returns>The impersonated user's  UserIdentity</returns>
-  /// <exception cref="AuthenticationException">Thrown when both id and username are missing,
-  /// the impersonated user doesn't exist,
-  /// or the impersonating user doesn't have the permissions to impersonate the specified user</exception>
+  /// <exception cref="AuthenticationException">
+  ///   Thrown when both id and username are missing,
+  ///   the impersonated user doesn't exist,
+  ///   or the impersonating user doesn't have the permissions to impersonate the specified user
+  /// </exception>
   public async Task<UserIdentity> GetImpersonatedIdentityAsync(UserIdentity      baseIdentity,
                                                                string?           impersonationId,
                                                                string?           impersonationUsername,
@@ -279,15 +284,14 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   }
 
   /// <summary>
-  /// 
   /// </summary>
   /// <param name="headerName"></param>
   /// <returns></returns>
   private string? TryGetHeader(string headerName)
   {
-    if (!string.IsNullOrEmpty(headerName)
-        && Request.Headers.TryGetValue(headerName, out var values)
-        && !string.IsNullOrWhiteSpace(values.First()))
+    if (!string.IsNullOrEmpty(headerName) && Request.Headers.TryGetValue(headerName,
+                                                                                                                        out var values) &&
+        !string.IsNullOrWhiteSpace(values.First()))
     {
       return values.First();
     }

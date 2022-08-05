@@ -28,7 +28,7 @@ using System.Collections.Generic;
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
 /// <summary>
-/// Object containing the authentication result from database
+///   Object containing the authentication result from database
 /// </summary>
 /// <param name="Id">Id of the user</param>
 /// <param name="Username">Name of the user</param>

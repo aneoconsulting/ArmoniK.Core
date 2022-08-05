@@ -207,12 +207,16 @@ public class AuthenticationIntegrationTest
   {
     // Auth and Authorization
     DefaultAuth,
+
     // Auth Only
     NoAuthorization,
+
     // No Auth, No Authorization
     NoAuthentication,
+
     // Auth and Authorization, no impersonation
     NoImpersonation,
+
     // Auth, no impersonation no authorization
     NoImpersonationNoAuthorization,
   }

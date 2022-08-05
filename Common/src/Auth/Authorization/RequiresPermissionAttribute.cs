@@ -28,7 +28,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace ArmoniK.Core.Common.Auth.Authorization;
 
 /// <summary>
-/// Function attribute defining the authorization policy name for the function
+///   Function attribute defining the authorization policy name for the function
 /// </summary>
 public class RequiresPermissionAttribute : AuthorizeAttribute
 {

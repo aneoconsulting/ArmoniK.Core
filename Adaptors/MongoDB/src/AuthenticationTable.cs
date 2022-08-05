@@ -36,9 +36,9 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
 
-using Microsoft.Extensions.Logging;
-
 using JetBrains.Annotations;
+
+using Microsoft.Extensions.Logging;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -99,6 +99,33 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   public ILogger Logger { get; }
+
+  /// <inheritdoc />
+  public void AddRoles(IEnumerable<RoleData> roles)
+  {
+    var roleCollection = roleCollectionProvider_.Get();
+    var sessionHandle  = sessionProvider_.Get();
+    roleCollection.InsertMany(sessionHandle,
+                              roles);
+  }
+
+  /// <inheritdoc />
+  public void AddUsers(IEnumerable<UserData> users)
+  {
+    var userCollection = userCollectionProvider_.Get();
+    var sessionHandle  = sessionProvider_.Get();
+    userCollection.InsertMany(sessionHandle,
+                              users);
+  }
+
+  /// <inheritdoc />
+  public void AddCertificates(IEnumerable<AuthData> certificates)
+  {
+    var authCollection = authCollectionProvider_.Get();
+    var sessionHandle  = sessionProvider_.Get();
+    authCollection.InsertMany(sessionHandle,
+                              certificates);
+  }
 
   /// <inheritdoc />
   public ValueTask<bool> Check(HealthCheckTag tag)
@@ -165,17 +192,9 @@ public class AuthenticationTable : IAuthenticationTable
              .ConfigureAwait(false);
   }
 
-
-  public void AddCertificates(IEnumerable<AuthData> certificates)
-  {
-    var authCollection = authCollectionProvider_.Get();
-    var sessionHandle  = sessionProvider_.Get();
-    authCollection.InsertMany(sessionHandle,
-                              certificates);
-  }
-
   /// <summary>
-  /// Gets the user from the given collection by first matching the entry with the matchingFunction and then executing the given pipeline
+  ///   Gets the user from the given collection by first matching the entry with the matchingFunction and then executing the
+  ///   given pipeline
   /// </summary>
   /// <typeparam name="TCollectionDataType">Type of data in the collection</typeparam>
   /// <param name="sessionHandle">Session Handle</param>
@@ -183,16 +202,19 @@ public class AuthenticationTable : IAuthenticationTable
   /// <param name="pipeline">Pipeline to use</param>
   /// <param name="matchingFunction">Filter to use in front of the pipeline</param>
   /// <param name="cancellationToken">Cancellation token</param>
-  /// <returns>UserAuthenticationResult object containing the user information, roles and permissions. Null if the user has not been found</returns>
+  /// <returns>
+  ///   UserAuthenticationResult object containing the user information, roles and permissions. Null if the user has
+  ///   not been found
+  /// </returns>
   private static async Task<UserAuthenticationResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle                  sessionHandle,
                                                                                                          IMongoCollection<TCollectionDataType> collection,
                                                                                                          PipelineDefinition<TCollectionDataType,
                                                                                                            UserAuthenticationResult> pipeline,
-                                                                                                         Expression<Func<TCollectionDataType, bool>> matchingFunctions,
+                                                                                                         Expression<Func<TCollectionDataType, bool>> matchingFunction,
                                                                                                          CancellationToken cancellationToken = default)
   {
     var pipe =
-      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserAuthenticationResult>(PipelineStageDefinitionBuilder.Match(matchingFunctions),
+      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserAuthenticationResult>(PipelineStageDefinitionBuilder.Match(matchingFunction),
                                                                                                                pipeline);
 
     return await collection.AggregateAsync(sessionHandle,
@@ -206,7 +228,7 @@ public class AuthenticationTable : IAuthenticationTable
 
 
   /// <summary>
-  /// Gets or generates the pipeline which uses the matched user information to get their roles and permissions
+  ///   Gets or generates the pipeline which uses the matched user information to get their roles and permissions
   /// </summary>
   /// <returns>The user to identity pipeline</returns>
   private PipelineDefinition<UserData, UserAuthenticationResult> GetUserToIdentityPipeline()
@@ -275,7 +297,8 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   /// <summary>
-  /// Gets or generates the pipeline which uses the matched certificates information to get the corresponding user, their role and their permissions
+  ///   Gets or generates the pipeline which uses the matched certificates information to get the corresponding user, their
+  ///   role and their permissions
   /// </summary>
   /// <returns>The certificate to identity pipeline</returns>
   private PipelineDefinition<AuthData, UserAuthenticationResult> GetAuthToIdentityPipeline()
