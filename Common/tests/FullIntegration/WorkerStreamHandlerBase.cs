@@ -37,7 +37,8 @@ namespace ArmoniK.Core.Common.Tests.FullIntegration;
 
 public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
 {
-  protected readonly List<Task> TaskList;
+  protected readonly ChannelAsyncPipe<ProcessReply, ProcessRequest> ChannelAsyncPipe;
+  protected readonly List<Task>                                     TaskList;
 
   protected WorkerStreamHandlerBase()
   {
@@ -57,14 +58,12 @@ public abstract class WorkerStreamHandlerBase : IWorkerStreamHandler
     GC.SuppressFinalize(this);
   }
 
-  public Queue<ProcessRequest.Types.ComputeRequest> WorkerReturn()
-    => throw new NotImplementedException();
-
   public abstract void StartTaskProcessing(TaskData          taskData,
                                            CancellationToken cancellationToken);
 
-  protected readonly ChannelAsyncPipe<ProcessReply, ProcessRequest> ChannelAsyncPipe;
-
   public IAsyncPipe<ProcessReply, ProcessRequest> Pipe
     => ChannelAsyncPipe;
+
+  public Queue<ProcessRequest.Types.ComputeRequest> WorkerReturn()
+    => throw new NotImplementedException();
 }

@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,18 +31,15 @@ using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Storage;
 
 using Output = ArmoniK.Api.gRPC.V1.Output;
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.FullIntegration;
 
-class WorkerStreamHandlerErrorRetryTest : WorkerStreamHandlerBase
+internal class WorkerStreamHandlerErrorRetryTest : WorkerStreamHandlerBase
 {
   private readonly Exception exception_;
 
   public WorkerStreamHandlerErrorRetryTest(Exception exception)
-  {
-    exception_ = exception;
-  }
+    => exception_ = exception;
 
   public override void StartTaskProcessing(TaskData          taskData,
                                            CancellationToken cancellationToken)
@@ -59,15 +55,13 @@ class WorkerStreamHandlerErrorRetryTest : WorkerStreamHandlerBase
                                                               .ConfigureAwait(false);
 
                           await ChannelAsyncPipe.Reverse.WriteAsync(new ProcessReply
-                                                         {
-                                                           Output = new Output
                                                                     {
-                                                                      Ok     = new Empty(),
-                                                                    },
-                                                         })
-                                     .ConfigureAwait(false);
-
-
+                                                                      Output = new Output
+                                                                               {
+                                                                                 Ok = new Empty(),
+                                                                               },
+                                                                    })
+                                                .ConfigureAwait(false);
                         });
     TaskList.Add(task);
     task.Start();

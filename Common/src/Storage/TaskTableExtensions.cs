@@ -39,5 +39,4 @@ public static class TaskTableExtensions
     => taskTable.UpdateAllTaskStatusAsync(filter,
                                           TaskStatus.Canceling,
                                           cancellationToken);
-
 }

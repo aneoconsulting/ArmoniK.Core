@@ -27,7 +27,6 @@ using Microsoft.Extensions.Logging;
 
 using Serilog;
 using Serilog.Core;
-using Serilog.Events;
 using Serilog.Formatting.Compact;
 
 using ILogger = Microsoft.Extensions.Logging.ILogger;

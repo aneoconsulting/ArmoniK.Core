@@ -29,13 +29,14 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 public static class GrpcSubmitterExtensions
 {
-  public static async IAsyncEnumerable<TaskRequest> BuildRequests(this                     IAsyncEnumerator<Api.gRPC.V1.Submitter.CreateLargeTaskRequest> enumerator,
-                                                                  [EnumeratorCancellation] CancellationToken                                  cancellationToken)
+  public static async IAsyncEnumerable<TaskRequest> BuildRequests(this                     IAsyncEnumerator<CreateLargeTaskRequest> enumerator,
+                                                                  [EnumeratorCancellation] CancellationToken                        cancellationToken)
   {
     var           id                 = string.Empty;
     IList<string> expectedOutputKeys = Array.Empty<string>();
@@ -47,7 +48,7 @@ public static class GrpcSubmitterExtensions
     {
       switch (enumerator.Current.TypeCase)
       {
-        case Api.gRPC.V1.Submitter.CreateLargeTaskRequest.TypeOneofCase.InitTask:
+        case CreateLargeTaskRequest.TypeOneofCase.InitTask:
           if (!string.IsNullOrEmpty(id) || dataDependencies.Any() || expectedOutputKeys.Any() || chunks.Any())
           {
             throw new InvalidOperationException();
@@ -69,7 +70,7 @@ public static class GrpcSubmitterExtensions
           }
 
           break;
-        case Api.gRPC.V1.Submitter.CreateLargeTaskRequest.TypeOneofCase.TaskPayload:
+        case CreateLargeTaskRequest.TypeOneofCase.TaskPayload:
           if (string.IsNullOrEmpty(id) || !expectedOutputKeys.Any())
           {
             throw new InvalidOperationException();
@@ -97,8 +98,8 @@ public static class GrpcSubmitterExtensions
           }
 
           break;
-        case Api.gRPC.V1.Submitter.CreateLargeTaskRequest.TypeOneofCase.InitRequest:
-        case Api.gRPC.V1.Submitter.CreateLargeTaskRequest.TypeOneofCase.None:
+        case CreateLargeTaskRequest.TypeOneofCase.InitRequest:
+        case CreateLargeTaskRequest.TypeOneofCase.None:
         default:
           throw new InvalidOperationException();
       }

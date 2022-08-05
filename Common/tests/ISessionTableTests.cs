@@ -51,12 +51,16 @@ public class SessionTableTestBase
     if (RunTests)
     {
       SessionTable.SetSessionDataAsync(RootSessionId,
-                                       new [] { "part1", "part2" },
+                                       new[]
+                                       {
+                                         "part1",
+                                         "part2",
+                                       },
                                        new TaskOptions
                                        {
                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                         MaxRetries = 2,
-                                         Priority = 1,
+                                         MaxRetries  = 2,
+                                         Priority    = 1,
                                          PartitionId = "part1",
                                        },
                                        CancellationToken.None)
@@ -99,11 +103,11 @@ public class SessionTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                               {
-                                                 await SessionTable.IsSessionCancelledAsync("BadSessionId",
-                                                                                            CancellationToken.None)
-                                                                   .ConfigureAwait(false);
-                                               });
+                                                   {
+                                                     await SessionTable.IsSessionCancelledAsync("BadSessionId",
+                                                                                                CancellationToken.None)
+                                                                       .ConfigureAwait(false);
+                                                   });
     }
   }
 
@@ -125,11 +129,11 @@ public class SessionTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                                     {
-                                                       await SessionTable.GetDefaultTaskOptionAsync("BadSessionId",
-                                                                                                    CancellationToken.None)
-                                                                         .ConfigureAwait(false);
-                                                     });
+                                                   {
+                                                     await SessionTable.GetDefaultTaskOptionAsync("BadSessionId",
+                                                                                                  CancellationToken.None)
+                                                                       .ConfigureAwait(false);
+                                                   });
     }
   }
 
@@ -154,11 +158,11 @@ public class SessionTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                                     {
-                                                       await SessionTable.CancelSessionAsync("BadSessionId",
-                                                                                             CancellationToken.None)
-                                                                         .ConfigureAwait(false);
-                                                     });
+                                                   {
+                                                     await SessionTable.CancelSessionAsync("BadSessionId",
+                                                                                           CancellationToken.None)
+                                                                       .ConfigureAwait(false);
+                                                   });
     }
   }
 
@@ -200,11 +204,11 @@ public class SessionTableTestBase
     if (RunTests)
     {
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
-                                           {
-                                             await SessionTable.DeleteSessionAsync("BadSessionId",
-                                                                                   CancellationToken.None)
-                                                               .ConfigureAwait(false);
-                                           });
+                                                   {
+                                                     await SessionTable.DeleteSessionAsync("BadSessionId",
+                                                                                           CancellationToken.None)
+                                                                       .ConfigureAwait(false);
+                                                   });
     }
   }
 
@@ -219,15 +223,16 @@ public class SessionTableTestBase
                                                                   {
                                                                     Statuses =
                                                                     {
-                                                                      SessionStatus.Running
-                                                                    }
-                                                                  }
+                                                                      SessionStatus.Running,
+                                                                    },
+                                                                  },
                                                      },
                                                      CancellationToken.None)
                                   .ToListAsync()
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(1, res.Count);
+      Assert.AreEqual(1,
+                      res.Count);
     }
   }
 
@@ -238,13 +243,17 @@ public class SessionTableTestBase
     {
       var res = await SessionTable.ListSessionsAsync(new SessionFilter
                                                      {
-                                                       Sessions = { "SessionId" }
+                                                       Sessions =
+                                                       {
+                                                         "SessionId",
+                                                       },
                                                      },
                                                      CancellationToken.None)
                                   .ToListAsync()
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(1, res.Count);
+      Assert.AreEqual(1,
+                      res.Count);
     }
   }
 
@@ -257,8 +266,8 @@ public class SessionTableTestBase
                                                      {
                                                        Sessions =
                                                        {
-                                                         "SessionIdDoesNotExist"
-                                                       }
+                                                         "SessionIdDoesNotExist",
+                                                       },
                                                      },
                                                      CancellationToken.None)
                                   .ToListAsync()

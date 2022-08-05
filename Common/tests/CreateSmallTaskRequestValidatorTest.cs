@@ -186,7 +186,7 @@ public class CreateSmallTaskRequestValidatorTest
               };
 
     Assert.IsFalse(validator_.Validate(ctr)
-                            .IsValid);
+                             .IsValid);
   }
 
   [Test]
@@ -418,7 +418,7 @@ public class CreateSmallTaskRequestValidatorTest
               };
 
     Assert.IsFalse(validator_.Validate(ctr)
-                            .IsValid);
+                             .IsValid);
   }
 
   [Test]

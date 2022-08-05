@@ -30,7 +30,6 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
@@ -44,11 +43,11 @@ namespace ArmoniK.Core.Common.Stream.Worker;
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
   private readonly GrpcChannelProvider                                     channelProvider_;
-  private readonly InitWorker                                              optionsInitWorker_;
   private readonly ILogger<WorkerStreamHandler>                            logger_;
-  private          Api.gRPC.V1.Worker.Worker.WorkerClient?                 workerClient_;
+  private readonly InitWorker                                              optionsInitWorker_;
   private          bool                                                    isInitialized_;
   private          AsyncClientStreamingCall<ProcessRequest, ProcessReply>? stream_;
+  private          Api.gRPC.V1.Worker.Worker.WorkerClient?                 workerClient_;
 
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
                              InitWorker                   optionsInitWorker,

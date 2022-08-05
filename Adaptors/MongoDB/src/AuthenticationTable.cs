@@ -23,15 +23,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Auth.Authentication;
-
-using Microsoft.Extensions.Logging;
-
-using MongoDB.Driver;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -40,9 +31,17 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
+using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Auth.Authentication;
+
+using Microsoft.Extensions.Logging;
+
 using JetBrains.Annotations;
 
 using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -54,10 +53,10 @@ public class AuthenticationTable : IAuthenticationTable
   private readonly MongoCollectionProvider<RoleData, RoleDataModelMapping> roleCollectionProvider_;
   private readonly SessionProvider                                         sessionProvider_;
   private readonly MongoCollectionProvider<UserData, UserDataModelMapping> userCollectionProvider_;
+  private          PipelineDefinition<AuthData, UserAuthenticationResult>? authToIdentityPipeline_;
   private          bool                                                    isInitialized_;
 
   private PipelineDefinition<UserData, UserAuthenticationResult>? userToIdentityPipeline_;
-  private PipelineDefinition<AuthData, UserAuthenticationResult>? authToIdentityPipeline_;
 
   static AuthenticationTable()
   {
@@ -120,37 +119,6 @@ public class AuthenticationTable : IAuthenticationTable
     return Task.CompletedTask;
   }
 
-  /// <summary>
-  /// Gets the user from the given collection by first matching the entry with the matchingFunction and then executing the given pipeline
-  /// </summary>
-  /// <typeparam name="TCollectionDataType">Type of data in the collection</typeparam>
-  /// <param name="sessionHandle">Session Handle</param>
-  /// <param name="collection">Collection to be used at the start of the pipeline</param>
-  /// <param name="pipeline">Pipeline to use</param>
-  /// <param name="matchingFunction">Filter to use in front of the pipeline</param>
-  /// <param name="cancellationToken">Cancellation token</param>
-  /// <returns>UserAuthenticationResult object containing the user information, roles and permissions. Null if the user has not been found</returns>
-  private static async Task<UserAuthenticationResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle                  sessionHandle,
-                                                                                                         IMongoCollection<TCollectionDataType> collection,
-                                                                                                         PipelineDefinition<TCollectionDataType,
-                                                                                                           UserAuthenticationResult> pipeline,
-                                                                                                         Expression<Func<TCollectionDataType, bool>> matchingFunction,
-                                                                                                         CancellationToken cancellationToken = default)
-  {
-    var pipe =
-      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserAuthenticationResult>(PipelineStageDefinitionBuilder.Match(matchingFunction),
-                                                                                                               pipeline);
-
-    return await collection.AggregateAsync(sessionHandle,
-                                           pipe,
-                                           new AggregateOptions(),
-                                           cancellationToken)
-                           .ContinueWith(task => task.Result.FirstOrDefault(),
-                                         cancellationToken)
-                           .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
   public async Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
                                                                                string            fingerprint,
                                                                                CancellationToken cancellationToken = default)
@@ -196,6 +164,46 @@ public class AuthenticationTable : IAuthenticationTable
                                               cancellationToken)
              .ConfigureAwait(false);
   }
+
+
+  public void AddCertificates(IEnumerable<AuthData> certificates)
+  {
+    var authCollection = authCollectionProvider_.Get();
+    var sessionHandle  = sessionProvider_.Get();
+    authCollection.InsertMany(sessionHandle,
+                              certificates);
+  }
+
+  /// <summary>
+  /// Gets the user from the given collection by first matching the entry with the matchingFunction and then executing the given pipeline
+  /// </summary>
+  /// <typeparam name="TCollectionDataType">Type of data in the collection</typeparam>
+  /// <param name="sessionHandle">Session Handle</param>
+  /// <param name="collection">Collection to be used at the start of the pipeline</param>
+  /// <param name="pipeline">Pipeline to use</param>
+  /// <param name="matchingFunction">Filter to use in front of the pipeline</param>
+  /// <param name="cancellationToken">Cancellation token</param>
+  /// <returns>UserAuthenticationResult object containing the user information, roles and permissions. Null if the user has not been found</returns>
+  private static async Task<UserAuthenticationResult?> GetIdentityFromPipelineAsync<TCollectionDataType>(IClientSessionHandle                  sessionHandle,
+                                                                                                         IMongoCollection<TCollectionDataType> collection,
+                                                                                                         PipelineDefinition<TCollectionDataType,
+                                                                                                           UserAuthenticationResult> pipeline,
+                                                                                                         Expression<Func<TCollectionDataType, bool>> matchingFunctions,
+                                                                                                         CancellationToken cancellationToken = default)
+  {
+    var pipe =
+      new PrependedStagePipelineDefinition<TCollectionDataType, TCollectionDataType, UserAuthenticationResult>(PipelineStageDefinitionBuilder.Match(matchingFunctions),
+                                                                                                               pipeline);
+
+    return await collection.AggregateAsync(sessionHandle,
+                                           pipe,
+                                           new AggregateOptions(),
+                                           cancellationToken)
+                           .ContinueWith(task => task.Result.FirstOrDefault(),
+                                         cancellationToken)
+                           .ConfigureAwait(false);
+  }
+
 
   /// <summary>
   /// Gets or generates the pipeline which uses the matched user information to get their roles and permissions
@@ -308,32 +316,5 @@ public class AuthenticationTable : IAuthenticationTable
                    }.Concat(userToIdentityPipeline.Stages);
     authToIdentityPipeline_ = new PipelineStagePipelineDefinition<AuthData, UserAuthenticationResult>(pipeline);
     return authToIdentityPipeline_;
-  }
-
-  /// <inheritdoc />
-  public void AddRoles(IEnumerable<RoleData> roles)
-  {
-    var roleCollection = roleCollectionProvider_.Get();
-    var sessionHandle  = sessionProvider_.Get();
-    roleCollection.InsertMany(sessionHandle,
-                              roles);
-  }
-
-  /// <inheritdoc />
-  public void AddUsers(IEnumerable<UserData> users)
-  {
-    var userCollection = userCollectionProvider_.Get();
-    var sessionHandle  = sessionProvider_.Get();
-    userCollection.InsertMany(sessionHandle,
-                              users);
-  }
-
-  /// <inheritdoc />
-  public void AddCertificates(IEnumerable<AuthData> certificates)
-  {
-    var authCollection = authCollectionProvider_.Get();
-    var sessionHandle  = sessionProvider_.Get();
-    authCollection.InsertMany(sessionHandle,
-                              certificates);
   }
 }

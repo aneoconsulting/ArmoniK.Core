@@ -115,10 +115,12 @@ public class ResultTable : IResultTable
       throw new SessionNotFoundException($"Session '{session}' not found");
     }
 
-    if (!results_[session].ContainsKey(key))
+    if (!results_[session]
+          .ContainsKey(key))
     {
       throw new ResultNotFoundException($"Key '{key}' not found");
     }
+
     return Task.FromResult(results_[session]
                              .Remove(key,
                                      out _));
@@ -132,6 +134,7 @@ public class ResultTable : IResultTable
     {
       throw new SessionNotFoundException($"Session '{sessionId}' not found");
     }
+
     results_[sessionId]
       .Clear();
     return Task.CompletedTask;
@@ -201,15 +204,13 @@ public class ResultTable : IResultTable
   public Task<IEnumerable<GetResultStatusReply.Types.IdStatus>> GetResultStatus(IEnumerable<string> ids,
                                                                                 string              sessionId,
                                                                                 CancellationToken   cancellationToken = default)
-  {
-    return Task.FromResult(results_[sessionId]
-                           .Where(model => ids.Contains(model.Key))
-                           .Select(model => new GetResultStatusReply.Types.IdStatus
-                                            {
-                                              ResultId = model.Value.Name,
-                                              Status   = model.Value.Status,
-                                            }));
-  }
+    => Task.FromResult(results_[sessionId]
+                       .Where(model => ids.Contains(model.Key))
+                       .Select(model => new GetResultStatusReply.Types.IdStatus
+                                        {
+                                          ResultId = model.Value.Name,
+                                          Status   = model.Value.Status,
+                                        }));
 
   /// <inheritdoc />
   public Task AbortTaskResults(string            sessionId,

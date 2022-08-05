@@ -31,9 +31,6 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Api.Worker.Worker;
-using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.Common.Stream.Worker;
 
 using Google.Protobuf;
 
@@ -51,9 +48,7 @@ public class SampleComputerService : WorkerStreamWrapper
                                GrpcChannelProvider provider)
     : base(loggerFactory,
            provider)
-  {
-    logger_ = loggerFactory.CreateLogger<SampleComputerService>();
-  }
+    => logger_ = loggerFactory.CreateLogger<SampleComputerService>();
 
   public override async Task<Output> Process(ITaskHandler taskHandler)
   {

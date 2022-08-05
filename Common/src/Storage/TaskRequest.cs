@@ -22,11 +22,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public record TaskRequest(string               Id,
-                          IEnumerable<string>  ExpectedOutputKeys,
-                          IEnumerable<string>  DataDependencies);
+public record TaskRequest(string              Id,
+                          IEnumerable<string> ExpectedOutputKeys,
+                          IEnumerable<string> DataDependencies);

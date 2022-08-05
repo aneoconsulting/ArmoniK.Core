@@ -47,20 +47,20 @@ using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <summary>
-/// Represents the internal processing requests received by the agent. Provides methods to process those requests
+///   Represents the internal processing requests received by the agent. Provides methods to process those requests
 /// </summary>
 public class Agent : IAgent
 {
-  private readonly ISubmitter                                                      submitter_;
-  private readonly ILogger                                                         logger_;
   private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority)> createdTasks_;
+  private readonly ILogger                                                         logger_;
   private readonly IObjectStorage                                                  resourcesStorage_;
   private readonly SessionData                                                     sessionData_;
+  private readonly ISubmitter                                                      submitter_;
   private readonly TaskData                                                        taskData_;
   private readonly string                                                          token_;
 
   /// <summary>
-  /// Initializes a new instance of the <see cref="Agent"/>
+  ///   Initializes a new instance of the <see cref="Agent" />
   /// </summary>
   /// <param name="submitter">Interface to manage tasks</param>
   /// <param name="objectStorageFactory">Interface class to create object storage</param>
@@ -118,7 +118,7 @@ public class Agent : IAgent
     using var _ = logger_.BeginNamedScope(nameof(CreateTask),
                                           ("taskId", taskData_.TaskId)!,
                                           ("sessionId", sessionData_.SessionId)!);
-    await foreach (var request in requestStream.ReadAllAsync(cancellationToken: cancellationToken)
+    await foreach (var request in requestStream.ReadAllAsync(cancellationToken)
                                                .ConfigureAwait(false))
     {
       // todo : check if using validator can do the job ?
@@ -380,7 +380,7 @@ public class Agent : IAgent
                                                Key = request.Key,
                                                Data = new DataChunk
                                                       {
-                                                        Data = UnsafeByteOperations.UnsafeWrap(await bytes.FirstAsync(cancellationToken: cancellationToken)
+                                                        Data = UnsafeByteOperations.UnsafeWrap(await bytes.FirstAsync(cancellationToken)
                                                                                                           .ConfigureAwait(false)),
                                                       },
                                              },

@@ -23,7 +23,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -37,14 +36,6 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 /// </summary>
 public class UserIdentity : ClaimsPrincipal
 {
-  public string          UserName { get; set; }
-  public HashSet<string> Roles    { get; set; }
-
-  public Permissions.Permission[] Permissions { get; set; }
-
-  public string UserId { get; set; }
-
-
   public UserIdentity(UserAuthenticationResult userAuth,
                       string?                  authenticationType)
     : base(new ClaimsIdentity(userAuth.Permissions.Select(perm => new Permissions.Permission(perm).Claim),
@@ -56,6 +47,13 @@ public class UserIdentity : ClaimsPrincipal
     Permissions = userAuth.Permissions.Select(perm => new Permissions.Permission(perm))
                           .ToArray();
   }
+
+  public string          UserName { get; set; }
+  public HashSet<string> Roles    { get; set; }
+
+  public Permissions.Permission[] Permissions { get; set; }
+
+  public string UserId { get; set; }
 
   public override bool IsInRole(string role)
     => Roles.Contains(role);

@@ -27,7 +27,6 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;

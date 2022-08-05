@@ -48,7 +48,7 @@ public class TaskOptionsValidatorTest
              };
 
     Assert.IsFalse(validator_.Validate(to)
-                            .IsValid);
+                             .IsValid);
   }
 
   [Test]

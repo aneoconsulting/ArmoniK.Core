@@ -38,6 +38,22 @@ namespace ArmoniK.Core.Common.Tests.Auth;
 [TestFixture]
 public class AuthenticationTableTestBase
 {
+  [OneTimeSetUp]
+  public void SetUp()
+  {
+    GetAuthSource();
+    if (RunTests)
+    {
+      AuthenticationTable!.AddRoles(Roles);
+      AuthenticationTable!.AddUsers(Users);
+      AuthenticationTable!.AddCertificates(Auths);
+    }
+  }
+
+  [OneTimeTearDown]
+  public virtual void TearDown()
+    => RunTests = false;
+
   static AuthenticationTableTestBase()
   {
     Roles = new List<RoleData>
@@ -77,7 +93,7 @@ public class AuthenticationTableTestBase
                   new[]
                   {
                     Roles[0]
-                      .RoleId
+                      .RoleId,
                   }),
               new("UserId2",
                   "User2",
@@ -158,24 +174,6 @@ public class AuthenticationTableTestBase
             };
   }
 
-  [OneTimeSetUp]
-  public void SetUp()
-  {
-    GetAuthSource();
-    if (RunTests)
-    {
-      AuthenticationTable!.AddRoles(Roles);
-      AuthenticationTable!.AddUsers(Users);
-      AuthenticationTable!.AddCertificates(Auths);
-    }
-  }
-
-  [OneTimeTearDown]
-  public virtual void TearDown()
-  {
-    RunTests = false;
-  }
-
   private static readonly List<RoleData> Roles;
   private static readonly List<AuthData> Auths;
   private static readonly List<UserData> Users;
@@ -226,7 +224,9 @@ public class AuthenticationTableTestBase
                                                            int    userid)
   {
     if (!RunTests)
+    {
       return;
+    }
 
     var ident = AuthenticationTable!.GetIdentityFromCertificateAsync(cn,
                                                                      fingerprint,
@@ -246,7 +246,9 @@ public class AuthenticationTableTestBase
                                                         string fingerprint)
   {
     if (!RunTests)
+    {
       return;
+    }
 
     Assert.IsNull(AuthenticationTable!.GetIdentityFromCertificateAsync(cn,
                                                                        fingerprint,
@@ -254,14 +256,18 @@ public class AuthenticationTableTestBase
                                       .Result);
   }
 
-  [TestCase(                                      0,
-                               "User1"), TestCase(1,
-                                                  "User2")]
+  [TestCase(0,
+            "User1")]
+  [TestCase(1,
+            "User2")]
   public void GetIdentityFromIdShouldSucceed(int    id,
                                              string username)
   {
     if (!RunTests)
+    {
       return;
+    }
+
     var ident = AuthenticationTable!.GetIdentityFromUserAsync(Users[id]
                                                                 .UserId,
                                                               null)
@@ -278,20 +284,27 @@ public class AuthenticationTableTestBase
   public void GetIdentityFromIdShouldFail(string id)
   {
     if (!RunTests)
+    {
       return;
+    }
+
     Assert.IsNull(AuthenticationTable!.GetIdentityFromUserAsync(id,
                                                                 null)
                                       .Result);
   }
 
-  [TestCase(                          "User1",
-                         0), TestCase("User2",
-                                      1)]
+  [TestCase("User1",
+            0)]
+  [TestCase("User2",
+            1)]
   public void GetIdentityFromNameShouldSucceed(string name,
                                                int    id)
   {
     if (!RunTests)
+    {
       return;
+    }
+
     var identity = AuthenticationTable!.GetIdentityFromUserAsync(null,
                                                                  name)
                                        .Result;
@@ -307,7 +320,10 @@ public class AuthenticationTableTestBase
   public void GetIdentityFromNameShouldFail(string name)
   {
     if (!RunTests)
+    {
       return;
+    }
+
     Assert.IsNull(AuthenticationTable!.GetIdentityFromUserAsync(null,
                                                                 name)
                                       .Result);
@@ -315,19 +331,25 @@ public class AuthenticationTableTestBase
 
   [TestCase("User1",
             "Role1",
-            true), TestCase("User1",
-                            "Role2",
-                            false), TestCase("User2",
-                                             "Role1",
-                                             true), TestCase("User2",
-                                                             "RoleDontExist",
-                                                             false)]
+            true)]
+  [TestCase("User1",
+            "Role2",
+            false)]
+  [TestCase("User2",
+            "Role1",
+            true)]
+  [TestCase("User2",
+            "RoleDontExist",
+            false)]
   public void UserHasRoleShouldMatch(string username,
                                      string rolename,
                                      bool   hasRole)
   {
     if (!RunTests)
+    {
       return;
+    }
+
     var identity = AuthenticationTable!.GetIdentityFromUserAsync(null,
                                                                  username)
                                        .Result;
@@ -338,21 +360,28 @@ public class AuthenticationTableTestBase
 
   [TestCase("User1",
             "category1:name1",
-            true), TestCase("User1",
-                            "category1:name2",
-                            true), TestCase("User1",
-                                            "category1:name3",
-                                            false), TestCase("User2",
-                                                             "category1:name2",
-                                                             true), TestCase("User2",
-                                                                             "category1:name2:" + Permissions.AllUsersScope,
-                                                                             true)]
+            true)]
+  [TestCase("User1",
+            "category1:name2",
+            true)]
+  [TestCase("User1",
+            "category1:name3",
+            false)]
+  [TestCase("User2",
+            "category1:name2",
+            true)]
+  [TestCase("User2",
+            "category1:name2:" + Permissions.AllUsersScope,
+            true)]
   public void UserHasClaimShouldMatch(string username,
                                       string claim,
                                       bool   hasClaim)
   {
     if (!RunTests)
+    {
       return;
+    }
+
     var identity = AuthenticationTable!.GetIdentityFromUserAsync(null,
                                                                  username,
                                                                  CancellationToken.None)
@@ -368,7 +397,10 @@ public class AuthenticationTableTestBase
   public void UserHasAllClaimsOfItsRoles(UserData user)
   {
     if (!RunTests)
+    {
       return;
+    }
+
     var identity = AuthenticationTable!.GetIdentityFromUserAsync(user.UserId,
                                                                  null)
                                        .Result;

@@ -23,20 +23,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Auth.Authorization;
-using ArmoniK.Core.Common.Exceptions;
-
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-
 using System.Linq;
 using System.Security.Authentication;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Exceptions;
+
 using JetBrains.Annotations;
+
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
@@ -95,14 +95,14 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
 
 public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
 {
-  public const string SchemeName = "SubmitterAuthenticationScheme";
+  public const     string               SchemeName = "SubmitterAuthenticationScheme";
+  private readonly IAuthenticationTable authTable_;
+  private readonly string               cnHeader_;
+  private readonly string               fingerprintHeader_;
+  private readonly string               impersonationIdHeader_;
+  private readonly string               impersonationUsernameHeader_;
 
   private readonly ILogger<Authenticator> logger_;
-  private readonly string                 cnHeader_;
-  private readonly string                 fingerprintHeader_;
-  private readonly string                 impersonationUsernameHeader_;
-  private readonly string                 impersonationIdHeader_;
-  private readonly IAuthenticationTable   authTable_;
   private readonly bool                   requireAuthentication_;
 
   public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,

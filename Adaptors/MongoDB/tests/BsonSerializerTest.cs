@@ -56,7 +56,7 @@ internal class BsonSerializerTest
                               new[]
                               {
                                 "part1",
-                                "part2"
+                                "part2",
                               },
                               new TaskOptions
                               {
@@ -93,9 +93,9 @@ internal class BsonSerializerTest
                                  .ToUniversalTime(),
                          new[]
                          {
-                           (byte) 1,
-                           (byte) 2,
-                           (byte) 3,
+                           (byte)1,
+                           (byte)2,
+                           (byte)3,
                          });
 
     var serialized = rdm.ToBson();
@@ -195,7 +195,7 @@ internal class BsonSerializerTest
                            new[]
                            {
                              "RoleId1",
-                             "RoleId2"
+                             "RoleId2",
                            });
     var serialized = udm.ToBson();
 

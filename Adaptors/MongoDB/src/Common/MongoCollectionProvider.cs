@@ -58,7 +58,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : ProviderBase<IMongo
              {
              }
 
-             var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
+             var output  = mongoDatabase.GetCollection<TData>(model.CollectionName);
              var session = sessionProvider.Get();
              try
              {

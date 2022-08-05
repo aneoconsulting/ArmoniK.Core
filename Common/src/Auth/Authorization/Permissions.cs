@@ -35,15 +35,44 @@ namespace ArmoniK.Core.Common.Auth.Authorization;
 
 public static class Permissions
 {
+  // Ownership permission scopes
+  public const string AllUsersScope = "all";
+  public const string SelfScope     = "self";
+  public const string Default       = "";
+
+  // Services
+  public const string General   = "General";
+  public const string Submitter = "Submitter";
+
+  // Constants
+  public const char Separator = ':';
+
+  // Base permissions
+  public static readonly Permission Impersonate = new(General,
+                                                      nameof(Impersonate));
+
+  // Permissions list
+  public static readonly ImmutableList<Permission> PermissionList = GetPermissionList();
+
+  private static ImmutableList<Permission> GetPermissionList()
+  {
+    var permissions = typeof(GrpcSubmitterService).GetMethods()
+                                                  .SelectMany(mInfo => mInfo.GetCustomAttributes<RequiresPermissionAttribute>())
+                                                  .Select(a => a.Permission!)
+                                                  .ToList();
+    permissions.Add(Impersonate);
+    return permissions.ToImmutableList();
+  }
+
   /// <summary>
   /// Class used to store a permission
   /// </summary>
   public class Permission
   {
-    public readonly string Service;
-    public readonly string Name;
-    public readonly string Target;
     public readonly Claim  Claim;
+    public readonly string Name;
+    public readonly string Service;
+    public readonly string Target;
 
     /// <summary>
     /// Constructs the permission from a string with format :
@@ -110,41 +139,6 @@ public static class Permissions
     /// </summary>
     /// <returns>The base permission string of this permission, no target</returns>
     public string ToBasePermission()
-    {
-      return Service + Separator + Name;
-    }
+      => Service + Separator + Name;
   }
-
-  /// <summary>
-  /// Gets the list of base permissions, generated from the endpoints
-  /// </summary>
-  /// <returns>List of base permissions</returns>
-  private static ImmutableList<Permission> GetPermissionList()
-  {
-    var permissions = typeof(GrpcSubmitterService).GetMethods()
-                                                  .SelectMany(mInfo => mInfo.GetCustomAttributes<RequiresPermissionAttribute>())
-                                                  .Select(a => a.Permission!)
-                                                  .ToList();
-    permissions.Add(Impersonate);
-    return permissions.ToImmutableList();
-  }
-
-  // Ownership permission scopes
-  public const string AllUsersScope = "all";
-  public const string SelfScope     = "self";
-  public const string Default       = "";
-
-  // Services
-  public const string General   = "General";
-  public const string Submitter = "Submitter";
-
-  // Base permissions
-  public static readonly Permission Impersonate = new(General,
-                                                      nameof(Impersonate));
-
-  // Permissions list
-  public static readonly ImmutableList<Permission> PermissionList = GetPermissionList();
-
-  // Constants
-  public const char Separator = ':';
 }

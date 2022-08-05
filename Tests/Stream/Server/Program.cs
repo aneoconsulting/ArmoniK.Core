@@ -23,9 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
-
-using Microsoft.Extensions.Configuration;
 
 namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Server;
 

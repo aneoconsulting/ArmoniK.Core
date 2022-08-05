@@ -32,7 +32,6 @@ using ArmoniK.Api.Worker.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
@@ -53,17 +52,20 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestPollingAgentProvider : IDisposable
 {
-  private readonly        MongoDbRunner            runner_;
-  private readonly        IMongoClient             client_;
   private const           string                   DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource           ActivitySource = new("ArmoniK.Core.Common.Tests.FullIntegration");
-  private readonly        IResultTable             resultTable_;
-  private readonly        ITaskTable               taskTable_;
-  private readonly        ISessionTable            sessionTable_;
-  public readonly         ISubmitter               Submitter;
-  private readonly        LoggerFactory            loggerFactory_;
   private readonly        WebApplication           app;
+  private readonly        IMongoClient             client_;
+  private readonly        LoggerFactory            loggerFactory_;
   private readonly        Common.Pollster.Pollster pollster_;
+
+  private readonly CancellationTokenSource pollsterCancellationTokenSource_ = new();
+  private readonly Task                    pollsterRunningTask;
+  private readonly IResultTable            resultTable_;
+  private readonly MongoDbRunner           runner_;
+  private readonly ISessionTable           sessionTable_;
+  public readonly  ISubmitter              Submitter;
+  private readonly ITaskTable              taskTable_;
 
 
   public TestPollingAgentProvider(IWorkerStreamHandler workerStreamHandler)
@@ -139,9 +141,6 @@ public class TestPollingAgentProvider : IDisposable
     pollsterRunningTask = Task.Factory.StartNew(() => pollster_.MainLoop(pollsterCancellationTokenSource_.Token),
                                                 TaskCreationOptions.LongRunning);
   }
-
-  private readonly CancellationTokenSource pollsterCancellationTokenSource_ = new CancellationTokenSource();
-  private readonly Task                    pollsterRunningTask;
 
   public void Dispose()
   {

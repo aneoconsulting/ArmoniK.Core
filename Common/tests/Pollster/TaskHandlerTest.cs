@@ -41,8 +41,9 @@ using Moq;
 using NUnit.Framework;
 
 using Result = ArmoniK.Api.gRPC.V1.Agent.Result;
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
+using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
 
@@ -108,21 +109,25 @@ public class TaskHandlerTest
                                                                 mockAgentHandler.Object,
                                                                 sqmh);
 
-    var taskRequests = new List<gRPC.Services.TaskRequest>();
-    taskRequests.Add(new gRPC.Services.TaskRequest(taskId,
-                                                   new List<string>
-                                                   {
-                                                     "ExpectedOutput",
-                                                   },
-                                                   new List<string>(),
-                                                   new List<ReadOnlyMemory<byte>>
-                                                   {
-                                                     ReadOnlyMemory<byte>.Empty,
-                                                   }.ToAsyncEnumerable()));
+    var taskRequests = new List<TaskRequest>();
+    taskRequests.Add(new TaskRequest(taskId,
+                                     new List<string>
+                                     {
+                                       "ExpectedOutput",
+                                     },
+                                     new List<string>(),
+                                     new List<ReadOnlyMemory<byte>>
+                                     {
+                                       ReadOnlyMemory<byte>.Empty,
+                                     }.ToAsyncEnumerable()));
 
     await testServiceProvider.Submitter.CreateSession(sessionId,
-                                                      new[] {"part1", "part2"},
-                                                      new Api.gRPC.V1.TaskOptions
+                                                      new[]
+                                                      {
+                                                        "part1",
+                                                        "part2",
+                                                      },
+                                                      new TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                         MaxRetries  = 2,
@@ -134,7 +139,7 @@ public class TaskHandlerTest
 
     var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
-                                                                               new Api.gRPC.V1.TaskOptions
+                                                                               new TaskOptions
                                                                                {
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                                                  MaxRetries  = 2,
@@ -181,24 +186,28 @@ public class TaskHandlerTest
                                                                 mockAgentHandler.Object,
                                                                 sqmh);
 
-    var taskRequests = new List<gRPC.Services.TaskRequest>();
-    taskRequests.Add(new gRPC.Services.TaskRequest(taskId,
-                                                   new List<string>
-                                                   {
-                                                     "ExpectedOutput",
-                                                   },
-                                                   new List<string>
-                                                   {
-                                                     "DataDep",
-                                                   },
-                                                   new List<ReadOnlyMemory<byte>>
-                                                   {
-                                                     ReadOnlyMemory<byte>.Empty,
-                                                   }.ToAsyncEnumerable()));
+    var taskRequests = new List<TaskRequest>();
+    taskRequests.Add(new TaskRequest(taskId,
+                                     new List<string>
+                                     {
+                                       "ExpectedOutput",
+                                     },
+                                     new List<string>
+                                     {
+                                       "DataDep",
+                                     },
+                                     new List<ReadOnlyMemory<byte>>
+                                     {
+                                       ReadOnlyMemory<byte>.Empty,
+                                     }.ToAsyncEnumerable()));
 
     await testServiceProvider.Submitter.CreateSession(sessionId,
-                                                      new[] {"part1", "part2"},
-                                                      new Api.gRPC.V1.TaskOptions
+                                                      new[]
+                                                      {
+                                                        "part1",
+                                                        "part2",
+                                                      },
+                                                      new TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                         MaxRetries  = 2,
@@ -210,7 +219,7 @@ public class TaskHandlerTest
 
     var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
-                                                                               new Api.gRPC.V1.TaskOptions
+                                                                               new TaskOptions
                                                                                {
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                                                  MaxRetries  = 2,
@@ -257,21 +266,25 @@ public class TaskHandlerTest
                                                                 agentHandler,
                                                                 sqmh);
 
-    var taskRequests = new List<gRPC.Services.TaskRequest>();
-    taskRequests.Add(new gRPC.Services.TaskRequest(taskId,
-                                                   new List<string>
-                                                   {
-                                                     "ExpectedOutput",
-                                                   },
-                                                   new List<string>(),
-                                                   new List<ReadOnlyMemory<byte>>
-                                                   {
-                                                     ReadOnlyMemory<byte>.Empty,
-                                                   }.ToAsyncEnumerable()));
+    var taskRequests = new List<TaskRequest>();
+    taskRequests.Add(new TaskRequest(taskId,
+                                     new List<string>
+                                     {
+                                       "ExpectedOutput",
+                                     },
+                                     new List<string>(),
+                                     new List<ReadOnlyMemory<byte>>
+                                     {
+                                       ReadOnlyMemory<byte>.Empty,
+                                     }.ToAsyncEnumerable()));
 
     await testServiceProvider.Submitter.CreateSession(sessionId,
-                                                      new[] {"part1", "part2"},
-                                                      new Api.gRPC.V1.TaskOptions
+                                                      new[]
+                                                      {
+                                                        "part1",
+                                                        "part2",
+                                                      },
+                                                      new TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                         MaxRetries  = 2,
@@ -283,7 +296,7 @@ public class TaskHandlerTest
 
     var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
-                                                                               new Api.gRPC.V1.TaskOptions
+                                                                               new TaskOptions
                                                                                {
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                                                  MaxRetries  = 2,
@@ -322,7 +335,6 @@ public class TaskHandlerTest
                                                                        })
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
-
   }
 
   [Test]
@@ -347,21 +359,25 @@ public class TaskHandlerTest
                                                                 agentHandler,
                                                                 sqmh);
 
-    var taskRequests = new List<gRPC.Services.TaskRequest>();
-    taskRequests.Add(new gRPC.Services.TaskRequest(taskId,
-                                                   new List<string>
-                                                   {
-                                                     "ExpectedOutput",
-                                                   },
-                                                   new List<string>(),
-                                                   new List<ReadOnlyMemory<byte>>
-                                                   {
-                                                     ReadOnlyMemory<byte>.Empty,
-                                                   }.ToAsyncEnumerable()));
+    var taskRequests = new List<TaskRequest>();
+    taskRequests.Add(new TaskRequest(taskId,
+                                     new List<string>
+                                     {
+                                       "ExpectedOutput",
+                                     },
+                                     new List<string>(),
+                                     new List<ReadOnlyMemory<byte>>
+                                     {
+                                       ReadOnlyMemory<byte>.Empty,
+                                     }.ToAsyncEnumerable()));
 
     await testServiceProvider.Submitter.CreateSession(sessionId,
-                                                      new[] {"part1", "part2"},
-                                                      new Api.gRPC.V1.TaskOptions
+                                                      new[]
+                                                      {
+                                                        "part1",
+                                                        "part2",
+                                                      },
+                                                      new TaskOptions
                                                       {
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                         MaxRetries  = 2,
@@ -373,7 +389,7 @@ public class TaskHandlerTest
 
     var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
-                                                                               new Api.gRPC.V1.TaskOptions
+                                                                               new TaskOptions
                                                                                {
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                                                  MaxRetries  = 2,
@@ -430,6 +446,5 @@ public class TaskHandlerTest
                                                                        })
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
-
   }
 }

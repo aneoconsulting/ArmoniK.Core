@@ -40,14 +40,14 @@ public class ResultNotFoundException : ArmoniKException
   }
 
   public ResultNotFoundException(string    message,
-                                   Exception innerException)
+                                 Exception innerException)
     : base(message,
            innerException)
   {
   }
 
   protected ResultNotFoundException(SerializationInfo info,
-                                      StreamingContext  context)
+                                    StreamingContext  context)
     : base(info,
            context)
   {

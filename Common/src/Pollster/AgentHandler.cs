@@ -29,7 +29,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Worker.Options;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -47,18 +46,18 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace ArmoniK.Core.Common.Pollster;
 
 /// <summary>
-/// Represents the handler that will provide servers to process requests from worker
+///   Represents the handler that will provide servers to process requests from worker
 /// </summary>
 public class AgentHandler : IAgentHandler, IAsyncDisposable
 {
-  private readonly ISubmitter            submitter_;
-  private readonly IObjectStorageFactory objectStorageFactory_;
-  private readonly ILogger<AgentHandler> logger_;
   private readonly WebApplication        app_;
+  private readonly ILogger<AgentHandler> logger_;
+  private readonly IObjectStorageFactory objectStorageFactory_;
   private readonly GrpcAgentService      service_;
+  private readonly ISubmitter            submitter_;
 
   /// <summary>
-  /// Initializes a new instance
+  ///   Initializes a new instance
   /// </summary>
   /// <param name="loggerInit">Logger initializer used to configure the loggers needed by the worker</param>
   /// <param name="computePlanOptions">Options needed for the creation of the servers</param>
@@ -164,8 +163,6 @@ public class AgentHandler : IAgentHandler, IAsyncDisposable
   }
 
   public async ValueTask DisposeAsync()
-  {
-    await app_.DisposeAsync()
-              .ConfigureAwait(false);
-  }
+    => await app_.DisposeAsync()
+                 .ConfigureAwait(false);
 }

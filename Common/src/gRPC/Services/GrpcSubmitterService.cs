@@ -28,9 +28,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 
 using Grpc.Core;
@@ -43,8 +43,8 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBase
 {
-  private readonly ISubmitter                    submitter_;
   private readonly ILogger<GrpcSubmitterService> logger_;
+  private readonly ISubmitter                    submitter_;
 
   public GrpcSubmitterService(ISubmitter                    submitter,
                               ILogger<GrpcSubmitterService> logger)

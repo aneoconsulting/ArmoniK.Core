@@ -35,9 +35,7 @@ public class MockAuthenticationTable : IAuthenticationTable
   private readonly List<MockIdentity> identities_;
 
   public MockAuthenticationTable(List<MockIdentity> mockIdentities)
-  {
-    identities_ = mockIdentities;
-  }
+    => identities_ = mockIdentities;
 
   public ValueTask<bool> Check(HealthCheckTag tag)
     => ValueTask.FromResult(true);

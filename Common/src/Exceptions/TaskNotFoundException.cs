@@ -40,14 +40,14 @@ public class TaskNotFoundException : ArmoniKException
   }
 
   public TaskNotFoundException(string    message,
-                              Exception innerException)
+                               Exception innerException)
     : base(message,
            innerException)
   {
   }
 
   protected TaskNotFoundException(SerializationInfo info,
-                                 StreamingContext  context)
+                                  StreamingContext  context)
     : base(info,
            context)
   {

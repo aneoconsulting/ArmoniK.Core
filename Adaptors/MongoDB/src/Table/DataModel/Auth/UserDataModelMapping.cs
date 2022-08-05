@@ -79,7 +79,7 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
                         new(usernameIndexHashed,
                             new CreateIndexOptions
                             {
-                              Name = nameof(usernameIndexHashed)
+                              Name = nameof(usernameIndexHashed),
                             }),
                       };
     await collection.Indexes.CreateManyAsync(sessionHandle,

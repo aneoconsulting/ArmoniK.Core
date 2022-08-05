@@ -45,6 +45,7 @@ services:
       - Amqp__Port=5672
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
+      - Amqp__MaxRetries=10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
     logging:
@@ -84,6 +85,7 @@ services:
       - Amqp__Port=5672
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
+      - Amqp__MaxRetries=10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
     logging:
       driver: fluentd
@@ -116,6 +118,7 @@ services:
       - Amqp__Port=5672
       - Amqp__Scheme=AMQP
       - Amqp__MaxPriority=10
+      - Amqp__MaxRetries=10
       - InitWorker__WorkerCheckRetries=10
       - InitWorker__WorkerCheckDelay=00:00:10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}

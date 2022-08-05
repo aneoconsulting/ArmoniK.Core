@@ -206,5 +206,4 @@ public class ComputeRequestStateMachineTest
     Console.WriteLine(str);
     Assert.IsFalse(string.IsNullOrEmpty(str));
   }
-
 }

@@ -42,18 +42,16 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
   {
   }
 
-  public void StartTaskProcessing(TaskData taskData,
+  public void StartTaskProcessing(TaskData          taskData,
                                   CancellationToken cancellationToken)
-  {
-    Pipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>(new ProcessReply
-    {
-      CommunicationToken = "",
-      Output = new Output
-      {
-        Ok = new Empty(),
-      },
-    });
-  }
+    => Pipe = new ChannelAsyncPipe<ProcessReply, ProcessRequest>(new ProcessReply
+                                                                 {
+                                                                   CommunicationToken = "",
+                                                                   Output = new Output
+                                                                            {
+                                                                              Ok = new Empty(),
+                                                                            },
+                                                                 });
 
   public IAsyncPipe<ProcessReply, ProcessRequest> Pipe { get; private set; }
 }

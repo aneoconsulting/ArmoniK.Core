@@ -26,13 +26,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
 
 using ArmoniK.Api.Worker.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
@@ -49,23 +47,21 @@ using Mongo2Go;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-using TaskHandler = ArmoniK.Core.Common.Pollster.TaskHandler;
-
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestTaskHandlerProvider : IDisposable
 {
-  private readonly        MongoDbRunner  runner_;
-  private readonly        IMongoClient   client_;
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
+  private readonly        WebApplication app_;
+  private readonly        IMongoClient   client_;
+  private readonly        LoggerFactory  loggerFactory_;
   private readonly        IResultTable   resultTable_;
-  public readonly         ITaskTable     TaskTable;
+  private readonly        MongoDbRunner  runner_;
   private readonly        ISessionTable  sessionTable_;
   public readonly         ISubmitter     Submitter;
-  private readonly        LoggerFactory  loggerFactory_;
-  private readonly        WebApplication app_;
   public readonly         TaskHandler    TaskHandler;
+  public readonly         ITaskTable     TaskTable;
 
 
   public TestTaskHandlerProvider(IWorkerStreamHandler workerStreamHandler,
@@ -117,7 +113,7 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_)
            .AddLogging()
-           .AddSingleton<ILogger>(loggerFactory_.CreateLogger(nameof(TestTaskHandlerProvider)))
+           .AddSingleton(loggerFactory_.CreateLogger(nameof(TestTaskHandlerProvider)))
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddSingleton<IQueueStorage, QueueStorage>()
            .AddSingleton("ownerpodid")

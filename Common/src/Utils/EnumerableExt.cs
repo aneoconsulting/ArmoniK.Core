@@ -25,13 +25,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ArmoniK.Core.Common.Utils
+namespace ArmoniK.Core.Common.Utils;
+
+public static class EnumerableExt
 {
-  static public class EnumerableExt
-  {
-    static public IList<T> ToIList<T>(this IEnumerable<T> self)
-    {
-      return self as IList<T> ?? self.ToList<T>();
-    }
-  }
+  public static IList<T> ToIList<T>(this IEnumerable<T> self)
+    => self as IList<T> ?? self.ToList();
 }

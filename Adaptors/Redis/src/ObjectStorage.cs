@@ -29,9 +29,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Worker.Options;
 using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
@@ -49,7 +47,7 @@ public class ObjectStorage : IObjectStorage
   private readonly IDatabaseAsync         redis_;
 
   /// <summary>
-  /// <see cref="IObjectStorage"/> implementation for Redis
+  ///   <see cref="IObjectStorage" /> implementation for Redis
   /// </summary>
   /// <param name="redis">Connection to redis database</param>
   /// <param name="objectStorageName">Name of the object storage used to differentiate them</param>
@@ -131,7 +129,7 @@ public class ObjectStorage : IObjectStorage
 
     if (!value.HasValue)
     {
-      throw new ObjectDataNotFoundException($"Key not found");
+      throw new ObjectDataNotFoundException("Key not found");
     }
 
     var valuesCount = int.Parse(value);

@@ -33,21 +33,22 @@ internal class ConsoleForwardingLoggerProvider : ILoggerProvider
   private readonly ForwardingLoggerProvider provider_;
 
   public ConsoleForwardingLoggerProvider(LogLevel minLogLevel)
-  {
-    provider_ = new ForwardingLoggerProvider((logLevel,
-                                              category,
-                                              _,
-                                              message,
-                                              exception) =>
-                                             {
-                                               if (logLevel >= minLogLevel)
-                                               {
-                                                 Console.WriteLine(logLevel + " => " + category + "\n" + message + "\n" + exception);
-                                               }
-                                             });
-  }
+    => provider_ = new ForwardingLoggerProvider((logLevel,
+                                                 category,
+                                                 _,
+                                                 message,
+                                                 exception) =>
+                                                {
+                                                  if (logLevel >= minLogLevel)
+                                                  {
+                                                    Console.WriteLine(logLevel + " => " + category + "\n" + message + "\n" + exception);
+                                                  }
+                                                });
 
-  public ConsoleForwardingLoggerProvider() : this(LogLevel.Trace){}
+  public ConsoleForwardingLoggerProvider()
+    : this(LogLevel.Trace)
+  {
+  }
 
   public void Dispose()
     => provider_.Dispose();

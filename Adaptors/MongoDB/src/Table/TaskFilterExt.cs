@@ -68,9 +68,9 @@ public static class TaskFilterExt
         {
           output = Expression.And(output,
                                   ExpressionsBuilders.FieldFilterInternal<TaskData, string>(model => model.TaskId,
-                                                                                                filter.Task.Ids,
-                                                                                                true,
-                                                                                                x));
+                                                                                            filter.Task.Ids,
+                                                                                            true,
+                                                                                            x));
         }
 
         break;
@@ -89,10 +89,10 @@ public static class TaskFilterExt
         if (filter.Included.Statuses is not null)
         {
           output = Expression.And(output,
-                                 ExpressionsBuilders.FieldFilterInternal<TaskData, TaskStatus>(model => model.Status,
-                                                                                               filter.Included.Statuses,
-                                                                                               true,
-                                                                                               x));
+                                  ExpressionsBuilders.FieldFilterInternal<TaskData, TaskStatus>(model => model.Status,
+                                                                                                filter.Included.Statuses,
+                                                                                                true,
+                                                                                                x));
         }
 
         break;
@@ -102,10 +102,10 @@ public static class TaskFilterExt
         if (filter.Excluded.Statuses is not null)
         {
           output = Expression.And(output,
-                                 ExpressionsBuilders.FieldFilterInternal<TaskData, TaskStatus>(model => model.Status,
-                                                                         filter.Excluded.Statuses,
-                                                                         false,
-                                                                         x));
+                                  ExpressionsBuilders.FieldFilterInternal<TaskData, TaskStatus>(model => model.Status,
+                                                                                                filter.Excluded.Statuses,
+                                                                                                false,
+                                                                                                x));
         }
 
         break;

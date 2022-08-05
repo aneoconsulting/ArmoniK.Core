@@ -35,10 +35,11 @@ public class PermissionTest
   [TestCase("testprefix:testname:testsuffix",
             "testprefix",
             "testname",
-            "testsuffix"), TestCase("prefix:name",
-                                    "prefix",
-                                    "name",
-                                    Permissions.Default)]
+            "testsuffix")]
+  [TestCase("prefix:name",
+            "prefix",
+            "name",
+            Permissions.Default)]
   public void PermissionFromStringShouldMatch(string  actionName,
                                               string? prefix,
                                               string? name,
@@ -55,9 +56,10 @@ public class PermissionTest
 
   [TestCase("prefix:name:suffix",
             "prefix:name",
-            "suffix"), TestCase("prefix:name",
-                                "prefix:name",
-                                Permissions.Default)]
+            "suffix")]
+  [TestCase("prefix:name",
+            "prefix:name",
+            Permissions.Default)]
   public void PermissionToClaimShouldMatch(string actionName,
                                            string claimType,
                                            string claimValue)
@@ -76,10 +78,8 @@ public class PermissionTest
   [TestCase(":testprefix:")]
   [TestCase("::testprefix")]
   public void PermissionCreationShouldThrow(string actionstring)
-  {
-    Assert.NotNull(Assert.Catch(() =>
-                                {
-                                  var _ = new Permissions.Permission(actionstring);
-                                }));
-  }
+    => Assert.NotNull(Assert.Catch(() =>
+                                   {
+                                     var _ = new Permissions.Permission(actionstring);
+                                   }));
 }

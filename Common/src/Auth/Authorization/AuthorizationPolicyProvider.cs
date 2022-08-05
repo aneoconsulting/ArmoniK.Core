@@ -50,15 +50,21 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
   {
     // If authentication is disabled, no check is required
     if (!requireAuthentication_)
+    {
       return GetAlwaysTruePolicyAsync()!;
+    }
 
     // If authorization is disabled, only check for an authenticated user
     if (!requireAuthorization_)
+    {
       return GetDefaultPolicyAsync()!;
+    }
 
     // If the policy name doesn't match ours, ignore
     if (!policyName.StartsWith(RequiresPermissionAttribute.PolicyPrefix))
+    {
       return GetFallbackPolicyAsync();
+    }
 
     // Require the authenticated user to have the right permission type
     var permission = new Permissions.Permission(policyName[RequiresPermissionAttribute.PolicyPrefix.Length..]);
@@ -67,14 +73,14 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
                                                                                                          .Build());
   }
 
-  public static Task<AuthorizationPolicy> GetAlwaysTruePolicyAsync()
-    => Task.FromResult(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAssertion(_ => true)
-                                                                               .Build());
-
   public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
     => Task.FromResult(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAuthenticatedUser()
                                                                                .Build());
 
   public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
     => Task.FromResult<AuthorizationPolicy?>(null);
+
+  public static Task<AuthorizationPolicy> GetAlwaysTruePolicyAsync()
+    => Task.FromResult(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAssertion(_ => true)
+                                                                               .Build());
 }
