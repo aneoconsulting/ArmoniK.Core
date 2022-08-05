@@ -43,7 +43,8 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueStorage : IQueueStorage
 {
-  private const int MaxInternalQueuePriority = 10;
+  private const    int MaxInternalQueuePriority = 10;
+  private readonly int linkCredit_;
 
   private readonly ILogger<QueueStorage>      logger_;
   private readonly AsyncLazy<IReceiverLink>[] receivers_;
@@ -88,6 +89,7 @@ public class QueueStorage : IQueueStorage
 
     MaxPriority = options.MaxPriority;
     logger_     = logger;
+    linkCredit_ = options.LinkCredit;
 
     var nbLinks = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
 
@@ -141,6 +143,11 @@ public class QueueStorage : IQueueStorage
       {
         cancellationToken.ThrowIfCancellationRequested();
         var receiver = await receivers_[i];
+        /* linkCredit_: the maximum number of messages the remote peer can send to the receiver.
+         * With the goal of minimizing/deactivating prefetching, a value of 1 gave us the desired
+         * behavior. We pick a default value of 2 to have "some cache". */
+        receiver.SetCredit(linkCredit_,
+                           true);
         var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
         if (message is null)
