@@ -2,3 +2,5 @@
   href: intro.md
 - name: Tasks
   href: tasks.md
+- name: Authentication and Authorization
+  href: authentication.md
