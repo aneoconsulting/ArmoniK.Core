@@ -44,7 +44,6 @@ namespace ArmoniK.Core.Adapters.Amqp;
 public class QueueStorage : IQueueStorage
 {
   private const    int MaxInternalQueuePriority = 10;
-  private readonly int linkCredit_;
 
   private readonly ILogger<QueueStorage>      logger_;
   private readonly AsyncLazy<IReceiverLink>[] receivers_;
@@ -89,7 +88,6 @@ public class QueueStorage : IQueueStorage
 
     MaxPriority = options.MaxPriority;
     logger_     = logger;
-    linkCredit_ = options.LinkCredit;
 
     var nbLinks = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
 
@@ -113,8 +111,7 @@ public class QueueStorage : IQueueStorage
                                                                         * With the goal of minimizing/deactivating
                                                                         * prefetching, a value of 1 gave us the desired
                                                                         * behavior. We pick a default value of 2 to have "some cache". */
-                                                                       rl.SetCredit(linkCredit_,
-                                                                                    true);
+                                                                       rl.SetCredit(options.LinkCredit);
                                                                        return rl;
                                                                      }))
                            .ToArray();
