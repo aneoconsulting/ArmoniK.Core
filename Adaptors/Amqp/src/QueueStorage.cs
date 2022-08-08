@@ -102,9 +102,21 @@ public class QueueStorage : IQueueStorage
 
     receivers_ = Enumerable.Range(0,
                                   nbLinks)
-                           .Select(i => new AsyncLazy<IReceiverLink>(() => new ReceiverLink(sessionProvider.Get(),
-                                                                                            $"ReceiverLink{i}",
-                                                                                            $"q{i}")))
+                           .Select(i => new AsyncLazy<IReceiverLink>(() =>
+                                                                     {
+                                                                       var rl = new ReceiverLink(sessionProvider.Get(),
+                                                                                                 $"ReceiverLink{i}",
+                                                                                                 $"q{i}");
+
+                                                                       /* linkCredit_: the maximum number of messages the
+                                                                        * remote peer can send to the receiver.
+                                                                        * With the goal of minimizing/deactivating
+                                                                        * prefetching, a value of 1 gave us the desired
+                                                                        * behavior. We pick a default value of 2 to have "some cache". */
+                                                                       rl.SetCredit(linkCredit_,
+                                                                                    true);
+                                                                       return rl;
+                                                                     }))
                            .ToArray();
   }
 
@@ -143,11 +155,6 @@ public class QueueStorage : IQueueStorage
       {
         cancellationToken.ThrowIfCancellationRequested();
         var receiver = await receivers_[i];
-        /* linkCredit_: the maximum number of messages the remote peer can send to the receiver.
-         * With the goal of minimizing/deactivating prefetching, a value of 1 gave us the desired
-         * behavior. We pick a default value of 2 to have "some cache". */
-        receiver.SetCredit(linkCredit_,
-                           true);
         var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
         if (message is null)
