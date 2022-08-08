@@ -703,11 +703,22 @@ public class SubmitterTests
                                                               Session = new TaskFilter.Types.IdsRequest(),
                                                             },
                                                             CancellationToken.None)
-                                  .ConfigureAwait(false)).OrderBy(r => r.Status).ToIList();
+                                  .ConfigureAwait(false)).OrderBy(r => r.Status)
+                                                         .ToIList();
 
-    Assert.AreEqual(3,                                                              result.Count);
-    Assert.AreEqual(new PartitionTaskStatusCount("part1", TaskStatus.Creating,  1), result[0]);
-    Assert.AreEqual(new PartitionTaskStatusCount("part1", TaskStatus.Submitted, 1), result[1]);
-    Assert.AreEqual(new PartitionTaskStatusCount("part2", TaskStatus.Completed, 1), result[2]);
+    Assert.AreEqual(3,
+                    result.Count);
+    Assert.AreEqual(new PartitionTaskStatusCount("part1",
+                                                 TaskStatus.Creating,
+                                                 1),
+                    result[0]);
+    Assert.AreEqual(new PartitionTaskStatusCount("part1",
+                                                 TaskStatus.Submitted,
+                                                 1),
+                    result[1]);
+    Assert.AreEqual(new PartitionTaskStatusCount("part2",
+                                                 TaskStatus.Completed,
+                                                 1),
+                    result[2]);
   }
 }
