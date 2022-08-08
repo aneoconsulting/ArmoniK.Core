@@ -56,11 +56,10 @@ public class ExecutionSingleizer<T> : IDisposable
   {
     // Read the handle_ reference to have a stable view of it
     var currentHandle = handle_;
-    var task          = currentHandle.InnerTask;
 
-    // If task is completed (success or failed), then no thread is currently running it
+    // If there is no waiters, the task is complete (success or failed), and no thread is currently running it.
     // We therefore need to call func again
-    if (task.IsCompleted)
+    if (currentHandle.Waiters == 0)
     {
       // Prepare new handle, with new cancellation token source and new task
       var cts         = new CancellationTokenSource();
@@ -70,7 +69,9 @@ public class ExecutionSingleizer<T> : IDisposable
                       {
                         CancellationTokenSource = cts,
                         // Unwrap allows the handle to have a single level Task, instead of a Task<Task<...>>
-                        InnerTask               = delayedTask.Unwrap(),
+                        InnerTask = delayedTask.Unwrap(),
+                        // Current thread is implicitly waiting for the task
+                        Waiters = 1,
                       };
 
       // Try to store new handle replacing the previous one.
@@ -87,6 +88,8 @@ public class ExecutionSingleizer<T> : IDisposable
         // We can now start the task, other threads will just wait on the result.
         delayedTask.Start();
         currentHandle = newHandle;
+
+        // There is no need increment number of waiters as it has been initialized to 1.
       }
       else
       {
@@ -95,23 +98,29 @@ public class ExecutionSingleizer<T> : IDisposable
         // The handle created by the current thread can be destroyed as it is not used by anything.
         newHandle.Dispose();
         currentHandle = previousHandle;
+
+        // Record current thread as waiting for the task
+        Interlocked.Increment(ref currentHandle.Waiters);
       }
-
-      task = currentHandle.InnerTask;
     }
-    // if the task is not complete, we can just wait its result
+    else
+    {
+      // if the task is not complete, we can just wait its result.
+      // Record current thread as waiting for the task.
+      Interlocked.Increment(ref currentHandle.Waiters);
+    }
 
-    // Record current thread as waiting for the task
-    Interlocked.Increment(ref currentHandle.Waiters);
+    var task = currentHandle.InnerTask;
+    // Wait for task.
     try
     {
-      // Allow for early exit
+      // Allow for early exit.
       var tcs = new TaskCompletionSource<T>();
 
-      // early exit if the current cancellationToken is cancelled
+      // Early exit if the current cancellationToken is cancelled.
       cancellationToken.Register(() => tcs.SetCanceled(cancellationToken));
 
-      // Wait for either the task to finish, or the cancellation token to be cancelled
+      // Wait for either the task to finish, or the cancellation token to be cancelled.
       return await Task.WhenAny(task,
                                 tcs.Task)
                        .Unwrap()
@@ -119,17 +128,17 @@ public class ExecutionSingleizer<T> : IDisposable
     }
     finally
     {
-      // Remove the current thread from the list of waiters
+      // Remove the current thread from the list of waiters.
       var i = Interlocked.Decrement(ref currentHandle.Waiters);
 
-      // If the current thread was the last, we can cancel the shared token
+      // If the current thread was the last, we can cancel the shared token.
       if (i == 0)
       {
         // If we enter here because the task has completed without errors,
         // cancelling is a no op, therefore, we do not need to check why we went here.
         currentHandle.CancellationTokenSource.Cancel();
 
-        // The task might not have finished yet. If that is the case, let the GC do the job
+        // The task might not have finished yet. If that is the case, let the GC do the job.
         if (currentHandle.InnerTask.IsCompleted)
         {
           // Dispose of the Handle (and therefore the underlying task) here is fine:
@@ -148,12 +157,12 @@ public class ExecutionSingleizer<T> : IDisposable
   private sealed class Handle : IDisposable
   {
     /// <summary>
-    ///   Number of threads waiting for the result
+    ///   Number of threads waiting for the result.
     /// </summary>
     public int Waiters;
 
     /// <summary>
-    ///   Construct an handle that is cancelled
+    ///   Construct an handle that is cancelled.
     /// </summary>
     public Handle()
     {
@@ -168,13 +177,14 @@ public class ExecutionSingleizer<T> : IDisposable
     }
 
     /// <summary>
-    ///   Shared cancellation token for all the threads waiting on the task
+    ///   Shared cancellation token for all the threads waiting on the task.
     /// </summary>
     public CancellationTokenSource CancellationTokenSource { get; init; }
+
     /// <summary>
-    ///   Task that creates the result
+    ///   Task that creates the result.
     /// </summary>
-    public Task<T>                 InnerTask               { get; init; }
+    public Task<T> InnerTask { get; init; }
 
     /// <inheritdoc />
     public void Dispose()
