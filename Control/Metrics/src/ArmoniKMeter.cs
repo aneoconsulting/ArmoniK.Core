@@ -53,30 +53,37 @@ public class ArmoniKMeter : Meter, IHostedService
                       ILogger<ArmoniKMeter> logger)
     : base(nameof(ArmoniKMeter))
   {
-    using var log = logger.LogFunction();
+    using var _ = logger.LogFunction();
 
     taskTable_    = taskTable;
     logger_       = logger;
     gauges_       = new Dictionary<Tuple<string, string>, ObservableGauge<long>>();
     measurements_ = new ExecutionSingleizer<IDictionary<Tuple<string, string>, long>>();
 
-    _ = measurements_.Call(UpdateMeasurementsAsync,
-                           CancellationToken.None)
-                     .Result;
-
     CreateObservableCounter("test",
                             () => i++);
     logger.LogDebug("Meter added");
   }
 
-  public Task StartAsync(CancellationToken cancellationToken)
-    => Task.CompletedTask;
+  public async Task StartAsync(CancellationToken cancellationToken)
+    // Call FetchMeasurementsAsync in order to populate gauges.
+    => await measurements_.Call(FetchMeasurementsAsync,
+                                CancellationToken.None)
+                          .ConfigureAwait(false);
 
   public Task StopAsync(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  private async Task<IDictionary<Tuple<string, string>, long>> UpdateMeasurementsAsync(CancellationToken cancellationToken)
+  /// <summary>
+  ///   Fetch all the measurements from the taskTable.
+  /// </summary>
+  /// <param name="cancellationToken"></param>
+  /// <returns>
+  ///   Dictionary of the task count for each partition/status.
+  /// </returns>
+  private async Task<IDictionary<Tuple<string, string>, long>> FetchMeasurementsAsync(CancellationToken cancellationToken)
   {
+    // DB request
     var partitionStatusCounts = await taskTable_.CountPartitionTasksAsync(new TaskFilter
                                                                           {
                                                                             Task    = new TaskFilter.Types.IdsRequest(),
@@ -84,35 +91,39 @@ public class ArmoniKMeter : Meter, IHostedService
                                                                           },
                                                                           cancellationToken)
                                                 .ConfigureAwait(false);
+
+    // Populate dictionary from request
     var measurements = new Dictionary<Tuple<string, string>, long>();
 
+    // Aggregates across partitions
     foreach (var status in (TaskStatus[])Enum.GetValues(typeof(TaskStatus)))
     {
       var statusName = status.ToString();
-      measurements[new Tuple<string, string>("",
-                                             statusName)] = 0;
+      measurements[Tuple.Create("",
+                                statusName)] = 0;
       AddGauge("",
                statusName);
     }
 
-    measurements[new Tuple<string, string>("",
-                                           QueuedName)] = 0;
+    measurements[Tuple.Create("",
+                              QueuedName)] = 0;
     AddGauge("",
              QueuedName);
 
+    // Count per partitions
     foreach (var psc in partitionStatusCounts)
     {
       var statusName = psc.Status.ToString();
-      measurements[new Tuple<string, string>(psc.PartitionId,
-                                             statusName)] = psc.Count;
-      measurements[new Tuple<string, string>("",
-                                             statusName)] += psc.Count;
+      measurements[Tuple.Create(psc.PartitionId,
+                                statusName)] = psc.Count;
+      measurements[Tuple.Create("",
+                                statusName)] += psc.Count;
       if (psc.Status is TaskStatus.Dispatched or TaskStatus.Submitted or TaskStatus.Processing)
       {
-        measurements[new Tuple<string, string>(psc.PartitionId,
-                                               QueuedName)] = psc.Count;
-        measurements[new Tuple<string, string>("",
-                                               QueuedName)] += psc.Count;
+        measurements[Tuple.Create(psc.PartitionId,
+                                  QueuedName)] = psc.Count;
+        measurements[Tuple.Create("",
+                                  QueuedName)] += psc.Count;
         AddGauge(psc.PartitionId,
                  QueuedName);
       }
@@ -124,22 +135,36 @@ public class ArmoniKMeter : Meter, IHostedService
     return measurements;
   }
 
+  /// <summary>
+  ///   Get the Number of tasks for a given partition and task status.
+  /// </summary>
+  /// <param name="partition">Name of the partition to filter on</param>
+  /// <param name="status">Name of the status to filter on</param>
+  /// <param name="cancellationToken"></param>
+  /// <returns>
+  ///   Number of tasks for the given partition and status.
+  /// </returns>
   private async Task<long> GetMeasurementAsync(string            partition,
                                                string            status,
                                                CancellationToken cancellationToken)
   {
-    var measurements = await measurements_.Call(UpdateMeasurementsAsync,
+    var measurements = await measurements_.Call(FetchMeasurementsAsync,
                                                 cancellationToken)
                                           .ConfigureAwait(false);
-    return measurements[new Tuple<string, string>(partition,
-                                                  status)];
+    return measurements[Tuple.Create(partition,
+                                     status)];
   }
 
+  /// <summary>
+  ///   Add gauge if it does not already exist
+  /// </summary>
+  /// <param name="partition">Name of the partition to be metered</param>
+  /// <param name="statusName">Name of the Status to be metered</param>
   private void AddGauge(string partition,
                         string statusName)
   {
-    var key = new Tuple<string, string>(partition,
-                                        statusName);
+    var key = Tuple.Create(partition,
+                           statusName);
     if (gauges_.ContainsKey(key))
     {
       return;
