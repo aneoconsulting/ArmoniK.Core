@@ -160,6 +160,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.Options.Amqp.Host
   nameWithType: Amqp.Host
+- uid: ArmoniK.Core.Adapters.Amqp.Options.Amqp.LinkCredit
+  name: LinkCredit
+  href: api/ArmoniK.Core.Adapters.Amqp.Options.Amqp.html#ArmoniK_Core_Adapters_Amqp_Options_Amqp_LinkCredit
+  commentId: P:ArmoniK.Core.Adapters.Amqp.Options.Amqp.LinkCredit
+  fullName: ArmoniK.Core.Adapters.Amqp.Options.Amqp.LinkCredit
+  nameWithType: Amqp.LinkCredit
+- uid: ArmoniK.Core.Adapters.Amqp.Options.Amqp.LinkCredit*
+  name: LinkCredit
+  href: api/ArmoniK.Core.Adapters.Amqp.Options.Amqp.html#ArmoniK_Core_Adapters_Amqp_Options_Amqp_LinkCredit_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Options.Amqp.LinkCredit
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.Options.Amqp.LinkCredit
+  nameWithType: Amqp.LinkCredit
 - uid: ArmoniK.Core.Adapters.Amqp.Options.Amqp.MaxPriority
   name: MaxPriority
   href: api/ArmoniK.Core.Adapters.Amqp.Options.Amqp.html#ArmoniK_Core_Adapters_Amqp_Options_Amqp_MaxPriority

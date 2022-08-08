@@ -45,7 +45,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Amqp.Options.Amqp.html",
-          "hash": "37F/6/X5gQ6RJM5eLcwUema9t21uggldLC5cUMlLzCw="
+          "hash": "AOG1jW2aMScTwX1SyNkhudypyOid2sSHF3oLeWIwsnw="
         }
       },
       "is_incremental": false,
@@ -81,7 +81,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html",
-          "hash": "ZkB+NbBhEV5y3eWfZf6H18R4Jna3uUPPxb5Nz7WLcQA="
+          "hash": "vUSgiw6qd8zUMocWLpRs6CDLx/sciwD5N6sG7fsX8pY="
         }
       },
       "is_incremental": false,
@@ -129,7 +129,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html",
-          "hash": "AAg6gxDkC1NL7NkDJhYR0Q/4bF3ZxKjMhSk0J0hyuTw="
+          "hash": "LnvIQGbeEzFkUDqRrVi6ldkzc75ka/iXlIFoHkXIT9w="
         }
       },
       "is_incremental": false,
