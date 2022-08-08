@@ -30,28 +30,10 @@ namespace ArmoniK.Core.Common.Utils;
 
 public class ExecutionSingleizer<T> : IDisposable
 {
-  private sealed class Handle : IDisposable
-  {
-    public CancellationTokenSource CancellationTokenSource { get; init; }
-    public Task<T>                 InnerTask               { get; init; }
-    public int                     Waiters;
-
-    public Handle()
-    {
-      CancellationTokenSource = new CancellationTokenSource();
-      CancellationTokenSource.Cancel();
-
-      InnerTask = Task.FromCanceled<T>(CancellationTokenSource.Token);
-    }
-
-    public void Dispose()
-    {
-      CancellationTokenSource.Dispose();
-      InnerTask.Dispose();
-    }
-  }
-
   private Handle handle_ = new();
+
+  public void Dispose()
+    => handle_.Dispose();
 
 
   public async Task<T> Call(Func<CancellationToken, Task<T>> func,
@@ -116,6 +98,25 @@ public class ExecutionSingleizer<T> : IDisposable
     }
   }
 
-  public void Dispose()
-    => handle_.Dispose();
+  private sealed class Handle : IDisposable
+  {
+    public int Waiters;
+
+    public Handle()
+    {
+      CancellationTokenSource = new CancellationTokenSource();
+      CancellationTokenSource.Cancel();
+
+      InnerTask = Task.FromCanceled<T>(CancellationTokenSource.Token);
+    }
+
+    public CancellationTokenSource CancellationTokenSource { get; init; }
+    public Task<T>                 InnerTask               { get; init; }
+
+    public void Dispose()
+    {
+      CancellationTokenSource.Dispose();
+      InnerTask.Dispose();
+    }
+  }
 }

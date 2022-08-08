@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Threading;
@@ -43,13 +42,12 @@ namespace ArmoniK.Core.Control.Metrics;
 
 public class ArmoniKMeter : Meter, IHostedService
 {
-  private          int                                                           i;
-  private readonly ITaskTable                                                    taskTable_;
-  private          ILogger                                                       logger_;
-  private readonly ExecutionSingleizer<IDictionary<Tuple<string, string>, long>> measurements_;
+  private const    string                                                        QueuedName = "queued";
   private readonly IDictionary<Tuple<string, string>, ObservableGauge<long>>     gauges_;
-
-  private const string QueuedName = "queued";
+  private readonly ExecutionSingleizer<IDictionary<Tuple<string, string>, long>> measurements_;
+  private readonly ITaskTable                                                    taskTable_;
+  private          int                                                           i;
+  private          ILogger                                                       logger_;
 
   public ArmoniKMeter(ITaskTable            taskTable,
                       ILogger<ArmoniKMeter> logger)
