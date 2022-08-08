@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -37,7 +37,7 @@ public class HtcMockClient : IDisposable
 {
   private readonly GridClient               gridClient_;
   private readonly ILogger<Htc.Mock.Client> logger_;
-  private          ISessionClient           sessionClient_;
+  private          ISessionClient?          sessionClient_;
 
   public HtcMockClient(GridClient               gridClient,
                        ILogger<Htc.Mock.Client> logger)
