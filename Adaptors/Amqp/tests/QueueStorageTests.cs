@@ -64,6 +64,7 @@ public class QueueStorageTests
          MaxPriority       = 5,
          MaxRetries        = 5,
          AllowHostMismatch = false,
+         LinkCredit        = 2,
        };
 
   [Test]
@@ -128,6 +129,12 @@ public class QueueStorageTests
       var badMaxRetry = new TestCaseData(badMaxRetryOpt);
       badMaxRetry.SetArgDisplayNames("InvalidMaxRetry");
       yield return badMaxRetry;
+
+      var badLinkCreditOpt = CreateDefaultOptions();
+      badLinkCreditOpt.LinkCredit = 0;
+      var badLinkCredit = new TestCaseData(badLinkCreditOpt);
+      badLinkCredit.SetArgDisplayNames("InvalidLinkCredit");
+      yield return badLinkCredit;
     }
   }
 
