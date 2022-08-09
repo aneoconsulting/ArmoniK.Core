@@ -1387,6 +1387,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.CountAllTasksAsync
   nameWithType: TaskTable.CountAllTasksAsync
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.CountPartitionTasksAsync(CancellationToken)
+  name: CountPartitionTasksAsync(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_CountPartitionTasksAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.CountPartitionTasksAsync(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.CountPartitionTasksAsync(CancellationToken)
+  nameWithType: TaskTable.CountPartitionTasksAsync(CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.CountPartitionTasksAsync*
+  name: CountPartitionTasksAsync
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_CountPartitionTasksAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.TaskTable.CountPartitionTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.CountPartitionTasksAsync
+  nameWithType: TaskTable.CountPartitionTasksAsync
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.CountTasksAsync(TaskFilter,CancellationToken)
   name: CountTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_CountTasksAsync_TaskFilter_CancellationToken_
@@ -4066,6 +4079,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountAllTasksAsync
   nameWithType: TaskTable.CountAllTasksAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountPartitionTasksAsync(CancellationToken)
+  name: CountPartitionTasksAsync(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_CountPartitionTasksAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.CountPartitionTasksAsync(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountPartitionTasksAsync(CancellationToken)
+  nameWithType: TaskTable.CountPartitionTasksAsync(CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountPartitionTasksAsync*
+  name: CountPartitionTasksAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_CountPartitionTasksAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.TaskTable.CountPartitionTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountPartitionTasksAsync
+  nameWithType: TaskTable.CountPartitionTasksAsync
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.CountTasksAsync(TaskFilter,CancellationToken)
   name: CountTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_CountTasksAsync_TaskFilter_CancellationToken_
@@ -9892,6 +9918,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ITaskTable.CountAllTasksAsync
   nameWithType: ITaskTable.CountAllTasksAsync
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.CountPartitionTasksAsync(CancellationToken)
+  name: CountPartitionTasksAsync(CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_CountPartitionTasksAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.CountPartitionTasksAsync(CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.CountPartitionTasksAsync(CancellationToken)
+  nameWithType: ITaskTable.CountPartitionTasksAsync(CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.CountPartitionTasksAsync*
+  name: CountPartitionTasksAsync
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_CountPartitionTasksAsync_
+  commentId: Overload:ArmoniK.Core.Common.Storage.ITaskTable.CountPartitionTasksAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.CountPartitionTasksAsync
+  nameWithType: ITaskTable.CountPartitionTasksAsync
 - uid: ArmoniK.Core.Common.Storage.ITaskTable.CountTasksAsync(TaskFilter,CancellationToken)
   name: CountTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_CountTasksAsync_TaskFilter_CancellationToken_
@@ -10692,6 +10731,64 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.Output.Success
   nameWithType: Output.Success
+- uid: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount
+  name: PartitionTaskStatusCount
+  href: api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html
+  commentId: T:ArmoniK.Core.Common.Storage.PartitionTaskStatusCount
+  fullName: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount
+  nameWithType: PartitionTaskStatusCount
+- uid: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.#ctor(System.String,TaskStatus,System.Int32)
+  name: PartitionTaskStatusCount(String, TaskStatus, Int32)
+  href: api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html#ArmoniK_Core_Common_Storage_PartitionTaskStatusCount__ctor_System_String_TaskStatus_System_Int32_
+  commentId: M:ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.#ctor(System.String,TaskStatus,System.Int32)
+  fullName: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.PartitionTaskStatusCount(System.String, TaskStatus, System.Int32)
+  nameWithType: PartitionTaskStatusCount.PartitionTaskStatusCount(String, TaskStatus, Int32)
+- uid: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.#ctor*
+  name: PartitionTaskStatusCount
+  href: api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html#ArmoniK_Core_Common_Storage_PartitionTaskStatusCount__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.PartitionTaskStatusCount
+  nameWithType: PartitionTaskStatusCount.PartitionTaskStatusCount
+- uid: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Count
+  name: Count
+  href: api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html#ArmoniK_Core_Common_Storage_PartitionTaskStatusCount_Count
+  commentId: P:ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Count
+  fullName: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Count
+  nameWithType: PartitionTaskStatusCount.Count
+- uid: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Count*
+  name: Count
+  href: api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html#ArmoniK_Core_Common_Storage_PartitionTaskStatusCount_Count_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Count
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Count
+  nameWithType: PartitionTaskStatusCount.Count
+- uid: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.PartitionId
+  name: PartitionId
+  href: api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html#ArmoniK_Core_Common_Storage_PartitionTaskStatusCount_PartitionId
+  commentId: P:ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.PartitionId
+  fullName: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.PartitionId
+  nameWithType: PartitionTaskStatusCount.PartitionId
+- uid: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.PartitionId*
+  name: PartitionId
+  href: api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html#ArmoniK_Core_Common_Storage_PartitionTaskStatusCount_PartitionId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.PartitionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.PartitionId
+  nameWithType: PartitionTaskStatusCount.PartitionId
+- uid: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Status
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html#ArmoniK_Core_Common_Storage_PartitionTaskStatusCount_Status
+  commentId: P:ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Status
+  fullName: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Status
+  nameWithType: PartitionTaskStatusCount.Status
+- uid: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Status*
+  name: Status
+  href: api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html#ArmoniK_Core_Common_Storage_PartitionTaskStatusCount_Status_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Status
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Status
+  nameWithType: PartitionTaskStatusCount.Status
 - uid: ArmoniK.Core.Common.Storage.QueueMessageHandler
   name: QueueMessageHandler
   href: api/ArmoniK.Core.Common.Storage.QueueMessageHandler.html
@@ -16699,6 +16796,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetNotExistingResultStatusShouldSucceed
   nameWithType: SubmitterTests.GetNotExistingResultStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetPartitionTaskStatus
+  name: GetPartitionTaskStatus()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetPartitionTaskStatus
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetPartitionTaskStatus
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetPartitionTaskStatus()
+  nameWithType: SubmitterTests.GetPartitionTaskStatus()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetPartitionTaskStatus*
+  name: GetPartitionTaskStatus
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetPartitionTaskStatus_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetPartitionTaskStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetPartitionTaskStatus
+  nameWithType: SubmitterTests.GetPartitionTaskStatus
 - uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.GetResultStatusShouldSucceed
   name: GetResultStatusShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_GetResultStatusShouldSucceed
@@ -17211,6 +17321,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.CountAllTasksAsyncShouldSucceed
   nameWithType: TaskTableTestBase.CountAllTasksAsyncShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.CountPartitionTasksAsyncShouldSucceed
+  name: CountPartitionTasksAsyncShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_CountPartitionTasksAsyncShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.CountPartitionTasksAsyncShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.CountPartitionTasksAsyncShouldSucceed()
+  nameWithType: TaskTableTestBase.CountPartitionTasksAsyncShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.CountPartitionTasksAsyncShouldSucceed*
+  name: CountPartitionTasksAsyncShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_CountPartitionTasksAsyncShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.CountPartitionTasksAsyncShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.CountPartitionTasksAsyncShouldSucceed
+  nameWithType: TaskTableTestBase.CountPartitionTasksAsyncShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.CountTasksAsyncShouldSucceed
   name: CountTasksAsyncShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_CountTasksAsyncShouldSucceed
@@ -17626,6 +17749,148 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.UpdateTaskStatusAsyncShouldSucceed
   nameWithType: TaskTableTestBase.UpdateTaskStatusAsyncShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Utils
+  name: ArmoniK.Core.Common.Tests.Utils
+  href: api/ArmoniK.Core.Common.Tests.Utils.html
+  commentId: N:ArmoniK.Core.Common.Tests.Utils
+  fullName: ArmoniK.Core.Common.Tests.Utils
+  nameWithType: ArmoniK.Core.Common.Tests.Utils
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest
+  name: ExecutionSingleizerTest
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest
+  nameWithType: ExecutionSingleizerTest
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.CancelExecutionShouldFail
+  name: CancelExecutionShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_CancelExecutionShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.CancelExecutionShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.CancelExecutionShouldFail()
+  nameWithType: ExecutionSingleizerTest.CancelExecutionShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.CancelExecutionShouldFail*
+  name: CancelExecutionShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_CancelExecutionShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.CancelExecutionShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.CancelExecutionShouldFail
+  nameWithType: ExecutionSingleizerTest.CancelExecutionShouldFail
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentCancelExecutionShouldFail
+  name: ConcurrentCancelExecutionShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_ConcurrentCancelExecutionShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentCancelExecutionShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentCancelExecutionShouldFail()
+  nameWithType: ExecutionSingleizerTest.ConcurrentCancelExecutionShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentCancelExecutionShouldFail*
+  name: ConcurrentCancelExecutionShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_ConcurrentCancelExecutionShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentCancelExecutionShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentCancelExecutionShouldFail
+  nameWithType: ExecutionSingleizerTest.ConcurrentCancelExecutionShouldFail
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentExecutionShouldSucceed
+  name: ConcurrentExecutionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_ConcurrentExecutionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentExecutionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentExecutionShouldSucceed()
+  nameWithType: ExecutionSingleizerTest.ConcurrentExecutionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentExecutionShouldSucceed*
+  name: ConcurrentExecutionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_ConcurrentExecutionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentExecutionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentExecutionShouldSucceed
+  nameWithType: ExecutionSingleizerTest.ConcurrentExecutionShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentPartialCancelExecutionShouldSucceed
+  name: ConcurrentPartialCancelExecutionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_ConcurrentPartialCancelExecutionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentPartialCancelExecutionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentPartialCancelExecutionShouldSucceed()
+  nameWithType: ExecutionSingleizerTest.ConcurrentPartialCancelExecutionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentPartialCancelExecutionShouldSucceed*
+  name: ConcurrentPartialCancelExecutionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_ConcurrentPartialCancelExecutionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentPartialCancelExecutionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ConcurrentPartialCancelExecutionShouldSucceed
+  nameWithType: ExecutionSingleizerTest.ConcurrentPartialCancelExecutionShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ManyConcurrentExecutionShouldSucceed
+  name: ManyConcurrentExecutionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_ManyConcurrentExecutionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ManyConcurrentExecutionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ManyConcurrentExecutionShouldSucceed()
+  nameWithType: ExecutionSingleizerTest.ManyConcurrentExecutionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ManyConcurrentExecutionShouldSucceed*
+  name: ManyConcurrentExecutionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_ManyConcurrentExecutionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ManyConcurrentExecutionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.ManyConcurrentExecutionShouldSucceed
+  nameWithType: ExecutionSingleizerTest.ManyConcurrentExecutionShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedConcurrentExecutionShouldSucceed
+  name: RepeatedConcurrentExecutionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_RepeatedConcurrentExecutionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedConcurrentExecutionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedConcurrentExecutionShouldSucceed()
+  nameWithType: ExecutionSingleizerTest.RepeatedConcurrentExecutionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedConcurrentExecutionShouldSucceed*
+  name: RepeatedConcurrentExecutionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_RepeatedConcurrentExecutionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedConcurrentExecutionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedConcurrentExecutionShouldSucceed
+  nameWithType: ExecutionSingleizerTest.RepeatedConcurrentExecutionShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedExecutionShouldSucceed
+  name: RepeatedExecutionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_RepeatedExecutionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedExecutionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedExecutionShouldSucceed()
+  nameWithType: ExecutionSingleizerTest.RepeatedExecutionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedExecutionShouldSucceed*
+  name: RepeatedExecutionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_RepeatedExecutionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedExecutionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.RepeatedExecutionShouldSucceed
+  nameWithType: ExecutionSingleizerTest.RepeatedExecutionShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_SetUp
+  commentId: M:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SetUp
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SetUp()
+  nameWithType: ExecutionSingleizerTest.SetUp()
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_SetUp_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SetUp
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SetUp
+  nameWithType: ExecutionSingleizerTest.SetUp
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SingleExecutionShouldSucceed
+  name: SingleExecutionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_SingleExecutionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SingleExecutionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SingleExecutionShouldSucceed()
+  nameWithType: ExecutionSingleizerTest.SingleExecutionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SingleExecutionShouldSucceed*
+  name: SingleExecutionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_SingleExecutionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SingleExecutionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.SingleExecutionShouldSucceed
+  nameWithType: ExecutionSingleizerTest.SingleExecutionShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_TearDown
+  commentId: M:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.TearDown
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.TearDown()
+  nameWithType: ExecutionSingleizerTest.TearDown()
+- uid: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.html#ArmoniK_Core_Common_Tests_Utils_ExecutionSingleizerTest_TearDown_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Utils.ExecutionSingleizerTest.TearDown
+  nameWithType: ExecutionSingleizerTest.TearDown
 - uid: ArmoniK.Core.Common.Utils
   name: ArmoniK.Core.Common.Utils
   href: api/ArmoniK.Core.Common.Utils.html
@@ -17770,6 +18035,50 @@ references:
   fullName.vb: ArmoniK.Core.Common.Utils.EnumerableExt.ToIList(Of T)(IEnumerable(Of T))
   nameWithType: EnumerableExt.ToIList<T>(IEnumerable<T>)
   nameWithType.vb: EnumerableExt.ToIList(Of T)(IEnumerable(Of T))
+- uid: ArmoniK.Core.Common.Utils.ExecutionSingleizer`1
+  name: ExecutionSingleizer<T>
+  href: api/ArmoniK.Core.Common.Utils.ExecutionSingleizer-1.html
+  commentId: T:ArmoniK.Core.Common.Utils.ExecutionSingleizer`1
+  name.vb: ExecutionSingleizer(Of T)
+  fullName: ArmoniK.Core.Common.Utils.ExecutionSingleizer<T>
+  fullName.vb: ArmoniK.Core.Common.Utils.ExecutionSingleizer(Of T)
+  nameWithType: ExecutionSingleizer<T>
+  nameWithType.vb: ExecutionSingleizer(Of T)
+- uid: ArmoniK.Core.Common.Utils.ExecutionSingleizer`1.Call(Func{CancellationToken,Task{`0}},CancellationToken)
+  name: Call(Func<CancellationToken, Task<T>>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Utils.ExecutionSingleizer-1.html#ArmoniK_Core_Common_Utils_ExecutionSingleizer_1_Call_Func_CancellationToken_Task__0___CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Utils.ExecutionSingleizer`1.Call(Func{CancellationToken,Task{`0}},CancellationToken)
+  name.vb: Call(Func(Of CancellationToken, Task(Of T)), CancellationToken)
+  fullName: ArmoniK.Core.Common.Utils.ExecutionSingleizer<T>.Call(Func<CancellationToken, Task<T>>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Utils.ExecutionSingleizer(Of T).Call(Func(Of CancellationToken, Task(Of T)), CancellationToken)
+  nameWithType: ExecutionSingleizer<T>.Call(Func<CancellationToken, Task<T>>, CancellationToken)
+  nameWithType.vb: ExecutionSingleizer(Of T).Call(Func(Of CancellationToken, Task(Of T)), CancellationToken)
+- uid: ArmoniK.Core.Common.Utils.ExecutionSingleizer`1.Call*
+  name: Call
+  href: api/ArmoniK.Core.Common.Utils.ExecutionSingleizer-1.html#ArmoniK_Core_Common_Utils_ExecutionSingleizer_1_Call_
+  commentId: Overload:ArmoniK.Core.Common.Utils.ExecutionSingleizer`1.Call
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.ExecutionSingleizer<T>.Call
+  fullName.vb: ArmoniK.Core.Common.Utils.ExecutionSingleizer(Of T).Call
+  nameWithType: ExecutionSingleizer<T>.Call
+  nameWithType.vb: ExecutionSingleizer(Of T).Call
+- uid: ArmoniK.Core.Common.Utils.ExecutionSingleizer`1.Dispose
+  name: Dispose()
+  href: api/ArmoniK.Core.Common.Utils.ExecutionSingleizer-1.html#ArmoniK_Core_Common_Utils_ExecutionSingleizer_1_Dispose
+  commentId: M:ArmoniK.Core.Common.Utils.ExecutionSingleizer`1.Dispose
+  fullName: ArmoniK.Core.Common.Utils.ExecutionSingleizer<T>.Dispose()
+  fullName.vb: ArmoniK.Core.Common.Utils.ExecutionSingleizer(Of T).Dispose()
+  nameWithType: ExecutionSingleizer<T>.Dispose()
+  nameWithType.vb: ExecutionSingleizer(Of T).Dispose()
+- uid: ArmoniK.Core.Common.Utils.ExecutionSingleizer`1.Dispose*
+  name: Dispose
+  href: api/ArmoniK.Core.Common.Utils.ExecutionSingleizer-1.html#ArmoniK_Core_Common_Utils_ExecutionSingleizer_1_Dispose_
+  commentId: Overload:ArmoniK.Core.Common.Utils.ExecutionSingleizer`1.Dispose
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Utils.ExecutionSingleizer<T>.Dispose
+  fullName.vb: ArmoniK.Core.Common.Utils.ExecutionSingleizer(Of T).Dispose
+  nameWithType: ExecutionSingleizer<T>.Dispose
+  nameWithType.vb: ExecutionSingleizer(Of T).Dispose
 - uid: ArmoniK.Core.Common.Utils.Heart
   name: Heart
   href: api/ArmoniK.Core.Common.Utils.Heart.html
