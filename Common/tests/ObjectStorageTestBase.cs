@@ -78,7 +78,7 @@ public class ObjectStorageTestBase
   }
 
   /* Interface to test */
-  protected IObjectStorage ObjectStorage;
+  protected IObjectStorage? ObjectStorage;
 
   /* Boolean to control that tests are executed in
    * an instance of this class */

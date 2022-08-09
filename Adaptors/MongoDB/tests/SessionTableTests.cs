@@ -43,12 +43,12 @@ public class SessionTableTests : SessionTableTestBase
   public override void TearDown()
   {
     client_ = null;
-    runner_.Dispose();
+    runner_?.Dispose();
     RunTests = false;
   }
 
-  private                 MongoClient    client_;
-  private                 MongoDbRunner  runner_;
+  private                 MongoClient?   client_;
+  private                 MongoDbRunner? runner_;
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
 
@@ -80,7 +80,7 @@ public class SessionTableTests : SessionTableTestBase
     services.AddMongoStorages(configuration,
                               logger);
     services.AddSingleton(ActivitySource);
-    services.AddTransient<IMongoClient>(serviceProvider => client_);
+    services.AddTransient<IMongoClient>(_ => client_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
