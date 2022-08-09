@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -31,15 +31,15 @@ namespace ArmoniK.Core.ProfilingTools.OpenTelemetryExporter;
 
 public static class MongoExporterHelperExtensions
 {
-  public static TracerProviderBuilder AddMongoExporter(this TracerProviderBuilder   builder,
-                                                       Action<MongoExporterOptions> configure = null)
+  public static TracerProviderBuilder AddMongoExporter(this TracerProviderBuilder    builder,
+                                                       Action<MongoExporterOptions>? configure = null)
   {
     if (builder is IDeferredTracerProviderBuilder deferredTracerProviderBuilder)
     {
       return deferredTracerProviderBuilder.Configure((sp,
-                                                      builder) =>
+                                                      b) =>
                                                      {
-                                                       AddMongoExporter(builder,
+                                                       AddMongoExporter(b,
                                                                         new MongoExporterOptions(),
                                                                         configure,
                                                                         sp);
@@ -52,19 +52,17 @@ public static class MongoExporterHelperExtensions
                             null);
   }
 
-  private static TracerProviderBuilder AddMongoExporter(TracerProviderBuilder        builder,
-                                                        MongoExporterOptions         options,
-                                                        Action<MongoExporterOptions> configure,
-                                                        IServiceProvider             serviceProvider)
+  private static TracerProviderBuilder AddMongoExporter(TracerProviderBuilder         builder,
+                                                        MongoExporterOptions          options,
+                                                        Action<MongoExporterOptions>? configure,
+                                                        IServiceProvider?             serviceProvider)
   {
+    _ = serviceProvider;
     configure?.Invoke(options);
     var mongoExporter = new MongoExporter(options);
 
-    if (options.ExportProcessorType == ExportProcessorType.Simple)
-    {
-      return builder.AddProcessor(new SimpleActivityExportProcessor(mongoExporter));
-    }
-
-    return builder.AddProcessor(new BatchActivityExportProcessor(mongoExporter));
+    return options.ExportProcessorType == ExportProcessorType.Simple
+             ? builder.AddProcessor(new SimpleActivityExportProcessor(mongoExporter))
+             : builder.AddProcessor(new BatchActivityExportProcessor(mongoExporter));
   }
 }
