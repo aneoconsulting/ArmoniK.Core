@@ -42,7 +42,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
 internal class CreateSessionTests
 {
-  private Submitter.SubmitterClient client_;
+  private Submitter.SubmitterClient? client_;
 
   [SetUp]
   public void SetUp()
@@ -73,11 +73,11 @@ internal class CreateSessionTests
     Console.WriteLine("NullDefaultTaskOptionShouldThrowException");
 
     Assert.Throws(typeof(RpcException),
-                  () => client_.CreateSession(new CreateSessionRequest
-                                              {
-                                                DefaultTaskOption = null,
-                                                Id                = sessionId,
-                                              }));
+                  () => client_!.CreateSession(new CreateSessionRequest
+                                               {
+                                                 DefaultTaskOption = null,
+                                                 Id                = sessionId,
+                                               }));
   }
 
   [Test]
@@ -85,16 +85,16 @@ internal class CreateSessionTests
   {
     Console.WriteLine("EmptyIdTaskOptionShouldThrowException");
     Assert.Throws(typeof(RpcException),
-                  () => client_.CreateSession(new CreateSessionRequest
-                                              {
-                                                DefaultTaskOption = new TaskOptions
-                                                                    {
-                                                                      Priority    = 1,
-                                                                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                      MaxRetries  = 2,
-                                                                    },
-                                                Id = "",
-                                              }));
+                  () => client_!.CreateSession(new CreateSessionRequest
+                                               {
+                                                 DefaultTaskOption = new TaskOptions
+                                                                     {
+                                                                       Priority    = 1,
+                                                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                       MaxRetries  = 2,
+                                                                     },
+                                                 Id = "",
+                                               }));
   }
 
   [Test]
@@ -103,16 +103,16 @@ internal class CreateSessionTests
     var sessionId = Guid.NewGuid() + "mytestsession";
     Console.WriteLine("SessionShouldBeCreated");
 
-    var createSessionReply = client_.CreateSession(new CreateSessionRequest
-                                                   {
-                                                     DefaultTaskOption = new TaskOptions
-                                                                         {
-                                                                           Priority    = 1,
-                                                                           MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                           MaxRetries  = 2,
-                                                                         },
-                                                     Id = sessionId,
-                                                   });
+    var createSessionReply = client_!.CreateSession(new CreateSessionRequest
+                                                    {
+                                                      DefaultTaskOption = new TaskOptions
+                                                                          {
+                                                                            Priority    = 1,
+                                                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                            MaxRetries  = 2,
+                                                                          },
+                                                      Id = sessionId,
+                                                    });
     Assert.AreEqual(createSessionReply.ResultCase,
                     CreateSessionReply.ResultOneofCase.Ok);
   }
