@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -292,6 +292,30 @@ public class TaskTable : ITaskTable
                                   .GroupBy(model => model.Status)
                                   .Select(models => new TaskStatusCount(models.Key,
                                                                         models.Count()))
+                                  .ToListAsync(cancellationToken)
+                                  .ConfigureAwait(false);
+
+    return res;
+  }
+
+  /// <inheritdoc />
+  public async Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(CountPartitionTasksAsync)}");
+
+    var sessionHandle  = sessionProvider_.Get();
+    var taskCollection = taskCollectionProvider_.Get();
+
+
+    var res = await taskCollection.AsQueryable(sessionHandle)
+                                  .GroupBy(model => new
+                                                    {
+                                                      model.Options.PartitionId,
+                                                      model.Status,
+                                                    })
+                                  .Select(models => new PartitionTaskStatusCount(models.Key.PartitionId,
+                                                                                 models.Key.Status,
+                                                                                 models.Count()))
                                   .ToListAsync(cancellationToken)
                                   .ConfigureAwait(false);
 

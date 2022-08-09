@@ -195,6 +195,22 @@ public class TaskTable : ITaskTable
              .ConfigureAwait(false);
 
   /// <inheritdoc />
+  public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
+  {
+    var res = taskId2TaskData_.Values.AsQueryable()
+                              .GroupBy(model => new
+                                                {
+                                                  model.Options.PartitionId,
+                                                  model.Status,
+                                                })
+                              .Select(models => new PartitionTaskStatusCount(models.Key.PartitionId,
+                                                                             models.Key.Status,
+                                                                             models.Count()));
+
+    return Task.FromResult(res as IEnumerable<PartitionTaskStatusCount>);
+  }
+
+  /// <inheritdoc />
   public async Task<int> CountAllTasksAsync(TaskStatus        status,
                                             CancellationToken cancellationToken = default)
   {

@@ -22,25 +22,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using ArmoniK.Api.gRPC.V1;
 
-using JetBrains.Annotations;
+namespace ArmoniK.Core.Common.Storage;
 
-namespace ArmoniK.Core.Adapters.Amqp.Options;
-
-[PublicAPI]
-public class Amqp
-{
-  public const string SettingSection = nameof(Amqp);
-
-  public string Host              { get; set; }
-  public string CredentialsPath   { get; set; }
-  public string User              { get; set; }
-  public string Password          { get; set; }
-  public string Scheme            { get; set; }
-  public string CaPath            { get; set; }
-  public int    Port              { get; set; }
-  public int    MaxPriority       { get; set; }
-  public bool   AllowHostMismatch { get; set; }
-  public int    MaxRetries        { get; set; }
-  public int    LinkCredit        { get; set; }
-}
+public record PartitionTaskStatusCount(string     PartitionId,
+                                       TaskStatus Status,
+                                       int        Count);
