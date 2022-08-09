@@ -49,6 +49,11 @@ public class TaskTableTestBase
 
     if (RunTests)
     {
+      var options = new TaskOptions(new Dictionary<string, string>(),
+                                    TimeSpan.MaxValue,
+                                    5,
+                                    1,
+                                    "part1");
       TaskTable.CreateTasks(new[]
                             {
                               new TaskData("SessionId",
@@ -69,7 +74,7 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Completed,
-                                           default,
+                                           options,
                                            new Output(true,
                                                       "")),
                               new TaskData("SessionId",
@@ -90,7 +95,7 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Creating,
-                                           default,
+                                           options,
                                            new Output(false,
                                                       "")),
                               new TaskData("SessionId",
@@ -111,7 +116,7 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Processing,
-                                           default,
+                                           options,
                                            new Output(false,
                                                       "")),
                               new TaskData("SessionId",
@@ -132,7 +137,7 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Processing,
-                                           default,
+                                           options,
                                            new Output(false,
                                                       "")),
                               new TaskData("SessionId",
@@ -153,7 +158,7 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Submitted,
-                                           default,
+                                           options,
                                            new Output(false,
                                                       "")),
                               new TaskData("SessionId",
@@ -174,7 +179,7 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Failed,
-                                           default,
+                                           options,
                                            new Output(false,
                                                       "sad task")),
                             })
@@ -489,6 +494,37 @@ public class TaskTableTestBase
                                                                                         CancellationToken.None)
                                                                     .ConfigureAwait(false);
                                                    });
+    }
+  }
+
+  [Test]
+  public async Task CountPartitionTasksAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var result = (await TaskTable.CountPartitionTasksAsync(new TaskFilter
+                                                             {
+                                                               Task    = new TaskFilter.Types.IdsRequest(),
+                                                               Session = new TaskFilter.Types.IdsRequest(),
+                                                             },
+                                                             CancellationToken.None)
+                                   .ConfigureAwait(false)).OrderBy(r => r.Status)
+                                                          .ToIList();
+
+      Assert.AreEqual(3,
+                      result.Count);
+      Assert.AreEqual(new PartitionTaskStatusCount("part1",
+                                                   TaskStatus.Creating,
+                                                   1),
+                      result[0]);
+      Assert.AreEqual(new PartitionTaskStatusCount("part1",
+                                                   TaskStatus.Submitted,
+                                                   1),
+                      result[1]);
+      Assert.AreEqual(new PartitionTaskStatusCount("part2",
+                                                   TaskStatus.Completed,
+                                                   1),
+                      result[2]);
     }
   }
 
