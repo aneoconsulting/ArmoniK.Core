@@ -138,13 +138,18 @@ public class ExecutionSingleizer<T> : IDisposable
         // cancelling is a no op, therefore, we do not need to check why we went here.
         currentHandle.CancellationTokenSource.Cancel();
 
-        // The task might not have finished yet. If that is the case, let the GC do the job.
-        if (currentHandle.InnerTask.IsCompleted)
-        {
-          // Dispose of the Handle (and therefore the underlying task) here is fine:
-          // https://devblogs.microsoft.com/pfxteam/do-i-need-to-dispose-of-tasks/
-          currentHandle.Dispose();
-        }
+        // FIXME: There might be a race condition between the dispose and the cancel here.
+        // ManyConcurrentExecutionShouldSucceed fails with:
+        //   `System.ObjectDisposedException : The CancellationTokenSource has been disposed.`
+        // As soon as we understand where it comes from, we can reenable early dispose.
+
+        //// The task might not have finished yet. If that is the case, let the GC do the job.
+        //if (currentHandle.InnerTask.IsCompleted)
+        //{
+        //  // Dispose of the Handle (and therefore the underlying task) here is fine:
+        //  // https://devblogs.microsoft.com/pfxteam/do-i-need-to-dispose-of-tasks/
+        //  currentHandle.Dispose();
+        //}
       }
     }
   }
