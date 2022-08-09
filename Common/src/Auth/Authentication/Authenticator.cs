@@ -95,15 +95,15 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   private readonly string               fingerprintHeader_;
   private readonly string               impersonationIdHeader_;
   private readonly string               impersonationUsernameHeader_;
-  
-  private readonly bool                 requireAuthentication_;
+
+  private readonly bool requireAuthentication_;
 
   public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,
                        ILoggerFactory                        loggerFactory,
                        UrlEncoder                            encoder,
                        ISystemClock                          clock,
                        IAuthenticationTable                  authTable,
-                       AuthenticationCache cache)
+                       AuthenticationCache                   cache)
     : base(options,
            loggerFactory,
            encoder,
@@ -137,18 +137,24 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                                                                   SchemeName),
                                                                  SchemeName));
     }
-    var           cn                    = TryGetHeader(cnHeader_);
-    var           fingerprint           = TryGetHeader(fingerprintHeader_);
-    var           impersonationUsername = TryGetHeader(impersonationUsernameHeader_);
-    var           impersonationId       = TryGetHeader(impersonationIdHeader_);
 
-    var identity = cache_.Get(new AuthenticationCacheKey(Request.HttpContext.Connection.Id, cn, fingerprint, impersonationId, impersonationUsername));
+    var cn                    = TryGetHeader(cnHeader_);
+    var fingerprint           = TryGetHeader(fingerprintHeader_);
+    var impersonationUsername = TryGetHeader(impersonationUsernameHeader_);
+    var impersonationId       = TryGetHeader(impersonationIdHeader_);
+
+    var identity = cache_.Get(new AuthenticationCacheKey(Request.HttpContext.Connection.Id,
+                                                         cn,
+                                                         fingerprint,
+                                                         impersonationId,
+                                                         impersonationUsername));
     if (identity != null)
     {
       Log.Debug($"Found user {identity.UserName} in cache");
       return AuthenticateResult.Success(new AuthenticationTicket(identity,
                                                                  SchemeName));
     }
+
     if (!string.IsNullOrEmpty(cn) && !string.IsNullOrEmpty(fingerprint))
     {
       identity = await GetIdentityFromCertificateAsync(cn,
@@ -188,7 +194,12 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       }
     }
 
-    cache_.Set(new AuthenticationCacheKey(Request.HttpContext.Connection.Id, cn, fingerprint, impersonationId, impersonationUsername), identity);
+    cache_.Set(new AuthenticationCacheKey(Request.HttpContext.Connection.Id,
+                                          cn,
+                                          fingerprint,
+                                          impersonationId,
+                                          impersonationUsername),
+               identity);
     var ticket = new AuthenticationTicket(identity,
                                           SchemeName);
     return AuthenticateResult.Success(ticket);

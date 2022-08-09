@@ -37,10 +37,10 @@ public class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
                                 string? impersonateUsername = "")
   {
     ConnectionId        = connectionId;
-    CN                  = cn                  ??"";
-    Fingerprint         = fingerprint         ??"";
-    ImpersonateId       = impersonateId       ??"";
-    ImpersonateUsername = impersonateUsername ??"";
+    CN                  = cn                  ?? "";
+    Fingerprint         = fingerprint         ?? "";
+    ImpersonateId       = impersonateId       ?? "";
+    ImpersonateUsername = impersonateUsername ?? "";
   }
 
   public string ConnectionId        { get; }
@@ -62,7 +62,8 @@ public class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
       return true;
     }
 
-    return ConnectionId == other.ConnectionId && CN == other.CN && Fingerprint == other.Fingerprint && ImpersonateId == other.ImpersonateId && ImpersonateUsername == other.ImpersonateUsername;
+    return ConnectionId        == other.ConnectionId && CN == other.CN && Fingerprint == other.Fingerprint && ImpersonateId == other.ImpersonateId &&
+           ImpersonateUsername == other.ImpersonateUsername;
   }
 
   public override bool Equals(object? obj)
@@ -94,9 +95,7 @@ public class AuthenticationCache
   private readonly ConcurrentDictionary<AuthenticationCacheKey, UserIdentity> identityStore_;
 
   public AuthenticationCache()
-  {
-    identityStore_ = new ConcurrentDictionary<AuthenticationCacheKey, UserIdentity>();
-  }
+    => identityStore_ = new ConcurrentDictionary<AuthenticationCacheKey, UserIdentity>();
 
   public virtual UserIdentity? Get(AuthenticationCacheKey key)
   {
@@ -106,14 +105,13 @@ public class AuthenticationCache
   }
 
   public void Set(AuthenticationCacheKey key,
-                         UserIdentity           identity)
-  {
-    identityStore_[key] = identity;
-  }
+                  UserIdentity           identity)
+    => identityStore_[key] = identity;
 
   public void FlushConnection(string connectionId)
   {
-    foreach (var s in identityStore_.Where(kv => kv.Key.ConnectionId == connectionId).ToList())
+    foreach (var s in identityStore_.Where(kv => kv.Key.ConnectionId == connectionId)
+                                    .ToList())
     {
       identityStore_.TryRemove(s.Key,
                                out _);
@@ -121,7 +119,5 @@ public class AuthenticationCache
   }
 
   public void Clear()
-  {
-    identityStore_.Clear();
-  }
+    => identityStore_.Clear();
 }

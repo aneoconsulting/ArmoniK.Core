@@ -37,15 +37,9 @@ using Grpc.Net.Client;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
-using Serilog;
-
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -55,8 +49,8 @@ public class GrpcSubmitterServiceHelper : IDisposable
   private readonly ILoggerFactory      loggerFactory_;
   private          GrpcChannel?        channel_;
   private          HttpMessageHandler? handler_;
-  private          TestServer?         server_;
   private          ILogger             logger_;
+  private          TestServer?         server_;
 
   public GrpcSubmitterServiceHelper(ISubmitter           submitter,
                                     List<MockIdentity>   authIdentities,
@@ -75,7 +69,8 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(authIdentities))
            .AddSingleton(new AuthenticationCache())
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
-           .AddLogging(build => build.SetMinimumLevel(loglevel).AddConsole())
+           .AddLogging(build => build.SetMinimumLevel(loglevel)
+                                     .AddConsole())
            .AddAuthentication()
            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
                                                            _ =>
@@ -150,6 +145,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     {
       return;
     }
+
     await channel_.ShutdownAsync()
                   .ConfigureAwait(false);
     channel_.Dispose();

@@ -31,6 +31,14 @@ namespace ArmoniK.Core.Common.Tests.Auth;
 [TestFixture]
 public class AuthenticationCacheTest
 {
+  [SetUp]
+  public void Setup()
+  {
+    cache_ = new AuthenticationCache();
+    cache_.Set(BaseKey,
+               BaseIdentity);
+  }
+
   private const string ConnectionId = "TestConnectionId";
   private const string CN           = "CN1";
   private const string Fingerprint  = "Fingerprint1";
@@ -43,12 +51,6 @@ public class AuthenticationCacheTest
                                                           string.Empty);
 
   private AuthenticationCache? cache_;
-  [SetUp]
-  public void Setup()
-  {
-    cache_ = new AuthenticationCache();
-    cache_.Set(BaseKey, BaseIdentity);
-  }
 
   [Test]
   public void CacheShouldHit()
@@ -58,16 +60,49 @@ public class AuthenticationCacheTest
     Assert.AreEqual(BaseIdentity,
                     result);
   }
+
   [Test]
-  [TestCase(ConnectionId, CN,      Fingerprint,      "ImpId",          null)]
-  [TestCase(ConnectionId, CN,      Fingerprint,      null,             "ImpName")]
-  [TestCase(ConnectionId, CN +"0", Fingerprint +"0", null,             null)]
-  [TestCase(ConnectionId, CN +"0", null,             null,             null)]
-  [TestCase(ConnectionId     +"0", CN,               Fingerprint,      null, null)]
-  [TestCase(ConnectionId+"0",          CN +"0",          Fingerprint +"0", null, null)]
-  public void CacheShouldMiss(string connectionId, string? cn, string? fingerprint, string? impersonationId, string? impersonationUsername)
+  [TestCase(ConnectionId,
+            CN,
+            Fingerprint,
+            "ImpId",
+            null)]
+  [TestCase(ConnectionId,
+            CN,
+            Fingerprint,
+            null,
+            "ImpName")]
+  [TestCase(ConnectionId,
+            CN          + "0",
+            Fingerprint + "0",
+            null,
+            null)]
+  [TestCase(ConnectionId,
+            CN + "0",
+            null,
+            null,
+            null)]
+  [TestCase(ConnectionId + "0",
+            CN,
+            Fingerprint,
+            null,
+            null)]
+  [TestCase(ConnectionId + "0",
+            CN           + "0",
+            Fingerprint  + "0",
+            null,
+            null)]
+  public void CacheShouldMiss(string  connectionId,
+                              string? cn,
+                              string? fingerprint,
+                              string? impersonationId,
+                              string? impersonationUsername)
   {
-    var result = cache_!.Get(new AuthenticationCacheKey(connectionId, cn, fingerprint, impersonationId, impersonationUsername));
+    var result = cache_!.Get(new AuthenticationCacheKey(connectionId,
+                                                        cn,
+                                                        fingerprint,
+                                                        impersonationId,
+                                                        impersonationUsername));
     Assert.IsTrue(result == null || BaseIdentity != result);
   }
 

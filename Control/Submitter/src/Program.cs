@@ -31,7 +31,6 @@ using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Utils;
