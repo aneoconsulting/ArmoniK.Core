@@ -28,7 +28,7 @@ using System.Linq;
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
-public class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
+public sealed class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
 {
   public AuthenticationCacheKey(string  connectionId,
                                 string? cn                  = "",
@@ -79,7 +79,7 @@ public class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
       return true;
     }
 
-    return obj.GetType() == typeof(AuthenticationCacheKey) && Equals((AuthenticationCacheKey)obj);
+    return obj is AuthenticationCacheKey key && Equals(key);
   }
 
   public override int GetHashCode()

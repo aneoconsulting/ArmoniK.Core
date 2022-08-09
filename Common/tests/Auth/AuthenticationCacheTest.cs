@@ -123,4 +123,18 @@ public class AuthenticationCacheTest
     cache_.Clear();
     Assert.IsNull(cache_!.Get(BaseKey));
   }
+
+  [Test]
+  public void CacheKeyEquatableShouldMatch()
+  {
+    Assert.IsTrue(BaseKey.Equals(BaseKey));
+    Assert.IsTrue(BaseKey.Equals(new AuthenticationCacheKey(ConnectionId,
+                                                            CN,
+                                                            Fingerprint)));
+    Assert.IsFalse(BaseKey.Equals(null));
+    Assert.IsFalse(BaseKey!.Equals(new AuthenticationCacheKey(ConnectionId,
+                                                              CN + "0",
+                                                              Fingerprint)));
+    Assert.IsFalse(BaseKey.Equals(new object()));
+  }
 }
