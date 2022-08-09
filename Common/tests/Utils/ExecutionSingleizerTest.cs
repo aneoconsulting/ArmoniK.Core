@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,19 +34,19 @@ namespace ArmoniK.Core.Common.Tests.Utils;
 [TestFixture(TestOf = typeof(ExecutionSingleizer<int>))]
 public class ExecutionSingleizerTest
 {
-  private ExecutionSingleizer<int>? single_;
-  private int                       val_;
-
   [SetUp]
   public void SetUp()
   {
     single_ = new ExecutionSingleizer<int>();
-    val_ = 0;
+    val_    = 0;
   }
 
   [TearDown]
   public void TearDown()
     => single_ = null;
+
+  private ExecutionSingleizer<int>? single_;
+  private int                       val_;
 
   [Test]
   public async Task SingleExecutionShouldSucceed()
@@ -67,7 +66,8 @@ public class ExecutionSingleizerTest
   {
     for (var t = 1; t <= 10; ++t)
     {
-      var i = await single_!.Call(ct => Set(t,
+      var t2 = t;
+      var i = await single_!.Call(ct => Set(t2,
                                             0,
                                             ct))
                             .ConfigureAwait(false);
@@ -100,12 +100,13 @@ public class ExecutionSingleizerTest
   [Test]
   public async Task RepeatedConcurrentExecutionShouldSucceed()
   {
-    for (var t = 1; t <= 10*2; t += 2)
+    for (var t = 1; t <= 10 * 2; t += 2)
     {
-      var ti = single_!.Call(ct => Set(t,
+      var t2 = t;
+      var ti = single_!.Call(ct => Set(t2,
                                        10,
                                        ct));
-      var tj = single_!.Call(ct => Set(t + 1,
+      var tj = single_!.Call(ct => Set(t2 + 1,
                                        10,
                                        ct));
       var i = await ti.ConfigureAwait(false);
@@ -127,15 +128,18 @@ public class ExecutionSingleizerTest
 
     for (var i = 0; i < n; ++i)
     {
-      var J = Tuple.Create(i);
-      tasks[i] = single_!.Call(ct => Set(J.Item1,
+      var i2 = i;
+      tasks[i] = single_!.Call(ct => Set(i2,
                                          0,
                                          ct));
     }
+
     for (var i = 0; i < n; ++i)
     {
-      var j = await tasks[i].ConfigureAwait(false);
-      Assert.GreaterOrEqual(i, j);
+      var j = await tasks[i]
+                .ConfigureAwait(false);
+      Assert.GreaterOrEqual(i,
+                            j);
     }
   }
 

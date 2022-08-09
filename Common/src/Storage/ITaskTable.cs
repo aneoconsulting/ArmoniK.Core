@@ -155,7 +155,6 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Count tasks matching a given filter and group by partition and status
   /// </summary>
-  /// <param name="filter">Task Filter describing the tasks to be counted</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   The number of tasks that matched the filter grouped by partition and status

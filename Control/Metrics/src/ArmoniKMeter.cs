@@ -28,7 +28,6 @@ using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
@@ -44,10 +43,10 @@ public class ArmoniKMeter : Meter, IHostedService
 {
   private const    string                                                        QueuedName = "queued";
   private readonly IDictionary<Tuple<string, string>, ObservableGauge<long>>     gauges_;
+  private readonly ILogger                                                       logger_;
   private readonly ExecutionSingleizer<IDictionary<Tuple<string, string>, long>> measurements_;
   private readonly ITaskTable                                                    taskTable_;
-  private          int                                                           i;
-  private          ILogger                                                       logger_;
+  private          int                                                           i_;
 
   public ArmoniKMeter(ITaskTable            taskTable,
                       ILogger<ArmoniKMeter> logger)
@@ -61,7 +60,7 @@ public class ArmoniKMeter : Meter, IHostedService
     measurements_ = new ExecutionSingleizer<IDictionary<Tuple<string, string>, long>>();
 
     CreateObservableCounter("test",
-                            () => i++);
+                            () => i_++);
     logger.LogDebug("Meter added");
   }
 
@@ -77,12 +76,14 @@ public class ArmoniKMeter : Meter, IHostedService
   /// <summary>
   ///   Fetch all the measurements from the taskTable.
   /// </summary>
-  /// <param name="cancellationToken"></param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Dictionary of the task count for each partition/status.
   /// </returns>
   private async Task<IDictionary<Tuple<string, string>, long>> FetchMeasurementsAsync(CancellationToken cancellationToken)
   {
+    _ = logger_;
+
     // DB request
     var partitionStatusCounts = await taskTable_.CountPartitionTasksAsync(cancellationToken)
                                                 .ConfigureAwait(false);
@@ -135,7 +136,7 @@ public class ArmoniKMeter : Meter, IHostedService
   /// </summary>
   /// <param name="partition">Name of the partition to filter on</param>
   /// <param name="status">Name of the status to filter on</param>
-  /// <param name="cancellationToken"></param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Number of tasks for the given partition and status.
   /// </returns>

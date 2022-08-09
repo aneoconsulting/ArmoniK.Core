@@ -197,8 +197,6 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
   {
-
-
     var res = taskId2TaskData_.Values.AsQueryable()
                               .GroupBy(model => new
                                                 {
