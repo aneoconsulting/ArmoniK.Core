@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -37,14 +37,14 @@ public class QueueMessageModelMapping : IMongoDataModelMapping<QueueMessageModel
   public const string Collection = "Queue";
 
   [BsonId(IdGenerator = typeof(StringCombGuidGenerator))]
-  public string MessageId { get; set; }
+  public string MessageId { get; set; } = "";
 
   [BsonRequired]
   [BsonElement]
-  public string TaskId { get; set; }
+  public string TaskId { get; set; } = "";
 
   [BsonElement]
-  public string OwnerId { get; set; }
+  public string OwnerId { get; set; } = "";
 
   [BsonRequired]
   [BsonElement]

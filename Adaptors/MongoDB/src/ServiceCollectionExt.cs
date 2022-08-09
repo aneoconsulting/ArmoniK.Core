@@ -113,9 +113,10 @@ public static class ServiceCollectionExt
                                                   ConfigurationManager    configuration,
                                                   ILogger                 logger)
   {
-    services.AddOption<Options.MongoDB>(configuration,
-                                        Options.MongoDB.SettingSection,
-                                        out var mongoOptions);
+    Options.MongoDB mongoOptions;
+    services.AddOption(configuration,
+                       Options.MongoDB.SettingSection,
+                       out mongoOptions);
 
     using var _ = logger.BeginNamedScope("MongoDB configuration",
                                          ("host", mongoOptions.Host),
