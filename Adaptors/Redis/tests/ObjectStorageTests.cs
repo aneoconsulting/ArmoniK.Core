@@ -30,7 +30,6 @@ using ArmoniK.Core.Common.Tests;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
 
@@ -43,18 +42,16 @@ public class ObjectStorageTests : ObjectStorageTestBase
 {
   public override void TearDown()
   {
-    redis.Dispose();
+    redis_?.Dispose();
     ObjectStorage = null;
     RunTests      = false;
   }
 
-  private RedisInside.Redis redis;
+  private RedisInside.Redis? redis_;
 
   public override void GetObjectStorageInstance()
   {
-    var logger = NullLogger.Instance;
-
-    redis = new RedisInside.Redis();
+    redis_ = new RedisInside.Redis();
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string> minimalConfig = new()
@@ -76,7 +73,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
                    AbortOnConnectFail   = true,
                    EndPoints =
                    {
-                     redis.Endpoint,
+                     redis_.Endpoint,
                    },
                  };
 
