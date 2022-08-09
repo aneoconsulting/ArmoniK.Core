@@ -374,7 +374,7 @@ public class AuthenticationIntegrationTest
     var headers = new Metadata();
     var defaultCertificate = new MockIdentity.MockCertificate("Default",
                                                               "Default");
-    if ((int) index < -1)
+    if ((int)index < -1)
     {
       return headers;
     }
@@ -382,29 +382,29 @@ public class AuthenticationIntegrationTest
     headers.Add(AuthenticatorOptions.DefaultAuth.CNHeader,
                 index == IdentityIndex.DoesntExist
                   ? "DoesntExistCN"
-                  : Identities[(int) index]
+                  : Identities[(int)index]
                     .Certificates.FirstOrDefault(defaultCertificate)
                     .CN);
     headers.Add(AuthenticatorOptions.DefaultAuth.FingerprintHeader,
                 index == IdentityIndex.DoesntExist
                   ? "DoesntExistFingerprint"
-                  : Identities[(int) index]
+                  : Identities[(int)index]
                     .Certificates.FirstOrDefault(defaultCertificate)
                     .Fingerprint);
     if (impersonationType == ImpersonationType.ImpersonateId)
     {
       headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationIdHeader,
-                  (int) impersonate < 0
+                  (int)impersonate < 0
                     ? "DoesntExist"
-                    : Identities[(int) impersonate]
+                    : Identities[(int)impersonate]
                       .UserId);
     }
     else if (impersonationType == ImpersonationType.ImpersonateUsername)
     {
       headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationUsernameHeader,
-                  (int) impersonate < 0
+                  (int)impersonate < 0
                     ? "DoesntExist"
-                    : Identities[(int) impersonate]
+                    : Identities[(int)impersonate]
                       .UserName);
     }
 
@@ -539,11 +539,11 @@ public class AuthenticationIntegrationTest
     // Generator
     foreach (var parameters in ParametersList)
     {
-      var identityIndex     = (IdentityIndex) parameters[0];
-      var shouldSucceed     = (ResultType) parameters[1];
-      var statusCode        = (StatusCode) parameters[2];
-      var impersonate       = (IdentityIndex) parameters[3];
-      var impersonationType = (ImpersonationType) parameters[4];
+      var identityIndex     = (IdentityIndex)parameters[0];
+      var shouldSucceed     = (ResultType)parameters[1];
+      var statusCode        = (StatusCode)parameters[2];
+      var impersonate       = (IdentityIndex)parameters[3];
+      var impersonationType = (ImpersonationType)parameters[4];
       foreach (var methodAndObject in methodsAndObjects)
       {
         yield return (methodAndObject.Item1, identityIndex, impersonationType, impersonate, GetArgs(methodAndObject.Item2,
@@ -628,12 +628,12 @@ public class AuthenticationIntegrationTest
     switch (authType_)
     {
       case AuthenticationType.NoAuthentication:
-        userIndex     = (int) tuple.userIndex;
+        userIndex     = (int)tuple.userIndex;
         shouldSucceed = ResultType.AlwaysTrue;
         errorCode     = StatusCode.OK;
         break;
       case AuthenticationType.NoAuthorization:
-        userIndex = (int) tuple.userIndex;
+        userIndex = (int)tuple.userIndex;
         shouldSucceed = tuple.shouldSucceed == ResultType.AlwaysTrue
                           ? ResultType.AlwaysTrue
                           : tuple.errorCode == StatusCode.PermissionDenied || tuple.shouldSucceed == ResultType.AuthorizedForSome
@@ -644,7 +644,7 @@ public class AuthenticationIntegrationTest
                       : StatusCode.OK;
         break;
       case AuthenticationType.NoImpersonation:
-        userIndex = (int) tuple.userIndex;
+        userIndex = (int)tuple.userIndex;
         if (tuple.impersonationType == ImpersonationType.NoImpersonate)
         {
           shouldSucceed = tuple.shouldSucceed;
@@ -679,7 +679,7 @@ public class AuthenticationIntegrationTest
 
         break;
       case AuthenticationType.NoImpersonationNoAuthorization:
-        userIndex = (int) tuple.userIndex;
+        userIndex = (int)tuple.userIndex;
         if (tuple.impersonationType == ImpersonationType.NoImpersonate)
         {
           shouldSucceed = tuple.shouldSucceed == ResultType.AlwaysTrue
@@ -705,7 +705,7 @@ public class AuthenticationIntegrationTest
         break;
       default:
       case AuthenticationType.DefaultAuth:
-        userIndex     = (int) tuple.userIndex;
+        userIndex     = (int)tuple.userIndex;
         shouldSucceed = tuple.shouldSucceed;
         errorCode     = tuple.errorCode;
         break;
@@ -752,7 +752,7 @@ public class AuthenticationIntegrationTest
       Assert.IsNotNull(exception!.InnerException);
       Assert.IsInstanceOf<RpcException>(exception.InnerException);
       Assert.AreEqual(errorCode,
-                      ((RpcException) exception.InnerException!).StatusCode);
+                      ((RpcException)exception.InnerException!).StatusCode);
     }
 
     await helper_.DeleteChannel()
@@ -806,7 +806,7 @@ public class AuthenticationIntegrationTest
       Assert.IsNotNull(exception);
       Assert.IsInstanceOf<RpcException>(exception);
       Assert.AreEqual(errorCode,
-                      ((RpcException) exception!).StatusCode);
+                      ((RpcException)exception!).StatusCode);
     }
 
     await helper_.DeleteChannel()
@@ -852,7 +852,7 @@ public class AuthenticationIntegrationTest
     {
       Assert.DoesNotThrowAsync(async () =>
                                {
-                                 var stream = client.CreateLargeTasks((Metadata) tuple.args[1]);
+                                 var stream = client.CreateLargeTasks((Metadata)tuple.args[1]);
                                  await CreateLargeTask(stream)
                                    .ConfigureAwait(false);
                                  await stream.RequestStream.CompleteAsync()
@@ -863,7 +863,7 @@ public class AuthenticationIntegrationTest
     {
       var exception = Assert.CatchAsync(async () =>
                                         {
-                                          var stream = client.CreateLargeTasks((Metadata) tuple.args[1]);
+                                          var stream = client.CreateLargeTasks((Metadata)tuple.args[1]);
                                           await CreateLargeTask(stream)
                                             .ConfigureAwait(false);
                                           await stream.RequestStream.CompleteAsync()
@@ -872,7 +872,7 @@ public class AuthenticationIntegrationTest
       Assert.IsNotNull(exception);
       Assert.IsInstanceOf<RpcException>(exception);
       Assert.AreEqual(errorCode,
-                      ((RpcException) exception!).StatusCode);
+                      ((RpcException)exception!).StatusCode);
     }
 
     await helper_.DeleteChannel()
@@ -895,7 +895,7 @@ public class AuthenticationIntegrationTest
                                                                                                     .Permissions.Any(p => p.Name == tuple.method)))
     {
       Assert.DoesNotThrowAsync(() => client.TryGetResultStream(ResultRequest,
-                                                               (Metadata) tuple.args[1])
+                                                               (Metadata)tuple.args[1])
                                            .ResponseStream.ReadAllAsync()
                                            .ToListAsync()
                                            .AsTask());
@@ -903,14 +903,14 @@ public class AuthenticationIntegrationTest
     else
     {
       var exception = Assert.CatchAsync(() => client.TryGetResultStream(ResultRequest,
-                                                                        (Metadata) tuple.args[1])
+                                                                        (Metadata)tuple.args[1])
                                                     .ResponseStream.ReadAllAsync()
                                                     .ToListAsync()
                                                     .AsTask());
       Assert.IsNotNull(exception);
       Assert.IsInstanceOf<RpcException>(exception);
       Assert.AreEqual(errorCode,
-                      ((RpcException) exception!).StatusCode);
+                      ((RpcException)exception!).StatusCode);
     }
 
     await helper_.DeleteChannel()

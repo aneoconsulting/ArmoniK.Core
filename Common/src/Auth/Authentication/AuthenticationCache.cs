@@ -79,7 +79,7 @@ public class AuthenticationCacheKey : IEquatable<AuthenticationCacheKey>
       return true;
     }
 
-    return obj.GetType() == typeof(AuthenticationCacheKey) && Equals((AuthenticationCacheKey) obj);
+    return obj.GetType() == typeof(AuthenticationCacheKey) && Equals((AuthenticationCacheKey)obj);
   }
 
   public override int GetHashCode()
