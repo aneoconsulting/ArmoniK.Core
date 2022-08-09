@@ -299,8 +299,7 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(TaskFilter        filter,
-                                                                                    CancellationToken cancellationToken = default)
+  public async Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CountPartitionTasksAsync)}");
 
@@ -309,7 +308,6 @@ public class TaskTable : ITaskTable
 
 
     var res = await taskCollection.AsQueryable(sessionHandle)
-                                  .FilterQuery(filter)
                                   .GroupBy(model => new
                                                     {
                                                       model.Options.PartitionId,

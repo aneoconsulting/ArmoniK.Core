@@ -84,12 +84,7 @@ public class ArmoniKMeter : Meter, IHostedService
   private async Task<IDictionary<Tuple<string, string>, long>> FetchMeasurementsAsync(CancellationToken cancellationToken)
   {
     // DB request
-    var partitionStatusCounts = await taskTable_.CountPartitionTasksAsync(new TaskFilter
-                                                                          {
-                                                                            Task    = new TaskFilter.Types.IdsRequest(),
-                                                                            Session = new TaskFilter.Types.IdsRequest(),
-                                                                          },
-                                                                          cancellationToken)
+    var partitionStatusCounts = await taskTable_.CountPartitionTasksAsync(cancellationToken)
                                                 .ConfigureAwait(false);
 
     // Populate dictionary from request

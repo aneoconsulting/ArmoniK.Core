@@ -160,8 +160,7 @@ public interface ITaskTable : IInitializable
   /// <returns>
   ///   The number of tasks that matched the filter grouped by partition and status
   /// </returns>
-  Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(TaskFilter        filter,
-                                                                       CancellationToken cancellationToken = default);
+  Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Count tasks matching a given status

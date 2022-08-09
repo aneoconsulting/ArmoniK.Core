@@ -697,13 +697,9 @@ public class SubmitterTests
                                     CancellationToken.None)
       .ConfigureAwait(false);
 
-    var result = (await taskTable_.CountPartitionTasksAsync(new TaskFilter
-                                                            {
-                                                              Task    = new TaskFilter.Types.IdsRequest(),
-                                                              Session = new TaskFilter.Types.IdsRequest(),
-                                                            },
-                                                            CancellationToken.None)
+    var result = (await taskTable_.CountPartitionTasksAsync(CancellationToken.None)
                                   .ConfigureAwait(false)).OrderBy(r => r.Status)
+                                                         .ThenBy(r => r.PartitionId)
                                                          .ToIList();
 
     Assert.AreEqual(3,

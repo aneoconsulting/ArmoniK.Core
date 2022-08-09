@@ -158,7 +158,10 @@ public class TaskTableTestBase
                                            },
                                            Array.Empty<string>(),
                                            TaskStatus.Submitted,
-                                           options,
+                                           options with
+                                           {
+                                             PartitionId = "part2",
+                                           },
                                            new Output(false,
                                                       "")),
                               new TaskData("SessionId",
@@ -502,29 +505,33 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var result = (await TaskTable.CountPartitionTasksAsync(new TaskFilter
-                                                             {
-                                                               Task    = new TaskFilter.Types.IdsRequest(),
-                                                               Session = new TaskFilter.Types.IdsRequest(),
-                                                             },
-                                                             CancellationToken.None)
+      var result = (await TaskTable.CountPartitionTasksAsync(CancellationToken.None)
                                    .ConfigureAwait(false)).OrderBy(r => r.Status)
+                                                          .ThenBy(r => r.PartitionId)
                                                           .ToIList();
 
-      Assert.AreEqual(3,
+      Assert.AreEqual(5,
                       result.Count);
       Assert.AreEqual(new PartitionTaskStatusCount("part1",
                                                    TaskStatus.Creating,
                                                    1),
                       result[0]);
-      Assert.AreEqual(new PartitionTaskStatusCount("part1",
+      Assert.AreEqual(new PartitionTaskStatusCount("part2",
                                                    TaskStatus.Submitted,
                                                    1),
                       result[1]);
-      Assert.AreEqual(new PartitionTaskStatusCount("part2",
+      Assert.AreEqual(new PartitionTaskStatusCount("part1",
                                                    TaskStatus.Completed,
                                                    1),
                       result[2]);
+      Assert.AreEqual(new PartitionTaskStatusCount("part1",
+                                                   TaskStatus.Failed,
+                                                   1),
+                      result[3]);
+      Assert.AreEqual(new PartitionTaskStatusCount("part1",
+                                                   TaskStatus.Processing,
+                                                   2),
+                      result[4]);
     }
   }
 
