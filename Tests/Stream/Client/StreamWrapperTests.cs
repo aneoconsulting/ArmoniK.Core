@@ -42,8 +42,6 @@ using Microsoft.Extensions.Configuration;
 
 using NUnit.Framework;
 
-using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-
 namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
 [TestFixture]
@@ -183,7 +181,6 @@ internal class StreamWrapperTests
     return taskOutput.TypeCase;
   }
 
-  // TODO: should it be TaskStatus.Failed ?
   [Test]
   [Repeat(2)]
   public async Task TaskFailed()
@@ -231,10 +228,10 @@ internal class StreamWrapperTests
 
                                            var taskOutput = client_.TryGetTaskOutput(resultRequest);
                                            Console.WriteLine(request.Id + " - " + taskOutput);
-                                           return taskOutput.Status;
+                                           return taskOutput.TypeCase;
                                          });
 
-    Assert.IsTrue(taskOutput.All(status => status == TaskStatus.Error));
+    Assert.IsTrue(taskOutput.All(status => status == Output.TypeOneofCase.Error));
   }
 
 
@@ -296,20 +293,6 @@ internal class StreamWrapperTests
                                                     });
 
     Assert.IsTrue(resultAvailability.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
-
-    var resultTypeOneofCases = taskRequestList.Select(request =>
-                                                      {
-                                                        var resultRequest = new ResultRequest
-                                                                            {
-                                                                              Key     = request.Id,
-                                                                              Session = sessionId,
-                                                                            };
-                                                        var taskOutput = client_.TryGetTaskOutput(resultRequest);
-                                                        Console.WriteLine(request.Id + " - " + taskOutput);
-                                                        return taskOutput.TypeCase;
-                                                      });
-
-    Assert.IsTrue(resultTypeOneofCases.All(t => t == Output.TypeOneofCase.Ok));
 
     var resultList = taskRequestList.Select(async request =>
                                             {
@@ -406,20 +389,6 @@ internal class StreamWrapperTests
                                                      });
 
     Assert.IsTrue(resultAvailability2.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
-
-    var resultTypeOneofCases = taskRequestList.Select(request =>
-                                                      {
-                                                        var resultRequest = new ResultRequest
-                                                                            {
-                                                                              Key     = request.Id,
-                                                                              Session = sessionId,
-                                                                            };
-                                                        var taskOutput = client_.TryGetTaskOutput(resultRequest);
-                                                        Console.WriteLine(request.Id + " - " + taskOutput);
-                                                        return taskOutput.TypeCase;
-                                                      });
-
-    Assert.IsTrue(resultTypeOneofCases.All(t => t == Output.TypeOneofCase.Ok));
 
     var results = taskRequestList.Select(async request =>
                                          {
@@ -530,20 +499,6 @@ internal class StreamWrapperTests
 
     Assert.IsTrue(resultAvailability.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
 
-    var resultTypeOneofCases = taskRequestList.Select(request =>
-                                                      {
-                                                        var resultRequest = new ResultRequest
-                                                                            {
-                                                                              Key     = request.Id,
-                                                                              Session = sessionId,
-                                                                            };
-                                                        var taskOutput = client_.TryGetTaskOutput(resultRequest);
-                                                        Console.WriteLine(request.Id + " - " + taskOutput);
-                                                        return taskOutput.TypeCase;
-                                                      });
-
-    Assert.IsTrue(resultTypeOneofCases.All(t => t == Output.TypeOneofCase.Ok));
-
     var resultList = taskRequestList.Select(async request =>
                                             {
                                               var resultRequest = new ResultRequest
@@ -598,12 +553,14 @@ internal class StreamWrapperTests
                         };
     var availabilityReply = client_.WaitForAvailability(resultRequest);
 
-    Assert.IsTrue(availabilityReply.TypeCase == AvailabilityReply.TypeOneofCase.Ok);
+    Assert.AreEqual(AvailabilityReply.TypeOneofCase.Error,
+                    availabilityReply.TypeCase);
 
     var taskOutput = client_.TryGetTaskOutput(resultRequest);
     Console.WriteLine(taskId + " - " + taskOutput);
 
-    Assert.IsTrue(taskOutput.TypeCase == Output.TypeOneofCase.Error);
+    Assert.AreEqual(Output.TypeOneofCase.Error,
+                    taskOutput.TypeCase);
   }
 
   [Test]
@@ -677,20 +634,6 @@ internal class StreamWrapperTests
 
     if (resultAvailability.Any(c => c != AvailabilityReply.TypeOneofCase.Ok))
       return -1;
-
-    var resultTypeOneofCases = taskRequestList.Select(request =>
-    {
-      var resultRequest = new ResultRequest
-      {
-        Key = request.Id,
-        Session = sessionId,
-      };
-      var taskOutput = client_.TryGetTaskOutput(resultRequest);
-      return taskOutput.TypeCase;
-    });
-
-    if (resultTypeOneofCases.Any(c => c != Output.TypeOneofCase.Ok))
-      return -2;
 
     var resultList = taskRequestList.Select(async request =>
     {

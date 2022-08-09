@@ -33,6 +33,7 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Pollster;
+using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 
@@ -112,8 +113,8 @@ public class TestPollingAgentProvider : IDisposable
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddSingleton<IQueueStorage, QueueStorage>()
            .AddSingleton<Common.Pollster.Pollster>()
-           .AddSingleton<PreconditionChecker>()
            .AddSingleton<DataPrefetcher>()
+           .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
            .AddSingleton(workerStreamHandler);
 
     var computePlanComponent = builder.Configuration.GetSection(ComputePlan.SettingSection);

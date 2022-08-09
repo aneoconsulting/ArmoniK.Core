@@ -215,8 +215,8 @@ public class RequestProcessorTest
                                                           1),
                                           DateTime.Now,
                                           DateTime.Now + TimeSpan.FromSeconds(1),
-                                          DateTime.MinValue,
-                                          DateTime.MinValue,
+                                          null,
+                                          null,
                                           DateTime.Now,
                                           new Output(true,
                                                      "")),
@@ -243,9 +243,9 @@ public class RequestProcessorTest
                                                           5,
                                                           1),
                                           DateTime.Now,
-                                          DateTime.MinValue,
-                                          DateTime.MinValue,
-                                          DateTime.MinValue,
+                                          null,
+                                          null,
+                                          null,
                                           DateTime.Now,
                                           new Output(false,
                                                      "")),
@@ -274,15 +274,14 @@ public class RequestProcessorTest
                         })
                 .Wait();
 
-    sessionTable_.CreateSessionDataAsync(SessionId,
-                                         Task1,
-                                         new Api.gRPC.V1.TaskOptions
-                                         {
-                                           MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                           MaxRetries  = 2,
-                                           Priority    = 1,
-                                         },
-                                         CancellationToken.None)
+    sessionTable_.SetSessionDataAsync(SessionId,
+                                     new Api.gRPC.V1.TaskOptions
+                                     {
+                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                       MaxRetries  = 2,
+                                       Priority    = 1,
+                                     },
+                                     CancellationToken.None)
                  .Wait();
 
     var queueStorage = new Mock<IQueueStorage>();
@@ -298,7 +297,6 @@ public class RequestProcessorTest
                                              mockObjectStorageFactory_.Object,
                                              loggerFactory_.CreateLogger<Common.Pollster.Pollster>(),
                                              submitter,
-                                             resultTable_,
                                              activitySource_);
   }
 
@@ -318,8 +316,7 @@ public class RequestProcessorTest
                                              {
                                                Output = new Api.gRPC.V1.Output
                                                         {
-                                                          Ok     = new Empty(),
-                                                          Status = TaskStatus.Completed,
+                                                          Ok = new Empty(),
                                                         },
                                              },
                                            },
@@ -386,8 +383,7 @@ public class RequestProcessorTest
                                              {
                                                Output = new Api.gRPC.V1.Output
                                                         {
-                                                          Ok     = new Empty(),
-                                                          Status = TaskStatus.Completed,
+                                                          Ok = new Empty(),
                                                         },
                                              },
                                            },
@@ -479,8 +475,7 @@ public class RequestProcessorTest
                                               {
                                                 Output = new Api.gRPC.V1.Output
                                                          {
-                                                           Ok     = new Empty(),
-                                                           Status = TaskStatus.Completed,
+                                                           Ok = new Empty(),
                                                          },
                                               },
                                             },
@@ -539,10 +534,14 @@ public class RequestProcessorTest
                                        return cap;
                                      });
 
-    var processResult = await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                                      requests,
-                                                                      CancellationToken.None)
+    var mockMessageHandler = new Mock<IQueueMessageHandler>();
+
+    var processResult = await requestProcessor_.ProcessAsync(mockMessageHandler.Object,
+                                                             taskData,
+                                                             requests,
+                                                             tokenSource.Token)
                                                .ConfigureAwait(false);
+
     await Task.WhenAll(processResult)
               .ConfigureAwait(false);
 
@@ -568,8 +567,7 @@ public class RequestProcessorTest
                                                  {
                                                    Output = new Api.gRPC.V1.Output
                                                             {
-                                                              Ok     = new Empty(),
-                                                              Status = TaskStatus.Completed,
+                                                              Ok = new Empty(),
                                                             },
                                                  },
                                                },
@@ -602,8 +600,7 @@ public class RequestProcessorTest
                                                {
                                                  Output = new Api.gRPC.V1.Output
                                                           {
-                                                            Ok     = new Empty(),
-                                                            Status = TaskStatus.Completed,
+                                                            Ok = new Empty(),
                                                           },
                                                },
                                              },
@@ -636,8 +633,7 @@ public class RequestProcessorTest
                                                {
                                                  Output = new Api.gRPC.V1.Output
                                                           {
-                                                            Ok     = new Empty(),
-                                                            Status = TaskStatus.Completed,
+                                                            Ok = new Empty(),
                                                           },
                                                },
                                              },
@@ -695,9 +691,13 @@ public class RequestProcessorTest
                                           .Wait(tokenSource.Token);
                                        return cap;
                                      });
-    await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                  requests,
-                                                  tokenSource.Token)
+
+    var mockMessageHandler = new Mock<IQueueMessageHandler>();
+
+    await requestProcessor_.ProcessAsync(mockMessageHandler.Object,
+                                         taskData,
+                                         requests,
+                                         tokenSource.Token)
                            .ConfigureAwait(false);
 
     Assert.AreEqual(request,
@@ -727,9 +727,11 @@ public class RequestProcessorTest
 
     Assert.ThrowsAsync<ArmoniKException>(async () =>
                                          {
-                                           await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                                                         requests,
-                                                                                         CancellationToken.None)
+                                           var mockMessageHandler = new Mock<IQueueMessageHandler>();
+                                           await requestProcessor_.ProcessAsync(mockMessageHandler.Object,
+                                                                                taskData,
+                                                                                requests,
+                                                                                CancellationToken.None)
                                                                   .ConfigureAwait(false);
                                          });
   }
@@ -772,9 +774,11 @@ public class RequestProcessorTest
 
     Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
                                                     {
-                                                      await requestProcessor_.ProcessInternalsAsync(taskData,
-                                                                                                    requests,
-                                                                                                    CancellationToken.None)
+                                                      var mockMessageHandler = new Mock<IQueueMessageHandler>();
+                                                      await requestProcessor_.ProcessAsync(mockMessageHandler.Object,
+                                                                                           taskData,
+                                                                                           requests,
+                                                                                           CancellationToken.None)
                                                                              .ConfigureAwait(false);
                                                     });
   }

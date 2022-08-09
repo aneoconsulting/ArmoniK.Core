@@ -22,40 +22,41 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Common.Storage;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
 
-public record Output(bool   Success,
-                     string Error)
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+
+namespace ArmoniK.Core.Common.Utils;
+
+public class LoggerInit
 {
-  public static implicit operator Api.gRPC.V1.Output(Output output)
-  {
-    if (output.Success)
-    {
-      return new Api.gRPC.V1.Output
-             {
-               Ok = new Empty(),
-             };
-    }
+  private readonly Logger   loggerConfiguration_;
+  private          ILogger? logger_;
 
-    return new Api.gRPC.V1.Output
-           {
-             Error = new Api.gRPC.V1.Output.Types.Error
-                     {
-                       Details = output.Error,
-                     },
-           };
+  public LoggerInit(IConfiguration configuration)
+  {
+    loggerConfiguration_ = new LoggerConfiguration().ReadFrom.Configuration(configuration)
+                                                    .WriteTo.Console(new CompactJsonFormatter())
+                                                    .Enrich.FromLogContext()
+                                                    .CreateLogger();
+    logger_ = null;
   }
 
-  public static implicit operator Output(Api.gRPC.V1.Output output)
+  public void Configure(ILoggingBuilder loggingBuilder)
+    => loggingBuilder.AddSerilog(loggerConfiguration_);
+
+  public Logger GetSerilogConf()
+    => loggerConfiguration_;
+
+  public ILogger GetLogger()
   {
-    return output.TypeCase switch
-           {
-             Api.gRPC.V1.Output.TypeOneofCase.Ok => new Output(true,
-                                                               ""),
-             _ => new Output(false,
-                             output.Error.Details),
-           };
+    return logger_ ??= LoggerFactory.Create(Configure)
+                                    .CreateLogger("root");
   }
 }

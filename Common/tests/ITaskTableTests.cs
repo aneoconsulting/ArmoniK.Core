@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using NUnit.Framework;
 
@@ -97,9 +98,9 @@ public class TaskTableTestBase
                                            "",
                                            default,
                                            DateTime.Now,
-                                           DateTime.MinValue,
-                                           DateTime.MinValue,
-                                           DateTime.MinValue,
+                                           null,
+                                           null,
+                                           null,
                                            DateTime.Now,
                                            new Output(false,
                                                       "")),
@@ -125,7 +126,7 @@ public class TaskTableTestBase
                                            DateTime.Now,
                                            DateTime.Now + TimeSpan.FromSeconds(1),
                                            DateTime.Now + TimeSpan.FromSeconds(10),
-                                           DateTime.MinValue,
+                                           null,
                                            DateTime.Now,
                                            new Output(false,
                                                       "")),
@@ -151,7 +152,7 @@ public class TaskTableTestBase
                                            DateTime.Now,
                                            DateTime.Now + TimeSpan.FromSeconds(1),
                                            DateTime.Now + TimeSpan.FromSeconds(10),
-                                           DateTime.MinValue,
+                                           null,
                                            DateTime.Now,
                                            new Output(false,
                                                       "")),
@@ -176,8 +177,8 @@ public class TaskTableTestBase
                                            default,
                                            DateTime.Now,
                                            DateTime.Now + TimeSpan.FromSeconds(1),
-                                           DateTime.MinValue,
-                                           DateTime.MinValue,
+                                           null,
+                                           null,
                                            DateTime.Now,
                                            new Output(false,
                                                       "")),
@@ -383,6 +384,58 @@ public class TaskTableTestBase
     }
   }
 
+  [Test]
+  public async Task CancelTasksShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var testFilter = new TaskFilter
+                       {
+                         Task = new TaskFilter.Types.IdsRequest
+                                {
+                                  Ids =
+                                  {
+                                    "TaskProcessingId",
+                                    "TaskCreatingId",
+                                  },
+                                },
+                       };
+      await TaskTable.CancelTasks(testFilter,
+                                  CancellationToken.None)
+                     .ConfigureAwait(false);
+      var resCreating = await TaskTable.GetTaskStatus(new[]
+                                                      {
+                                                        "TaskCreatingId",
+                                                      },
+                                                      CancellationToken.None)
+                                       .ConfigureAwait(false);
+      var resProcessing = await TaskTable.GetTaskStatus(new[]
+                                                        {
+                                                          "TaskProcessingId",
+                                                        },
+                                                        CancellationToken.None)
+                                         .ConfigureAwait(false);
+
+      Assert.AreEqual(TaskStatus.Canceling,
+                      resCreating.Single()
+                                 .Status);
+      Assert.AreEqual(TaskStatus.Canceling,
+                      resProcessing.Single()
+                                   .Status);
+
+      var resAnotherProcessing = await TaskTable.GetTaskStatus(new[]
+                                                               {
+                                                                 "TaskAnotherProcessingId",
+                                                               },
+                                                               CancellationToken.None)
+                                                .ConfigureAwait(false);
+
+      Assert.AreNotEqual(TaskStatus.Canceling,
+                         resAnotherProcessing.Single()
+                                             .Status);
+    }
+  }
+
   [Test(Description = "Forbidden update: A given Task its on a final status")]
   public void UpdateAllTaskStatusAsyncShouldFail()
   {
@@ -558,8 +611,37 @@ public class TaskTableTestBase
                                                     CancellationToken.None)
                                      .ConfigureAwait(false);
 
+      Assert.AreEqual(TaskStatus.Error,
+                      resStatus.Single()
+                               .Status);
+
+      var output = await TaskTable.GetTaskOutput("TaskProcessingId",
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual("Testing SetTaskError",
+                      output.Error);
+    }
+  }
+
+  [Test]
+  public async Task SetTaskCanceledAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var result = TaskTable.SetTaskCanceledAsync("TaskProcessingId",
+                                                 CancellationToken.None);
+      await result.ConfigureAwait(false);
+
+      var resStatus = await TaskTable.GetTaskStatus(new[]
+                                                    {
+                                                      "TaskProcessingId",
+                                                    },
+                                                    CancellationToken.None)
+                                     .ConfigureAwait(false);
+
       Assert.IsTrue(result.IsCompletedSuccessfully && resStatus.Single()
-                                                               .Status == TaskStatus.Completed);
+                                                  .Status == TaskStatus.Canceled);
     }
   }
 
@@ -662,12 +744,46 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
+      var hostname = LocalIPv4.GetLocalIPv4Ethernet();
 
       var result = await TaskTable.AcquireTask("TaskSubmittedId",
+                                               hostname,
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      Assert.IsTrue(result);
+      Assert.AreEqual("TaskSubmittedId",
+                      result!.TaskId);
+      Assert.AreEqual(hostname,
+                      result!.OwnerPodId);
+    }
+  }
+
+  [Test]
+  public async Task AcquireAcquiredTaskShouldReturnSame()
+  {
+    if (RunTests)
+    {
+      var hostname = LocalIPv4.GetLocalIPv4Ethernet();
+
+      var result1 = await TaskTable.AcquireTask("TaskSubmittedId",
+                                               hostname,
+                                               CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.AreEqual("TaskSubmittedId",
+                      result1!.TaskId);
+      Assert.AreEqual(hostname,
+                      result1!.OwnerPodId);
+
+      var result2 = await TaskTable.AcquireTask("TaskSubmittedId",
+                                           hostname,
+                                           CancellationToken.None)
+                              .ConfigureAwait(false);
+      Assert.AreEqual(result1.Status,
+                      result2.Status);
+
+      Assert.AreEqual(result1.OwnerPodId,
+                      result2.OwnerPodId);
     }
   }
 
@@ -678,10 +794,12 @@ public class TaskTableTestBase
     {
 
       var result = await TaskTable.AcquireTask("TaskFailedId",
+                                               LocalIPv4.GetLocalIPv4Ethernet(),
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      Assert.IsFalse(result);
+      Assert.AreNotEqual(LocalIPv4.GetLocalIPv4Ethernet(),
+                         result.OwnerPodId);
     }
   }
 

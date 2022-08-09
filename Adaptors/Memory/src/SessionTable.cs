@@ -58,10 +58,9 @@ public class SessionTable : ISessionTable
     => Task.CompletedTask;
 
   /// <inheritdoc />
-  public Task CreateSessionDataAsync(string            rootSessionId,
-                                     string            parentTaskId,
-                                     Common.Storage.TaskOptions       defaultOptions,
-                                     CancellationToken cancellationToken = default)
+  public Task SetSessionDataAsync(string            rootSessionId,
+                                  Common.Storage.TaskOptions       defaultOptions,
+                                  CancellationToken cancellationToken = default)
   {
     storage_.TryAdd(rootSessionId,
                     new SessionData(rootSessionId,

@@ -22,24 +22,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading;
-using System.Threading.Tasks;
+using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public static class SessionTableExtensions
-{
-  public static async Task CreateSessionAsync(this ISessionTable      sessionTable,
-                                              string                  id,
-                                              Api.gRPC.V1.TaskOptions defaultOptions,
-                                              CancellationToken       cancellationToken = default)
-  {
-    using var _ = sessionTable.Logger.LogFunction(id);
-
-    await sessionTable.CreateSessionDataAsync(id,
-                                              id,
-                                              defaultOptions,
-                                              cancellationToken)
-                      .ConfigureAwait(false);
-  }
-}
+public record ResultStatusCount(ResultStatus Status,
+                                int          Count);

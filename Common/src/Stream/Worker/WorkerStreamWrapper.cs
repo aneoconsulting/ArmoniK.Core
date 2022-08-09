@@ -62,6 +62,9 @@ public class WorkerStreamWrapper : Api.gRPC.V1.Worker.WorkerBase
                                                context.CancellationToken)
                                        .ConfigureAwait(false);
 
+    using var _ = logger_.BeginNamedScope("Execute task",
+                                          ("taskId", taskHandler.TaskId),
+                                          ("sessionId", taskHandler.SessionId));
     logger_.LogDebug("Execute Process");
     var output = await Process(taskHandler)
                    .ConfigureAwait(false);

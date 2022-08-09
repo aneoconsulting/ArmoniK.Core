@@ -22,23 +22,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Adapters.Amqp.Options;
+namespace ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 
-[PublicAPI]
-public class Amqp
+/// <summary>
+/// Checker used to determine if tasks are running on other pods
+/// </summary>
+public interface ITaskProcessingChecker
 {
-  public const string SettingSection = nameof(Amqp);
-
-  public string Host              { get; set; }
-  public string CredentialsPath   { get; set; }
-  public string User              { get; set; }
-  public string Password          { get; set; }
-  public string Scheme            { get; set; }
-  public string CaPath            { get; set; }
-  public int    Port              { get; set; }
-  public int    MaxPriority       { get; set; }
-  public bool   AllowHostMismatch { get; set; }
-  public int    LinkCredit        { get; set; }
+  /// <summary>
+  /// Check if the task is running on the given pod
+  /// </summary>
+  /// <param name="taskId">id of the task to check</param>
+  /// <param name="ownerPodId">Id of the pod which should execute the task</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  /// A bool representing whether or not the task is running on the pod
+  /// </returns>
+  Task<bool> Check(string            taskId,
+                   string            ownerPodId,
+                   CancellationToken cancellationToken);
 }

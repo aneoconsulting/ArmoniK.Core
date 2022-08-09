@@ -84,39 +84,6 @@ public class Submitter : ISubmitter
     => taskTable_.StartTask(taskId, cancellationToken);
 
   /// <inheritdoc />
-  public async Task<string?> ResubmitTask(TaskData          taskData,
-                                          CancellationToken cancellationToken = default)
-  {
-    logger_.LogWarning("Resubmit {Task}",
-                       taskData.TaskId);
-    if (taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
-    {
-      var newTaskId = await taskTable_.RetryTask(taskData,
-                                                 cancellationToken)
-                                      .ConfigureAwait(false);
-      await FinalizeTaskCreation(new List<Storage.TaskRequest>
-                                 {
-                                   new(taskData.TaskId,
-                                       taskData.ExpectedOutputIds,
-                                       taskData.DataDependencies),
-                                 },
-                                 taskData.Options.Priority,
-                                 taskData.SessionId,
-                                 taskData.TaskId,
-                                 cancellationToken)
-        .ConfigureAwait(false);
-
-      return newTaskId;
-    }
-
-    await UpdateTaskStatusAsync(taskData.TaskId,
-                                TaskStatus.Failed,
-                                cancellationToken)
-      .ConfigureAwait(false);
-    return null;
-  }
-
-  /// <inheritdoc />
   public Task<Configuration> GetServiceConfiguration(Empty             request,
                                                      CancellationToken cancellationToken)
     => Task.FromResult(new Configuration
@@ -302,9 +269,9 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
-      await sessionTable_.CreateSessionAsync(sessionId,
-                                             defaultTaskOptions,
-                                             cancellationToken)
+      await sessionTable_.SetSessionDataAsync(sessionId,
+                                              defaultTaskOptions,
+                                              cancellationToken)
                          .ConfigureAwait(false);
       return new CreateSessionReply
              {
@@ -477,6 +444,7 @@ public class Submitter : ISubmitter
             break;
           case TaskStatus.Error:
             notCompleted += count;
+            error        =  true;
             break;
           case TaskStatus.Unspecified:
             notCompleted += count;
@@ -528,7 +496,8 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task CompleteTaskAsync(string            id,
+  public async Task CompleteTaskAsync(TaskData          taskData,
+                                      bool              resubmit,
                                       Output            output,
                                       CancellationToken cancellationToken = default)
   {
@@ -538,16 +507,52 @@ public class Submitter : ISubmitter
 
     if (cOutput.Success)
     {
-      await taskTable_.SetTaskSuccessAsync(id,
+      await taskTable_.SetTaskSuccessAsync(taskData.TaskId,
                                            cancellationToken)
                       .ConfigureAwait(false);
     }
     else
     {
-      await taskTable_.SetTaskErrorAsync(id,
-                                         cOutput.Error,
-                                         cancellationToken)
-                      .ConfigureAwait(false);
+      // not done means that another pod put this task in error so we do not need to do it a second time
+      // so nothing to do
+      if (!await taskTable_.SetTaskErrorAsync(taskData.TaskId,
+                                              cOutput.Error,
+                                              cancellationToken)
+                           .ConfigureAwait(false))
+      {
+        return;
+      }
+
+      // TODO FIXME: nothing will resubmit the task if there is a crash there
+      if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
+      {
+
+        logger_.LogWarning("Resubmit {task}",
+                           taskData.TaskId);
+
+        var newTaskId = await taskTable_.RetryTask(taskData,
+                                                   cancellationToken)
+                                        .ConfigureAwait(false);
+
+        await FinalizeTaskCreation(new List<Storage.TaskRequest>
+                                   {
+                                     new(newTaskId,
+                                         taskData.ExpectedOutputIds,
+                                         taskData.DataDependencies),
+                                   },
+                                   taskData.Options.Priority,
+                                   taskData.SessionId,
+                                   taskData.TaskId,
+                                   cancellationToken)
+          .ConfigureAwait(false);
+      }
+      else
+      {
+        await resultTable_.AbortTaskResults(taskData.SessionId,
+                                            taskData.TaskId,
+                                            cancellationToken)
+                          .ConfigureAwait(false);
+      }
     }
   }
 
@@ -568,82 +573,61 @@ public class Submitter : ISubmitter
   {
     using var activity = activitySource_.StartActivity($"{nameof(WaitForAvailabilityAsync)}");
 
-    var result = await resultTable_.GetResult(request.Session,
-                                              request.Key,
-                                              contextCancellationToken)
-                                   .ConfigureAwait(false);
-
-    logger_.LogDebug("OwnerTaskId {OwnerTaskId}",
-                     result.OwnerTaskId);
-
-    var continueWaiting = true;
-
-    while (continueWaiting)
+    if (logger_.IsEnabled(LogLevel.Trace))
     {
-      var ownerId = result.OwnerTaskId;
-      var completion = await WaitForCompletion(new WaitRequest
-                                               {
-                                                 Filter = new TaskFilter
-                                                          {
-                                                            Task = new TaskFilter.Types.IdsRequest
-                                                                   {
-                                                                     Ids =
-                                                                     {
-                                                                       ownerId,
-                                                                     },
-                                                                   },
-                                                          },
-                                                 StopOnFirstTaskCancellation = true,
-                                                 StopOnFirstTaskError        = true,
-                                               },
-                                               contextCancellationToken)
-                         .ConfigureAwait(false);
-      if (completion.Values.Any(count => count.Status is TaskStatus.Failed or TaskStatus.Error))
-      {
-        return new AvailabilityReply
-               {
-                 Error = new TaskError
-                         {
-                           TaskId = ownerId,
-                         },
-               };
-      }
-
-      if (completion.Values.Any(count => count.Status is TaskStatus.Canceled or TaskStatus.Canceling))
-      {
-        return new AvailabilityReply
-               {
-                 NotCompletedTask = ownerId,
-               };
-      }
-
-      result = await resultTable_.GetResult(request.Session,
-                                            request.Key,
-                                            contextCancellationToken)
-                                 .ConfigureAwait(false);
-      logger_.LogDebug("OwnerTaskId {OwnerTaskId}",
-                       result.OwnerTaskId);
-      if (ownerId != result.OwnerTaskId)
-      {
-        continueWaiting = result.Status != ResultStatus.Completed;
-        if (continueWaiting)
-        {
-          await Task.Delay(150,
-                           contextCancellationToken)
-                    .ConfigureAwait(false);
-        }
-      }
-      else
-      {
-        continueWaiting = false;
-      }
+      contextCancellationToken.Register(() => logger_.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    var availabilityReply = new AvailabilityReply
-                            {
-                              Ok = new Empty(),
-                            };
-    return availabilityReply;
+    var currentPollingDelay = taskTable_.PollingDelayMin;
+    while (true)
+    {
+      var result = await resultTable_.GetResult(request.Session,
+                                                request.Key,
+                                                contextCancellationToken)
+                                     .ConfigureAwait(false);
+
+      switch (result.Status)
+      {
+        case ResultStatus.Completed:
+          return new AvailabilityReply
+                 {
+                   Ok = new Empty(),
+                 };
+        case ResultStatus.Created:
+          break;
+        case ResultStatus.Aborted:
+          var taskData = await taskTable_.ReadTaskAsync(result.OwnerTaskId,
+                                                        contextCancellationToken)
+                                         .ConfigureAwait(false);
+          
+          return new AvailabilityReply
+                 {
+                   Error = new TaskError
+                           {
+                             TaskId = taskData.TaskId,
+                             Error =
+                             {
+                               new Error
+                               {
+                                 Detail     = taskData.Output.Error,
+                                 TaskStatus = taskData.Status,
+                               },
+                             },
+                           },
+                 };
+        case ResultStatus.Unspecified:
+        default:
+          throw new ArgumentOutOfRangeException();
+      }
+
+      await Task.Delay(currentPollingDelay,
+                       contextCancellationToken)
+                .ConfigureAwait(false);
+      if (2 * currentPollingDelay < taskTable_.PollingDelayMax)
+      {
+        currentPollingDelay = 2 * currentPollingDelay;
+      }
+    }
   }
 
   /// <inheritdoc />

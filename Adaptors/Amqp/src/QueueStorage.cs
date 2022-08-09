@@ -43,7 +43,7 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueStorage : IQueueStorage
 {
-  private const int MaxInternalQueuePriority = 10;
+  private const    int MaxInternalQueuePriority = 10;
 
   private readonly ILogger<QueueStorage>      logger_;
   private readonly AsyncLazy<IReceiverLink>[] receivers_;
@@ -100,9 +100,20 @@ public class QueueStorage : IQueueStorage
 
     receivers_ = Enumerable.Range(0,
                                   nbLinks)
-                           .Select(i => new AsyncLazy<IReceiverLink>(() => new ReceiverLink(sessionProvider.Get(),
-                                                                                            $"ReceiverLink{i}",
-                                                                                            $"q{i}")))
+                           .Select(i => new AsyncLazy<IReceiverLink>(() =>
+                                                                     {
+                                                                       var rl = new ReceiverLink(sessionProvider.Get(),
+                                                                                                 $"ReceiverLink{i}",
+                                                                                                 $"q{i}");
+
+                                                                       /* linkCredit_: the maximum number of messages the
+                                                                        * remote peer can send to the receiver.
+                                                                        * With the goal of minimizing/deactivating
+                                                                        * prefetching, a value of 1 gave us the desired
+                                                                        * behavior. We pick a default value of 2 to have "some cache". */
+                                                                       rl.SetCredit(options.LinkCredit);
+                                                                       return rl;
+                                                                     }))
                            .ToArray();
   }
 

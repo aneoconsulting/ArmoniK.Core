@@ -81,7 +81,7 @@ public class SessionClient : ISessionClient
       case AvailabilityReply.TypeOneofCase.Ok:
         break;
       case AvailabilityReply.TypeOneofCase.Error:
-        throw new Exception($"Task in Error - {id}");
+        throw new Exception($"Task in Error - {availabilityReply.Error.TaskId} : {availabilityReply.Error.Error}");
       case AvailabilityReply.TypeOneofCase.NotCompletedTask:
         throw new Exception($"Task not completed - {id}");
       default:
@@ -97,7 +97,7 @@ public class SessionClient : ISessionClient
       case Output.TypeOneofCase.Ok:
         break;
       case Output.TypeOneofCase.Error:
-        throw new Exception($"Task in Error - {id}");
+        throw new Exception($"Task Error - {id}");
       default:
         throw new ArgumentOutOfRangeException(nameof(taskOutput.TypeCase));
     }

@@ -22,23 +22,41 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
-namespace ArmoniK.Core.Adapters.Amqp.Options;
+using ArmoniK.Core.Common.Exceptions;
 
-[PublicAPI]
-public class Amqp
+namespace ArmoniK.Core.Common.Utils;
+
+public class LocalIPv4
 {
-  public const string SettingSection = nameof(Amqp);
+  public static string GetLocalIPv4(NetworkInterfaceType _type)
+  {
+    var output = "";
+    foreach (var item in NetworkInterface.GetAllNetworkInterfaces())
+    {
+      if (item.NetworkInterfaceType == _type && item.OperationalStatus == OperationalStatus.Up)
+      {
+        foreach (var ip in item.GetIPProperties()
+                               .UnicastAddresses)
+        {
+          if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+          {
+            output = ip.Address.ToString();
+          }
+        }
+      }
+    }
 
-  public string Host              { get; set; }
-  public string CredentialsPath   { get; set; }
-  public string User              { get; set; }
-  public string Password          { get; set; }
-  public string Scheme            { get; set; }
-  public string CaPath            { get; set; }
-  public int    Port              { get; set; }
-  public int    MaxPriority       { get; set; }
-  public bool   AllowHostMismatch { get; set; }
-  public int    LinkCredit        { get; set; }
+    if (output == "")
+    {
+      throw new ArmoniKException("No local IPv4 found");
+    }
+
+    return output;
+  }
+
+  public static string GetLocalIPv4Ethernet()
+    => GetLocalIPv4(NetworkInterfaceType.Ethernet);
 }

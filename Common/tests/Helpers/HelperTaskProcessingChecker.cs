@@ -22,23 +22,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Adapters.Amqp.Options;
+using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 
-[PublicAPI]
-public class Amqp
+namespace ArmoniK.Core.Common.Tests.Helpers;
+
+internal class HelperTaskProcessingChecker : ITaskProcessingChecker
 {
-  public const string SettingSection = nameof(Amqp);
-
-  public string Host              { get; set; }
-  public string CredentialsPath   { get; set; }
-  public string User              { get; set; }
-  public string Password          { get; set; }
-  public string Scheme            { get; set; }
-  public string CaPath            { get; set; }
-  public int    Port              { get; set; }
-  public int    MaxPriority       { get; set; }
-  public bool   AllowHostMismatch { get; set; }
-  public int    LinkCredit        { get; set; }
+  public Task<bool> Check(string            taskId,
+                          string            ownerPodId,
+                          CancellationToken cancellationToken)
+    => Task.FromResult(true);
 }
