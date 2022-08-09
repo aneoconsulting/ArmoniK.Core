@@ -31,11 +31,13 @@ using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Utils;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -115,10 +117,24 @@ public static class Program
       builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration,
                                                                logger.GetLogger());
       builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
-                                                      logger.GetLogger());
+                                                      logger.GetLogger(),
+                                                      out var authCache);
 
-      builder.WebHost.UseKestrel(options => options.ListenAnyIP(1080,
-                                                                listenOptions => listenOptions.Protocols = HttpProtocols.Http2));
+      builder.WebHost.UseKestrel(options =>
+                                 {
+                                   options.ListenAnyIP(1080,
+                                                       listenOptions =>
+                                                       {
+                                                         listenOptions.Protocols = HttpProtocols.Http2;
+                                                         listenOptions.Use(async (context,
+                                                                                  func) =>
+                                                                           {
+                                                                             await func.Invoke()
+                                                                                       .ConfigureAwait(false);
+                                                                             authCache.FlushConnection(context.ConnectionId);
+                                                                           });
+                                                       });
+                                 });
 
       var app = builder.Build();
 

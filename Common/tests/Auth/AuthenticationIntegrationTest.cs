@@ -83,24 +83,24 @@ public class AuthenticationIntegrationTest
     options_ = null;
   }
 
-  private const           string                 SessionId = "MySession";
-  private const           string                 TaskId    = "MyTask";
-  private const           string                 ResultKey = "ResultKey";
-  private static readonly TaskFilter             TaskFilter;
-  private static readonly CreateSmallTaskRequest CreateSmallTasksRequest;
-  private static readonly CreateSessionRequest   CreateSessionRequest;
-  private static readonly Session                SessionRequest;
-  private static readonly GetResultStatusRequest GetResultStatusRequest;
-  private static readonly GetTaskStatusRequest   GetTaskStatusRequest;
-  private static readonly Empty                  Empty;
-  private static readonly SessionFilter          SessionFilter;
-  private static readonly ResultRequest          ResultRequest;
-  private static readonly WaitRequest            WaitRequest;
-  private static readonly CreateLargeTaskRequest CreateLargeTaskRequestInit;
-  private static readonly CreateLargeTaskRequest CreateLargeTaskRequestInitTask;
-  private static readonly CreateLargeTaskRequest CreateLargeTaskRequestPayload;
-  private static readonly CreateLargeTaskRequest CreateLargeTaskRequestPayloadComplete;
-  private static readonly CreateLargeTaskRequest CreateLargeTaskRequestLastTask;
+  private const           string                       SessionId = "MySession";
+  private const           string                       TaskId    = "MyTask";
+  private const           string                       ResultKey = "ResultKey";
+  private static readonly TaskFilter                   TaskFilter;
+  private static readonly CreateSmallTaskRequest       CreateSmallTasksRequest;
+  private static readonly CreateSessionRequest         CreateSessionRequest;
+  private static readonly Session                      SessionRequest;
+  private static readonly GetResultStatusRequest       GetResultStatusRequest;
+  private static readonly GetTaskStatusRequest         GetTaskStatusRequest;
+  private static readonly Empty                        Empty;
+  private static readonly SessionFilter                SessionFilter;
+  private static readonly ResultRequest                ResultRequest;
+  private static readonly WaitRequest                  WaitRequest;
+  private static readonly CreateLargeTaskRequest       CreateLargeTaskRequestInit;
+  private static readonly CreateLargeTaskRequest       CreateLargeTaskRequestInitTask;
+  private static readonly CreateLargeTaskRequest       CreateLargeTaskRequestPayload;
+  private static readonly CreateLargeTaskRequest       CreateLargeTaskRequestPayloadComplete;
+  private static readonly CreateLargeTaskRequest       CreateLargeTaskRequestLastTask;
 
   static AuthenticationIntegrationTest()
   {
@@ -808,6 +808,8 @@ public class AuthenticationIntegrationTest
       Assert.AreEqual(errorCode,
                       ((RpcException)exception!).StatusCode);
     }
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
   }
 
   public static async Task<CreateTaskReply> CreateLargeTask(AsyncClientStreamingCall<CreateLargeTaskRequest, CreateTaskReply> stream)
@@ -871,6 +873,8 @@ public class AuthenticationIntegrationTest
       Assert.AreEqual(errorCode,
                       ((RpcException)exception!).StatusCode);
     }
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
   }
 
   [TestCaseSource(nameof(GetTryGetResultStreamTestCases))]
@@ -906,5 +910,7 @@ public class AuthenticationIntegrationTest
       Assert.AreEqual(errorCode,
                       ((RpcException)exception!).StatusCode);
     }
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
   }
 }

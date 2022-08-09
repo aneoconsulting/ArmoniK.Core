@@ -37,9 +37,15 @@ using Grpc.Net.Client;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+using Serilog;
+
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -50,6 +56,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
   private          GrpcChannel?        channel_;
   private          HttpMessageHandler? handler_;
   private          TestServer?         server_;
+  private          ILogger             logger_;
 
   public GrpcSubmitterServiceHelper(ISubmitter           submitter,
                                     List<MockIdentity>   authIdentities,
@@ -58,6 +65,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
   {
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider(loglevel));
+    var loggerAuth = loggerFactory_.CreateLogger<AuthenticationCache>();
 
     var builder = WebApplication.CreateBuilder();
 
@@ -65,21 +73,22 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddSingleton(submitter)
            .AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
            .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(authIdentities))
+           .AddSingleton(new AuthenticationCache())
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
+           .AddLogging(build => build.SetMinimumLevel(loglevel).AddConsole())
            .AddAuthentication()
            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
                                                            _ =>
                                                            {
                                                            });
-    builder.Services.AddLogging(build => build.SetMinimumLevel(loglevel))
-           .AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
+    builder.Services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
            .AddAuthorization()
            .ValidateGrpcRequests()
            .AddGrpc();
 
     builder.WebHost.UseTestServer();
-
-    app_ = builder.Build();
+    logger_ = loggerFactory_.CreateLogger("Testing apps");
+    app_    = builder.Build();
     app_.UseRouting();
     app_.UseAuthentication();
     app_.UseAuthorization();
@@ -141,7 +150,6 @@ public class GrpcSubmitterServiceHelper : IDisposable
     {
       return;
     }
-
     await channel_.ShutdownAsync()
                   .ConfigureAwait(false);
     channel_.Dispose();

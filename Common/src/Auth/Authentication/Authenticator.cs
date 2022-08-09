@@ -38,6 +38,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using Serilog;
+
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
 [PublicAPI]
@@ -88,19 +90,20 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
 {
   public const     string               SchemeName = "SubmitterAuthenticationScheme";
   private readonly IAuthenticationTable authTable_;
+  private readonly AuthenticationCache  cache_;
   private readonly string               cnHeader_;
   private readonly string               fingerprintHeader_;
   private readonly string               impersonationIdHeader_;
   private readonly string               impersonationUsernameHeader_;
-
-  private readonly ILogger<Authenticator> logger_;
-  private readonly bool                   requireAuthentication_;
+  
+  private readonly bool                 requireAuthentication_;
 
   public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,
                        ILoggerFactory                        loggerFactory,
                        UrlEncoder                            encoder,
                        ISystemClock                          clock,
-                       IAuthenticationTable                  authTable)
+                       IAuthenticationTable                  authTable,
+                       AuthenticationCache cache)
     : base(options,
            loggerFactory,
            encoder,
@@ -123,7 +126,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     impersonationIdHeader_       = options.CurrentValue.ImpersonationIdHeader;
 
     authTable_ = authTable;
-    logger_    = loggerFactory.CreateLogger<Authenticator>();
+    cache_     = cache;
   }
 
   protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -134,10 +137,18 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                                                                   SchemeName),
                                                                  SchemeName));
     }
+    var           cn                    = TryGetHeader(cnHeader_);
+    var           fingerprint           = TryGetHeader(fingerprintHeader_);
+    var           impersonationUsername = TryGetHeader(impersonationUsernameHeader_);
+    var           impersonationId       = TryGetHeader(impersonationIdHeader_);
 
-    UserIdentity? identity;
-    var           cn          = TryGetHeader(cnHeader_);
-    var           fingerprint = TryGetHeader(fingerprintHeader_);
+    var identity = cache_.Get(new AuthenticationCacheKey(Request.HttpContext.Connection.Id, cn, fingerprint, impersonationId, impersonationUsername));
+    if (identity != null)
+    {
+      Log.Debug($"Found user {identity.UserName} in cache");
+      return AuthenticateResult.Success(new AuthenticationTicket(identity,
+                                                                 SchemeName));
+    }
     if (!string.IsNullOrEmpty(cn) && !string.IsNullOrEmpty(fingerprint))
     {
       identity = await GetIdentityFromCertificateAsync(cn,
@@ -154,9 +165,6 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     {
       return AuthenticateResult.Fail("Missing Certificate Headers");
     }
-
-    var impersonationUsername = TryGetHeader(impersonationUsernameHeader_);
-    var impersonationId       = TryGetHeader(impersonationIdHeader_);
 
     if (impersonationId != null || impersonationUsername != null)
     {
@@ -180,6 +188,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       }
     }
 
+    cache_.Set(new AuthenticationCacheKey(Request.HttpContext.Connection.Id, cn, fingerprint, impersonationId, impersonationUsername), identity);
     var ticket = new AuthenticationTicket(identity,
                                           SchemeName);
     return AuthenticateResult.Success(ticket);
@@ -189,9 +198,9 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                                                    string            fingerprint,
                                                                    CancellationToken cancellationToken = default)
   {
-    logger_.LogDebug("Authenticating request with CN {CN} and fingerprint {Fingerprint}",
-                     cn,
-                     fingerprint);
+    Logger.LogDebug("Authenticating request with CN {CN} and fingerprint {Fingerprint}",
+                    cn,
+                    fingerprint);
     var result = await authTable_.GetIdentityFromCertificateAsync(cn,
                                                                   fingerprint,
                                                                   cancellationToken)
