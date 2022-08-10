@@ -46,40 +46,5 @@ public class SessionProvider : ProviderBase<SessionAmqp>
              return session;
            })
   {
-    if (string.IsNullOrEmpty(options.Host))
-    {
-      throw new ArgumentNullException(nameof(options),
-                                      $"Contains a null or empty {nameof(options.Host)} field");
-    }
-
-    if (options.MaxRetries == 0)
-    {
-      throw new ArgumentNullException(nameof(options),
-                                      $"Contains a zero {nameof(options.MaxRetries)} field");
-    }
-
-    if (options.Port == 0)
-    {
-      throw new ArgumentNullException(nameof(options),
-                                      $"Contains a zero {nameof(options.Port)} field");
-    }
-
-    if (string.IsNullOrEmpty(options.User))
-    {
-      throw new ArgumentNullException(nameof(options),
-                                      $"Contains a null or empty {nameof(options.User)} field");
-    }
-
-    if (string.IsNullOrEmpty(options.Password))
-    {
-      throw new ArgumentNullException(nameof(options),
-                                      $"Contains a null or empty {nameof(options.Password)} field");
-    }
-
-    if (string.IsNullOrEmpty(options.Scheme))
-    {
-      throw new ArgumentNullException(nameof(options),
-                                      $"Contains a null or empty {nameof(options.Scheme)} field");
-    }
   }
 }
