@@ -525,7 +525,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.ServiceCollectionExt.html",
-          "hash": "UlXRLPkvl8V1MVZBij8UzOGYwyKQyfznzgknTVwPu7M="
+          "hash": "HuVAtHW9e0yk7I1jsvePF1rhxa4uEVy/bZ5sHKNFFHQ="
         }
       },
       "is_incremental": false,
@@ -929,11 +929,35 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.AuthenticationCache.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.AuthenticationCache.html",
+          "hash": "//ktdqMPezr5A7k9z7v8oc6ZPfe7RLHOk+/y3qJSNxI="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.AuthenticationCacheKey.html",
+          "hash": "m2nuJpwSKKQD76tqT4TIRSKimgqQjK2xDxQPdWppx1s="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.Authenticator.yml",
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.Authenticator.html",
-          "hash": "nZLJPw4PJbqdDAvO27tzykM8cRdYPU8Zqg3QYQe5v2k="
+          "hash": "UegBnvtSjG0mb2nqpJiEPNAh1GPXocAvpXzwk19JwD0="
         }
       },
       "is_incremental": false,
@@ -1017,7 +1041,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Auth.Authentication.html",
-          "hash": "Y0FJZ52qTHRVVo/5j4rlhezyzvgGZTgo4YB4Vfng1YY="
+          "hash": "dM4eNwz4DOPqhVD5TUBMJmW9nb1JNzWrva7897AAQQA="
         }
       },
       "is_incremental": false,
@@ -2009,6 +2033,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationCacheTest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationCacheTest.html",
+          "hash": "RU9/k1/iKg2JNEVM5++39BR4m3H4EfONVrfpNg4NT7M="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.AuthenticationType.yml",
       "output": {
         ".html": {
@@ -2061,7 +2097,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.AuthenticationIntegrationTest.html",
-          "hash": "loRMTRDNNTBb3J17K+WvePl5ndacZ/ErLN7DOgjAKSs="
+          "hash": "Iz+RXl3ah/j/H/MqduNrlhjqOWswxp4AILT9n4QCdwM="
         }
       },
       "is_incremental": false,
@@ -2133,7 +2169,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Auth.html",
-          "hash": "R26XNIdpYxqvUgCp10tbMPdH+3nw1ZU1hKc0Tb9SbOQ="
+          "hash": "haKRm2jWdQtYvcNTBgHYhX9F3QsEWSD2RrEaOQDfHSc="
         }
       },
       "is_incremental": false,
@@ -2241,7 +2277,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.Helpers.GrpcSubmitterServiceHelper.html",
-          "hash": "qs4kJfcvwLWmHKgYJUoWG2fEtef5RVYjJZRn0Cp0SYg="
+          "hash": "05QEWZsiaMx7syUzY+/Fo0BSF2Jsvfr1yFPvwcRn5Ds="
         }
       },
       "is_incremental": false,
@@ -3201,7 +3237,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Control.Submitter.Program.html",
-          "hash": "eZDU17o0zhe1rpy6EbNKvPPzicMB1/t5S0mmuqEh4Gk="
+          "hash": "38Bpm74VKhhtjRbd4Bqo4SGmzJJa3mg2Nkqtwv7VutA="
         }
       },
       "is_incremental": false,
@@ -3513,7 +3549,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "A+TThh8lVY2L+EbpmgXRrRa6oRk7j5r1lsQOcFga4p4="
+          "hash": "VJu4PJQgnxu1e3exZuILlCN/f3BtlnFUPdHBbSxIpa8="
         }
       },
       "is_incremental": false,
@@ -3600,7 +3636,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 291,
+          "total_file_count": 294,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
