@@ -245,9 +245,12 @@ public static class ServiceCollectionExt
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
                                                                   ConfigurationManager    configuration,
-                                                                  ILogger                 logger)
+                                                                  ILogger                 logger,
+                                                                  out AuthenticationCache authCache)
   {
+    authCache = new AuthenticationCache();
     services.Configure<AuthenticatorOptions>(configuration.GetSection(AuthenticatorOptions.SectionName))
+            .AddSingleton(authCache)
             .AddAuthentication()
             .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
                                                             _ =>
