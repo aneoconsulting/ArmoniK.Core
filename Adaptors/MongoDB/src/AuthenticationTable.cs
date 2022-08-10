@@ -231,8 +231,9 @@ public class AuthenticationTable : IAuthenticationTable
   ///   Gets or generates the pipeline which uses the matched user's informations to obtain their roles and permissions
   /// </summary>
   /// @SONAR-IGNORE-START
-  /// <notes>
-  /// Equivalent to the following MongoDB bson pipeline :
+  /// <remarks>
+  ///   Equivalent to the following MongoDB Bson pipeline:
+  ///   <code>
   /// [
   ///   {
   ///     "$lookup": {
@@ -263,7 +264,8 @@ public class AuthenticationTable : IAuthenticationTable
   ///     }
   ///   }
   /// ]
-  /// </notes>
+  /// </code>
+  /// </remarks>
   /// @SONAR-IGNORE-END
   /// <returns>The user to identity pipeline</returns>
   private PipelineDefinition<UserData, UserAuthenticationResult> GetUserToIdentityPipeline()
@@ -315,8 +317,9 @@ public class AuthenticationTable : IAuthenticationTable
   ///   roles and their permissions
   /// </summary>
   /// @SONAR-IGNORE-START
-  /// <notes>
-  /// Equivalent to the following MongoDB Bson pipeline:
+  /// <remarks>
+  ///   Equivalent to the following MongoDB Bson pipeline:
+  ///   <code>
   /// [
   ///   {
   ///     "$sort": {
@@ -383,7 +386,8 @@ public class AuthenticationTable : IAuthenticationTable
   ///     }
   ///   }
   /// ]
-  /// </notes>
+  /// </code>
+  /// </remarks>
   /// @SONAR-IGNORE-END
   /// <returns>Pipeline to obtain the identity from the certificate</returns>
   private PipelineDefinition<AuthData, UserAuthenticationResult> GetAuthToIdentityPipeline()
