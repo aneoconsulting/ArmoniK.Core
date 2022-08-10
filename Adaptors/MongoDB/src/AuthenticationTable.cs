@@ -196,7 +196,7 @@ public class AuthenticationTable : IAuthenticationTable
   ///   Gets the user from the given collection by first matching the entry with the matchingFunction and then executing the
   ///   given pipeline
   /// </summary>
-  /// <typeparam name="TCollectionDataType">Type of data in the collection</typeparam>
+  /// <typeparam name="TCollectionDataType">Data type in the collection</typeparam>
   /// <param name="sessionHandle">Session Handle</param>
   /// <param name="collection">Collection to be used at the start of the pipeline</param>
   /// <param name="pipeline">Pipeline to use</param>
@@ -228,7 +228,7 @@ public class AuthenticationTable : IAuthenticationTable
 
 
   /// <summary>
-  ///   Gets or generates the pipeline which uses the matched user information to get their roles and permissions
+  ///   Gets or generates the pipeline which uses the matched user's informations to obtain their roles and permissions
   /// </summary>
   /// <returns>The user to identity pipeline</returns>
   private PipelineDefinition<UserData, UserAuthenticationResult> GetUserToIdentityPipeline()
@@ -244,10 +244,10 @@ public class AuthenticationTable : IAuthenticationTable
                                                                                                 r => r.RoleId,
                                                                                                 ual => ual.Roles);
     /* Projects the object into the identity containing:
-    - UserId : The database Id of the user
-    - UserName : The name of the User
-    - Roles : The names of the roles the user has
-    - Permissions : The list of permissions, extracted from the roles. Permissions are not repeated
+    - UserId : database user Id
+    - UserName : user name
+    - Roles : user's role names
+    - Permissions : permissions list, extracted from the roles. Permissions are not repeated
     Equivalent Bson Stage :
     @SONAR-IGNORE-START
     $project: {
@@ -297,10 +297,10 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   /// <summary>
-  ///   Gets or generates the pipeline which uses the matched certificates information to get the corresponding user, their
-  ///   role and their permissions
+  ///   Gets or generates the pipeline which uses matched certificate's informations to get the corresponding user, their
+  ///   roles and their permissions
   /// </summary>
-  /// <returns>The certificate to identity pipeline</returns>
+  /// <returns>Pipeline to obtain the identity from the certificate</returns>
   private PipelineDefinition<AuthData, UserAuthenticationResult> GetAuthToIdentityPipeline()
   {
     if (authToIdentityPipeline_ != null)
@@ -309,9 +309,9 @@ public class AuthenticationTable : IAuthenticationTable
     }
 
     /*
-     When matching, either 1 or 2 certificates can be found. Either the database only has the CN and Fingerprint matching, or there is also a CN only entry.
-     When both are present, select the one which matches best (CN AND Fingerprint > CN only).
-     First sort by the Fingerprint in descending order (null fingerprint are push to the end)...
+     When matching, either 1 or 2 certificates can be found. A CN or a fingerprint should match.
+     When both are present, it will choose the one which matches best (CN AND Fingerprint > CN only).
+     First sort by the Fingerprint in descending order (null fingerprint are pushed to the end)...
     */
     var sortByRelevance = PipelineStageDefinitionBuilder.Sort(new SortDefinitionBuilder<AuthData>().Descending(authData => authData.Fingerprint));
     // ...then limit to 1 result, allowing to keep the best matching.

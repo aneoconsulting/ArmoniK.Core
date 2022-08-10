@@ -30,10 +30,10 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 /// <summary>
 ///   Object containing the authentication result from database
 /// </summary>
-/// <param name="Id">Id of the user</param>
-/// <param name="Username">Name of the user</param>
-/// <param name="Roles">Roles of the user</param>
-/// <param name="Permissions">Permissions of the user</param>
+/// <param name="Id">User Id</param>
+/// <param name="Username">User name</param>
+/// <param name="Roles">User roles</param>
+/// <param name="Permissions">User permissions</param>
 public record UserAuthenticationResult(string              Id,
                                        string              Username,
                                        IEnumerable<string> Roles,

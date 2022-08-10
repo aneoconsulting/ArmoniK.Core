@@ -172,7 +172,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
 
     var impersonationUsername = TryGetHeader(impersonationUsernameHeader_);
     var impersonationId       = TryGetHeader(impersonationIdHeader_);
-    // Only try to impersonate if at least one of the impersonation headers is set
+    // Try to impersonate only if at least one of the impersonation headers is set
     if (impersonationId != null || impersonationUsername != null)
     {
       // Only users with the impersonate permission can impersonate
@@ -240,7 +240,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   /// <param name="impersonationId">Id of the user being impersonated</param>
   /// <param name="impersonationUsername">Username of the user being impersonated</param>
   /// <param name="cancellationToken">Cancellation token</param>
-  /// <returns>The impersonated user's  UserIdentity</returns>
+  /// <returns>The impersonated user's UserIdentity</returns>
   /// <exception cref="AuthenticationException">
   ///   Thrown when both id and username are missing,
   ///   the impersonated user doesn't exist,

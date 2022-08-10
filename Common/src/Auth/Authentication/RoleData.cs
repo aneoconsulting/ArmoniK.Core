@@ -28,9 +28,9 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 /// <summary>
 ///   Role object in database
 /// </summary>
-/// <param name="RoleId">Id of the role</param>
-/// <param name="RoleName">Name of the role</param>
-/// <param name="Permissions">List of permissions, as strings</param>
+/// <param name="RoleId">Role Id</param>
+/// <param name="RoleName">Role Name</param>
+/// <param name="Permissions">Permissions list, as strings</param>
 public record RoleData(string   RoleId,
                        string   RoleName,
                        string[] Permissions);

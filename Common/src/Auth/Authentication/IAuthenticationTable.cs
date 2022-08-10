@@ -46,8 +46,8 @@ public interface IAuthenticationTable : IInitializable
   ///   Get the User authentication data from the database, based on the id or username. If id is not null, will be used for
   ///   matching, otherwise tries to match the username
   /// </summary>
-  /// <param name="id">Id of the user</param>
-  /// <param name="username">Username of the user</param>
+  /// <param name="id">User Id</param>
+  /// <param name="username">User name</param>
   /// <param name="cancellationToken">Cancellation token</param>
   /// <returns>User authentication data matching the id, if not null, otherwise the username, null if not found</returns>
   public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,

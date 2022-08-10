@@ -32,7 +32,7 @@ using ArmoniK.Core.Common.Auth.Authorization;
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
 /// <summary>
-///   Identity of a user. Used in the authentication middleware
+///   User identity. Used in the authentication middleware
 /// </summary>
 public class UserIdentity : ClaimsPrincipal
 {
