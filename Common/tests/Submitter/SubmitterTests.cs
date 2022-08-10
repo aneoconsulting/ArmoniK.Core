@@ -39,6 +39,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Core.Common.Utils;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -125,6 +126,7 @@ public class SubmitterTests
 
     submitter_    = provider.GetRequiredService<ISubmitter>();
     sessionTable_ = provider.GetRequiredService<ISessionTable>();
+    taskTable_    = provider.GetRequiredService<ITaskTable>();
   }
 
   [TearDown]
@@ -148,6 +150,7 @@ public class SubmitterTests
   private const           string         ExpectedOutput3 = "ExpectedOutput3";
   private static readonly ActivitySource ActivitySource  = new("ArmoniK.Core.Common.Tests.Submitter");
   private                 ISessionTable  sessionTable_;
+  private                 ITaskTable     taskTable_;
 
   private static async Task InitSubmitter(ISubmitter        submitter,
                                           CancellationToken token)
@@ -224,6 +227,7 @@ public class SubmitterTests
                                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
                                MaxRetries  = 2,
                                Priority    = 1,
+                               PartitionId = "part2",
                              };
 
     var taskdata = new TaskData(SessionId,
@@ -681,5 +685,36 @@ public class SubmitterTests
 
     Assert.AreEqual(0,
                     result.IdStatuses.Count);
+  }
+
+  [Test]
+  public async Task GetPartitionTaskStatus()
+  {
+    await InitSubmitter(submitter_,
+                        CancellationToken.None)
+      .ConfigureAwait(false);
+    await InitSubmitterCompleteTask(submitter_,
+                                    CancellationToken.None)
+      .ConfigureAwait(false);
+
+    var result = (await taskTable_.CountPartitionTasksAsync(CancellationToken.None)
+                                  .ConfigureAwait(false)).OrderBy(r => r.Status)
+                                                         .ThenBy(r => r.PartitionId)
+                                                         .ToIList();
+
+    Assert.AreEqual(3,
+                    result.Count);
+    Assert.AreEqual(new PartitionTaskStatusCount("part1",
+                                                 TaskStatus.Creating,
+                                                 1),
+                    result[0]);
+    Assert.AreEqual(new PartitionTaskStatusCount("part1",
+                                                 TaskStatus.Submitted,
+                                                 1),
+                    result[1]);
+    Assert.AreEqual(new PartitionTaskStatusCount("part2",
+                                                 TaskStatus.Completed,
+                                                 1),
+                    result[2]);
   }
 }

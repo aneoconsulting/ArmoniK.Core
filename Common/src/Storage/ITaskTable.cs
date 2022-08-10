@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -151,6 +151,15 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task<IEnumerable<TaskStatusCount>> CountTasksAsync(TaskFilter        filter,
                                                      CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Count tasks matching a given filter and group by partition and status
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of tasks that matched the filter grouped by partition and status
+  /// </returns>
+  Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Count tasks matching a given status

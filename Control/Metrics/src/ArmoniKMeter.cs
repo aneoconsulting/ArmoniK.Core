@@ -23,12 +23,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -39,35 +41,141 @@ namespace ArmoniK.Core.Control.Metrics;
 
 public class ArmoniKMeter : Meter, IHostedService
 {
-  private int i;
+  private const    string                                                        QueuedName = "queued";
+  private readonly IDictionary<Tuple<string, string>, ObservableGauge<long>>     gauges_;
+  private readonly ILogger                                                       logger_;
+  private readonly ExecutionSingleizer<IDictionary<Tuple<string, string>, long>> measurements_;
+  private readonly ITaskTable                                                    taskTable_;
+  private          int                                                           i_;
 
   public ArmoniKMeter(ITaskTable            taskTable,
                       ILogger<ArmoniKMeter> logger)
     : base(nameof(ArmoniKMeter))
   {
     using var _ = logger.LogFunction();
-    foreach (var status in (TaskStatus[])Enum.GetValues(typeof(TaskStatus)))
-    {
-      CreateObservableGauge("armonik_tasks_" + status.ToString()
-                                                     .ToLower(),
-                            () => new Measurement<int>(taskTable.CountAllTasksAsync(status)
-                                                                .Result));
-    }
 
-    CreateObservableGauge("armonik_tasks_queued",
-                          () => new Measurement<int>(taskTable.CountAllTasksAsync(TaskStatus.Dispatched)
-                                                              .Result                                       + taskTable.CountAllTasksAsync(TaskStatus.Submitted)
-                                                                                                    .Result + taskTable.CountAllTasksAsync(TaskStatus.Processing)
-                                                                                                                       .Result));
+    taskTable_    = taskTable;
+    logger_       = logger;
+    gauges_       = new Dictionary<Tuple<string, string>, ObservableGauge<long>>();
+    measurements_ = new ExecutionSingleizer<IDictionary<Tuple<string, string>, long>>();
 
     CreateObservableCounter("test",
-                            () => i++);
+                            () => i_++);
     logger.LogDebug("Meter added");
   }
 
-  public Task StartAsync(CancellationToken cancellationToken)
-    => Task.CompletedTask;
+  public async Task StartAsync(CancellationToken cancellationToken)
+    // Call FetchMeasurementsAsync in order to populate gauges.
+    => await measurements_.Call(FetchMeasurementsAsync,
+                                CancellationToken.None)
+                          .ConfigureAwait(false);
 
   public Task StopAsync(CancellationToken cancellationToken)
     => Task.CompletedTask;
+
+  /// <summary>
+  ///   Fetch all the measurements from the taskTable.
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Dictionary of the task count for each partition/status.
+  /// </returns>
+  private async Task<IDictionary<Tuple<string, string>, long>> FetchMeasurementsAsync(CancellationToken cancellationToken)
+  {
+    _ = logger_;
+
+    // DB request
+    var partitionStatusCounts = await taskTable_.CountPartitionTasksAsync(cancellationToken)
+                                                .ConfigureAwait(false);
+
+    // Populate dictionary from request
+    var measurements = new Dictionary<Tuple<string, string>, long>();
+
+    // Aggregates across partitions
+    foreach (var status in (TaskStatus[])Enum.GetValues(typeof(TaskStatus)))
+    {
+      var statusName = status.ToString();
+      measurements[Tuple.Create("",
+                                statusName)] = 0;
+      AddGauge("",
+               statusName);
+    }
+
+    measurements[Tuple.Create("",
+                              QueuedName)] = 0;
+    AddGauge("",
+             QueuedName);
+
+    // Count per partitions
+    foreach (var psc in partitionStatusCounts)
+    {
+      var statusName = psc.Status.ToString();
+      measurements[Tuple.Create(psc.PartitionId,
+                                statusName)] = psc.Count;
+      measurements[Tuple.Create("",
+                                statusName)] += psc.Count;
+      if (psc.Status is TaskStatus.Dispatched or TaskStatus.Submitted or TaskStatus.Processing)
+      {
+        measurements[Tuple.Create(psc.PartitionId,
+                                  QueuedName)] = psc.Count;
+        measurements[Tuple.Create("",
+                                  QueuedName)] += psc.Count;
+        AddGauge(psc.PartitionId,
+                 QueuedName);
+      }
+
+      AddGauge(psc.PartitionId,
+               statusName);
+    }
+
+    return measurements;
+  }
+
+  /// <summary>
+  ///   Get the Number of tasks for a given partition and task status.
+  /// </summary>
+  /// <param name="partition">Name of the partition to filter on</param>
+  /// <param name="status">Name of the status to filter on</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Number of tasks for the given partition and status.
+  /// </returns>
+  private async Task<long> GetMeasurementAsync(string            partition,
+                                               string            status,
+                                               CancellationToken cancellationToken)
+  {
+    var measurements = await measurements_.Call(FetchMeasurementsAsync,
+                                                cancellationToken)
+                                          .ConfigureAwait(false);
+    return measurements[Tuple.Create(partition,
+                                     status)];
+  }
+
+  /// <summary>
+  ///   Add gauge if it does not already exist
+  /// </summary>
+  /// <param name="partition">Name of the partition to be metered</param>
+  /// <param name="statusName">Name of the Status to be metered</param>
+  private void AddGauge(string partition,
+                        string statusName)
+  {
+    var key = Tuple.Create(partition,
+                           statusName);
+    if (gauges_.ContainsKey(key))
+    {
+      return;
+    }
+
+    var metricName = string.IsNullOrEmpty(partition)
+                       ? $"armonik_tasks_{statusName.ToLower()}"
+                       : $"armonik_{partition}_tasks_{statusName.ToLower()}";
+
+    var gauge = CreateObservableGauge(metricName,
+                                      () => new Measurement<long>(GetMeasurementAsync(partition,
+                                                                                      statusName,
+                                                                                      CancellationToken.None)
+                                                                    .Result));
+
+    gauges_[key] = gauge;
+  }
 }
