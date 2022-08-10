@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Adapters.Amqp.Options;
@@ -41,4 +42,5 @@ public class Amqp
   public int    MaxPriority       { get; set; }
   public bool   AllowHostMismatch { get; set; }
   public int    MaxRetries        { get; set; }
+  public int    LinkCredit        { get; set; }
 }

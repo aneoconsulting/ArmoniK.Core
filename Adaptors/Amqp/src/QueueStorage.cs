@@ -94,6 +94,11 @@ public class QueueStorage : IQueueStorage
                                             $"Minimum value for {nameof(Options.Amqp.MaxPriority)} is 1.");
     }
 
+    if (options.LinkCredit < 1)
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"Minimum value for {nameof(Options.Amqp.LinkCredit)} is 1.");
+    }
 
     MaxPriority = options.MaxPriority;
     logger_     = logger;
@@ -109,9 +114,20 @@ public class QueueStorage : IQueueStorage
 
     receivers_ = Enumerable.Range(0,
                                   nbLinks_)
-                           .Select(i => new AsyncLazy<IReceiverLink>(() => new ReceiverLink(sessionAmqp.Session,
-                                                                                            $"ReceiverLink{i}",
-                                                                                            $"q{i}")))
+                           .Select(i => new AsyncLazy<IReceiverLink>(() =>
+                                                                     {
+                                                                       var rl = new ReceiverLink(sessionAmqp.Session,
+                                                                                                 $"ReceiverLink{i}",
+                                                                                                 $"q{i}");
+
+                                                                       /* linkCredit_: the maximum number of messages the
+                                                                        * remote peer can send to the receiver.
+                                                                        * With the goal of minimizing/deactivating
+                                                                        * prefetching, a value of 1 gave us the desired
+                                                                        * behavior. We pick a default value of 2 to have "some cache". */
+                                                                       rl.SetCredit(options.LinkCredit);
+                                                                       return rl;
+                                                                     }))
                            .ToArray();
   }
 
