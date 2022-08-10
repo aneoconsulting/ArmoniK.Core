@@ -818,6 +818,9 @@ public class AuthenticationIntegrationTest
       Assert.AreEqual(errorCode,
                       ((RpcException)exception!).StatusCode);
     }
+
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
   }
 
   public static async Task<CreateTaskReply> CreateLargeTask(AsyncClientStreamingCall<CreateLargeTaskRequest, CreateTaskReply> stream)
@@ -881,6 +884,9 @@ public class AuthenticationIntegrationTest
       Assert.AreEqual(errorCode,
                       ((RpcException)exception!).StatusCode);
     }
+
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
   }
 
   [TestCaseSource(nameof(GetTryGetResultStreamTestCases))]
@@ -916,5 +922,8 @@ public class AuthenticationIntegrationTest
       Assert.AreEqual(errorCode,
                       ((RpcException)exception!).StatusCode);
     }
+
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
   }
 }

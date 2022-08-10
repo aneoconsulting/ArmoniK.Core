@@ -95,21 +95,27 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
 
 public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
 {
-  public const     string               SchemeName = "SubmitterAuthenticationScheme";
-  private readonly IAuthenticationTable authTable_;
-  private readonly string               cnHeader_;
-  private readonly string               fingerprintHeader_;
-  private readonly string               impersonationIdHeader_;
-  private readonly string               impersonationUsernameHeader_;
+  public const string SchemeName = "SubmitterAuthenticationScheme";
 
+  private static readonly UserIdentity DefaultUser = new(new UserAuthenticationResult(),
+                                                         SchemeName);
+
+  private readonly IAuthenticationTable   authTable_;
+  private readonly AuthenticationCache    cache_;
+  private readonly string                 cnHeader_;
+  private readonly string                 fingerprintHeader_;
+  private readonly string                 impersonationIdHeader_;
+  private readonly string                 impersonationUsernameHeader_;
   private readonly ILogger<Authenticator> logger_;
-  private readonly bool                   requireAuthentication_;
+
+  private readonly bool requireAuthentication_;
 
   public Authenticator(IOptionsMonitor<AuthenticatorOptions> options,
                        ILoggerFactory                        loggerFactory,
                        UrlEncoder                            encoder,
                        ISystemClock                          clock,
-                       IAuthenticationTable                  authTable)
+                       IAuthenticationTable                  authTable,
+                       AuthenticationCache                   cache)
     : base(options,
            loggerFactory,
            encoder,
@@ -132,6 +138,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     impersonationIdHeader_       = options.CurrentValue.ImpersonationIdHeader;
 
     authTable_ = authTable;
+    cache_     = cache;
     logger_    = loggerFactory.CreateLogger<Authenticator>();
   }
 
@@ -145,14 +152,29 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     // Bypass if authentication is not required
     if (!requireAuthentication_)
     {
-      return AuthenticateResult.Success(new AuthenticationTicket(new UserIdentity(new UserAuthenticationResult(),
-                                                                                  SchemeName),
+      return AuthenticateResult.Success(new AuthenticationTicket(DefaultUser,
                                                                  SchemeName));
     }
 
-    UserIdentity? identity;
-    var           cn          = TryGetHeader(cnHeader_);
-    var           fingerprint = TryGetHeader(fingerprintHeader_);
+    var cn                    = TryGetHeader(cnHeader_);
+    var fingerprint           = TryGetHeader(fingerprintHeader_);
+    var impersonationUsername = TryGetHeader(impersonationUsernameHeader_);
+    var impersonationId       = TryGetHeader(impersonationIdHeader_);
+
+    var cacheKey = new AuthenticationCacheKey(Request.HttpContext.Connection.Id,
+                                              cn,
+                                              fingerprint,
+                                              impersonationId,
+                                              impersonationUsername);
+
+    var identity = cache_.Get(cacheKey);
+    if (identity != null)
+    {
+      logger_.LogDebug($"Found authenticated user {identity.UserName} in cache");
+      return AuthenticateResult.Success(new AuthenticationTicket(identity,
+                                                                 SchemeName));
+    }
+
     if (!string.IsNullOrEmpty(cn) && !string.IsNullOrEmpty(fingerprint))
     {
       identity = await GetIdentityFromCertificateAsync(cn,
@@ -170,8 +192,6 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       return AuthenticateResult.Fail("Missing Certificate Headers");
     }
 
-    var impersonationUsername = TryGetHeader(impersonationUsernameHeader_);
-    var impersonationId       = TryGetHeader(impersonationIdHeader_);
     // Try to impersonate only if at least one of the impersonation headers is set
     if (impersonationId != null || impersonationUsername != null)
     {
@@ -196,6 +216,8 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       }
     }
 
+    cache_.Set(cacheKey,
+               identity);
     // Authentication hasn't been rejected, create the ticket and authenticate the user
     var ticket = new AuthenticationTicket(identity,
                                           SchemeName);
