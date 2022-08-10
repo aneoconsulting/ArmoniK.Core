@@ -230,6 +230,41 @@ public class AuthenticationTable : IAuthenticationTable
   /// <summary>
   ///   Gets or generates the pipeline which uses the matched user's informations to obtain their roles and permissions
   /// </summary>
+  /// @SONAR-IGNORE-START
+  /// <notes>
+  /// Equivalent to the following MongoDB bson pipeline :
+  /// [
+  ///   {
+  ///     "$lookup": {
+  ///       "from": "RoleData",
+  ///       "localField": "Roles",
+  ///       "foreignField": "_id",
+  ///       "as": "Roles"
+  ///     }
+  ///   },
+  ///   {
+  ///     "$project": {
+  ///       "Id": "$_id",
+  ///       "Username": "$Username",
+  ///       "Roles": "$Roles.RoleName",
+  ///       "Permissions": {
+  ///         "$reduce": {
+  ///           "input": "$Roles",
+  ///           "initialValue": [],
+  ///           "in": {
+  ///             "$setUnion": [
+  ///               "$$value",
+  ///               "$$this.Permissions"
+  ///             ]
+  ///           }
+  ///         }
+  ///       },
+  ///       "_id": 0
+  ///     }
+  ///   }
+  /// ]
+  /// </notes>
+  /// @SONAR-IGNORE-END
   /// <returns>The user to identity pipeline</returns>
   private PipelineDefinition<UserData, UserAuthenticationResult> GetUserToIdentityPipeline()
   {
@@ -248,27 +283,6 @@ public class AuthenticationTable : IAuthenticationTable
     - UserName : user name
     - Roles : user's role names
     - Permissions : permissions list, extracted from the roles. Permissions are not repeated
-    Equivalent Bson Stage :
-    @SONAR-IGNORE-START
-    $project: {
-        Id: '$_id',
-        Username: '$Username',
-        Roles: '$Roles.RoleName',
-        Permissions: {
-            $reduce: {
-                input: '$Roles',
-                initialValue: [],
-                'in': {
-                    $setUnion: [
-                        '$$value',
-                        '$$this.Permissions'
-                    ]
-                }
-            }
-        },
-        _id: 0
-    }
-    @SONAR-IGNORE-END
     */
     var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, UserAuthenticationResult>(ual => new UserAuthenticationResult(ual.UserId,
                                                                                                                                                     ual.Username,
@@ -300,6 +314,77 @@ public class AuthenticationTable : IAuthenticationTable
   ///   Gets or generates the pipeline which uses matched certificate's informations to get the corresponding user, their
   ///   roles and their permissions
   /// </summary>
+  /// @SONAR-IGNORE-START
+  /// <notes>
+  /// Equivalent to the following MongoDB Bson pipeline:
+  /// [
+  ///   {
+  ///     "$sort": {
+  ///       "Fingerprint": -1
+  ///     }
+  ///   },
+  ///   {
+  ///     "$limit": 1
+  ///   },
+  ///   {
+  ///     "$lookup": {
+  ///       "from": "UserData",
+  ///       "localField": "UserId",
+  ///       "foreignField": "_id",
+  ///       "as": "UserData"
+  ///     }
+  ///   },
+  ///   {
+  ///     "$match": {
+  ///       "UserData": {
+  ///         "$ne": null,
+  ///         "$not": {
+  ///           "$size": 0
+  ///         }
+  ///       }
+  ///     }
+  ///   },
+  ///   {
+  ///     "$replaceRoot": {
+  ///       "newRoot": {
+  ///         "$arrayElemAt": [
+  ///           "$UserData",
+  ///           0
+  ///         ]
+  ///       }
+  ///     }
+  ///   },
+  ///   {
+  ///     "$lookup": {
+  ///       "from": "RoleData",
+  ///       "localField": "Roles",
+  ///       "foreignField": "_id",
+  ///       "as": "Roles"
+  ///     }
+  ///   },
+  ///   {
+  ///     "$project": {
+  ///       "Id": "$_id",
+  ///       "Username": "$Username",
+  ///       "Roles": "$Roles.RoleName",
+  ///       "Permissions": {
+  ///         "$reduce": {
+  ///           "input": "$Roles",
+  ///           "initialValue": [],
+  ///           "in": {
+  ///             "$setUnion": [
+  ///               "$$value",
+  ///               "$$this.Permissions"
+  ///             ]
+  ///           }
+  ///         }
+  ///       },
+  ///       "_id": 0
+  ///     }
+  ///   }
+  /// ]
+  /// </notes>
+  /// @SONAR-IGNORE-END
   /// <returns>Pipeline to obtain the identity from the certificate</returns>
   private PipelineDefinition<AuthData, UserAuthenticationResult> GetAuthToIdentityPipeline()
   {
