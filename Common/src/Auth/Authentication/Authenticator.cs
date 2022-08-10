@@ -183,7 +183,6 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       {
         try
         {
-          var baseUsername = identity.UserName;
           identity = await GetImpersonatedIdentityAsync(identity,
                                                         impersonationId,
                                                         impersonationUsername)
