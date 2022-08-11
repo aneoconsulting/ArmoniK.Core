@@ -45,10 +45,10 @@ public class MetricsExporter
   /// <summary>
   ///   Port of the metrics exporter
   /// </summary>
-  public       int    Port { get; set; } = 80;
+  public int Port { get; set; } = 80;
 
   /// <summary>
   ///   Path to access the metrics
   /// </summary>
-  public       string Path { get; set; } = "/metrics";
+  public string Path { get; set; } = "/metrics";
 }
