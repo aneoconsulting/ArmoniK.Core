@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -167,6 +167,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                            It.IsAny<CancellationToken>()),
                         submitter => submitter.FinalizeTaskCreation(It.IsAny<IEnumerable<TaskRequest>>(),
                                                                     It.IsAny<int>(),
+                                                                    It.IsAny<string>(),
                                                                     It.IsAny<string>(),
                                                                     It.IsAny<string>(),
                                                                     It.IsAny<CancellationToken>()),

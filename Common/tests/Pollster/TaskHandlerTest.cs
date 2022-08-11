@@ -91,8 +91,9 @@ public class TaskHandlerTest
   [Test]
   public async Task AcquireTaskShouldSucceed()
   {
-    var sessionId = "sessionId";
-    var taskId    = "TaskId";
+    var sessionId   = "sessionId";
+    var taskId      = "TaskId";
+    var partitionId = "part1";
 
     var sqmh = new SimpleQueueMessageHandler
                {
@@ -132,7 +133,7 @@ public class TaskHandlerTest
                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                         MaxRetries  = 2,
                                                         Priority    = 1,
-                                                        PartitionId = "part1",
+                                                        PartitionId = partitionId,
                                                       },
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
@@ -152,6 +153,7 @@ public class TaskHandlerTest
 
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
                                                              priority,
+                                                             partitionId,
                                                              sessionId,
                                                              sessionId,
                                                              CancellationToken.None)
@@ -232,6 +234,7 @@ public class TaskHandlerTest
 
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
                                                              priority,
+                                                             "part1",
                                                              sessionId,
                                                              sessionId,
                                                              CancellationToken.None)
@@ -309,6 +312,7 @@ public class TaskHandlerTest
 
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
                                                              priority,
+                                                             "part1",
                                                              sessionId,
                                                              sessionId,
                                                              CancellationToken.None)
@@ -402,6 +406,7 @@ public class TaskHandlerTest
 
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
                                                              priority,
+                                                             "part1",
                                                              sessionId,
                                                              sessionId,
                                                              CancellationToken.None)

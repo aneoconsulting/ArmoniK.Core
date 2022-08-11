@@ -103,6 +103,7 @@ public class SimpleSubmitter : ISubmitter
 
   public Task FinalizeTaskCreation(IEnumerable<TaskRequest> requests,
                                    int                      priority,
+                                   string                   partitionId,
                                    string                   sessionId,
                                    string                   parentTaskId,
                                    CancellationToken        cancellationToken)

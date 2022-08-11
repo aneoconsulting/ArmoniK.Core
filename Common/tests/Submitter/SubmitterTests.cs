@@ -213,6 +213,7 @@ public class SubmitterTests
 
     await submitter.FinalizeTaskCreation(tuple.requests,
                                          tuple.priority,
+                                         "part1",
                                          SessionId,
                                          SessionId,
                                          CancellationToken.None)
@@ -267,6 +268,7 @@ public class SubmitterTests
 
     await submitter.FinalizeTaskCreation(tuple.requests,
                                          tuple.priority,
+                                         "part2",
                                          SessionId,
                                          SessionId,
                                          token)

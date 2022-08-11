@@ -27,6 +27,8 @@ using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Amqp;
+
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
@@ -61,6 +63,7 @@ public class QueueStorageTests
          CaPath            = "somePath",
          Scheme            = "someScheme",
          CredentialsPath   = "somePath",
+         PartitionId       = "part1",
          MaxPriority       = 5,
          MaxRetries        = 5,
          AllowHostMismatch = false,
@@ -111,6 +114,12 @@ public class QueueStorageTests
       var badPswd = new TestCaseData(badPswdOpt);
       badPswd.SetArgDisplayNames("InvalidPassword");
       yield return badPswd;
+
+      var badPartOpt = CreateDefaultOptions();
+      badPartOpt.PartitionId = "";
+      var badPart = new TestCaseData(badPartOpt);
+      badPart.SetArgDisplayNames("InvalidPartitionId");
+      yield return badPart;
 
       var badPortOpt = CreateDefaultOptions();
       badPortOpt.Port = 0;
@@ -175,6 +184,7 @@ public class QueueStorageTests
                          "msg3",
                        };
     await queueStorage.EnqueueMessagesAsync(testMessages,
+                                            "part1",
                                             priority,
                                             CancellationToken.None)
                       .ConfigureAwait(false);
@@ -203,6 +213,7 @@ public class QueueStorageTests
                          "msg3",
                        };
     await queueStorage.EnqueueMessagesAsync(testMessages,
+                                            "part1",
                                             priority,
                                             CancellationToken.None)
                       .ConfigureAwait(false);
@@ -231,15 +242,56 @@ public class QueueStorageTests
                          "msg3",
                        };
     await queueStorage.EnqueueMessagesAsync(testMessages,
+                                            "part1",
                                             priority,
                                             CancellationToken.None)
                       .ConfigureAwait(false);
 
     await foreach (var qm in queueStorage.PullAsync(3,
+                                                    "part1",
                                                     CancellationToken.None)
                                          .ConfigureAwait(false))
     {
       Assert.IsTrue(qm.Status == QueueMessageStatus.Waiting);
     }
+  }
+
+  [Test]
+  public async Task PullAsyncAsyncFailsIfInvalidPartitionGiven()
+  {
+    await using var helper   = new SimpleAmqpClientHelper();
+    var             provider = new Mock<ISessionAmqp>();
+
+    provider.Setup(sp => sp.Session)
+            .Returns(helper.Session);
+
+    var queueStorage = new QueueStorage(Options,
+                                        provider.Object,
+                                        NullLogger<QueueStorage>.Instance);
+    await queueStorage.Init(CancellationToken.None)
+                      .ConfigureAwait(false);
+
+    var priority = 1;
+    var testMessages = new[]
+                       {
+                         "msg1",
+                         "msg2",
+                         "msg3",
+                       };
+    await queueStorage.EnqueueMessagesAsync(testMessages,
+                                            "part1",
+                                            priority,
+                                            CancellationToken.None)
+                      .ConfigureAwait(false);
+
+    Assert.ThrowsAsync<AmqpException>(async () =>
+                                      {
+                                        await foreach (var qm in queueStorage.PullAsync(3,
+                                                                                        "invalidPartition",
+                                                                                        CancellationToken.None)
+                                                                             .ConfigureAwait(false))
+                                        {
+                                        }
+                                      });
   }
 }
