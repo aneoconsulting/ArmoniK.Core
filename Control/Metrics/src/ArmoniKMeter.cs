@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -106,6 +107,25 @@ public class ArmoniKMeter : Meter, IHostedService
     AddGauge("",
              QueuedName);
 
+    // initialize all the gauges
+    foreach (var partition in partitionStatusCounts.Select(p => p.PartitionId)
+                                                   .Distinct())
+    {
+      foreach (var status in (TaskStatus[])Enum.GetValues(typeof(TaskStatus)))
+      {
+        var statusName = status.ToString();
+        measurements[Tuple.Create(partition,
+                                  statusName)] = 0;
+        AddGauge(partition,
+                 statusName);
+      }
+
+      measurements[Tuple.Create(partition,
+                                QueuedName)] = 0;
+      AddGauge(partition,
+               QueuedName);
+    }
+
     // Count per partitions
     foreach (var psc in partitionStatusCounts)
     {
@@ -120,12 +140,7 @@ public class ArmoniKMeter : Meter, IHostedService
                                   QueuedName)] = psc.Count;
         measurements[Tuple.Create("",
                                   QueuedName)] += psc.Count;
-        AddGauge(psc.PartitionId,
-                 QueuedName);
       }
-
-      AddGauge(psc.PartitionId,
-               statusName);
     }
 
     return measurements;
