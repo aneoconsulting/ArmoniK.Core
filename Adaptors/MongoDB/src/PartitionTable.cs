@@ -45,11 +45,11 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 public class PartitionTable : IPartitionTable
 {
   private readonly ActivitySource                                                    activitySource_;
-  private readonly SessionProvider                                                   sessionProvider_;
+  private readonly ILogger<TaskTable>                                                logger_;
   private readonly MongoCollectionProvider<PartitionData, PartitionDataModelMapping> partitionCollectionProvider_;
+  private readonly SessionProvider                                                   sessionProvider_;
 
-  private          bool               isInitialized_;
-  private readonly ILogger<TaskTable> logger_;
+  private bool isInitialized_;
 
   public PartitionTable(SessionProvider                                                   sessionProvider,
                         MongoCollectionProvider<PartitionData, PartitionDataModelMapping> partitionCollectionProvider,

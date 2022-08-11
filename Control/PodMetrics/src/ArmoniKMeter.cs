@@ -45,13 +45,13 @@ namespace ArmoniK.Core.Control.PodMetrics;
 
 public class ArmoniKMeter : Meter, IHostedService
 {
+  private readonly HttpClient                                     client_;
   private readonly IDictionary<string, ObservableGauge<long>>     gauges_;
   private readonly ILogger                                        logger_;
   private readonly ExecutionSingleizer<IDictionary<string, long>> measurements_;
+  private readonly string                                         metricsExporterUri_;
   private readonly IPartitionTable                                partitionTable_;
   private          int                                            i_;
-  private readonly HttpClient                                     client_;
-  private readonly string                                         metricsExporterUri_;
 
   public ArmoniKMeter(IPartitionTable       partitionTable,
                       MetricsExporter       optionsMetricsExporter,
@@ -115,7 +115,7 @@ public class ArmoniKMeter : Meter, IHostedService
     await foreach (var partition in partitionTable_.GetPartitionWithAllocationAsync(cancellationToken)
                                                    .ConfigureAwait(false))
     {
-      var metricValue = ((metrics[$"armonik_{partition.PartitionId}_tasks_queued"] as Metric)!).MetricValue;
+      var metricValue = (metrics[$"armonik_{partition.PartitionId}_tasks_queued"] as Metric)!.MetricValue;
       if (metricValue != null)
       {
         var numberOfTasks = (long)metricValue.Value;

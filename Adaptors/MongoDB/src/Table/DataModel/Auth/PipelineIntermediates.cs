@@ -32,15 +32,13 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 
 [BsonIgnoreExtraElements]
-public record AuthDataAfterLookup([property: BsonId]
-                                  string AuthId,
-                                  string     UserId,
-                                  string     CN,
-                                  string     Fingerprint,
-                                  UserData[] UserData);
+public record AuthDataAfterLookup([property: BsonId] string AuthId,
+                                  string                    UserId,
+                                  string                    CN,
+                                  string                    Fingerprint,
+                                  UserData[]                UserData);
 
 [BsonIgnoreExtraElements]
-public record UserDataAfterLookup([property: BsonId]
-                                  string UserId,
-                                  string                Username,
-                                  IEnumerable<RoleData> Roles);
+public record UserDataAfterLookup([property: BsonId] string UserId,
+                                  string                    Username,
+                                  IEnumerable<RoleData>     Roles);
