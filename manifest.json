@@ -353,18 +353,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.LockedQueueStorage.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.LockedQueueStorage.html",
-          "hash": "BL/del9TcayPFo7yX5oc+b3upExzZdXCq3tjbWgrTbE="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Object.ObjectDataModelMapping.yml",
       "output": {
         ".html": {
@@ -485,42 +473,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Queue.QueueMessageModelMapping.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Queue.QueueMessageModelMapping.html",
-          "hash": "TVi678FmWaLw8+va4ww2MeHlkRweWodlle3R0yCpBqQ="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Queue.StringCombGuidGenerator.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Queue.StringCombGuidGenerator.html",
-          "hash": "PWwJjhpRZVZpPQpWGOy43fmew79nu1W0GKde6ZuCpKI="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Queue.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Queue.html",
-          "hash": "jzAQf0dA/sqFMfpelUlS9Xy0hyvhmZ4a+Y+rDXV79aY="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.ResultTable.yml",
       "output": {
         ".html": {
@@ -537,7 +489,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.ServiceCollectionExt.html",
-          "hash": "YDER1TJxVVJDBEBCoDe6wmQSK29uIWqazNaZNmFuXg0="
+          "hash": "lyCMjPdOfAjHXRV5RnPT2qaioCyyqxyVfmwlwiQJGaI="
         }
       },
       "is_incremental": false,
@@ -873,7 +825,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.html",
-          "hash": "7ypVxtKljWn0nXWIYinGD0VEhRgq1wQfFkYX1tzR+lE="
+          "hash": "/Vtb0C5+CnVVAw0Tx0pFphaDYk8HGssdIu4ryTSFaZ4="
         }
       },
       "is_incremental": false,
@@ -3681,7 +3633,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "doU6S9FVD9L8oYPBmDyGvYxjYp5lJae3jsfeM5HQ5mc="
+          "hash": "YHujqgElnSNw+GDevHAR1j+Jit7UpMV3HN41ZTxl0CQ="
         }
       },
       "is_incremental": false,
@@ -3768,7 +3720,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 305,
+          "total_file_count": 301,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
