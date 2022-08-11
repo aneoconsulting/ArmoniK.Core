@@ -127,12 +127,12 @@ public class PartitionTableTestBase
   [Test]
   public async Task DeleteAlreadyDeletedTaskAsyncShouldThrowException()
   {
-    await PartitionTable!.DeletePartitionAsync("PartitionId0",
-                                               CancellationToken.None)
-                         .ConfigureAwait(false);
-
     if (RunTests)
     {
+      await PartitionTable!.DeletePartitionAsync("PartitionId0",
+                                                 CancellationToken.None)
+                           .ConfigureAwait(false);
+
       Assert.ThrowsAsync<PartitionNotFoundException>(() => PartitionTable!.DeletePartitionAsync("PartitionId0",
                                                                                                 CancellationToken.None));
     }
