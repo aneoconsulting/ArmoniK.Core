@@ -73,11 +73,13 @@ public class LockedWrapperQueueStorage : IQueueStorage
 
   /// <inheritdoc />
   public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
+                                                                string                                     partitionId,
                                                                 [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var logFunction = logger_.LogFunction($"for {nbMessages} messages");
 
     await foreach (var qm in lockedQueueStorage_.PullAsync(nbMessages,
+                                                           partitionId,
                                                            cancellationToken)
                                                 .WithCancellation(cancellationToken)
                                                 .ConfigureAwait(false))
@@ -99,9 +101,11 @@ public class LockedWrapperQueueStorage : IQueueStorage
 
   /// <inheritdoc />
   public Task EnqueueMessagesAsync(IEnumerable<string> messages,
+                                   string              partitionId,
                                    int                 priority          = 1,
                                    CancellationToken   cancellationToken = default)
     => lockedQueueStorage_.EnqueueMessagesAsync(messages,
+                                                partitionId,
                                                 priority,
                                                 cancellationToken);
 

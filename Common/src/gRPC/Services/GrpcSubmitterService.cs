@@ -199,6 +199,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
       await submitter_.FinalizeTaskCreation(tuple.requests,
                                             tuple.priority,
+                                            request.TaskOptions.PartitionId,
                                             request.SessionId,
                                             request.SessionId,
                                             context.CancellationToken)
@@ -262,6 +263,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
       await submitter_.FinalizeTaskCreation(tuple.requests,
                                             tuple.priority,
+                                            first.InitRequest.TaskOptions.PartitionId,
                                             first.InitRequest.SessionId,
                                             first.InitRequest.SessionId,
                                             context.CancellationToken)

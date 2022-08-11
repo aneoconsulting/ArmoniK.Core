@@ -243,6 +243,7 @@ public class Submitter : ISubmitter
   /// <inheritdoc />
   public async Task FinalizeTaskCreation(IEnumerable<Storage.TaskRequest> requests,
                                          int                              priority,
+                                         string                           partitionId,
                                          string                           sessionId,
                                          string                           parentTaskId,
                                          CancellationToken                cancellationToken)
@@ -255,6 +256,7 @@ public class Submitter : ISubmitter
                                 cancellationToken);
 
     await lockedQueueStorage_.EnqueueMessagesAsync(taskIds,
+                                                   partitionId,
                                                    priority,
                                                    cancellationToken)
                              .ConfigureAwait(false);
@@ -583,6 +585,7 @@ public class Submitter : ISubmitter
                                          taskData.DataDependencies),
                                    },
                                    taskData.Options.Priority,
+                                   taskData.Options.PartitionId,
                                    taskData.SessionId,
                                    taskData.TaskId,
                                    cancellationToken)

@@ -100,6 +100,7 @@ public class Agent : IAgent
     {
       await submitter_.FinalizeTaskCreation(createdTask.requests,
                                             createdTask.priority,
+                                            taskData_.Options.PartitionId,
                                             sessionData_.SessionId!,
                                             taskData_.TaskId!,
                                             cancellationToken)

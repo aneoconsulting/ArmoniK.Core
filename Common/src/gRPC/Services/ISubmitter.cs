@@ -74,6 +74,7 @@ public interface ISubmitter
 
   Task FinalizeTaskCreation(IEnumerable<Storage.TaskRequest> requests,
                             int                              priority,
+                            string                           partitionId,
                             string                           sessionId,
                             string                           parentTaskId,
                             CancellationToken                cancellationToken);
