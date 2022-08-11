@@ -2803,6 +2803,109 @@ references:
   commentId: F:ArmoniK.Core.Adapters.MongoDB.Options.TableStorage.SettingSection
   fullName: ArmoniK.Core.Adapters.MongoDB.Options.TableStorage.SettingSection
   nameWithType: TableStorage.SettingSection
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable
+  name: PartitionTable
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.PartitionTable
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable
+  nameWithType: PartitionTable
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Storage.PartitionData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.TaskTable},ActivitySource)
+  name: PartitionTable(SessionProvider, MongoCollectionProvider<PartitionData, PartitionDataModelMapping>, ILogger<TaskTable>, ActivitySource)
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable__ctor_ArmoniK_Core_Adapters_MongoDB_Common_SessionProvider_ArmoniK_Core_Adapters_MongoDB_Common_MongoCollectionProvider_ArmoniK_Core_Common_Storage_PartitionData_ArmoniK_Core_Adapters_MongoDB_Table_DataModel_PartitionDataModelMapping__ILogger_ArmoniK_Core_Adapters_MongoDB_TaskTable__ActivitySource_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.PartitionTable.#ctor(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider,ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider{ArmoniK.Core.Common.Storage.PartitionData,ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping},ILogger{ArmoniK.Core.Adapters.MongoDB.TaskTable},ActivitySource)
+  name.vb: PartitionTable(SessionProvider, MongoCollectionProvider(Of PartitionData, PartitionDataModelMapping), ILogger(Of TaskTable), ActivitySource)
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.PartitionTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider<ArmoniK.Core.Common.Storage.PartitionData, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping>, ILogger<ArmoniK.Core.Adapters.MongoDB.TaskTable>, ActivitySource)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.PartitionTable.PartitionTable(ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider, ArmoniK.Core.Adapters.MongoDB.Common.MongoCollectionProvider(Of ArmoniK.Core.Common.Storage.PartitionData, ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping), ILogger(Of ArmoniK.Core.Adapters.MongoDB.TaskTable), ActivitySource)
+  nameWithType: PartitionTable.PartitionTable(SessionProvider, MongoCollectionProvider<PartitionData, PartitionDataModelMapping>, ILogger<TaskTable>, ActivitySource)
+  nameWithType.vb: PartitionTable.PartitionTable(SessionProvider, MongoCollectionProvider(Of PartitionData, PartitionDataModelMapping), ILogger(Of TaskTable), ActivitySource)
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.#ctor*
+  name: PartitionTable
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.PartitionTable.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.PartitionTable
+  nameWithType: PartitionTable.PartitionTable
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.PartitionTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: PartitionTable.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.PartitionTable.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.Check
+  nameWithType: PartitionTable.Check
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.CreatePartitionsAsync(IEnumerable{ArmoniK.Core.Common.Storage.PartitionData},CancellationToken)
+  name: CreatePartitionsAsync(IEnumerable<PartitionData>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_CreatePartitionsAsync_IEnumerable_ArmoniK_Core_Common_Storage_PartitionData__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.PartitionTable.CreatePartitionsAsync(IEnumerable{ArmoniK.Core.Common.Storage.PartitionData},CancellationToken)
+  name.vb: CreatePartitionsAsync(IEnumerable(Of PartitionData), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.CreatePartitionsAsync(IEnumerable<ArmoniK.Core.Common.Storage.PartitionData>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.PartitionTable.CreatePartitionsAsync(IEnumerable(Of ArmoniK.Core.Common.Storage.PartitionData), CancellationToken)
+  nameWithType: PartitionTable.CreatePartitionsAsync(IEnumerable<PartitionData>, CancellationToken)
+  nameWithType.vb: PartitionTable.CreatePartitionsAsync(IEnumerable(Of PartitionData), CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.CreatePartitionsAsync*
+  name: CreatePartitionsAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_CreatePartitionsAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.PartitionTable.CreatePartitionsAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.CreatePartitionsAsync
+  nameWithType: PartitionTable.CreatePartitionsAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.DeletePartitionAsync(System.String,CancellationToken)
+  name: DeletePartitionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_DeletePartitionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.PartitionTable.DeletePartitionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.DeletePartitionAsync(System.String, CancellationToken)
+  nameWithType: PartitionTable.DeletePartitionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.DeletePartitionAsync*
+  name: DeletePartitionAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_DeletePartitionAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.PartitionTable.DeletePartitionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.DeletePartitionAsync
+  nameWithType: PartitionTable.DeletePartitionAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.GetPartitionWithAllocationAsync(CancellationToken)
+  name: GetPartitionWithAllocationAsync(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_GetPartitionWithAllocationAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.PartitionTable.GetPartitionWithAllocationAsync(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.GetPartitionWithAllocationAsync(CancellationToken)
+  nameWithType: PartitionTable.GetPartitionWithAllocationAsync(CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.GetPartitionWithAllocationAsync*
+  name: GetPartitionWithAllocationAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_GetPartitionWithAllocationAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.PartitionTable.GetPartitionWithAllocationAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.GetPartitionWithAllocationAsync
+  nameWithType: PartitionTable.GetPartitionWithAllocationAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.PartitionTable.Init(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.Init(CancellationToken)
+  nameWithType: PartitionTable.Init(CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.Init*
+  name: Init
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_Init_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.PartitionTable.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.Init
+  nameWithType: PartitionTable.Init
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.ReadPartitionAsync(System.String,CancellationToken)
+  name: ReadPartitionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_ReadPartitionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.PartitionTable.ReadPartitionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.ReadPartitionAsync(System.String, CancellationToken)
+  nameWithType: PartitionTable.ReadPartitionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.ReadPartitionAsync*
+  name: ReadPartitionAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_ReadPartitionAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.PartitionTable.ReadPartitionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.ReadPartitionAsync
+  nameWithType: PartitionTable.ReadPartitionAsync
 - uid: ArmoniK.Core.Adapters.MongoDB.Queue
   name: ArmoniK.Core.Adapters.MongoDB.Queue
   href: api/ArmoniK.Core.Adapters.MongoDB.Queue.html
@@ -3678,6 +3781,41 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth.UserDataModelMapping.InitializeIndexesAsync
   nameWithType: UserDataModelMapping.InitializeIndexesAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping
+  name: PartitionDataModelMapping
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping
+  nameWithType: PartitionDataModelMapping
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.CollectionName
+  name: CollectionName
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_PartitionDataModelMapping_CollectionName
+  commentId: P:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.CollectionName
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.CollectionName
+  nameWithType: PartitionDataModelMapping.CollectionName
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.CollectionName*
+  name: CollectionName
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_PartitionDataModelMapping_CollectionName_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.CollectionName
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.CollectionName
+  nameWithType: PartitionDataModelMapping.CollectionName
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{ArmoniK.Core.Common.Storage.PartitionData})
+  name: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<PartitionData>)
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_PartitionDataModelMapping_InitializeIndexesAsync_IClientSessionHandle_IMongoCollection_ArmoniK_Core_Common_Storage_PartitionData__
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle,IMongoCollection{ArmoniK.Core.Common.Storage.PartitionData})
+  name.vb: InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of PartitionData))
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<ArmoniK.Core.Common.Storage.PartitionData>)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of ArmoniK.Core.Common.Storage.PartitionData))
+  nameWithType: PartitionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection<PartitionData>)
+  nameWithType.vb: PartitionDataModelMapping.InitializeIndexesAsync(IClientSessionHandle, IMongoCollection(Of PartitionData))
+- uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.InitializeIndexesAsync*
+  name: InitializeIndexesAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.html#ArmoniK_Core_Adapters_MongoDB_Table_DataModel_PartitionDataModelMapping_InitializeIndexesAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.InitializeIndexesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.InitializeIndexesAsync
+  nameWithType: PartitionDataModelMapping.InitializeIndexesAsync
 - uid: ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result
   name: Result
   href: api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.html
@@ -4473,6 +4611,38 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.Tests.ObjectStorageTests.TearDown
   nameWithType: ObjectStorageTests.TearDown
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests
+  name: PartitionTableTests
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.html
+  commentId: T:ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests
+  nameWithType: PartitionTableTests
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.GetPartitionTableInstance
+  name: GetPartitionTableInstance()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_PartitionTableTests_GetPartitionTableInstance
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.GetPartitionTableInstance
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.GetPartitionTableInstance()
+  nameWithType: PartitionTableTests.GetPartitionTableInstance()
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.GetPartitionTableInstance*
+  name: GetPartitionTableInstance
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_PartitionTableTests_GetPartitionTableInstance_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.GetPartitionTableInstance
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.GetPartitionTableInstance
+  nameWithType: PartitionTableTests.GetPartitionTableInstance
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_PartitionTableTests_TearDown
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.TearDown
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.TearDown()
+  nameWithType: PartitionTableTests.TearDown()
+- uid: ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.html#ArmoniK_Core_Adapters_MongoDB_Tests_PartitionTableTests_TearDown_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.TearDown
+  nameWithType: PartitionTableTests.TearDown
 - uid: ArmoniK.Core.Adapters.MongoDB.Tests.ResultTableTests
   name: ResultTableTests
   href: api/ArmoniK.Core.Adapters.MongoDB.Tests.ResultTableTests.html
@@ -6091,6 +6261,43 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.ObjectDataNotFoundException
   nameWithType: ObjectDataNotFoundException.ObjectDataNotFoundException
+- uid: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException
+  name: PartitionNotFoundException
+  href: api/ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.html
+  commentId: T:ArmoniK.Core.Common.Exceptions.PartitionNotFoundException
+  fullName: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException
+  nameWithType: PartitionNotFoundException
+- uid: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor
+  name: PartitionNotFoundException()
+  href: api/ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.html#ArmoniK_Core_Common_Exceptions_PartitionNotFoundException__ctor
+  commentId: M:ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor
+  fullName: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.PartitionNotFoundException()
+  nameWithType: PartitionNotFoundException.PartitionNotFoundException()
+- uid: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor(SerializationInfo,StreamingContext)
+  name: PartitionNotFoundException(SerializationInfo, StreamingContext)
+  href: api/ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.html#ArmoniK_Core_Common_Exceptions_PartitionNotFoundException__ctor_SerializationInfo_StreamingContext_
+  commentId: M:ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor(SerializationInfo,StreamingContext)
+  fullName: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.PartitionNotFoundException(SerializationInfo, StreamingContext)
+  nameWithType: PartitionNotFoundException.PartitionNotFoundException(SerializationInfo, StreamingContext)
+- uid: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor(System.String)
+  name: PartitionNotFoundException(String)
+  href: api/ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.html#ArmoniK_Core_Common_Exceptions_PartitionNotFoundException__ctor_System_String_
+  commentId: M:ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor(System.String)
+  fullName: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.PartitionNotFoundException(System.String)
+  nameWithType: PartitionNotFoundException.PartitionNotFoundException(String)
+- uid: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor(System.String,Exception)
+  name: PartitionNotFoundException(String, Exception)
+  href: api/ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.html#ArmoniK_Core_Common_Exceptions_PartitionNotFoundException__ctor_System_String_Exception_
+  commentId: M:ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor(System.String,Exception)
+  fullName: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.PartitionNotFoundException(System.String, Exception)
+  nameWithType: PartitionNotFoundException.PartitionNotFoundException(String, Exception)
+- uid: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor*
+  name: PartitionNotFoundException
+  href: api/ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.html#ArmoniK_Core_Common_Exceptions_PartitionNotFoundException__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.PartitionNotFoundException
+  nameWithType: PartitionNotFoundException.PartitionNotFoundException
 - uid: ArmoniK.Core.Common.Exceptions.ResultNotFoundException
   name: ResultNotFoundException
   href: api/ArmoniK.Core.Common.Exceptions.ResultNotFoundException.html
@@ -9626,6 +9833,67 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.IObjectStorageFactory.CreateObjectStorage
   nameWithType: IObjectStorageFactory.CreateObjectStorage
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable
+  name: IPartitionTable
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html
+  commentId: T:ArmoniK.Core.Common.Storage.IPartitionTable
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable
+  nameWithType: IPartitionTable
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable.CreatePartitionsAsync(IEnumerable{ArmoniK.Core.Common.Storage.PartitionData},CancellationToken)
+  name: CreatePartitionsAsync(IEnumerable<PartitionData>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_CreatePartitionsAsync_IEnumerable_ArmoniK_Core_Common_Storage_PartitionData__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IPartitionTable.CreatePartitionsAsync(IEnumerable{ArmoniK.Core.Common.Storage.PartitionData},CancellationToken)
+  name.vb: CreatePartitionsAsync(IEnumerable(Of PartitionData), CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable.CreatePartitionsAsync(IEnumerable<ArmoniK.Core.Common.Storage.PartitionData>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.IPartitionTable.CreatePartitionsAsync(IEnumerable(Of ArmoniK.Core.Common.Storage.PartitionData), CancellationToken)
+  nameWithType: IPartitionTable.CreatePartitionsAsync(IEnumerable<PartitionData>, CancellationToken)
+  nameWithType.vb: IPartitionTable.CreatePartitionsAsync(IEnumerable(Of PartitionData), CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable.CreatePartitionsAsync*
+  name: CreatePartitionsAsync
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_CreatePartitionsAsync_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IPartitionTable.CreatePartitionsAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable.CreatePartitionsAsync
+  nameWithType: IPartitionTable.CreatePartitionsAsync
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable.DeletePartitionAsync(System.String,CancellationToken)
+  name: DeletePartitionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_DeletePartitionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IPartitionTable.DeletePartitionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable.DeletePartitionAsync(System.String, CancellationToken)
+  nameWithType: IPartitionTable.DeletePartitionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable.DeletePartitionAsync*
+  name: DeletePartitionAsync
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_DeletePartitionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IPartitionTable.DeletePartitionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable.DeletePartitionAsync
+  nameWithType: IPartitionTable.DeletePartitionAsync
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable.GetPartitionWithAllocationAsync(CancellationToken)
+  name: GetPartitionWithAllocationAsync(CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_GetPartitionWithAllocationAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IPartitionTable.GetPartitionWithAllocationAsync(CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable.GetPartitionWithAllocationAsync(CancellationToken)
+  nameWithType: IPartitionTable.GetPartitionWithAllocationAsync(CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable.GetPartitionWithAllocationAsync*
+  name: GetPartitionWithAllocationAsync
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_GetPartitionWithAllocationAsync_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IPartitionTable.GetPartitionWithAllocationAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable.GetPartitionWithAllocationAsync
+  nameWithType: IPartitionTable.GetPartitionWithAllocationAsync
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable.ReadPartitionAsync(System.String,CancellationToken)
+  name: ReadPartitionAsync(String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_ReadPartitionAsync_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IPartitionTable.ReadPartitionAsync(System.String,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable.ReadPartitionAsync(System.String, CancellationToken)
+  nameWithType: IPartitionTable.ReadPartitionAsync(String, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable.ReadPartitionAsync*
+  name: ReadPartitionAsync
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_ReadPartitionAsync_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IPartitionTable.ReadPartitionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable.ReadPartitionAsync
+  nameWithType: IPartitionTable.ReadPartitionAsync
 - uid: ArmoniK.Core.Common.Storage.IQueueMessageHandler
   name: IQueueMessageHandler
   href: api/ArmoniK.Core.Common.Storage.IQueueMessageHandler.html
@@ -10927,6 +11195,119 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.Output.Success
   nameWithType: Output.Success
+- uid: ArmoniK.Core.Common.Storage.PartitionData
+  name: PartitionData
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html
+  commentId: T:ArmoniK.Core.Common.Storage.PartitionData
+  fullName: ArmoniK.Core.Common.Storage.PartitionData
+  nameWithType: PartitionData
+- uid: ArmoniK.Core.Common.Storage.PartitionData.#ctor(System.String,IList{System.String},System.Int32,System.Int32,System.Int32,System.Int32,ArmoniK.Core.Common.Storage.PodConfiguration)
+  name: PartitionData(String, IList<String>, Int32, Int32, Int32, Int32, PodConfiguration)
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData__ctor_System_String_IList_System_String__System_Int32_System_Int32_System_Int32_System_Int32_ArmoniK_Core_Common_Storage_PodConfiguration_
+  commentId: M:ArmoniK.Core.Common.Storage.PartitionData.#ctor(System.String,IList{System.String},System.Int32,System.Int32,System.Int32,System.Int32,ArmoniK.Core.Common.Storage.PodConfiguration)
+  name.vb: PartitionData(String, IList(Of String), Int32, Int32, Int32, Int32, PodConfiguration)
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PartitionData(System.String, IList<System.String>, System.Int32, System.Int32, System.Int32, System.Int32, ArmoniK.Core.Common.Storage.PodConfiguration)
+  fullName.vb: ArmoniK.Core.Common.Storage.PartitionData.PartitionData(System.String, IList(Of System.String), System.Int32, System.Int32, System.Int32, System.Int32, ArmoniK.Core.Common.Storage.PodConfiguration)
+  nameWithType: PartitionData.PartitionData(String, IList<String>, Int32, Int32, Int32, Int32, PodConfiguration)
+  nameWithType.vb: PartitionData.PartitionData(String, IList(Of String), Int32, Int32, Int32, Int32, PodConfiguration)
+- uid: ArmoniK.Core.Common.Storage.PartitionData.#ctor*
+  name: PartitionData
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionData.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PartitionData
+  nameWithType: PartitionData.PartitionData
+- uid: ArmoniK.Core.Common.Storage.PartitionData.ParentPartitionIds
+  name: ParentPartitionIds
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_ParentPartitionIds
+  commentId: P:ArmoniK.Core.Common.Storage.PartitionData.ParentPartitionIds
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.ParentPartitionIds
+  nameWithType: PartitionData.ParentPartitionIds
+- uid: ArmoniK.Core.Common.Storage.PartitionData.ParentPartitionIds*
+  name: ParentPartitionIds
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_ParentPartitionIds_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionData.ParentPartitionIds
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.ParentPartitionIds
+  nameWithType: PartitionData.ParentPartitionIds
+- uid: ArmoniK.Core.Common.Storage.PartitionData.PartitionId
+  name: PartitionId
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_PartitionId
+  commentId: P:ArmoniK.Core.Common.Storage.PartitionData.PartitionId
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PartitionId
+  nameWithType: PartitionData.PartitionId
+- uid: ArmoniK.Core.Common.Storage.PartitionData.PartitionId*
+  name: PartitionId
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_PartitionId_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionData.PartitionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PartitionId
+  nameWithType: PartitionData.PartitionId
+- uid: ArmoniK.Core.Common.Storage.PartitionData.PodConfiguration
+  name: PodConfiguration
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_PodConfiguration
+  commentId: P:ArmoniK.Core.Common.Storage.PartitionData.PodConfiguration
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PodConfiguration
+  nameWithType: PartitionData.PodConfiguration
+- uid: ArmoniK.Core.Common.Storage.PartitionData.PodConfiguration*
+  name: PodConfiguration
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_PodConfiguration_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionData.PodConfiguration
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PodConfiguration
+  nameWithType: PartitionData.PodConfiguration
+- uid: ArmoniK.Core.Common.Storage.PartitionData.PodMax
+  name: PodMax
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_PodMax
+  commentId: P:ArmoniK.Core.Common.Storage.PartitionData.PodMax
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PodMax
+  nameWithType: PartitionData.PodMax
+- uid: ArmoniK.Core.Common.Storage.PartitionData.PodMax*
+  name: PodMax
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_PodMax_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionData.PodMax
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PodMax
+  nameWithType: PartitionData.PodMax
+- uid: ArmoniK.Core.Common.Storage.PartitionData.PodReserved
+  name: PodReserved
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_PodReserved
+  commentId: P:ArmoniK.Core.Common.Storage.PartitionData.PodReserved
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PodReserved
+  nameWithType: PartitionData.PodReserved
+- uid: ArmoniK.Core.Common.Storage.PartitionData.PodReserved*
+  name: PodReserved
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_PodReserved_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionData.PodReserved
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PodReserved
+  nameWithType: PartitionData.PodReserved
+- uid: ArmoniK.Core.Common.Storage.PartitionData.PreemptionPercentage
+  name: PreemptionPercentage
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_PreemptionPercentage
+  commentId: P:ArmoniK.Core.Common.Storage.PartitionData.PreemptionPercentage
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PreemptionPercentage
+  nameWithType: PartitionData.PreemptionPercentage
+- uid: ArmoniK.Core.Common.Storage.PartitionData.PreemptionPercentage*
+  name: PreemptionPercentage
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_PreemptionPercentage_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionData.PreemptionPercentage
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.PreemptionPercentage
+  nameWithType: PartitionData.PreemptionPercentage
+- uid: ArmoniK.Core.Common.Storage.PartitionData.Priority
+  name: Priority
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_Priority
+  commentId: P:ArmoniK.Core.Common.Storage.PartitionData.Priority
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.Priority
+  nameWithType: PartitionData.Priority
+- uid: ArmoniK.Core.Common.Storage.PartitionData.Priority*
+  name: Priority
+  href: api/ArmoniK.Core.Common.Storage.PartitionData.html#ArmoniK_Core_Common_Storage_PartitionData_Priority_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PartitionData.Priority
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PartitionData.Priority
+  nameWithType: PartitionData.Priority
 - uid: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount
   name: PartitionTaskStatusCount
   href: api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html
@@ -10985,6 +11366,41 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.Status
   nameWithType: PartitionTaskStatusCount.Status
+- uid: ArmoniK.Core.Common.Storage.PodConfiguration
+  name: PodConfiguration
+  href: api/ArmoniK.Core.Common.Storage.PodConfiguration.html
+  commentId: T:ArmoniK.Core.Common.Storage.PodConfiguration
+  fullName: ArmoniK.Core.Common.Storage.PodConfiguration
+  nameWithType: PodConfiguration
+- uid: ArmoniK.Core.Common.Storage.PodConfiguration.#ctor(IDictionary{System.String,System.String})
+  name: PodConfiguration(IDictionary<String, String>)
+  href: api/ArmoniK.Core.Common.Storage.PodConfiguration.html#ArmoniK_Core_Common_Storage_PodConfiguration__ctor_IDictionary_System_String_System_String__
+  commentId: M:ArmoniK.Core.Common.Storage.PodConfiguration.#ctor(IDictionary{System.String,System.String})
+  name.vb: PodConfiguration(IDictionary(Of String, String))
+  fullName: ArmoniK.Core.Common.Storage.PodConfiguration.PodConfiguration(IDictionary<System.String, System.String>)
+  fullName.vb: ArmoniK.Core.Common.Storage.PodConfiguration.PodConfiguration(IDictionary(Of System.String, System.String))
+  nameWithType: PodConfiguration.PodConfiguration(IDictionary<String, String>)
+  nameWithType.vb: PodConfiguration.PodConfiguration(IDictionary(Of String, String))
+- uid: ArmoniK.Core.Common.Storage.PodConfiguration.#ctor*
+  name: PodConfiguration
+  href: api/ArmoniK.Core.Common.Storage.PodConfiguration.html#ArmoniK_Core_Common_Storage_PodConfiguration__ctor_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PodConfiguration.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PodConfiguration.PodConfiguration
+  nameWithType: PodConfiguration.PodConfiguration
+- uid: ArmoniK.Core.Common.Storage.PodConfiguration.Configuration
+  name: Configuration
+  href: api/ArmoniK.Core.Common.Storage.PodConfiguration.html#ArmoniK_Core_Common_Storage_PodConfiguration_Configuration
+  commentId: P:ArmoniK.Core.Common.Storage.PodConfiguration.Configuration
+  fullName: ArmoniK.Core.Common.Storage.PodConfiguration.Configuration
+  nameWithType: PodConfiguration.Configuration
+- uid: ArmoniK.Core.Common.Storage.PodConfiguration.Configuration*
+  name: Configuration
+  href: api/ArmoniK.Core.Common.Storage.PodConfiguration.html#ArmoniK_Core_Common_Storage_PodConfiguration_Configuration_
+  commentId: Overload:ArmoniK.Core.Common.Storage.PodConfiguration.Configuration
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.PodConfiguration.Configuration
+  nameWithType: PodConfiguration.Configuration
 - uid: ArmoniK.Core.Common.Storage.QueueMessageHandler
   name: QueueMessageHandler
   href: api/ArmoniK.Core.Common.Storage.QueueMessageHandler.html
@@ -14917,6 +15333,115 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.ObjectStorageTestBase.TearDown
   nameWithType: ObjectStorageTestBase.TearDown
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase
+  name: PartitionTableTestBase
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html
+  commentId: T:ArmoniK.Core.Common.Tests.PartitionTableTestBase
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase
+  nameWithType: PartitionTableTestBase
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteAlreadyDeletedTaskAsyncShouldThrowException
+  name: DeleteAlreadyDeletedTaskAsyncShouldThrowException()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_DeleteAlreadyDeletedTaskAsyncShouldThrowException
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteAlreadyDeletedTaskAsyncShouldThrowException
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteAlreadyDeletedTaskAsyncShouldThrowException()
+  nameWithType: PartitionTableTestBase.DeleteAlreadyDeletedTaskAsyncShouldThrowException()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteAlreadyDeletedTaskAsyncShouldThrowException*
+  name: DeleteAlreadyDeletedTaskAsyncShouldThrowException
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_DeleteAlreadyDeletedTaskAsyncShouldThrowException_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteAlreadyDeletedTaskAsyncShouldThrowException
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteAlreadyDeletedTaskAsyncShouldThrowException
+  nameWithType: PartitionTableTestBase.DeleteAlreadyDeletedTaskAsyncShouldThrowException
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteTaskAsyncShouldThrowException
+  name: DeleteTaskAsyncShouldThrowException()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_DeleteTaskAsyncShouldThrowException
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteTaskAsyncShouldThrowException
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteTaskAsyncShouldThrowException()
+  nameWithType: PartitionTableTestBase.DeleteTaskAsyncShouldThrowException()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteTaskAsyncShouldThrowException*
+  name: DeleteTaskAsyncShouldThrowException
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_DeleteTaskAsyncShouldThrowException_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteTaskAsyncShouldThrowException
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteTaskAsyncShouldThrowException
+  nameWithType: PartitionTableTestBase.DeleteTaskAsyncShouldThrowException
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.GetPartitionTableInstance
+  name: GetPartitionTableInstance()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_GetPartitionTableInstance
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.GetPartitionTableInstance
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.GetPartitionTableInstance()
+  nameWithType: PartitionTableTestBase.GetPartitionTableInstance()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.GetPartitionTableInstance*
+  name: GetPartitionTableInstance
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_GetPartitionTableInstance_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.GetPartitionTableInstance
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.GetPartitionTableInstance
+  nameWithType: PartitionTableTestBase.GetPartitionTableInstance
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.PartitionTable
+  name: PartitionTable
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_PartitionTable
+  commentId: F:ArmoniK.Core.Common.Tests.PartitionTableTestBase.PartitionTable
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.PartitionTable
+  nameWithType: PartitionTableTestBase.PartitionTable
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadPartitionAsyncShouldSucceed
+  name: ReadPartitionAsyncShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ReadPartitionAsyncShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadPartitionAsyncShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadPartitionAsyncShouldSucceed()
+  nameWithType: PartitionTableTestBase.ReadPartitionAsyncShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadPartitionAsyncShouldSucceed*
+  name: ReadPartitionAsyncShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ReadPartitionAsyncShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadPartitionAsyncShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadPartitionAsyncShouldSucceed
+  nameWithType: PartitionTableTestBase.ReadPartitionAsyncShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadTaskAsyncShouldThrowException
+  name: ReadTaskAsyncShouldThrowException()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ReadTaskAsyncShouldThrowException
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadTaskAsyncShouldThrowException
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadTaskAsyncShouldThrowException()
+  nameWithType: PartitionTableTestBase.ReadTaskAsyncShouldThrowException()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadTaskAsyncShouldThrowException*
+  name: ReadTaskAsyncShouldThrowException
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ReadTaskAsyncShouldThrowException_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadTaskAsyncShouldThrowException
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ReadTaskAsyncShouldThrowException
+  nameWithType: PartitionTableTestBase.ReadTaskAsyncShouldThrowException
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.RunTests
+  name: RunTests
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_RunTests
+  commentId: F:ArmoniK.Core.Common.Tests.PartitionTableTestBase.RunTests
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.RunTests
+  nameWithType: PartitionTableTestBase.RunTests
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_SetUp
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.SetUp
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.SetUp()
+  nameWithType: PartitionTableTestBase.SetUp()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_SetUp_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.SetUp
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.SetUp
+  nameWithType: PartitionTableTestBase.SetUp
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.TearDown
+  name: TearDown()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_TearDown
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.TearDown
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.TearDown()
+  nameWithType: PartitionTableTestBase.TearDown()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.TearDown*
+  name: TearDown
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_TearDown_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.TearDown
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.TearDown
+  nameWithType: PartitionTableTestBase.TearDown
 - uid: ArmoniK.Core.Common.Tests.Pollster
   name: ArmoniK.Core.Common.Tests.Pollster
   href: api/ArmoniK.Core.Common.Tests.Pollster.html
@@ -19075,6 +19600,139 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Name
   nameWithType: Program.ObjectDescription.Name
+- uid: ArmoniK.Core.Control.PodMetrics
+  name: ArmoniK.Core.Control.PodMetrics
+  href: api/ArmoniK.Core.Control.PodMetrics.html
+  commentId: N:ArmoniK.Core.Control.PodMetrics
+  fullName: ArmoniK.Core.Control.PodMetrics
+  nameWithType: ArmoniK.Core.Control.PodMetrics
+- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter
+  name: ArmoniKMeter
+  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html
+  commentId: T:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter
+  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter
+  nameWithType: ArmoniKMeter
+- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.#ctor(ArmoniK.Core.Common.Storage.IPartitionTable,ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter,IHttpClientFactory,ILogger{ArmoniK.Core.Control.PodMetrics.ArmoniKMeter})
+  name: ArmoniKMeter(IPartitionTable, MetricsExporter, IHttpClientFactory, ILogger<ArmoniKMeter>)
+  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter__ctor_ArmoniK_Core_Common_Storage_IPartitionTable_ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_IHttpClientFactory_ILogger_ArmoniK_Core_Control_PodMetrics_ArmoniKMeter__
+  commentId: M:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.#ctor(ArmoniK.Core.Common.Storage.IPartitionTable,ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter,IHttpClientFactory,ILogger{ArmoniK.Core.Control.PodMetrics.ArmoniKMeter})
+  name.vb: ArmoniKMeter(IPartitionTable, MetricsExporter, IHttpClientFactory, ILogger(Of ArmoniKMeter))
+  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.ArmoniKMeter(ArmoniK.Core.Common.Storage.IPartitionTable, ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter, IHttpClientFactory, ILogger<ArmoniK.Core.Control.PodMetrics.ArmoniKMeter>)
+  fullName.vb: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.ArmoniKMeter(ArmoniK.Core.Common.Storage.IPartitionTable, ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter, IHttpClientFactory, ILogger(Of ArmoniK.Core.Control.PodMetrics.ArmoniKMeter))
+  nameWithType: ArmoniKMeter.ArmoniKMeter(IPartitionTable, MetricsExporter, IHttpClientFactory, ILogger<ArmoniKMeter>)
+  nameWithType.vb: ArmoniKMeter.ArmoniKMeter(IPartitionTable, MetricsExporter, IHttpClientFactory, ILogger(Of ArmoniKMeter))
+- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.#ctor*
+  name: ArmoniKMeter
+  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter__ctor_
+  commentId: Overload:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.ArmoniKMeter
+  nameWithType: ArmoniKMeter.ArmoniKMeter
+- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync(CancellationToken)
+  name: StartAsync(CancellationToken)
+  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter_StartAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync(CancellationToken)
+  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync(CancellationToken)
+  nameWithType: ArmoniKMeter.StartAsync(CancellationToken)
+- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync*
+  name: StartAsync
+  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter_StartAsync_
+  commentId: Overload:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync
+  nameWithType: ArmoniKMeter.StartAsync
+- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync(CancellationToken)
+  name: StopAsync(CancellationToken)
+  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter_StopAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync(CancellationToken)
+  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync(CancellationToken)
+  nameWithType: ArmoniKMeter.StopAsync(CancellationToken)
+- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync*
+  name: StopAsync
+  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter_StopAsync_
+  commentId: Overload:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync
+  nameWithType: ArmoniKMeter.StopAsync
+- uid: ArmoniK.Core.Control.PodMetrics.Options
+  name: ArmoniK.Core.Control.PodMetrics.Options
+  href: api/ArmoniK.Core.Control.PodMetrics.Options.html
+  commentId: N:ArmoniK.Core.Control.PodMetrics.Options
+  fullName: ArmoniK.Core.Control.PodMetrics.Options
+  nameWithType: ArmoniK.Core.Control.PodMetrics.Options
+- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter
+  name: MetricsExporter
+  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html
+  commentId: T:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter
+  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter
+  nameWithType: MetricsExporter
+- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host
+  name: Host
+  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Host
+  commentId: P:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host
+  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host
+  nameWithType: MetricsExporter.Host
+- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host*
+  name: Host
+  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Host_
+  commentId: Overload:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host
+  isSpec: "True"
+  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host
+  nameWithType: MetricsExporter.Host
+- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path
+  name: Path
+  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Path
+  commentId: P:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path
+  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path
+  nameWithType: MetricsExporter.Path
+- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path*
+  name: Path
+  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Path_
+  commentId: Overload:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path
+  isSpec: "True"
+  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path
+  nameWithType: MetricsExporter.Path
+- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port
+  name: Port
+  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Port
+  commentId: P:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port
+  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port
+  nameWithType: MetricsExporter.Port
+- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port*
+  name: Port
+  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Port_
+  commentId: Overload:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port
+  isSpec: "True"
+  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port
+  nameWithType: MetricsExporter.Port
+- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.SettingSection
+  name: SettingSection
+  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_SettingSection
+  commentId: F:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.SettingSection
+  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.SettingSection
+  nameWithType: MetricsExporter.SettingSection
+- uid: ArmoniK.Core.Control.PodMetrics.Program
+  name: Program
+  href: api/ArmoniK.Core.Control.PodMetrics.Program.html
+  commentId: T:ArmoniK.Core.Control.PodMetrics.Program
+  fullName: ArmoniK.Core.Control.PodMetrics.Program
+  nameWithType: Program
+- uid: ArmoniK.Core.Control.PodMetrics.Program.Main(System.String[])
+  name: Main(String[])
+  href: api/ArmoniK.Core.Control.PodMetrics.Program.html#ArmoniK_Core_Control_PodMetrics_Program_Main_System_String___
+  commentId: M:ArmoniK.Core.Control.PodMetrics.Program.Main(System.String[])
+  name.vb: Main(String())
+  fullName: ArmoniK.Core.Control.PodMetrics.Program.Main(System.String[])
+  fullName.vb: ArmoniK.Core.Control.PodMetrics.Program.Main(System.String())
+  nameWithType: Program.Main(String[])
+  nameWithType.vb: Program.Main(String())
+- uid: ArmoniK.Core.Control.PodMetrics.Program.Main*
+  name: Main
+  href: api/ArmoniK.Core.Control.PodMetrics.Program.html#ArmoniK_Core_Control_PodMetrics_Program_Main_
+  commentId: Overload:ArmoniK.Core.Control.PodMetrics.Program.Main
+  isSpec: "True"
+  fullName: ArmoniK.Core.Control.PodMetrics.Program.Main
+  nameWithType: Program.Main
 - uid: ArmoniK.Core.Control.Submitter
   name: ArmoniK.Core.Control.Submitter
   href: api/ArmoniK.Core.Control.Submitter.html
@@ -19478,12 +20136,12 @@ references:
   commentId: T:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt
   fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt
   nameWithType: SubmitterExt
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient,System.String)
-  name: CreateSessionAndCheckReply(Submitter.SubmitterClient, String)
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateSessionAndCheckReply_Submitter_SubmitterClient_System_String_
-  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient,System.String)
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient, System.String)
-  nameWithType: SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient, String)
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient,System.String,System.String)
+  name: CreateSessionAndCheckReply(Submitter.SubmitterClient, String, String)
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateSessionAndCheckReply_Submitter_SubmitterClient_System_String_System_String_
+  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient,System.String,System.String)
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient, System.String, System.String)
+  nameWithType: SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient, String, String)
 - uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply*
   name: CreateSessionAndCheckReply
   href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateSessionAndCheckReply_
@@ -19880,6 +20538,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.NTasks
   nameWithType: HtcMock.NTasks
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.Partition
+  name: Partition
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_Partition
+  commentId: P:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.Partition
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.Partition
+  nameWithType: HtcMock.Partition
+- uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.Partition*
+  name: Partition
+  href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_Partition_
+  commentId: Overload:ArmoniK.Samples.HtcMock.Client.Options.HtcMock.Partition
+  isSpec: "True"
+  fullName: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.Partition
+  nameWithType: HtcMock.Partition
 - uid: ArmoniK.Samples.HtcMock.Client.Options.HtcMock.SettingSection
   name: SettingSection
   href: api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html#ArmoniK_Samples_HtcMock_Client_Options_HtcMock_SettingSection

@@ -473,6 +473,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html",
+          "hash": "9FxmO0K7bprtfmAmJuJvg05KhQSP5zEsudW+pNt47jg="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Queue.QueueMessageModelMapping.yml",
       "output": {
         ".html": {
@@ -525,7 +537,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.ServiceCollectionExt.html",
-          "hash": "HuVAtHW9e0yk7I1jsvePF1rhxa4uEVy/bZ5sHKNFFHQ="
+          "hash": "YDER1TJxVVJDBEBCoDe6wmQSK29uIWqazNaZNmFuXg0="
         }
       },
       "is_incremental": false,
@@ -617,6 +629,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.PartitionDataModelMapping.html",
+          "hash": "seP7pcKPKNXxYMPfcA/JJR0ZhXtI4VA/YJTizboKsc8="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Result.yml",
       "output": {
         ".html": {
@@ -681,7 +705,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Table.DataModel.html",
-          "hash": "XKOJsQZ05Lt8jKu1KyV1DmQuiBLEY+XrMCpmTkEnIUw="
+          "hash": "2d+Zeo1an+ulUVAWW/HIPO0++rHquwm1en1hUe6/QuU="
         }
       },
       "is_incremental": false,
@@ -785,6 +809,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.PartitionTableTests.html",
+          "hash": "edDhLmItuR0ntFOeTYKV3Kou8sPhN9GkTXF9yiRJuXI="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.ResultTableTests.yml",
       "output": {
         ".html": {
@@ -825,7 +861,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.Tests.html",
-          "hash": "0GWKZsKcb4GqxmrwMqgRCMQjQnxSwj1yFpjXBhuDhy8="
+          "hash": "EE/J7W0cE8kX7Qm9IyQufx1r/qlFu1wZRlo1Ix43XEE="
         }
       },
       "is_incremental": false,
@@ -837,7 +873,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Adapters.MongoDB.html",
-          "hash": "ziepTcB/1TcMOUnh0uQCEaS9/H7Pri7moueL17cbirY="
+          "hash": "7ypVxtKljWn0nXWIYinGD0VEhRgq1wQfFkYX1tzR+lE="
         }
       },
       "is_incremental": false,
@@ -1125,7 +1161,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Exceptions.ArmoniKException.html",
-          "hash": "IT5rtl0pUPjN0dj9l9elu6ZNdd5lIWXNXYgEXqP2idY="
+          "hash": "4Jq2ksUJRs4pCwrLE53RzqVyFKiXJ10nGXD7nYW6eKU="
         }
       },
       "is_incremental": false,
@@ -1162,6 +1198,18 @@
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Exceptions.ObjectDataNotFoundException.html",
           "hash": "MvF/rZW/ZdRPYg4b5tdcgQQRu2BKexJsnuv2qZGfokk="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Exceptions.PartitionNotFoundException.html",
+          "hash": "1+VM7OFMjdbBdKvEqyfCEfzXOzKEZOqSiEqwJhOXjTA="
         }
       },
       "is_incremental": false,
@@ -1233,7 +1281,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Exceptions.html",
-          "hash": "vecEd6PCDWQGgu2Fgnf7eekYKgSECZouCK6EhHBVq+8="
+          "hash": "LN5HOBZjksfvu5+lC7JXusK0QPDW54EfT7s87kCcEQ4="
         }
       },
       "is_incremental": false,
@@ -1673,6 +1721,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Storage.IPartitionTable.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Storage.IPartitionTable.html",
+          "hash": "Aa+bNmnujVnw/QJsW4rgl34sDso2QJ+CEtJycovMlmU="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Storage.IQueueMessageHandler.yml",
       "output": {
         ".html": {
@@ -1841,11 +1901,35 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Storage.PartitionData.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Storage.PartitionData.html",
+          "hash": "kAOeyt3Xm+/bq0hlSRj5APnYPZ7intHintWKot5pRwg="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.yml",
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Storage.PartitionTaskStatusCount.html",
           "hash": "zxf8Y89EO3/Pvdyd334ZhzP1qFuVfHMV53WR/coaOMM="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Storage.PodConfiguration.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Storage.PodConfiguration.html",
+          "hash": "HgkpQtX6igGjbOMFf850HUPGeh22oNGIQXYObiJp76w="
         }
       },
       "is_incremental": false,
@@ -1989,7 +2073,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Storage.html",
-          "hash": "HNnIWxyoSSE0+XC0brFmJoppNiWSD8e6Ktxa3enhfdk="
+          "hash": "LPnxhQoqKo85siGo0Xms03sSmPZR09QZ7bBOwCMI6UI="
         }
       },
       "is_incremental": false,
@@ -2429,6 +2513,18 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html",
+          "hash": "7hGrY4XClSL/1mtLo6DSAcgkBBzsL5gFnO8eBSDMcf4="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Common.Tests.Pollster.DataPrefetcherTest.yml",
       "output": {
         ".html": {
@@ -2661,7 +2757,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Core.Common.Tests.html",
-          "hash": "NaTDefy1z76P1LJVUi+Djm3ngGHm1wKYSMyvQcp4fGY="
+          "hash": "NQzhW7wopKCY5d3UsJ5O8oSAnvjGfmwddc3QfttSP5U="
         }
       },
       "is_incremental": false,
@@ -3221,6 +3317,66 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html",
+          "hash": "qZeplFaApFxfOkG4E3bySK/WOG41XJoX/0JPc+WlCAQ="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html",
+          "hash": "+TQS1hMmpMUwCQ7Wj8BogCgNxYBCqf5dvra2KSrItjo="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.PodMetrics.Options.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.PodMetrics.Options.html",
+          "hash": "iB87bExNB+/mhh4CRyksltdv2JCTWC0f+nJAc+TqK7w="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.PodMetrics.Program.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.PodMetrics.Program.html",
+          "hash": "Za8GxSgN7I5rg+AJ1Y6wyUhTp8EE43hvAHACr7GlYbg="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/ArmoniK.Core.Control.PodMetrics.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/ArmoniK.Core.Control.PodMetrics.html",
+          "hash": "i6tSa2FsJnMHvNuJ0Sk769XJ+2v2+FJdQx1IvGbLZOY="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Core.Control.Submitter.GrpcHealthCheckService.yml",
       "output": {
         ".html": {
@@ -3333,7 +3489,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html",
-          "hash": "Z9WJ7PCAzt9Ty6fAWQRLDsl5+IAf8WrHHvTK0jXNcpE="
+          "hash": "kaaMDCasG3vJD3ZFfu84cn3BxayWqf2R9J+NZiK3SbU="
         }
       },
       "is_incremental": false,
@@ -3441,7 +3597,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Samples.HtcMock.Client.Options.HtcMock.html",
-          "hash": "ZFR23vVP/bafjdnxOHHXasLLLwVU+2nJvdPVvWLHGtE="
+          "hash": "Ib6VLuF8Vl1jnZTXx7d166DxfWFXKNxmaU2IvMgzdzU="
         }
       },
       "is_incremental": false,
@@ -3525,7 +3681,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "Wb3q8rlDxBs37i5DuGgLmubkt9z9h5/13K3bir3RIzY="
+          "hash": "doU6S9FVD9L8oYPBmDyGvYxjYp5lJae3jsfeM5HQ5mc="
         }
       },
       "is_incremental": false,
@@ -3612,7 +3768,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 292,
+          "total_file_count": 305,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
