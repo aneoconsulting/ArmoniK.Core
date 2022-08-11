@@ -79,13 +79,13 @@ public class PartitionTableTestBase
   protected bool RunTests;
 
   /* Function be override so it returns the suitable instance
-   * of TaskTable to the corresponding interface implementation */
+   * of PartitionTable to the corresponding interface implementation */
   public virtual void GetPartitionTableInstance()
   {
   }
 
   [Test]
-  public async Task ReadTaskAsyncShouldSucceed()
+  public async Task ReadPartitionAsyncShouldSucceed()
   {
     if (RunTests)
     {
