@@ -107,7 +107,7 @@ public class ArmoniKMeter : Meter, IHostedService
     AddGauge("",
              QueuedName);
 
-    // initialize all the gauges
+    // initialize all the gauges for each partition
     foreach (var partition in partitionStatusCounts.Select(p => p.PartitionId)
                                                    .Distinct())
     {
