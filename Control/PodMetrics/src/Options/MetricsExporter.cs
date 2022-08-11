@@ -26,11 +26,29 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Control.PodMetrics.Options;
 
+/// <summary>
+///   Options to set up the connection to the metrics exporter
+/// </summary>
 [PublicAPI]
 public class MetricsExporter
 {
+  /// <summary>
+  ///   Configuration section name
+  /// </summary>
   public const string SettingSection = nameof(MetricsExporter);
-  public       string Host { get; set; } = "localhost";
+
+  /// <summary>
+  ///   Host of the metrics exporter
+  /// </summary>
+  public string Host { get; set; } = "localhost";
+
+  /// <summary>
+  ///   Port of the metrics exporter
+  /// </summary>
   public       int    Port { get; set; } = 80;
+
+  /// <summary>
+  ///   Path to access the metrics
+  /// </summary>
   public       string Path { get; set; } = "/metrics";
 }
