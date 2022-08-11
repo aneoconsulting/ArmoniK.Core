@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,25 +22,34 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.IdGenerators;
+using System;
+using System.Runtime.Serialization;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Queue;
+namespace ArmoniK.Core.Common.Exceptions;
 
-public class StringCombGuidGenerator : IIdGenerator
+[Serializable]
+public class PartitionNotFoundException : ArmoniKException
 {
-  private static CombGuidGenerator Generator
-    => CombGuidGenerator.Instance;
+  public PartitionNotFoundException()
+  {
+  }
 
-  /// <inheritdoc />
-  public object GenerateId(object container,
-                           object document)
-    => $"{Generator.GenerateId(container, document)}";
+  public PartitionNotFoundException(string message)
+    : base(message)
+  {
+  }
 
-  /// <inheritdoc />
-  public bool IsEmpty(object id)
-    => id == null || ((string)id).Equals("00000000-0000-0000-0000-000000000000");
+  public PartitionNotFoundException(string    message,
+                                    Exception innerException)
+    : base(message,
+           innerException)
+  {
+  }
 
-  public static string GenerateId()
-    => $"{Generator.GenerateId(null, null)}";
+  protected PartitionNotFoundException(SerializationInfo info,
+                                       StreamingContext  context)
+    : base(info,
+           context)
+  {
+  }
 }

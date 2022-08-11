@@ -20,6 +20,11 @@ services:
       - Amqp__User=guest
       - Amqp__Password=guest
 
+  armonik.control.podmetrics:
+    environment:
+      - Amqp__User=guest
+      - Amqp__Password=guest
+
   armonik.compute.pollingagent0:
     environment:
       - Amqp__User=guest

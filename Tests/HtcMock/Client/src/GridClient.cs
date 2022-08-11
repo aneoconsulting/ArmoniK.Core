@@ -64,6 +64,7 @@ public class GridClient : IGridClient
                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
                                                        MaxRetries  = 2,
                                                        Priority    = 1,
+                                                       PartitionId = optionsHtcMock_.Partition,
                                                        Options =
                                                        {
                                                          {
@@ -83,6 +84,10 @@ public class GridClient : IGridClient
                                                          },
                                                        },
                                                      },
+                                 PartitionIds =
+                                 {
+                                   optionsHtcMock_.Partition,
+                                 },
                                  Id = sessionId,
                                };
     var session = client_.CreateSession(createSessionRequest);

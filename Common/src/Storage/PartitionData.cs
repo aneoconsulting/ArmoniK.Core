@@ -22,8 +22,24 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Extensions.Common.StreamWrapper.Tests.Server;
+using System.Collections.Generic;
 
-WorkerServer.Create<WorkerService>()
-            .Run();
+namespace ArmoniK.Core.Common.Storage;
+
+/// <summary>
+///   Data structure to hold partitions metadata
+/// </summary>
+/// <param name="PartitionId">Unique name of the partition</param>
+/// <param name="ParentPartitionIds">List of parents up to the first partition</param>
+/// <param name="PodReserved">Number of reserved pods</param>
+/// <param name="PodMax">Max number of pods</param>
+/// <param name="PreemptionPercentage">Percentage of pods that can be preempted</param>
+/// <param name="Priority">Priority of the partition</param>
+/// <param name="PodConfiguration">Pod configuration used to select machines</param>
+public record PartitionData(string           PartitionId,
+                            IList<string>    ParentPartitionIds,
+                            int              PodReserved,
+                            int              PodMax,
+                            int              PreemptionPercentage,
+                            int              Priority,
+                            PodConfiguration PodConfiguration);

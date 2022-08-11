@@ -22,8 +22,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Extensions.Common.StreamWrapper.Tests.Server;
+using System.Collections.Generic;
 
-WorkerServer.Create<WorkerService>()
-            .Run();
+namespace ArmoniK.Core.Common.Storage;
+
+public record PodConfiguration(IDictionary<string, string> Configuration);
