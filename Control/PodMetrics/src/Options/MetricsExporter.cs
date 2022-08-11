@@ -30,7 +30,7 @@ namespace ArmoniK.Core.Control.PodMetrics.Options;
 public class MetricsExporter
 {
   public const string SettingSection = nameof(MetricsExporter);
-  public       string Host     { get; set; } = "localhost";
-  public       int    Port     { get; set; } = 80;
+  public       string Host { get; set; } = "localhost";
+  public       int    Port { get; set; } = 80;
   public       string Path { get; set; } = "/metrics";
 }

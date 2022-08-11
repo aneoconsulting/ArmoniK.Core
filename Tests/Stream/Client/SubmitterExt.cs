@@ -55,7 +55,6 @@ public static class SubmitterExt
                                          PartitionIds =
                                          {
                                            partitionId,
-
                                          },
                                        });
     switch (session.ResultCase)

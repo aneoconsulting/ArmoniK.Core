@@ -81,7 +81,7 @@ public static class Program
                                         b.AddMeter(nameof(ArmoniKMeter));
                                       })
              .AddOption<MetricsExporter>(builder.Configuration,
-                                      MetricsExporter.SettingSection)
+                                         MetricsExporter.SettingSection)
              .AddHostedService<ArmoniKMeter>()
              .AddHttpClient()
              .AddControllers();

@@ -62,7 +62,6 @@ public class PartitionTableTestBase
                                                                 new PodConfiguration(new Dictionary<string, string>())),
                                             })
                      .Wait();
-
     }
   }
 
@@ -137,5 +136,4 @@ public class PartitionTableTestBase
                                                                                                 CancellationToken.None));
     }
   }
-
 }

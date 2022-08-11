@@ -28,12 +28,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+
 using Microsoft.Extensions.Logging;
+
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 

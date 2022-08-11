@@ -87,7 +87,6 @@ public class PartitionDataModelMapping : IMongoDataModelMapping<PartitionData>
   public async Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,
                                            IMongoCollection<PartitionData> collection)
   {
-
     var partitionIndex = Builders<PartitionData>.IndexKeys.Hashed(model => model.PartitionId);
 
     var indexModels = new CreateIndexModel<PartitionData>[]
