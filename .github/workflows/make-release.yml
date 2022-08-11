@@ -42,6 +42,7 @@ jobs:
         image:
         - dockerhubaneo/armonik_pollingagent
         - dockerhubaneo/armonik_control_metrics
+        - dockerhubaneo/armonik_control_podmetrics
         - dockerhubaneo/armonik_control
         - dockerhubaneo/armonik_core_stream_test_worker
         - dockerhubaneo/armonik_core_stream_test_client

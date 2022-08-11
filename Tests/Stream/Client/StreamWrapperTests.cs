@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -63,6 +64,8 @@ internal class StreamWrapperTests
     var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
                                .Get<GrpcClient>();
 
+    partition_ = Environment.GetEnvironmentVariable("Partition");
+
     Console.WriteLine($"endpoint : {options.Endpoint}");
     var channel = GrpcChannelFactory.CreateChannel(options);
     client_ = new Submitter.SubmitterClient(channel);
@@ -70,6 +73,7 @@ internal class StreamWrapperTests
   }
 
   private Submitter.SubmitterClient client_;
+  private string?                   partition_;
 
   [TestCase(2,
             ExpectedResult = 4)]
@@ -80,7 +84,8 @@ internal class StreamWrapperTests
     var sessionId = Guid.NewGuid() + "mytestsession";
     var taskId    = Guid.NewGuid() + "mytask";
 
-    client_.CreateSessionAndCheckReply(sessionId);
+    client_.CreateSessionAndCheckReply(sessionId,
+                                       partition_!);
 
     var payload = new TestPayload
                   {
@@ -144,7 +149,8 @@ internal class StreamWrapperTests
     var sessionId = Guid.NewGuid() + "mytestsession";
     var taskId    = Guid.NewGuid() + "mytask";
 
-    client_.CreateSessionAndCheckReply(sessionId);
+    client_.CreateSessionAndCheckReply(sessionId,
+                                       partition_!);
 
     var payload = new TestPayload
                   {
@@ -188,7 +194,8 @@ internal class StreamWrapperTests
   {
     var sessionId = Guid.NewGuid() + nameof(TaskFailed);
 
-    client_.CreateSessionAndCheckReply(sessionId);
+    client_.CreateSessionAndCheckReply(sessionId,
+                                       partition_!);
 
     var payload = new TestPayload
                   {
@@ -248,7 +255,8 @@ internal class StreamWrapperTests
     var sessionId = "sessionId-" + Guid.NewGuid() + "-" + nameof(MultipleTasks) + " - " + taskType;
     Console.WriteLine($"Type of task {taskType}");
 
-    client_.CreateSessionAndCheckReply(sessionId);
+    client_.CreateSessionAndCheckReply(sessionId,
+                                       partition_!);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -330,7 +338,8 @@ internal class StreamWrapperTests
   {
     var sessionId = Guid.NewGuid() + "-MultipleDatadependencies";
 
-    client_.CreateSessionAndCheckReply(sessionId);
+    client_.CreateSessionAndCheckReply(sessionId,
+                                       partition_!);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -445,7 +454,8 @@ internal class StreamWrapperTests
   {
     var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
 
-    client_.CreateSessionAndCheckReply(sessionId);
+    client_.CreateSessionAndCheckReply(sessionId,
+                                       partition_!);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -527,7 +537,8 @@ internal class StreamWrapperTests
   {
     var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
 
-    client_.CreateSessionAndCheckReply(sessionId);
+    client_.CreateSessionAndCheckReply(sessionId,
+                                       partition_!);
 
     var taskId = nameof(LargePayloads) + "-" + Guid.NewGuid();
 
@@ -571,7 +582,8 @@ internal class StreamWrapperTests
   {
     var sessionId = Guid.NewGuid() + "-" + nameof(PriorityShouldHaveAnEffect);
 
-    client_.CreateSessionAndCheckReply(sessionId);
+    client_.CreateSessionAndCheckReply(sessionId,
+                                       partition_!);
 
     var tasks = Enumerable.Range(1,
                                  9)

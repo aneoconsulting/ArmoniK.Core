@@ -43,6 +43,7 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 internal class CreateSessionTests
 {
   private Submitter.SubmitterClient client_;
+  private string?                   partition_;
 
   [SetUp]
   public void SetUp()
@@ -59,6 +60,8 @@ internal class CreateSessionTests
     var configuration = builder.Build();
     var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
                                .Get<GrpcClient>();
+
+    partition_ = Environment.GetEnvironmentVariable("Partition");
 
     Console.WriteLine($"endpoint : {options.Endpoint}");
     var channel = GrpcChannelFactory.CreateChannel(options);
@@ -77,6 +80,10 @@ internal class CreateSessionTests
                                               {
                                                 DefaultTaskOption = null,
                                                 Id                = sessionId,
+                                                PartitionIds =
+                                                {
+                                                  partition_,
+                                                },
                                               }));
   }
 
@@ -94,6 +101,10 @@ internal class CreateSessionTests
                                                                       MaxRetries  = 2,
                                                                     },
                                                 Id = "",
+                                                PartitionIds =
+                                                {
+                                                  partition_,
+                                                },
                                               }));
   }
 
@@ -112,6 +123,10 @@ internal class CreateSessionTests
                                                                            MaxRetries  = 2,
                                                                          },
                                                      Id = sessionId,
+                                                     PartitionIds =
+                                                     {
+                                                       partition_,
+                                                     },
                                                    });
     Assert.AreEqual(createSessionReply.ResultCase,
                     CreateSessionReply.ResultOneofCase.Ok);

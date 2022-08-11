@@ -37,19 +37,26 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 public static class SubmitterExt
 {
   public static void CreateSessionAndCheckReply(this Submitter.SubmitterClient client,
-                                                string                         sessionId)
+                                                string                         sessionId,
+                                                string                         partitionId)
   {
     var taskOptions = new TaskOptions
                       {
                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
                         MaxRetries  = 3,
                         Priority    = 1,
+                        PartitionId = partitionId,
                       };
     Console.WriteLine("Creating Session");
     var session = client.CreateSession(new CreateSessionRequest
                                        {
                                          DefaultTaskOption = taskOptions,
                                          Id                = sessionId,
+                                         PartitionIds =
+                                         {
+                                           partitionId,
+
+                                         },
                                        });
     switch (session.ResultCase)
     {

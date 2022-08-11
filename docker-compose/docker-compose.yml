@@ -68,10 +68,6 @@ services:
     ports:
       - 5002:1080
     environment:
-      - Metrics__ApiVersion=TestApiVersion
-      - Metrics__DescribedObject__ApiVersion=TestApiVersion
-      - Metrics__DescribedObject__Name=metrics-exporter
-      - Metrics__DescribedObject__Namespace=armonik
       - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
       - MongoDB__Host=database
       - MongoDB__Port=27017
@@ -89,6 +85,46 @@ services:
       - Amqp__MaxRetries=10
       - Amqp__LinkCredit=2
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
+  armonik.control.podmetrics:
+    image: ${ARMONIK_PODMETRICS}
+    depends_on:
+      - database
+      - object
+      - queue
+      - fluentbit
+      - armonik.control.metrics
+    networks:
+      - armonik-net
+      - armonik-backend
+      - armonik-monitoring
+    ports:
+      - 5003:1080
+    environment:
+      - Components__TableStorage=ArmoniK.Adapters.MongoDB.TableStorage
+      - MongoDB__Host=database
+      - MongoDB__Port=27017
+      - MongoDB__DatabaseName=database
+      - MongoDB__MaxConnectionPoolSize=500
+      - MongoDB__TableStorage__PollingDelayMin=00:00:01
+      - MongoDB__TableStorage__PollingDelayMax=00:00:10
+      - Components__ObjectStorage=ArmoniK.Adapters.Redis.ObjectStorage
+      - Redis__EndpointUrl=object:6379
+      - Components__QueueStorage=ArmoniK.Adapters.Amqp.QueueStorage
+      - Amqp__Host=queue
+      - Amqp__Port=5672
+      - Amqp__Scheme=AMQP
+      - Amqp__MaxPriority=10
+      - Amqp__MaxRetries=10
+      - Amqp__LinkCredit=2
+      - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
+      - MetricsExporter__Host=http://armonik.control.metrics
+      - MetricsExporter__Port=1080
+      - MetricsExporter__Path=/metrics
     logging:
       driver: fluentd
       options:
