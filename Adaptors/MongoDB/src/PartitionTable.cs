@@ -135,12 +135,9 @@ public class PartitionTable : IPartitionTable
                                                           cancellationToken)
                                           .ConfigureAwait(false);
 
-    switch (result.DeletedCount)
+    if (result.DeletedCount == 0)
     {
-      case 0:
-        throw new PartitionNotFoundException($"Partition '{partitionId}' not found.");
-      case > 1:
-        throw new ArmoniKException("Multiple partitions deleted");
+      throw new PartitionNotFoundException($"Partition '{partitionId}' not found.");
     }
   }
 }
