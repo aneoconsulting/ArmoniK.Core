@@ -19659,28 +19659,6 @@ references:
   commentId: N:ArmoniK.Extensions.Common.StreamWrapper.Tests.Server
   fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server
   nameWithType: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program
-  name: Program
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.html
-  commentId: T:ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program
-  nameWithType: Program
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.Main(System.String[])
-  name: Main(String[])
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_Program_Main_System_String___
-  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.Main(System.String[])
-  name.vb: Main(String())
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.Main(System.String[])
-  fullName.vb: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.Main(System.String())
-  nameWithType: Program.Main(String[])
-  nameWithType.vb: Program.Main(String())
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.Main*
-  name: Main
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Server_Program_Main_
-  commentId: Overload:ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.Main
-  isSpec: "True"
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.Main
-  nameWithType: Program.Main
 - uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService
   name: WorkerService
   href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService.html
@@ -20043,28 +20021,6 @@ references:
   commentId: N:ArmoniK.Samples.HtcMock.Server
   fullName: ArmoniK.Samples.HtcMock.Server
   nameWithType: ArmoniK.Samples.HtcMock.Server
-- uid: ArmoniK.Samples.HtcMock.Server.Program
-  name: Program
-  href: api/ArmoniK.Samples.HtcMock.Server.Program.html
-  commentId: T:ArmoniK.Samples.HtcMock.Server.Program
-  fullName: ArmoniK.Samples.HtcMock.Server.Program
-  nameWithType: Program
-- uid: ArmoniK.Samples.HtcMock.Server.Program.Main(System.String[])
-  name: Main(String[])
-  href: api/ArmoniK.Samples.HtcMock.Server.Program.html#ArmoniK_Samples_HtcMock_Server_Program_Main_System_String___
-  commentId: M:ArmoniK.Samples.HtcMock.Server.Program.Main(System.String[])
-  name.vb: Main(String())
-  fullName: ArmoniK.Samples.HtcMock.Server.Program.Main(System.String[])
-  fullName.vb: ArmoniK.Samples.HtcMock.Server.Program.Main(System.String())
-  nameWithType: Program.Main(String[])
-  nameWithType.vb: Program.Main(String())
-- uid: ArmoniK.Samples.HtcMock.Server.Program.Main*
-  name: Main
-  href: api/ArmoniK.Samples.HtcMock.Server.Program.html#ArmoniK_Samples_HtcMock_Server_Program_Main_
-  commentId: Overload:ArmoniK.Samples.HtcMock.Server.Program.Main
-  isSpec: "True"
-  fullName: ArmoniK.Samples.HtcMock.Server.Program.Main
-  nameWithType: Program.Main
 - uid: ArmoniK.Samples.HtcMock.Server.SampleComputerService
   name: SampleComputerService
   href: api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.html

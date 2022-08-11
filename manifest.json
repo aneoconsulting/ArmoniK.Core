@@ -3389,18 +3389,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.Program.html",
-          "hash": "oy9EmrdxMZtkOYvzFgHCHp0ryNpkHw6JA/aR1yjE0MA="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.WorkerService.yml",
       "output": {
         ".html": {
@@ -3417,7 +3405,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Server.html",
-          "hash": "EtSLBjYXNyrbVpxkZilNIeuNhY/nChHQJqVWbh+eKKk="
+          "hash": "mSRgjQPNE5PA6gkY8cK6uTsrwUHaHvn/WJj/CxgrUfw="
         }
       },
       "is_incremental": false,
@@ -3497,18 +3485,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/ArmoniK.Samples.HtcMock.Server.Program.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/ArmoniK.Samples.HtcMock.Server.Program.html",
-          "hash": "K/yGrUspE9o8sk7GNHYHDbOVBbbH3qynKbEWVHt0dUA="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/ArmoniK.Samples.HtcMock.Server.SampleComputerService.yml",
       "output": {
         ".html": {
@@ -3525,7 +3501,7 @@
       "output": {
         ".html": {
           "relative_path": "api/ArmoniK.Samples.HtcMock.Server.html",
-          "hash": "8GdDuY+h7hZHkCK5dAUMmcLsGYBi45qbQWwmAJyA/SQ="
+          "hash": "LFbN109M2zdo+cMWcPCSSxNmx82HbO8N15UMiqEDGKk="
         }
       },
       "is_incremental": false,
@@ -3549,7 +3525,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "VJu4PJQgnxu1e3exZuILlCN/f3BtlnFUPdHBbSxIpa8="
+          "hash": "Wb3q8rlDxBs37i5DuGgLmubkt9z9h5/13K3bir3RIzY="
         }
       },
       "is_incremental": false,
@@ -3636,7 +3612,7 @@
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": false,
           "incrementalPhase": "build",
-          "total_file_count": 294,
+          "total_file_count": 292,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
