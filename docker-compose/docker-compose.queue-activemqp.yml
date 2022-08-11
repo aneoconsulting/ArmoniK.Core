@@ -23,6 +23,11 @@ services:
       - Amqp__User=admin
       - Amqp__Password=admin
 
+  armonik.control.podmetrics:
+    environment:
+      - Amqp__User=admin
+      - Amqp__Password=admin
+
   armonik.compute.pollingagent0:
     environment:
       - Amqp__User=admin

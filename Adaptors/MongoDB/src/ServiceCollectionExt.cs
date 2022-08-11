@@ -77,7 +77,8 @@ public static class ServiceCollectionExt
                                        TableStorage.SettingSection)
               .AddTransient<ITaskTable, TaskTable>()
               .AddTransient<ISessionTable, SessionTable>()
-              .AddTransient<IResultTable, ResultTable>();
+              .AddTransient<IResultTable, ResultTable>()
+              .AddTransient<IPartitionTable, PartitionTable>();
     }
 
     if (components["QueueStorage"] == "ArmoniK.Adapters.MongoDB.LockedQueueStorage")
