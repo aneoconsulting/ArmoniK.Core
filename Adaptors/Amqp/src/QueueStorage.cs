@@ -44,13 +44,15 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueStorage : IQueueStorage
 {
-  private const int MaxInternalQueuePriority = 10;
+  private const    int          MaxInternalQueuePriority = 10;
+  private readonly List<string> linkAdresses_;
 
   private readonly ILogger<QueueStorage> logger_;
 
-  private readonly int                        nbLinks_;
-  private readonly AsyncLazy<IReceiverLink>[] receivers_;
-  private readonly AsyncLazy<ISenderLink>[]   senders_;
+  private readonly int                      nbLinks_;
+  private readonly Options.Amqp             options_;
+  private readonly AsyncLazy<ISenderLink>[] senders_;
+  private readonly ISessionAmqp             sessionAmqp_;
 
   private bool isInitialized_;
 
@@ -74,6 +76,12 @@ public class QueueStorage : IQueueStorage
     {
       throw new ArgumentOutOfRangeException(nameof(options),
                                             $"{nameof(Options.Amqp.Password)} is not defined.");
+    }
+
+    if (string.IsNullOrEmpty(options.PartitionId))
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.Amqp.PartitionId)} is not defined.");
     }
 
     if (options.Port == 0)
@@ -100,35 +108,29 @@ public class QueueStorage : IQueueStorage
                                             $"Minimum value for {nameof(Options.Amqp.LinkCredit)} is 1.");
     }
 
-    MaxPriority = options.MaxPriority;
-    logger_     = logger;
+    sessionAmqp_ = sessionAmqp;
+    options_     = options;
+    MaxPriority  = options.MaxPriority;
+    logger_      = logger;
 
-    nbLinks_ = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
+    linkAdresses_ = new List<string>();
+    nbLinks_      = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
 
     senders_ = Enumerable.Range(0,
                                 nbLinks_)
-                         .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(sessionAmqp.Session,
-                                                                                      $"SenderLink{i}",
-                                                                                      $"q{i}")))
+                         .Select(i => new AsyncLazy<ISenderLink>(() =>
+                                                                 {
+                                                                   linkAdresses_.Add($"{options.PartitionId}###q{i}");
+                                                                   var target = new Target
+                                                                                {
+                                                                                  Address = linkAdresses_[i],
+                                                                                };
+                                                                   return new SenderLink(sessionAmqp.Session,
+                                                                                         $"{options.PartitionId}###SenderLink{i}",
+                                                                                         target,
+                                                                                         null);
+                                                                 }))
                          .ToArray();
-
-    receivers_ = Enumerable.Range(0,
-                                  nbLinks_)
-                           .Select(i => new AsyncLazy<IReceiverLink>(() =>
-                                                                     {
-                                                                       var rl = new ReceiverLink(sessionAmqp.Session,
-                                                                                                 $"ReceiverLink{i}",
-                                                                                                 $"q{i}");
-
-                                                                       /* linkCredit_: the maximum number of messages the
-                                                                        * remote peer can send to the receiver.
-                                                                        * With the goal of minimizing/deactivating
-                                                                        * prefetching, a value of 1 gave us the desired
-                                                                        * behavior. We pick a default value of 2 to have "some cache". */
-                                                                       rl.SetCredit(options.LinkCredit);
-                                                                       return rl;
-                                                                     }))
-                           .ToArray();
   }
 
   /// <inheritdoc />
@@ -136,10 +138,8 @@ public class QueueStorage : IQueueStorage
   {
     if (!isInitialized_)
     {
-      var senders   = Task.WhenAll(senders_.Select(async lazy => await lazy));
-      var receivers = Task.WhenAll(receivers_.Select(async lazy => await lazy));
-      await Task.WhenAll(senders,
-                         receivers)
+      var senders = Task.WhenAll(senders_.Select(async lazy => await lazy));
+      await Task.WhenAll(senders)
                 .ConfigureAwait(false);
       isInitialized_ = true;
     }
@@ -154,31 +154,59 @@ public class QueueStorage : IQueueStorage
 
   /// <inheritdoc />
   public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
+                                                                string                                     partitionId,
                                                                 [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var _               = logger_.LogFunction();
     var       nbPulledMessage = 0;
 
+
+    var receivers = Enumerable.Range(0,
+                                     nbLinks_)
+                              .Select(i => new AsyncLazy<IReceiverLink>(() =>
+                                                                        {
+                                                                          if (linkAdresses_.Contains($"{partitionId}###q{i}") is false)
+                                                                          {
+                                                                            throw new AmqpException(new Error("Queue does not exist"));
+                                                                          }
+
+                                                                          var rl = new ReceiverLink(sessionAmqp_.Session,
+                                                                                                    $"{partitionId}###ReceiverLink{i}",
+                                                                                                    $"{partitionId}###q{i}");
+
+                                                                          /* linkCredit_: the maximum number of messages the
+                                                                           * remote peer can send to the receiver.
+                                                                           * With the goal of minimizing/deactivating
+                                                                           * prefetching, a value of 1 gave us the desired
+                                                                           * behavior. We pick a default value of 2 to have "some cache". */
+                                                                          rl.SetCredit(options_.LinkCredit);
+                                                                          return rl;
+                                                                        }))
+                              .ToArray();
+
+
     while (nbPulledMessage < nbMessages)
     {
       var currentNbMessages = nbPulledMessage;
-      for (var i = receivers_.Length - 1; i >= 0; --i)
+      for (var i = receivers.Length - 1; i >= 0; --i)
       {
         cancellationToken.ThrowIfCancellationRequested();
-        var receiver = await receivers_[i];
+        var receiver = await receivers[i];
+        Console.WriteLine(receiver.Name);
         var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
         if (message is null)
         {
-          logger_.LogTrace("Message is null receiver {i}",
+          logger_.LogTrace($"Message is null receiver {i}",
                            i);
           continue;
         }
 
         nbPulledMessage++;
 
+        var sender = await senders_[i];
         yield return new QueueMessageHandler(message,
-                                             await senders_[i],
+                                             sender,
                                              receiver,
                                              Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
                                              logger_,
@@ -196,6 +224,7 @@ public class QueueStorage : IQueueStorage
 
   /// <inheritdoc />
   public async Task EnqueueMessagesAsync(IEnumerable<string> messages,
+                                         string              partitionId,
                                          int                 priority          = 1,
                                          CancellationToken   cancellationToken = default)
   {

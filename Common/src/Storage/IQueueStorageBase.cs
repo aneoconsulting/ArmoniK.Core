@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -33,6 +33,7 @@ public interface IQueueStorageBase : IInitializable
   int MaxPriority { get; }
 
   IAsyncEnumerable<IQueueMessageHandler> PullAsync(int               nbMessages,
+                                                   string            partitionId,
                                                    CancellationToken cancellationToken = default);
 
   /// <summary>
@@ -43,6 +44,7 @@ public interface IQueueStorageBase : IInitializable
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   Task EnqueueMessagesAsync(IEnumerable<string> messages,
+                            string              partitionId,
                             int                 priority          = 1,
                             CancellationToken   cancellationToken = default);
 }

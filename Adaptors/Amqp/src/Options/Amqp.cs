@@ -38,6 +38,7 @@ public class Amqp
   public string Password          { get; set; }
   public string Scheme            { get; set; }
   public string CaPath            { get; set; }
+  public string PartitionId       { get; set; }
   public int    Port              { get; set; }
   public int    MaxPriority       { get; set; }
   public bool   AllowHostMismatch { get; set; }
