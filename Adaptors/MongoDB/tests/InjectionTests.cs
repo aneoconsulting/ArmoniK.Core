@@ -50,9 +50,6 @@ internal class InjectionTests
                                                 "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
                                               },
                                               {
-                                                "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage"
-                                              },
-                                              {
                                                 "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
                                               },
                                               {
@@ -99,16 +96,7 @@ internal class InjectionTests
                                               },
                                               {
                                                 $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:ChunkSize", "100000"
-                                              },
-                                              {
-                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshPeriodicity", "00:20:00"
-                                              },
-                                              {
-                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:PollPeriodicity", "00:00:50"
-                                              },
-                                              {
-                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshExtension", "00:50:00"
-                                              },
+                                              }
                                             };
 
     var logger_ = NullLogger.Instance;
@@ -270,41 +258,6 @@ internal class InjectionTests
   }
 
   [Test]
-  public void QueueOptionsNotNull()
-  {
-    var options = provider_.GetRequiredService<QueueStorage>();
-
-    Assert.NotNull(options);
-  }
-
-  [Test]
-  public void ReadQueueLockRefreshExtension()
-  {
-    var options = provider_.GetRequiredService<QueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(50),
-                    options.LockRefreshExtension);
-  }
-
-  [Test]
-  public void ReadQueuePollPeriodicity()
-  {
-    var options = provider_.GetRequiredService<QueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromSeconds(50),
-                    options.PollPeriodicity);
-  }
-
-  [Test]
-  public void ReadQueueLockRefreshPeriodicity()
-  {
-    var options = provider_.GetRequiredService<QueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(20),
-                    options.LockRefreshPeriodicity);
-  }
-
-  [Test]
   public void BuildTableStorage()
   {
     var table = provider_.GetRequiredService<TableStorage>();
@@ -336,51 +289,6 @@ internal class InjectionTests
     var objectStorageFactory = provider_.GetRequiredService<ObjectStorageFactory>();
 
     Assert.NotNull(objectStorageFactory);
-  }
-
-  [Test]
-  public void BuildQueueStorage()
-  {
-    var queue = provider_.GetRequiredService<LockedQueueStorage>();
-
-    Assert.NotNull(queue);
-  }
-
-  [Test]
-  public void QueueStorageHasLockRefreshExtension()
-  {
-    var queue = provider_.GetRequiredService<LockedQueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(50),
-                    queue.LockRefreshExtension);
-  }
-
-  [Test]
-  public void QueueStorageHasPollPeriodicity()
-  {
-    var queue = provider_.GetRequiredService<LockedQueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromSeconds(50),
-                    queue.PollPeriodicity);
-  }
-
-  [Test]
-  public void QueueStorageHasLockRefreshPeriodicity()
-  {
-    var queue = provider_.GetRequiredService<LockedQueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(20),
-                    queue.LockRefreshPeriodicity);
-  }
-
-  [Test]
-  public void QueueStorageHasBindingToQueueStorage()
-  {
-    var queueStorage = provider_.GetRequiredService<ILockedQueueStorage>();
-
-    Assert.NotNull(queueStorage);
-    Assert.AreEqual(typeof(LockedQueueStorage),
-                    queueStorage.GetType());
   }
 
   [Test]

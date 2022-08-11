@@ -80,15 +80,6 @@ public static class ServiceCollectionExt
               .AddTransient<IResultTable, ResultTable>();
     }
 
-    if (components["QueueStorage"] == "ArmoniK.Adapters.MongoDB.LockedQueueStorage")
-    {
-      services.AddOption<QueueStorage>(configuration,
-                                       QueueStorage.SettingSection)
-              .AddTransientWithHealthCheck<LockedQueueStorage>($"MongoDB.{nameof(LockedQueueStorage)}")
-              .AddTransientWithHealthCheck<IQueueStorage, LockedWrapperQueueStorage>($"MongoDB.{nameof(LockedWrapperQueueStorage)}")
-              .AddTransient<ILockedQueueStorage, LockedQueueStorage>();
-    }
-
     if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
     {
       services.AddOption<Options.ObjectStorage>(configuration,
