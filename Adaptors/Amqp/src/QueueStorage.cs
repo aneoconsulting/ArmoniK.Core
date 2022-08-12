@@ -111,6 +111,7 @@ public class QueueStorage : IQueueStorage
     sessionAmqp_ = sessionAmqp;
     options_     = options;
     MaxPriority  = options.MaxPriority;
+    PartitionId  = options.PartitionId;
     logger_      = logger;
 
     linkAdresses_ = new List<string>();
@@ -151,6 +152,10 @@ public class QueueStorage : IQueueStorage
 
   /// <inheritdoc />
   public int MaxPriority { get; }
+
+  /// <inheritdoc />
+  public string PartitionId { get; }
+
 
   /// <inheritdoc />
   public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,

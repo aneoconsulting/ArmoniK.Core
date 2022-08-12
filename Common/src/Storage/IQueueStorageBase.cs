@@ -32,6 +32,8 @@ public interface IQueueStorageBase : IInitializable
 {
   int MaxPriority { get; }
 
+  string PartitionId { get; }
+
   IAsyncEnumerable<IQueueMessageHandler> PullAsync(int               nbMessages,
                                                    string            partitionId,
                                                    CancellationToken cancellationToken = default);
@@ -40,6 +42,7 @@ public interface IQueueStorageBase : IInitializable
   ///   Submit new messages
   /// </summary>
   /// <param name="messages"></param>
+  /// <param name="partitionId"></param>
   /// <param name="priority"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>

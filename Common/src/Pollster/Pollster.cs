@@ -50,7 +50,6 @@ public class Pollster
   private readonly int                      messageBatchSize_;
   private readonly IObjectStorageFactory    objectStorageFactory_;
   private readonly string                   ownerPodId_;
-  private readonly string                   partitionId_;
   private readonly IQueueStorage            queueStorage_;
   private readonly IResultTable             resultTable_;
   private readonly ISessionTable            sessionTable_;
@@ -87,7 +86,6 @@ public class Pollster
     lifeTime_              = lifeTime;
     dataPrefetcher_        = dataPrefetcher;
     messageBatchSize_      = options.MessageBatchSize;
-    partitionId_           = "defaultPartition";
     objectStorageFactory_  = objectStorageFactory;
     resultTable_           = resultTable;
     submitter_             = submitter;
@@ -133,7 +131,7 @@ public class Pollster
 
         logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
         var messages = queueStorage_.PullAsync(messageBatchSize_,
-                                               partitionId_,
+                                               queueStorage_.PartitionId,
                                                cancellationToken);
 
         await foreach (var message in messages.WithCancellation(cancellationToken)

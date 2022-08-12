@@ -72,6 +72,10 @@ public class LockedWrapperQueueStorage : IQueueStorage
     => lockedQueueStorage_.MaxPriority;
 
   /// <inheritdoc />
+  public string PartitionId
+    => lockedQueueStorage_.PartitionId;
+
+  /// <inheritdoc />
   public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
                                                                 string                                     partitionId,
                                                                 [EnumeratorCancellation] CancellationToken cancellationToken = default)

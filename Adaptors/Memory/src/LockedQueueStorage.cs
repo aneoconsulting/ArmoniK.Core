@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -57,6 +57,10 @@ public class LockedQueueStorage : ILockedQueueStorage
   /// <inheritdoc />
   public int MaxPriority
     => 100;
+
+  /// <inheritdoc />
+  public string PartitionId
+    => "";
 
   /// <inheritdoc />
   public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
