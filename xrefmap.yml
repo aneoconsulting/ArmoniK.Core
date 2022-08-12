@@ -2618,6 +2618,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.PartitionTable
   nameWithType: PartitionTable.PartitionTable
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.ArePartitionsExistingAsync(IEnumerable{System.String},CancellationToken)
+  name: ArePartitionsExistingAsync(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_ArePartitionsExistingAsync_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.PartitionTable.ArePartitionsExistingAsync(IEnumerable{System.String},CancellationToken)
+  name.vb: ArePartitionsExistingAsync(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.ArePartitionsExistingAsync(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.PartitionTable.ArePartitionsExistingAsync(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: PartitionTable.ArePartitionsExistingAsync(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: PartitionTable.ArePartitionsExistingAsync(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.ArePartitionsExistingAsync*
+  name: ArePartitionsExistingAsync
+  href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_ArePartitionsExistingAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.MongoDB.PartitionTable.ArePartitionsExistingAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.MongoDB.PartitionTable.ArePartitionsExistingAsync
+  nameWithType: PartitionTable.ArePartitionsExistingAsync
 - uid: ArmoniK.Core.Adapters.MongoDB.PartitionTable.Check(ArmoniK.Core.Common.HealthCheckTag)
   name: Check(HealthCheckTag)
   href: api/ArmoniK.Core.Adapters.MongoDB.PartitionTable.html#ArmoniK_Core_Adapters_MongoDB_PartitionTable_Check_ArmoniK_Core_Common_HealthCheckTag_
@@ -7101,15 +7117,15 @@ references:
   commentId: T:ArmoniK.Core.Common.gRPC.Services.Submitter
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter
   nameWithType: Submitter
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ActivitySource)
-  name: Submitter(IQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, ActivitySource)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter__ctor_ArmoniK_Core_Common_Storage_IQueueStorage_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ILogger_ArmoniK_Core_Common_gRPC_Services_Submitter__ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_IResultTable_ActivitySource_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ActivitySource)
-  name.vb: Submitter(IQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, ActivitySource)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger<ArmoniK.Core.Common.gRPC.Services.Submitter>, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ActivitySource)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger(Of ArmoniK.Core.Common.gRPC.Services.Submitter), ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ActivitySource)
-  nameWithType: Submitter.Submitter(IQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, ActivitySource)
-  nameWithType.vb: Submitter.Submitter(IQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, ActivitySource)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.IPartitionTable,ActivitySource)
+  name: Submitter(IQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter__ctor_ArmoniK_Core_Common_Storage_IQueueStorage_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ILogger_ArmoniK_Core_Common_gRPC_Services_Submitter__ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_Storage_IPartitionTable_ActivitySource_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.IPartitionTable,ActivitySource)
+  name.vb: Submitter(IQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger<ArmoniK.Core.Common.gRPC.Services.Submitter>, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.IPartitionTable, ActivitySource)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger(Of ArmoniK.Core.Common.gRPC.Services.Submitter), ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.IPartitionTable, ActivitySource)
+  nameWithType: Submitter.Submitter(IQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
+  nameWithType.vb: Submitter.Submitter(IQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor*
   name: Submitter
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter__ctor_
@@ -9469,6 +9485,22 @@ references:
   commentId: T:ArmoniK.Core.Common.Storage.IPartitionTable
   fullName: ArmoniK.Core.Common.Storage.IPartitionTable
   nameWithType: IPartitionTable
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable.ArePartitionsExistingAsync(IEnumerable{System.String},CancellationToken)
+  name: ArePartitionsExistingAsync(IEnumerable<String>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_ArePartitionsExistingAsync_IEnumerable_System_String__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IPartitionTable.ArePartitionsExistingAsync(IEnumerable{System.String},CancellationToken)
+  name.vb: ArePartitionsExistingAsync(IEnumerable(Of String), CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable.ArePartitionsExistingAsync(IEnumerable<System.String>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.IPartitionTable.ArePartitionsExistingAsync(IEnumerable(Of System.String), CancellationToken)
+  nameWithType: IPartitionTable.ArePartitionsExistingAsync(IEnumerable<String>, CancellationToken)
+  nameWithType.vb: IPartitionTable.ArePartitionsExistingAsync(IEnumerable(Of String), CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IPartitionTable.ArePartitionsExistingAsync*
+  name: ArePartitionsExistingAsync
+  href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_ArePartitionsExistingAsync_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IPartitionTable.ArePartitionsExistingAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IPartitionTable.ArePartitionsExistingAsync
+  nameWithType: IPartitionTable.ArePartitionsExistingAsync
 - uid: ArmoniK.Core.Common.Storage.IPartitionTable.CreatePartitionsAsync(IEnumerable{ArmoniK.Core.Common.Storage.PartitionData},CancellationToken)
   name: CreatePartitionsAsync(IEnumerable<PartitionData>, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.IPartitionTable.html#ArmoniK_Core_Common_Storage_IPartitionTable_CreatePartitionsAsync_IEnumerable_ArmoniK_Core_Common_Storage_PartitionData__CancellationToken_
@@ -13208,6 +13240,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyIdShouldFail
   nameWithType: CreateSessionRequestValidatorTest.EmptyIdShouldFail
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
+  name: EmptyPartitionIdInTaskOptionsShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdInTaskOptionsShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail()
+  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail()
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail*
+  name: EmptyPartitionIdInTaskOptionsShouldFail
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdInTaskOptionsShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
+  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail
+  name: EmptyPartitionIdShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail()
+  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail()
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail*
+  name: EmptyPartitionIdShouldFail
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail
+  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail
 - uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.NullDefaultTaskOptionShouldFail
   name: NullDefaultTaskOptionShouldFail()
   href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_NullDefaultTaskOptionShouldFail
@@ -13221,19 +13279,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.NullDefaultTaskOptionShouldFail
   nameWithType: CreateSessionRequestValidatorTest.NullDefaultTaskOptionShouldFail
-- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionOk
-  name: SessionOk()
-  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_SessionOk
-  commentId: M:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionOk
-  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionOk()
-  nameWithType: CreateSessionRequestValidatorTest.SessionOk()
-- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionOk*
-  name: SessionOk
-  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_SessionOk_
-  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionOk
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionShouldBeValid
+  name: SessionShouldBeValid()
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_SessionShouldBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionShouldBeValid()
+  nameWithType: CreateSessionRequestValidatorTest.SessionShouldBeValid()
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionShouldBeValid*
+  name: SessionShouldBeValid
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_SessionShouldBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionShouldBeValid
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionOk
-  nameWithType: CreateSessionRequestValidatorTest.SessionOk
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.SessionShouldBeValid
+  nameWithType: CreateSessionRequestValidatorTest.SessionShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.Setup
+  name: Setup()
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_Setup
+  commentId: M:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.Setup
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.Setup()
+  nameWithType: CreateSessionRequestValidatorTest.Setup()
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.Setup*
+  name: Setup
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_Setup_
+  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.Setup
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.Setup
+  nameWithType: CreateSessionRequestValidatorTest.Setup
 - uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest
   name: CreateSmallTaskRequestValidatorTest
   href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html
@@ -13305,19 +13376,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.EmptyTaskRequestShouldFail
   nameWithType: CreateSmallTaskRequestValidatorTest.EmptyTaskRequestShouldFail
-- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.MissingSessionIdShouldFail
-  name: MissingSessionIdShouldFail()
-  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_MissingSessionIdShouldFail
-  commentId: M:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.MissingSessionIdShouldFail
-  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.MissingSessionIdShouldFail()
-  nameWithType: CreateSmallTaskRequestValidatorTest.MissingSessionIdShouldFail()
-- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.MissingSessionIdShouldFail*
-  name: MissingSessionIdShouldFail
-  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_MissingSessionIdShouldFail_
-  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.MissingSessionIdShouldFail
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.MissingSessionIdShouldFail
-  nameWithType: CreateSmallTaskRequestValidatorTest.MissingSessionIdShouldFail
 - uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.NegativeMaxRetryShouldFail
   name: NegativeMaxRetryShouldFail()
   href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_NegativeMaxRetryShouldFail
@@ -13344,19 +13402,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.NegativePriorityShouldFail
   nameWithType: CreateSmallTaskRequestValidatorTest.NegativePriorityShouldFail
-- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
-  name: OnlyMaxRetryAndPriorityDefinedShouldFail()
-  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_OnlyMaxRetryAndPriorityDefinedShouldFail
-  commentId: M:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
-  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail()
-  nameWithType: CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail()
-- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail*
-  name: OnlyMaxRetryAndPriorityDefinedShouldFail
-  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_OnlyMaxRetryAndPriorityDefinedShouldFail_
-  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
+- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.SetUp
+  name: SetUp()
+  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_SetUp
+  commentId: M:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.SetUp
+  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.SetUp()
+  nameWithType: CreateSmallTaskRequestValidatorTest.SetUp()
+- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.SetUp*
+  name: SetUp
+  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_SetUp_
+  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.SetUp
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
-  nameWithType: CreateSmallTaskRequestValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
+  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.SetUp
+  nameWithType: CreateSmallTaskRequestValidatorTest.SetUp
 - uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.TooBigPriorityShouldFail
   name: TooBigPriorityShouldFail()
   href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_TooBigPriorityShouldFail
@@ -13448,19 +13506,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedTaskOptionShouldFail
   nameWithType: CreateSmallTaskRequestValidatorTest.UndefinedTaskOptionShouldFail
-- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedTaskRequestShouldFail
-  name: UndefinedTaskRequestShouldFail()
-  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_UndefinedTaskRequestShouldFail
-  commentId: M:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedTaskRequestShouldFail
-  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedTaskRequestShouldFail()
-  nameWithType: CreateSmallTaskRequestValidatorTest.UndefinedTaskRequestShouldFail()
-- uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedTaskRequestShouldFail*
-  name: UndefinedTaskRequestShouldFail
-  href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_UndefinedTaskRequestShouldFail_
-  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedTaskRequestShouldFail
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.UndefinedTaskRequestShouldFail
-  nameWithType: CreateSmallTaskRequestValidatorTest.UndefinedTaskRequestShouldFail
 - uid: ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.ZeroMaxRetryShouldFail
   name: ZeroMaxRetryShouldFail()
   href: api/ArmoniK.Core.Common.Tests.CreateSmallTaskRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSmallTaskRequestValidatorTest_ZeroMaxRetryShouldFail
@@ -14810,6 +14855,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Dispose
   nameWithType: TestTaskHandlerProvider.Dispose
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.PartitionTable
+  name: PartitionTable
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_PartitionTable
+  commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.PartitionTable
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.PartitionTable
+  nameWithType: TestTaskHandlerProvider.PartitionTable
 - uid: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.Submitter
   name: Submitter
   href: api/ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.html#ArmoniK_Core_Common_Tests_Helpers_TestTaskHandlerProvider_Submitter
@@ -14969,6 +15020,32 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.PartitionTableTestBase
   fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase
   nameWithType: PartitionTableTestBase
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldReturnFalse
+  name: ArePartitionExistingAsyncShouldReturnFalse()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ArePartitionExistingAsyncShouldReturnFalse
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldReturnFalse
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldReturnFalse()
+  nameWithType: PartitionTableTestBase.ArePartitionExistingAsyncShouldReturnFalse()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldReturnFalse*
+  name: ArePartitionExistingAsyncShouldReturnFalse
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ArePartitionExistingAsyncShouldReturnFalse_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldReturnFalse
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldReturnFalse
+  nameWithType: PartitionTableTestBase.ArePartitionExistingAsyncShouldReturnFalse
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldSucceed
+  name: ArePartitionExistingAsyncShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ArePartitionExistingAsyncShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldSucceed()
+  nameWithType: PartitionTableTestBase.ArePartitionExistingAsyncShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldSucceed*
+  name: ArePartitionExistingAsyncShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_ArePartitionExistingAsyncShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.PartitionTableTestBase.ArePartitionExistingAsyncShouldSucceed
+  nameWithType: PartitionTableTestBase.ArePartitionExistingAsyncShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.PartitionTableTestBase.DeleteAlreadyDeletedTaskAsyncShouldThrowException
   name: DeleteAlreadyDeletedTaskAsyncShouldThrowException()
   href: api/ArmoniK.Core.Common.Tests.PartitionTableTestBase.html#ArmoniK_Core_Common_Tests_PartitionTableTestBase_DeleteAlreadyDeletedTaskAsyncShouldThrowException
@@ -17571,19 +17648,45 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.NegativePriorityShouldFail
   nameWithType: TaskOptionsValidatorTest.NegativePriorityShouldFail
-- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid
-  name: OnlyMaxRetryAndPriorityDefinedShouldBeValid()
-  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_OnlyMaxRetryAndPriorityDefinedShouldBeValid
-  commentId: M:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid
-  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid()
-  nameWithType: TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid()
-- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid*
-  name: OnlyMaxRetryAndPriorityDefinedShouldBeValid
-  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_OnlyMaxRetryAndPriorityDefinedShouldBeValid_
-  commentId: Overload:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
+  name: OnlyMaxRetryAndPriorityDefinedShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_OnlyMaxRetryAndPriorityDefinedShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
+  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail()
+  nameWithType: TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail()
+- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail*
+  name: OnlyMaxRetryAndPriorityDefinedShouldFail
+  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_OnlyMaxRetryAndPriorityDefinedShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid
-  nameWithType: TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
+  nameWithType: TaskOptionsValidatorTest.OnlyMaxRetryAndPriorityDefinedShouldFail
+- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.Setup
+  name: Setup()
+  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_Setup
+  commentId: M:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.Setup
+  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.Setup()
+  nameWithType: TaskOptionsValidatorTest.Setup()
+- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.Setup*
+  name: Setup
+  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_Setup_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.Setup
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.Setup
+  nameWithType: TaskOptionsValidatorTest.Setup
+- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.TaskOptionsShouldBeValid
+  name: TaskOptionsShouldBeValid()
+  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_TaskOptionsShouldBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.TaskOptionsShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.TaskOptionsShouldBeValid()
+  nameWithType: TaskOptionsValidatorTest.TaskOptionsShouldBeValid()
+- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.TaskOptionsShouldBeValid*
+  name: TaskOptionsShouldBeValid
+  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_TaskOptionsShouldBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.TaskOptionsShouldBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.TaskOptionsShouldBeValid
+  nameWithType: TaskOptionsValidatorTest.TaskOptionsShouldBeValid
 - uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.TooBigPriorityShouldFail
   name: TooBigPriorityShouldFail()
   href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_TooBigPriorityShouldFail
