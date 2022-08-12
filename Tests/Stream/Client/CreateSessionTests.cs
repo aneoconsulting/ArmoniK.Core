@@ -42,8 +42,8 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
 internal class CreateSessionTests
 {
-  private Submitter.SubmitterClient client_;
-  private string?                   partition_;
+  private Submitter.SubmitterClient? client_;
+  private string?                    partition_;
 
   [SetUp]
   public void SetUp()
@@ -76,7 +76,7 @@ internal class CreateSessionTests
     Console.WriteLine("NullDefaultTaskOptionShouldThrowException");
 
     Assert.Throws(typeof(RpcException),
-                  () => client_.CreateSession(new CreateSessionRequest
+                  () => client_!.CreateSession(new CreateSessionRequest
                                               {
                                                 DefaultTaskOption = null,
                                                 Id                = sessionId,
@@ -92,13 +92,14 @@ internal class CreateSessionTests
   {
     Console.WriteLine("EmptyIdTaskOptionShouldThrowException");
     Assert.Throws(typeof(RpcException),
-                  () => client_.CreateSession(new CreateSessionRequest
+                  () => client_!.CreateSession(new CreateSessionRequest
                                               {
                                                 DefaultTaskOption = new TaskOptions
                                                                     {
                                                                       Priority    = 1,
                                                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
                                                                       MaxRetries  = 2,
+                                                                      PartitionId = partition_,
                                                                     },
                                                 Id = "",
                                                 PartitionIds =
@@ -114,13 +115,14 @@ internal class CreateSessionTests
     var sessionId = Guid.NewGuid() + "mytestsession";
     Console.WriteLine("SessionShouldBeCreated");
 
-    var createSessionReply = client_.CreateSession(new CreateSessionRequest
+    var createSessionReply = client_!.CreateSession(new CreateSessionRequest
                                                    {
                                                      DefaultTaskOption = new TaskOptions
                                                                          {
                                                                            Priority    = 1,
                                                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
                                                                            MaxRetries  = 2,
+                                                                           PartitionId = partition_,
                                                                          },
                                                      Id = sessionId,
                                                      PartitionIds =
