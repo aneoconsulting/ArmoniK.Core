@@ -25,7 +25,7 @@ services:
       - Amqp__User=guest
       - Amqp__Password=guest
 
-  armonik.control.podmetrics:
+  armonik.control.partitionmetrics:
     environment:
       - Amqp__User=guest
       - Amqp__Password=guest

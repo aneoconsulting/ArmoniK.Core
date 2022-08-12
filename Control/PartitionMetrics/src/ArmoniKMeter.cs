@@ -34,14 +34,14 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
-using ArmoniK.Core.Control.PodMetrics.Options;
+using ArmoniK.Core.Control.PartitionMetrics.Options;
 
 using Fennel.CSharp;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Control.PodMetrics;
+namespace ArmoniK.Core.Control.PartitionMetrics;
 
 public class ArmoniKMeter : Meter, IHostedService
 {

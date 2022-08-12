@@ -31,7 +31,7 @@ using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Utils;
-using ArmoniK.Core.Control.PodMetrics.Options;
+using ArmoniK.Core.Control.PartitionMetrics.Options;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -45,7 +45,7 @@ using OpenTelemetry.Resources;
 
 using Serilog;
 
-namespace ArmoniK.Core.Control.PodMetrics;
+namespace ArmoniK.Core.Control.PartitionMetrics;
 
 public static class Program
 {

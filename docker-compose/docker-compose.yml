@@ -90,8 +90,8 @@ services:
       options:
         fluentd-address: 127.0.0.1:24224
 
-  armonik.control.podmetrics:
-    image: ${ARMONIK_PODMETRICS}
+  armonik.control.partitionmetrics:
+    image: ${ARMONIK_PARTITIONMETRICS}
     depends_on:
       - database
       - object

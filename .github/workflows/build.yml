@@ -253,7 +253,7 @@ jobs:
           - ./Common/tests/ArmoniK.Core.Common.Tests.csproj
           - ./Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj
           - ./Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj
-          - ./Control/PodMetrics/src/ArmoniK.Core.Control.PodMetrics.csproj
+          - ./Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj
           - ./Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj
           - ./Control/Submitter/tests/ArmoniK.Core.Control.Submitter.Tests.csproj
           - ./Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj
@@ -294,8 +294,8 @@ jobs:
            path: ./Compute/PollingAgent/src/Dockerfile
         -  img : dockerhubaneo/armonik_control_metrics
            path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_podmetrics
-           path: ./Control/PodMetrics/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_partition_metrics
+           path: ./Control/PartitionMetrics/src/Dockerfile
         -  img : dockerhubaneo/armonik_control
            path: ./Control/Submitter/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
@@ -339,8 +339,8 @@ jobs:
            path: ./Compute/PollingAgent/src/Dockerfile
         -  img : dockerhubaneo/armonik_control_metrics
            path: ./Control/Metrics/src/Dockerfile
-        -  img : dockerhubaneo/armonik_control_podmetrics
-           path: ./Control/PodMetrics/src/Dockerfile
+        -  img : dockerhubaneo/armonik_control_partition_metrics
+           path: ./Control/PartitionMetrics/src/Dockerfile
         -  img : dockerhubaneo/armonik_control
            path: ./Control/Submitter/src/Dockerfile
         -  img : dockerhubaneo/armonik_core_stream_test_worker
@@ -424,7 +424,7 @@ jobs:
         run: |
           export ARMONIK_WORKER=dockerhubaneo/armonik_core_stream_test_worker:$VERSION
           export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
-          export ARMONIK_PODMETRICS=dockerhubaneo/armonik_control_podmetrics:$VERSION
+          export ARMONIK_PARTTIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
           export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
@@ -496,7 +496,7 @@ jobs:
         run: |
           export ARMONIK_WORKER=dockerhubaneo/armonik_core_htcmock_test_worker:$VERSION
           export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
-          export ARMONIK_PODMETRICS=dockerhubaneo/armonik_control_podmetrics:$VERSION
+          export ARMONIK_PARTTIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
           export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
