@@ -19333,138 +19333,138 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Name
   nameWithType: Program.ObjectDescription.Name
-- uid: ArmoniK.Core.Control.PodMetrics
-  name: ArmoniK.Core.Control.PodMetrics
-  href: api/ArmoniK.Core.Control.PodMetrics.html
-  commentId: N:ArmoniK.Core.Control.PodMetrics
-  fullName: ArmoniK.Core.Control.PodMetrics
-  nameWithType: ArmoniK.Core.Control.PodMetrics
-- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter
+- uid: ArmoniK.Core.Control.PartitionMetrics
+  name: ArmoniK.Core.Control.PartitionMetrics
+  href: api/ArmoniK.Core.Control.PartitionMetrics.html
+  commentId: N:ArmoniK.Core.Control.PartitionMetrics
+  fullName: ArmoniK.Core.Control.PartitionMetrics
+  nameWithType: ArmoniK.Core.Control.PartitionMetrics
+- uid: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter
   name: ArmoniKMeter
-  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html
-  commentId: T:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter
-  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter
+  href: api/ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.html
+  commentId: T:ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter
+  fullName: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter
   nameWithType: ArmoniKMeter
-- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.#ctor(ArmoniK.Core.Common.Storage.IPartitionTable,ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter,IHttpClientFactory,ILogger{ArmoniK.Core.Control.PodMetrics.ArmoniKMeter})
+- uid: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.#ctor(ArmoniK.Core.Common.Storage.IPartitionTable,ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter,IHttpClientFactory,ILogger{ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter})
   name: ArmoniKMeter(IPartitionTable, MetricsExporter, IHttpClientFactory, ILogger<ArmoniKMeter>)
-  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter__ctor_ArmoniK_Core_Common_Storage_IPartitionTable_ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_IHttpClientFactory_ILogger_ArmoniK_Core_Control_PodMetrics_ArmoniKMeter__
-  commentId: M:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.#ctor(ArmoniK.Core.Common.Storage.IPartitionTable,ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter,IHttpClientFactory,ILogger{ArmoniK.Core.Control.PodMetrics.ArmoniKMeter})
+  href: api/ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PartitionMetrics_ArmoniKMeter__ctor_ArmoniK_Core_Common_Storage_IPartitionTable_ArmoniK_Core_Control_PartitionMetrics_Options_MetricsExporter_IHttpClientFactory_ILogger_ArmoniK_Core_Control_PartitionMetrics_ArmoniKMeter__
+  commentId: M:ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.#ctor(ArmoniK.Core.Common.Storage.IPartitionTable,ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter,IHttpClientFactory,ILogger{ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter})
   name.vb: ArmoniKMeter(IPartitionTable, MetricsExporter, IHttpClientFactory, ILogger(Of ArmoniKMeter))
-  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.ArmoniKMeter(ArmoniK.Core.Common.Storage.IPartitionTable, ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter, IHttpClientFactory, ILogger<ArmoniK.Core.Control.PodMetrics.ArmoniKMeter>)
-  fullName.vb: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.ArmoniKMeter(ArmoniK.Core.Common.Storage.IPartitionTable, ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter, IHttpClientFactory, ILogger(Of ArmoniK.Core.Control.PodMetrics.ArmoniKMeter))
+  fullName: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.ArmoniKMeter(ArmoniK.Core.Common.Storage.IPartitionTable, ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter, IHttpClientFactory, ILogger<ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter>)
+  fullName.vb: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.ArmoniKMeter(ArmoniK.Core.Common.Storage.IPartitionTable, ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter, IHttpClientFactory, ILogger(Of ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter))
   nameWithType: ArmoniKMeter.ArmoniKMeter(IPartitionTable, MetricsExporter, IHttpClientFactory, ILogger<ArmoniKMeter>)
   nameWithType.vb: ArmoniKMeter.ArmoniKMeter(IPartitionTable, MetricsExporter, IHttpClientFactory, ILogger(Of ArmoniKMeter))
-- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.#ctor*
+- uid: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.#ctor*
   name: ArmoniKMeter
-  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter__ctor_
-  commentId: Overload:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.#ctor
+  href: api/ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PartitionMetrics_ArmoniKMeter__ctor_
+  commentId: Overload:ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.#ctor
   isSpec: "True"
-  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.ArmoniKMeter
+  fullName: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.ArmoniKMeter
   nameWithType: ArmoniKMeter.ArmoniKMeter
-- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync(CancellationToken)
+- uid: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StartAsync(CancellationToken)
   name: StartAsync(CancellationToken)
-  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter_StartAsync_CancellationToken_
-  commentId: M:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync(CancellationToken)
-  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync(CancellationToken)
+  href: api/ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PartitionMetrics_ArmoniKMeter_StartAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StartAsync(CancellationToken)
+  fullName: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StartAsync(CancellationToken)
   nameWithType: ArmoniKMeter.StartAsync(CancellationToken)
-- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync*
+- uid: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StartAsync*
   name: StartAsync
-  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter_StartAsync_
-  commentId: Overload:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync
+  href: api/ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PartitionMetrics_ArmoniKMeter_StartAsync_
+  commentId: Overload:ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StartAsync
   isSpec: "True"
-  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StartAsync
+  fullName: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StartAsync
   nameWithType: ArmoniKMeter.StartAsync
-- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync(CancellationToken)
+- uid: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StopAsync(CancellationToken)
   name: StopAsync(CancellationToken)
-  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter_StopAsync_CancellationToken_
-  commentId: M:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync(CancellationToken)
-  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync(CancellationToken)
+  href: api/ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PartitionMetrics_ArmoniKMeter_StopAsync_CancellationToken_
+  commentId: M:ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StopAsync(CancellationToken)
+  fullName: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StopAsync(CancellationToken)
   nameWithType: ArmoniKMeter.StopAsync(CancellationToken)
-- uid: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync*
+- uid: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StopAsync*
   name: StopAsync
-  href: api/ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PodMetrics_ArmoniKMeter_StopAsync_
-  commentId: Overload:ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync
+  href: api/ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.html#ArmoniK_Core_Control_PartitionMetrics_ArmoniKMeter_StopAsync_
+  commentId: Overload:ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StopAsync
   isSpec: "True"
-  fullName: ArmoniK.Core.Control.PodMetrics.ArmoniKMeter.StopAsync
+  fullName: ArmoniK.Core.Control.PartitionMetrics.ArmoniKMeter.StopAsync
   nameWithType: ArmoniKMeter.StopAsync
-- uid: ArmoniK.Core.Control.PodMetrics.Options
-  name: ArmoniK.Core.Control.PodMetrics.Options
-  href: api/ArmoniK.Core.Control.PodMetrics.Options.html
-  commentId: N:ArmoniK.Core.Control.PodMetrics.Options
-  fullName: ArmoniK.Core.Control.PodMetrics.Options
-  nameWithType: ArmoniK.Core.Control.PodMetrics.Options
-- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter
+- uid: ArmoniK.Core.Control.PartitionMetrics.Options
+  name: ArmoniK.Core.Control.PartitionMetrics.Options
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Options.html
+  commentId: N:ArmoniK.Core.Control.PartitionMetrics.Options
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Options
+  nameWithType: ArmoniK.Core.Control.PartitionMetrics.Options
+- uid: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter
   name: MetricsExporter
-  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html
-  commentId: T:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter
-  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.html
+  commentId: T:ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter
   nameWithType: MetricsExporter
-- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host
+- uid: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Host
   name: Host
-  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Host
-  commentId: P:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host
-  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PartitionMetrics_Options_MetricsExporter_Host
+  commentId: P:ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Host
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Host
   nameWithType: MetricsExporter.Host
-- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host*
+- uid: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Host*
   name: Host
-  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Host_
-  commentId: Overload:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PartitionMetrics_Options_MetricsExporter_Host_
+  commentId: Overload:ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Host
   isSpec: "True"
-  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Host
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Host
   nameWithType: MetricsExporter.Host
-- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path
+- uid: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Path
   name: Path
-  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Path
-  commentId: P:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path
-  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PartitionMetrics_Options_MetricsExporter_Path
+  commentId: P:ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Path
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Path
   nameWithType: MetricsExporter.Path
-- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path*
+- uid: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Path*
   name: Path
-  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Path_
-  commentId: Overload:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PartitionMetrics_Options_MetricsExporter_Path_
+  commentId: Overload:ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Path
   isSpec: "True"
-  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Path
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Path
   nameWithType: MetricsExporter.Path
-- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port
+- uid: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Port
   name: Port
-  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Port
-  commentId: P:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port
-  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PartitionMetrics_Options_MetricsExporter_Port
+  commentId: P:ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Port
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Port
   nameWithType: MetricsExporter.Port
-- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port*
+- uid: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Port*
   name: Port
-  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_Port_
-  commentId: Overload:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PartitionMetrics_Options_MetricsExporter_Port_
+  commentId: Overload:ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Port
   isSpec: "True"
-  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.Port
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.Port
   nameWithType: MetricsExporter.Port
-- uid: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.SettingSection
+- uid: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.SettingSection
   name: SettingSection
-  href: api/ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PodMetrics_Options_MetricsExporter_SettingSection
-  commentId: F:ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.SettingSection
-  fullName: ArmoniK.Core.Control.PodMetrics.Options.MetricsExporter.SettingSection
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.html#ArmoniK_Core_Control_PartitionMetrics_Options_MetricsExporter_SettingSection
+  commentId: F:ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.SettingSection
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Options.MetricsExporter.SettingSection
   nameWithType: MetricsExporter.SettingSection
-- uid: ArmoniK.Core.Control.PodMetrics.Program
+- uid: ArmoniK.Core.Control.PartitionMetrics.Program
   name: Program
-  href: api/ArmoniK.Core.Control.PodMetrics.Program.html
-  commentId: T:ArmoniK.Core.Control.PodMetrics.Program
-  fullName: ArmoniK.Core.Control.PodMetrics.Program
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Program.html
+  commentId: T:ArmoniK.Core.Control.PartitionMetrics.Program
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Program
   nameWithType: Program
-- uid: ArmoniK.Core.Control.PodMetrics.Program.Main(System.String[])
+- uid: ArmoniK.Core.Control.PartitionMetrics.Program.Main(System.String[])
   name: Main(String[])
-  href: api/ArmoniK.Core.Control.PodMetrics.Program.html#ArmoniK_Core_Control_PodMetrics_Program_Main_System_String___
-  commentId: M:ArmoniK.Core.Control.PodMetrics.Program.Main(System.String[])
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Program.html#ArmoniK_Core_Control_PartitionMetrics_Program_Main_System_String___
+  commentId: M:ArmoniK.Core.Control.PartitionMetrics.Program.Main(System.String[])
   name.vb: Main(String())
-  fullName: ArmoniK.Core.Control.PodMetrics.Program.Main(System.String[])
-  fullName.vb: ArmoniK.Core.Control.PodMetrics.Program.Main(System.String())
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Program.Main(System.String[])
+  fullName.vb: ArmoniK.Core.Control.PartitionMetrics.Program.Main(System.String())
   nameWithType: Program.Main(String[])
   nameWithType.vb: Program.Main(String())
-- uid: ArmoniK.Core.Control.PodMetrics.Program.Main*
+- uid: ArmoniK.Core.Control.PartitionMetrics.Program.Main*
   name: Main
-  href: api/ArmoniK.Core.Control.PodMetrics.Program.html#ArmoniK_Core_Control_PodMetrics_Program_Main_
-  commentId: Overload:ArmoniK.Core.Control.PodMetrics.Program.Main
+  href: api/ArmoniK.Core.Control.PartitionMetrics.Program.html#ArmoniK_Core_Control_PartitionMetrics_Program_Main_
+  commentId: Overload:ArmoniK.Core.Control.PartitionMetrics.Program.Main
   isSpec: "True"
-  fullName: ArmoniK.Core.Control.PodMetrics.Program.Main
+  fullName: ArmoniK.Core.Control.PartitionMetrics.Program.Main
   nameWithType: Program.Main
 - uid: ArmoniK.Core.Control.Submitter
   name: ArmoniK.Core.Control.Submitter
