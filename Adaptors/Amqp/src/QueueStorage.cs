@@ -192,7 +192,6 @@ public class QueueStorage : IQueueStorage
       {
         cancellationToken.ThrowIfCancellationRequested();
         var receiver = await receivers[i];
-        Console.WriteLine(receiver.Name);
         var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
         if (message is null)
