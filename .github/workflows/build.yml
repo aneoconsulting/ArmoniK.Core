@@ -424,7 +424,7 @@ jobs:
         run: |
           export ARMONIK_WORKER=dockerhubaneo/armonik_core_stream_test_worker:$VERSION
           export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
-          export ARMONIK_PARTTIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
+          export ARMONIK_PARTITIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
           export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
@@ -496,7 +496,7 @@ jobs:
         run: |
           export ARMONIK_WORKER=dockerhubaneo/armonik_core_htcmock_test_worker:$VERSION
           export ARMONIK_METRICS=dockerhubaneo/armonik_control_metrics:$VERSION
-          export ARMONIK_PARTTIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
+          export ARMONIK_PARTITIONMETRICS=dockerhubaneo/armonik_control_partition_metrics:$VERSION
           export ARMONIK_SUBMITTER=dockerhubaneo/armonik_control:$VERSION
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
