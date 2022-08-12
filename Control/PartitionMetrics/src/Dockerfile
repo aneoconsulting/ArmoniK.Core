@@ -5,18 +5,18 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Control/PodMetrics/src/ArmoniK.Core.Control.PodMetrics.csproj", "Control/PodMetrics/src/"]
+COPY ["Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj", "Control/PartitionMetrics/src/"]
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 COPY ["Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj", "Adaptors/Amqp/src/"]
 COPY ["Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj", "Adaptors/MongoDB/src/"]
-RUN dotnet restore "Control/PodMetrics/src/ArmoniK.Core.Control.PodMetrics.csproj"
+RUN dotnet restore "Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj"
 COPY . .
-WORKDIR "/src/Control/PodMetrics/src"
-RUN dotnet build "ArmoniK.Core.Control.PodMetrics.csproj" -c Release -o /app/build
+WORKDIR "/src/Control/PartitionMetrics/src"
+RUN dotnet build "ArmoniK.Core.Control.PartitionMetrics.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "ArmoniK.Core.Control.PodMetrics.csproj" -c Release -o /app/publish
+RUN dotnet publish "ArmoniK.Core.Control.PartitionMetrics.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
@@ -27,4 +27,4 @@ USER armonikuser
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
 
-ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.PodMetrics.dll"]
+ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.PartitionMetrics.dll"]
