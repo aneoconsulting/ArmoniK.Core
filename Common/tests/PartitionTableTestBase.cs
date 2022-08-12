@@ -141,12 +141,12 @@ public class PartitionTableTestBase
   {
     if (RunTests)
     {
-      var result = await PartitionTable!.ArePartitionExistingAsync(new[]
-                                                                   {
-                                                                     "PartitionId0",
-                                                                     "PartitionId1",
-                                                                   },
-                                                                   CancellationToken.None)
+      var result = await PartitionTable!.ArePartitionsExistingAsync(new[]
+                                                                    {
+                                                                      "PartitionId0",
+                                                                      "PartitionId1",
+                                                                    },
+                                                                    CancellationToken.None)
                                         .ConfigureAwait(false);
 
       Assert.IsTrue(result);
@@ -158,12 +158,12 @@ public class PartitionTableTestBase
   {
     if (RunTests)
     {
-      var result = await PartitionTable!.ArePartitionExistingAsync(new[]
-                                                                   {
-                                                                     "PartitionId0",
-                                                                     "PartitionIdNotExisting",
-                                                                   },
-                                                                   CancellationToken.None)
+      var result = await PartitionTable!.ArePartitionsExistingAsync(new[]
+                                                                    {
+                                                                      "PartitionId0",
+                                                                      "PartitionIdNotExisting",
+                                                                    },
+                                                                    CancellationToken.None)
                                         .ConfigureAwait(false);
 
       Assert.IsFalse(result);

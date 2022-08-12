@@ -88,6 +88,6 @@ public interface IPartitionTable : IInitializable
   /// <returns>
   ///   A bool representing whether all the partitions are available
   /// </returns>
-  Task<bool> ArePartitionExistingAsync(IEnumerable<string> partitionIds,
-                                       CancellationToken   cancellationToken = default);
+  Task<bool> ArePartitionsExistingAsync(IEnumerable<string> partitionIds,
+                                        CancellationToken   cancellationToken = default);
 }

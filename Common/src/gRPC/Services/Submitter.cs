@@ -304,11 +304,11 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
-      if (!await partitionTable_.ArePartitionExistingAsync(partitionIds,
-                                                           cancellationToken)
+      if (!await partitionTable_.ArePartitionsExistingAsync(partitionIds,
+                                                            cancellationToken)
                                 .ConfigureAwait(false))
       {
-        throw new PartitionNotFoundException("One of the partition does not exist");
+        throw new PartitionNotFoundException("One of the partitions does not exist");
       }
 
       await sessionTable_.SetSessionDataAsync(sessionId,

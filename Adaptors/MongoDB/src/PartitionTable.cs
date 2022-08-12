@@ -141,10 +141,10 @@ public class PartitionTable : IPartitionTable
     }
   }
 
-  public async Task<bool> ArePartitionExistingAsync(IEnumerable<string> partitionIds,
-                                                    CancellationToken   cancellationToken = default)
+  public async Task<bool> ArePartitionsExistingAsync(IEnumerable<string> partitionIds,
+                                                     CancellationToken   cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(ArePartitionExistingAsync)}");
+    using var activity       = activitySource_.StartActivity($"{nameof(ArePartitionsExistingAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = partitionCollectionProvider_.Get();
 
