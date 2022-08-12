@@ -305,8 +305,8 @@ public class Submitter : ISubmitter
     try
     {
       if (!await partitionTable_.ArePartitionExistingAsync(partitionIds,
-                                                          cancellationToken)
-                               .ConfigureAwait(false))
+                                                           cancellationToken)
+                                .ConfigureAwait(false))
       {
         throw new PartitionNotFoundException("One of the partition does not exist");
       }

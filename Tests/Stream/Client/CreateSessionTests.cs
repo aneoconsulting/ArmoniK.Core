@@ -77,14 +77,14 @@ internal class CreateSessionTests
 
     Assert.Throws(typeof(RpcException),
                   () => client_!.CreateSession(new CreateSessionRequest
-                                              {
-                                                DefaultTaskOption = null,
-                                                Id                = sessionId,
-                                                PartitionIds =
-                                                {
-                                                  partition_,
-                                                },
-                                              }));
+                                               {
+                                                 DefaultTaskOption = null,
+                                                 Id                = sessionId,
+                                                 PartitionIds =
+                                                 {
+                                                   partition_,
+                                                 },
+                                               }));
   }
 
   [Test]
@@ -93,20 +93,20 @@ internal class CreateSessionTests
     Console.WriteLine("EmptyIdTaskOptionShouldThrowException");
     Assert.Throws(typeof(RpcException),
                   () => client_!.CreateSession(new CreateSessionRequest
-                                              {
-                                                DefaultTaskOption = new TaskOptions
-                                                                    {
-                                                                      Priority    = 1,
-                                                                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                      MaxRetries  = 2,
-                                                                      PartitionId = partition_,
-                                                                    },
-                                                Id = "",
-                                                PartitionIds =
-                                                {
-                                                  partition_,
-                                                },
-                                              }));
+                                               {
+                                                 DefaultTaskOption = new TaskOptions
+                                                                     {
+                                                                       Priority    = 1,
+                                                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                       MaxRetries  = 2,
+                                                                       PartitionId = partition_,
+                                                                     },
+                                                 Id = "",
+                                                 PartitionIds =
+                                                 {
+                                                   partition_,
+                                                 },
+                                               }));
   }
 
   [Test]
@@ -116,20 +116,20 @@ internal class CreateSessionTests
     Console.WriteLine("SessionShouldBeCreated");
 
     var createSessionReply = client_!.CreateSession(new CreateSessionRequest
-                                                   {
-                                                     DefaultTaskOption = new TaskOptions
-                                                                         {
-                                                                           Priority    = 1,
-                                                                           MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                           MaxRetries  = 2,
-                                                                           PartitionId = partition_,
-                                                                         },
-                                                     Id = sessionId,
-                                                     PartitionIds =
-                                                     {
-                                                       partition_,
-                                                     },
-                                                   });
+                                                    {
+                                                      DefaultTaskOption = new TaskOptions
+                                                                          {
+                                                                            Priority    = 1,
+                                                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                            MaxRetries  = 2,
+                                                                            PartitionId = partition_,
+                                                                          },
+                                                      Id = sessionId,
+                                                      PartitionIds =
+                                                      {
+                                                        partition_,
+                                                      },
+                                                    });
     Assert.AreEqual(createSessionReply.ResultCase,
                     CreateSessionReply.ResultOneofCase.Ok);
   }
