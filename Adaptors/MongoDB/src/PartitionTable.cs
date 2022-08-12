@@ -114,7 +114,7 @@ public class PartitionTable : IPartitionTable
 
   public IAsyncEnumerable<PartitionData> GetPartitionWithAllocationAsync(CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(ReadPartitionAsync)}");
+    using var activity       = activitySource_.StartActivity($"{nameof(GetPartitionWithAllocationAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = partitionCollectionProvider_.Get();
 
@@ -144,7 +144,7 @@ public class PartitionTable : IPartitionTable
   public async Task<bool> ArePartitionExistingAsync(IEnumerable<string> partitionIds,
                                                     CancellationToken   cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(ReadPartitionAsync)}");
+    using var activity       = activitySource_.StartActivity($"{nameof(ArePartitionExistingAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = partitionCollectionProvider_.Get();
 
