@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -36,119 +36,90 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture(TestOf = typeof(TaskOptionsValidator))]
 public class TaskOptionsValidatorTest
 {
+  [SetUp]
+  public void Setup()
+    => validTaskOptions_ = new TaskOptions
+                           {
+                             PartitionId = "PartitionId",
+                             MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                             MaxRetries  = 2,
+                             Priority    = 2,
+                           };
+
   private readonly TaskOptionsValidator validator_ = new();
+  private          TaskOptions?         validTaskOptions_;
+
+  [Test]
+  public void TaskOptionsShouldBeValid()
+    => Assert.IsTrue(validator_.Validate(validTaskOptions_!)
+                               .IsValid);
 
   [Test]
   public void UndefinedMaxDurationShouldFail()
   {
-    var to = new TaskOptions
-             {
-               MaxRetries = 1,
-               Priority   = 1,
-             };
-
-    Assert.IsFalse(validator_.Validate(to)
+    validTaskOptions_!.MaxDuration = null;
+    Assert.IsFalse(validator_.Validate(validTaskOptions_)
                              .IsValid);
   }
 
   [Test]
   public void UndefinedMaxRetriesShouldFail()
   {
-    var to = new TaskOptions
-             {
-               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-               Priority    = 1,
-             };
-
-    Assert.IsFalse(validator_.Validate(to)
+    validTaskOptions_!.MaxRetries = default;
+    Assert.IsFalse(validator_.Validate(validTaskOptions_)
                              .IsValid);
   }
 
   [Test]
   public void ZeroMaxRetryShouldFail()
   {
-    var to = new TaskOptions
-             {
-               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-               Priority    = 1,
-               MaxRetries  = 0,
-             };
-
-    Assert.IsFalse(validator_.Validate(to)
+    validTaskOptions_!.MaxRetries = 0;
+    Assert.IsFalse(validator_.Validate(validTaskOptions_)
                              .IsValid);
   }
 
   [Test]
   public void NegativeMaxRetryShouldFail()
   {
-    var to = new TaskOptions
-             {
-               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-               Priority    = 1,
-               MaxRetries  = -6,
-             };
-
-    Assert.IsFalse(validator_.Validate(to)
+    validTaskOptions_!.MaxRetries = -6;
+    Assert.IsFalse(validator_.Validate(validTaskOptions_)
                              .IsValid);
   }
 
   [Test]
   public void UndefinedPriorityShouldFail()
   {
-    var to = new TaskOptions
-             {
-               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-               MaxRetries  = 1,
-             };
-
-    Assert.IsFalse(validator_.Validate(to)
+    validTaskOptions_!.Priority = default;
+    Assert.IsFalse(validator_.Validate(validTaskOptions_)
                              .IsValid);
   }
 
   [Test]
   public void ZeroPriorityShouldFail()
   {
-    var to = new TaskOptions
-             {
-               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-               MaxRetries  = 1,
-               Priority    = 0,
-             };
-
-    Assert.IsFalse(validator_.Validate(to)
+    validTaskOptions_!.Priority = 0;
+    Assert.IsFalse(validator_.Validate(validTaskOptions_)
                              .IsValid);
   }
 
   [Test]
   public void NegativePriorityShouldFail()
   {
-    var to = new TaskOptions
-             {
-               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-               MaxRetries  = 1,
-               Priority    = -6,
-             };
-
-    Assert.IsFalse(validator_.Validate(to)
+    validTaskOptions_!.Priority = -6;
+    Assert.IsFalse(validator_.Validate(validTaskOptions_)
                              .IsValid);
   }
 
   [Test]
   public void TooBigPriorityShouldFail()
   {
-    var to = new TaskOptions
-             {
-               MaxDuration = Duration.FromTimeSpan(TimeSpan.MinValue),
-               MaxRetries  = 1,
-               Priority    = 100,
-             };
-
-    Assert.IsFalse(validator_.Validate(to)
+    validTaskOptions_!.Priority = 100;
+    Assert.IsFalse(validator_.Validate(validTaskOptions_)
                              .IsValid);
   }
 
   [Test]
-  public void OnlyMaxRetryAndPriorityDefinedShouldBeValid()
+  public void OnlyMaxRetryAndPriorityDefinedShouldFail()
   {
     var to = new TaskOptions
              {

@@ -121,6 +121,25 @@ public class TaskHandlerTest
                                        ReadOnlyMemory<byte>.Empty,
                                      }.ToAsyncEnumerable()));
 
+    await testServiceProvider.PartitionTable.CreatePartitionsAsync(new[]
+                                                                   {
+                                                                     new PartitionData("part1",
+                                                                                       new List<string>(),
+                                                                                       10,
+                                                                                       10,
+                                                                                       20,
+                                                                                       1,
+                                                                                       new PodConfiguration(new Dictionary<string, string>())),
+                                                                     new PartitionData("part2",
+                                                                                       new List<string>(),
+                                                                                       10,
+                                                                                       10,
+                                                                                       20,
+                                                                                       1,
+                                                                                       new PodConfiguration(new Dictionary<string, string>())),
+                                                                   })
+                             .ConfigureAwait(false);
+
     await testServiceProvider.Submitter.CreateSession(sessionId,
                                                       new[]
                                                       {
@@ -201,6 +220,25 @@ public class TaskHandlerTest
                                        ReadOnlyMemory<byte>.Empty,
                                      }.ToAsyncEnumerable()));
 
+    await testServiceProvider.PartitionTable.CreatePartitionsAsync(new[]
+                                                                   {
+                                                                     new PartitionData("part1",
+                                                                                       new List<string>(),
+                                                                                       10,
+                                                                                       10,
+                                                                                       20,
+                                                                                       1,
+                                                                                       new PodConfiguration(new Dictionary<string, string>())),
+                                                                     new PartitionData("part2",
+                                                                                       new List<string>(),
+                                                                                       10,
+                                                                                       10,
+                                                                                       20,
+                                                                                       1,
+                                                                                       new PodConfiguration(new Dictionary<string, string>())),
+                                                                   })
+                             .ConfigureAwait(false);
+
     await testServiceProvider.Submitter.CreateSession(sessionId,
                                                       new[]
                                                       {
@@ -277,6 +315,25 @@ public class TaskHandlerTest
                                      {
                                        ReadOnlyMemory<byte>.Empty,
                                      }.ToAsyncEnumerable()));
+
+    await testServiceProvider.PartitionTable.CreatePartitionsAsync(new[]
+                                                                   {
+                                                                     new PartitionData("part1",
+                                                                                       new List<string>(),
+                                                                                       10,
+                                                                                       10,
+                                                                                       20,
+                                                                                       1,
+                                                                                       new PodConfiguration(new Dictionary<string, string>())),
+                                                                     new PartitionData("part2",
+                                                                                       new List<string>(),
+                                                                                       10,
+                                                                                       10,
+                                                                                       20,
+                                                                                       1,
+                                                                                       new PodConfiguration(new Dictionary<string, string>())),
+                                                                   })
+                             .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.CreateSession(sessionId,
                                                       new[]
@@ -370,6 +427,25 @@ public class TaskHandlerTest
                                      {
                                        ReadOnlyMemory<byte>.Empty,
                                      }.ToAsyncEnumerable()));
+
+    await testServiceProvider.PartitionTable.CreatePartitionsAsync(new[]
+                                                                   {
+                                                                     new PartitionData("part1",
+                                                                                       new List<string>(),
+                                                                                       10,
+                                                                                       10,
+                                                                                       20,
+                                                                                       1,
+                                                                                       new PodConfiguration(new Dictionary<string, string>())),
+                                                                     new PartitionData("part2",
+                                                                                       new List<string>(),
+                                                                                       10,
+                                                                                       10,
+                                                                                       20,
+                                                                                       1,
+                                                                                       new PodConfiguration(new Dictionary<string, string>())),
+                                                                   })
+                             .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.CreateSession(sessionId,
                                                       new[]
