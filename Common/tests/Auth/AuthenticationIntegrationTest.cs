@@ -83,9 +83,9 @@ public class AuthenticationIntegrationTest
     options_ = null;
   }
 
-  private const           string                 SessionId = "MySession";
-  private const           string                 TaskId    = "MyTask";
-  private const           string                 ResultKey = "ResultKey";
+  private const           string                 SessionId   = "MySession";
+  private const           string                 TaskId      = "MyTask";
+  private const           string                 ResultKey   = "ResultKey";
   private const           string                 PartitionId = "PartitionId";
   private static readonly TaskFilter             TaskFilter;
   private static readonly CreateSmallTaskRequest CreateSmallTasksRequest;
