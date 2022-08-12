@@ -79,4 +79,15 @@ public interface IPartitionTable : IInitializable
   /// <exception cref="PartitionNotFoundException">required partition is not found</exception>
   Task DeletePartitionAsync(string            partitionId,
                             CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Check the availability of the given partitions in the data base
+  /// </summary>
+  /// <param name="partitionIds">Collection of partition ids</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   A bool representing whether all the partitions are available
+  /// </returns>
+  Task<bool> ArePartitionExistingAsync(IEnumerable<string> partitionIds,
+                                       CancellationToken   cancellationToken = default);
 }

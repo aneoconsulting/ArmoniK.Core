@@ -135,4 +135,38 @@ public class PartitionTableTestBase
                                                                                                 CancellationToken.None));
     }
   }
+
+  [Test]
+  public async Task ArePartitionExistingAsyncShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var result = await PartitionTable!.ArePartitionExistingAsync(new[]
+                                                                   {
+                                                                     "PartitionId0",
+                                                                     "PartitionId1",
+                                                                   },
+                                                                   CancellationToken.None)
+                                        .ConfigureAwait(false);
+
+      Assert.IsTrue(result);
+    }
+  }
+
+  [Test]
+  public async Task ArePartitionExistingAsyncShouldReturnFalse()
+  {
+    if (RunTests)
+    {
+      var result = await PartitionTable!.ArePartitionExistingAsync(new[]
+                                                                   {
+                                                                     "PartitionId0",
+                                                                     "PartitionIdNotExisting",
+                                                                   },
+                                                                   CancellationToken.None)
+                                        .ConfigureAwait(false);
+
+      Assert.IsFalse(result);
+    }
+  }
 }

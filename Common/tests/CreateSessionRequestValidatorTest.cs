@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -37,54 +37,63 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture(TestOf = typeof(CreateSessionRequestValidator))]
 public class CreateSessionRequestValidatorTest
 {
+  [SetUp]
+  public void Setup()
+    => validCreateSessionRequest_ = new CreateSessionRequest
+                                    {
+                                      DefaultTaskOption = new TaskOptions
+                                                          {
+                                                            Priority    = 1,
+                                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                            MaxRetries  = 2,
+                                                            PartitionId = "PartitionId",
+                                                          },
+                                      Id = "Id",
+                                      PartitionIds =
+                                      {
+                                        "PartitionId",
+                                      },
+                                    };
+
   private readonly CreateSessionRequestValidator validator_ = new();
+
+  private CreateSessionRequest? validCreateSessionRequest_;
 
   [Test]
   public void NullDefaultTaskOptionShouldFail()
   {
-    var csr = new CreateSessionRequest
-              {
-                DefaultTaskOption = null,
-                Id                = "SessionId",
-              };
-
-    Assert.IsFalse(validator_.Validate(csr)
+    validCreateSessionRequest_!.DefaultTaskOption = null;
+    Assert.IsFalse(validator_.Validate(validCreateSessionRequest_)
                              .IsValid);
   }
 
   [Test]
   public void EmptyIdShouldFail()
   {
-    var csr = new CreateSessionRequest
-              {
-                DefaultTaskOption = new TaskOptions
-                                    {
-                                      Priority    = 1,
-                                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                      MaxRetries  = 2,
-                                    },
-                Id = "",
-              };
-
-    Assert.IsFalse(validator_.Validate(csr)
+    validCreateSessionRequest_!.Id = string.Empty;
+    Assert.IsFalse(validator_.Validate(validCreateSessionRequest_)
                              .IsValid);
   }
 
   [Test]
-  public void SessionOk()
+  public void EmptyPartitionIdInTaskOptionsShouldFail()
   {
-    var csr = new CreateSessionRequest
-              {
-                DefaultTaskOption = new TaskOptions
-                                    {
-                                      Priority    = 1,
-                                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                      MaxRetries  = 2,
-                                    },
-                Id = "Id",
-              };
-
-    Assert.IsTrue(validator_.Validate(csr)
-                            .IsValid);
+    validCreateSessionRequest_!.DefaultTaskOption.PartitionId = string.Empty;
+    Assert.IsFalse(validator_.Validate(validCreateSessionRequest_)
+                             .IsValid);
   }
+
+
+  [Test]
+  public void EmptyPartitionIdShouldFail()
+  {
+    validCreateSessionRequest_!.PartitionIds.Clear();
+    Assert.IsFalse(validator_.Validate(validCreateSessionRequest_)
+                             .IsValid);
+  }
+
+  [Test]
+  public void SessionShouldBeValid()
+    => Assert.IsTrue(validator_.Validate(validCreateSessionRequest_!)
+                               .IsValid);
 }

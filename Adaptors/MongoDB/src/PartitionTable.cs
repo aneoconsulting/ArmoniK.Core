@@ -140,4 +140,17 @@ public class PartitionTable : IPartitionTable
       throw new PartitionNotFoundException($"Partition '{partitionId}' not found.");
     }
   }
+
+  public async Task<bool> ArePartitionExistingAsync(IEnumerable<string> partitionIds,
+                                                    CancellationToken   cancellationToken = default)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(ReadPartitionAsync)}");
+    var       sessionHandle  = sessionProvider_.Get();
+    var       taskCollection = partitionCollectionProvider_.Get();
+
+    return await taskCollection.AsQueryable(sessionHandle)
+                               .CountAsync(tdm => partitionIds.Contains(tdm.PartitionId),
+                                           cancellationToken)
+                               .ConfigureAwait(false) == partitionIds.Count();
+  }
 }
