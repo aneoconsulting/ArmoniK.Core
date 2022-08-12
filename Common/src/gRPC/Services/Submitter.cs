@@ -304,7 +304,7 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
-      if (await partitionTable_.ArePartitionExistingAsync(partitionIds,
+      if (!await partitionTable_.ArePartitionExistingAsync(partitionIds,
                                                           cancellationToken)
                                .ConfigureAwait(false))
       {
