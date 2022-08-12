@@ -56,13 +56,13 @@ public class TestTaskHandlerProvider : IDisposable
   private readonly        WebApplication  app_;
   private readonly        IMongoClient    client_;
   private readonly        LoggerFactory   loggerFactory_;
+  public readonly         IPartitionTable PartitionTable;
   private readonly        IResultTable    resultTable_;
   private readonly        MongoDbRunner   runner_;
   private readonly        ISessionTable   sessionTable_;
   public readonly         ISubmitter      Submitter;
   public readonly         TaskHandler     TaskHandler;
   public readonly         ITaskTable      TaskTable;
-  public readonly         IPartitionTable PartitionTable;
 
 
   public TestTaskHandlerProvider(IWorkerStreamHandler workerStreamHandler,
