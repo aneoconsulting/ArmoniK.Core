@@ -30,6 +30,7 @@ using System.Threading.Tasks;
 using Amqp;
 
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
@@ -51,7 +52,7 @@ public class QueueStorageTests
      * the later is defined in the  SimpleAmqpClientHelper class */
     => Options = CreateDefaultOptions();
 
-  public Options.Amqp Options { get; set; }
+  public Options.Amqp? Options { get; set; }
 
   private static Options.Amqp CreateDefaultOptions()
     => new()
@@ -73,14 +74,16 @@ public class QueueStorageTests
   [Test]
   public async Task CreateQueueStorageShouldSucceed()
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<ISessionAmqp>();
+    await using var helper         = new SimpleAmqpClientHelper();
+    var             provider       = new Mock<ISessionAmqp>();
+    var             partitionTable = new Mock<IPartitionTable>();
 
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
     var queueStorage = new QueueStorage(Options,
                                         provider.Object,
+                                        partitionTable.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
                       .ConfigureAwait(false);
@@ -150,28 +153,33 @@ public class QueueStorageTests
   [TestCaseSource(nameof(TestCasesBadOptions))]
   public async Task CreateQueueStorageShouldThrowIfBadOptionsGiven(Options.Amqp options)
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<ISessionAmqp>();
+    await using var helper         = new SimpleAmqpClientHelper();
+    var             provider       = new Mock<ISessionAmqp>();
+    var             partitionTable = new Mock<IPartitionTable>();
 
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
     Assert.Throws<ArgumentOutOfRangeException>(() => new QueueStorage(options,
                                                                       provider.Object,
+                                                                      partitionTable.Object,
                                                                       NullLogger<QueueStorage>.Instance));
   }
 
   [Test]
   public async Task EnqueueMessagesAsyncSucceedsIfTooBigPriority()
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<ISessionAmqp>();
+    await using var helper         = new SimpleAmqpClientHelper();
+    var             provider       = new Mock<ISessionAmqp>();
+    var             partitionTable = new Mock<IPartitionTable>();
+
 
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
     var queueStorage = new QueueStorage(Options,
                                         provider.Object,
+                                        partitionTable.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
                       .ConfigureAwait(false);
@@ -193,14 +201,17 @@ public class QueueStorageTests
   [Test]
   public async Task EnqueueMessagesAsyncSucceeds()
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<ISessionAmqp>();
+    await using var helper         = new SimpleAmqpClientHelper();
+    var             provider       = new Mock<ISessionAmqp>();
+    var             partitionTable = new Mock<IPartitionTable>();
+
 
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
     var queueStorage = new QueueStorage(Options,
                                         provider.Object,
+                                        partitionTable.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
                       .ConfigureAwait(false);
@@ -222,14 +233,20 @@ public class QueueStorageTests
   [Test]
   public async Task PullAsyncAsyncSucceeds()
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<ISessionAmqp>();
+    await using var helper         = new SimpleAmqpClientHelper();
+    var             provider       = new Mock<ISessionAmqp>();
+    var             partitionTable = new Mock<IPartitionTable>();
 
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
+    partitionTable.Setup(pt => pt.ArePartitionsExistingAsync(It.IsAny<string[]>(),
+                                                             CancellationToken.None))
+                  .Returns(Task.FromResult(true));
+
     var queueStorage = new QueueStorage(Options,
                                         provider.Object,
+                                        partitionTable.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
                       .ConfigureAwait(false);
@@ -259,14 +276,17 @@ public class QueueStorageTests
   [Test]
   public async Task PullAsyncAsyncFailsIfInvalidPartitionGiven()
   {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<ISessionAmqp>();
+    await using var helper         = new SimpleAmqpClientHelper();
+    var             provider       = new Mock<ISessionAmqp>();
+    var             partitionTable = new Mock<IPartitionTable>();
+
 
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
     var queueStorage = new QueueStorage(Options,
                                         provider.Object,
+                                        partitionTable.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
                       .ConfigureAwait(false);
@@ -284,7 +304,7 @@ public class QueueStorageTests
                                             CancellationToken.None)
                       .ConfigureAwait(false);
 
-    Assert.ThrowsAsync<AmqpException>(async () =>
+    Assert.ThrowsAsync<PartitionNotFoundException>(async () =>
                                       {
                                         await foreach (var qm in queueStorage.PullAsync(3,
                                                                                         "invalidPartition",
