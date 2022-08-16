@@ -52,7 +52,6 @@ public class QueueStorage : IQueueStorage
 
   private readonly int                      nbLinks_;
   private readonly Options.Amqp             options_;
-  private readonly IPartitionTable          partitionTable_;
   private readonly AsyncLazy<ISenderLink>[] senders_;
   private readonly ISessionAmqp             sessionAmqp_;
 
@@ -60,7 +59,6 @@ public class QueueStorage : IQueueStorage
 
   public QueueStorage(Options.Amqp          options,
                       ISessionAmqp          sessionAmqp,
-                      IPartitionTable       partitionTable,
                       ILogger<QueueStorage> logger)
   {
     if (string.IsNullOrEmpty(options.Host))
@@ -81,11 +79,6 @@ public class QueueStorage : IQueueStorage
                                             $"{nameof(Options.Amqp.Password)} is not defined.");
     }
 
-    if (string.IsNullOrEmpty(options.PartitionId))
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.PartitionId)} is not defined.");
-    }
 
     if (options.Port == 0)
     {
@@ -112,7 +105,6 @@ public class QueueStorage : IQueueStorage
     }
 
     sessionAmqp_    = sessionAmqp;
-    partitionTable_ = partitionTable;
     options_        = options;
     MaxPriority     = options.MaxPriority;
     PartitionId     = options.PartitionId;
@@ -174,16 +166,6 @@ public class QueueStorage : IQueueStorage
                                      nbLinks_)
                               .Select(i => new AsyncLazy<IReceiverLink>(async () =>
                                                                         {
-                                                                          if (!await partitionTable_.ArePartitionsExistingAsync(new[]
-                                                                                                                                {
-                                                                                                                                  partitionId,
-                                                                                                                                },
-                                                                                                                                CancellationToken.None)
-                                                                                                    .ConfigureAwait(false))
-                                                                          {
-                                                                            throw new PartitionNotFoundException($"Given partition {partitionId} does not exist");
-                                                                          }
-
                                                                           var rl = new ReceiverLink(sessionAmqp_.Session,
                                                                                                     $"{partitionId}###ReceiverLink{i}",
                                                                                                     $"{partitionId}###q{i}");
