@@ -174,15 +174,14 @@ public class QueueStorage : IQueueStorage
                                      nbLinks_)
                               .Select(i => new AsyncLazy<IReceiverLink>(async () =>
                                                                         {
-                                                                          var pName = $"{partitionId}###q{i}";
                                                                           if (!await partitionTable_.ArePartitionsExistingAsync(new[]
                                                                                                                                 {
-                                                                                                                                  pName,
+                                                                                                                                  partitionId,
                                                                                                                                 },
                                                                                                                                 CancellationToken.None)
                                                                                                     .ConfigureAwait(false))
                                                                           {
-                                                                            throw new PartitionNotFoundException($"Given partition {pName} does not exist");
+                                                                            throw new PartitionNotFoundException($"Given partition {partitionId} does not exist");
                                                                           }
 
                                                                           var rl = new ReceiverLink(sessionAmqp_.Session,
