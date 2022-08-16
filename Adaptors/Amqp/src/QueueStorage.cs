@@ -35,6 +35,7 @@ using Amqp.Framing;
 
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -51,6 +52,7 @@ public class QueueStorage : IQueueStorage
 
   private readonly int                      nbLinks_;
   private readonly Options.Amqp             options_;
+  private readonly IPartitionTable          partitionTable_;
   private readonly AsyncLazy<ISenderLink>[] senders_;
   private readonly ISessionAmqp             sessionAmqp_;
 
@@ -58,6 +60,7 @@ public class QueueStorage : IQueueStorage
 
   public QueueStorage(Options.Amqp          options,
                       ISessionAmqp          sessionAmqp,
+                      IPartitionTable       partitionTable,
                       ILogger<QueueStorage> logger)
   {
     if (string.IsNullOrEmpty(options.Host))
@@ -108,11 +111,12 @@ public class QueueStorage : IQueueStorage
                                             $"Minimum value for {nameof(Options.Amqp.LinkCredit)} is 1.");
     }
 
-    sessionAmqp_ = sessionAmqp;
-    options_     = options;
-    MaxPriority  = options.MaxPriority;
-    PartitionId  = options.PartitionId;
-    logger_      = logger;
+    sessionAmqp_    = sessionAmqp;
+    partitionTable_ = partitionTable;
+    options_        = options;
+    MaxPriority     = options.MaxPriority;
+    PartitionId     = options.PartitionId;
+    logger_         = logger;
 
     linkAdresses_ = new List<string>();
     nbLinks_      = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
@@ -168,11 +172,17 @@ public class QueueStorage : IQueueStorage
 
     var receivers = Enumerable.Range(0,
                                      nbLinks_)
-                              .Select(i => new AsyncLazy<IReceiverLink>(() =>
+                              .Select(i => new AsyncLazy<IReceiverLink>(async () =>
                                                                         {
-                                                                          if (linkAdresses_.Contains($"{partitionId}###q{i}") is false)
+                                                                          var pName = $"{partitionId}###q{i}";
+                                                                          if (!await partitionTable_.ArePartitionsExistingAsync(new[]
+                                                                                                                                {
+                                                                                                                                  pName,
+                                                                                                                                },
+                                                                                                                                CancellationToken.None)
+                                                                                                    .ConfigureAwait(false))
                                                                           {
-                                                                            throw new AmqpException(new Error("Queue does not exist"));
+                                                                            throw new PartitionNotFoundException($"Given partition {pName} does not exist");
                                                                           }
 
                                                                           var rl = new ReceiverLink(sessionAmqp_.Session,
