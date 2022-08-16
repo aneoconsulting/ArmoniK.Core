@@ -51,7 +51,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// </summary>
 public class Agent : IAgent
 {
-  private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority)> createdTasks_;
+  private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> createdTasks_;
   private readonly ILogger                                                         logger_;
   private readonly IObjectStorage                                                  resourcesStorage_;
   private readonly SessionData                                                     sessionData_;
@@ -78,7 +78,7 @@ public class Agent : IAgent
     submitter_        = submitter;
     logger_           = logger;
     resourcesStorage_ = objectStorageFactory.CreateResourcesStorage();
-    createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority)>();
+    createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
     sessionData_      = sessionData;
     taskData_         = taskData;
     token_            = token;
@@ -148,7 +148,7 @@ public class Agent : IAgent
 
           completionTask = Task.Run(async () =>
                                     {
-                                      createdTasks_.Add(await submitter_.CreateTasks(sessionData_,
+                                      createdTasks_.Add(await submitter_.CreateTasks(sessionData_.SessionId,
                                                                                      taskData_.TaskId!,
                                                                                      request.InitRequest.TaskOptions,
                                                                                      taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
