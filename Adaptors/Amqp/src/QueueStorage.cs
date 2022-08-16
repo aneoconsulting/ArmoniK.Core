@@ -45,7 +45,6 @@ namespace ArmoniK.Core.Adapters.Amqp;
 public class QueueStorage : IQueueStorage
 {
   private const    int          MaxInternalQueuePriority = 10;
-  private readonly List<string> linkAdresses_;
 
   private readonly ILogger<QueueStorage> logger_;
 
@@ -109,23 +108,13 @@ public class QueueStorage : IQueueStorage
     PartitionId  = options.PartitionId;
     logger_      = logger;
 
-    linkAdresses_ = new List<string>();
     nbLinks_      = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
 
     senders_ = Enumerable.Range(0,
                                 nbLinks_)
-                         .Select(i => new AsyncLazy<ISenderLink>(() =>
-                                                                 {
-                                                                   linkAdresses_.Add($"{options.PartitionId}###q{i}");
-                                                                   var target = new Target
-                                                                                {
-                                                                                  Address = linkAdresses_[i],
-                                                                                };
-                                                                   return new SenderLink(sessionAmqp.Session,
-                                                                                         $"{options.PartitionId}###SenderLink{i}",
-                                                                                         target,
-                                                                                         null);
-                                                                 }))
+                         .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(sessionAmqp.Session,
+                                                                                      $"{options.PartitionId}###SenderLink{i}",
+                                                                                      $"{options.PartitionId}###q{i}")))
                          .ToArray();
   }
 
@@ -203,6 +192,7 @@ public class QueueStorage : IQueueStorage
                                              Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
                                              logger_,
                                              cancellationToken);
+
 
         break;
       }

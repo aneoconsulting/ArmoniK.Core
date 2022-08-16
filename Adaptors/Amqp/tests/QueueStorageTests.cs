@@ -27,8 +27,6 @@ using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Amqp;
-
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
