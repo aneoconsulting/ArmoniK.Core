@@ -27,8 +27,6 @@ using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Amqp;
-
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -305,13 +303,13 @@ public class QueueStorageTests
                       .ConfigureAwait(false);
 
     Assert.ThrowsAsync<PartitionNotFoundException>(async () =>
-                                      {
-                                        await foreach (var qm in queueStorage.PullAsync(3,
-                                                                                        "invalidPartition",
-                                                                                        CancellationToken.None)
-                                                                             .ConfigureAwait(false))
-                                        {
-                                        }
-                                      });
+                                                   {
+                                                     await foreach (var qm in queueStorage.PullAsync(3,
+                                                                                                     "invalidPartition",
+                                                                                                     CancellationToken.None)
+                                                                                          .ConfigureAwait(false))
+                                                     {
+                                                     }
+                                                   });
   }
 }

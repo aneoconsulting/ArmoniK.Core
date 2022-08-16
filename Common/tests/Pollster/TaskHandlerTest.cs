@@ -405,8 +405,8 @@ public class TaskHandlerTest
   [Test]
   public async Task ExecuteTaskWithResultsShouldSucceed()
   {
-    var sessionId   = "sessionId";
-    var taskId      = "TaskId";
+    var sessionId    = "sessionId";
+    var taskId       = "TaskId";
     var partition1Id = "part1";
     var partition2Id = "part2";
 
@@ -480,7 +480,7 @@ public class TaskHandlerTest
                                                                                  MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
                                                                                  MaxRetries  = 2,
                                                                                  Priority    = 1,
-                                                                                 PartitionId = partition1Id
+                                                                                 PartitionId = partition1Id,
                                                                                },
                                                                                taskRequests.ToAsyncEnumerable(),
                                                                                CancellationToken.None)
