@@ -23,7 +23,7 @@ services:
       - Amqp__User=admin
       - Amqp__Password=admin
 
-  armonik.control.podmetrics:
+  armonik.control.partitionmetrics:
     environment:
       - Amqp__User=admin
       - Amqp__Password=admin

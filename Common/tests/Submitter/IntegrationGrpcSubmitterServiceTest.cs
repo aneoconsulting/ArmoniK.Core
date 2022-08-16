@@ -443,7 +443,12 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
                                                        MaxRetries  = 2,
                                                        Priority    = 2,
+                                                       PartitionId = "Partition",
                                                      },
+                                 PartitionIds =
+                                 {
+                                   "Partition",
+                                 },
                                });
       Assert.Fail("Function should throw an exception");
     }
@@ -487,6 +492,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                     MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
                                                     MaxRetries  = 2,
                                                     Priority    = 2,
+                                                    PartitionId = "Partition",
                                                   },
                                   });
       Assert.Fail("Function should throw an exception");

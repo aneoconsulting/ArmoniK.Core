@@ -61,7 +61,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.ProfilingTools
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.Amqp.Tests", "Adaptors\Amqp\tests\ArmoniK.Core.Adapters.Amqp.Tests.csproj", "{CD255A51-7002-452E-9B1D-6E621134A129}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Control.PodMetrics", "Control\PodMetrics\src\ArmoniK.Core.Control.PodMetrics.csproj", "{0A2722D2-0FB7-4004-9CC6-7EAEBC553798}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Control.PartitionMetrics", "Control\PartitionMetrics\src\ArmoniK.Core.Control.PartitionMetrics.csproj", "{0A2722D2-0FB7-4004-9CC6-7EAEBC553798}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

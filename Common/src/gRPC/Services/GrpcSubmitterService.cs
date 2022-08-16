@@ -160,6 +160,13 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                       request.DefaultTaskOption,
                                       context.CancellationToken);
     }
+    catch (PartitionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Partition not found while creating session");
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "Partition not found"));
+    }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,

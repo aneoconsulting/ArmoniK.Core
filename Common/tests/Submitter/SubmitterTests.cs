@@ -124,9 +124,10 @@ public class SubmitterTests
                                                    ValidateOnBuild = true,
                                                  });
 
-    submitter_    = provider.GetRequiredService<ISubmitter>();
-    sessionTable_ = provider.GetRequiredService<ISessionTable>();
-    taskTable_    = provider.GetRequiredService<ITaskTable>();
+    submitter_      = provider.GetRequiredService<ISubmitter>();
+    sessionTable_   = provider.GetRequiredService<ISessionTable>();
+    taskTable_      = provider.GetRequiredService<ITaskTable>();
+    partitionTable_ = provider.GetRequiredService<IPartitionTable>();
   }
 
   [TearDown]
@@ -137,22 +138,24 @@ public class SubmitterTests
     submitter_ = null;
   }
 
-  private                 ISubmitter     submitter_;
-  private                 MongoDbRunner  runner_;
-  private                 MongoClient    client_;
-  private const           string         DatabaseName    = "ArmoniK_TestDB";
-  private const           string         SessionId       = "SessionId";
-  private const           string         TaskCreatingId  = "TaskCreatingId";
-  private const           string         TaskSubmittedId = "TaskSubmittedId";
-  private const           string         TaskCompletedId = "TaskCompeletedId";
-  private const           string         ExpectedOutput1 = "ExpectedOutput1";
-  private const           string         ExpectedOutput2 = "ExpectedOutput2";
-  private const           string         ExpectedOutput3 = "ExpectedOutput3";
-  private static readonly ActivitySource ActivitySource  = new("ArmoniK.Core.Common.Tests.Submitter");
-  private                 ISessionTable  sessionTable_;
-  private                 ITaskTable     taskTable_;
+  private                 ISubmitter      submitter_;
+  private                 MongoDbRunner   runner_;
+  private                 MongoClient     client_;
+  private const           string          DatabaseName    = "ArmoniK_TestDB";
+  private const           string          SessionId       = "SessionId";
+  private const           string          TaskCreatingId  = "TaskCreatingId";
+  private const           string          TaskSubmittedId = "TaskSubmittedId";
+  private const           string          TaskCompletedId = "TaskCompeletedId";
+  private const           string          ExpectedOutput1 = "ExpectedOutput1";
+  private const           string          ExpectedOutput2 = "ExpectedOutput2";
+  private const           string          ExpectedOutput3 = "ExpectedOutput3";
+  private static readonly ActivitySource  ActivitySource  = new("ArmoniK.Core.Common.Tests.Submitter");
+  private                 ISessionTable   sessionTable_;
+  private                 ITaskTable      taskTable_;
+  private                 IPartitionTable partitionTable_;
 
   private static async Task InitSubmitter(ISubmitter        submitter,
+                                          IPartitionTable   partitionTable,
                                           CancellationToken token)
   {
     var defaultTaskOptions = new TaskOptions
@@ -162,6 +165,26 @@ public class SubmitterTests
                                Priority    = 1,
                                PartitionId = "part1",
                              };
+
+    await partitionTable.CreatePartitionsAsync(new[]
+                                               {
+                                                 new PartitionData("part1",
+                                                                   new List<string>(),
+                                                                   10,
+                                                                   10,
+                                                                   20,
+                                                                   1,
+                                                                   new PodConfiguration(new Dictionary<string, string>())),
+                                                 new PartitionData("part2",
+                                                                   new List<string>(),
+                                                                   10,
+                                                                   10,
+                                                                   20,
+                                                                   1,
+                                                                   new PodConfiguration(new Dictionary<string, string>())),
+                                               },
+                                               token)
+                        .ConfigureAwait(false);
 
     await submitter.CreateSession(SessionId,
                                   new[]
@@ -304,6 +327,7 @@ public class SubmitterTests
   public async Task CreateSessionShouldSucceed()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -343,6 +367,7 @@ public class SubmitterTests
   public async Task CreateTaskShouldSucceed()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -384,29 +409,30 @@ public class SubmitterTests
                                    CancellationToken.None)
                     .ConfigureAwait(false);
 
-    Assert.ThrowsAsync<InvalidOperationException>(() => submitter_.CreateTasks(SessionId,
-                                                                               SessionId,
-                                                                               defaultTaskOptions,
-                                                                               new List<TaskRequest>
-                                                                               {
-                                                                                 new(TaskCreatingId,
-                                                                                     new[]
-                                                                                     {
-                                                                                       ExpectedOutput1,
-                                                                                     },
-                                                                                     new List<string>(),
-                                                                                     new List<ReadOnlyMemory<byte>>
-                                                                                     {
-                                                                                       new(Encoding.ASCII.GetBytes("AAAA")),
-                                                                                     }.ToAsyncEnumerable()),
-                                                                               }.ToAsyncEnumerable(),
-                                                                               CancellationToken.None));
+    Assert.ThrowsAsync<SessionNotFoundException>(() => submitter_.CreateTasks(SessionId,
+                                                                              SessionId,
+                                                                              defaultTaskOptions,
+                                                                              new List<TaskRequest>
+                                                                              {
+                                                                                new(TaskCreatingId,
+                                                                                    new[]
+                                                                                    {
+                                                                                      ExpectedOutput1,
+                                                                                    },
+                                                                                    new List<string>(),
+                                                                                    new List<ReadOnlyMemory<byte>>
+                                                                                    {
+                                                                                      new(Encoding.ASCII.GetBytes("AAAA")),
+                                                                                    }.ToAsyncEnumerable()),
+                                                                              }.ToAsyncEnumerable(),
+                                                                              CancellationToken.None));
   }
 
   [Test]
   public async Task GetStatusShouldSucceed()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -429,6 +455,7 @@ public class SubmitterTests
   public async Task FinalizeTaskCreationShouldSucceed()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -451,6 +478,7 @@ public class SubmitterTests
   public async Task GetStatusReturnEmptyList()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -471,6 +499,7 @@ public class SubmitterTests
   public async Task TryGetResultShouldSucceed()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -512,6 +541,7 @@ public class SubmitterTests
   public async Task TryGetResultShouldFail()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -530,6 +560,7 @@ public class SubmitterTests
   public async Task TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -555,6 +586,7 @@ public class SubmitterTests
   public async Task CancelSessionShouldSucceed()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -571,6 +603,7 @@ public class SubmitterTests
   public async Task GetTaskOutputShouldSucceed()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -610,6 +643,7 @@ public class SubmitterTests
   public async Task CancelTaskShouldSucceed()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -645,6 +679,7 @@ public class SubmitterTests
   public async Task GetResultStatusShouldSucceed()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -671,6 +706,7 @@ public class SubmitterTests
   public async Task GetNotExistingResultStatusShouldSucceed()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -693,6 +729,7 @@ public class SubmitterTests
   public async Task GetPartitionTaskStatus()
   {
     await InitSubmitter(submitter_,
+                        partitionTable_,
                         CancellationToken.None)
       .ConfigureAwait(false);
     await InitSubmitterCompleteTask(submitter_,

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -37,9 +37,15 @@ public class CreateSessionRequestValidator : AbstractValidator<CreateSessionRequ
   {
     RuleFor(request => request.DefaultTaskOption)
       .SetValidator(new TaskOptionsValidator())
-      .NotNull();
+      .NotNull()
+      .WithName(nameof(CreateSessionRequest.DefaultTaskOption));
     RuleFor(request => request.Id)
       .NotNull()
-      .NotEmpty();
+      .NotEmpty()
+      .WithName(nameof(CreateSessionRequest.Id));
+    RuleFor(request => request.PartitionIds)
+      .NotNull()
+      .NotEmpty()
+      .WithName(nameof(CreateSessionRequest.PartitionIds));
   }
 }

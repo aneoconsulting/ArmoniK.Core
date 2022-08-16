@@ -56,6 +56,7 @@ public class Submitter : ISubmitter
   private readonly IQueueStorage         lockedQueueStorage_;
   private readonly ILogger<Submitter>    logger_;
   private readonly IObjectStorageFactory objectStorageFactory_;
+  private readonly IPartitionTable       partitionTable_;
   private readonly IResultTable          resultTable_;
 
 
@@ -69,6 +70,7 @@ public class Submitter : ISubmitter
                    ISessionTable         sessionTable,
                    ITaskTable            taskTable,
                    IResultTable          resultTable,
+                   IPartitionTable       partitionTable,
                    ActivitySource        activitySource)
   {
     objectStorageFactory_ = objectStorageFactory;
@@ -76,6 +78,7 @@ public class Submitter : ISubmitter
     sessionTable_         = sessionTable;
     taskTable_            = taskTable;
     resultTable_          = resultTable;
+    partitionTable_       = partitionTable;
     activitySource_       = activitySource;
     lockedQueueStorage_   = lockedQueueStorage;
   }
@@ -303,20 +306,15 @@ public class Submitter : ISubmitter
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     try
     {
-      var partitionList = partitionIds.ToIList();
-      if (partitionList.Count == 0)
+      if (!await partitionTable_.ArePartitionsExistingAsync(partitionIds,
+                                                            cancellationToken)
+                                .ConfigureAwait(false))
       {
-        partitionList = new[]
-                        {
-                          string.Empty,
-                        };
-        // TODO: once partitions are fully integrated,
-        //   the default partition list should be replaced by an error
-        //throw new InvalidOperationException($"{nameof(partitionIds)} must not be empty or null");
+        throw new PartitionNotFoundException("One of the partitions does not exist");
       }
 
       await sessionTable_.SetSessionDataAsync(sessionId,
-                                              partitionList,
+                                              partitionIds,
                                               defaultTaskOptions,
                                               cancellationToken)
                          .ConfigureAwait(false);

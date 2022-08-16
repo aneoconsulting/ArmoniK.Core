@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -52,6 +52,7 @@ public class CreateLargeTaskRequestValidatorTest
                                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
                                                 MaxRetries  = 3,
                                                 Priority    = 1,
+                                                PartitionId = "Partition",
                                               },
                                 SessionId = "SessionId",
                               },
@@ -73,6 +74,7 @@ public class CreateLargeTaskRequestValidatorTest
                                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
                                                 MaxRetries  = 3,
                                                 Priority    = 1,
+                                                PartitionId = "Partition",
                                               },
                               },
               };
@@ -93,6 +95,7 @@ public class CreateLargeTaskRequestValidatorTest
                                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.Zero),
                                                 MaxRetries  = 3,
                                                 Priority    = 1,
+                                                PartitionId = "Partition",
                                               },
                                 SessionId = "    ",
                               },

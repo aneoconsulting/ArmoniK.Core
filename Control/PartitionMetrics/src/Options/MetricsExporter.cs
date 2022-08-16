@@ -24,7 +24,7 @@
 
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Control.PodMetrics.Options;
+namespace ArmoniK.Core.Control.PartitionMetrics.Options;
 
 /// <summary>
 ///   Options to set up the connection to the metrics exporter
