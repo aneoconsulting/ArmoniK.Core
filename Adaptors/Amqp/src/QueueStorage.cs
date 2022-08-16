@@ -35,7 +35,6 @@ using Amqp.Framing;
 
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common;
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -104,11 +103,11 @@ public class QueueStorage : IQueueStorage
                                             $"Minimum value for {nameof(Options.Amqp.LinkCredit)} is 1.");
     }
 
-    sessionAmqp_    = sessionAmqp;
-    options_        = options;
-    MaxPriority     = options.MaxPriority;
-    PartitionId     = options.PartitionId;
-    logger_         = logger;
+    sessionAmqp_ = sessionAmqp;
+    options_     = options;
+    MaxPriority  = options.MaxPriority;
+    PartitionId  = options.PartitionId;
+    logger_      = logger;
 
     linkAdresses_ = new List<string>();
     nbLinks_      = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
@@ -164,22 +163,20 @@ public class QueueStorage : IQueueStorage
 
     var receivers = Enumerable.Range(0,
                                      nbLinks_)
-                              .Select(i => new AsyncLazy<IReceiverLink>(async () =>
-                                                                        {
-                                                                          var rl = new ReceiverLink(sessionAmqp_.Session,
-                                                                                                    $"{partitionId}###ReceiverLink{i}",
-                                                                                                    $"{partitionId}###q{i}");
-
-                                                                          /* linkCredit_: the maximum number of messages the
-                                                                           * remote peer can send to the receiver.
-                                                                           * With the goal of minimizing/deactivating
-                                                                           * prefetching, a value of 1 gave us the desired
-                                                                           * behavior. We pick a default value of 2 to have "some cache". */
-                                                                          rl.SetCredit(options_.LinkCredit);
-                                                                          return rl;
-                                                                        }))
+                              .Select(i =>
+                                      {
+                                        var rl = new ReceiverLink(sessionAmqp_.Session,
+                                                                  $"{partitionId}###ReceiverLink{i}",
+                                                                  $"{partitionId}###q{i}");
+                                        /* linkCredit_: the maximum number of messages the
+                                         * remote peer can send to the receiver.
+                                         * With the goal of minimizing/deactivating
+                                         * prefetching, a value of 1 gave us the desired
+                                         * behavior. We pick a default value of 2 to have "some cache". */
+                                        rl.SetCredit(options_.LinkCredit);
+                                        return rl;
+                                      })
                               .ToArray();
-
 
     while (nbPulledMessage < nbMessages)
     {
@@ -187,7 +184,7 @@ public class QueueStorage : IQueueStorage
       for (var i = receivers.Length - 1; i >= 0; --i)
       {
         cancellationToken.ThrowIfCancellationRequested();
-        var receiver = await receivers[i];
+        var receiver = receivers[i];
         var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
         if (message is null)
