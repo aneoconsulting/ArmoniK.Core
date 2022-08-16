@@ -157,7 +157,7 @@ public class TaskHandlerTest
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
+    var (requests, priority,whichPartitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
                                                                                new TaskOptions
                                                                                {
@@ -259,7 +259,7 @@ public class TaskHandlerTest
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
+    var (requests, priority,partitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
                                                                                new TaskOptions
                                                                                {
@@ -358,7 +358,7 @@ public class TaskHandlerTest
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
+    var (requests, priority,partitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
                                                                                new TaskOptions
                                                                                {
@@ -473,7 +473,7 @@ public class TaskHandlerTest
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
+    var (requests, priority,partitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
                                                                                new TaskOptions
                                                                                {
