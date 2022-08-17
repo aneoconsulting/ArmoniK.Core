@@ -106,7 +106,7 @@ public class LockedWrapperQueueStorage : IQueueStorage
   public Task CloseReceiversAsync()
     => lockedQueueStorage_.CloseReceiversAsync();
 
-    /// <inheritdoc />
+  /// <inheritdoc />
   public Task EnqueueMessagesAsync(IEnumerable<string> messages,
                                    string              partitionId,
                                    int                 priority          = 1,

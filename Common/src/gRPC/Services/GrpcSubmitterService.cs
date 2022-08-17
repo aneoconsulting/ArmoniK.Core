@@ -262,11 +262,11 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
       }
 
       var (requests, priority, partitionId) = await submitter_.CreateTasks(first.InitRequest.SessionId,
-                                                                                            first.InitRequest.SessionId,
-                                                                                            first.InitRequest.TaskOptions,
-                                                                                            enumerator.BuildRequests(context.CancellationToken),
-                                                                                            context.CancellationToken)
-                                                                               .ConfigureAwait(false);
+                                                                           first.InitRequest.SessionId,
+                                                                           first.InitRequest.TaskOptions,
+                                                                           enumerator.BuildRequests(context.CancellationToken),
+                                                                           context.CancellationToken)
+                                                              .ConfigureAwait(false);
 
       await submitter_.FinalizeTaskCreation(requests,
                                             priority,

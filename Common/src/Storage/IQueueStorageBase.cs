@@ -32,7 +32,7 @@ public interface IQueueStorageBase : IInitializable
 {
   int MaxPriority { get; }
 
-  string            PartitionId { get; }
+  string      PartitionId { get; }
   public Task CloseReceiversAsync();
 
   IAsyncEnumerable<IQueueMessageHandler> PullAsync(int               nbMessages,

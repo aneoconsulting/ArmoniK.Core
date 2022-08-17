@@ -52,12 +52,12 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class Agent : IAgent
 {
   private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> createdTasks_;
-  private readonly ILogger                                                         logger_;
-  private readonly IObjectStorage                                                  resourcesStorage_;
-  private readonly SessionData                                                     sessionData_;
-  private readonly ISubmitter                                                      submitter_;
-  private readonly TaskData                                                        taskData_;
-  private readonly string                                                          token_;
+  private readonly ILogger                                                                             logger_;
+  private readonly IObjectStorage                                                                      resourcesStorage_;
+  private readonly SessionData                                                                         sessionData_;
+  private readonly ISubmitter                                                                          submitter_;
+  private readonly TaskData                                                                            taskData_;
+  private readonly string                                                                              token_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
