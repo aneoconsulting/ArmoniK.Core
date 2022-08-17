@@ -108,9 +108,11 @@ public class LockedWrapperQueueStorage : IQueueStorage
 
     /// <inheritdoc />
   public Task EnqueueMessagesAsync(IEnumerable<string> messages,
+                                   string              partitionId,
                                    int                 priority          = 1,
                                    CancellationToken   cancellationToken = default)
     => lockedQueueStorage_.EnqueueMessagesAsync(messages,
+                                                partitionId,
                                                 priority,
                                                 cancellationToken);
 

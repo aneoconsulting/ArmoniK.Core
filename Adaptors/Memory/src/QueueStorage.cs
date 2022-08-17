@@ -131,6 +131,9 @@ public class QueueStorage : IQueueStorage
     return Task.CompletedTask;
   }
 
+  public Task CloseReceiversAsync()
+    => throw new NotImplementedException();
+
   private class MessageHandler : IQueueMessageHandler
   {
     private static long count_;

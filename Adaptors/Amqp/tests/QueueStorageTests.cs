@@ -236,6 +236,7 @@ public class QueueStorageTests
                          "msg5",
                        };
     await queueStorage.EnqueueMessagesAsync(testMessages,
+                                            Options.PartitionId,
                                             priority,
                                             CancellationToken.None)
                       .ConfigureAwait(false);
@@ -283,6 +284,7 @@ public class QueueStorageTests
                          "msg5",
                        };
     await queueStorage.EnqueueMessagesAsync(testMessages,
+                                            Options.PartitionId,
                                             priority,
                                             CancellationToken.None)
                       .ConfigureAwait(false);
