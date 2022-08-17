@@ -256,7 +256,7 @@ public class SessionTable : ISessionTable
 
     return await ordered.Skip(request.Page * request.PageSize)
                         .Take(request.PageSize)
-                        .ToListAsync(cancellationToken)
+                        .ToListAsync(cancellationToken) // todo : do not create list there but pass cancellation token
                         .ConfigureAwait(false);
   }
 

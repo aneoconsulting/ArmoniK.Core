@@ -171,8 +171,8 @@ public class SessionTable : ISessionTable
                                       });
   }
 
-  public async Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
-                                                                CancellationToken   cancellationToken = default)
+  public Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
+                                                          CancellationToken   cancellationToken = default)
   {
     var queryable = storage_.AsQueryable()
                             .Select(pair => pair.Value)
@@ -182,10 +182,8 @@ public class SessionTable : ISessionTable
                     ? queryable.OrderBy(request.Sort.ToSessionDataField())
                     : queryable.OrderByDescending(request.Sort.ToSessionDataField());
 
-    return await ordered.Skip(request.Page * request.PageSize)
-                        .Take(request.PageSize)
-                        .ToListAsync(cancellationToken)
-                        .ConfigureAwait(false);
+    return Task.FromResult<IEnumerable<SessionData>>(ordered.Skip(request.Page * request.PageSize)
+                                                            .Take(request.PageSize));
   }
 
   /// <inheritdoc />
