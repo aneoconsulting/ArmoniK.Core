@@ -44,7 +44,7 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueStorage : IQueueStorage
 {
-  private const    int          MaxInternalQueuePriority = 10;
+  private const int MaxInternalQueuePriority = 10;
 
   private readonly ILogger<QueueStorage> logger_;
 
@@ -53,7 +53,8 @@ public class QueueStorage : IQueueStorage
   private readonly AsyncLazy<ISenderLink>[] senders_;
   private readonly ISessionAmqp             sessionAmqp_;
 
-  private bool isInitialized_;
+  private bool           isInitialized_;
+  private ReceiverLink[] receivers_;
 
   public QueueStorage(Options.Amqp          options,
                       ISessionAmqp          sessionAmqp,
@@ -108,7 +109,7 @@ public class QueueStorage : IQueueStorage
     PartitionId  = options.PartitionId;
     logger_      = logger;
 
-    nbLinks_      = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
+    nbLinks_ = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
 
     senders_ = Enumerable.Range(0,
                                 nbLinks_)
@@ -149,31 +150,30 @@ public class QueueStorage : IQueueStorage
     using var _               = logger_.LogFunction();
     var       nbPulledMessage = 0;
 
-
-    var receivers = Enumerable.Range(0,
-                                     nbLinks_)
-                              .Select(i =>
-                                      {
-                                        var rl = new ReceiverLink(sessionAmqp_.Session,
-                                                                  $"{partitionId}###ReceiverLink{i}",
-                                                                  $"{partitionId}###q{i}");
-                                        /* linkCredit_: the maximum number of messages the
-                                         * remote peer can send to the receiver.
-                                         * With the goal of minimizing/deactivating
-                                         * prefetching, a value of 1 gave us the desired
-                                         * behavior. We pick a default value of 2 to have "some cache". */
-                                        rl.SetCredit(options_.LinkCredit);
-                                        return rl;
-                                      })
-                              .ToArray();
+    receivers_ = Enumerable.Range(0,
+                                  nbLinks_)
+                           .Select(i =>
+                                   {
+                                     var rl = new ReceiverLink(sessionAmqp_.Session,
+                                                               $"{partitionId}###ReceiverLink{i}",
+                                                               $"{partitionId}###q{i}");
+                                     /* linkCredit_: the maximum number of messages the
+                                      * remote peer can send to the receiver.
+                                      * With the goal of minimizing/deactivating
+                                      * prefetching, a value of 1 gave us the desired
+                                      * behavior. We pick a default value of 2 to have "some cache". */
+                                     rl.SetCredit(options_.LinkCredit);
+                                     return rl;
+                                   })
+                           .ToArray();
 
     while (nbPulledMessage < nbMessages)
     {
       var currentNbMessages = nbPulledMessage;
-      for (var i = receivers.Length - 1; i >= 0; --i)
+      for (var i = receivers_.Length - 1; i >= 0; --i)
       {
         cancellationToken.ThrowIfCancellationRequested();
-        var receiver = receivers[i];
+        var receiver = receivers_[i];
         var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
         if (message is null)
@@ -200,6 +200,18 @@ public class QueueStorage : IQueueStorage
       if (nbPulledMessage == currentNbMessages)
       {
         break;
+      }
+    }
+  }
+
+  public async Task CloseReceiversAsync()
+  {
+    foreach (var rl in receivers_)
+    {
+      if (!rl.IsClosed)
+      {
+        await rl.CloseAsync()
+                .ConfigureAwait(false);
       }
     }
   }

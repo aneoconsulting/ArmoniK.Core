@@ -196,6 +196,9 @@ public class Pollster
             combinedCts.Cancel();
           }
         }
+
+        await queueStorage_.CloseReceiversAsync()
+                           .ConfigureAwait(false);
       }
     }
     catch (Exception e)

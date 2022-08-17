@@ -128,6 +128,10 @@ public class LockedQueueStorage : ILockedQueueStorage
 
     return Task.CompletedTask;
   }
+  public Task CloseReceiversAsync()
+  {
+    return Task.CompletedTask;
+  }
 
   /// <inheritdoc />
   public TimeSpan LockRefreshPeriodicity { get; } = TimeSpan.FromMinutes(5);
