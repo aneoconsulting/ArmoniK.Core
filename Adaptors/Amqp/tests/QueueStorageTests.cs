@@ -232,19 +232,86 @@ public class QueueStorageTests
                          "msg1",
                          "msg2",
                          "msg3",
+                         "msg4",
+                         "msg5",
                        };
     await queueStorage.EnqueueMessagesAsync(testMessages,
-                                            "part1",
                                             priority,
                                             CancellationToken.None)
                       .ConfigureAwait(false);
 
-    await foreach (var qm in queueStorage.PullAsync(3,
-                                                    "part1",
-                                                    CancellationToken.None)
-                                         .ConfigureAwait(false))
+
+    var messages = queueStorage.PullAsync(5,
+                                          queueStorage.PartitionId,
+                                          CancellationToken.None);
+
+    await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
+                                      .ConfigureAwait(false))
     {
-      Assert.IsTrue(qm.Status == QueueMessageStatus.Waiting);
+      Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
+      qmh.Status = QueueMessageStatus.Processed;
+      await qmh.DisposeAsync()
+               .ConfigureAwait(false);
+    }
+
+    await queueStorage.CloseReceiversAsync()
+                      .ConfigureAwait(false);
+  }
+
+  [Test]
+  public async Task PullAsyncAsyncSucceedsOnMultipleCalls()
+  {
+    await using var helper   = new SimpleAmqpClientHelper();
+    var             provider = new Mock<ISessionAmqp>();
+
+    provider.Setup(sp => sp.Session)
+            .Returns(helper.Session);
+
+    var queueStorage = new QueueStorage(Options,
+                                        provider.Object,
+                                        NullLogger<QueueStorage>.Instance);
+    await queueStorage.Init(CancellationToken.None)
+                      .ConfigureAwait(false);
+
+    var priority = 1;
+    var testMessages = new[]
+                       {
+                         "msg1",
+                         "msg2",
+                         "msg3",
+                         "msg4",
+                         "msg5",
+                       };
+    await queueStorage.EnqueueMessagesAsync(testMessages,
+                                            priority,
+                                            CancellationToken.None)
+                      .ConfigureAwait(false);
+
+
+    var messages = queueStorage.PullAsync(3,
+                                          queueStorage.PartitionId,
+                                          CancellationToken.None);
+
+    await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
+                                      .ConfigureAwait(false))
+    {
+      Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
+      qmh.Status = QueueMessageStatus.Processed;
+    }
+
+    await queueStorage.CloseReceiversAsync()
+                      .ConfigureAwait(false);
+
+    var messages2 = queueStorage.PullAsync(2,
+                                           queueStorage.PartitionId,
+                                           CancellationToken.None);
+    await foreach (var qmh in messages2.WithCancellation(CancellationToken.None)
+                                       .ConfigureAwait(false))
+    {
+      Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
+      qmh.Status = QueueMessageStatus.Postponed;
+      await qmh.DisposeAsync()
+               .ConfigureAwait(false);
     }
   }
 }
