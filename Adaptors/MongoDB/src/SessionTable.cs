@@ -31,13 +31,18 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
+
+using Armonik.Api.gRPC.V1.Tasks;
+
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -48,6 +53,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+using Task = System.Threading.Tasks.Task;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -161,8 +167,8 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public async Task CancelSessionAsync(string            sessionId,
-                                       CancellationToken cancellationToken = default)
+  public async Task<SessionData> CancelSessionAsync(string            sessionId,
+                                                    CancellationToken cancellationToken = default)
   {
     using var _        = Logger.LogFunction(sessionId);
     using var activity = activitySource_.StartActivity($"{nameof(CancelSessionAsync)}");
@@ -171,18 +177,26 @@ public class SessionTable : ISessionTable
 
     var sessionCollection = sessionCollectionProvider_.Get();
 
+    var filterDefinition = new FilterDefinitionBuilder<SessionData>().Where(model => model.SessionId == sessionId && model.Status == SessionStatus.Running);
 
-    var resSession = sessionCollection.UpdateOneAsync(model => model.SessionId == sessionId && model.Status == SessionStatus.Running,
-                                                      Builders<SessionData>.Update.Set(model => model.Status,
-                                                                                       SessionStatus.Canceled)
-                                                                           .Set(model => model.CancellationDate,
-                                                                                DateTime.UtcNow),
-                                                      cancellationToken: cancellationToken);
+    var resSession = await sessionCollection.FindOneAndUpdateAsync(filterDefinition,
+                                                                   Builders<SessionData>.Update.Set(model => model.Status,
+                                                                                                    SessionStatus.Canceled)
+                                                                                        .Set(model => model.CancellationDate,
+                                                                                             DateTime.UtcNow),
+                                                                   options: new FindOneAndUpdateOptions<SessionData>
+                                                                            {
+                                                                              ReturnDocument = ReturnDocument.After
+                                                                            },
+                                                                   cancellationToken: cancellationToken)
+                                            .ConfigureAwait(false);
 
-    if ((await resSession.ConfigureAwait(false)).MatchedCount < 1)
+    if (resSession is null)
     {
       throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
     }
+
+    return resSession;
   }
 
   /// <inheritdoc />
@@ -223,6 +237,27 @@ public class SessionTable : ISessionTable
     {
       yield return sessionId;
     }
+  }
+
+  public async Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
+                                                                CancellationToken   cancellationToken = default)
+  {
+    using var _                 = Logger.LogFunction();
+    using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
+    var       sessionHandle     = sessionProvider_.Get();
+    var       sessionCollection = sessionCollectionProvider_.Get();
+
+    var queryable = sessionCollection.AsQueryable(sessionHandle)
+                                  .Where(request.Filter.ToSessionDataFilter());
+
+    var ordered = request.Sort.Direction == ListSessionsRequest.Types.OrderDirection.Asc
+                    ? queryable.OrderBy(request.Sort.ToSessionDataField())
+                    : queryable.OrderByDescending(request.Sort.ToSessionDataField());
+
+    return await ordered.Skip(request.Page * request.PageSize)
+                        .Take(request.PageSize)
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false);
   }
 
   /// <inheritdoc />

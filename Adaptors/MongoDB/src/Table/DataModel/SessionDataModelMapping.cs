@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -76,11 +76,17 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                       .SetIsRequired(true);
                                                    map.MapProperty(nameof(TaskOptions.PartitionId))
                                                       .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.ApplicationName))
+                                                      .SetIsRequired(true);
+                                                   map.MapProperty(nameof(TaskOptions.ApplicationVersion))
+                                                      .SetIsRequired(true);
                                                    map.MapCreator(options => new TaskOptions(options.Options,
                                                                                              options.MaxDuration,
                                                                                              options.MaxRetries,
                                                                                              options.Priority,
-                                                                                             options.PartitionId));
+                                                                                             options.PartitionId,
+                                                                                             options.ApplicationName,
+                                                                                             options.ApplicationVersion));
                                                  });
     }
   }

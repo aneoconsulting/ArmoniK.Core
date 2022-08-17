@@ -28,9 +28,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -50,20 +52,80 @@ public class SessionTableTestBase
 
     if (RunTests)
     {
-      SessionTable.SetSessionDataAsync(RootSessionId,
-                                       new[]
-                                       {
-                                         "part1",
-                                         "part2",
-                                       },
-                                       new TaskOptions
-                                       {
-                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                         MaxRetries  = 2,
-                                         Priority    = 1,
-                                         PartitionId = "part1",
-                                       },
-                                       CancellationToken.None)
+      SessionTable!.SetSessionDataAsync(RootSessionId,
+                                        new[]
+                                        {
+                                          "part1",
+                                          "part2",
+                                        },
+                                        new TaskOptions
+                                        {
+                                          MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                          MaxRetries         = 2,
+                                          Priority           = 1,
+                                          PartitionId        = "part1",
+                                          ApplicationName    = "ApplicationName",
+                                          ApplicationVersion = "ApplicationVersion",
+                                        },
+                                        CancellationToken.None)
+                   .Wait();
+
+      SessionTable!.SetSessionDataAsync("SessionId2",
+                                        new[]
+                                        {
+                                          "part1",
+                                          "part2",
+                                        },
+                                        new TaskOptions
+                                        {
+                                          MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                          MaxRetries         = 2,
+                                          Priority           = 1,
+                                          PartitionId        = "part1",
+                                          ApplicationName    = "ApplicationName",
+                                          ApplicationVersion = "ApplicationVersion",
+                                        },
+                                        CancellationToken.None)
+                   .Wait();
+
+      SessionTable!.SetSessionDataAsync("SessionId3",
+                                        new[]
+                                        {
+                                          "part1",
+                                          "part2",
+                                        },
+                                        new TaskOptions
+                                        {
+                                          MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                          MaxRetries         = 2,
+                                          Priority           = 1,
+                                          PartitionId        = "part1",
+                                          ApplicationName    = "ApplicationName",
+                                          ApplicationVersion = "ApplicationVersion",
+                                        },
+                                        CancellationToken.None)
+                   .Wait();
+
+      SessionTable!.SetSessionDataAsync("SessionId4",
+                                        new[]
+                                        {
+                                          "part1",
+                                          "part2",
+                                        },
+                                        new TaskOptions
+                                        {
+                                          MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                          MaxRetries         = 2,
+                                          Priority           = 1,
+                                          PartitionId        = "part1",
+                                          ApplicationName    = "ApplicationName2",
+                                          ApplicationVersion = "ApplicationVersion2",
+                                        },
+                                        CancellationToken.None)
+                   .Wait();
+
+      SessionTable.CancelSessionAsync("SessionId3",
+                                      CancellationToken.None)
                   .Wait();
     }
   }
@@ -75,7 +137,7 @@ public class SessionTableTestBase
     RunTests     = false;
   }
 
-  protected ISessionTable SessionTable;
+  protected ISessionTable? SessionTable;
 
   protected bool RunTests;
 
@@ -90,9 +152,9 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable.IsSessionCancelledAsync("SessionId",
-                                                           CancellationToken.None)
-                                  .ConfigureAwait(false);
+      var res = await SessionTable!.IsSessionCancelledAsync("SessionId",
+                                                            CancellationToken.None)
+                                   .ConfigureAwait(false);
       Assert.IsFalse(res);
     }
   }
@@ -104,9 +166,9 @@ public class SessionTableTestBase
     {
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {
-                                                     await SessionTable.IsSessionCancelledAsync("BadSessionId",
-                                                                                                CancellationToken.None)
-                                                                       .ConfigureAwait(false);
+                                                     await SessionTable!.IsSessionCancelledAsync("BadSessionId",
+                                                                                                 CancellationToken.None)
+                                                                        .ConfigureAwait(false);
                                                    });
     }
   }
@@ -116,9 +178,9 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable.GetDefaultTaskOptionAsync("SessionId",
-                                                             CancellationToken.None)
-                                  .ConfigureAwait(false);
+      var res = await SessionTable!.GetDefaultTaskOptionAsync("SessionId",
+                                                              CancellationToken.None)
+                                   .ConfigureAwait(false);
       Assert.NotNull(res);
     }
   }
@@ -130,9 +192,9 @@ public class SessionTableTestBase
     {
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {
-                                                     await SessionTable.GetDefaultTaskOptionAsync("BadSessionId",
-                                                                                                  CancellationToken.None)
-                                                                       .ConfigureAwait(false);
+                                                     await SessionTable!.GetDefaultTaskOptionAsync("BadSessionId",
+                                                                                                   CancellationToken.None)
+                                                                        .ConfigureAwait(false);
                                                    });
     }
   }
@@ -142,9 +204,13 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      await SessionTable.CancelSessionAsync("SessionId",
-                                            CancellationToken.None)
-                        .ConfigureAwait(false);
+      var sessionData = await SessionTable!.CancelSessionAsync("SessionId",
+                                             CancellationToken.None)
+                         .ConfigureAwait(false);
+
+      Assert.AreEqual(SessionStatus.Canceled,
+                      sessionData.Status);
+
       var wasSessionCanceled = await SessionTable.IsSessionCancelledAsync(RootSessionId,
                                                                           CancellationToken.None)
                                                  .ConfigureAwait(false);
@@ -159,9 +225,9 @@ public class SessionTableTestBase
     {
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {
-                                                     await SessionTable.CancelSessionAsync("BadSessionId",
-                                                                                           CancellationToken.None)
-                                                                       .ConfigureAwait(false);
+                                                     await SessionTable!.CancelSessionAsync("BadSessionId",
+                                                                                            CancellationToken.None)
+                                                                        .ConfigureAwait(false);
                                                    });
     }
   }
@@ -171,9 +237,9 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      await SessionTable.CancelSessionAsync("SessionId",
-                                            CancellationToken.None)
-                        .ConfigureAwait(false);
+      await SessionTable!.CancelSessionAsync("SessionId",
+                                             CancellationToken.None)
+                         .ConfigureAwait(false);
 
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {
@@ -190,8 +256,8 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = SessionTable.DeleteSessionAsync(RootSessionId,
-                                                CancellationToken.None);
+      var res = SessionTable!.DeleteSessionAsync(RootSessionId,
+                                                 CancellationToken.None);
       await res.ConfigureAwait(false);
 
       Assert.IsTrue(res.IsCompletedSuccessfully);
@@ -205,9 +271,9 @@ public class SessionTableTestBase
     {
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {
-                                                     await SessionTable.DeleteSessionAsync("BadSessionId",
-                                                                                           CancellationToken.None)
-                                                                       .ConfigureAwait(false);
+                                                     await SessionTable!.DeleteSessionAsync("BadSessionId",
+                                                                                            CancellationToken.None)
+                                                                        .ConfigureAwait(false);
                                                    });
     }
   }
@@ -217,21 +283,21 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable.ListSessionsAsync(new SessionFilter
-                                                     {
-                                                       Included = new SessionFilter.Types.StatusesRequest
-                                                                  {
-                                                                    Statuses =
-                                                                    {
-                                                                      SessionStatus.Running,
-                                                                    },
-                                                                  },
-                                                     },
-                                                     CancellationToken.None)
-                                  .ToListAsync()
-                                  .ConfigureAwait(false);
+      var res = await SessionTable!.ListSessionsAsync(new SessionFilter
+                                                      {
+                                                        Included = new SessionFilter.Types.StatusesRequest
+                                                                   {
+                                                                     Statuses =
+                                                                     {
+                                                                       SessionStatus.Running,
+                                                                     },
+                                                                   },
+                                                      },
+                                                      CancellationToken.None)
+                                   .ToListAsync()
+                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(1,
+      Assert.AreEqual(3,
                       res.Count);
     }
   }
@@ -241,16 +307,16 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable.ListSessionsAsync(new SessionFilter
-                                                     {
-                                                       Sessions =
-                                                       {
-                                                         "SessionId",
-                                                       },
-                                                     },
-                                                     CancellationToken.None)
-                                  .ToListAsync()
-                                  .ConfigureAwait(false);
+      var res = await SessionTable!.ListSessionsAsync(new SessionFilter
+                                                      {
+                                                        Sessions =
+                                                        {
+                                                          "SessionId",
+                                                        },
+                                                      },
+                                                      CancellationToken.None)
+                                   .ToListAsync()
+                                   .ConfigureAwait(false);
 
       Assert.AreEqual(1,
                       res.Count);
@@ -262,18 +328,104 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable.ListSessionsAsync(new SessionFilter
-                                                     {
-                                                       Sessions =
-                                                       {
-                                                         "SessionIdDoesNotExist",
-                                                       },
-                                                     },
-                                                     CancellationToken.None)
-                                  .ToListAsync()
-                                  .ConfigureAwait(false);
+      var res = await SessionTable!.ListSessionsAsync(new SessionFilter
+                                                      {
+                                                        Sessions =
+                                                        {
+                                                          "SessionIdDoesNotExist",
+                                                        },
+                                                      },
+                                                      CancellationToken.None)
+                                   .ToListAsync()
+                                   .ConfigureAwait(false);
 
       Assert.AreEqual(0,
+                      res.Count);
+    }
+  }
+
+  [Test]
+  public async Task ListSessionAsyncFilterApplicationNameShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var res = await SessionTable!.ListSessionsAsync(new ListSessionsRequest
+                                                      {
+                                                        Page = 0,
+                                                        PageSize = 3,
+                                                        Filter = new ListSessionsRequest.Types.Filter
+                                                                 {
+                                                                   ApplicationName = "ApplicationName",
+                                                                 },
+                                                        Sort = new ListSessionsRequest.Types.Sort
+                                                               {
+                                                                 Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                                                                 Field = ListSessionsRequest.Types.OrderByField.Status,
+                                                               },
+                                                      },
+                                                      CancellationToken.None)
+                                   .ToListAsync()
+                                   .ConfigureAwait(false);
+
+      Assert.AreEqual(3,
+                      res.Count);
+    }
+  }
+
+  [Test]
+  public async Task ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var res = await SessionTable!.ListSessionsAsync(new ListSessionsRequest
+                                                      {
+                                                        Page     = 0,
+                                                        PageSize = 3,
+                                                        Filter = new ListSessionsRequest.Types.Filter
+                                                                 {
+                                                                   ApplicationName = "ApplicationName",
+                                                                   SessionId = "SessionId",
+                                                                 },
+                                                        Sort = new ListSessionsRequest.Types.Sort
+                                                               {
+                                                                 Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                                                                 Field     = ListSessionsRequest.Types.OrderByField.Status,
+                                                               },
+                                                      },
+                                                      CancellationToken.None)
+                                   .ToListAsync()
+                                   .ConfigureAwait(false);
+
+      Assert.AreEqual(1,
+                      res.Count);
+    }
+  }
+
+  [Test]
+  public async Task ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var res = await SessionTable!.ListSessionsAsync(new ListSessionsRequest
+                                                      {
+                                                        Page     = 0,
+                                                        PageSize = 3,
+                                                        Filter = new ListSessionsRequest.Types.Filter
+                                                                 {
+                                                                   ApplicationName = "ApplicationName",
+                                                                   Status = SessionStatus.Running,
+                                                                 },
+                                                        Sort = new ListSessionsRequest.Types.Sort
+                                                               {
+                                                                 Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                                                                 Field     = ListSessionsRequest.Types.OrderByField.Status,
+                                                               },
+                                                      },
+                                                      CancellationToken.None)
+                                   .ToListAsync()
+                                   .ConfigureAwait(false);
+
+      Assert.AreEqual(2,
                       res.Count);
     }
   }

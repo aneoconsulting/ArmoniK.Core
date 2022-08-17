@@ -30,12 +30,15 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
@@ -108,26 +111,25 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public Task CancelSessionAsync(string            sessionId,
+  public Task<SessionData> CancelSessionAsync(string            sessionId,
                                  CancellationToken cancellationToken = default)
   {
-    storage_.AddOrUpdate(sessionId,
-                         _ => throw new SessionNotFoundException($"Key '{sessionId}' not found"),
-                         (_,
-                          data) =>
-                         {
-                           if (data.Status == SessionStatus.Canceled)
-                           {
-                             throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
-                           }
+    return Task.FromResult(storage_.AddOrUpdate(sessionId,
+                                                _ => throw new SessionNotFoundException($"Key '{sessionId}' not found"),
+                                                (_,
+                                                 data) =>
+                                                {
+                                                  if (data.Status == SessionStatus.Canceled)
+                                                  {
+                                                    throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
+                                                  }
 
-                           return data with
-                                  {
-                                    Status = SessionStatus.Canceled,
-                                    CancellationDate = DateTime.UtcNow,
-                                  };
-                         });
-    return Task.CompletedTask;
+                                                  return data with
+                                                         {
+                                                           Status = SessionStatus.Canceled,
+                                                           CancellationDate = DateTime.UtcNow,
+                                                         };
+                                                }));
   }
 
 
@@ -167,6 +169,23 @@ public class SessionTable : ISessionTable
                                                                                                                                 .Status),
                                         _ => throw new ArgumentException("Filter is set to an unknown StatusesCase."),
                                       });
+  }
+
+  public async Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
+                                                                CancellationToken   cancellationToken = default)
+  {
+    var queryable = storage_.AsQueryable()
+                            .Select(pair => pair.Value)
+                            .Where(request.Filter.ToSessionDataFilter());
+
+    var ordered = request.Sort.Direction == ListSessionsRequest.Types.OrderDirection.Asc
+                    ? queryable.OrderBy(request.Sort.ToSessionDataField())
+                    : queryable.OrderByDescending(request.Sort.ToSessionDataField());
+
+    return await ordered.Skip(request.Page * request.PageSize)
+                        .Take(request.PageSize)
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false);
   }
 
   /// <inheritdoc />

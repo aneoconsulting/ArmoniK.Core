@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Microsoft.Extensions.Logging;
@@ -96,10 +97,10 @@ public interface ISessionTable : IInitializable
   /// <param name="sessionId">Id of the session to cancel</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Task representing the asynchronous execution of the method
+  ///   The metadata of the cancelled session
   /// </returns>
-  Task CancelSessionAsync(string            sessionId,
-                          CancellationToken cancellationToken = default);
+  Task<SessionData> CancelSessionAsync(string            sessionId,
+                                       CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Delete a session
@@ -122,4 +123,15 @@ public interface ISessionTable : IInitializable
   /// </returns>
   IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     request,
                                              CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   List all sessions matching the given request
+  /// </summary>
+  /// <param name="request">Session request describing the sessions to be listed </param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Collection of sessions metadata that matched the filter
+  /// </returns>
+  Task<IEnumerable<SessionData>> ListSessionsAsync(ListSessionsRequest request,
+                                                   CancellationToken   cancellationToken = default);
 }

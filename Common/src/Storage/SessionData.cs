@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Sessions;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -48,4 +49,31 @@ public record SessionData(string        SessionId,
            options)
   {
   }
+
+  public static implicit operator SessionRaw(SessionData sessionData)
+    => new()
+       {
+         CancelledAt = sessionData.CancellationDate is not null
+                         ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(sessionData.CancellationDate.Value)
+                         : null,
+         CreatedAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(sessionData.CreationDate),
+         Options   = sessionData.Options,
+         PartitionIds =
+         {
+           sessionData.PartitionIds,
+         },
+         SessionId = sessionData.SessionId,
+         Status    = sessionData.Status,
+       };
+
+  public static implicit operator SessionSummary(SessionData sessionData)
+    => new()
+       {
+         CancelledAt = sessionData.CancellationDate is not null
+                         ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(sessionData.CancellationDate.Value)
+                         : null,
+         CreatedAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(sessionData.CreationDate),
+         SessionId = sessionData.SessionId,
+         Status    = sessionData.Status,
+       };
 }

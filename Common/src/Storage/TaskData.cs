@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -26,6 +26,8 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+
+using Armonik.Api.gRPC.V1.Tasks;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -79,4 +81,62 @@ public record TaskData(string        SessionId,
            output)
   {
   }
+
+  public static implicit operator TaskRaw(TaskData taskData)
+    => new()
+       {
+         SessionId  = taskData.SessionId,
+         Status     = taskData.Status,
+         Output     = taskData.Output,
+         OwnerPodId = taskData.OwnerPodId,
+         Options    = taskData.Options,
+         DataDependencies =
+         {
+           taskData.DataDependencies,
+         },
+         CreatedAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.CreationDate),
+         EndedAt = taskData.EndDate is not null
+                     ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.EndDate.Value)
+                     : null,
+         ExpectedOutputIds =
+         {
+           taskData.ExpectedOutputIds,
+         },
+         Id = taskData.TaskId,
+         RetryOfIds =
+         {
+           taskData.RetryOfIds,
+         },
+         ParentTaskIds =
+         {
+           taskData.ParentTaskIds,
+         },
+         PodTtl = taskData.PodTtl is not null
+                    ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.PodTtl.Value)
+                    : null,
+         StartedAt = taskData.StartDate is not null
+                       ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.StartDate.Value)
+                       : null,
+         StatusMessage = taskData.StatusMessage,
+         SubmittedAt = taskData.SubmittedDate is not null
+                         ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.SubmittedDate.Value)
+                         : null,
+       };
+
+  public static implicit operator Task(TaskData taskData)
+    => new()
+       {
+         SessionId = taskData.SessionId,
+         Status    = taskData.Status,
+         Options   = taskData.Options,
+         CreatedAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.CreationDate),
+         EndedAt = taskData.EndDate is not null
+                     ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.EndDate.Value)
+                     : null,
+         Id = taskData.TaskId,
+
+         StartedAt = taskData.StartDate is not null
+                       ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.StartDate.Value)
+                       : null,
+       };
 }
