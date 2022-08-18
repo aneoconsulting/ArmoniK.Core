@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -39,31 +39,31 @@ public class ProcessReplyResultStateMachineTest
   public void Setup()
     => sm_ = new ProcessReplyResultStateMachine(NullLogger<ProcessReplyResultStateMachine>.Instance);
 
-  private ProcessReplyResultStateMachine sm_;
+  private ProcessReplyResultStateMachine? sm_;
 
   [Test]
   public void DataChunkFirstShouldFail()
-    => Assert.Throws<InvalidOperationException>(() => sm_.AddDataChunk());
+    => Assert.Throws<InvalidOperationException>(() => sm_!.AddDataChunk());
 
   [Test]
   public void CompleteDataFirstShouldFail()
-    => Assert.Throws<InvalidOperationException>(() => sm_.CompleteData());
+    => Assert.Throws<InvalidOperationException>(() => sm_!.CompleteData());
 
   [Test]
   public void CompleteRequestFirstShouldFail()
-    => Assert.Throws<InvalidOperationException>(() => sm_.CompleteRequest());
+    => Assert.Throws<InvalidOperationException>(() => sm_!.CompleteRequest());
 
   [Test]
   public void TwoInitRequestsShouldFail()
   {
-    sm_.InitKey();
+    sm_!.InitKey();
     Assert.Throws<InvalidOperationException>(() => sm_.InitKey());
   }
 
   [Test]
   public void DoubleCompleteRequestWithoutPayloadCompleteShouldFail()
   {
-    sm_.InitKey();
+    sm_!.InitKey();
     sm_.AddDataChunk();
     sm_.AddDataChunk();
     sm_.AddDataChunk();
@@ -76,7 +76,7 @@ public class ProcessReplyResultStateMachineTest
   [Test]
   public void CompleteRequestWithoutPayloadCompleteShouldFail()
   {
-    sm_.InitKey();
+    sm_!.InitKey();
     sm_.AddDataChunk();
     sm_.AddDataChunk();
     sm_.AddDataChunk();
@@ -87,7 +87,7 @@ public class ProcessReplyResultStateMachineTest
   [Test]
   public void CompleteRequestWithPayloadCompleteShouldSucceed()
   {
-    sm_.InitKey();
+    sm_!.InitKey();
     sm_.AddDataChunk();
     sm_.AddDataChunk();
     sm_.AddDataChunk();
@@ -102,7 +102,7 @@ public class ProcessReplyResultStateMachineTest
   [Test]
   public void HappyPathSmallShouldSucceed()
   {
-    sm_.InitKey();
+    sm_!.InitKey();
     sm_.AddDataChunk();
 
     sm_.CompleteData();
@@ -115,7 +115,7 @@ public class ProcessReplyResultStateMachineTest
   [Test]
   public void GenerateGraphShouldSucceed()
   {
-    var str = sm_.GenerateGraph();
+    var str = sm_!.GenerateGraph();
     Console.WriteLine(str);
     Assert.IsFalse(string.IsNullOrEmpty(str));
   }
@@ -123,7 +123,7 @@ public class ProcessReplyResultStateMachineTest
   [Test]
   public void GenerateMermaidGraphShouldSucceed()
   {
-    var str = sm_.GenerateMermaidGraph();
+    var str = sm_!.GenerateMermaidGraph();
     Console.WriteLine(str);
     Assert.IsFalse(string.IsNullOrEmpty(str));
   }

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -39,31 +39,31 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   public void Setup()
     => sm_ = new ProcessReplyCreateLargeTaskStateMachine(NullLogger<ProcessReplyCreateLargeTaskStateMachine>.Instance);
 
-  private ProcessReplyCreateLargeTaskStateMachine sm_;
+  private ProcessReplyCreateLargeTaskStateMachine? sm_;
 
   [Test]
   public void DataChunkFirstShouldFail()
-    => Assert.Throws<InvalidOperationException>(() => sm_.AddDataChunk());
+    => Assert.Throws<InvalidOperationException>(() => sm_!.AddDataChunk());
 
   [Test]
   public void CompleteDataFirstShouldFail()
-    => Assert.Throws<InvalidOperationException>(() => sm_.CompleteData());
+    => Assert.Throws<InvalidOperationException>(() => sm_!.CompleteData());
 
   [Test]
   public void CompleteRequestFirstShouldFail()
-    => Assert.Throws<InvalidOperationException>(() => sm_.CompleteRequest());
+    => Assert.Throws<InvalidOperationException>(() => sm_!.CompleteRequest());
 
   [Test]
   public void TwoInitRequestsShouldFail()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     Assert.Throws<InvalidOperationException>(() => sm_.InitRequest());
   }
 
   [Test]
   public void DoubleCompleteRequestWithoutDataCompleteShouldFail()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.AddHeader();
     sm_.AddDataChunk();
     sm_.AddDataChunk();
@@ -77,7 +77,7 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   [Test]
   public void CompleteRequestWithoutDataCompleteShouldFail()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.AddHeader();
     sm_.AddDataChunk();
     sm_.AddDataChunk();
@@ -89,7 +89,7 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   [Test]
   public void CompleteRequestWithDataCompleteShouldSucceed()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.AddHeader();
     sm_.AddDataChunk();
     sm_.AddDataChunk();
@@ -105,7 +105,7 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   [Test]
   public void HappyPathSmallShouldSucceed()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.AddHeader();
     sm_.AddDataChunk();
 
@@ -119,7 +119,7 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   [Test]
   public void HappyPathSmall2ShouldSucceed()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
 
     sm_.AddHeader();
     sm_.AddDataChunk();
@@ -136,9 +136,9 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   }
 
   [Test]
-  public void FSMShouldNotBeReusable()
+  public void FsmShouldNotBeReusable()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
 
     sm_.AddHeader();
     sm_.AddDataChunk();
@@ -154,9 +154,9 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   }
 
   [Test]
-  public void FSMShouldNotBeReusable2()
+  public void FsmShouldNotBeReusable2()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
 
     sm_.AddHeader();
     sm_.AddDataChunk();
@@ -174,7 +174,7 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   [Test]
   public void GenerateGraphShouldSucceed()
   {
-    var str = sm_.GenerateGraph();
+    var str = sm_!.GenerateGraph();
     Console.WriteLine(str);
     Assert.IsFalse(string.IsNullOrEmpty(str));
   }
@@ -182,7 +182,7 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   [Test]
   public void GenerateMermaidGraphShouldSucceed()
   {
-    var str = sm_.GenerateMermaidGraph();
+    var str = sm_!.GenerateMermaidGraph();
     Console.WriteLine(str);
     Assert.IsFalse(string.IsNullOrEmpty(str));
   }
