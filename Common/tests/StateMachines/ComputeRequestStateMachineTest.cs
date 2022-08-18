@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -39,31 +39,31 @@ public class ComputeRequestStateMachineTest
   public void Setup()
     => sm_ = new ComputeRequestStateMachine(NullLogger<ComputeRequestStateMachine>.Instance);
 
-  private ComputeRequestStateMachine sm_;
+  private ComputeRequestStateMachine? sm_;
 
   [Test]
   public void PayloadFirstShouldFail()
-    => Assert.Throws<InvalidOperationException>(() => sm_.AddPayloadChunk());
+    => Assert.Throws<InvalidOperationException>(() => sm_!.AddPayloadChunk());
 
   [Test]
   public void DataChunkFirstShouldFail()
-    => Assert.Throws<InvalidOperationException>(() => sm_.AddDataDependencyChunk());
+    => Assert.Throws<InvalidOperationException>(() => sm_!.AddDataDependencyChunk());
 
   [Test]
   public void InitDataFirstShouldFail()
-    => Assert.Throws<InvalidOperationException>(() => sm_.InitDataDependency());
+    => Assert.Throws<InvalidOperationException>(() => sm_!.InitDataDependency());
 
   [Test]
   public void TwoInitRequestsShouldFail()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     Assert.Throws<InvalidOperationException>(() => sm_.InitRequest());
   }
 
   [Test]
   public void GetQueueWithoutPayloadCompleteShouldFail()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
@@ -74,7 +74,7 @@ public class ComputeRequestStateMachineTest
   [Test]
   public void GetQueueWithPayloadCompleteShouldSucceed()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
@@ -89,7 +89,7 @@ public class ComputeRequestStateMachineTest
   [Test]
   public void DataDepWithoutChunkShouldFail()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
@@ -102,7 +102,7 @@ public class ComputeRequestStateMachineTest
   [Test]
   public void HappyPathShouldSucceed()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
@@ -124,7 +124,7 @@ public class ComputeRequestStateMachineTest
   [Test]
   public void HappyPathSmallShouldSucceed()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.CompletePayload();
 
     sm_.InitDataDependency();
@@ -139,7 +139,7 @@ public class ComputeRequestStateMachineTest
   [Test]
   public void HappyPathNoDataDepShouldSucceed()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.CompletePayload();
     sm_.CompleteRequest();
     Assert.AreEqual(ComputeRequestStateMachine.State.DataLast,
@@ -149,7 +149,7 @@ public class ComputeRequestStateMachineTest
   [Test]
   public void HappyPathNoDataDepNoGetQueueShouldFail()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.CompletePayload();
     Assert.AreNotEqual(ComputeRequestStateMachine.State.DataLast,
                        sm_.GetState());
@@ -158,7 +158,7 @@ public class ComputeRequestStateMachineTest
   [Test]
   public void HappyPathMultipleLargeDataShouldSucceed()
   {
-    sm_.InitRequest();
+    sm_!.InitRequest();
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
     sm_.AddPayloadChunk();
@@ -194,7 +194,7 @@ public class ComputeRequestStateMachineTest
   [Test]
   public void GenerateGraphShouldSucceed()
   {
-    var str = sm_.GenerateGraph();
+    var str = sm_!.GenerateGraph();
     Console.WriteLine(str);
     Assert.IsFalse(string.IsNullOrEmpty(str));
   }
@@ -202,7 +202,7 @@ public class ComputeRequestStateMachineTest
   [Test]
   public void GenerateMermaidGraphShouldSucceed()
   {
-    var str = sm_.GenerateMermaidGraph();
+    var str = sm_!.GenerateMermaidGraph();
     Console.WriteLine(str);
     Assert.IsFalse(string.IsNullOrEmpty(str));
   }

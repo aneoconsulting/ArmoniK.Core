@@ -33,7 +33,7 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public interface ISessionAmqp
 {
-  Session            Session { get; set; }
+  Session?           Session { get; set; }
   Options.Amqp       Options { get; set; }
   ILogger            Logger  { get; set; }
   Task<ISessionAmqp> OpenConnection();

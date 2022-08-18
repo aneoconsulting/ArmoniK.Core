@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -46,7 +46,7 @@ public class TestServerCallContext : ServerCallContext
     userState_ = new Dictionary<object, object>();
   }
 
-  public Metadata ResponseHeaders { get; private set; }
+  public Metadata? ResponseHeaders { get; private set; }
 
   protected override string MethodCore
     => "MethodName";
@@ -67,17 +67,17 @@ public class TestServerCallContext : ServerCallContext
 
   protected override Status StatusCore { get; set; }
 
-  protected override WriteOptions WriteOptionsCore { get; set; }
+  protected override WriteOptions? WriteOptionsCore { get; set; }
 
   protected override AuthContext AuthContextCore { get; }
 
   protected override IDictionary<object, object> UserStateCore
     => userState_;
 
-  protected override ContextPropagationToken CreatePropagationTokenCore(ContextPropagationOptions options)
+  protected override ContextPropagationToken CreatePropagationTokenCore(ContextPropagationOptions? options)
     => throw new NotImplementedException();
 
-  protected override Task WriteResponseHeadersAsyncCore(Metadata responseHeaders)
+  protected override Task WriteResponseHeadersAsyncCore(Metadata? responseHeaders)
   {
     if (ResponseHeaders != null)
     {
@@ -88,7 +88,7 @@ public class TestServerCallContext : ServerCallContext
     return Task.CompletedTask;
   }
 
-  public static TestServerCallContext Create(Metadata          requestHeaders    = null,
+  public static TestServerCallContext Create(Metadata?         requestHeaders    = null,
                                              CancellationToken cancellationToken = default)
     => new(requestHeaders ?? new Metadata(),
            cancellationToken);
