@@ -36,7 +36,6 @@ using Amqp.Framing;
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -48,13 +47,13 @@ public class QueueStorage : IQueueStorage
 
   private readonly ILogger<QueueStorage> logger_;
 
-  private readonly int                      nbLinks_;
-  private readonly Options.Amqp             options_;
-  private readonly AsyncLazy<ISenderLink>[] senders_;
-  private readonly ISessionAmqp             sessionAmqp_;
+  private readonly int          nbLinks_;
+  private readonly Options.Amqp options_;
+  private readonly ISessionAmqp sessionAmqp_;
 
   private bool           isInitialized_;
   private ReceiverLink[] receivers_;
+  private SenderLink[]   senders_;
 
   public QueueStorage(Options.Amqp          options,
                       ISessionAmqp          sessionAmqp,
@@ -110,13 +109,6 @@ public class QueueStorage : IQueueStorage
     logger_      = logger;
 
     nbLinks_ = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
-
-    senders_ = Enumerable.Range(0,
-                                nbLinks_)
-                         .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(sessionAmqp.Session,
-                                                                                      $"{options.PartitionId}###SenderLink{i}",
-                                                                                      $"{options.PartitionId}###q{i}")))
-                         .ToArray();
   }
 
   /// <inheritdoc />
@@ -124,9 +116,11 @@ public class QueueStorage : IQueueStorage
   {
     if (!isInitialized_)
     {
+#if false
       var senders = Task.WhenAll(senders_.Select(async lazy => await lazy));
       await Task.WhenAll(senders)
                 .ConfigureAwait(false);
+#endif
       isInitialized_ = true;
     }
   }
@@ -185,7 +179,7 @@ public class QueueStorage : IQueueStorage
 
         nbPulledMessage++;
 
-        var sender = await senders_[i];
+        var sender = senders_[i];
         yield return new QueueMessageHandler(message,
                                              sender,
                                              receiver,
@@ -224,6 +218,13 @@ public class QueueStorage : IQueueStorage
   {
     using var _ = logger_.LogFunction();
 
+    senders_ = Enumerable.Range(0,
+                                nbLinks_)
+                         .Select(i => new SenderLink(sessionAmqp_.Session,
+                                                     $"{partitionId}###SenderLink{i}",
+                                                     $"{partitionId}###q{i}"))
+                         .ToArray();
+
     /* Priority is handled using multiple queues; there should be at least one queue which
      * is imposed via the restriction MaxPriority > 1. If a user tries to enqueue a message
      * with priority larger or equal than MaxInternalQueuePriority, we put that message in
@@ -240,7 +241,7 @@ public class QueueStorage : IQueueStorage
                      whichQueue,
                      internalPriority);
 
-    var sender = await senders_[whichQueue];
+    var sender = senders_[whichQueue];
     await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
                                                               {
                                                                 Header = new Header
