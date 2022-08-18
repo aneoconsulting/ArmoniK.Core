@@ -51,8 +51,6 @@ public class PushQueueStorage : IPushQueueStorage
 
   public bool IsInitialized;
 
-  private SenderLink? sender_;
-
   public PushQueueStorage(Options.Amqp          options,
                           ISessionAmqp          sessionAmqp,
                           ILogger<PushQueueStorage> logger)
@@ -148,11 +146,11 @@ public class PushQueueStorage : IPushQueueStorage
                       whichQueue,
                       internalPriority);
 
-    sender_ = new SenderLink(sessionAmqp_!.Session,
+    var sender = new SenderLink(sessionAmqp_!.Session,
                              $"{partitionId}###SenderLink{whichQueue}",
                              $"{partitionId}###q{whichQueue}");
 
-    await Task.WhenAll(messages.Select(id => sender_.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
+    await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
                                                                {
                                                                  Header = new Header
                                                                           {
@@ -162,7 +160,7 @@ public class PushQueueStorage : IPushQueueStorage
                                                                })))
               .ConfigureAwait(false);
 
-    await sender_.CloseAsync()
+    await sender.CloseAsync()
                  .ConfigureAwait(false);
   }
 }
