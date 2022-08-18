@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 
 using ArmoniK.Core.Adapters.Amqp;
@@ -45,10 +44,8 @@ using Serilog;
 
 namespace ArmoniK.Core.Control.Metrics;
 
-public static partial class Program
+public static class Program
 {
-  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Control.Metrics");
-
   public static int Main(string[] args)
   {
     try
@@ -113,9 +110,6 @@ public static partial class Program
                                                    });
                          endpoints.MapControllers();
                        });
-
-      //app.MapGet("/metrics",
-      //           (MetricGenerator generator) => generator.GetMetrics());
 
       app.Run();
 
