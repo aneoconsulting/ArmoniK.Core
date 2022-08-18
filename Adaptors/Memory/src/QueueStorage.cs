@@ -63,9 +63,8 @@ public class QueueStorage : IQueueStorage
     => "";
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
-                                                                string                                     partitionId,
-                                                                [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
+                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     while (nbMessages > 0 && queues_.Any())
     {
@@ -102,10 +101,10 @@ public class QueueStorage : IQueueStorage
   }
 
   /// <inheritdoc />
-  public Task EnqueueMessagesAsync(IEnumerable<string> messages,
-                                   string              partitionId,
-                                   int                 priority          = 1,
-                                   CancellationToken   cancellationToken = default)
+  public Task PushMessagesAsync(IEnumerable<string> messages,
+                                string              partitionId,
+                                int                 priority          = 1,
+                                CancellationToken   cancellationToken = default)
   {
     var messageHandlers = messages.Select(message => new MessageHandler
                                                      {

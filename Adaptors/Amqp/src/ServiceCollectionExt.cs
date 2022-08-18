@@ -104,7 +104,8 @@ public static class ServiceCollectionExt
 
       serviceCollection.AddSingleton<ISessionAmqp, SessionAmqp>(sp => sessionProvider.Get());
 
-      serviceCollection.AddSingleton<IQueueStorage, QueueStorage>();
+      serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();
+      serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
 
       serviceCollection.AddHealthChecks()
                        .AddCheck("AmqpHealthCheck",

@@ -53,7 +53,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class Submitter : ISubmitter
 {
   private readonly ActivitySource        activitySource_;
-  private readonly IQueueStorage         lockedQueueStorage_;
+  private readonly IPushQueueStorage     pushQueueStorage_;
   private readonly ILogger<Submitter>    logger_;
   private readonly IObjectStorageFactory objectStorageFactory_;
   private readonly IPartitionTable       partitionTable_;
@@ -64,7 +64,7 @@ public class Submitter : ISubmitter
   private readonly ITaskTable    taskTable_;
 
   [UsedImplicitly]
-  public Submitter(IQueueStorage         lockedQueueStorage,
+  public Submitter(IPushQueueStorage     pushQueueStorage,
                    IObjectStorageFactory objectStorageFactory,
                    ILogger<Submitter>    logger,
                    ISessionTable         sessionTable,
@@ -80,7 +80,7 @@ public class Submitter : ISubmitter
     resultTable_          = resultTable;
     partitionTable_       = partitionTable;
     activitySource_       = activitySource;
-    lockedQueueStorage_   = lockedQueueStorage;
+    pushQueueStorage_     = pushQueueStorage;
   }
 
   /// <inheritdoc />
@@ -151,10 +151,10 @@ public class Submitter : ISubmitter
                                 requests,
                                 cancellationToken);
 
-    await lockedQueueStorage_.EnqueueMessagesAsync(taskIds,
-                                                   partitionId,
-                                                   priority,
-                                                   cancellationToken)
+    await pushQueueStorage_.PushMessagesAsync(taskIds,
+                                                partitionId,
+                                                priority,
+                                                cancellationToken)
                              .ConfigureAwait(false);
 
     await taskTable_.FinalizeTaskCreation(taskIds,
@@ -680,10 +680,10 @@ public class Submitter : ISubmitter
                                           $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {partitionId}");
     }
 
-    if (options.Priority >= lockedQueueStorage_.MaxPriority)
+    if (options.Priority >= pushQueueStorage_.MaxPriority)
     {
       var exception = new RpcException(new Status(StatusCode.InvalidArgument,
-                                                  $"Max priority is {lockedQueueStorage_.MaxPriority}"));
+                                                  $"Max priority is {pushQueueStorage_.MaxPriority}"));
       logger_.LogError(exception,
                        "Invalid Argument");
       throw exception;

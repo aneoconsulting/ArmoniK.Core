@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -28,8 +28,10 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Storage;
 
-public interface IQueueStorage : IInitializable
+public interface IPushQueueStorage : IQueueStorage
 {
-  public int MaxPriority { get; }
-  
+  public Task PushMessagesAsync(IEnumerable<string> messages,
+                                string              partitionId,
+                                int                 priority          = 1,
+                                CancellationToken   cancellationToken = default);
 }

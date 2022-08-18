@@ -23,17 +23,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Amqp;
-using Amqp.Framing;
-
-using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
@@ -45,15 +37,13 @@ public class QueueStorage : IQueueStorage
 {
   private const int MaxInternalQueuePriority = 10;
 
-  private readonly ILogger<QueueStorage> logger_;
+  public readonly ILogger<QueueStorage>? logger_;
 
-  private readonly int          nbLinks_;
-  private readonly Options.Amqp options_;
-  private readonly ISessionAmqp sessionAmqp_;
+  public readonly int           NbLinks;
+  public readonly Options.Amqp? Options;
+  public readonly ISessionAmqp? SessionAmqp;
 
-  private bool           isInitialized_;
-  private ReceiverLink[] receivers_;
-  private SenderLink[]   senders_;
+  public bool IsInitialized;
 
   public QueueStorage(Options.Amqp          options,
                       ISessionAmqp          sessionAmqp,
@@ -62,194 +52,72 @@ public class QueueStorage : IQueueStorage
     if (string.IsNullOrEmpty(options.Host))
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.Host)} is not defined.");
+                                            $"{nameof(Options.Host)} is not defined.");
     }
 
     if (string.IsNullOrEmpty(options.User))
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.User)} is not defined.");
+                                            $"{nameof(Options.User)} is not defined.");
     }
 
     if (string.IsNullOrEmpty(options.Password))
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.Password)} is not defined.");
+                                            $"{nameof(Options.Password)} is not defined.");
     }
-
 
     if (options.Port == 0)
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.Port)} is not defined.");
+                                            $"{nameof(Options.Port)} is not defined.");
     }
 
     if (options.MaxRetries == 0)
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.MaxRetries)} is not defined.");
+                                            $"{nameof(Options.MaxRetries)} is not defined.");
     }
 
     if (options.MaxPriority < 1)
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"Minimum value for {nameof(Options.Amqp.MaxPriority)} is 1.");
+                                            $"Minimum value for {nameof(Options.MaxPriority)} is 1.");
     }
 
     if (options.LinkCredit < 1)
     {
       throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"Minimum value for {nameof(Options.Amqp.LinkCredit)} is 1.");
+                                            $"Minimum value for {nameof(Options.LinkCredit)} is 1.");
     }
 
-    sessionAmqp_ = sessionAmqp;
-    options_     = options;
-    MaxPriority  = options.MaxPriority;
-    PartitionId  = options.PartitionId;
-    logger_      = logger;
+    SessionAmqp = sessionAmqp;
+    Options     = options;
+    MaxPriority = options.MaxPriority;
+    PartitionId = options.PartitionId;
+    logger_     = logger;
 
-    nbLinks_ = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
+    NbLinks = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
   }
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public virtual Task Init(CancellationToken cancellationToken)
   {
-    if (!isInitialized_)
+    if (!IsInitialized)
     {
-#if false
-      var senders = Task.WhenAll(senders_.Select(async lazy => await lazy));
-      await Task.WhenAll(senders)
-                .ConfigureAwait(false);
-#endif
-      isInitialized_ = true;
+      IsInitialized = true;
     }
+
+    return Task.CompletedTask;
   }
 
   /// <inheritdoc />
   public ValueTask<bool> Check(HealthCheckTag tag)
-    => ValueTask.FromResult(isInitialized_);
+    => ValueTask.FromResult(IsInitialized);
 
   /// <inheritdoc />
   public int MaxPriority { get; }
 
   /// <inheritdoc />
   public string PartitionId { get; }
-
-
-  /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullAsync(int                                        nbMessages,
-                                                                string                                     partitionId,
-                                                                [EnumeratorCancellation] CancellationToken cancellationToken = default)
-  {
-    using var _               = logger_.LogFunction();
-    var       nbPulledMessage = 0;
-
-    receivers_ = Enumerable.Range(0,
-                                  nbLinks_)
-                           .Select(i =>
-                                   {
-                                     var rl = new ReceiverLink(sessionAmqp_.Session,
-                                                               $"{partitionId}###ReceiverLink{i}",
-                                                               $"{partitionId}###q{i}");
-                                     /* linkCredit_: the maximum number of messages the
-                                      * remote peer can send to the receiver.
-                                      * With the goal of minimizing/deactivating
-                                      * prefetching, a value of 1 gave us the desired
-                                      * behavior. We pick a default value of 2 to have "some cache". */
-                                     rl.SetCredit(options_.LinkCredit);
-                                     return rl;
-                                   })
-                           .ToArray();
-
-    while (nbPulledMessage < nbMessages)
-    {
-      var currentNbMessages = nbPulledMessage;
-      for (var i = receivers_.Length - 1; i >= 0; --i)
-      {
-        cancellationToken.ThrowIfCancellationRequested();
-        var receiver = receivers_[i];
-        var message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
-                                    .ConfigureAwait(false);
-        if (message is null)
-        {
-          logger_.LogTrace($"Message is null receiver {i}",
-                           i);
-          continue;
-        }
-
-        nbPulledMessage++;
-
-        var sender = senders_[i];
-        yield return new QueueMessageHandler(message,
-                                             sender,
-                                             receiver,
-                                             Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
-                                             logger_,
-                                             cancellationToken);
-
-
-        break;
-      }
-
-      if (nbPulledMessage == currentNbMessages)
-      {
-        break;
-      }
-    }
-  }
-
-  public async Task CloseReceiversAsync()
-  {
-    foreach (var rl in receivers_)
-    {
-      if (!rl.IsClosed)
-      {
-        await rl.CloseAsync()
-                .ConfigureAwait(false);
-      }
-    }
-  }
-
-  /// <inheritdoc />
-  public async Task EnqueueMessagesAsync(IEnumerable<string> messages,
-                                         string              partitionId,
-                                         int                 priority          = 1,
-                                         CancellationToken   cancellationToken = default)
-  {
-    using var _ = logger_.LogFunction();
-
-    senders_ = Enumerable.Range(0,
-                                nbLinks_)
-                         .Select(i => new SenderLink(sessionAmqp_.Session,
-                                                     $"{partitionId}###SenderLink{i}",
-                                                     $"{partitionId}###q{i}"))
-                         .ToArray();
-
-    /* Priority is handled using multiple queues; there should be at least one queue which
-     * is imposed via the restriction MaxPriority > 1. If a user tries to enqueue a message
-     * with priority larger or equal than MaxInternalQueuePriority, we put that message in
-     * the last queue and set its internal priority MaxInternalQueuePriority.*/
-    var whichQueue = priority < MaxInternalQueuePriority
-                       ? priority / MaxInternalQueuePriority
-                       : nbLinks_ - 1;
-    var internalPriority = priority < MaxInternalQueuePriority
-                             ? priority % MaxInternalQueuePriority
-                             : MaxInternalQueuePriority;
-
-    logger_.LogDebug("Priority is {priority} ; will use queue #{queueId} with internal priority {internal priority}",
-                     priority,
-                     whichQueue,
-                     internalPriority);
-
-    var sender = senders_[whichQueue];
-    await Task.WhenAll(messages.Select(id => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(id))
-                                                              {
-                                                                Header = new Header
-                                                                         {
-                                                                           Priority = (byte)internalPriority,
-                                                                         },
-                                                                Properties = new Properties(),
-                                                              })))
-              .ConfigureAwait(false);
-  }
 }
