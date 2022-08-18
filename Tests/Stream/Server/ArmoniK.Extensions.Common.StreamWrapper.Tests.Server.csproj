@@ -26,7 +26,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.46.0" />
-    <PackageReference Include="ArmoniK.Api.Worker" Version="3.0.0-SNAPSHOT.101.d9b6548" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.0.2-jgfixtasksnamespace.6.347de4e" />
   </ItemGroup>
 
   <ItemGroup>

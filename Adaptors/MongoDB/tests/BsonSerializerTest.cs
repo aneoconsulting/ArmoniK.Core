@@ -150,7 +150,9 @@ internal class BsonSerializerTest
                                                                TimeSpan.FromSeconds(200),
                                                                5,
                                                                1,
-                                                               "part1"),
+                                                               "part1",
+                                                               "applicationName",
+                                                               "applicationVersion"),
                            new Output(true,
                                       ""));
 

@@ -33,7 +33,9 @@ public record TaskOptions(IDictionary<string, string> Options,
                           TimeSpan                    MaxDuration,
                           int                         MaxRetries,
                           int                         Priority,
-                          string                      PartitionId)
+                          string                      PartitionId,
+                          string                      ApplicationName,
+                          string                      ApplicationVersion)
 {
   public static implicit operator Api.gRPC.V1.TaskOptions(TaskOptions taskOption)
     => new()
@@ -46,6 +48,8 @@ public record TaskOptions(IDictionary<string, string> Options,
          {
            taskOption.Options,
          },
+         ApplicationName    = taskOption.ApplicationName,
+         ApplicationVersion = taskOption.ApplicationVersion,
        };
 
   public static implicit operator TaskOptions(Api.gRPC.V1.TaskOptions taskOption)
@@ -53,7 +57,9 @@ public record TaskOptions(IDictionary<string, string> Options,
            taskOption.MaxDuration.ToTimeSpan(),
            taskOption.MaxRetries,
            taskOption.Priority,
-           taskOption.PartitionId);
+           taskOption.PartitionId,
+           taskOption.ApplicationName,
+           taskOption.ApplicationVersion);
 
   public static TaskOptions Merge(TaskOptions taskOption,
                                   TaskOptions defaultOption)
@@ -74,6 +80,12 @@ public record TaskOptions(IDictionary<string, string> Options,
                            taskOption.Priority,
                            taskOption.PartitionId != string.Empty
                              ? taskOption.PartitionId
-                             : defaultOption.PartitionId);
+                             : defaultOption.PartitionId,
+                           taskOption.ApplicationName != string.Empty
+                             ? taskOption.ApplicationName
+                             : defaultOption.ApplicationName,
+                           taskOption.ApplicationVersion != string.Empty
+                             ? taskOption.ApplicationVersion
+                             : defaultOption.ApplicationVersion);
   }
 }
