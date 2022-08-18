@@ -29,6 +29,8 @@ using ArmoniK.Api.gRPC.V1;
 
 using Armonik.Api.gRPC.V1.Tasks;
 
+using Timestamp = Google.Protobuf.WellKnownTypes.Timestamp;
+
 namespace ArmoniK.Core.Common.Storage;
 
 public record TaskData(string        SessionId,
@@ -94,9 +96,9 @@ public record TaskData(string        SessionId,
          {
            taskData.DataDependencies,
          },
-         CreatedAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.CreationDate),
+         CreatedAt = Timestamp.FromDateTime(taskData.CreationDate),
          EndedAt = taskData.EndDate is not null
-                     ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.EndDate.Value)
+                     ? Timestamp.FromDateTime(taskData.EndDate.Value)
                      : null,
          ExpectedOutputIds =
          {
@@ -112,14 +114,14 @@ public record TaskData(string        SessionId,
            taskData.ParentTaskIds,
          },
          PodTtl = taskData.PodTtl is not null
-                    ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.PodTtl.Value)
+                    ? Timestamp.FromDateTime(taskData.PodTtl.Value)
                     : null,
          StartedAt = taskData.StartDate is not null
-                       ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.StartDate.Value)
+                       ? Timestamp.FromDateTime(taskData.StartDate.Value)
                        : null,
          StatusMessage = taskData.StatusMessage,
          SubmittedAt = taskData.SubmittedDate is not null
-                         ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.SubmittedDate.Value)
+                         ? Timestamp.FromDateTime(taskData.SubmittedDate.Value)
                          : null,
        };
 
@@ -129,14 +131,14 @@ public record TaskData(string        SessionId,
          SessionId = taskData.SessionId,
          Status    = taskData.Status,
          Options   = taskData.Options,
-         CreatedAt = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.CreationDate),
+         CreatedAt = Timestamp.FromDateTime(taskData.CreationDate),
          EndedAt = taskData.EndDate is not null
-                     ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.EndDate.Value)
+                     ? Timestamp.FromDateTime(taskData.EndDate.Value)
                      : null,
          Id = taskData.TaskId,
 
          StartedAt = taskData.StartDate is not null
-                       ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(taskData.StartDate.Value)
+                       ? Timestamp.FromDateTime(taskData.StartDate.Value)
                        : null,
        };
 }

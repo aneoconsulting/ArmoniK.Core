@@ -63,7 +63,6 @@ public class GrpcTasksService : Tasks.TasksBase
                                                      context.CancellationToken)
                                       .ConfigureAwait(false),
              };
-
     }
     catch (TaskNotFoundException e)
     {

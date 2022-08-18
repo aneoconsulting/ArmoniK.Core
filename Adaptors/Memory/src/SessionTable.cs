@@ -111,25 +111,23 @@ public class SessionTable : ISessionTable
 
   /// <inheritdoc />
   public Task<SessionData> CancelSessionAsync(string            sessionId,
-                                 CancellationToken cancellationToken = default)
-  {
-    return Task.FromResult(storage_.AddOrUpdate(sessionId,
-                                                _ => throw new SessionNotFoundException($"Key '{sessionId}' not found"),
-                                                (_,
-                                                 data) =>
-                                                {
-                                                  if (data.Status == SessionStatus.Canceled)
-                                                  {
-                                                    throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
-                                                  }
+                                              CancellationToken cancellationToken = default)
+    => Task.FromResult(storage_.AddOrUpdate(sessionId,
+                                            _ => throw new SessionNotFoundException($"Key '{sessionId}' not found"),
+                                            (_,
+                                             data) =>
+                                            {
+                                              if (data.Status == SessionStatus.Canceled)
+                                              {
+                                                throw new SessionNotFoundException($"No open session with key '{sessionId}' was found");
+                                              }
 
-                                                  return data with
-                                                         {
-                                                           Status = SessionStatus.Canceled,
-                                                           CancellationDate = DateTime.UtcNow,
-                                                         };
-                                                }));
-  }
+                                              return data with
+                                                     {
+                                                       Status = SessionStatus.Canceled,
+                                                       CancellationDate = DateTime.UtcNow,
+                                                     };
+                                            }));
 
 
   /// <inheritdoc />

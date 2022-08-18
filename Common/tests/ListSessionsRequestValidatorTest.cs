@@ -61,7 +61,7 @@ public class ListSessionsRequestValidatorTest
   {
     validListSessionsRequest_!.Filter = default;
     Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
-                            .IsValid);
+                             .IsValid);
   }
 
   [Test]
@@ -69,10 +69,12 @@ public class ListSessionsRequestValidatorTest
   {
     validListSessionsRequest_!.Sort = default;
 
-    foreach (var error in validator_.Validate(validListSessionsRequest_).Errors)
+    foreach (var error in validator_.Validate(validListSessionsRequest_)
+                                    .Errors)
     {
       Console.WriteLine(error);
     }
+
     Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
                              .IsValid);
   }
@@ -84,10 +86,12 @@ public class ListSessionsRequestValidatorTest
                                       {
                                         Direction = ListSessionsRequest.Types.OrderDirection.Desc,
                                       };
-    foreach (var error in validator_.Validate(validListSessionsRequest_).Errors)
+    foreach (var error in validator_.Validate(validListSessionsRequest_)
+                                    .Errors)
     {
       Console.WriteLine(error);
     }
+
     Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
                              .IsValid);
   }
@@ -99,10 +103,12 @@ public class ListSessionsRequestValidatorTest
                                       {
                                         Field = ListSessionsRequest.Types.OrderByField.SessionId,
                                       };
-    foreach (var error in validator_.Validate(validListSessionsRequest_).Errors)
+    foreach (var error in validator_.Validate(validListSessionsRequest_)
+                                    .Errors)
     {
       Console.WriteLine(error);
     }
+
     Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
                              .IsValid);
   }
@@ -111,10 +117,12 @@ public class ListSessionsRequestValidatorTest
   public void ListSessionsRequestNegativePageShouldFail()
   {
     validListSessionsRequest_!.Page = -1;
-    foreach (var error in validator_.Validate(validListSessionsRequest_).Errors)
+    foreach (var error in validator_.Validate(validListSessionsRequest_)
+                                    .Errors)
     {
       Console.WriteLine(error);
     }
+
     Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
                              .IsValid);
   }

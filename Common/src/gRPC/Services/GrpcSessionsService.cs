@@ -133,7 +133,6 @@ public class GrpcSessionsService : Sessions.SessionsBase
                PageSize = request.PageSize,
                Sessions =
                {
-
                  sessionData.Select(data => new SessionSummary(data)),
                },
              };

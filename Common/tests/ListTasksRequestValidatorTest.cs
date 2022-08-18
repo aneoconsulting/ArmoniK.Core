@@ -38,16 +38,16 @@ public class ListTasksRequestValidatorTest
   [SetUp]
   public void Setup()
     => validListTasksRequest_ = new ListTasksRequest
-                                   {
-                                     Filter = new ListTasksRequest.Types.Filter(),
-                                     Sort = new ListTasksRequest.Types.Sort
-                                            {
-                                              Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                              Field     = ListTasksRequest.Types.OrderByField.CreatedAt,
-                                            },
-                                     Page     = 0,
-                                     PageSize = 1,
-                                   };
+                                {
+                                  Filter = new ListTasksRequest.Types.Filter(),
+                                  Sort = new ListTasksRequest.Types.Sort
+                                         {
+                                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                                           Field     = ListTasksRequest.Types.OrderByField.CreatedAt,
+                                         },
+                                  Page     = 0,
+                                  PageSize = 1,
+                                };
 
   private readonly ListTasksRequestValidator validator_ = new();
   private          ListTasksRequest?         validListTasksRequest_;
@@ -62,7 +62,7 @@ public class ListTasksRequestValidatorTest
   {
     validListTasksRequest_!.Filter = default;
     Assert.IsFalse(validator_.Validate(validListTasksRequest_)
-                            .IsValid);
+                             .IsValid);
   }
 
   [Test]
@@ -70,10 +70,12 @@ public class ListTasksRequestValidatorTest
   {
     validListTasksRequest_!.Sort = default;
 
-    foreach (var error in validator_.Validate(validListTasksRequest_).Errors)
+    foreach (var error in validator_.Validate(validListTasksRequest_)
+                                    .Errors)
     {
       Console.WriteLine(error);
     }
+
     Assert.IsFalse(validator_.Validate(validListTasksRequest_)
                              .IsValid);
   }
@@ -82,13 +84,15 @@ public class ListTasksRequestValidatorTest
   public void ListTasksRequestMissingFieldShouldFail()
   {
     validListTasksRequest_!.Sort = new ListTasksRequest.Types.Sort
-                                      {
-                                        Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                                      };
-    foreach (var error in validator_.Validate(validListTasksRequest_).Errors)
+                                   {
+                                     Direction = ListTasksRequest.Types.OrderDirection.Desc,
+                                   };
+    foreach (var error in validator_.Validate(validListTasksRequest_)
+                                    .Errors)
     {
       Console.WriteLine(error);
     }
+
     Assert.IsFalse(validator_.Validate(validListTasksRequest_)
                              .IsValid);
   }
@@ -97,13 +101,15 @@ public class ListTasksRequestValidatorTest
   public void ListTasksRequestMissingDirectionShouldFail()
   {
     validListTasksRequest_!.Sort = new ListTasksRequest.Types.Sort
-                                      {
-                                        Field = ListTasksRequest.Types.OrderByField.SessionId,
-                                      };
-    foreach (var error in validator_.Validate(validListTasksRequest_).Errors)
+                                   {
+                                     Field = ListTasksRequest.Types.OrderByField.SessionId,
+                                   };
+    foreach (var error in validator_.Validate(validListTasksRequest_)
+                                    .Errors)
     {
       Console.WriteLine(error);
     }
+
     Assert.IsFalse(validator_.Validate(validListTasksRequest_)
                              .IsValid);
   }
@@ -112,10 +118,12 @@ public class ListTasksRequestValidatorTest
   public void ListTasksRequestNegativePageShouldFail()
   {
     validListTasksRequest_!.Page = -1;
-    foreach (var error in validator_.Validate(validListTasksRequest_).Errors)
+    foreach (var error in validator_.Validate(validListTasksRequest_)
+                                    .Errors)
     {
       Console.WriteLine(error);
     }
+
     Assert.IsFalse(validator_.Validate(validListTasksRequest_)
                              .IsValid);
   }

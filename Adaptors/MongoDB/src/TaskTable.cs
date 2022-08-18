@@ -386,7 +386,7 @@ public class TaskTable : ITaskTable
   }
 
   public async Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                                                           CancellationToken cancellationToken)
+                                                          CancellationToken cancellationToken)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
     var       sessionHandle  = sessionProvider_.Get();

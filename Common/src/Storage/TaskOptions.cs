@@ -34,8 +34,8 @@ public record TaskOptions(IDictionary<string, string> Options,
                           int                         MaxRetries,
                           int                         Priority,
                           string                      PartitionId,
-                          string ApplicationName,
-                          string ApplicationVersion)
+                          string                      ApplicationName,
+                          string                      ApplicationVersion)
 {
   public static implicit operator Api.gRPC.V1.TaskOptions(TaskOptions taskOption)
     => new()
@@ -48,7 +48,7 @@ public record TaskOptions(IDictionary<string, string> Options,
          {
            taskOption.Options,
          },
-         ApplicationName = taskOption.ApplicationName,
+         ApplicationName    = taskOption.ApplicationName,
          ApplicationVersion = taskOption.ApplicationVersion,
        };
 

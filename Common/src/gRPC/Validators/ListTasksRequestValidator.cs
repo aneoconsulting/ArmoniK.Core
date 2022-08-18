@@ -62,6 +62,5 @@ public class ListTasksRequestValidator : AbstractValidator<ListTasksRequest>
                           .NotEmpty()
                           .WithName($"{nameof(ListTasksRequest)}.{nameof(ListTasksRequest.Sort)}.{nameof(ListTasksRequest.Sort.Field)}");
                       });
-
   }
 }

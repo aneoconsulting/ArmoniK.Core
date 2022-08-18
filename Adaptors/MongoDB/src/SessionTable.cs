@@ -50,7 +50,6 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
-using Task = System.Threading.Tasks.Task;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -181,11 +180,11 @@ public class SessionTable : ISessionTable
                                                                                                     SessionStatus.Canceled)
                                                                                         .Set(model => model.CancellationDate,
                                                                                              DateTime.UtcNow),
-                                                                   options: new FindOneAndUpdateOptions<SessionData>
-                                                                            {
-                                                                              ReturnDocument = ReturnDocument.After
-                                                                            },
-                                                                   cancellationToken: cancellationToken)
+                                                                   new FindOneAndUpdateOptions<SessionData>
+                                                                   {
+                                                                     ReturnDocument = ReturnDocument.After,
+                                                                   },
+                                                                   cancellationToken)
                                             .ConfigureAwait(false);
 
     if (resSession is null)
@@ -245,7 +244,7 @@ public class SessionTable : ISessionTable
     var       sessionCollection = sessionCollectionProvider_.Get();
 
     var queryable = sessionCollection.AsQueryable(sessionHandle)
-                                  .Where(request.Filter.ToSessionDataFilter());
+                                     .Where(request.Filter.ToSessionDataFilter());
 
     var ordered = request.Sort.Direction == ListSessionsRequest.Types.OrderDirection.Asc
                     ? queryable.OrderBy(request.Sort.ToSessionDataField())

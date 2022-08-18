@@ -33,18 +33,20 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+
 namespace ArmoniK.Core.Common.Tests.ListSessionsRequestExt;
 
 [TestFixture(TestOf = typeof(ToSessionDataFieldTest))]
 public class ToSessionDataFieldTest
 {
-  private static readonly Storage.TaskOptions Options = new(new Dictionary<string, string>(),
-                                                            TimeSpan.MaxValue,
-                                                            5,
-                                                            1,
-                                                            "part1",
-                                                            "applicationName",
-                                                            "applicationVersion");
+  private static readonly TaskOptions Options = new(new Dictionary<string, string>(),
+                                                    TimeSpan.MaxValue,
+                                                    5,
+                                                    1,
+                                                    "part1",
+                                                    "applicationName",
+                                                    "applicationVersion");
 
   private readonly SessionData sessionData_ = new("SessionId",
                                                   SessionStatus.Running,

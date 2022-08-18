@@ -291,7 +291,7 @@ public class TaskTable : ITaskTable
   }
 
   public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                                                           CancellationToken cancellationToken)
+                                                    CancellationToken cancellationToken)
   {
     var queryable = taskId2TaskData_.AsQueryable()
                                     .Select(pair => pair.Value)
@@ -302,7 +302,7 @@ public class TaskTable : ITaskTable
                     : queryable.OrderByDescending(request.Sort.ToTaskDataField());
 
     return Task.FromResult<IEnumerable<TaskData>>(ordered.Skip(request.Page * request.PageSize)
-                                                                          .Take(request.PageSize));
+                                                         .Take(request.PageSize));
   }
 
   /// <inheritdoc />

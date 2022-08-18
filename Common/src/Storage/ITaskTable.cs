@@ -27,9 +27,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Armonik.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Api.gRPC.V1.Submitter;
+
+using Armonik.Api.gRPC.V1.Tasks;
 
 using Microsoft.Extensions.Logging;
 
@@ -335,5 +335,4 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task<int> FinalizeTaskCreation(IEnumerable<string> taskIds,
                                  CancellationToken   cancellationToken = default);
-
 }

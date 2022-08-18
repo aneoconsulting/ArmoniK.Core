@@ -26,26 +26,29 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+
 using Armonik.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
-
 using NUnit.Framework;
+
+using Output = ArmoniK.Core.Common.Storage.Output;
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 
 [TestFixture(TestOf = typeof(ToTaskDataFieldTest))]
 public class ToTaskDataFieldTest
 {
-  private static readonly Storage.TaskOptions Options = new(new Dictionary<string, string>(),
-                                                            TimeSpan.MaxValue,
-                                                            5,
-                                                            1,
-                                                            "part1",
-                                                            "applicationName",
-                                                            "applicationVersion");
+  private static readonly TaskOptions Options = new(new Dictionary<string, string>(),
+                                                    TimeSpan.MaxValue,
+                                                    5,
+                                                    1,
+                                                    "part1",
+                                                    "applicationName",
+                                                    "applicationVersion");
 
   private readonly TaskData taskData_ = new("SessionId",
                                             "TaskCompletedId",
@@ -66,8 +69,8 @@ public class ToTaskDataFieldTest
                                             Array.Empty<string>(),
                                             TaskStatus.Completed,
                                             Options,
-                                            new Storage.Output(true,
-                                                               ""));
+                                            new Output(true,
+                                                       ""));
 
   [Test]
   public void InvokeShouldReturnCreationDate()

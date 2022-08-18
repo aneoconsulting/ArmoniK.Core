@@ -32,18 +32,21 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using Timestamp = Google.Protobuf.WellKnownTypes.Timestamp;
+
 namespace ArmoniK.Core.Common.Tests.ListSessionsRequestExt;
 
 [TestFixture(TestOf = typeof(ToSessionDataFilterTest))]
 public class ToSessionDataFilterTest
 {
-  private static readonly Storage.TaskOptions Options = new(new Dictionary<string, string>(),
-                                                            TimeSpan.MaxValue,
-                                                            5,
-                                                            1,
-                                                            "part1",
-                                                            "applicationName",
-                                                            "applicationVersion");
+  private static readonly TaskOptions Options = new(new Dictionary<string, string>(),
+                                                    TimeSpan.MaxValue,
+                                                    5,
+                                                    1,
+                                                    "part1",
+                                                    "applicationName",
+                                                    "applicationVersion");
 
   private readonly SessionData sessionData_ = new("SessionId",
                                                   SessionStatus.Running,
@@ -219,7 +222,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow)
+                            CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -239,7 +242,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow)
+                            CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -250,9 +253,9 @@ public class ToSessionDataFilterTest
                 .Compile();
 
     Assert.IsFalse(func.Invoke(sessionData_ with
-                              {
-                                CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3)
-                              }));
+                               {
+                                 CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
+                               }));
   }
 
   [Test]
@@ -262,7 +265,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CreatedAfter = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow)
+                            CreatedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -274,7 +277,7 @@ public class ToSessionDataFilterTest
 
     Assert.IsTrue(func.Invoke(sessionData_ with
                               {
-                                CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3)
+                                CreationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
                               }));
   }
 
@@ -285,7 +288,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CreatedAfter = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow)
+                            CreatedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -302,17 +305,17 @@ public class ToSessionDataFilterTest
   public void FilterCancelledBeforeShouldSucceed()
   {
     var func = new ListSessionsRequest
-    {
-      Filter = new ListSessionsRequest.Types.Filter
-      {
-        CancelledBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow)
-      },
-      Sort = new ListSessionsRequest.Types.Sort
-      {
-        Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-        Field = ListSessionsRequest.Types.OrderByField.CreatedAt,
-      },
-    }.Filter.ToSessionDataFilter()
+               {
+                 Filter = new ListSessionsRequest.Types.Filter
+                          {
+                            CancelledBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListSessionsRequest.Types.Sort
+                        {
+                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
+                        },
+               }.Filter.ToSessionDataFilter()
                 .Compile();
 
     Assert.IsTrue(func.Invoke(sessionData_));
@@ -322,63 +325,63 @@ public class ToSessionDataFilterTest
   public void FilterCancelledBeforeShouldFail()
   {
     var func = new ListSessionsRequest
-    {
-      Filter = new ListSessionsRequest.Types.Filter
-      {
-        CancelledBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow)
-      },
-      Sort = new ListSessionsRequest.Types.Sort
-      {
-        Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-        Field = ListSessionsRequest.Types.OrderByField.CreatedAt,
-      },
-    }.Filter.ToSessionDataFilter()
+               {
+                 Filter = new ListSessionsRequest.Types.Filter
+                          {
+                            CancelledBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListSessionsRequest.Types.Sort
+                        {
+                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
+                        },
+               }.Filter.ToSessionDataFilter()
                 .Compile();
 
     Assert.IsFalse(func.Invoke(sessionData_ with
-    {
-      CancellationDate = DateTime.UtcNow + TimeSpan.FromHours(3)
-    }));
+                               {
+                                 CancellationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
+                               }));
   }
 
   [Test]
   public void FilterCancelledAfterShouldSucceed()
   {
     var func = new ListSessionsRequest
-    {
-      Filter = new ListSessionsRequest.Types.Filter
-      {
-        CancelledAfter = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow)
-      },
-      Sort = new ListSessionsRequest.Types.Sort
-      {
-        Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-        Field = ListSessionsRequest.Types.OrderByField.CreatedAt,
-      },
-    }.Filter.ToSessionDataFilter()
+               {
+                 Filter = new ListSessionsRequest.Types.Filter
+                          {
+                            CancelledAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListSessionsRequest.Types.Sort
+                        {
+                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
+                        },
+               }.Filter.ToSessionDataFilter()
                 .Compile();
 
     Assert.IsTrue(func.Invoke(sessionData_ with
-    {
-      CancellationDate = DateTime.UtcNow + TimeSpan.FromHours(3)
-    }));
+                              {
+                                CancellationDate = DateTime.UtcNow + TimeSpan.FromHours(3),
+                              }));
   }
 
   [Test]
   public void FilterCancelledAfterShouldFail()
   {
     var func = new ListSessionsRequest
-    {
-      Filter = new ListSessionsRequest.Types.Filter
-      {
-        CancelledAfter = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow)
-      },
-      Sort = new ListSessionsRequest.Types.Sort
-      {
-        Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-        Field = ListSessionsRequest.Types.OrderByField.CreatedAt,
-      },
-    }.Filter.ToSessionDataFilter()
+               {
+                 Filter = new ListSessionsRequest.Types.Filter
+                          {
+                            CancelledAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListSessionsRequest.Types.Sort
+                        {
+                          Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                          Field     = ListSessionsRequest.Types.OrderByField.CreatedAt,
+                        },
+               }.Filter.ToSessionDataFilter()
                 .Compile();
 
     Assert.IsFalse(func.Invoke(sessionData_));

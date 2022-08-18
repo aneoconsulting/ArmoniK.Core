@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
+
 using Armonik.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Core.Common.gRPC;
@@ -33,18 +34,22 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
+using Timestamp = Google.Protobuf.WellKnownTypes.Timestamp;
+
 namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 
 [TestFixture(TestOf = typeof(ToTaskDataFilterTest))]
 public class ToTaskDataFilterTest
 {
-  private static readonly Storage.TaskOptions Options = new(new Dictionary<string, string>(),
-                                                            TimeSpan.MaxValue,
-                                                            5,
-                                                            1,
-                                                            "part1",
-                                                            "applicationName",
-                                                            "applicationVersion");
+  private static readonly TaskOptions Options = new(new Dictionary<string, string>(),
+                                                    TimeSpan.MaxValue,
+                                                    5,
+                                                    1,
+                                                    "part1",
+                                                    "applicationName",
+                                                    "applicationVersion");
 
   private readonly TaskData taskData_ = new("SessionId",
                                             "TaskCompletedId",
@@ -65,8 +70,8 @@ public class ToTaskDataFilterTest
                                             Array.Empty<string>(),
                                             TaskStatus.Completed,
                                             Options,
-                                            new Storage.Output(true,
-                                                               ""));
+                                            new Output(true,
+                                                       ""));
 
   [Test]
   public void FilterSessionIdShouldSucceed()
@@ -118,7 +123,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            CreatedAfter = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -141,7 +146,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            CreatedAfter = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -164,7 +169,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -187,7 +192,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -207,184 +212,184 @@ public class ToTaskDataFilterTest
   public void FilterEndedAfterShouldFail()
   {
     var func = new ListTasksRequest
-    {
-      Filter = new ListTasksRequest.Types.Filter
-      {
-        EndedAfter = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-      },
-      Sort = new ListTasksRequest.Types.Sort
-      {
-        Direction = ListTasksRequest.Types.OrderDirection.Asc,
-        Field = ListTasksRequest.Types.OrderByField.StartedAt,
-      },
-    }.Filter.ToTaskDataFilter()
+               {
+                 Filter = new ListTasksRequest.Types.Filter
+                          {
+                            EndedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListTasksRequest.Types.Sort
+                        {
+                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
+                        },
+               }.Filter.ToTaskDataFilter()
                 .Compile();
 
     Assert.IsFalse(func.Invoke(taskData_ with
-    {
-      EndDate = DateTime.UtcNow - TimeSpan.FromHours(3),
-    }));
+                               {
+                                 EndDate = DateTime.UtcNow - TimeSpan.FromHours(3),
+                               }));
   }
 
   [Test]
   public void FilterEndedAfterShouldSucceed()
   {
     var func = new ListTasksRequest
-    {
-      Filter = new ListTasksRequest.Types.Filter
-      {
-        EndedAfter = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-      },
-      Sort = new ListTasksRequest.Types.Sort
-      {
-        Direction = ListTasksRequest.Types.OrderDirection.Asc,
-        Field = ListTasksRequest.Types.OrderByField.StartedAt,
-      },
-    }.Filter.ToTaskDataFilter()
+               {
+                 Filter = new ListTasksRequest.Types.Filter
+                          {
+                            EndedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListTasksRequest.Types.Sort
+                        {
+                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
+                        },
+               }.Filter.ToTaskDataFilter()
                 .Compile();
 
     Assert.IsTrue(func.Invoke(taskData_ with
-    {
-      EndDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-    }));
+                              {
+                                EndDate = DateTime.UtcNow + TimeSpan.FromHours(3),
+                              }));
   }
 
   [Test]
   public void FilterEndedBeforeShouldFail()
   {
     var func = new ListTasksRequest
-    {
-      Filter = new ListTasksRequest.Types.Filter
-      {
-        EndedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-      },
-      Sort = new ListTasksRequest.Types.Sort
-      {
-        Direction = ListTasksRequest.Types.OrderDirection.Asc,
-        Field = ListTasksRequest.Types.OrderByField.StartedAt,
-      },
-    }.Filter.ToTaskDataFilter()
+               {
+                 Filter = new ListTasksRequest.Types.Filter
+                          {
+                            EndedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListTasksRequest.Types.Sort
+                        {
+                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
+                        },
+               }.Filter.ToTaskDataFilter()
                 .Compile();
 
     Assert.IsFalse(func.Invoke(taskData_ with
-    {
-      EndDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-    }));
+                               {
+                                 EndDate = DateTime.UtcNow + TimeSpan.FromHours(3),
+                               }));
   }
 
   [Test]
   public void FilterEndedBeforeShouldSucceed()
   {
     var func = new ListTasksRequest
-    {
-      Filter = new ListTasksRequest.Types.Filter
-      {
-        EndedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-      },
-      Sort = new ListTasksRequest.Types.Sort
-      {
-        Direction = ListTasksRequest.Types.OrderDirection.Asc,
-        Field = ListTasksRequest.Types.OrderByField.StartedAt,
-      },
-    }.Filter.ToTaskDataFilter()
+               {
+                 Filter = new ListTasksRequest.Types.Filter
+                          {
+                            EndedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListTasksRequest.Types.Sort
+                        {
+                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
+                        },
+               }.Filter.ToTaskDataFilter()
                 .Compile();
 
     Assert.IsTrue(func.Invoke(taskData_ with
-    {
-      EndDate = DateTime.UtcNow - TimeSpan.FromHours(3),
-    }));
+                              {
+                                EndDate = DateTime.UtcNow - TimeSpan.FromHours(3),
+                              }));
   }
 
   [Test]
   public void FilterStartedAfterShouldFail()
   {
     var func = new ListTasksRequest
-    {
-      Filter = new ListTasksRequest.Types.Filter
-      {
-        StartedAfter = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-      },
-      Sort = new ListTasksRequest.Types.Sort
-      {
-        Direction = ListTasksRequest.Types.OrderDirection.Asc,
-        Field = ListTasksRequest.Types.OrderByField.StartedAt,
-      },
-    }.Filter.ToTaskDataFilter()
+               {
+                 Filter = new ListTasksRequest.Types.Filter
+                          {
+                            StartedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListTasksRequest.Types.Sort
+                        {
+                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
+                        },
+               }.Filter.ToTaskDataFilter()
                 .Compile();
 
     Assert.IsFalse(func.Invoke(taskData_ with
-    {
-      StartDate = DateTime.UtcNow - TimeSpan.FromHours(3),
-    }));
+                               {
+                                 StartDate = DateTime.UtcNow - TimeSpan.FromHours(3),
+                               }));
   }
 
   [Test]
   public void FilterStartedAfterShouldSucceed()
   {
     var func = new ListTasksRequest
-    {
-      Filter = new ListTasksRequest.Types.Filter
-      {
-        StartedAfter = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-      },
-      Sort = new ListTasksRequest.Types.Sort
-      {
-        Direction = ListTasksRequest.Types.OrderDirection.Asc,
-        Field = ListTasksRequest.Types.OrderByField.StartedAt,
-      },
-    }.Filter.ToTaskDataFilter()
+               {
+                 Filter = new ListTasksRequest.Types.Filter
+                          {
+                            StartedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListTasksRequest.Types.Sort
+                        {
+                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
+                        },
+               }.Filter.ToTaskDataFilter()
                 .Compile();
 
     Assert.IsTrue(func.Invoke(taskData_ with
-    {
-      StartDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-    }));
+                              {
+                                StartDate = DateTime.UtcNow + TimeSpan.FromHours(3),
+                              }));
   }
 
   [Test]
   public void FilterStartedBeforeShouldFail()
   {
     var func = new ListTasksRequest
-    {
-      Filter = new ListTasksRequest.Types.Filter
-      {
-        StartedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-      },
-      Sort = new ListTasksRequest.Types.Sort
-      {
-        Direction = ListTasksRequest.Types.OrderDirection.Asc,
-        Field = ListTasksRequest.Types.OrderByField.StartedAt,
-      },
-    }.Filter.ToTaskDataFilter()
+               {
+                 Filter = new ListTasksRequest.Types.Filter
+                          {
+                            StartedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListTasksRequest.Types.Sort
+                        {
+                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
+                        },
+               }.Filter.ToTaskDataFilter()
                 .Compile();
 
     Assert.IsFalse(func.Invoke(taskData_ with
-    {
-      StartDate = DateTime.UtcNow + TimeSpan.FromHours(3),
-    }));
+                               {
+                                 StartDate = DateTime.UtcNow + TimeSpan.FromHours(3),
+                               }));
   }
 
   [Test]
   public void FilterStartedBeforeShouldSucceed()
   {
     var func = new ListTasksRequest
-    {
-      Filter = new ListTasksRequest.Types.Filter
-      {
-        StartedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-      },
-      Sort = new ListTasksRequest.Types.Sort
-      {
-        Direction = ListTasksRequest.Types.OrderDirection.Asc,
-        Field = ListTasksRequest.Types.OrderByField.StartedAt,
-      },
-    }.Filter.ToTaskDataFilter()
+               {
+                 Filter = new ListTasksRequest.Types.Filter
+                          {
+                            StartedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                          },
+                 Sort = new ListTasksRequest.Types.Sort
+                        {
+                          Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                          Field     = ListTasksRequest.Types.OrderByField.StartedAt,
+                        },
+               }.Filter.ToTaskDataFilter()
                 .Compile();
 
     Assert.IsTrue(func.Invoke(taskData_ with
-    {
-      StartDate = DateTime.UtcNow - TimeSpan.FromHours(3),
-    }));
+                              {
+                                StartDate = DateTime.UtcNow - TimeSpan.FromHours(3),
+                              }));
   }
 
 
@@ -433,5 +438,4 @@ public class ToTaskDataFilterTest
                                  Status = TaskStatus.Canceling,
                                }));
   }
-
 }

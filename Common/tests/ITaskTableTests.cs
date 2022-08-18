@@ -40,6 +40,7 @@ using NUnit.Framework;
 
 using Task = System.Threading.Tasks.Task;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
+using Timestamp = Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.Tests;
 
@@ -1112,9 +1113,8 @@ public class TaskTableTestBase
                   PageSize = 2,
                   Filter = new ListTasksRequest.Types.Filter
                            {
-                             SessionId = "SessionId",
-                             CreatedAfter =
-                               Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow - TimeSpan.FromMinutes(1)),
+                             SessionId    = "SessionId",
+                             CreatedAfter = Timestamp.FromDateTime(DateTime.UtcNow - TimeSpan.FromMinutes(1)),
                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {
@@ -1143,7 +1143,6 @@ public class TaskTableTestBase
   }
 
 
-
   [Test]
   public async Task ListTaskWithRequestCreatedBeforeShouldSucceed()
   {
@@ -1156,7 +1155,7 @@ public class TaskTableTestBase
                   Filter = new ListTasksRequest.Types.Filter
                            {
                              SessionId     = "SessionId",
-                             CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                             CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {
@@ -1196,7 +1195,7 @@ public class TaskTableTestBase
                   Filter = new ListTasksRequest.Types.Filter
                            {
                              SessionId     = "SessionId",
-                             CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                             CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {
@@ -1242,7 +1241,7 @@ public class TaskTableTestBase
                   Filter = new ListTasksRequest.Types.Filter
                            {
                              SessionId     = "SessionId",
-                             CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                             CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {
@@ -1288,7 +1287,7 @@ public class TaskTableTestBase
                   Filter = new ListTasksRequest.Types.Filter
                            {
                              SessionId     = "SessionId",
-                             CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                             CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {
@@ -1321,5 +1320,4 @@ public class TaskTableTestBase
                         .Status);
     }
   }
-
 }
