@@ -392,7 +392,6 @@ public class TaskTable : ITaskTable
     var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = taskCollectionProvider_.Get();
 
-
     var queryable = taskCollection.AsQueryable(sessionHandle)
                                   .Where(request.Filter.ToTaskDataFilter());
 
