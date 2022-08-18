@@ -32,8 +32,9 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
+using static Google.Protobuf.WellKnownTypes.Timestamp;
+
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
-using Timestamp = Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.Tests.ListSessionsRequestExt;
 
@@ -222,7 +223,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedBefore = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -242,7 +243,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedBefore = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -265,7 +266,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CreatedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedAfter = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -288,7 +289,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CreatedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedAfter = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -308,7 +309,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CancelledBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CancelledBefore = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -328,7 +329,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CancelledBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CancelledBefore = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -351,7 +352,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CancelledAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CancelledAfter = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {
@@ -374,7 +375,7 @@ public class ToSessionDataFilterTest
                {
                  Filter = new ListSessionsRequest.Types.Filter
                           {
-                            CancelledAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CancelledAfter = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListSessionsRequest.Types.Sort
                         {

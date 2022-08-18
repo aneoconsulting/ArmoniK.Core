@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 
-using Timestamp = Google.Protobuf.WellKnownTypes.Timestamp;
+using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -56,9 +56,9 @@ public record SessionData(string        SessionId,
     => new()
        {
          CancelledAt = sessionData.CancellationDate is not null
-                         ? Timestamp.FromDateTime(sessionData.CancellationDate.Value)
+                         ? FromDateTime(sessionData.CancellationDate.Value)
                          : null,
-         CreatedAt = Timestamp.FromDateTime(sessionData.CreationDate),
+         CreatedAt = FromDateTime(sessionData.CreationDate),
          Options   = sessionData.Options,
          PartitionIds =
          {
@@ -72,9 +72,9 @@ public record SessionData(string        SessionId,
     => new()
        {
          CancelledAt = sessionData.CancellationDate is not null
-                         ? Timestamp.FromDateTime(sessionData.CancellationDate.Value)
+                         ? FromDateTime(sessionData.CancellationDate.Value)
                          : null,
-         CreatedAt = Timestamp.FromDateTime(sessionData.CreationDate),
+         CreatedAt = FromDateTime(sessionData.CreationDate),
          SessionId = sessionData.SessionId,
          Status    = sessionData.Status,
        };

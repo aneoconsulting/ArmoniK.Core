@@ -38,9 +38,10 @@ using ArmoniK.Core.Common.Utils;
 
 using NUnit.Framework;
 
+using static Google.Protobuf.WellKnownTypes.Timestamp;
+
 using Task = System.Threading.Tasks.Task;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
-using Timestamp = Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.Tests;
 
@@ -1114,7 +1115,7 @@ public class TaskTableTestBase
                   Filter = new ListTasksRequest.Types.Filter
                            {
                              SessionId    = "SessionId",
-                             CreatedAfter = Timestamp.FromDateTime(DateTime.UtcNow - TimeSpan.FromMinutes(1)),
+                             CreatedAfter = FromDateTime(DateTime.UtcNow - TimeSpan.FromMinutes(1)),
                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {
@@ -1155,7 +1156,7 @@ public class TaskTableTestBase
                   Filter = new ListTasksRequest.Types.Filter
                            {
                              SessionId     = "SessionId",
-                             CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                             CreatedBefore = FromDateTime(DateTime.UtcNow),
                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {
@@ -1195,7 +1196,7 @@ public class TaskTableTestBase
                   Filter = new ListTasksRequest.Types.Filter
                            {
                              SessionId     = "SessionId",
-                             CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                             CreatedBefore = FromDateTime(DateTime.UtcNow),
                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {
@@ -1241,7 +1242,7 @@ public class TaskTableTestBase
                   Filter = new ListTasksRequest.Types.Filter
                            {
                              SessionId     = "SessionId",
-                             CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                             CreatedBefore = FromDateTime(DateTime.UtcNow),
                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {
@@ -1287,7 +1288,7 @@ public class TaskTableTestBase
                   Filter = new ListTasksRequest.Types.Filter
                            {
                              SessionId     = "SessionId",
-                             CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                             CreatedBefore = FromDateTime(DateTime.UtcNow),
                            },
                   Sort = new ListTasksRequest.Types.Sort
                          {

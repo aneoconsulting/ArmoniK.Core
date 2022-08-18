@@ -34,9 +34,10 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
+using static Google.Protobuf.WellKnownTypes.Timestamp;
+
 using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
-using Timestamp = Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 
@@ -123,7 +124,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            CreatedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedAfter = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -146,7 +147,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            CreatedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedAfter = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -169,7 +170,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedBefore = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -192,7 +193,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            CreatedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                            CreatedBefore = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -215,7 +216,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            EndedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                            EndedAfter = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -238,7 +239,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            EndedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                            EndedAfter = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -261,7 +262,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            EndedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                            EndedBefore = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -284,7 +285,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            EndedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                            EndedBefore = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -307,7 +308,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            StartedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                            StartedAfter = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -330,7 +331,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            StartedAfter = Timestamp.FromDateTime(DateTime.UtcNow),
+                            StartedAfter = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -353,7 +354,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            StartedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                            StartedBefore = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
@@ -376,7 +377,7 @@ public class ToTaskDataFilterTest
                {
                  Filter = new ListTasksRequest.Types.Filter
                           {
-                            StartedBefore = Timestamp.FromDateTime(DateTime.UtcNow),
+                            StartedBefore = FromDateTime(DateTime.UtcNow),
                           },
                  Sort = new ListTasksRequest.Types.Sort
                         {
