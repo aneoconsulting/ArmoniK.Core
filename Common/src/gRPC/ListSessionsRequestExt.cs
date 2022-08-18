@@ -27,9 +27,6 @@ using System.Linq.Expressions;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
-
-using Armonik.Api.gRPC.V1.Tasks;
-
 using ArmoniK.Core.Common.Storage;
 
 using LinqKit;
@@ -63,6 +60,7 @@ public static class ListSessionsRequestExt
   public static Expression<Func<SessionData, bool>> ToSessionDataFilter(this ListSessionsRequest.Types.Filter filter)
   {
     var predicate = PredicateBuilder.New<SessionData>();
+    predicate = predicate.And(data => true);
 
     if (!string.IsNullOrEmpty(filter.SessionId))
     {

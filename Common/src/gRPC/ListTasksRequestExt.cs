@@ -68,6 +68,7 @@ public static class ListTasksRequestExt
   public static Expression<Func<TaskData, bool>> ToTaskDataFilter(this ListTasksRequest.Types.Filter filter)
   {
     var predicate = PredicateBuilder.New<TaskData>();
+    predicate = predicate.And(data => true);
 
     if (!string.IsNullOrEmpty(filter.SessionId))
     {

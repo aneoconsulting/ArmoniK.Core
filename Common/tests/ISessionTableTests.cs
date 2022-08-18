@@ -31,6 +31,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -205,8 +206,8 @@ public class SessionTableTestBase
     if (RunTests)
     {
       var sessionData = await SessionTable!.CancelSessionAsync("SessionId",
-                                             CancellationToken.None)
-                         .ConfigureAwait(false);
+                                                               CancellationToken.None)
+                                           .ConfigureAwait(false);
 
       Assert.AreEqual(SessionStatus.Canceled,
                       sessionData.Status);
@@ -349,20 +350,26 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.ListSessionsAsync(new ListSessionsRequest
-                                                      {
-                                                        Page = 0,
-                                                        PageSize = 3,
-                                                        Filter = new ListSessionsRequest.Types.Filter
-                                                                 {
-                                                                   ApplicationName = "ApplicationName",
-                                                                 },
-                                                        Sort = new ListSessionsRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                                                                 Field = ListSessionsRequest.Types.OrderByField.Status,
-                                                               },
-                                                      },
+      var req = new ListSessionsRequest
+                {
+                  Page     = 0,
+                  PageSize = 3,
+                  Filter = new ListSessionsRequest.Types.Filter
+                           {
+                             ApplicationName = "ApplicationName",
+                           },
+                  Sort = new ListSessionsRequest.Types.Sort
+                         {
+                           Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                           Field     = ListSessionsRequest.Types.OrderByField.Status,
+                         },
+                };
+
+      ListSessionsRequestValidator validator = new();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var res = await SessionTable!.ListSessionsAsync(req,
                                                       CancellationToken.None)
                                    .ToListAsync()
                                    .ConfigureAwait(false);
@@ -377,21 +384,27 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.ListSessionsAsync(new ListSessionsRequest
-                                                      {
-                                                        Page     = 0,
-                                                        PageSize = 3,
-                                                        Filter = new ListSessionsRequest.Types.Filter
-                                                                 {
-                                                                   ApplicationName = "ApplicationName",
-                                                                   SessionId = "SessionId",
-                                                                 },
-                                                        Sort = new ListSessionsRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                                                                 Field     = ListSessionsRequest.Types.OrderByField.Status,
-                                                               },
-                                                      },
+      var req = new ListSessionsRequest
+                {
+                  Page     = 0,
+                  PageSize = 3,
+                  Filter = new ListSessionsRequest.Types.Filter
+                           {
+                             ApplicationName = "ApplicationName",
+                             SessionId       = "SessionId",
+                           },
+                  Sort = new ListSessionsRequest.Types.Sort
+                         {
+                           Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                           Field     = ListSessionsRequest.Types.OrderByField.Status,
+                         },
+                };
+
+      ListSessionsRequestValidator validator = new();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var res = await SessionTable!.ListSessionsAsync(req,
                                                       CancellationToken.None)
                                    .ToListAsync()
                                    .ConfigureAwait(false);
@@ -406,26 +419,63 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.ListSessionsAsync(new ListSessionsRequest
-                                                      {
-                                                        Page     = 0,
-                                                        PageSize = 3,
-                                                        Filter = new ListSessionsRequest.Types.Filter
-                                                                 {
-                                                                   ApplicationName = "ApplicationName",
-                                                                   Status = SessionStatus.Running,
-                                                                 },
-                                                        Sort = new ListSessionsRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListSessionsRequest.Types.OrderDirection.Asc,
-                                                                 Field     = ListSessionsRequest.Types.OrderByField.Status,
-                                                               },
-                                                      },
+      var req = new ListSessionsRequest
+                {
+                  Page     = 0,
+                  PageSize = 3,
+                  Filter = new ListSessionsRequest.Types.Filter
+                           {
+                             ApplicationName = "ApplicationName",
+                             Status          = SessionStatus.Running,
+                           },
+                  Sort = new ListSessionsRequest.Types.Sort
+                         {
+                           Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                           Field     = ListSessionsRequest.Types.OrderByField.Status,
+                         },
+                };
+
+      ListSessionsRequestValidator validator = new();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var res = await SessionTable!.ListSessionsAsync(req,
                                                       CancellationToken.None)
                                    .ToListAsync()
                                    .ConfigureAwait(false);
 
       Assert.AreEqual(2,
+                      res.Count);
+    }
+  }
+
+  [Test]
+  public async Task ListSessionAsyncNoFilterShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var req = new ListSessionsRequest
+                {
+                  Page     = 0,
+                  PageSize = 3,
+                  Filter   = new ListSessionsRequest.Types.Filter(),
+                  Sort = new ListSessionsRequest.Types.Sort
+                         {
+                           Direction = ListSessionsRequest.Types.OrderDirection.Asc,
+                           Field     = ListSessionsRequest.Types.OrderByField.Status,
+                         },
+                };
+
+      ListSessionsRequestValidator validator = new();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var res = await SessionTable!.ListSessionsAsync(req,
+                                                      CancellationToken.None)
+                                   .ToListAsync()
+                                   .ConfigureAwait(false);
+
+      Assert.AreEqual(3,
                       res.Count);
     }
   }

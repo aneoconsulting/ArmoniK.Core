@@ -32,6 +32,7 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using Armonik.Api.gRPC.V1.Tasks;
 
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
@@ -999,20 +1000,26 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(new ListTasksRequest
-                                                      {
-                                                        Page     = 0,
-                                                        PageSize = 20,
-                                                        Filter = new ListTasksRequest.Types.Filter
-                                                                 {
-                                                                   SessionId = "SessionId",
-                                                                 },
-                                                        Sort = new ListTasksRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                                                                 Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                                                               },
-                                                      },
+      var req = new ListTasksRequest
+                {
+                  Page     = 0,
+                  PageSize = 20,
+                  Filter = new ListTasksRequest.Types.Filter
+                           {
+                             SessionId = "SessionId",
+                           },
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
+                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
+                         },
+                };
+
+      var validator = new ListTasksRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListTasksAsync(req,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
@@ -1026,20 +1033,26 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(new ListTasksRequest
-                                                      {
-                                                        Page     = 0,
-                                                        PageSize = 2,
-                                                        Filter = new ListTasksRequest.Types.Filter
-                                                                 {
-                                                                   SessionId = "SessionId",
-                                                                 },
-                                                        Sort = new ListTasksRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                                                                 Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                                                               },
-                                                      },
+      var req = new ListTasksRequest
+                {
+                  Page     = 0,
+                  PageSize = 2,
+                  Filter = new ListTasksRequest.Types.Filter
+                           {
+                             SessionId = "SessionId",
+                           },
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
+                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
+                         },
+                };
+
+      var validator = new ListTasksRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListTasksAsync(req,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
@@ -1053,21 +1066,27 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(new ListTasksRequest
-                                                      {
-                                                        Page     = 0,
-                                                        PageSize = 2,
-                                                        Filter = new ListTasksRequest.Types.Filter
-                                                                 {
-                                                                   SessionId = "SessionId",
-                                                                   Status    = TaskStatus.Completed,
-                                                                 },
-                                                        Sort = new ListTasksRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                                                                 Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                                                               },
-                                                      },
+      var req = new ListTasksRequest
+                {
+                  Page     = 0,
+                  PageSize = 2,
+                  Filter = new ListTasksRequest.Types.Filter
+                           {
+                             SessionId = "SessionId",
+                             Status    = TaskStatus.Completed,
+                           },
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
+                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
+                         },
+                };
+
+      var validator = new ListTasksRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListTasksAsync(req,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
@@ -1087,22 +1106,28 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(new ListTasksRequest
-                                                      {
-                                                        Page     = 0,
-                                                        PageSize = 2,
-                                                        Filter = new ListTasksRequest.Types.Filter
-                                                                 {
-                                                                   SessionId = "SessionId",
-                                                                   CreatedAfter =
-                                                                     Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow - TimeSpan.FromMinutes(1)),
-                                                                 },
-                                                        Sort = new ListTasksRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                                                                 Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                                                               },
-                                                      },
+      var req = new ListTasksRequest
+                {
+                  Page     = 0,
+                  PageSize = 2,
+                  Filter = new ListTasksRequest.Types.Filter
+                           {
+                             SessionId = "SessionId",
+                             CreatedAfter =
+                               Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow - TimeSpan.FromMinutes(1)),
+                           },
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
+                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
+                         },
+                };
+
+      var validator = new ListTasksRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListTasksAsync(req,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
@@ -1124,21 +1149,27 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(new ListTasksRequest
-                                                      {
-                                                        Page     = 0,
-                                                        PageSize = 2,
-                                                        Filter = new ListTasksRequest.Types.Filter
-                                                                 {
-                                                                   SessionId     = "SessionId",
-                                                                   CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-                                                                 },
-                                                        Sort = new ListTasksRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                                                                 Field     = ListTasksRequest.Types.OrderByField.SessionId,
-                                                               },
-                                                      },
+      var req = new ListTasksRequest
+                {
+                  Page     = 0,
+                  PageSize = 2,
+                  Filter = new ListTasksRequest.Types.Filter
+                           {
+                             SessionId     = "SessionId",
+                             CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                           },
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
+                           Field     = ListTasksRequest.Types.OrderByField.SessionId,
+                         },
+                };
+
+      var validator = new ListTasksRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListTasksAsync(req,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
@@ -1158,21 +1189,27 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(new ListTasksRequest
-                                                      {
-                                                        Page     = 0,
-                                                        PageSize = 2,
-                                                        Filter = new ListTasksRequest.Types.Filter
-                                                                 {
-                                                                   SessionId     = "SessionId",
-                                                                   CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-                                                                 },
-                                                        Sort = new ListTasksRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                                                 Field     = ListTasksRequest.Types.OrderByField.TaskId,
-                                                               },
-                                                      },
+      var req = new ListTasksRequest
+                {
+                  Page     = 0,
+                  PageSize = 2,
+                  Filter = new ListTasksRequest.Types.Filter
+                           {
+                             SessionId     = "SessionId",
+                             CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                           },
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                           Field     = ListTasksRequest.Types.OrderByField.TaskId,
+                         },
+                };
+
+      var validator = new ListTasksRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListTasksAsync(req,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
@@ -1198,21 +1235,27 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(new ListTasksRequest
-                                                      {
-                                                        Page     = 0,
-                                                        PageSize = 2,
-                                                        Filter = new ListTasksRequest.Types.Filter
-                                                                 {
-                                                                   SessionId     = "SessionId",
-                                                                   CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-                                                                 },
-                                                        Sort = new ListTasksRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListTasksRequest.Types.OrderDirection.Asc,
-                                                                 Field     = ListTasksRequest.Types.OrderByField.Status,
-                                                               },
-                                                      },
+      var req = new ListTasksRequest
+                {
+                  Page     = 0,
+                  PageSize = 2,
+                  Filter = new ListTasksRequest.Types.Filter
+                           {
+                             SessionId     = "SessionId",
+                             CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                           },
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = ListTasksRequest.Types.OrderDirection.Asc,
+                           Field     = ListTasksRequest.Types.OrderByField.Status,
+                         },
+                };
+
+      var validator = new ListTasksRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListTasksAsync(req,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 
@@ -1238,21 +1281,27 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      var listTasks = await TaskTable!.ListTasksAsync(new ListTasksRequest
-                                                      {
-                                                        Page     = 0,
-                                                        PageSize = 2,
-                                                        Filter = new ListTasksRequest.Types.Filter
-                                                                 {
-                                                                   SessionId     = "SessionId",
-                                                                   CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
-                                                                 },
-                                                        Sort = new ListTasksRequest.Types.Sort
-                                                               {
-                                                                 Direction = ListTasksRequest.Types.OrderDirection.Desc,
-                                                                 Field     = ListTasksRequest.Types.OrderByField.Status,
-                                                               },
-                                                      },
+      var req = new ListTasksRequest
+                {
+                  Page     = 0,
+                  PageSize = 2,
+                  Filter = new ListTasksRequest.Types.Filter
+                           {
+                             SessionId     = "SessionId",
+                             CreatedBefore = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(DateTime.UtcNow),
+                           },
+                  Sort = new ListTasksRequest.Types.Sort
+                         {
+                           Direction = ListTasksRequest.Types.OrderDirection.Desc,
+                           Field     = ListTasksRequest.Types.OrderByField.Status,
+                         },
+                };
+
+      var validator = new ListTasksRequestValidator();
+      Assert.IsTrue(validator.Validate(req)
+                             .IsValid);
+
+      var listTasks = await TaskTable!.ListTasksAsync(req,
                                                       CancellationToken.None)
                                       .ConfigureAwait(false);
 

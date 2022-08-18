@@ -38,7 +38,6 @@ using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
