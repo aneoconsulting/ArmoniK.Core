@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -94,4 +94,9 @@ public class HtcMock
   ///   if empty string
   /// </summary>
   public string TaskError { get; set; } = string.Empty;
+
+  /// <summary>
+  ///   Partition in which to submit the tasks
+  /// </summary>
+  public string Partition { get; set; } = string.Empty;
 }

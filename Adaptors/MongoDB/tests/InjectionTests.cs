@@ -50,9 +50,6 @@ internal class InjectionTests
                                                 "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
                                               },
                                               {
-                                                "Components:QueueStorage", "ArmoniK.Adapters.MongoDB.LockedQueueStorage"
-                                              },
-                                              {
                                                 "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
                                               },
                                               {
@@ -100,25 +97,16 @@ internal class InjectionTests
                                               {
                                                 $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:ChunkSize", "100000"
                                               },
-                                              {
-                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshPeriodicity", "00:20:00"
-                                              },
-                                              {
-                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:PollPeriodicity", "00:00:50"
-                                              },
-                                              {
-                                                $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.QueueStorage)}:LockRefreshExtension", "00:50:00"
-                                              },
                                             };
 
-    var logger = NullLogger.Instance;
+    var logger_ = NullLogger.Instance;
 
     configuration_ = new ConfigurationManager();
     configuration_.AddInMemoryCollection(baseConfig);
 
     var services = new ServiceCollection();
     services.AddMongoComponents(configuration_,
-                                logger);
+                                logger_);
     services.AddSingleton(ActivitySource);
     services.AddLogging();
     provider_ = services.BuildServiceProvider(new ServiceProviderOptions
@@ -129,27 +117,27 @@ internal class InjectionTests
 
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
 
-  private ServiceProvider?      provider_;
-  private ConfigurationManager? configuration_;
+  private ServiceProvider      provider_;
+  private ConfigurationManager configuration_;
 
   [Test]
   public void MongoDbOptionsNotNull()
   {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
+    var options = provider_.GetRequiredService<Options.MongoDB>();
     Assert.NotNull(options);
   }
 
   [Test]
   public void MongoDbOptionsValueNotNull()
   {
-    var options = configuration_!.GetRequiredValue<Options.MongoDB>(Options.MongoDB.SettingSection);
+    var options = configuration_.GetRequiredValue<Options.MongoDB>(Options.MongoDB.SettingSection);
     Assert.NotNull(options);
   }
 
   [Test]
   public void ReadMongoDbHost()
   {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
+    var options = provider_.GetRequiredService<Options.MongoDB>();
 
     Assert.AreEqual("localhost",
                     options.Host);
@@ -158,7 +146,7 @@ internal class InjectionTests
   [Test]
   public void ReadMongoDbUser()
   {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
+    var options = provider_.GetRequiredService<Options.MongoDB>();
 
     Assert.AreEqual("user",
                     options.User);
@@ -167,7 +155,7 @@ internal class InjectionTests
   [Test]
   public void ReadMongoDbPassword()
   {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
+    var options = provider_.GetRequiredService<Options.MongoDB>();
 
     Assert.AreEqual("password",
                     options.Password);
@@ -176,17 +164,16 @@ internal class InjectionTests
   [Test]
   public void ReadMongoDbCredentialsPath()
   {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
+    var options = provider_.GetRequiredService<Options.MongoDB>();
 
     Assert.AreEqual("",
                     options.CredentialsPath);
   }
 
   [Test]
-  // ReSharper disable once InconsistentNaming
   public void ReadMongoDbCAFile()
   {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
+    var options = provider_.GetRequiredService<Options.MongoDB>();
 
     Assert.AreEqual("",
                     options.CAFile);
@@ -195,7 +182,7 @@ internal class InjectionTests
   [Test]
   public void ReadMongoDbPort()
   {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
+    var options = provider_.GetRequiredService<Options.MongoDB>();
 
     Assert.AreEqual(3232,
                     options.Port);
@@ -204,7 +191,7 @@ internal class InjectionTests
   [Test]
   public void ReadMongoDbTls()
   {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
+    var options = provider_.GetRequiredService<Options.MongoDB>();
 
     Assert.AreEqual(true,
                     options.Tls);
@@ -213,7 +200,7 @@ internal class InjectionTests
   [Test]
   public void ReadMongoDbDatabaseName()
   {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
+    var options = provider_.GetRequiredService<Options.MongoDB>();
     Assert.AreEqual("database",
                     options.DatabaseName);
   }
@@ -221,7 +208,7 @@ internal class InjectionTests
   [Test]
   public void ReadMongoDbDataRetention()
   {
-    var options = provider_!.GetRequiredService<Options.MongoDB>();
+    var options = provider_.GetRequiredService<Options.MongoDB>();
 
     Assert.AreEqual(TimeSpan.FromDays(10),
                     options.DataRetention);
@@ -230,7 +217,7 @@ internal class InjectionTests
   [Test]
   public void TableOptionsNotNull()
   {
-    var options = provider_!.GetRequiredService<TableStorage>();
+    var options = provider_.GetRequiredService<TableStorage>();
 
     Assert.NotNull(options);
   }
@@ -238,7 +225,7 @@ internal class InjectionTests
   [Test]
   public void ReadTablePollingMinDelay()
   {
-    var options = provider_!.GetRequiredService<TableStorage>();
+    var options = provider_.GetRequiredService<TableStorage>();
 
     Assert.AreEqual(TimeSpan.FromSeconds(10),
                     options.PollingDelayMin);
@@ -247,7 +234,7 @@ internal class InjectionTests
   [Test]
   public void ReadTablePollingMaxDelay()
   {
-    var options = provider_!.GetRequiredService<TableStorage>();
+    var options = provider_.GetRequiredService<TableStorage>();
 
     Assert.AreEqual(TimeSpan.FromSeconds(20),
                     options.PollingDelayMax);
@@ -256,7 +243,7 @@ internal class InjectionTests
   [Test]
   public void ObjectOptionsNotNull()
   {
-    var options = provider_!.GetRequiredService<Options.ObjectStorage>();
+    var options = provider_.GetRequiredService<Options.ObjectStorage>();
 
     Assert.NotNull(options);
   }
@@ -264,51 +251,16 @@ internal class InjectionTests
   [Test]
   public void ReadObjectChunkSize()
   {
-    var options = provider_!.GetRequiredService<Options.ObjectStorage>();
+    var options = provider_.GetRequiredService<Options.ObjectStorage>();
 
     Assert.AreEqual(100000,
                     options.ChunkSize);
   }
 
   [Test]
-  public void QueueOptionsNotNull()
-  {
-    var options = provider_!.GetRequiredService<QueueStorage>();
-
-    Assert.NotNull(options);
-  }
-
-  [Test]
-  public void ReadQueueLockRefreshExtension()
-  {
-    var options = provider_!.GetRequiredService<QueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(50),
-                    options.LockRefreshExtension);
-  }
-
-  [Test]
-  public void ReadQueuePollPeriodicity()
-  {
-    var options = provider_!.GetRequiredService<QueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromSeconds(50),
-                    options.PollPeriodicity);
-  }
-
-  [Test]
-  public void ReadQueueLockRefreshPeriodicity()
-  {
-    var options = provider_!.GetRequiredService<QueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(20),
-                    options.LockRefreshPeriodicity);
-  }
-
-  [Test]
   public void BuildTableStorage()
   {
-    var table = provider_!.GetRequiredService<TableStorage>();
+    var table = provider_.GetRequiredService<TableStorage>();
 
     Assert.NotNull(table);
   }
@@ -316,7 +268,7 @@ internal class InjectionTests
   [Test]
   public void TableStorageHasPollingDelayMin()
   {
-    var table = provider_!.GetRequiredService<TableStorage>();
+    var table = provider_.GetRequiredService<TableStorage>();
 
     Assert.AreEqual(TimeSpan.FromSeconds(10),
                     table.PollingDelayMin);
@@ -325,7 +277,7 @@ internal class InjectionTests
   [Test]
   public void TableStorageHasPollingDelayMax()
   {
-    var table = provider_!.GetRequiredService<TableStorage>();
+    var table = provider_.GetRequiredService<TableStorage>();
 
     Assert.AreEqual(TimeSpan.FromSeconds(20),
                     table.PollingDelayMax);
@@ -334,60 +286,15 @@ internal class InjectionTests
   [Test]
   public void BuildObjectStorageFactory()
   {
-    var objectStorageFactory = provider_!.GetRequiredService<ObjectStorageFactory>();
+    var objectStorageFactory = provider_.GetRequiredService<ObjectStorageFactory>();
 
     Assert.NotNull(objectStorageFactory);
   }
 
   [Test]
-  public void BuildQueueStorage()
-  {
-    var queue = provider_!.GetRequiredService<LockedQueueStorage>();
-
-    Assert.NotNull(queue);
-  }
-
-  [Test]
-  public void QueueStorageHasLockRefreshExtension()
-  {
-    var queue = provider_!.GetRequiredService<LockedQueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(50),
-                    queue.LockRefreshExtension);
-  }
-
-  [Test]
-  public void QueueStorageHasPollPeriodicity()
-  {
-    var queue = provider_!.GetRequiredService<LockedQueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromSeconds(50),
-                    queue.PollPeriodicity);
-  }
-
-  [Test]
-  public void QueueStorageHasLockRefreshPeriodicity()
-  {
-    var queue = provider_!.GetRequiredService<LockedQueueStorage>();
-
-    Assert.AreEqual(TimeSpan.FromMinutes(20),
-                    queue.LockRefreshPeriodicity);
-  }
-
-  [Test]
-  public void QueueStorageHasBindingToQueueStorage()
-  {
-    var queueStorage = provider_!.GetRequiredService<ILockedQueueStorage>();
-
-    Assert.NotNull(queueStorage);
-    Assert.AreEqual(typeof(LockedQueueStorage),
-                    queueStorage.GetType());
-  }
-
-  [Test]
   public void ObjectStorageFactoryHasBindingToObjectStorageFactory()
   {
-    var objectStorage = provider_!.GetRequiredService<IObjectStorageFactory>();
+    var objectStorage = provider_.GetRequiredService<IObjectStorageFactory>();
 
     Assert.NotNull(objectStorage);
     Assert.AreEqual(typeof(ObjectStorageFactory),

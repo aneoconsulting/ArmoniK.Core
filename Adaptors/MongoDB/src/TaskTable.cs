@@ -31,12 +31,16 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
+
+using Armonik.Api.gRPC.V1.Tasks;
+
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Adapters.MongoDB.Table;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
@@ -44,6 +48,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
+using Task = System.Threading.Tasks.Task;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -378,6 +383,26 @@ public class TaskTable : ITaskTable
     {
       yield return taskId;
     }
+  }
+
+  public async Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
+                                                          CancellationToken cancellationToken)
+  {
+    using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
+    var       sessionHandle  = sessionProvider_.Get();
+    var       taskCollection = taskCollectionProvider_.Get();
+
+    var queryable = taskCollection.AsQueryable(sessionHandle)
+                                  .Where(request.Filter.ToTaskDataFilter());
+
+    var ordered = request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc
+                    ? queryable.OrderBy(request.Sort.ToTaskDataField())
+                    : queryable.OrderByDescending(request.Sort.ToTaskDataField());
+
+    return await ordered.Skip(request.Page * request.PageSize)
+                        .Take(request.PageSize)
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false);
   }
 
   public async Task SetTaskSuccessAsync(string            taskId,

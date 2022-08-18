@@ -83,9 +83,10 @@ public class AuthenticationIntegrationTest
     options_ = null;
   }
 
-  private const           string                 SessionId = "MySession";
-  private const           string                 TaskId    = "MyTask";
-  private const           string                 ResultKey = "ResultKey";
+  private const           string                 SessionId   = "MySession";
+  private const           string                 TaskId      = "MyTask";
+  private const           string                 ResultKey   = "ResultKey";
+  private const           string                 PartitionId = "PartitionId";
   private static readonly TaskFilter             TaskFilter;
   private static readonly CreateSmallTaskRequest CreateSmallTasksRequest;
   private static readonly CreateSessionRequest   CreateSessionRequest;
@@ -109,6 +110,7 @@ public class AuthenticationIntegrationTest
                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
                         MaxRetries  = 4,
                         Priority    = 2,
+                        PartitionId = PartitionId,
                       };
     var idsrequest = new TaskFilter.Types.IdsRequest();
     idsrequest.Ids.Add(TaskId);
@@ -131,6 +133,10 @@ public class AuthenticationIntegrationTest
                            {
                              Id                = SessionId,
                              DefaultTaskOption = taskOptions,
+                             PartitionIds =
+                             {
+                               PartitionId,
+                             },
                            };
     SessionRequest = new Session
                      {
@@ -808,6 +814,9 @@ public class AuthenticationIntegrationTest
       Assert.AreEqual(errorCode,
                       ((RpcException)exception!).StatusCode);
     }
+
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
   }
 
   public static async Task<CreateTaskReply> CreateLargeTask(AsyncClientStreamingCall<CreateLargeTaskRequest, CreateTaskReply> stream)
@@ -871,6 +880,9 @@ public class AuthenticationIntegrationTest
       Assert.AreEqual(errorCode,
                       ((RpcException)exception!).StatusCode);
     }
+
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
   }
 
   [TestCaseSource(nameof(GetTryGetResultStreamTestCases))]
@@ -906,5 +918,8 @@ public class AuthenticationIntegrationTest
       Assert.AreEqual(errorCode,
                       ((RpcException)exception!).StatusCode);
     }
+
+    await helper_.DeleteChannel()
+                 .ConfigureAwait(false);
   }
 }

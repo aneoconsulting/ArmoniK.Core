@@ -23,14 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Api.Worker.Utils;
+using ArmoniK.Extensions.Common.StreamWrapper.Tests.Server;
 
-namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Server;
-
-public static class Program
-{
-  public static void Main(string[] args)
-  {
-    var app = WorkerServer.Create<WorkerService>();
-    app.Run();
-  }
-}
+WorkerServer.Create<WorkerService>()
+            .Run();

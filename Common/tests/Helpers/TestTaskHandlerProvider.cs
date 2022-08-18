@@ -51,17 +51,18 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestTaskHandlerProvider : IDisposable
 {
-  private const           string         DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
-  private readonly        WebApplication app_;
-  private readonly        IMongoClient   client_;
-  private readonly        LoggerFactory  loggerFactory_;
-  private readonly        IResultTable   resultTable_;
-  private readonly        MongoDbRunner  runner_;
-  private readonly        ISessionTable  sessionTable_;
-  public readonly         ISubmitter     Submitter;
-  public readonly         TaskHandler    TaskHandler;
-  public readonly         ITaskTable     TaskTable;
+  private const           string          DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource  ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
+  private readonly        WebApplication  app_;
+  private readonly        IMongoClient    client_;
+  private readonly        LoggerFactory   loggerFactory_;
+  public readonly         IPartitionTable PartitionTable;
+  private readonly        IResultTable    resultTable_;
+  private readonly        MongoDbRunner   runner_;
+  private readonly        ISessionTable   sessionTable_;
+  public readonly         ISubmitter      Submitter;
+  public readonly         TaskHandler     TaskHandler;
+  public readonly         ITaskTable      TaskTable;
 
 
   public TestTaskHandlerProvider(IWorkerStreamHandler workerStreamHandler,
@@ -131,11 +132,12 @@ public class TestTaskHandlerProvider : IDisposable
 
     app_ = builder.Build();
 
-    resultTable_  = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable     = app_.Services.GetRequiredService<ITaskTable>();
-    sessionTable_ = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter     = app_.Services.GetRequiredService<ISubmitter>();
-    TaskHandler   = app_.Services.GetRequiredService<TaskHandler>();
+    resultTable_   = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
+    PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
+    sessionTable_  = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter      = app_.Services.GetRequiredService<ISubmitter>();
+    TaskHandler    = app_.Services.GetRequiredService<TaskHandler>();
 
     sessionTable_.Init(CancellationToken.None)
                  .Wait();

@@ -22,11 +22,11 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
     <PackageReference Include="AMQPNetLite.Core" Version="2.4.4" />
   </ItemGroup>
-	
+
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
-		
+
   <ItemGroup>
     <ProjectReference Include="..\..\Adaptors\MongoDB\src\ArmoniK.Core.Adapters.MongoDB.csproj" />
     <ProjectReference Include="..\src\ArmoniK.Core.Common.csproj" />

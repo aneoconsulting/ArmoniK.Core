@@ -23,14 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Api.Worker.Utils;
+using ArmoniK.Samples.HtcMock.Server;
 
-namespace ArmoniK.Samples.HtcMock.Server;
-
-public static class Program
-{
-  public static void Main(string[] args)
-  {
-    var app = WorkerServer.Create<SampleComputerService>();
-    app.Run();
-  }
-}
+WorkerServer.Create<SampleComputerService>()
+            .Run();
