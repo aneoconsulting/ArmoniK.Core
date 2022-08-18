@@ -45,7 +45,7 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public class DataPrefetcher : IInitializable
 {
-  private readonly ActivitySource          activitySource_;
+  private readonly ActivitySource?         activitySource_;
   private readonly ILogger<DataPrefetcher> logger_;
   private readonly IObjectStorageFactory   objectStorageFactory_;
 
@@ -58,7 +58,7 @@ public class DataPrefetcher : IInitializable
   /// <param name="activitySource">Activity source for tracing</param>
   /// <param name="logger">Logger used to print logs</param>
   public DataPrefetcher(IObjectStorageFactory   objectStorageFactory,
-                        ActivitySource          activitySource,
+                        ActivitySource?         activitySource,
                         ILogger<DataPrefetcher> logger)
   {
     objectStorageFactory_ = objectStorageFactory;
