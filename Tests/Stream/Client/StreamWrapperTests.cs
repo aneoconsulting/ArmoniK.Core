@@ -626,6 +626,7 @@ internal class StreamWrapperTests
                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
                         MaxRetries  = 3,
                         Priority    = priority,
+                        PartitionId = partition_,
                       };
     var taskRequestList = new List<TaskRequest>();
 
