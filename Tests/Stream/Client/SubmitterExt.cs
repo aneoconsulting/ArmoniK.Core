@@ -36,9 +36,9 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
 public static class SubmitterExt
 {
-  public static void CreateSessionAndCheckReply(this Submitter.SubmitterClient client,
-                                                string                         sessionId,
-                                                string                         partitionId)
+  public static void CreateSessionAndCheckReply(this Submitter.SubmitterClient? client,
+                                                string                          sessionId,
+                                                string                          partitionId)
   {
     var taskOptions = new TaskOptions
                       {
@@ -72,10 +72,10 @@ public static class SubmitterExt
     Console.WriteLine("Session Created");
   }
 
-  public static async Task CreateTasksAndCheckReplyAsync(this Submitter.SubmitterClient client,
-                                                         string                         sessionId,
-                                                         TaskOptions                    taskOptions,
-                                                         IEnumerable<TaskRequest>       taskRequestList)
+  public static async Task CreateTasksAndCheckReplyAsync(this Submitter.SubmitterClient? client,
+                                                         string                          sessionId,
+                                                         TaskOptions?                    taskOptions,
+                                                         IEnumerable<TaskRequest>        taskRequestList)
   {
     var createTaskReply = await client.CreateTasksAsync(sessionId,
                                                         taskOptions,
