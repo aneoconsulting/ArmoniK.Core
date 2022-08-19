@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
 //   J. Gurhem         <jgurhem@aneo.fr>
@@ -8,17 +8,17 @@
 //   F. Lemaitre       <flemaitre@aneo.fr>
 //   S. Djebbar        <sdjebbar@aneo.fr>
 //   J. Fonseca        <jfonseca@aneo.fr>
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -59,6 +59,10 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   {
     using var _ = logger_!.LogFunction();
 
+    /* Priority is handled using multiple queues; there should be at least one queue which
+     * is imposed via the restriction MaxPriority > 1. If a user tries to enqueue a message
+     * with priority larger or equal than MaxInternalQueuePriority, we put that message in
+     * the last queue and set its internal priority MaxInternalQueuePriority.*/
     var whichQueue = priority < MaxInternalQueuePriority
                        ? priority / MaxInternalQueuePriority
                        : NbLinks - 1;
@@ -66,8 +70,9 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                              ? priority % MaxInternalQueuePriority
                              : MaxInternalQueuePriority;
 
-    logger_!.LogDebug("Priority is {priority} ; will use queue #{queueId} with internal priority {internal priority}",
+    logger_!.LogDebug("Priority is {priority} ; will use queue {partitionId}###q{whichQueue} with internal priority {internal priority}",
                       priority,
+                      partitionId,
                       whichQueue,
                       internalPriority);
 
