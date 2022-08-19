@@ -45,7 +45,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   private readonly ILogger<PushQueueStorage>? logger_;
 
   public PushQueueStorage(Options.Amqp              options,
-                          ISessionAmqp              sessionAmqp,
+                          IPushSessionAmqp          sessionAmqp,
                           ILogger<PushQueueStorage> logger)
     : base(options,
            sessionAmqp)

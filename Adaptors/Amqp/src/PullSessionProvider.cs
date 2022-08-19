@@ -22,20 +22,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading.Tasks;
+using ArmoniK.Core.Common.Injection;
 
-using Amqp;
-
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
-public interface ISessionAmqp
+// ReSharper disable once ClassNeverInstantiated.Global
+public class PullSessionProvider : ProviderBase<PullSessionAmqp>
 {
-  public Session            Session { get; set; }
-  public Options.Amqp       Options { get; set; }
-  public ILogger            Logger  { get; set; }
-  public Task<ISessionAmqp> OpenConnection();
-  public HealthCheckResult  Check();
+  /// <inheritdoc />
+  public PullSessionProvider(Options.Amqp options,
+                             ILogger      logger)
+    : base(async () =>
+           {
+             var session = new PullSessionAmqp(options,
+                                               logger);
+             await session.OpenConnection()
+                          .ConfigureAwait(false);
+
+             return session;
+           })
+  {
+  }
 }

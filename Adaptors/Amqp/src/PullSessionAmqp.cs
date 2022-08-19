@@ -22,20 +22,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading.Tasks;
-
-using Amqp;
-
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
-public interface ISessionAmqp
+public class PullSessionAmqp : SessionAmqp, IPullSessionAmqp
 {
-  public Session            Session { get; set; }
-  public Options.Amqp       Options { get; set; }
-  public ILogger            Logger  { get; set; }
-  public Task<ISessionAmqp> OpenConnection();
-  public HealthCheckResult  Check();
+  public PullSessionAmqp(Options.Amqp options,
+                         ILogger      logger)
+    : base(options,
+           logger)
+  {
+  }
 }

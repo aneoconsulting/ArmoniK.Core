@@ -15,34 +15,15 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Injection;
-
-using Microsoft.Extensions.Logging;
-
 namespace ArmoniK.Core.Adapters.Amqp;
 
-// ReSharper disable once ClassNeverInstantiated.Global
-public class SessionProvider : ProviderBase<SessionAmqp>
+public interface IPullSessionAmqp : ISessionAmqp
 {
-  /// <inheritdoc />
-  public SessionProvider(Options.Amqp options,
-                         ILogger      logger)
-    : base(async () =>
-           {
-             var session = new SessionAmqp(options,
-                                           logger);
-             await session.OpenConnection()
-                          .ConfigureAwait(false);
-
-             return session;
-           })
-  {
-  }
 }
