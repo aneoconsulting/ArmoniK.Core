@@ -48,7 +48,7 @@ public class ChannelAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMes
   {
     readerChannel_ = readerChannel;
     writerChannel_ = writerChannel;
-    message_  = message;
+    message_       = message;
   }
 
   public IAsyncPipe<TWriteMessage, TReadMessage> Reverse
