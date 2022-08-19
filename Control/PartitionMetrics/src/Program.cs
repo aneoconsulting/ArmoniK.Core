@@ -126,5 +126,9 @@ public static class Program
                          "Host terminated unexpectedly");
       return 1;
     }
+    finally
+    {
+      Log.CloseAndFlush();
+    }
   }
 }
