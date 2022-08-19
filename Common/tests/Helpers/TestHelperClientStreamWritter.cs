@@ -45,5 +45,5 @@ internal class TestHelperClientStreamWriter<T> : IClientStreamWriter<T>
   public Task CompleteAsync()
     => Task.CompletedTask;
 
-  public WriteOptions WriteOptions { get; set; }
+  public WriteOptions? WriteOptions { get; set; }
 }

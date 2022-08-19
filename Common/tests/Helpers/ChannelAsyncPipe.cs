@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -32,6 +32,8 @@ using ArmoniK.Core.Common.Utils;
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class ChannelAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMessage, TWriteMessage>
+  where TWriteMessage : new()
+  where TReadMessage : new()
 {
   private readonly TReadMessage           message_;
   private readonly Channel<TReadMessage>  readerChannel_ = Channel.CreateUnbounded<TReadMessage>();
@@ -41,15 +43,18 @@ public class ChannelAsyncPipe<TReadMessage, TWriteMessage> : IAsyncPipe<TReadMes
     => message_ = message;
 
   private ChannelAsyncPipe(Channel<TReadMessage>  readerChannel,
-                           Channel<TWriteMessage> writerChannel)
+                           Channel<TWriteMessage> writerChannel,
+                           TReadMessage           message)
   {
     readerChannel_ = readerChannel;
     writerChannel_ = writerChannel;
+    message_  = message;
   }
 
   public IAsyncPipe<TWriteMessage, TReadMessage> Reverse
     => new ChannelAsyncPipe<TWriteMessage, TReadMessage>(writerChannel_,
-                                                         readerChannel_);
+                                                         readerChannel_,
+                                                         new TWriteMessage());
 
   public Task<TReadMessage> ReadAsync(CancellationToken cancellationToken)
     => Task.FromResult(message_);

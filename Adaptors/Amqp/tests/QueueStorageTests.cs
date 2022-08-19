@@ -49,7 +49,7 @@ public class QueueStorageTests
      * the later is defined in the  SimpleAmqpClientHelper class */
     => Options = CreateDefaultOptions();
 
-  public Options.Amqp Options { get; set; }
+  public Options.Amqp? Options;
 
   private static Options.Amqp CreateDefaultOptions()
     => new()
@@ -76,7 +76,7 @@ public class QueueStorageTests
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options,
+    var queueStorage = new QueueStorage(Options!,
                                         provider.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
@@ -147,9 +147,12 @@ public class QueueStorageTests
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    Assert.Throws<ArgumentOutOfRangeException>(() => new QueueStorage(options,
-                                                                      provider.Object,
-                                                                      NullLogger<QueueStorage>.Instance));
+    Assert.Throws<ArgumentOutOfRangeException>(() =>
+                                               {
+                                                 var _ = new QueueStorage(options,
+                                                                          provider.Object,
+                                                                          NullLogger<QueueStorage>.Instance);
+                                               });
   }
 
   [Test]
@@ -161,7 +164,7 @@ public class QueueStorageTests
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options,
+    var queueStorage = new QueueStorage(Options!,
                                         provider.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
@@ -189,7 +192,7 @@ public class QueueStorageTests
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options,
+    var queueStorage = new QueueStorage(Options!,
                                         provider.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)
@@ -217,7 +220,7 @@ public class QueueStorageTests
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var queueStorage = new QueueStorage(Options,
+    var queueStorage = new QueueStorage(Options!,
                                         provider.Object,
                                         NullLogger<QueueStorage>.Instance);
     await queueStorage.Init(CancellationToken.None)

@@ -48,7 +48,7 @@ public class SessionAmqp : ISessionAmqp
     retriesReconnect_ = options.MaxRetries;
   }
 
-  public Session     Session { get; set; }
+  public Session?     Session { get; set; }
   public Options.Amqp Options { get; set; }
 
   public ILogger Logger { get; set; }

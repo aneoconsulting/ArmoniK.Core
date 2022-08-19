@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -85,7 +85,6 @@ public class DataPrefetcher : IInitializable
   ///   Method used to prefetch data before executing a task
   /// </summary>
   /// <param name="taskData">Task metadata</param>
-  /// <param name="socketPath">Path to the socket used for receiving the requests from the worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Queue containing the request containing the data for the task which can be sent to the worker
@@ -95,7 +94,7 @@ public class DataPrefetcher : IInitializable
   public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData          taskData,
                                                                                   CancellationToken cancellationToken)
   {
-    using var activity = activitySource_.StartActivity();
+    using var activity = activitySource_?.StartActivity();
 
     var resultStorage  = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
     var payloadStorage = objectStorageFactory_.CreatePayloadStorage(taskData.SessionId);
