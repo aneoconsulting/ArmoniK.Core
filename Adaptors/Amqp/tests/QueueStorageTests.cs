@@ -242,7 +242,7 @@ public class QueueStorageTests
     var pullQueueStorage = new PullQueueStorage(Options,
                                                 provider.Object,
                                                 NullLogger<PullQueueStorage>.Instance);
- 
+
     var priority = 1;
     var testMessages = new[]
                        {
@@ -313,7 +313,7 @@ public class QueueStorageTests
                                                         CancellationToken.None);
 
       await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
-                                         .ConfigureAwait(false))
+                                        .ConfigureAwait(false))
       {
         Assert.IsTrue(qmh.Status == QueueMessageStatus.Waiting);
         qmh.Status = QueueMessageStatus.Processed;

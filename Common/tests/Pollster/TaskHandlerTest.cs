@@ -157,18 +157,18 @@ public class TaskHandlerTest
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var (requests, priority,whichPartitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
-                                                                               sessionId,
-                                                                               new TaskOptions
-                                                                               {
-                                                                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                                 MaxRetries  = 2,
-                                                                                 Priority    = 1,
-                                                                                 PartitionId = partitionId,
-                                                                               },
-                                                                               taskRequests.ToAsyncEnumerable(),
-                                                                               CancellationToken.None)
-                                                        .ConfigureAwait(false);
+    var (requests, priority, whichPartitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
+                                                                                                 sessionId,
+                                                                                                 new TaskOptions
+                                                                                                 {
+                                                                                                   MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
+                                                                                                   MaxRetries  = 2,
+                                                                                                   Priority    = 1,
+                                                                                                   PartitionId = partitionId,
+                                                                                                 },
+                                                                                                 taskRequests.ToAsyncEnumerable(),
+                                                                                                 CancellationToken.None)
+                                                                          .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
                                                              priority,
@@ -259,18 +259,18 @@ public class TaskHandlerTest
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var (requests, priority,partitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
-                                                                               sessionId,
-                                                                               new TaskOptions
-                                                                               {
-                                                                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                                 MaxRetries  = 2,
-                                                                                 Priority    = 1,
-                                                                                 PartitionId = partition1Id,
-                                                                               },
-                                                                               taskRequests.ToAsyncEnumerable(),
-                                                                               CancellationToken.None)
-                                                        .ConfigureAwait(false);
+    var (requests, priority, partitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
+                                                                                            sessionId,
+                                                                                            new TaskOptions
+                                                                                            {
+                                                                                              MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
+                                                                                              MaxRetries  = 2,
+                                                                                              Priority    = 1,
+                                                                                              PartitionId = partition1Id,
+                                                                                            },
+                                                                                            taskRequests.ToAsyncEnumerable(),
+                                                                                            CancellationToken.None)
+                                                                     .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
                                                              priority,
@@ -358,18 +358,18 @@ public class TaskHandlerTest
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var (requests, priority,partitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
-                                                                               sessionId,
-                                                                               new TaskOptions
-                                                                               {
-                                                                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                                 MaxRetries  = 2,
-                                                                                 Priority    = 1,
-                                                                                 PartitionId = partition1Id,
-                                                                               },
-                                                                               taskRequests.ToAsyncEnumerable(),
-                                                                               CancellationToken.None)
-                                                        .ConfigureAwait(false);
+    var (requests, priority, partitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
+                                                                                            sessionId,
+                                                                                            new TaskOptions
+                                                                                            {
+                                                                                              MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
+                                                                                              MaxRetries  = 2,
+                                                                                              Priority    = 1,
+                                                                                              PartitionId = partition1Id,
+                                                                                            },
+                                                                                            taskRequests.ToAsyncEnumerable(),
+                                                                                            CancellationToken.None)
+                                                                     .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
                                                              priority,
@@ -473,18 +473,18 @@ public class TaskHandlerTest
                                                       CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var (requests, priority,partitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
-                                                                               sessionId,
-                                                                               new TaskOptions
-                                                                               {
-                                                                                 MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                                                 MaxRetries  = 2,
-                                                                                 Priority    = 1,
-                                                                                 PartitionId = partition1Id,
-                                                                               },
-                                                                               taskRequests.ToAsyncEnumerable(),
-                                                                               CancellationToken.None)
-                                                        .ConfigureAwait(false);
+    var (requests, priority, partitionId) = await testServiceProvider.Submitter.CreateTasks(sessionId,
+                                                                                            sessionId,
+                                                                                            new TaskOptions
+                                                                                            {
+                                                                                              MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
+                                                                                              MaxRetries  = 2,
+                                                                                              Priority    = 1,
+                                                                                              PartitionId = partition1Id,
+                                                                                            },
+                                                                                            taskRequests.ToAsyncEnumerable(),
+                                                                                            CancellationToken.None)
+                                                                     .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
                                                              priority,

@@ -101,7 +101,7 @@ public class Pollster
   public async Task Init(CancellationToken cancellationToken)
   {
     await pullQueueStorage_.Init(cancellationToken)
-                       .ConfigureAwait(false);
+                           .ConfigureAwait(false);
     await dataPrefetcher_.Init(cancellationToken)
                          .ConfigureAwait(false);
     await workerStreamHandler_.Init(cancellationToken)
@@ -131,7 +131,7 @@ public class Pollster
 
         logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(pullQueueStorage_.PullMessagesAsync)}");
         var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
-                                                       cancellationToken);
+                                                           cancellationToken);
 
         await foreach (var message in messages.WithCancellation(cancellationToken)
                                               .ConfigureAwait(false))

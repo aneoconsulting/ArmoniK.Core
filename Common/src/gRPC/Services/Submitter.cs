@@ -53,10 +53,10 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class Submitter : ISubmitter
 {
   private readonly ActivitySource        activitySource_;
-  private readonly IPushQueueStorage     pushQueueStorage_;
   private readonly ILogger<Submitter>    logger_;
   private readonly IObjectStorageFactory objectStorageFactory_;
   private readonly IPartitionTable       partitionTable_;
+  private readonly IPushQueueStorage     pushQueueStorage_;
   private readonly IResultTable          resultTable_;
 
 
@@ -152,10 +152,10 @@ public class Submitter : ISubmitter
                                 cancellationToken);
 
     await pushQueueStorage_.PushMessagesAsync(taskIds,
-                                                partitionId,
-                                                priority,
-                                                cancellationToken)
-                             .ConfigureAwait(false);
+                                              partitionId,
+                                              priority,
+                                              cancellationToken)
+                           .ConfigureAwait(false);
 
     await taskTable_.FinalizeTaskCreation(taskIds,
                                           cancellationToken)

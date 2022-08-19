@@ -47,6 +47,10 @@ public class QueueStorage : IQueueStorage
   private readonly SortedList<MessageHandler, MessageHandler> queues_ = new(MessageComparer.Instance);
 
   /// <inheritdoc />
+  public string PartitionId
+    => "";
+
+  /// <inheritdoc />
   public ValueTask<bool> Check(HealthCheckTag tag)
     => ValueTask.FromResult(true);
 
@@ -57,10 +61,6 @@ public class QueueStorage : IQueueStorage
   /// <inheritdoc />
   public int MaxPriority
     => 100;
-
-  /// <inheritdoc />
-  public string PartitionId
-    => "";
 
   /// <inheritdoc />
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,

@@ -26,10 +26,9 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-
 namespace ArmoniK.Core.Common.Storage;
 
-public interface IPullQueueStorage: IQueueStorage
+public interface IPullQueueStorage : IQueueStorage
 {
   IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
                                                            [EnumeratorCancellation] CancellationToken cancellationToken = default);
