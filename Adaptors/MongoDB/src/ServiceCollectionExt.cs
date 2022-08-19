@@ -25,7 +25,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-using ArmoniK.Api.Worker.Utils;
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Common.Auth.Authentication;

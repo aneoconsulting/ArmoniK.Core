@@ -142,8 +142,6 @@ public static class Program
         app.UseDeveloperExceptionPage();
       }
 
-      app.UseSerilogRequestLogging();
-
       app.UseAuthentication();
 
       app.UseRouting();

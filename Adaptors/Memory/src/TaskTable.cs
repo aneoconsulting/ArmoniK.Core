@@ -30,11 +30,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Armonik.Api.gRPC.V1.Tasks;
 
-using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;

@@ -29,9 +29,9 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
-using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
