@@ -40,13 +40,14 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture(TestOf = typeof(TaskFilterExt))]
 internal class TaskFilterExtTests
 {
-  private static TaskOptions _taskOptions = new(new Dictionary<string, string>(),
-                                                TimeSpan.Zero,
-                                                0,
-                                                0,
-                                                "part1",
-                                                "ApplicationName",
-                                                "ApplicationVersion");
+  private static readonly TaskOptions _taskOptions = new(new Dictionary<string, string>(),
+                                                         TimeSpan.Zero,
+                                                         0,
+                                                         0,
+                                                         "part1",
+                                                         "ApplicationName",
+                                                         "ApplicationVersion");
+
   [Test]
   public void ShouldRecognizeSession()
   {

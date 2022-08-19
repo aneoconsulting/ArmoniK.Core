@@ -54,9 +54,9 @@ public static class ServiceCollectionExt
     {
       // ReSharper disable once InlineOutVariableDeclaration
       Options.Redis redisOptions;
-      serviceCollection.AddOption<Options.Redis>(configuration,
-                                                 Options.Redis.SettingSection,
-                                                 out redisOptions);
+      serviceCollection.AddOption(configuration,
+                                  Options.Redis.SettingSection,
+                                  out redisOptions);
 
       using var _ = logger.BeginNamedScope("Redis configuration",
                                            ("EndpointUrl", redisOptions.EndpointUrl));

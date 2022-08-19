@@ -84,7 +84,7 @@ internal class StreamWrapperTests
     var taskId    = Guid.NewGuid() + "mytask";
 
     client_!.CreateSessionAndCheckReply(sessionId,
-                                       partition_!);
+                                        partition_!);
 
     var payload = new TestPayload
                   {
@@ -106,12 +106,12 @@ internal class StreamWrapperTests
     Console.WriteLine("TaskRequest Created");
 
     await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                null,
-                                                new[]
-                                                {
-                                                  req,
-                                                })
-                 .ConfigureAwait(false);
+                                                 null,
+                                                 new[]
+                                                 {
+                                                   req,
+                                                 })
+                  .ConfigureAwait(false);
 
     var resultRequest = new ResultRequest
                         {
@@ -152,7 +152,7 @@ internal class StreamWrapperTests
     var taskId    = Guid.NewGuid() + "mytask";
 
     client_!.CreateSessionAndCheckReply(sessionId,
-                                       partition_!);
+                                        partition_!);
 
     var payload = new TestPayload
                   {
@@ -172,12 +172,12 @@ internal class StreamWrapperTests
     Console.WriteLine("TaskRequest Created");
 
     await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                null,
-                                                new[]
-                                                {
-                                                  req,
-                                                })
-                 .ConfigureAwait(false);
+                                                 null,
+                                                 new[]
+                                                 {
+                                                   req,
+                                                 })
+                  .ConfigureAwait(false);
 
     var resultRequest = new ResultRequest
                         {
@@ -197,7 +197,7 @@ internal class StreamWrapperTests
     var sessionId = Guid.NewGuid() + nameof(TaskFailed);
 
     client_!.CreateSessionAndCheckReply(sessionId,
-                                       partition_!);
+                                        partition_!);
 
     var payload = new TestPayload
                   {
@@ -224,9 +224,9 @@ internal class StreamWrapperTests
     Console.WriteLine("TaskRequest Created");
 
     await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                null,
-                                                taskRequests)
-                 .ConfigureAwait(false);
+                                                 null,
+                                                 taskRequests)
+                  .ConfigureAwait(false);
 
     var taskOutput = taskRequests.Select(request =>
                                          {
@@ -258,7 +258,7 @@ internal class StreamWrapperTests
     Console.WriteLine($"Type of task {taskType}");
 
     client_!.CreateSessionAndCheckReply(sessionId,
-                                       partition_!);
+                                        partition_!);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -288,9 +288,9 @@ internal class StreamWrapperTests
     Console.WriteLine("TaskRequest Created");
 
     await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                null,
-                                                taskRequestList)
-                 .ConfigureAwait(false);
+                                                 null,
+                                                 taskRequestList)
+                  .ConfigureAwait(false);
 
     var resultAvailability = taskRequestList.Select(request =>
                                                     {
@@ -346,7 +346,7 @@ internal class StreamWrapperTests
     var sessionId = Guid.NewGuid() + "-MultipleDatadependencies";
 
     client_!.CreateSessionAndCheckReply(sessionId,
-                                       partition_!);
+                                        partition_!);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -377,9 +377,9 @@ internal class StreamWrapperTests
     Console.WriteLine("TaskRequest Created");
 
     await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                null,
-                                                taskRequestList)
-                 .ConfigureAwait(false);
+                                                 null,
+                                                 taskRequestList)
+                  .ConfigureAwait(false);
 
     var resultAvailability1 = taskRequestList.Select(request =>
                                                      {
@@ -467,7 +467,7 @@ internal class StreamWrapperTests
     var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
 
     client_!.CreateSessionAndCheckReply(sessionId,
-                                       partition_!);
+                                        partition_!);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -505,9 +505,9 @@ internal class StreamWrapperTests
     Console.WriteLine("TaskRequest Created");
 
     await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                null,
-                                                taskRequestList)
-                 .ConfigureAwait(false);
+                                                 null,
+                                                 taskRequestList)
+                  .ConfigureAwait(false);
 
     var resultAvailability = taskRequestList.Select(request =>
                                                     {
@@ -555,25 +555,25 @@ internal class StreamWrapperTests
     var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
 
     client_!.CreateSessionAndCheckReply(sessionId,
-                                       partition_!);
+                                        partition_!);
 
     var taskId = nameof(LargePayloads) + "-" + Guid.NewGuid();
 
     await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                null,
-                                                new[]
-                                                {
-                                                  new TaskRequest
-                                                  {
-                                                    Id = taskId,
-                                                    ExpectedOutputKeys =
-                                                    {
-                                                      taskId,
-                                                    },
-                                                    Payload = ByteString.Empty,
-                                                  },
-                                                })
-                 .ConfigureAwait(false);
+                                                 null,
+                                                 new[]
+                                                 {
+                                                   new TaskRequest
+                                                   {
+                                                     Id = taskId,
+                                                     ExpectedOutputKeys =
+                                                     {
+                                                       taskId,
+                                                     },
+                                                     Payload = ByteString.Empty,
+                                                   },
+                                                 })
+                  .ConfigureAwait(false);
 
     var resultRequest = new ResultRequest
                         {
@@ -600,7 +600,7 @@ internal class StreamWrapperTests
     var sessionId = Guid.NewGuid() + "-" + nameof(PriorityShouldHaveAnEffect);
 
     client_!.CreateSessionAndCheckReply(sessionId,
-                                       partition_!);
+                                        partition_!);
 
     var tasks = Enumerable.Range(1,
                                  9)
@@ -655,9 +655,9 @@ internal class StreamWrapperTests
     }
 
     await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                taskOptions,
-                                                taskRequestList)
-                 .ConfigureAwait(false);
+                                                 taskOptions,
+                                                 taskRequestList)
+                  .ConfigureAwait(false);
 
     var resultAvailability = taskRequestList.Select(request =>
                                                     {
