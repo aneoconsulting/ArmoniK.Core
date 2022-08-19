@@ -82,6 +82,7 @@ public static class Program
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
+             .AddGrpcReflection()
              .ValidateGrpcRequests();
 
       builder.Services.AddHealthChecks();
