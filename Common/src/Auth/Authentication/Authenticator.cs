@@ -45,12 +45,18 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
 {
   public const string SectionName = nameof(Authenticator);
 
+  /// <summary>
+  ///   Default options used when no authentication is required
+  /// </summary>
   public static readonly AuthenticatorOptions DefaultNoAuth = new()
                                                               {
                                                                 RequireAuthentication = false,
                                                                 RequireAuthorization  = false,
                                                               };
 
+  /// <summary>
+  ///   Default options used when authentication and authorization are required
+  /// </summary>
   public static readonly AuthenticatorOptions DefaultAuth = new()
                                                             {
                                                               CNHeader                    = "X-Certificate-Client-CN",
@@ -61,6 +67,9 @@ public class AuthenticatorOptions : AuthenticationSchemeOptions
                                                               RequireAuthorization        = true,
                                                             };
 
+  /// <summary>
+  ///   Default options, will prevent launch as a fail-dead as it requires a proper configuration
+  /// </summary>
   public static readonly AuthenticatorOptions Default = new();
 
   // ReSharper disable once InconsistentNaming
@@ -133,8 +142,14 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     logger_    = loggerFactory.CreateLogger<Authenticator>();
   }
 
+  /// <summary>
+  ///   Function called by the Authentication middleware to get the authentication ticket for the user
+  /// </summary>
+  /// <returns></returns>
+  [UsedImplicitly]
   protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
   {
+    // Bypass if authentication is not required
     if (!requireAuthentication_)
     {
       return AuthenticateResult.Success(new AuthenticationTicket(DefaultUser,
@@ -151,11 +166,12 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                               fingerprint,
                                               impersonationId,
                                               impersonationUsername);
+    var keyHash = cacheKey.GetHashCode();
 
     var identity = cache_.Get(cacheKey);
     if (identity != null)
     {
-      logger_.LogDebug($"Found authenticated user {identity.UserName} in cache");
+      logger_.LogInformation($"Found authenticated user {identity.UserName} in cache. Authentication hashkey : {keyHash}.");
       return AuthenticateResult.Success(new AuthenticationTicket(identity,
                                                                  SchemeName));
     }
@@ -177,16 +193,20 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       return AuthenticateResult.Fail("Missing Certificate Headers");
     }
 
+    // Try to impersonate only if at least one of the impersonation headers is set
     if (impersonationId != null || impersonationUsername != null)
     {
+      // Only users with the impersonate permission can impersonate
       if (identity.HasClaim(c => c.Type == Permissions.Impersonate.Claim.Type))
       {
         try
         {
+          var prevIdentity = identity;
           identity = await GetImpersonatedIdentityAsync(identity,
                                                         impersonationId,
                                                         impersonationUsername)
                        .ConfigureAwait(false);
+          logger_.LogInformation($"User with id {prevIdentity.UserId} and name {prevIdentity.UserName} impersonated the user with id {identity.UserId} and name {identity.UserName}. Authentication key : {keyHash}");
         }
         catch (AuthenticationException e)
         {
@@ -201,11 +221,22 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
 
     cache_.Set(cacheKey,
                identity);
+    // Authentication hasn't been rejected, create the ticket and authenticate the user
     var ticket = new AuthenticationTicket(identity,
                                           SchemeName);
     return AuthenticateResult.Success(ticket);
   }
 
+  /// <summary>
+  ///   Get the UserIdentity from the CN and Fingerprint of a certificate
+  /// </summary>
+  /// <param name="cn">Common name of the certificate</param>
+  /// <param name="fingerprint">Fingerprint of the certificate</param>
+  /// <param name="cancellationToken">Cancellation token</param>
+  /// <returns>
+  ///   A UserIdentity object which can be used in authentication, corresponding to the certificate. Null if it
+  ///   doesn't correspond to any user.
+  /// </returns>
   public async Task<UserIdentity?> GetIdentityFromCertificateAsync(string            cn,
                                                                    string            fingerprint,
                                                                    CancellationToken cancellationToken = default)
@@ -227,6 +258,19 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                             SchemeName);
   }
 
+  /// <summary>
+  ///   Get the UserIdentity attempting to be impersonated by the user
+  /// </summary>
+  /// <param name="baseIdentity">UserIdentity trying to impersonate</param>
+  /// <param name="impersonationId">Id of the user being impersonated</param>
+  /// <param name="impersonationUsername">Username of the user being impersonated</param>
+  /// <param name="cancellationToken">Cancellation token</param>
+  /// <returns>The impersonated user's UserIdentity</returns>
+  /// <exception cref="AuthenticationException">
+  ///   Thrown when both id and username are missing,
+  ///   the impersonated user doesn't exist,
+  ///   or the impersonating user doesn't have the permissions to impersonate the specified user
+  /// </exception>
   public async Task<UserIdentity> GetImpersonatedIdentityAsync(UserIdentity      baseIdentity,
                                                                string?           impersonationId,
                                                                string?           impersonationUsername,
@@ -239,6 +283,10 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                                          impersonationUsername,
                                                          cancellationToken)
                                .ConfigureAwait(false);
+    }
+    else
+    {
+      throw new AuthenticationException("Impersonation headers are missing");
     }
 
     if (result == null)
@@ -260,6 +308,10 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
     throw new AuthenticationException("Certificate does not allow to impersonate the specified user (insufficient roles)");
   }
 
+  /// <summary>
+  /// </summary>
+  /// <param name="headerName"></param>
+  /// <returns></returns>
   private string? TryGetHeader(string headerName)
   {
     if (!string.IsNullOrEmpty(headerName) && Request.Headers.TryGetValue(headerName,
