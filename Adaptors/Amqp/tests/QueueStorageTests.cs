@@ -69,28 +69,6 @@ public class QueueStorageTests
        };
 
   [Test]
-  public async Task CreateQueueStorageShouldSucceed()
-  {
-    await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<ISessionAmqp>();
-
-    provider.Setup(sp => sp.Session)
-            .Returns(helper.Session);
-
-    var queueStorage = new QueueStorage(Options,
-                                        provider.Object);
-    await queueStorage.Init(CancellationToken.None)
-                      .ConfigureAwait(false);
-
-    Assert.IsTrue(await queueStorage.Check(HealthCheckTag.Liveness)
-                                    .ConfigureAwait(false));
-    Assert.IsTrue(await queueStorage.Check(HealthCheckTag.Readiness)
-                                    .ConfigureAwait(false));
-    Assert.IsTrue(await queueStorage.Check(HealthCheckTag.Startup)
-                                    .ConfigureAwait(false));
-  }
-
-  [Test]
   public async Task CreatePushQueueStorageShouldSucceed()
   {
     await using var helper   = new SimpleAmqpClientHelper();
@@ -99,18 +77,18 @@ public class QueueStorageTests
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var queueStorage = new PushQueueStorage(Options,
-                                            provider.Object,
-                                            NullLogger<PushQueueStorage>.Instance);
-    await queueStorage.Init(CancellationToken.None)
-                      .ConfigureAwait(false);
+    var pushQueueStorage = new PushQueueStorage(Options,
+                                                provider.Object,
+                                                NullLogger<PushQueueStorage>.Instance);
+    await pushQueueStorage.Init(CancellationToken.None)
+                          .ConfigureAwait(false);
 
-    Assert.IsTrue(await queueStorage.Check(HealthCheckTag.Liveness)
-                                    .ConfigureAwait(false));
-    Assert.IsTrue(await queueStorage.Check(HealthCheckTag.Readiness)
-                                    .ConfigureAwait(false));
-    Assert.IsTrue(await queueStorage.Check(HealthCheckTag.Startup)
-                                    .ConfigureAwait(false));
+    Assert.IsTrue(await pushQueueStorage.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false));
+    Assert.IsTrue(await pushQueueStorage.Check(HealthCheckTag.Readiness)
+                                        .ConfigureAwait(false));
+    Assert.IsTrue(await pushQueueStorage.Check(HealthCheckTag.Startup)
+                                        .ConfigureAwait(false));
   }
 
   [Test]
