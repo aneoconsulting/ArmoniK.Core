@@ -88,6 +88,7 @@ public static class Program
         app.UseDeveloperExceptionPage();
       }
 
+      app.UseSerilogRequestLogging();
       app.UseOpenTelemetryPrometheusScrapingEndpoint();
       app.UseRouting();
       app.UseHttpsRedirection();

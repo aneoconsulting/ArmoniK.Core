@@ -146,6 +146,7 @@ public static class Program
       app.UseRouting();
 
       app.UseAuthorization();
+      app.UseSerilogRequestLogging();
 
       app.MapGrpcService<GrpcSubmitterService>();
       app.MapGrpcService<GrpcTasksService>();
