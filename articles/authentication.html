@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Authentication and Authorization </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Authentication and Authorization ">
+    <meta name="generator" content="docfx 2.59.3.0">
+    
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles/docfx.vendor.css">
+    <link rel="stylesheet" href="../styles/docfx.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <meta property="docfx:navrel" content="../toc.html">
+    <meta property="docfx:tocrel" content="toc.html">
+    
+    
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+              <a class="navbar-brand" href="../index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="authentication-and-authorization">Authentication and Authorization</h1>
+
+<h2 id="user-authentication-in-armonik">User authentication in ArmoniK</h2>
+<p>ArmoniK supports user authentication to increase the level of security, to allow different kinds of access to allowed users and to record the usage of the system. It uses <strong>mTLS</strong> to authentify a user with their user certificate.
+This authentication is done at 2 levels :</p>
+<ul>
+<li><strong>Certificate level authentication</strong>: the ingress in front of ArmoniK checks the validity of the user certificate. If validated, it sends the Common Name (CN) and Fingerprint of the certificate as headers to the underlying service</li>
+<li><strong>Header level authentication</strong>: the received headers are checked against a user database. If the user exists, it is authenticated with the corresponding internal user identity.</li>
+</ul>
+<p>A user identity is the representation of a user and their permissions inside the system after the user has been authenticated. This authentication can be accomplished using either of the following schemes:</p>
+<ul>
+<li><strong>Certificate based scheme</strong>: the user identity corresponds to a specific certificate, which CN and Fingerprint are stored in the database.</li>
+<li><strong>CN based scheme</strong>: the user identity corresponds to the CN of a certificate. If the database contains an entry where only the CN is specified, it will match any valid certificate with this CN, unless it also matches an entry with both CN and Fingerprint in which case the Certificate Based Scheme has priority.</li>
+<li><strong>Impersonation scheme</strong>: the user identity corresponds to the user chosen via specific headers in the request. This is possible only if the certificate used matches a user, through a Certificate or CN scheme, who has the permissions required to impersonate the chosen user. See the <a href="#impersonation">Impersonation</a> section for details.</li>
+</ul>
+<h2 id="impersonation">Impersonation</h2>
+<p>ArmoniK allows users to impersonate other users by adding an impersonation header in their request. A user can use this feature if they already managed to pass a Certificate based scheme or a CN based scheme, then they must have impersonation permissions targetting <strong>all</strong> of the target's roles. If at least one of the roles of the target user is not covered by the base user's impersonate permissions, impersonation fails. If they can impersonate the target user, then the user identity used is the impersonated one. Permissions and roles of the original user are <strong>not</strong> inherited by the impersonated user. If a user attempts to impersonate a nonexistant user, or a user for which they don't have have the proper rights, the authentication fails and does not fall back to the base user. Subsequent API calls done after this impersonation are seen by the rest of the system as if it was the impersonated user who made them. Impersonation is logged for auditing purposes.</p>
+<h2 id="user-permissions">User permissions</h2>
+<p>ArmoniK uses a User-Role-Permission based approach to handle authorization. Each user in the database can have a set of <strong>Roles</strong>. Each role contains a set of <strong>Permissions</strong>. A user cannot receive permissions directly, instead roles containing the permissions have to be created and given to the user. A permission is defined as a string in a specific format.
+The current version handles the following types of permissions :
+|Format|Example|Parameters|Description|
+---|---|---|---|
+<code>General:Impersonate:&lt;Rolename&gt;</code>|<code>General:Impersonate:Monitoring</code>|<strong>Rolename</strong>: Name of a role|Grants the right to impersonate a user with the role named &lt;Rolename&gt;. See <a href="#impersonation">Impersonation</a> for details|
+|<code>&lt;Service&gt;:&lt;Name&gt;</code>|<code>Submitter:CreateSession</code>|<strong>Service</strong>: Name of an ArmoniK web service<br><strong>Name</strong>: Name of the endpoint|Grants the right to use the endpoint named &lt;Name&gt; of the service named &lt;Service&gt;|
+|<code>&lt;Service&gt;:&lt;Name&gt;:&lt;Target&gt;</code>|<code>Submitter:CancelSession:Self</code>|<strong>Service</strong>: Name of an ArmoniK web service<br><strong>Name</strong>: Name of the endpoint<br><strong>Target</strong>: Target or scope of the permission|Same as <code>&lt;Service&gt;:&lt;Name&gt;</code> as &lt;Target&gt; is currently unused|</p>
+<h2 id="user-authorization">User authorization</h2>
+<p>When an user sends a request to an endpoint, they need to be authenticated, and they need the permission to use this endpoint. If they lack the permission, then they will be forbidden from using it.</p>
+<h2 id="request-authorization-flowchart">Request authorization flowchart</h2>
+<pre><code class="lang-mermaid">flowchart LR
+    User([User Certificate])
+    OK(OK)
+    DENIED(PERMISSION DENIED)
+    UNAUTHENTICATED(UNAUTHENTICATED)
+    User --&gt; Nginx{Nginx validates\nthe certificate}
+    Nginx --&gt; |Yes|Cache{User is already\nauthenticated}
+    Nginx --&gt; |No|UNAUTHENTICATED
+    Cache --&gt; |No|Exists{User is found\nin the database}
+    Exists --&gt; |No|UNAUTHENTICATED
+    Exists --&gt; |Yes|Identity(Identity =\n User Identity)
+    Identity --&gt; Impersonation{Impersonation\nheaders are set}
+    Impersonation --&gt; |Yes|CheckImp{Impersonated\nuser exists and base\n user can impersonate\n them}
+    CheckImp --&gt; |Yes|NewIdentity(Identity =\n Impersonated Identity)
+    NewIdentity --&gt; CheckPerm{User has enough\npermission to\ncall endpoint}
+    Impersonation --&gt; |No|CheckPerm
+    CheckImp --&gt; |No|UNAUTHENTICATED
+    CheckPerm --&gt; |No|DENIED
+    CheckPerm --&gt; |Yes|OK
+    Cache --&gt; |Yes|CheckPerm
+</code></pre>
+<h2 id="user-administration">User administration</h2>
+<p>Users, roles, permissions and certificates are stored and managed in a database. Administrators in charge of handling user permissions can refer to this section to manage user permissions.</p>
+<h3 id="authentication-database-deployments">Authentication database deployments</h3>
+<p>The following database deployments can be used to handle authentication data :</p>
+<ul>
+<li>Internal MongoDB</li>
+<li>External MongoDB (Currently not supported)</li>
+<li>External SQL (Currently not supported)</li>
+</ul>
+<h3 id="using-mongodb-directly">Using MongoDB directly</h3>
+<blockquote>
+<p><strong>NOTE :</strong> Using a MongoDB instance different from the one used in the rest of ArmoniK is currently not supported</p>
+</blockquote>
+<blockquote>
+<p><strong>NOTE :</strong> If the deployment used is the internal MongoDB, to send commands to the database you need to use a script like the one available <a href="https://github.com/aneoconsulting/ArmoniK/blob/main/tools/access-mongo.sh">here</a> to connect to the database.</p>
+</blockquote>
+<blockquote>
+<p><strong>NOTE :</strong> This method is available to anyone having access to the deployed cluster's secrets and an access to the MongoDB host and port. <strong>Use it at your own risk</strong>.</p>
+</blockquote>
+<p>In order to function properly, the MongoDB database needs to have the following collections:</p>
+<ul>
+<li>AuthData
+<ul>
+<li>Handles the association between certificates and users</li>
+<li>Requires the following fields:
+<ul>
+<li>UserId : _id field of the UserData object associated with this certificate</li>
+<li>CN : Certificate's Common name</li>
+<li>Fingerprint : null if this entry should match all certificates with the given CN, otherwise, the certificate's fingerprint</li>
+</ul>
+</li>
+<li>The CN and Fingerprint fields form a unique compound index.</li>
+</ul>
+</li>
+<li>UserData
+<ul>
+<li>Handles the association between a user and its roles</li>
+<li>Requires the following fields
+<ul>
+<li>Username : Unique user name</li>
+<li>Roles : list of objectIds, each matching the _id field in RoleData of the roles given to the user</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>RoleData
+<ul>
+<li>Handles the association between a role and its permissions</li>
+<li>Requires the following fields
+<ul>
+<li>RoleName : Unique role name</li>
+<li>Permissions : list of strings corresponding to the permissions of the role</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="insert-a-role">Insert a role</h4>
+<p>To insert a role with the name &quot;Role1&quot; granting the permissions &quot;Submitter:ListTasks&quot; and &quot;General:Impersonate:Role2&quot;, use the following command :
+<code>db.RoleData.insertOne({RoleName:&quot;Role1&quot;, Permissions:[&quot;Submitter:ListTasks&quot;, &quot;General:Impersonate:Role2&quot;]})</code>
+See the <a href="https://www.mongodb.com/docs/manual/reference/method/db.collection.insertOne/">MongoDB documentation</a> to get the RoleId (_id field) of the inserted role from the command's response.</p>
+<h4 id="insert-a-user">Insert a user</h4>
+<p>To insert a user with the name &quot;User1&quot; with the role &quot;Role1&quot;, use the following command :
+<code>db.UserData.insertOne({User:&quot;User1&quot;, Roles:[&quot;Role1&quot;]})</code>
+See the <a href="https://www.mongodb.com/docs/manual/reference/method/db.collection.insertOne/">MongoDB documentation</a> to get the UserId (_id field) of the inserted user from the command's response.</p>
+<h4 id="insert-a-certificate">Insert a certificate</h4>
+<p>To insert a certificate with Common Name &quot;CN1&quot; and Fingerprint &quot;FP1&quot; associated with the user with UserId &quot;62f4efe6d82645e26e09584f&quot;, use the following command :
+<code>db.AuthData.insertOne({UserId:&quot;62f4efe6d82645e26e09584f&quot;, CN:&quot;CN1&quot;, Fingerprint:&quot;FP1&quot;})</code>
+To insert an entry matching all certificates with Common Name &quot;CN1&quot; associated with user with UserId &quot;62f4efe6d82645e26e09584f&quot;, use the following command :
+<code>db.AuthData.insertOne({UserId:&quot;62f4efe6d82645e26e09584f&quot;, CN:&quot;CN1&quot;})</code></p>
+<h4 id="edit-a-userrolecertificate">Edit a user/role/certificate</h4>
+<p>Refer to <a href="https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/">this link</a> for the procedure to update MongoDB entries. When updating a Role's name, please make sure to also update the associated impersonation permission's value.</p>
+<h4 id="deleting-a-userrolecertificate">Deleting a user/role/certificate</h4>
+<p>Refer to <a href="https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndDelete/">this link</a> for the procedure to delete MongoDB entries.</p>
+<h3 id="using-sql-directly">Using SQL directly</h3>
+<p>Currently not implemented</p>
+<h3 id="using-the-user-administration-grpc-service">Using the User Administration gRPC service</h3>
+<p>Currently not implemented</p>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Documentation/articles/authentication.md/#L1" class="contribution-link">Improve this Doc</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In This Article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <!-- Required styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+    <script type="text/javascript" src="../styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+    <!-- Load v9.1.3 of Mermaid -->
+    <!-- Hash obtained via https://www.srihash.org/ -->
+    <script type="text/javascript" src="https://unpkg.com/mermaid@9.1.3/dist/mermaid.min.js" integrity="sha384-LnGjpNDrP4cp7MIk4CpRa/lPNclrf839ryYVFx1T1mPSV3RGAZ7nlBa7pqcyGY/K" crossorigin="anonymous"></script>
+    <!-- Initialize Mermaid -->
+    <script>
+        mermaid.initialize({
+            startOnLoad: false
+        });
+        mermaid.init(undefined, ".lang-mermaid");
+    </script>  </body>
+</html>

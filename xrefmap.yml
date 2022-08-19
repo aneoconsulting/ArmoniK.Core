@@ -1271,6 +1271,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.SessionTable.IsSessionCancelledAsync
   nameWithType: SessionTable.IsSessionCancelledAsync
+- uid: ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync(ListSessionsRequest,CancellationToken)
+  name: ListSessionsAsync(ListSessionsRequest, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_ListSessionsAsync_ListSessionsRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync(ListSessionsRequest,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync(ListSessionsRequest, CancellationToken)
+  nameWithType: SessionTable.ListSessionsAsync(ListSessionsRequest, CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.SessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
   name: ListSessionsAsync(SessionFilter, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_ListSessionsAsync_SessionFilter_CancellationToken_
@@ -1539,6 +1545,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.TaskTable.IsTaskCancelledAsync
   nameWithType: TaskTable.IsTaskCancelledAsync
+- uid: ArmoniK.Core.Adapters.Memory.TaskTable.ListTasksAsync(ListTasksRequest,CancellationToken)
+  name: ListTasksAsync(ListTasksRequest, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_ListTasksAsync_ListTasksRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.TaskTable.ListTasksAsync(ListTasksRequest,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.TaskTable.ListTasksAsync(ListTasksRequest, CancellationToken)
+  nameWithType: TaskTable.ListTasksAsync(ListTasksRequest, CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.TaskTable.ListTasksAsync(TaskFilter,CancellationToken)
   name: ListTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.TaskTable.html#ArmoniK_Core_Adapters_Memory_TaskTable_ListTasksAsync_TaskFilter_CancellationToken_
@@ -3114,6 +3126,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.IsSessionCancelledAsync
   nameWithType: SessionTable.IsSessionCancelledAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync(ListSessionsRequest,CancellationToken)
+  name: ListSessionsAsync(ListSessionsRequest, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_ListSessionsAsync_ListSessionsRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync(ListSessionsRequest,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync(ListSessionsRequest, CancellationToken)
+  nameWithType: SessionTable.ListSessionsAsync(ListSessionsRequest, CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
   name: ListSessionsAsync(SessionFilter, CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_ListSessionsAsync_SessionFilter_CancellationToken_
@@ -4018,6 +4036,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.IsTaskCancelledAsync
   nameWithType: TaskTable.IsTaskCancelledAsync
+- uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.ListTasksAsync(ListTasksRequest,CancellationToken)
+  name: ListTasksAsync(ListTasksRequest, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_ListTasksAsync_ListTasksRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.TaskTable.ListTasksAsync(ListTasksRequest,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.TaskTable.ListTasksAsync(ListTasksRequest, CancellationToken)
+  nameWithType: TaskTable.ListTasksAsync(ListTasksRequest, CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.TaskTable.ListTasksAsync(TaskFilter,CancellationToken)
   name: ListTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Adapters.MongoDB.TaskTable.html#ArmoniK_Core_Adapters_MongoDB_TaskTable_ListTasksAsync_TaskFilter_CancellationToken_
@@ -5557,19 +5581,6 @@ references:
   commentId: F:ArmoniK.Core.Common.Auth.Authorization.Permissions.Impersonate
   fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Impersonate
   nameWithType: Permissions.Impersonate
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Parse(System.String)
-  name: Parse(String)
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Parse_System_String_
-  commentId: M:ArmoniK.Core.Common.Auth.Authorization.Permissions.Parse(System.String)
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Parse(System.String)
-  nameWithType: Permissions.Parse(String)
-- uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Parse*
-  name: Parse
-  href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.html#ArmoniK_Core_Common_Auth_Authorization_Permissions_Parse_
-  commentId: Overload:ArmoniK.Core.Common.Auth.Authorization.Permissions.Parse
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Auth.Authorization.Permissions.Parse
-  nameWithType: Permissions.Parse
 - uid: ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission
   name: Permissions.Permission
   href: api/ArmoniK.Core.Common.Auth.Authorization.Permissions.Permission.html
@@ -6170,6 +6181,70 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.GrpcHealthCheckServiceBase.Check
   nameWithType: GrpcHealthCheckServiceBase.Check
+- uid: ArmoniK.Core.Common.gRPC.ListSessionsRequestExt
+  name: ListSessionsRequestExt
+  href: api/ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.html
+  commentId: T:ArmoniK.Core.Common.gRPC.ListSessionsRequestExt
+  fullName: ArmoniK.Core.Common.gRPC.ListSessionsRequestExt
+  nameWithType: ListSessionsRequestExt
+- uid: ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataField(ListSessionsRequest.Types.Sort)
+  name: ToSessionDataField(ListSessionsRequest.Types.Sort)
+  href: api/ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.html#ArmoniK_Core_Common_gRPC_ListSessionsRequestExt_ToSessionDataField_ListSessionsRequest_Types_Sort_
+  commentId: M:ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataField(ListSessionsRequest.Types.Sort)
+  fullName: ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataField(ListSessionsRequest.Types.Sort)
+  nameWithType: ListSessionsRequestExt.ToSessionDataField(ListSessionsRequest.Types.Sort)
+- uid: ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataField*
+  name: ToSessionDataField
+  href: api/ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.html#ArmoniK_Core_Common_gRPC_ListSessionsRequestExt_ToSessionDataField_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataField
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataField
+  nameWithType: ListSessionsRequestExt.ToSessionDataField
+- uid: ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataFilter(ListSessionsRequest.Types.Filter)
+  name: ToSessionDataFilter(ListSessionsRequest.Types.Filter)
+  href: api/ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.html#ArmoniK_Core_Common_gRPC_ListSessionsRequestExt_ToSessionDataFilter_ListSessionsRequest_Types_Filter_
+  commentId: M:ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataFilter(ListSessionsRequest.Types.Filter)
+  fullName: ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataFilter(ListSessionsRequest.Types.Filter)
+  nameWithType: ListSessionsRequestExt.ToSessionDataFilter(ListSessionsRequest.Types.Filter)
+- uid: ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataFilter*
+  name: ToSessionDataFilter
+  href: api/ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.html#ArmoniK_Core_Common_gRPC_ListSessionsRequestExt_ToSessionDataFilter_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataFilter
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.ListSessionsRequestExt.ToSessionDataFilter
+  nameWithType: ListSessionsRequestExt.ToSessionDataFilter
+- uid: ArmoniK.Core.Common.gRPC.ListTasksRequestExt
+  name: ListTasksRequestExt
+  href: api/ArmoniK.Core.Common.gRPC.ListTasksRequestExt.html
+  commentId: T:ArmoniK.Core.Common.gRPC.ListTasksRequestExt
+  fullName: ArmoniK.Core.Common.gRPC.ListTasksRequestExt
+  nameWithType: ListTasksRequestExt
+- uid: ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataField(ListTasksRequest.Types.Sort)
+  name: ToTaskDataField(ListTasksRequest.Types.Sort)
+  href: api/ArmoniK.Core.Common.gRPC.ListTasksRequestExt.html#ArmoniK_Core_Common_gRPC_ListTasksRequestExt_ToTaskDataField_ListTasksRequest_Types_Sort_
+  commentId: M:ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataField(ListTasksRequest.Types.Sort)
+  fullName: ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataField(ListTasksRequest.Types.Sort)
+  nameWithType: ListTasksRequestExt.ToTaskDataField(ListTasksRequest.Types.Sort)
+- uid: ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataField*
+  name: ToTaskDataField
+  href: api/ArmoniK.Core.Common.gRPC.ListTasksRequestExt.html#ArmoniK_Core_Common_gRPC_ListTasksRequestExt_ToTaskDataField_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataField
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataField
+  nameWithType: ListTasksRequestExt.ToTaskDataField
+- uid: ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataFilter(ListTasksRequest.Types.Filter)
+  name: ToTaskDataFilter(ListTasksRequest.Types.Filter)
+  href: api/ArmoniK.Core.Common.gRPC.ListTasksRequestExt.html#ArmoniK_Core_Common_gRPC_ListTasksRequestExt_ToTaskDataFilter_ListTasksRequest_Types_Filter_
+  commentId: M:ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataFilter(ListTasksRequest.Types.Filter)
+  fullName: ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataFilter(ListTasksRequest.Types.Filter)
+  nameWithType: ListTasksRequestExt.ToTaskDataFilter(ListTasksRequest.Types.Filter)
+- uid: ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataFilter*
+  name: ToTaskDataFilter
+  href: api/ArmoniK.Core.Common.gRPC.ListTasksRequestExt.html#ArmoniK_Core_Common_gRPC_ListTasksRequestExt_ToTaskDataFilter_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataFilter
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.ListTasksRequestExt.ToTaskDataFilter
+  nameWithType: ListTasksRequestExt.ToTaskDataFilter
 - uid: ArmoniK.Core.Common.gRPC.RpcExt
   name: RpcExt
   href: api/ArmoniK.Core.Common.gRPC.RpcExt.html
@@ -6490,6 +6565,67 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcAgentService.Stop
   nameWithType: GrpcAgentService.Stop
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService
+  name: GrpcSessionsService
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService
+  nameWithType: GrpcSessionsService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService})
+  name: GrpcSessionsService(ISessionTable, ILogger<GrpcSessionsService>)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService__ctor_ArmoniK_Core_Common_Storage_ISessionTable_ILogger_ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService__
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.#ctor(ArmoniK.Core.Common.Storage.ISessionTable,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService})
+  name.vb: GrpcSessionsService(ISessionTable, ILogger(Of GrpcSessionsService))
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GrpcSessionsService(ArmoniK.Core.Common.Storage.ISessionTable, ILogger<ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GrpcSessionsService(ArmoniK.Core.Common.Storage.ISessionTable, ILogger(Of ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService))
+  nameWithType: GrpcSessionsService.GrpcSessionsService(ISessionTable, ILogger<GrpcSessionsService>)
+  nameWithType.vb: GrpcSessionsService.GrpcSessionsService(ISessionTable, ILogger(Of GrpcSessionsService))
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.#ctor*
+  name: GrpcSessionsService
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GrpcSessionsService
+  nameWithType: GrpcSessionsService.GrpcSessionsService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CancelSession(CancelSessionRequest,ServerCallContext)
+  name: CancelSession(CancelSessionRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService_CancelSession_CancelSessionRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CancelSession(CancelSessionRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CancelSession(CancelSessionRequest, ServerCallContext)
+  nameWithType: GrpcSessionsService.CancelSession(CancelSessionRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CancelSession*
+  name: CancelSession
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService_CancelSession_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CancelSession
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.CancelSession
+  nameWithType: GrpcSessionsService.CancelSession
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GetSession(GetSessionRequest,ServerCallContext)
+  name: GetSession(GetSessionRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService_GetSession_GetSessionRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GetSession(GetSessionRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GetSession(GetSessionRequest, ServerCallContext)
+  nameWithType: GrpcSessionsService.GetSession(GetSessionRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GetSession*
+  name: GetSession
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService_GetSession_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GetSession
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.GetSession
+  nameWithType: GrpcSessionsService.GetSession
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.ListSessions(ListSessionsRequest,ServerCallContext)
+  name: ListSessions(ListSessionsRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService_ListSessions_ListSessionsRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.ListSessions(ListSessionsRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.ListSessions(ListSessionsRequest, ServerCallContext)
+  nameWithType: GrpcSessionsService.ListSessions(ListSessionsRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.ListSessions*
+  name: ListSessions
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSessionsService_ListSessions_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.ListSessions
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSessionsService.ListSessions
+  nameWithType: GrpcSessionsService.ListSessions
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions
   name: GrpcSubmitterExtensions
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterExtensions.html
@@ -6735,6 +6871,54 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.WaitForCompletion
   nameWithType: GrpcSubmitterService.WaitForCompletion
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService
+  name: GrpcTasksService
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService
+  nameWithType: GrpcTasksService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.#ctor(ArmoniK.Core.Common.Storage.ITaskTable,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcTasksService})
+  name: GrpcTasksService(ITaskTable, ILogger<GrpcTasksService>)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService__ctor_ArmoniK_Core_Common_Storage_ITaskTable_ILogger_ArmoniK_Core_Common_gRPC_Services_GrpcTasksService__
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.#ctor(ArmoniK.Core.Common.Storage.ITaskTable,ILogger{ArmoniK.Core.Common.gRPC.Services.GrpcTasksService})
+  name.vb: GrpcTasksService(ITaskTable, ILogger(Of GrpcTasksService))
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GrpcTasksService(ArmoniK.Core.Common.Storage.ITaskTable, ILogger<ArmoniK.Core.Common.gRPC.Services.GrpcTasksService>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GrpcTasksService(ArmoniK.Core.Common.Storage.ITaskTable, ILogger(Of ArmoniK.Core.Common.gRPC.Services.GrpcTasksService))
+  nameWithType: GrpcTasksService.GrpcTasksService(ITaskTable, ILogger<GrpcTasksService>)
+  nameWithType.vb: GrpcTasksService.GrpcTasksService(ITaskTable, ILogger(Of GrpcTasksService))
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.#ctor*
+  name: GrpcTasksService
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GrpcTasksService
+  nameWithType: GrpcTasksService.GrpcTasksService
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetTask(GetTaskRequest,ServerCallContext)
+  name: GetTask(GetTaskRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService_GetTask_GetTaskRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetTask(GetTaskRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetTask(GetTaskRequest, ServerCallContext)
+  nameWithType: GrpcTasksService.GetTask(GetTaskRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetTask*
+  name: GetTask
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService_GetTask_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetTask
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.GetTask
+  nameWithType: GrpcTasksService.GetTask
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.ListTasks(ListTasksRequest,ServerCallContext)
+  name: ListTasks(ListTasksRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService_ListTasks_ListTasksRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.ListTasks(ListTasksRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.ListTasks(ListTasksRequest, ServerCallContext)
+  nameWithType: GrpcTasksService.ListTasks(ListTasksRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.ListTasks*
+  name: ListTasks
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.html#ArmoniK_Core_Common_gRPC_Services_GrpcTasksService_ListTasks_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.ListTasks
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcTasksService.ListTasks
+  nameWithType: GrpcTasksService.ListTasks
 - uid: ArmoniK.Core.Common.gRPC.Services.IAgent
   name: IAgent
   href: api/ArmoniK.Core.Common.gRPC.Services.IAgent.html
@@ -7560,6 +7744,44 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Validators.CreateSmallTaskRequestValidator.TaskRequestValidator.TaskRequestValidator
   nameWithType: CreateSmallTaskRequestValidator.TaskRequestValidator.TaskRequestValidator
+- uid: ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator
+  name: ListSessionsRequestValidator
+  href: api/ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator
+  fullName: ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator
+  nameWithType: ListSessionsRequestValidator
+- uid: ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator.#ctor
+  name: ListSessionsRequestValidator()
+  href: api/ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator.html#ArmoniK_Core_Common_gRPC_Validators_ListSessionsRequestValidator__ctor
+  commentId: M:ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator.#ctor
+  fullName: ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator.ListSessionsRequestValidator()
+  nameWithType: ListSessionsRequestValidator.ListSessionsRequestValidator()
+- uid: ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator.#ctor*
+  name: ListSessionsRequestValidator
+  href: api/ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator.html#ArmoniK_Core_Common_gRPC_Validators_ListSessionsRequestValidator__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Validators.ListSessionsRequestValidator.ListSessionsRequestValidator
+  nameWithType: ListSessionsRequestValidator.ListSessionsRequestValidator
+- uid: ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator
+  name: ListTasksRequestValidator
+  href: api/ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator.html
+  commentId: T:ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator
+  fullName: ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator
+  nameWithType: ListTasksRequestValidator
+- uid: ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator.#ctor
+  name: ListTasksRequestValidator()
+  href: api/ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator.html#ArmoniK_Core_Common_gRPC_Validators_ListTasksRequestValidator__ctor
+  commentId: M:ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator.#ctor
+  fullName: ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator.ListTasksRequestValidator()
+  nameWithType: ListTasksRequestValidator.ListTasksRequestValidator()
+- uid: ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator.#ctor*
+  name: ListTasksRequestValidator
+  href: api/ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator.html#ArmoniK_Core_Common_gRPC_Validators_ListTasksRequestValidator__ctor_
+  commentId: Overload:ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.gRPC.Validators.ListTasksRequestValidator.ListTasksRequestValidator
+  nameWithType: ListTasksRequestValidator.ListTasksRequestValidator
 - uid: ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator
   name: SessionFilterValidator
   href: api/ArmoniK.Core.Common.gRPC.Validators.SessionFilterValidator.html
@@ -9957,6 +10179,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ISessionTable.IsSessionCancelledAsync
   nameWithType: ISessionTable.IsSessionCancelledAsync
+- uid: ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync(ListSessionsRequest,CancellationToken)
+  name: ListSessionsAsync(ListSessionsRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_ListSessionsAsync_ListSessionsRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync(ListSessionsRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync(ListSessionsRequest, CancellationToken)
+  nameWithType: ISessionTable.ListSessionsAsync(ListSessionsRequest, CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.ISessionTable.ListSessionsAsync(SessionFilter,CancellationToken)
   name: ListSessionsAsync(SessionFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_ListSessionsAsync_SessionFilter_CancellationToken_
@@ -10183,6 +10411,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ITaskTable.IsTaskCancelledAsync
   nameWithType: ITaskTable.IsTaskCancelledAsync
+- uid: ArmoniK.Core.Common.Storage.ITaskTable.ListTasksAsync(ListTasksRequest,CancellationToken)
+  name: ListTasksAsync(ListTasksRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_ListTasksAsync_ListTasksRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ITaskTable.ListTasksAsync(ListTasksRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ITaskTable.ListTasksAsync(ListTasksRequest, CancellationToken)
+  nameWithType: ITaskTable.ListTasksAsync(ListTasksRequest, CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.ITaskTable.ListTasksAsync(TaskFilter,CancellationToken)
   name: ListTasksAsync(TaskFilter, CancellationToken)
   href: api/ArmoniK.Core.Common.Storage.ITaskTable.html#ArmoniK_Core_Common_Storage_ITaskTable_ListTasksAsync_TaskFilter_CancellationToken_
@@ -10834,6 +11068,24 @@ references:
   fullName.vb: ArmoniK.Core.Common.Storage.Output.Widening(ArmoniK.Core.Common.Storage.Output to ArmoniK.Api.gRPC.V1.Output)
   nameWithType: Output.Implicit(Output to Output)
   nameWithType.vb: Output.Widening(Output to Output)
+- uid: ArmoniK.Core.Common.Storage.Output.op_Implicit(ArmoniK.Core.Common.Storage.Output)~TaskRaw.Types.Output
+  name: Implicit(Output to TaskRaw.Types.Output)
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output_op_Implicit_ArmoniK_Core_Common_Storage_Output__TaskRaw_Types_Output
+  commentId: M:ArmoniK.Core.Common.Storage.Output.op_Implicit(ArmoniK.Core.Common.Storage.Output)~TaskRaw.Types.Output
+  name.vb: Widening(Output to TaskRaw.Types.Output)
+  fullName: ArmoniK.Core.Common.Storage.Output.Implicit(ArmoniK.Core.Common.Storage.Output to TaskRaw.Types.Output)
+  fullName.vb: ArmoniK.Core.Common.Storage.Output.Widening(ArmoniK.Core.Common.Storage.Output to TaskRaw.Types.Output)
+  nameWithType: Output.Implicit(Output to TaskRaw.Types.Output)
+  nameWithType.vb: Output.Widening(Output to TaskRaw.Types.Output)
+- uid: ArmoniK.Core.Common.Storage.Output.op_Implicit(TaskRaw.Types.Output)~ArmoniK.Core.Common.Storage.Output
+  name: Implicit(TaskRaw.Types.Output to Output)
+  href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output_op_Implicit_TaskRaw_Types_Output__ArmoniK_Core_Common_Storage_Output
+  commentId: M:ArmoniK.Core.Common.Storage.Output.op_Implicit(TaskRaw.Types.Output)~ArmoniK.Core.Common.Storage.Output
+  name.vb: Widening(TaskRaw.Types.Output to Output)
+  fullName: ArmoniK.Core.Common.Storage.Output.Implicit(TaskRaw.Types.Output to ArmoniK.Core.Common.Storage.Output)
+  fullName.vb: ArmoniK.Core.Common.Storage.Output.Widening(TaskRaw.Types.Output to ArmoniK.Core.Common.Storage.Output)
+  nameWithType: Output.Implicit(TaskRaw.Types.Output to Output)
+  nameWithType.vb: Output.Widening(TaskRaw.Types.Output to Output)
 - uid: ArmoniK.Core.Common.Storage.Output.op_Implicit*
   name: Implicit
   href: api/ArmoniK.Core.Common.Storage.Output.html#ArmoniK_Core_Common_Storage_Output_op_Implicit_
@@ -11400,6 +11652,34 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.SessionData.CreationDate
   nameWithType: SessionData.CreationDate
+- uid: ArmoniK.Core.Common.Storage.SessionData.op_Implicit(ArmoniK.Core.Common.Storage.SessionData)~SessionRaw
+  name: Implicit(SessionData to SessionRaw)
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_op_Implicit_ArmoniK_Core_Common_Storage_SessionData__SessionRaw
+  commentId: M:ArmoniK.Core.Common.Storage.SessionData.op_Implicit(ArmoniK.Core.Common.Storage.SessionData)~SessionRaw
+  name.vb: Widening(SessionData to SessionRaw)
+  fullName: ArmoniK.Core.Common.Storage.SessionData.Implicit(ArmoniK.Core.Common.Storage.SessionData to SessionRaw)
+  fullName.vb: ArmoniK.Core.Common.Storage.SessionData.Widening(ArmoniK.Core.Common.Storage.SessionData to SessionRaw)
+  nameWithType: SessionData.Implicit(SessionData to SessionRaw)
+  nameWithType.vb: SessionData.Widening(SessionData to SessionRaw)
+- uid: ArmoniK.Core.Common.Storage.SessionData.op_Implicit(ArmoniK.Core.Common.Storage.SessionData)~SessionSummary
+  name: Implicit(SessionData to SessionSummary)
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_op_Implicit_ArmoniK_Core_Common_Storage_SessionData__SessionSummary
+  commentId: M:ArmoniK.Core.Common.Storage.SessionData.op_Implicit(ArmoniK.Core.Common.Storage.SessionData)~SessionSummary
+  name.vb: Widening(SessionData to SessionSummary)
+  fullName: ArmoniK.Core.Common.Storage.SessionData.Implicit(ArmoniK.Core.Common.Storage.SessionData to SessionSummary)
+  fullName.vb: ArmoniK.Core.Common.Storage.SessionData.Widening(ArmoniK.Core.Common.Storage.SessionData to SessionSummary)
+  nameWithType: SessionData.Implicit(SessionData to SessionSummary)
+  nameWithType.vb: SessionData.Widening(SessionData to SessionSummary)
+- uid: ArmoniK.Core.Common.Storage.SessionData.op_Implicit*
+  name: Implicit
+  href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_op_Implicit_
+  commentId: Overload:ArmoniK.Core.Common.Storage.SessionData.op_Implicit
+  isSpec: "True"
+  name.vb: Widening
+  fullName: ArmoniK.Core.Common.Storage.SessionData.Implicit
+  fullName.vb: ArmoniK.Core.Common.Storage.SessionData.Widening
+  nameWithType: SessionData.Implicit
+  nameWithType.vb: SessionData.Widening
 - uid: ArmoniK.Core.Common.Storage.SessionData.Options
   name: Options
   href: api/ArmoniK.Core.Common.Storage.SessionData.html#ArmoniK_Core_Common_Storage_SessionData_Options
@@ -11606,6 +11886,34 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.TaskData.InitialTaskId
   nameWithType: TaskData.InitialTaskId
+- uid: ArmoniK.Core.Common.Storage.TaskData.op_Implicit(ArmoniK.Core.Common.Storage.TaskData)~Task
+  name: Implicit(TaskData to Task)
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_op_Implicit_ArmoniK_Core_Common_Storage_TaskData__Task
+  commentId: M:ArmoniK.Core.Common.Storage.TaskData.op_Implicit(ArmoniK.Core.Common.Storage.TaskData)~Task
+  name.vb: Widening(TaskData to Task)
+  fullName: ArmoniK.Core.Common.Storage.TaskData.Implicit(ArmoniK.Core.Common.Storage.TaskData to Task)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskData.Widening(ArmoniK.Core.Common.Storage.TaskData to Task)
+  nameWithType: TaskData.Implicit(TaskData to Task)
+  nameWithType.vb: TaskData.Widening(TaskData to Task)
+- uid: ArmoniK.Core.Common.Storage.TaskData.op_Implicit(ArmoniK.Core.Common.Storage.TaskData)~TaskRaw
+  name: Implicit(TaskData to TaskRaw)
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_op_Implicit_ArmoniK_Core_Common_Storage_TaskData__TaskRaw
+  commentId: M:ArmoniK.Core.Common.Storage.TaskData.op_Implicit(ArmoniK.Core.Common.Storage.TaskData)~TaskRaw
+  name.vb: Widening(TaskData to TaskRaw)
+  fullName: ArmoniK.Core.Common.Storage.TaskData.Implicit(ArmoniK.Core.Common.Storage.TaskData to TaskRaw)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskData.Widening(ArmoniK.Core.Common.Storage.TaskData to TaskRaw)
+  nameWithType: TaskData.Implicit(TaskData to TaskRaw)
+  nameWithType.vb: TaskData.Widening(TaskData to TaskRaw)
+- uid: ArmoniK.Core.Common.Storage.TaskData.op_Implicit*
+  name: Implicit
+  href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_op_Implicit_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskData.op_Implicit
+  isSpec: "True"
+  name.vb: Widening
+  fullName: ArmoniK.Core.Common.Storage.TaskData.Implicit
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskData.Widening
+  nameWithType: TaskData.Implicit
+  nameWithType.vb: TaskData.Widening
 - uid: ArmoniK.Core.Common.Storage.TaskData.Options
   name: Options
   href: api/ArmoniK.Core.Common.Storage.TaskData.html#ArmoniK_Core_Common_Storage_TaskData_Options
@@ -11781,15 +12089,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Storage.TaskOptions
   fullName: ArmoniK.Core.Common.Storage.TaskOptions
   nameWithType: TaskOptions
-- uid: ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32,System.String)
-  name: TaskOptions(IDictionary<String, String>, TimeSpan, Int32, Int32, String)
-  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions__ctor_IDictionary_System_String_System_String__TimeSpan_System_Int32_System_Int32_System_String_
-  commentId: M:ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32,System.String)
-  name.vb: TaskOptions(IDictionary(Of String, String), TimeSpan, Int32, Int32, String)
-  fullName: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions(IDictionary<System.String, System.String>, TimeSpan, System.Int32, System.Int32, System.String)
-  fullName.vb: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions(IDictionary(Of System.String, System.String), TimeSpan, System.Int32, System.Int32, System.String)
-  nameWithType: TaskOptions.TaskOptions(IDictionary<String, String>, TimeSpan, Int32, Int32, String)
-  nameWithType.vb: TaskOptions.TaskOptions(IDictionary(Of String, String), TimeSpan, Int32, Int32, String)
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32,System.String,System.String,System.String)
+  name: TaskOptions(IDictionary<String, String>, TimeSpan, Int32, Int32, String, String, String)
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions__ctor_IDictionary_System_String_System_String__TimeSpan_System_Int32_System_Int32_System_String_System_String_System_String_
+  commentId: M:ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32,System.String,System.String,System.String)
+  name.vb: TaskOptions(IDictionary(Of String, String), TimeSpan, Int32, Int32, String, String, String)
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions(IDictionary<System.String, System.String>, TimeSpan, System.Int32, System.Int32, System.String, System.String, System.String)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions(IDictionary(Of System.String, System.String), TimeSpan, System.Int32, System.Int32, System.String, System.String, System.String)
+  nameWithType: TaskOptions.TaskOptions(IDictionary<String, String>, TimeSpan, Int32, Int32, String, String, String)
+  nameWithType.vb: TaskOptions.TaskOptions(IDictionary(Of String, String), TimeSpan, Int32, Int32, String, String, String)
 - uid: ArmoniK.Core.Common.Storage.TaskOptions.#ctor*
   name: TaskOptions
   href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions__ctor_
@@ -11797,6 +12105,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions
   nameWithType: TaskOptions.TaskOptions
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationName
+  name: ApplicationName
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_ApplicationName
+  commentId: P:ArmoniK.Core.Common.Storage.TaskOptions.ApplicationName
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationName
+  nameWithType: TaskOptions.ApplicationName
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationName*
+  name: ApplicationName
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_ApplicationName_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.ApplicationName
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationName
+  nameWithType: TaskOptions.ApplicationName
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationVersion
+  name: ApplicationVersion
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_ApplicationVersion
+  commentId: P:ArmoniK.Core.Common.Storage.TaskOptions.ApplicationVersion
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationVersion
+  nameWithType: TaskOptions.ApplicationVersion
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationVersion*
+  name: ApplicationVersion
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_ApplicationVersion_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.ApplicationVersion
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationVersion
+  nameWithType: TaskOptions.ApplicationVersion
 - uid: ArmoniK.Core.Common.Storage.TaskOptions.MaxDuration
   name: MaxDuration
   href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_MaxDuration
@@ -14879,6 +15213,808 @@ references:
   commentId: F:ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskTable
   fullName: ArmoniK.Core.Common.Tests.Helpers.TestTaskHandlerProvider.TaskTable
   nameWithType: TestTaskHandlerProvider.TaskTable
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt
+  name: ArmoniK.Core.Common.Tests.ListSessionsRequestExt
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.html
+  commentId: N:ArmoniK.Core.Common.Tests.ListSessionsRequestExt
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt
+  nameWithType: ArmoniK.Core.Common.Tests.ListSessionsRequestExt
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest
+  name: ToSessionDataFieldTest
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest
+  nameWithType: ToSessionDataFieldTest
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCancelledAt
+  name: InvokeShouldReturnCancelledAt()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFieldTest_InvokeShouldReturnCancelledAt
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCancelledAt
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCancelledAt()
+  nameWithType: ToSessionDataFieldTest.InvokeShouldReturnCancelledAt()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCancelledAt*
+  name: InvokeShouldReturnCancelledAt
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFieldTest_InvokeShouldReturnCancelledAt_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCancelledAt
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCancelledAt
+  nameWithType: ToSessionDataFieldTest.InvokeShouldReturnCancelledAt
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCreationDate
+  name: InvokeShouldReturnCreationDate()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFieldTest_InvokeShouldReturnCreationDate
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCreationDate
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCreationDate()
+  nameWithType: ToSessionDataFieldTest.InvokeShouldReturnCreationDate()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCreationDate*
+  name: InvokeShouldReturnCreationDate
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFieldTest_InvokeShouldReturnCreationDate_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCreationDate
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnCreationDate
+  nameWithType: ToSessionDataFieldTest.InvokeShouldReturnCreationDate
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnSessionId
+  name: InvokeShouldReturnSessionId()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFieldTest_InvokeShouldReturnSessionId
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnSessionId
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnSessionId()
+  nameWithType: ToSessionDataFieldTest.InvokeShouldReturnSessionId()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnSessionId*
+  name: InvokeShouldReturnSessionId
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFieldTest_InvokeShouldReturnSessionId_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnSessionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnSessionId
+  nameWithType: ToSessionDataFieldTest.InvokeShouldReturnSessionId
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnStatus
+  name: InvokeShouldReturnStatus()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFieldTest_InvokeShouldReturnStatus
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnStatus
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnStatus()
+  nameWithType: ToSessionDataFieldTest.InvokeShouldReturnStatus()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnStatus*
+  name: InvokeShouldReturnStatus
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFieldTest_InvokeShouldReturnStatus_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFieldTest.InvokeShouldReturnStatus
+  nameWithType: ToSessionDataFieldTest.InvokeShouldReturnStatus
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest
+  name: ToSessionDataFilterTest
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest
+  nameWithType: ToSessionDataFilterTest
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldFail
+  name: FilterAppNameShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterAppNameShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldFail()
+  nameWithType: ToSessionDataFilterTest.FilterAppNameShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldFail*
+  name: FilterAppNameShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterAppNameShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldFail
+  nameWithType: ToSessionDataFilterTest.FilterAppNameShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldSucceed
+  name: FilterAppNameShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterAppNameShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldSucceed()
+  nameWithType: ToSessionDataFilterTest.FilterAppNameShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldSucceed*
+  name: FilterAppNameShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterAppNameShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppNameShouldSucceed
+  nameWithType: ToSessionDataFilterTest.FilterAppNameShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldFail
+  name: FilterAppVersionShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterAppVersionShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldFail()
+  nameWithType: ToSessionDataFilterTest.FilterAppVersionShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldFail*
+  name: FilterAppVersionShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterAppVersionShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldFail
+  nameWithType: ToSessionDataFilterTest.FilterAppVersionShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldSucceed
+  name: FilterAppVersionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterAppVersionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldSucceed()
+  nameWithType: ToSessionDataFilterTest.FilterAppVersionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldSucceed*
+  name: FilterAppVersionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterAppVersionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterAppVersionShouldSucceed
+  nameWithType: ToSessionDataFilterTest.FilterAppVersionShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldFail
+  name: FilterCancelledAfterShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCancelledAfterShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldFail()
+  nameWithType: ToSessionDataFilterTest.FilterCancelledAfterShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldFail*
+  name: FilterCancelledAfterShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCancelledAfterShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldFail
+  nameWithType: ToSessionDataFilterTest.FilterCancelledAfterShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldSucceed
+  name: FilterCancelledAfterShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCancelledAfterShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldSucceed()
+  nameWithType: ToSessionDataFilterTest.FilterCancelledAfterShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldSucceed*
+  name: FilterCancelledAfterShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCancelledAfterShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledAfterShouldSucceed
+  nameWithType: ToSessionDataFilterTest.FilterCancelledAfterShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldFail
+  name: FilterCancelledBeforeShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCancelledBeforeShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldFail()
+  nameWithType: ToSessionDataFilterTest.FilterCancelledBeforeShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldFail*
+  name: FilterCancelledBeforeShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCancelledBeforeShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldFail
+  nameWithType: ToSessionDataFilterTest.FilterCancelledBeforeShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldSucceed
+  name: FilterCancelledBeforeShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCancelledBeforeShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldSucceed()
+  nameWithType: ToSessionDataFilterTest.FilterCancelledBeforeShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldSucceed*
+  name: FilterCancelledBeforeShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCancelledBeforeShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCancelledBeforeShouldSucceed
+  nameWithType: ToSessionDataFilterTest.FilterCancelledBeforeShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldFail
+  name: FilterCreatedAfterShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCreatedAfterShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldFail()
+  nameWithType: ToSessionDataFilterTest.FilterCreatedAfterShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldFail*
+  name: FilterCreatedAfterShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCreatedAfterShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldFail
+  nameWithType: ToSessionDataFilterTest.FilterCreatedAfterShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldSucceed
+  name: FilterCreatedAfterShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCreatedAfterShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldSucceed()
+  nameWithType: ToSessionDataFilterTest.FilterCreatedAfterShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldSucceed*
+  name: FilterCreatedAfterShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCreatedAfterShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedAfterShouldSucceed
+  nameWithType: ToSessionDataFilterTest.FilterCreatedAfterShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldFail
+  name: FilterCreatedBeforeShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCreatedBeforeShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldFail()
+  nameWithType: ToSessionDataFilterTest.FilterCreatedBeforeShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldFail*
+  name: FilterCreatedBeforeShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCreatedBeforeShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldFail
+  nameWithType: ToSessionDataFilterTest.FilterCreatedBeforeShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldSucceed
+  name: FilterCreatedBeforeShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCreatedBeforeShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldSucceed()
+  nameWithType: ToSessionDataFilterTest.FilterCreatedBeforeShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldSucceed*
+  name: FilterCreatedBeforeShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterCreatedBeforeShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterCreatedBeforeShouldSucceed
+  nameWithType: ToSessionDataFilterTest.FilterCreatedBeforeShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldFail
+  name: FilterSessionIdShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterSessionIdShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldFail()
+  nameWithType: ToSessionDataFilterTest.FilterSessionIdShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldFail*
+  name: FilterSessionIdShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterSessionIdShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldFail
+  nameWithType: ToSessionDataFilterTest.FilterSessionIdShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldSucceed
+  name: FilterSessionIdShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterSessionIdShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldSucceed()
+  nameWithType: ToSessionDataFilterTest.FilterSessionIdShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldSucceed*
+  name: FilterSessionIdShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterSessionIdShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterSessionIdShouldSucceed
+  nameWithType: ToSessionDataFilterTest.FilterSessionIdShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldFail
+  name: FilterStatusShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterStatusShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldFail()
+  nameWithType: ToSessionDataFilterTest.FilterStatusShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldFail*
+  name: FilterStatusShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterStatusShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldFail
+  nameWithType: ToSessionDataFilterTest.FilterStatusShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldSucceed
+  name: FilterStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldSucceed()
+  nameWithType: ToSessionDataFilterTest.FilterStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldSucceed*
+  name: FilterStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestExt_ToSessionDataFilterTest_FilterStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestExt.ToSessionDataFilterTest.FilterStatusShouldSucceed
+  nameWithType: ToSessionDataFilterTest.FilterStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest
+  name: ListSessionsRequestValidatorTest
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest
+  nameWithType: ListSessionsRequestValidatorTest
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultFilterShouldFail
+  name: ListSessionsRequestDefaultFilterShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestDefaultFilterShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultFilterShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultFilterShouldFail()
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestDefaultFilterShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultFilterShouldFail*
+  name: ListSessionsRequestDefaultFilterShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestDefaultFilterShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultFilterShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultFilterShouldFail
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestDefaultFilterShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultSortShouldFail
+  name: ListSessionsRequestDefaultSortShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestDefaultSortShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultSortShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultSortShouldFail()
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestDefaultSortShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultSortShouldFail*
+  name: ListSessionsRequestDefaultSortShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestDefaultSortShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultSortShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestDefaultSortShouldFail
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestDefaultSortShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingDirectionShouldFail
+  name: ListSessionsRequestMissingDirectionShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestMissingDirectionShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingDirectionShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingDirectionShouldFail()
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestMissingDirectionShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingDirectionShouldFail*
+  name: ListSessionsRequestMissingDirectionShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestMissingDirectionShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingDirectionShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingDirectionShouldFail
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestMissingDirectionShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingFieldShouldFail
+  name: ListSessionsRequestMissingFieldShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestMissingFieldShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingFieldShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingFieldShouldFail()
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestMissingFieldShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingFieldShouldFail*
+  name: ListSessionsRequestMissingFieldShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestMissingFieldShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingFieldShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestMissingFieldShouldFail
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestMissingFieldShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageShouldFail
+  name: ListSessionsRequestNegativePageShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestNegativePageShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageShouldFail()
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageShouldFail*
+  name: ListSessionsRequestNegativePageShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestNegativePageShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageShouldFail
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageSizeShouldFail
+  name: ListSessionsRequestNegativePageSizeShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestNegativePageSizeShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageSizeShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageSizeShouldFail()
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageSizeShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageSizeShouldFail*
+  name: ListSessionsRequestNegativePageSizeShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestNegativePageSizeShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageSizeShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageSizeShouldFail
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestNegativePageSizeShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestShouldBeValid
+  name: ListSessionsRequestShouldBeValid()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestShouldBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestShouldBeValid()
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestShouldBeValid()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestShouldBeValid*
+  name: ListSessionsRequestShouldBeValid
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_ListSessionsRequestShouldBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestShouldBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.ListSessionsRequestShouldBeValid
+  nameWithType: ListSessionsRequestValidatorTest.ListSessionsRequestShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.Setup
+  name: Setup()
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_Setup
+  commentId: M:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.Setup
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.Setup()
+  nameWithType: ListSessionsRequestValidatorTest.Setup()
+- uid: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.Setup*
+  name: Setup
+  href: api/ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListSessionsRequestValidatorTest_Setup_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.Setup
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListSessionsRequestValidatorTest.Setup
+  nameWithType: ListSessionsRequestValidatorTest.Setup
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt
+  name: ArmoniK.Core.Common.Tests.ListTasksRequestExt
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.html
+  commentId: N:ArmoniK.Core.Common.Tests.ListTasksRequestExt
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt
+  nameWithType: ArmoniK.Core.Common.Tests.ListTasksRequestExt
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest
+  name: ToTaskDataFieldTest
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest
+  nameWithType: ToTaskDataFieldTest
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnCreationDate
+  name: InvokeShouldReturnCreationDate()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnCreationDate
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnCreationDate
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnCreationDate()
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnCreationDate()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnCreationDate*
+  name: InvokeShouldReturnCreationDate
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnCreationDate_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnCreationDate
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnCreationDate
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnCreationDate
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnEndedAt
+  name: InvokeShouldReturnEndedAt()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnEndedAt
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnEndedAt
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnEndedAt()
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnEndedAt()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnEndedAt*
+  name: InvokeShouldReturnEndedAt
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnEndedAt_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnEndedAt
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnEndedAt
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnEndedAt
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnSessionId
+  name: InvokeShouldReturnSessionId()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnSessionId
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnSessionId
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnSessionId()
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnSessionId()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnSessionId*
+  name: InvokeShouldReturnSessionId
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnSessionId_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnSessionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnSessionId
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnSessionId
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStartedAt
+  name: InvokeShouldReturnStartedAt()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnStartedAt
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStartedAt
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStartedAt()
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnStartedAt()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStartedAt*
+  name: InvokeShouldReturnStartedAt
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnStartedAt_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStartedAt
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStartedAt
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnStartedAt
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStatus
+  name: InvokeShouldReturnStatus()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnStatus
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStatus
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStatus()
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnStatus()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStatus*
+  name: InvokeShouldReturnStatus
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnStatus_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStatus
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnStatus
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnStatus
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnTaskId
+  name: InvokeShouldReturnTaskId()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnTaskId
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnTaskId
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnTaskId()
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnTaskId()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnTaskId*
+  name: InvokeShouldReturnTaskId
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFieldTest_InvokeShouldReturnTaskId_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnTaskId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFieldTest.InvokeShouldReturnTaskId
+  nameWithType: ToTaskDataFieldTest.InvokeShouldReturnTaskId
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest
+  name: ToTaskDataFilterTest
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest
+  nameWithType: ToTaskDataFilterTest
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldFail
+  name: FilterCreatedAfterShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterCreatedAfterShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldFail()
+  nameWithType: ToTaskDataFilterTest.FilterCreatedAfterShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldFail*
+  name: FilterCreatedAfterShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterCreatedAfterShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldFail
+  nameWithType: ToTaskDataFilterTest.FilterCreatedAfterShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldSucceed
+  name: FilterCreatedAfterShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterCreatedAfterShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldSucceed()
+  nameWithType: ToTaskDataFilterTest.FilterCreatedAfterShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldSucceed*
+  name: FilterCreatedAfterShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterCreatedAfterShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedAfterShouldSucceed
+  nameWithType: ToTaskDataFilterTest.FilterCreatedAfterShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldFail
+  name: FilterCreatedBeforeShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterCreatedBeforeShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldFail()
+  nameWithType: ToTaskDataFilterTest.FilterCreatedBeforeShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldFail*
+  name: FilterCreatedBeforeShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterCreatedBeforeShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldFail
+  nameWithType: ToTaskDataFilterTest.FilterCreatedBeforeShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldSucceed
+  name: FilterCreatedBeforeShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterCreatedBeforeShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldSucceed()
+  nameWithType: ToTaskDataFilterTest.FilterCreatedBeforeShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldSucceed*
+  name: FilterCreatedBeforeShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterCreatedBeforeShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterCreatedBeforeShouldSucceed
+  nameWithType: ToTaskDataFilterTest.FilterCreatedBeforeShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldFail
+  name: FilterEndedAfterShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterEndedAfterShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldFail()
+  nameWithType: ToTaskDataFilterTest.FilterEndedAfterShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldFail*
+  name: FilterEndedAfterShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterEndedAfterShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldFail
+  nameWithType: ToTaskDataFilterTest.FilterEndedAfterShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldSucceed
+  name: FilterEndedAfterShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterEndedAfterShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldSucceed()
+  nameWithType: ToTaskDataFilterTest.FilterEndedAfterShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldSucceed*
+  name: FilterEndedAfterShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterEndedAfterShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedAfterShouldSucceed
+  nameWithType: ToTaskDataFilterTest.FilterEndedAfterShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldFail
+  name: FilterEndedBeforeShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterEndedBeforeShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldFail()
+  nameWithType: ToTaskDataFilterTest.FilterEndedBeforeShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldFail*
+  name: FilterEndedBeforeShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterEndedBeforeShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldFail
+  nameWithType: ToTaskDataFilterTest.FilterEndedBeforeShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldSucceed
+  name: FilterEndedBeforeShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterEndedBeforeShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldSucceed()
+  nameWithType: ToTaskDataFilterTest.FilterEndedBeforeShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldSucceed*
+  name: FilterEndedBeforeShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterEndedBeforeShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterEndedBeforeShouldSucceed
+  nameWithType: ToTaskDataFilterTest.FilterEndedBeforeShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterSessionIdShouldSucceed
+  name: FilterSessionIdShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterSessionIdShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterSessionIdShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterSessionIdShouldSucceed()
+  nameWithType: ToTaskDataFilterTest.FilterSessionIdShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterSessionIdShouldSucceed*
+  name: FilterSessionIdShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterSessionIdShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterSessionIdShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterSessionIdShouldSucceed
+  nameWithType: ToTaskDataFilterTest.FilterSessionIdShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldFail
+  name: FilterStartedAfterShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStartedAfterShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldFail()
+  nameWithType: ToTaskDataFilterTest.FilterStartedAfterShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldFail*
+  name: FilterStartedAfterShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStartedAfterShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldFail
+  nameWithType: ToTaskDataFilterTest.FilterStartedAfterShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldSucceed
+  name: FilterStartedAfterShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStartedAfterShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldSucceed()
+  nameWithType: ToTaskDataFilterTest.FilterStartedAfterShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldSucceed*
+  name: FilterStartedAfterShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStartedAfterShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedAfterShouldSucceed
+  nameWithType: ToTaskDataFilterTest.FilterStartedAfterShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldFail
+  name: FilterStartedBeforeShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStartedBeforeShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldFail()
+  nameWithType: ToTaskDataFilterTest.FilterStartedBeforeShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldFail*
+  name: FilterStartedBeforeShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStartedBeforeShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldFail
+  nameWithType: ToTaskDataFilterTest.FilterStartedBeforeShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldSucceed
+  name: FilterStartedBeforeShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStartedBeforeShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldSucceed()
+  nameWithType: ToTaskDataFilterTest.FilterStartedBeforeShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldSucceed*
+  name: FilterStartedBeforeShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStartedBeforeShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStartedBeforeShouldSucceed
+  nameWithType: ToTaskDataFilterTest.FilterStartedBeforeShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldFail
+  name: FilterStatusShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStatusShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldFail()
+  nameWithType: ToTaskDataFilterTest.FilterStatusShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldFail*
+  name: FilterStatusShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStatusShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldFail
+  nameWithType: ToTaskDataFilterTest.FilterStatusShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldSucceed
+  name: FilterStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldSucceed()
+  nameWithType: ToTaskDataFilterTest.FilterStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldSucceed*
+  name: FilterStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterStatusShouldSucceed
+  nameWithType: ToTaskDataFilterTest.FilterStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterWrongSessionIdShouldFail
+  name: FilterWrongSessionIdShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterWrongSessionIdShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterWrongSessionIdShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterWrongSessionIdShouldFail()
+  nameWithType: ToTaskDataFilterTest.FilterWrongSessionIdShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterWrongSessionIdShouldFail*
+  name: FilterWrongSessionIdShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestExt_ToTaskDataFilterTest_FilterWrongSessionIdShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterWrongSessionIdShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestExt.ToTaskDataFilterTest.FilterWrongSessionIdShouldFail
+  nameWithType: ToTaskDataFilterTest.FilterWrongSessionIdShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest
+  name: ListTasksRequestValidatorTest
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html
+  commentId: T:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest
+  nameWithType: ListTasksRequestValidatorTest
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultFilterShouldFail
+  name: ListTasksRequestDefaultFilterShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestDefaultFilterShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultFilterShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultFilterShouldFail()
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestDefaultFilterShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultFilterShouldFail*
+  name: ListTasksRequestDefaultFilterShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestDefaultFilterShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultFilterShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultFilterShouldFail
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestDefaultFilterShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultSortShouldFail
+  name: ListTasksRequestDefaultSortShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestDefaultSortShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultSortShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultSortShouldFail()
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestDefaultSortShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultSortShouldFail*
+  name: ListTasksRequestDefaultSortShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestDefaultSortShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultSortShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestDefaultSortShouldFail
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestDefaultSortShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingDirectionShouldFail
+  name: ListTasksRequestMissingDirectionShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestMissingDirectionShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingDirectionShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingDirectionShouldFail()
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestMissingDirectionShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingDirectionShouldFail*
+  name: ListTasksRequestMissingDirectionShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestMissingDirectionShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingDirectionShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingDirectionShouldFail
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestMissingDirectionShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingFieldShouldFail
+  name: ListTasksRequestMissingFieldShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestMissingFieldShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingFieldShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingFieldShouldFail()
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestMissingFieldShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingFieldShouldFail*
+  name: ListTasksRequestMissingFieldShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestMissingFieldShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingFieldShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestMissingFieldShouldFail
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestMissingFieldShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageShouldFail
+  name: ListTasksRequestNegativePageShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestNegativePageShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageShouldFail()
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestNegativePageShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageShouldFail*
+  name: ListTasksRequestNegativePageShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestNegativePageShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageShouldFail
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestNegativePageShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageSizeShouldFail
+  name: ListTasksRequestNegativePageSizeShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestNegativePageSizeShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageSizeShouldFail
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageSizeShouldFail()
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestNegativePageSizeShouldFail()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageSizeShouldFail*
+  name: ListTasksRequestNegativePageSizeShouldFail
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestNegativePageSizeShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageSizeShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestNegativePageSizeShouldFail
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestNegativePageSizeShouldFail
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestShouldBeValid
+  name: ListTasksRequestShouldBeValid()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestShouldBeValid
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestShouldBeValid
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestShouldBeValid()
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestShouldBeValid()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestShouldBeValid*
+  name: ListTasksRequestShouldBeValid
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_ListTasksRequestShouldBeValid_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestShouldBeValid
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.ListTasksRequestShouldBeValid
+  nameWithType: ListTasksRequestValidatorTest.ListTasksRequestShouldBeValid
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.Setup
+  name: Setup()
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_Setup
+  commentId: M:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.Setup
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.Setup()
+  nameWithType: ListTasksRequestValidatorTest.Setup()
+- uid: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.Setup*
+  name: Setup
+  href: api/ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.html#ArmoniK_Core_Common_Tests_ListTasksRequestValidatorTest_Setup_
+  commentId: Overload:ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.Setup
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.ListTasksRequestValidatorTest.Setup
+  nameWithType: ListTasksRequestValidatorTest.Setup
 - uid: ArmoniK.Core.Common.Tests.ObjectStorageTestBase
   name: ObjectStorageTestBase
   href: api/ArmoniK.Core.Common.Tests.ObjectStorageTestBase.html
@@ -15879,6 +17015,58 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.IsSessionCancelledAsyncShouldSucceed
   nameWithType: SessionTableTestBase.IsSessionCancelledAsyncShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed
+  name: ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed()
+  nameWithType: SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed*
+  name: ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed
+  nameWithType: SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndSessionIdShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed
+  name: ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed()
+  nameWithType: SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed*
+  name: ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed
+  nameWithType: SessionTableTestBase.ListSessionAsyncFilterApplicationNameAndStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameShouldSucceed
+  name: ListSessionAsyncFilterApplicationNameShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncFilterApplicationNameShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameShouldSucceed()
+  nameWithType: SessionTableTestBase.ListSessionAsyncFilterApplicationNameShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameShouldSucceed*
+  name: ListSessionAsyncFilterApplicationNameShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncFilterApplicationNameShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncFilterApplicationNameShouldSucceed
+  nameWithType: SessionTableTestBase.ListSessionAsyncFilterApplicationNameShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncNoFilterShouldSucceed
+  name: ListSessionAsyncNoFilterShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncNoFilterShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncNoFilterShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncNoFilterShouldSucceed()
+  nameWithType: SessionTableTestBase.ListSessionAsyncNoFilterShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncNoFilterShouldSucceed*
+  name: ListSessionAsyncNoFilterShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncNoFilterShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncNoFilterShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncNoFilterShouldSucceed
+  nameWithType: SessionTableTestBase.ListSessionAsyncNoFilterShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.SessionTableTestBase.ListSessionAsyncShouldFail
   name: ListSessionAsyncShouldFail()
   href: api/ArmoniK.Core.Common.Tests.SessionTableTestBase.html#ArmoniK_Core_Common_Tests_SessionTableTestBase_ListSessionAsyncShouldFail
@@ -18070,6 +19258,110 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskShouldSucceed
   nameWithType: TaskTableTestBase.ListTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedAfterShouldSucceed
+  name: ListTaskWithRequestCreatedAfterShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestCreatedAfterShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedAfterShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedAfterShouldSucceed()
+  nameWithType: TaskTableTestBase.ListTaskWithRequestCreatedAfterShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedAfterShouldSucceed*
+  name: ListTaskWithRequestCreatedAfterShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestCreatedAfterShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedAfterShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedAfterShouldSucceed
+  nameWithType: TaskTableTestBase.ListTaskWithRequestCreatedAfterShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeShouldSucceed
+  name: ListTaskWithRequestCreatedBeforeShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestCreatedBeforeShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeShouldSucceed()
+  nameWithType: TaskTableTestBase.ListTaskWithRequestCreatedBeforeShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeShouldSucceed*
+  name: ListTaskWithRequestCreatedBeforeShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestCreatedBeforeShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeShouldSucceed
+  nameWithType: TaskTableTestBase.ListTaskWithRequestCreatedBeforeShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed
+  name: ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed()
+  nameWithType: TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed*
+  name: ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed
+  nameWithType: TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed
+  name: ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed()
+  nameWithType: TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed*
+  name: ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed
+  nameWithType: TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortAscTaskIdShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed
+  name: ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed()
+  nameWithType: TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed*
+  name: ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed
+  nameWithType: TaskTableTestBase.ListTaskWithRequestCreatedBeforeSortDescStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestLimit2ShouldSucceed
+  name: ListTaskWithRequestLimit2ShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestLimit2ShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestLimit2ShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestLimit2ShouldSucceed()
+  nameWithType: TaskTableTestBase.ListTaskWithRequestLimit2ShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestLimit2ShouldSucceed*
+  name: ListTaskWithRequestLimit2ShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestLimit2ShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestLimit2ShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestLimit2ShouldSucceed
+  nameWithType: TaskTableTestBase.ListTaskWithRequestLimit2ShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestShouldSucceed
+  name: ListTaskWithRequestShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestShouldSucceed()
+  nameWithType: TaskTableTestBase.ListTaskWithRequestShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestShouldSucceed*
+  name: ListTaskWithRequestShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestShouldSucceed
+  nameWithType: TaskTableTestBase.ListTaskWithRequestShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestTaskStatusShouldSucceed
+  name: ListTaskWithRequestTaskStatusShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestTaskStatusShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestTaskStatusShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestTaskStatusShouldSucceed()
+  nameWithType: TaskTableTestBase.ListTaskWithRequestTaskStatusShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestTaskStatusShouldSucceed*
+  name: ListTaskWithRequestTaskStatusShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_ListTaskWithRequestTaskStatusShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestTaskStatusShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestTaskStatusShouldSucceed
+  nameWithType: TaskTableTestBase.ListTaskWithRequestTaskStatusShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.PayloadIdAfterRetryShouldBeCorrect
   name: PayloadIdAfterRetryShouldBeCorrect()
   href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_PayloadIdAfterRetryShouldBeCorrect
