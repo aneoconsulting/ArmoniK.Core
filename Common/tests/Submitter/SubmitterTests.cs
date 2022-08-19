@@ -117,7 +117,7 @@ public class SubmitterTests
             .AddSingleton<IMongoClient>(client_)
             .AddLogging()
             .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
-            .AddSingleton<IQueueStorage, QueueStorage>();
+            .AddSingleton<IPushQueueStorage, PushQueueStorage>();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
                                                  {

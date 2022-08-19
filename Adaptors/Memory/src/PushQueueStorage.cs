@@ -26,7 +26,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,7 +34,7 @@ using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
-public class QueueStorage : IQueueStorage
+public class PushQueueStorage : IPushQueueStorage
 {
   private static readonly MessageHandler DefaultMessage = new();
 
@@ -61,44 +60,6 @@ public class QueueStorage : IQueueStorage
   /// <inheritdoc />
   public int MaxPriority
     => 100;
-
-  /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
-                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-  {
-    while (nbMessages > 0 && queues_.Any())
-    {
-      cancellationToken.ThrowIfCancellationRequested();
-      var (message, _) = queues_.FirstOrDefault(pair => pair.Key.IsVisible = true,
-                                                DefaultPair);
-      if (ReferenceEquals(message,
-                          DefaultMessage))
-      {
-        continue;
-      }
-
-      try
-      {
-        await message.Semaphore.WaitAsync(CancellationToken.None)
-                     .ConfigureAwait(false);
-        if (message.IsVisible)
-        {
-          message.IsVisible = false;
-          yield return message;
-        }
-        else
-        {
-          continue;
-        }
-      }
-      finally
-      {
-        message.Semaphore.Release();
-      }
-
-      nbMessages--;
-    }
-  }
 
   /// <inheritdoc />
   public Task PushMessagesAsync(IEnumerable<string> messages,
