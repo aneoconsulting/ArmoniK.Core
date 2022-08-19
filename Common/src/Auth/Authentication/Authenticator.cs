@@ -166,11 +166,12 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
                                               fingerprint,
                                               impersonationId,
                                               impersonationUsername);
+    var keyHash = cacheKey.GetHashCode();
 
     var identity = cache_.Get(cacheKey);
     if (identity != null)
     {
-      logger_.LogDebug($"Found authenticated user {identity.UserName} in cache");
+      logger_.LogInformation($"Found authenticated user {identity.UserName} in cache. Authentication hashkey : {keyHash}.");
       return AuthenticateResult.Success(new AuthenticationTicket(identity,
                                                                  SchemeName));
     }
@@ -200,10 +201,12 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
       {
         try
         {
+          var prevIdentity = identity;
           identity = await GetImpersonatedIdentityAsync(identity,
                                                         impersonationId,
                                                         impersonationUsername)
                        .ConfigureAwait(false);
+          logger_.LogInformation($"User with id {prevIdentity.UserId} and name {prevIdentity.UserName} impersonated the user with id {identity.UserId} and name {identity.UserName}. Authentication key : {keyHash}");
         }
         catch (AuthenticationException e)
         {
