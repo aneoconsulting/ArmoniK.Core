@@ -29,15 +29,11 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 
-using Microsoft.Extensions.Logging;
-
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueStorage : IQueueStorage
 {
   private const int MaxInternalQueuePriority = 10;
-
-  public readonly ILogger<QueueStorage>? logger_;
 
   public readonly int           NbLinks;
   public readonly Options.Amqp? Options;
@@ -45,9 +41,8 @@ public class QueueStorage : IQueueStorage
 
   public bool IsInitialized;
 
-  public QueueStorage(Options.Amqp          options,
-                      ISessionAmqp          sessionAmqp,
-                      ILogger<QueueStorage> logger)
+  public QueueStorage(Options.Amqp options,
+                      ISessionAmqp sessionAmqp)
   {
     if (string.IsNullOrEmpty(options.Host))
     {
@@ -95,10 +90,12 @@ public class QueueStorage : IQueueStorage
     Options     = options;
     MaxPriority = options.MaxPriority;
     PartitionId = options.PartitionId;
-    logger_     = logger;
 
     NbLinks = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
   }
+
+  /// <inheritdoc />
+  public string PartitionId { get; }
 
   /// <inheritdoc />
   public virtual Task Init(CancellationToken cancellationToken)
@@ -117,7 +114,4 @@ public class QueueStorage : IQueueStorage
 
   /// <inheritdoc />
   public int MaxPriority { get; }
-
-  /// <inheritdoc />
-  public string PartitionId { get; }
 }

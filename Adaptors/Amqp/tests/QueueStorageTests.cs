@@ -78,8 +78,7 @@ public class QueueStorageTests
             .Returns(helper.Session);
 
     var queueStorage = new QueueStorage(Options,
-                                        provider.Object,
-                                        NullLogger<QueueStorage>.Instance);
+                                        provider.Object);
     await queueStorage.Init(CancellationToken.None)
                       .ConfigureAwait(false);
 
@@ -195,8 +194,7 @@ public class QueueStorageTests
             .Returns(helper.Session);
 
     Assert.Throws<ArgumentOutOfRangeException>(() => new QueueStorage(options,
-                                                                      provider.Object,
-                                                                      NullLogger<QueueStorage>.Instance));
+                                                                      provider.Object));
   }
 
   [Test]

@@ -41,12 +41,10 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
-public class PullQueueStorage : IPullQueueStorage
+public class PullQueueStorage : QueueStorage, IPullQueueStorage
 {
-  private const int MaxInternalQueuePriority = 10;
-
   private readonly ILogger<PullQueueStorage> logger_;
-  
+
   private readonly AsyncLazy<IReceiverLink>[] receivers_;
   private readonly AsyncLazy<ISenderLink>[]   senders_;
 
@@ -55,56 +53,11 @@ public class PullQueueStorage : IPullQueueStorage
   public PullQueueStorage(Options.Amqp              options,
                           ISessionAmqp              sessionAmqp,
                           ILogger<PullQueueStorage> logger)
-
+    : base(options,
+           sessionAmqp)
   {
-    if (string.IsNullOrEmpty(options.Host))
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.Host)} is not defined.");
-    }
-
-    if (string.IsNullOrEmpty(options.User))
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.User)} is not defined.");
-    }
-
-    if (string.IsNullOrEmpty(options.Password))
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.Password)} is not defined.");
-    }
-
-    if (options.Port == 0)
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.Port)} is not defined.");
-    }
-
-    if (options.MaxRetries == 0)
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.Amqp.MaxRetries)} is not defined.");
-    }
-
-    if (options.MaxPriority < 1)
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"Minimum value for {nameof(Options.Amqp.MaxPriority)} is 1.");
-    }
-
-    if (options.LinkCredit < 1)
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"Minimum value for {nameof(Options.Amqp.LinkCredit)} is 1.");
-    }
-
-    logger_     = logger;
-    MaxPriority = options.MaxPriority;
-    var nbLinks    = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
-
     receivers_ = Enumerable.Range(0,
-                                  nbLinks)
+                                  NbLinks)
                            .Select(i => new AsyncLazy<IReceiverLink>(() =>
                                                                      {
                                                                        var rl = new ReceiverLink(sessionAmqp.Session,
@@ -122,21 +75,19 @@ public class PullQueueStorage : IPullQueueStorage
                            .ToArray();
 
     senders_ = Enumerable.Range(0,
-                                nbLinks)
+                                NbLinks)
                          .Select(i => new AsyncLazy<ISenderLink>(() => new SenderLink(sessionAmqp.Session,
                                                                                       $"{options.PartitionId}###SenderLink{i}",
                                                                                       $"{options.PartitionId}###q{i}")))
                          .ToArray();
+
+    logger_ = logger;
   }
 
-  /// <inheritdoc />
-  public ValueTask<bool> Check(HealthCheckTag tag)
+  public new ValueTask<bool> Check(HealthCheckTag tag)
     => ValueTask.FromResult(isInitialized_);
 
-  /// <inheritdoc />
-  public int MaxPriority { get; }
-  
-  public async Task Init(CancellationToken cancellationToken)
+  public override async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
