@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -55,12 +55,16 @@ public class FullyIntegratedTest
   [TearDown]
   public async Task TearDown()
   {
-    await helper_.StopServer()
-                 .ConfigureAwait(false);
+    if (helper_ != null)
+    {
+      await helper_.StopServer()
+                   .ConfigureAwait(false);
+    }
+
     helper_ = null;
   }
 
-  private GrpcSubmitterServiceHelper helper_;
+  private GrpcSubmitterServiceHelper? helper_;
 
 
   [Test]

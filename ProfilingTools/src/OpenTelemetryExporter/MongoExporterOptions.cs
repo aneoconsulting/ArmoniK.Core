@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -27,6 +27,7 @@ using System.Diagnostics;
 using System.Net.Http;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using OpenTelemetry;
 using OpenTelemetry.Trace;
@@ -66,5 +67,5 @@ public class MongoExporterOptions
   /// <summary>
   ///   Gets or sets the Logger. Can be null if not used.
   /// </summary>
-  public ILogger Logger { get; set; } = null;
+  public ILogger Logger { get; set; } = NullLogger.Instance;
 }

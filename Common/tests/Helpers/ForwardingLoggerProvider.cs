@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -30,11 +30,11 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-public delegate void LogMessage(LogLevel  logLevel,
-                                string    categoryName,
-                                EventId   eventId,
-                                string    message,
-                                Exception exception);
+public delegate void LogMessage(LogLevel   logLevel,
+                                string     categoryName,
+                                EventId    eventId,
+                                string     message,
+                                Exception? exception);
 
 internal class ForwardingLoggerProvider : ILoggerProvider
 {
@@ -71,11 +71,11 @@ internal class ForwardingLoggerProvider : ILoggerProvider
     public bool IsEnabled(LogLevel logLevel)
       => true;
 
-    public void Log<TState>(LogLevel                        logLevel,
-                            EventId                         eventId,
-                            TState                          state,
-                            Exception                       exception,
-                            Func<TState, Exception, string> formatter)
+    public void Log<TState>(LogLevel                         logLevel,
+                            EventId                          eventId,
+                            TState                           state,
+                            Exception?                       exception,
+                            Func<TState, Exception?, string> formatter)
       => logAction_(logLevel,
                     categoryName_,
                     eventId,

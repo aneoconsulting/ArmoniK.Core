@@ -53,5 +53,5 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
                                                                             },
                                                                  });
 
-  public IAsyncPipe<ProcessReply, ProcessRequest> Pipe { get; private set; }
+  public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
 }

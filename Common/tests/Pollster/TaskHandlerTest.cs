@@ -499,6 +499,11 @@ public class TaskHandlerTest
                                                                               {
                                                                                 new CreateTaskRequest(),
                                                                               });
+    if (agentHandler.Agent == null)
+    {
+      throw new NullReferenceException(nameof(agentHandler.Agent));
+    }
+
     await agentHandler.Agent.CreateTask(taskStreamReader,
                                         CancellationToken.None)
                       .ConfigureAwait(false);

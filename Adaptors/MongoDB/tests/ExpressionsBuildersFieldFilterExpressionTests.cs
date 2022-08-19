@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Adapters.MongoDB.Table;
@@ -31,12 +32,21 @@ using ArmoniK.Core.Common.Storage;
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 [TestFixture(TestOf = typeof(ExpressionsBuilders))]
 internal class ExpressionsBuildersFieldFilterExpressionTests
 {
+  private static readonly TaskOptions _taskOptions = new(new Dictionary<string, string>(),
+                                                         TimeSpan.Zero,
+                                                         0,
+                                                         0,
+                                                         "part1",
+                                                         "ApplicationName",
+                                                         "ApplicationVersion");
+
   [Test]
   public void ShouldRecognizeSession()
   {
@@ -46,6 +56,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                                                              "Session",
                                                                            })
                                   .Compile();
+
 
     var model = new TaskData("Session",
                              "TaskCompletedId",
@@ -65,7 +76,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -100,7 +111,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -136,7 +147,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -172,7 +183,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -208,7 +219,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -244,7 +255,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -280,7 +291,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -317,7 +328,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -352,7 +363,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -388,7 +399,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -424,7 +435,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -461,7 +472,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -496,7 +507,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -532,7 +543,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -568,7 +579,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -605,7 +616,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -640,7 +651,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -676,7 +687,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -712,7 +723,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -749,7 +760,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Canceled,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 

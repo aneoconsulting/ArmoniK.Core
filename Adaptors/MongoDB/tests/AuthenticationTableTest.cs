@@ -45,12 +45,12 @@ public class AuthenticationTableTest : AuthenticationTableTestBase
   public override void TearDown()
   {
     client_ = null;
-    runner_.Dispose();
+    runner_?.Dispose();
     RunTests = false;
   }
 
-  private                 MongoClient    client_;
-  private                 MongoDbRunner  runner_;
+  private                 MongoClient?   client_;
+  private                 MongoDbRunner? runner_;
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
 

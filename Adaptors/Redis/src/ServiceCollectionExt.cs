@@ -52,9 +52,11 @@ public static class ServiceCollectionExt
 
     if (components["ObjectStorage"] == "ArmoniK.Adapters.Redis.ObjectStorage")
     {
-      serviceCollection.AddOption<Options.Redis>(configuration,
-                                                 Options.Redis.SettingSection,
-                                                 out var redisOptions);
+      // ReSharper disable once InlineOutVariableDeclaration
+      Options.Redis redisOptions;
+      serviceCollection.AddOption(configuration,
+                                  Options.Redis.SettingSection,
+                                  out redisOptions);
 
       using var _ = logger.BeginNamedScope("Redis configuration",
                                            ("EndpointUrl", redisOptions.EndpointUrl));

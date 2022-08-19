@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -26,6 +26,8 @@ using System;
 
 using JetBrains.Annotations;
 
+// ReSharper disable InconsistentNaming
+
 namespace ArmoniK.Core.Adapters.MongoDB.Options;
 
 [PublicAPI]
@@ -39,29 +41,29 @@ public class MongoDB
 
   public bool DirectConnection { get; set; }
 
-  public string ReplicaSet { get; set; }
+  public string ReplicaSet { get; set; } = "";
 
-  public string Host { get; set; }
+  public string Host { get; set; } = "";
 
   public int Port { get; set; }
 
-  public string CAFile { get; set; }
+  public string CAFile { get; set; } = "";
 
-  public string CredentialsPath { get; set; }
+  public string CredentialsPath { get; set; } = "";
 
-  public string User { get; set; }
+  public string User { get; set; } = "";
 
-  public string Password { get; set; }
+  public string Password { get; set; } = "";
 
   public string DatabaseName { get; set; } = "ArmoniK";
 
   public TimeSpan DataRetention { get; set; } = TimeSpan.FromDays(15);
 
-  public TableStorage TableStorage { get; set; }
+  public TableStorage TableStorage { get; set; } = new();
 
-  public ObjectStorage ObjectStorage { get; set; }
+  public ObjectStorage ObjectStorage { get; set; } = new();
 
-  public QueueStorage QueueStorage { get; set; }
+  public QueueStorage QueueStorage { get; set; } = new();
 
   public int MaxConnectionPoolSize { get; set; } = 500;
 }

@@ -77,7 +77,7 @@ public class SampleComputerService : WorkerStreamWrapper
                                                          throw new KeyNotFoundException(armonikId);
                                                        }
 
-                                                       return Encoding.Default.GetString(data);
+                                                       return Encoding.Default.GetString(data!);
                                                      });
       logger_.LogDebug("Inputs {input}",
                        inputs);

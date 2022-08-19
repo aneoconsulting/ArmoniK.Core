@@ -51,9 +51,10 @@ public static class ServiceCollectionExt
 
     if (components["QueueStorage"] == "ArmoniK.Adapters.Amqp.QueueStorage")
     {
-      serviceCollection.AddOption<Options.Amqp>(configuration,
-                                                Options.Amqp.SettingSection,
-                                                out var amqpOptions);
+      Options.Amqp amqpOptions;
+      serviceCollection.AddOption(configuration,
+                                  Options.Amqp.SettingSection,
+                                  out amqpOptions);
       using var _ = logger.BeginNamedScope("AMQP configuration",
                                            ("host", amqpOptions.Host),
                                            ("port", amqpOptions.Port));
@@ -102,7 +103,7 @@ public static class ServiceCollectionExt
       var sessionProvider = new SessionProvider(amqpOptions,
                                                 logger);
 
-      serviceCollection.AddSingleton<ISessionAmqp, SessionAmqp>(sp => sessionProvider.Get());
+      serviceCollection.AddSingleton<ISessionAmqp, SessionAmqp>(_ => sessionProvider.Get());
 
       serviceCollection.AddSingleton<IQueueStorage, QueueStorage>();
 

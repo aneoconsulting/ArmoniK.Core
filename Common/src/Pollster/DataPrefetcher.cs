@@ -45,7 +45,7 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public class DataPrefetcher : IInitializable
 {
-  private readonly ActivitySource          activitySource_;
+  private readonly ActivitySource?         activitySource_;
   private readonly ILogger<DataPrefetcher> logger_;
   private readonly IObjectStorageFactory   objectStorageFactory_;
 
@@ -58,7 +58,7 @@ public class DataPrefetcher : IInitializable
   /// <param name="activitySource">Activity source for tracing</param>
   /// <param name="logger">Logger used to print logs</param>
   public DataPrefetcher(IObjectStorageFactory   objectStorageFactory,
-                        ActivitySource          activitySource,
+                        ActivitySource?         activitySource,
                         ILogger<DataPrefetcher> logger)
   {
     objectStorageFactory_ = objectStorageFactory;
@@ -85,7 +85,6 @@ public class DataPrefetcher : IInitializable
   ///   Method used to prefetch data before executing a task
   /// </summary>
   /// <param name="taskData">Task metadata</param>
-  /// <param name="socketPath">Path to the socket used for receiving the requests from the worker</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Queue containing the request containing the data for the task which can be sent to the worker
@@ -95,7 +94,7 @@ public class DataPrefetcher : IInitializable
   public async Task<Queue<ProcessRequest.Types.ComputeRequest>> PrefetchDataAsync(TaskData          taskData,
                                                                                   CancellationToken cancellationToken)
   {
-    using var activity = activitySource_.StartActivity();
+    using var activity = activitySource_?.StartActivity();
 
     var resultStorage  = objectStorageFactory_.CreateResultStorage(taskData.SessionId);
     var payloadStorage = objectStorageFactory_.CreatePayloadStorage(taskData.SessionId);

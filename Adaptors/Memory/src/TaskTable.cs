@@ -465,7 +465,8 @@ public class TaskTable : ITaskTable
                                                     {
                                                       if (data.OwnerPodId != ownerPodId)
                                                       {
-                                                        return null;
+                                                        throw new
+                                                          InvalidOperationException($"The task {taskId} is acquired by {data.OwnerPodId}, but release is done by {ownerPodId}.");
                                                       }
 
                                                       return data with
