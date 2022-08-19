@@ -620,14 +620,7 @@ references:
 - uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
   name: Options
   href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_Options
-  commentId: P:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
-  nameWithType: QueueStorageTests.Options
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options*
-  name: Options
-  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_Options_
-  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
-  isSpec: "True"
+  commentId: F:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
   fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
   nameWithType: QueueStorageTests.Options
 - uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullAsyncAsyncSucceeds
@@ -8445,15 +8438,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Pollster.DataPrefetcher
   fullName: ArmoniK.Core.Common.Pollster.DataPrefetcher
   nameWithType: DataPrefetcher
-- uid: ArmoniK.Core.Common.Pollster.DataPrefetcher.#ctor(ArmoniK.Core.Common.Storage.IObjectStorageFactory,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.DataPrefetcher})
-  name: DataPrefetcher(IObjectStorageFactory, ActivitySource, ILogger<DataPrefetcher>)
-  href: api/ArmoniK.Core.Common.Pollster.DataPrefetcher.html#ArmoniK_Core_Common_Pollster_DataPrefetcher__ctor_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_DataPrefetcher__
-  commentId: M:ArmoniK.Core.Common.Pollster.DataPrefetcher.#ctor(ArmoniK.Core.Common.Storage.IObjectStorageFactory,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.DataPrefetcher})
-  name.vb: DataPrefetcher(IObjectStorageFactory, ActivitySource, ILogger(Of DataPrefetcher))
-  fullName: ArmoniK.Core.Common.Pollster.DataPrefetcher.DataPrefetcher(ArmoniK.Core.Common.Storage.IObjectStorageFactory, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.DataPrefetcher>)
-  fullName.vb: ArmoniK.Core.Common.Pollster.DataPrefetcher.DataPrefetcher(ArmoniK.Core.Common.Storage.IObjectStorageFactory, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.DataPrefetcher))
-  nameWithType: DataPrefetcher.DataPrefetcher(IObjectStorageFactory, ActivitySource, ILogger<DataPrefetcher>)
-  nameWithType.vb: DataPrefetcher.DataPrefetcher(IObjectStorageFactory, ActivitySource, ILogger(Of DataPrefetcher))
+- uid: ArmoniK.Core.Common.Pollster.DataPrefetcher.#ctor(ArmoniK.Core.Common.Storage.IObjectStorageFactory,System.Nullable{ActivitySource},ILogger{ArmoniK.Core.Common.Pollster.DataPrefetcher})
+  name: DataPrefetcher(IObjectStorageFactory, Nullable<ActivitySource>, ILogger<DataPrefetcher>)
+  href: api/ArmoniK.Core.Common.Pollster.DataPrefetcher.html#ArmoniK_Core_Common_Pollster_DataPrefetcher__ctor_ArmoniK_Core_Common_Storage_IObjectStorageFactory_System_Nullable_ActivitySource__ILogger_ArmoniK_Core_Common_Pollster_DataPrefetcher__
+  commentId: M:ArmoniK.Core.Common.Pollster.DataPrefetcher.#ctor(ArmoniK.Core.Common.Storage.IObjectStorageFactory,System.Nullable{ActivitySource},ILogger{ArmoniK.Core.Common.Pollster.DataPrefetcher})
+  name.vb: DataPrefetcher(IObjectStorageFactory, Nullable(Of ActivitySource), ILogger(Of DataPrefetcher))
+  fullName: ArmoniK.Core.Common.Pollster.DataPrefetcher.DataPrefetcher(ArmoniK.Core.Common.Storage.IObjectStorageFactory, System.Nullable<ActivitySource>, ILogger<ArmoniK.Core.Common.Pollster.DataPrefetcher>)
+  fullName.vb: ArmoniK.Core.Common.Pollster.DataPrefetcher.DataPrefetcher(ArmoniK.Core.Common.Storage.IObjectStorageFactory, System.Nullable(Of ActivitySource), ILogger(Of ArmoniK.Core.Common.Pollster.DataPrefetcher))
+  nameWithType: DataPrefetcher.DataPrefetcher(IObjectStorageFactory, Nullable<ActivitySource>, ILogger<DataPrefetcher>)
+  nameWithType.vb: DataPrefetcher.DataPrefetcher(IObjectStorageFactory, Nullable(Of ActivitySource), ILogger(Of DataPrefetcher))
 - uid: ArmoniK.Core.Common.Pollster.DataPrefetcher.#ctor*
   name: DataPrefetcher
   href: api/ArmoniK.Core.Common.Pollster.DataPrefetcher.html#ArmoniK_Core_Common_Pollster_DataPrefetcher__ctor_
@@ -14988,12 +14981,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.CancellationTokenCore
   nameWithType: TestServerCallContext.CancellationTokenCore
-- uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.Create(Metadata,CancellationToken)
-  name: Create(Metadata, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html#ArmoniK_Core_Common_Tests_Helpers_TestServerCallContext_Create_Metadata_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.Create(Metadata,CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.Create(Metadata, CancellationToken)
-  nameWithType: TestServerCallContext.Create(Metadata, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.Create(System.Nullable{Metadata},CancellationToken)
+  name: Create(Nullable<Metadata>, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html#ArmoniK_Core_Common_Tests_Helpers_TestServerCallContext_Create_System_Nullable_Metadata__CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.Create(System.Nullable{Metadata},CancellationToken)
+  name.vb: Create(Nullable(Of Metadata), CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.Create(System.Nullable<Metadata>, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.Create(System.Nullable(Of Metadata), CancellationToken)
+  nameWithType: TestServerCallContext.Create(Nullable<Metadata>, CancellationToken)
+  nameWithType.vb: TestServerCallContext.Create(Nullable(Of Metadata), CancellationToken)
 - uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.Create*
   name: Create
   href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html#ArmoniK_Core_Common_Tests_Helpers_TestServerCallContext_Create_
@@ -15001,12 +14997,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.Create
   nameWithType: TestServerCallContext.Create
-- uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.CreatePropagationTokenCore(ContextPropagationOptions)
-  name: CreatePropagationTokenCore(ContextPropagationOptions)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html#ArmoniK_Core_Common_Tests_Helpers_TestServerCallContext_CreatePropagationTokenCore_ContextPropagationOptions_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.CreatePropagationTokenCore(ContextPropagationOptions)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.CreatePropagationTokenCore(ContextPropagationOptions)
-  nameWithType: TestServerCallContext.CreatePropagationTokenCore(ContextPropagationOptions)
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.CreatePropagationTokenCore(System.Nullable{ContextPropagationOptions})
+  name: CreatePropagationTokenCore(Nullable<ContextPropagationOptions>)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html#ArmoniK_Core_Common_Tests_Helpers_TestServerCallContext_CreatePropagationTokenCore_System_Nullable_ContextPropagationOptions__
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.CreatePropagationTokenCore(System.Nullable{ContextPropagationOptions})
+  name.vb: CreatePropagationTokenCore(Nullable(Of ContextPropagationOptions))
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.CreatePropagationTokenCore(System.Nullable<ContextPropagationOptions>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.CreatePropagationTokenCore(System.Nullable(Of ContextPropagationOptions))
+  nameWithType: TestServerCallContext.CreatePropagationTokenCore(Nullable<ContextPropagationOptions>)
+  nameWithType.vb: TestServerCallContext.CreatePropagationTokenCore(Nullable(Of ContextPropagationOptions))
 - uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.CreatePropagationTokenCore*
   name: CreatePropagationTokenCore
   href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html#ArmoniK_Core_Common_Tests_Helpers_TestServerCallContext_CreatePropagationTokenCore_
@@ -15144,12 +15143,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.WriteOptionsCore
   nameWithType: TestServerCallContext.WriteOptionsCore
-- uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.WriteResponseHeadersAsyncCore(Metadata)
-  name: WriteResponseHeadersAsyncCore(Metadata)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html#ArmoniK_Core_Common_Tests_Helpers_TestServerCallContext_WriteResponseHeadersAsyncCore_Metadata_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.WriteResponseHeadersAsyncCore(Metadata)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.WriteResponseHeadersAsyncCore(Metadata)
-  nameWithType: TestServerCallContext.WriteResponseHeadersAsyncCore(Metadata)
+- uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.WriteResponseHeadersAsyncCore(System.Nullable{Metadata})
+  name: WriteResponseHeadersAsyncCore(Nullable<Metadata>)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html#ArmoniK_Core_Common_Tests_Helpers_TestServerCallContext_WriteResponseHeadersAsyncCore_System_Nullable_Metadata__
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.WriteResponseHeadersAsyncCore(System.Nullable{Metadata})
+  name.vb: WriteResponseHeadersAsyncCore(Nullable(Of Metadata))
+  fullName: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.WriteResponseHeadersAsyncCore(System.Nullable<Metadata>)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.WriteResponseHeadersAsyncCore(System.Nullable(Of Metadata))
+  nameWithType: TestServerCallContext.WriteResponseHeadersAsyncCore(Nullable<Metadata>)
+  nameWithType.vb: TestServerCallContext.WriteResponseHeadersAsyncCore(Nullable(Of Metadata))
 - uid: ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.WriteResponseHeadersAsyncCore*
   name: WriteResponseHeadersAsyncCore
   href: api/ArmoniK.Core.Common.Tests.Helpers.TestServerCallContext.html#ArmoniK_Core_Common_Tests_Helpers_TestServerCallContext_WriteResponseHeadersAsyncCore_
@@ -17435,32 +17437,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail
   nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.DoubleCompleteRequestWithoutDataCompleteShouldFail
-- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable
-  name: FSMShouldNotBeReusable()
-  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FSMShouldNotBeReusable
-  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable
-  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable()
-  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable()
-- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable*
-  name: FSMShouldNotBeReusable
-  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FSMShouldNotBeReusable_
-  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable
+  name: FsmShouldNotBeReusable()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FsmShouldNotBeReusable
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable*
+  name: FsmShouldNotBeReusable
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FsmShouldNotBeReusable_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable
-  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable
-- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2
-  name: FSMShouldNotBeReusable2()
-  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FSMShouldNotBeReusable2
-  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2
-  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2()
-  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2()
-- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2*
-  name: FSMShouldNotBeReusable2
-  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FSMShouldNotBeReusable2_
-  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable2
+  name: FsmShouldNotBeReusable2()
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FsmShouldNotBeReusable2
+  commentId: M:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable2
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable2()
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable2()
+- uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable2*
+  name: FsmShouldNotBeReusable2
+  href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_FsmShouldNotBeReusable2_
+  commentId: Overload:ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable2
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2
-  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FSMShouldNotBeReusable2
+  fullName: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable2
+  nameWithType: ProcessReplyCreateLargeTaskStateMachineTest.FsmShouldNotBeReusable2
 - uid: ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.GenerateGraphShouldSucceed
   name: GenerateGraphShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.StateMachines.ProcessReplyCreateLargeTaskStateMachineTest.html#ArmoniK_Core_Common_Tests_StateMachines_ProcessReplyCreateLargeTaskStateMachineTest_GenerateGraphShouldSucceed
@@ -20302,101 +20304,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Control.Metrics.ArmoniKMeter.StopAsync
   nameWithType: ArmoniKMeter.StopAsync
-- uid: ArmoniK.Core.Control.Metrics.Options
-  name: ArmoniK.Core.Control.Metrics.Options
-  href: api/ArmoniK.Core.Control.Metrics.Options.html
-  commentId: N:ArmoniK.Core.Control.Metrics.Options
-  fullName: ArmoniK.Core.Control.Metrics.Options
-  nameWithType: ArmoniK.Core.Control.Metrics.Options
-- uid: ArmoniK.Core.Control.Metrics.Options.DescribedObject
-  name: DescribedObject
-  href: api/ArmoniK.Core.Control.Metrics.Options.DescribedObject.html
-  commentId: T:ArmoniK.Core.Control.Metrics.Options.DescribedObject
-  fullName: ArmoniK.Core.Control.Metrics.Options.DescribedObject
-  nameWithType: DescribedObject
-- uid: ArmoniK.Core.Control.Metrics.Options.DescribedObject.ApiVersion
-  name: ApiVersion
-  href: api/ArmoniK.Core.Control.Metrics.Options.DescribedObject.html#ArmoniK_Core_Control_Metrics_Options_DescribedObject_ApiVersion
-  commentId: P:ArmoniK.Core.Control.Metrics.Options.DescribedObject.ApiVersion
-  fullName: ArmoniK.Core.Control.Metrics.Options.DescribedObject.ApiVersion
-  nameWithType: DescribedObject.ApiVersion
-- uid: ArmoniK.Core.Control.Metrics.Options.DescribedObject.ApiVersion*
-  name: ApiVersion
-  href: api/ArmoniK.Core.Control.Metrics.Options.DescribedObject.html#ArmoniK_Core_Control_Metrics_Options_DescribedObject_ApiVersion_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Options.DescribedObject.ApiVersion
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Options.DescribedObject.ApiVersion
-  nameWithType: DescribedObject.ApiVersion
-- uid: ArmoniK.Core.Control.Metrics.Options.DescribedObject.Name
-  name: Name
-  href: api/ArmoniK.Core.Control.Metrics.Options.DescribedObject.html#ArmoniK_Core_Control_Metrics_Options_DescribedObject_Name
-  commentId: P:ArmoniK.Core.Control.Metrics.Options.DescribedObject.Name
-  fullName: ArmoniK.Core.Control.Metrics.Options.DescribedObject.Name
-  nameWithType: DescribedObject.Name
-- uid: ArmoniK.Core.Control.Metrics.Options.DescribedObject.Name*
-  name: Name
-  href: api/ArmoniK.Core.Control.Metrics.Options.DescribedObject.html#ArmoniK_Core_Control_Metrics_Options_DescribedObject_Name_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Options.DescribedObject.Name
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Options.DescribedObject.Name
-  nameWithType: DescribedObject.Name
-- uid: ArmoniK.Core.Control.Metrics.Options.DescribedObject.Namespace
-  name: Namespace
-  href: api/ArmoniK.Core.Control.Metrics.Options.DescribedObject.html#ArmoniK_Core_Control_Metrics_Options_DescribedObject_Namespace
-  commentId: P:ArmoniK.Core.Control.Metrics.Options.DescribedObject.Namespace
-  fullName: ArmoniK.Core.Control.Metrics.Options.DescribedObject.Namespace
-  nameWithType: DescribedObject.Namespace
-- uid: ArmoniK.Core.Control.Metrics.Options.DescribedObject.Namespace*
-  name: Namespace
-  href: api/ArmoniK.Core.Control.Metrics.Options.DescribedObject.html#ArmoniK_Core_Control_Metrics_Options_DescribedObject_Namespace_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Options.DescribedObject.Namespace
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Options.DescribedObject.Namespace
-  nameWithType: DescribedObject.Namespace
-- uid: ArmoniK.Core.Control.Metrics.Options.DescribedObject.SettingSection
-  name: SettingSection
-  href: api/ArmoniK.Core.Control.Metrics.Options.DescribedObject.html#ArmoniK_Core_Control_Metrics_Options_DescribedObject_SettingSection
-  commentId: F:ArmoniK.Core.Control.Metrics.Options.DescribedObject.SettingSection
-  fullName: ArmoniK.Core.Control.Metrics.Options.DescribedObject.SettingSection
-  nameWithType: DescribedObject.SettingSection
-- uid: ArmoniK.Core.Control.Metrics.Options.Metrics
-  name: Metrics
-  href: api/ArmoniK.Core.Control.Metrics.Options.Metrics.html
-  commentId: T:ArmoniK.Core.Control.Metrics.Options.Metrics
-  fullName: ArmoniK.Core.Control.Metrics.Options.Metrics
-  nameWithType: Metrics
-- uid: ArmoniK.Core.Control.Metrics.Options.Metrics.ApiVersion
-  name: ApiVersion
-  href: api/ArmoniK.Core.Control.Metrics.Options.Metrics.html#ArmoniK_Core_Control_Metrics_Options_Metrics_ApiVersion
-  commentId: P:ArmoniK.Core.Control.Metrics.Options.Metrics.ApiVersion
-  fullName: ArmoniK.Core.Control.Metrics.Options.Metrics.ApiVersion
-  nameWithType: Metrics.ApiVersion
-- uid: ArmoniK.Core.Control.Metrics.Options.Metrics.ApiVersion*
-  name: ApiVersion
-  href: api/ArmoniK.Core.Control.Metrics.Options.Metrics.html#ArmoniK_Core_Control_Metrics_Options_Metrics_ApiVersion_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Options.Metrics.ApiVersion
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Options.Metrics.ApiVersion
-  nameWithType: Metrics.ApiVersion
-- uid: ArmoniK.Core.Control.Metrics.Options.Metrics.DescribedObject
-  name: DescribedObject
-  href: api/ArmoniK.Core.Control.Metrics.Options.Metrics.html#ArmoniK_Core_Control_Metrics_Options_Metrics_DescribedObject
-  commentId: P:ArmoniK.Core.Control.Metrics.Options.Metrics.DescribedObject
-  fullName: ArmoniK.Core.Control.Metrics.Options.Metrics.DescribedObject
-  nameWithType: Metrics.DescribedObject
-- uid: ArmoniK.Core.Control.Metrics.Options.Metrics.DescribedObject*
-  name: DescribedObject
-  href: api/ArmoniK.Core.Control.Metrics.Options.Metrics.html#ArmoniK_Core_Control_Metrics_Options_Metrics_DescribedObject_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Options.Metrics.DescribedObject
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Options.Metrics.DescribedObject
-  nameWithType: Metrics.DescribedObject
-- uid: ArmoniK.Core.Control.Metrics.Options.Metrics.SettingSection
-  name: SettingSection
-  href: api/ArmoniK.Core.Control.Metrics.Options.Metrics.html#ArmoniK_Core_Control_Metrics_Options_Metrics_SettingSection
-  commentId: F:ArmoniK.Core.Control.Metrics.Options.Metrics.SettingSection
-  fullName: ArmoniK.Core.Control.Metrics.Options.Metrics.SettingSection
-  nameWithType: Metrics.SettingSection
 - uid: ArmoniK.Core.Control.Metrics.Program
   name: Program
   href: api/ArmoniK.Core.Control.Metrics.Program.html
@@ -20419,212 +20326,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Control.Metrics.Program.Main
   nameWithType: Program.Main
-- uid: ArmoniK.Core.Control.Metrics.Program.Metric
-  name: Program.Metric
-  href: api/ArmoniK.Core.Control.Metrics.Program.Metric.html
-  commentId: T:ArmoniK.Core.Control.Metrics.Program.Metric
-  fullName: ArmoniK.Core.Control.Metrics.Program.Metric
-  nameWithType: Program.Metric
-- uid: ArmoniK.Core.Control.Metrics.Program.Metric.DescribedObject
-  name: DescribedObject
-  href: api/ArmoniK.Core.Control.Metrics.Program.Metric.html#ArmoniK_Core_Control_Metrics_Program_Metric_DescribedObject
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.Metric.DescribedObject
-  fullName: ArmoniK.Core.Control.Metrics.Program.Metric.DescribedObject
-  nameWithType: Program.Metric.DescribedObject
-- uid: ArmoniK.Core.Control.Metrics.Program.Metric.DescribedObject*
-  name: DescribedObject
-  href: api/ArmoniK.Core.Control.Metrics.Program.Metric.html#ArmoniK_Core_Control_Metrics_Program_Metric_DescribedObject_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.Metric.DescribedObject
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.Metric.DescribedObject
-  nameWithType: Program.Metric.DescribedObject
-- uid: ArmoniK.Core.Control.Metrics.Program.Metric.MetricName
-  name: MetricName
-  href: api/ArmoniK.Core.Control.Metrics.Program.Metric.html#ArmoniK_Core_Control_Metrics_Program_Metric_MetricName
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.Metric.MetricName
-  fullName: ArmoniK.Core.Control.Metrics.Program.Metric.MetricName
-  nameWithType: Program.Metric.MetricName
-- uid: ArmoniK.Core.Control.Metrics.Program.Metric.MetricName*
-  name: MetricName
-  href: api/ArmoniK.Core.Control.Metrics.Program.Metric.html#ArmoniK_Core_Control_Metrics_Program_Metric_MetricName_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.Metric.MetricName
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.Metric.MetricName
-  nameWithType: Program.Metric.MetricName
-- uid: ArmoniK.Core.Control.Metrics.Program.Metric.Timestamp
-  name: Timestamp
-  href: api/ArmoniK.Core.Control.Metrics.Program.Metric.html#ArmoniK_Core_Control_Metrics_Program_Metric_Timestamp
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.Metric.Timestamp
-  fullName: ArmoniK.Core.Control.Metrics.Program.Metric.Timestamp
-  nameWithType: Program.Metric.Timestamp
-- uid: ArmoniK.Core.Control.Metrics.Program.Metric.Timestamp*
-  name: Timestamp
-  href: api/ArmoniK.Core.Control.Metrics.Program.Metric.html#ArmoniK_Core_Control_Metrics_Program_Metric_Timestamp_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.Metric.Timestamp
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.Metric.Timestamp
-  nameWithType: Program.Metric.Timestamp
-- uid: ArmoniK.Core.Control.Metrics.Program.Metric.Value
-  name: Value
-  href: api/ArmoniK.Core.Control.Metrics.Program.Metric.html#ArmoniK_Core_Control_Metrics_Program_Metric_Value
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.Metric.Value
-  fullName: ArmoniK.Core.Control.Metrics.Program.Metric.Value
-  nameWithType: Program.Metric.Value
-- uid: ArmoniK.Core.Control.Metrics.Program.Metric.Value*
-  name: Value
-  href: api/ArmoniK.Core.Control.Metrics.Program.Metric.html#ArmoniK_Core_Control_Metrics_Program_Metric_Value_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.Metric.Value
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.Metric.Value
-  nameWithType: Program.Metric.Value
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricGenerator
-  name: Program.MetricGenerator
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricGenerator.html
-  commentId: T:ArmoniK.Core.Control.Metrics.Program.MetricGenerator
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricGenerator
-  nameWithType: Program.MetricGenerator
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricGenerator.#ctor(ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Control.Metrics.Options.Metrics)
-  name: MetricGenerator(ITaskTable, Metrics)
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricGenerator.html#ArmoniK_Core_Control_Metrics_Program_MetricGenerator__ctor_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Control_Metrics_Options_Metrics_
-  commentId: M:ArmoniK.Core.Control.Metrics.Program.MetricGenerator.#ctor(ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Control.Metrics.Options.Metrics)
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricGenerator.MetricGenerator(ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Control.Metrics.Options.Metrics)
-  nameWithType: Program.MetricGenerator.MetricGenerator(ITaskTable, Metrics)
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricGenerator.#ctor*
-  name: MetricGenerator
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricGenerator.html#ArmoniK_Core_Control_Metrics_Program_MetricGenerator__ctor_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.MetricGenerator.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricGenerator.MetricGenerator
-  nameWithType: Program.MetricGenerator.MetricGenerator
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricGenerator.GetMetrics
-  name: GetMetrics()
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricGenerator.html#ArmoniK_Core_Control_Metrics_Program_MetricGenerator_GetMetrics
-  commentId: M:ArmoniK.Core.Control.Metrics.Program.MetricGenerator.GetMetrics
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricGenerator.GetMetrics()
-  nameWithType: Program.MetricGenerator.GetMetrics()
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricGenerator.GetMetrics*
-  name: GetMetrics
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricGenerator.html#ArmoniK_Core_Control_Metrics_Program_MetricGenerator_GetMetrics_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.MetricGenerator.GetMetrics
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricGenerator.GetMetrics
-  nameWithType: Program.MetricGenerator.GetMetrics
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricList
-  name: Program.MetricList
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricList.html
-  commentId: T:ArmoniK.Core.Control.Metrics.Program.MetricList
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricList
-  nameWithType: Program.MetricList
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricList.ApiVersion
-  name: ApiVersion
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricList.html#ArmoniK_Core_Control_Metrics_Program_MetricList_ApiVersion
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.MetricList.ApiVersion
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricList.ApiVersion
-  nameWithType: Program.MetricList.ApiVersion
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricList.ApiVersion*
-  name: ApiVersion
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricList.html#ArmoniK_Core_Control_Metrics_Program_MetricList_ApiVersion_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.MetricList.ApiVersion
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricList.ApiVersion
-  nameWithType: Program.MetricList.ApiVersion
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricList.Items
-  name: Items
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricList.html#ArmoniK_Core_Control_Metrics_Program_MetricList_Items
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.MetricList.Items
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricList.Items
-  nameWithType: Program.MetricList.Items
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricList.Items*
-  name: Items
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricList.html#ArmoniK_Core_Control_Metrics_Program_MetricList_Items_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.MetricList.Items
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricList.Items
-  nameWithType: Program.MetricList.Items
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricList.Kind
-  name: Kind
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricList.html#ArmoniK_Core_Control_Metrics_Program_MetricList_Kind
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.MetricList.Kind
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricList.Kind
-  nameWithType: Program.MetricList.Kind
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricList.Kind*
-  name: Kind
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricList.html#ArmoniK_Core_Control_Metrics_Program_MetricList_Kind_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.MetricList.Kind
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricList.Kind
-  nameWithType: Program.MetricList.Kind
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricList.Metadata
-  name: Metadata
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricList.html#ArmoniK_Core_Control_Metrics_Program_MetricList_Metadata
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.MetricList.Metadata
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricList.Metadata
-  nameWithType: Program.MetricList.Metadata
-- uid: ArmoniK.Core.Control.Metrics.Program.MetricList.Metadata*
-  name: Metadata
-  href: api/ArmoniK.Core.Control.Metrics.Program.MetricList.html#ArmoniK_Core_Control_Metrics_Program_MetricList_Metadata_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.MetricList.Metadata
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.MetricList.Metadata
-  nameWithType: Program.MetricList.Metadata
-- uid: ArmoniK.Core.Control.Metrics.Program.ObjectDescription
-  name: Program.ObjectDescription
-  href: api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.html
-  commentId: T:ArmoniK.Core.Control.Metrics.Program.ObjectDescription
-  fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription
-  nameWithType: Program.ObjectDescription
-- uid: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.ApiVersion
-  name: ApiVersion
-  href: api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.html#ArmoniK_Core_Control_Metrics_Program_ObjectDescription_ApiVersion
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.ObjectDescription.ApiVersion
-  fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.ApiVersion
-  nameWithType: Program.ObjectDescription.ApiVersion
-- uid: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.ApiVersion*
-  name: ApiVersion
-  href: api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.html#ArmoniK_Core_Control_Metrics_Program_ObjectDescription_ApiVersion_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.ObjectDescription.ApiVersion
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.ApiVersion
-  nameWithType: Program.ObjectDescription.ApiVersion
-- uid: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Kind
-  name: Kind
-  href: api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.html#ArmoniK_Core_Control_Metrics_Program_ObjectDescription_Kind
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Kind
-  fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Kind
-  nameWithType: Program.ObjectDescription.Kind
-- uid: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Kind*
-  name: Kind
-  href: api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.html#ArmoniK_Core_Control_Metrics_Program_ObjectDescription_Kind_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Kind
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Kind
-  nameWithType: Program.ObjectDescription.Kind
-- uid: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.KubernetesNamespace
-  name: KubernetesNamespace
-  href: api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.html#ArmoniK_Core_Control_Metrics_Program_ObjectDescription_KubernetesNamespace
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.ObjectDescription.KubernetesNamespace
-  fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.KubernetesNamespace
-  nameWithType: Program.ObjectDescription.KubernetesNamespace
-- uid: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.KubernetesNamespace*
-  name: KubernetesNamespace
-  href: api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.html#ArmoniK_Core_Control_Metrics_Program_ObjectDescription_KubernetesNamespace_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.ObjectDescription.KubernetesNamespace
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.KubernetesNamespace
-  nameWithType: Program.ObjectDescription.KubernetesNamespace
-- uid: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Name
-  name: Name
-  href: api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.html#ArmoniK_Core_Control_Metrics_Program_ObjectDescription_Name
-  commentId: P:ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Name
-  fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Name
-  nameWithType: Program.ObjectDescription.Name
-- uid: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Name*
-  name: Name
-  href: api/ArmoniK.Core.Control.Metrics.Program.ObjectDescription.html#ArmoniK_Core_Control_Metrics_Program_ObjectDescription_Name_
-  commentId: Overload:ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Name
-  isSpec: "True"
-  fullName: ArmoniK.Core.Control.Metrics.Program.ObjectDescription.Name
-  nameWithType: Program.ObjectDescription.Name
 - uid: ArmoniK.Core.Control.PartitionMetrics
   name: ArmoniK.Core.Control.PartitionMetrics
   href: api/ArmoniK.Core.Control.PartitionMetrics.html
@@ -20836,15 +20537,15 @@ references:
   commentId: T:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions
   fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions
   nameWithType: MongoExporterHelperExtensions
-- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder,Action{ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions})
-  name: AddMongoExporter(TracerProviderBuilder, Action<MongoExporterOptions>)
-  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterHelperExtensions_AddMongoExporter_TracerProviderBuilder_Action_ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions__
-  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder,Action{ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions})
-  name.vb: AddMongoExporter(TracerProviderBuilder, Action(Of MongoExporterOptions))
-  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, Action<ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions>)
-  fullName.vb: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, Action(Of ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions))
-  nameWithType: MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, Action<MongoExporterOptions>)
-  nameWithType.vb: MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, Action(Of MongoExporterOptions))
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder,System.Nullable{Action{ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions}})
+  name: AddMongoExporter(TracerProviderBuilder, Nullable<Action<MongoExporterOptions>>)
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterHelperExtensions_AddMongoExporter_TracerProviderBuilder_System_Nullable_Action_ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterOptions___
+  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder,System.Nullable{Action{ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions}})
+  name.vb: AddMongoExporter(TracerProviderBuilder, Nullable(Of Action(Of MongoExporterOptions)))
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, System.Nullable<Action<ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions>>)
+  fullName.vb: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, System.Nullable(Of Action(Of ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterOptions)))
+  nameWithType: MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, Nullable<Action<MongoExporterOptions>>)
+  nameWithType.vb: MongoExporterHelperExtensions.AddMongoExporter(TracerProviderBuilder, Nullable(Of Action(Of MongoExporterOptions)))
 - uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.AddMongoExporter*
   name: AddMongoExporter
   href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.MongoExporterHelperExtensions.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_MongoExporterHelperExtensions_AddMongoExporter_
@@ -20942,15 +20643,15 @@ references:
   commentId: T:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData
   fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData
   nameWithType: OpenTelemetryData
-- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.#ctor(System.String,IEnumerable{KeyValuePair{System.String,System.String}},TimeSpan,IEnumerable{KeyValuePair{System.String,System.String}},System.String,System.String,System.String,System.String,System.String,System.String,System.String,DateTime)
-  name: OpenTelemetryData(String, IEnumerable<KeyValuePair<String, String>>, TimeSpan, IEnumerable<KeyValuePair<String, String>>, String, String, String, String, String, String, String, DateTime)
-  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData__ctor_System_String_IEnumerable_KeyValuePair_System_String_System_String___TimeSpan_IEnumerable_KeyValuePair_System_String_System_String___System_String_System_String_System_String_System_String_System_String_System_String_System_String_DateTime_
-  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.#ctor(System.String,IEnumerable{KeyValuePair{System.String,System.String}},TimeSpan,IEnumerable{KeyValuePair{System.String,System.String}},System.String,System.String,System.String,System.String,System.String,System.String,System.String,DateTime)
-  name.vb: OpenTelemetryData(String, IEnumerable(Of KeyValuePair(Of String, String)), TimeSpan, IEnumerable(Of KeyValuePair(Of String, String)), String, String, String, String, String, String, String, DateTime)
-  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.OpenTelemetryData(System.String, IEnumerable<KeyValuePair<System.String, System.String>>, TimeSpan, IEnumerable<KeyValuePair<System.String, System.String>>, System.String, System.String, System.String, System.String, System.String, System.String, System.String, DateTime)
-  fullName.vb: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.OpenTelemetryData(System.String, IEnumerable(Of KeyValuePair(Of System.String, System.String)), TimeSpan, IEnumerable(Of KeyValuePair(Of System.String, System.String)), System.String, System.String, System.String, System.String, System.String, System.String, System.String, DateTime)
-  nameWithType: OpenTelemetryData.OpenTelemetryData(String, IEnumerable<KeyValuePair<String, String>>, TimeSpan, IEnumerable<KeyValuePair<String, String>>, String, String, String, String, String, String, String, DateTime)
-  nameWithType.vb: OpenTelemetryData.OpenTelemetryData(String, IEnumerable(Of KeyValuePair(Of String, String)), TimeSpan, IEnumerable(Of KeyValuePair(Of String, String)), String, String, String, String, String, String, String, DateTime)
+- uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.#ctor(System.String,IEnumerable{KeyValuePair{System.String,System.Nullable{System.String}}},TimeSpan,IEnumerable{KeyValuePair{System.String,System.Nullable{System.String}}},System.String,System.String,System.String,System.String,System.String,System.String,System.String,DateTime)
+  name: OpenTelemetryData(String, IEnumerable<KeyValuePair<String, Nullable<String>>>, TimeSpan, IEnumerable<KeyValuePair<String, Nullable<String>>>, String, String, String, String, String, String, String, DateTime)
+  href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData__ctor_System_String_IEnumerable_KeyValuePair_System_String_System_Nullable_System_String____TimeSpan_IEnumerable_KeyValuePair_System_String_System_Nullable_System_String____System_String_System_String_System_String_System_String_System_String_System_String_System_String_DateTime_
+  commentId: M:ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.#ctor(System.String,IEnumerable{KeyValuePair{System.String,System.Nullable{System.String}}},TimeSpan,IEnumerable{KeyValuePair{System.String,System.Nullable{System.String}}},System.String,System.String,System.String,System.String,System.String,System.String,System.String,DateTime)
+  name.vb: OpenTelemetryData(String, IEnumerable(Of KeyValuePair(Of String, Nullable(Of String))), TimeSpan, IEnumerable(Of KeyValuePair(Of String, Nullable(Of String))), String, String, String, String, String, String, String, DateTime)
+  fullName: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.OpenTelemetryData(System.String, IEnumerable<KeyValuePair<System.String, System.Nullable<System.String>>>, TimeSpan, IEnumerable<KeyValuePair<System.String, System.Nullable<System.String>>>, System.String, System.String, System.String, System.String, System.String, System.String, System.String, DateTime)
+  fullName.vb: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.OpenTelemetryData(System.String, IEnumerable(Of KeyValuePair(Of System.String, System.Nullable(Of System.String))), TimeSpan, IEnumerable(Of KeyValuePair(Of System.String, System.Nullable(Of System.String))), System.String, System.String, System.String, System.String, System.String, System.String, System.String, DateTime)
+  nameWithType: OpenTelemetryData.OpenTelemetryData(String, IEnumerable<KeyValuePair<String, Nullable<String>>>, TimeSpan, IEnumerable<KeyValuePair<String, Nullable<String>>>, String, String, String, String, String, String, String, DateTime)
+  nameWithType.vb: OpenTelemetryData.OpenTelemetryData(String, IEnumerable(Of KeyValuePair(Of String, Nullable(Of String))), TimeSpan, IEnumerable(Of KeyValuePair(Of String, Nullable(Of String))), String, String, String, String, String, String, String, DateTime)
 - uid: ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.#ctor*
   name: OpenTelemetryData
   href: api/ArmoniK.Core.ProfilingTools.OpenTelemetryExporter.OpenTelemetryData.html#ArmoniK_Core_ProfilingTools_OpenTelemetryExporter_OpenTelemetryData__ctor_
@@ -21174,15 +20875,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply
   nameWithType: SubmitterExt.CreateSessionAndCheckReply
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient,System.String,TaskOptions,IEnumerable{TaskRequest})
-  name: CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable<TaskRequest>)
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateTasksAndCheckReplyAsync_Submitter_SubmitterClient_System_String_TaskOptions_IEnumerable_TaskRequest__
-  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient,System.String,TaskOptions,IEnumerable{TaskRequest})
-  name.vb: CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable(Of TaskRequest))
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, System.String, TaskOptions, IEnumerable<TaskRequest>)
-  fullName.vb: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, System.String, TaskOptions, IEnumerable(Of TaskRequest))
-  nameWithType: SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable<TaskRequest>)
-  nameWithType.vb: SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, TaskOptions, IEnumerable(Of TaskRequest))
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient,System.String,System.Nullable{TaskOptions},IEnumerable{TaskRequest})
+  name: CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, Nullable<TaskOptions>, IEnumerable<TaskRequest>)
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateTasksAndCheckReplyAsync_Submitter_SubmitterClient_System_String_System_Nullable_TaskOptions__IEnumerable_TaskRequest__
+  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient,System.String,System.Nullable{TaskOptions},IEnumerable{TaskRequest})
+  name.vb: CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, Nullable(Of TaskOptions), IEnumerable(Of TaskRequest))
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, System.String, System.Nullable<TaskOptions>, IEnumerable<TaskRequest>)
+  fullName.vb: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, System.String, System.Nullable(Of TaskOptions), IEnumerable(Of TaskRequest))
+  nameWithType: SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, Nullable<TaskOptions>, IEnumerable<TaskRequest>)
+  nameWithType.vb: SubmitterExt.CreateTasksAndCheckReplyAsync(Submitter.SubmitterClient, String, Nullable(Of TaskOptions), IEnumerable(Of TaskRequest))
 - uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateTasksAndCheckReplyAsync*
   name: CreateTasksAndCheckReplyAsync
   href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateTasksAndCheckReplyAsync_

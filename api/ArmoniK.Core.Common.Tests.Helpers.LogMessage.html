@@ -79,7 +79,7 @@
   <h6><strong>Assembly</strong>: ArmoniK.Core.Common.Tests.dll</h6>
   <h5 id="ArmoniK_Core_Common_Tests_Helpers_LogMessage_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public delegate void LogMessage(LogLevel logLevel, string categoryName, EventId eventId, string message, Exception exception);</code></pre>
+    <pre><code class="lang-csharp hljs">public delegate void LogMessage(LogLevel logLevel, string categoryName, EventId eventId, string message, Exception? exception);</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -112,7 +112,7 @@
         <td></td>
       </tr>
       <tr>
-        <td><span class="xref">Exception</span></td>
+        <td><span class="xref">System.Nullable</span>&lt;<span class="xref">Exception</span>&gt;</td>
         <td><span class="parametername">exception</span></td>
         <td></td>
       </tr>
