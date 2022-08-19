@@ -51,8 +51,10 @@ public static class ServiceCollectionExt
 
     if (components["QueueStorage"] == "ArmoniK.Adapters.Amqp.QueueStorage")
     {
-      var amqpOptions = configuration.GetRequiredValue<Options.Amqp>(Options.Amqp.SettingSection);
-
+      Options.Amqp amqpOptions;
+      serviceCollection.AddOption(configuration,
+                                  Options.Amqp.SettingSection,
+                                  out amqpOptions);
       using var _ = logger.BeginNamedScope("AMQP configuration",
                                            ("host", amqpOptions.Host),
                                            ("port", amqpOptions.Port));
@@ -65,7 +67,9 @@ public static class ServiceCollectionExt
         logger.LogTrace("Loaded amqp credentials from file {path}",
                         amqpOptions.CredentialsPath);
 
-        amqpOptions = configuration.GetRequiredValue<Options.Amqp>(Options.Amqp.SettingSection);
+        serviceCollection.AddOption(configuration,
+                                    Options.Amqp.SettingSection,
+                                    out amqpOptions);
       }
       else
       {
