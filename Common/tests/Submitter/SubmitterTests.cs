@@ -30,9 +30,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Options;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.Worker.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.Exceptions;

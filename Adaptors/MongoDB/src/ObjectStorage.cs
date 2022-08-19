@@ -29,7 +29,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Worker.Utils;
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Object;
 using ArmoniK.Core.Common.Exceptions;

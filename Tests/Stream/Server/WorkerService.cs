@@ -27,8 +27,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Channel.Utils;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Api.Worker.Worker;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 
