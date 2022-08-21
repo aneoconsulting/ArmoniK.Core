@@ -429,7 +429,7 @@ jobs:
           export ARMONIK_POLLINGAGENT=dockerhubaneo/armonik_pollingagent:$VERSION
           export LOGGING_LEVEL=${{ matrix.log-level }}
           docker-compose -f docker-compose/docker-compose.override.yml -f docker-compose/docker-compose.yml -f docker-compose/docker-compose.queue-${{ matrix.queue }}.yml --compatibility up -d --build --force-recreate --remove-orphans
-          docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertOne({ _id: "TestPartition", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null})'
+          docker run --net armonik-backend --rm rtsp/mongosh mongosh mongodb://database:27017/database --eval 'db.PartitionData.insertMany([{ _id: "TestPartition0", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null},{ _id: "TestPartition1", ParentPartitionIds: [], PodReserved: 50, PodMax: 100, PreemptionPercentage: 20, Priority: 1, PodConfiguration: null}])'
           sleep 10
           ls -la docker-compose/logs/*.json
 
@@ -438,7 +438,7 @@ jobs:
         run: |
           cd ./Tests/Stream/Client/
           export GrpcClient__Endpoint=http://localhost:5001
-          export Partition=TestPartition
+          export Partition=TestPartition0
           dotnet test --logger "trx;LogFileName=test-results.trx"
 
       - name: Test Report
@@ -514,7 +514,7 @@ jobs:
             -e HtcMock__DataSize=1 \
             -e HtcMock__MemorySize=1 \
             -e HtcMock__SubTasksLevels=${{ matrix.nsublevel }} \
-            -e HtcMock__Partition=TestPartition \
+            -e HtcMock__Partition=TestPartition0 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
           ls -la docker-compose/logs/*.json
