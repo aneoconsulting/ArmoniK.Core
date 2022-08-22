@@ -47,6 +47,7 @@ services:
       - Amqp__MaxPriority=10
       - Amqp__MaxRetries=10
       - Amqp__LinkCredit=2
+      - Amqp__PartitionId=TestPartition0
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
     logging:
@@ -84,6 +85,7 @@ services:
       - Amqp__MaxPriority=10
       - Amqp__MaxRetries=10
       - Amqp__LinkCredit=2
+      - Amqp__PartitionId=TestPartition0
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
     logging:
       driver: fluentd
@@ -121,6 +123,7 @@ services:
       - Amqp__MaxPriority=10
       - Amqp__MaxRetries=10
       - Amqp__LinkCredit=2
+      - Amqp__PartitionId=TestPartition0
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - MetricsExporter__Host=http://armonik.control.metrics
       - MetricsExporter__Port=1080
@@ -158,6 +161,7 @@ services:
       - Amqp__MaxPriority=10
       - Amqp__MaxRetries=10
       - Amqp__LinkCredit=2
+      - Amqp__PartitionId=TestPartition0
       - InitWorker__WorkerCheckRetries=10
       - InitWorker__WorkerCheckDelay=00:00:10
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
