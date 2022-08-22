@@ -53,6 +53,9 @@ internal class CreateSessionTests
                                               {
                                                 "GrpcClient:Endpoint", "http://localhost:5001"
                                               },
+                                              {
+                                                "Partition", "TestPartition"
+                                              },
                                             };
 
     var builder = new ConfigurationBuilder().AddInMemoryCollection(baseConfig)
@@ -61,7 +64,7 @@ internal class CreateSessionTests
     var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
                                .Get<GrpcClient>();
 
-    partition_ = Environment.GetEnvironmentVariable("Partition");
+    partition_ = configuration.GetValue<string>("Partition");
 
     Console.WriteLine($"endpoint : {options.Endpoint}");
     var channel = GrpcChannelFactory.CreateChannel(options);
