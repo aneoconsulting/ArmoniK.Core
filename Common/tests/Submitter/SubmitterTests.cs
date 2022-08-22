@@ -391,7 +391,7 @@ public class SubmitterTests
   }
 
   [Test]
-  public async Task CreateTaskInvalidPartitionShouldFail()
+  public Task CreateSessionInvalidPartitionShouldFail()
   {
     var defaultTaskOptions = new TaskOptions
                              {
@@ -401,31 +401,14 @@ public class SubmitterTests
                                PartitionId = "invalid",
                              };
 
-    var sessionId = (await submitter_!.CreateSession(new[]
-                                                     {
-                                                       "part1",
-                                                       "part2",
-                                                     },
-                                                     defaultTaskOptions,
-                                                     CancellationToken.None)
-                                      .ConfigureAwait(false)).SessionId;
-
-    Assert.ThrowsAsync<SessionNotFoundException>(() => submitter_.CreateTasks(sessionId,
-                                                                              sessionId,
-                                                                              defaultTaskOptions,
-                                                                              new List<TaskRequest>
-                                                                              {
-                                                                                new(new[]
-                                                                                    {
-                                                                                      ExpectedOutput1,
-                                                                                    },
-                                                                                    new List<string>(),
-                                                                                    new List<ReadOnlyMemory<byte>>
-                                                                                    {
-                                                                                      new(Encoding.ASCII.GetBytes("AAAA")),
-                                                                                    }.ToAsyncEnumerable()),
-                                                                              }.ToAsyncEnumerable(),
-                                                                              CancellationToken.None));
+    Assert.ThrowsAsync<PartitionNotFoundException>(() => submitter_!.CreateSession(new[]
+                                                                                   {
+                                                                                     "part1",
+                                                                                     "part2",
+                                                                                   },
+                                                                                   defaultTaskOptions,
+                                                                                   CancellationToken.None));
+    return Task.CompletedTask;
   }
 
   [Test]
