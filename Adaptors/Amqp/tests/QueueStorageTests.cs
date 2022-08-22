@@ -77,7 +77,7 @@ public class QueueStorageTests
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var pushQueueStorage = new PushQueueStorage(Options,
+    var pushQueueStorage = new PushQueueStorage(Options!,
                                                 provider.Object,
                                                 NullLogger<PushQueueStorage>.Instance);
     await pushQueueStorage.Init(CancellationToken.None)
@@ -100,7 +100,7 @@ public class QueueStorageTests
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var pullQueueStorage = new PullQueueStorage(Options,
+    var pullQueueStorage = new PullQueueStorage(Options!,
                                                 provider.Object,
                                                 NullLogger<PullQueueStorage>.Instance);
     await pullQueueStorage.Init(CancellationToken.None)
@@ -190,7 +190,7 @@ public class QueueStorageTests
     provider.Setup(sp => sp.Session)
             .Returns(helper.Session);
 
-    var pushQueueStorage = new PushQueueStorage(Options,
+    var pushQueueStorage = new PushQueueStorage(Options!,
                                                 provider.Object,
                                                 NullLogger<PushQueueStorage>.Instance);
 
@@ -241,7 +241,7 @@ public class QueueStorageTests
                          "msg5",
                        };
     await pushQueueStorage.PushMessagesAsync(testMessages,
-                                             Options.PartitionId,
+                                             Options!.PartitionId,
                                              priority,
                                              CancellationToken.None)
                           .ConfigureAwait(false);
@@ -272,7 +272,7 @@ public class QueueStorageTests
 
     pushProvider.Setup(sp => sp.Session)
                 .Returns(helper.Session);
-    var pushQueueStorage = new PushQueueStorage(Options,
+    var pushQueueStorage = new PushQueueStorage(Options!,
                                                 pushProvider.Object,
                                                 NullLogger<PushQueueStorage>.Instance);
 
@@ -288,8 +288,8 @@ public class QueueStorageTests
 
     for (var i = 0; i < 3; i++)
     {
-      Options.PartitionId = $"part{i}";
-      var pullQueueStorage = new PullQueueStorage(Options,
+      Options!.PartitionId = $"part{i}";
+      var pullQueueStorage = new PullQueueStorage(Options!,
                                                   pullProvider.Object,
                                                   NullLogger<PullQueueStorage>.Instance);
 
@@ -327,11 +327,11 @@ public class QueueStorageTests
     pushProvider.Setup(sp => sp.Session)
                 .Returns(helper.Session);
 
-    var pushQueueStorage = new PushQueueStorage(Options,
+    var pushQueueStorage = new PushQueueStorage(Options!,
                                                 pushProvider.Object,
                                                 NullLogger<PushQueueStorage>.Instance);
 
-    var pullQueueStorage = new PullQueueStorage(Options,
+    var pullQueueStorage = new PullQueueStorage(Options!,
                                                 pullProvider.Object,
                                                 NullLogger<PullQueueStorage>.Instance);
 
@@ -346,7 +346,7 @@ public class QueueStorageTests
                        };
     /* Push 5 messages to the queue to test the pull */
     await pushQueueStorage.PushMessagesAsync(testMessages,
-                                             Options.PartitionId,
+                                             Options!.PartitionId,
                                              priority,
                                              CancellationToken.None)
                           .ConfigureAwait(false);
