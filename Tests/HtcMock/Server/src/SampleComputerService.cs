@@ -121,6 +121,7 @@ public class SampleComputerService : WorkerStreamWrapper
                            .Count());
         var readyRequests = requests[true];
 
+        // todo : can be batched in order to improve memory usage
         var taskRequests = readyRequests.Select(r => new TaskRequest
                                                      {
                                                        Payload = ByteString.CopyFrom(DataAdapter.BuildPayload(runConfiguration,

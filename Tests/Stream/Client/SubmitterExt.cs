@@ -56,18 +56,7 @@ public static class SubmitterExt
                                            partitionId,
                                          },
                                        });
-    switch (session.ResultCase)
-    {
-      case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception("Error while creating session : " + session.Error);
-      case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case CreateSessionReply.ResultOneofCase.SessionId:
-        Console.WriteLine("Session Created");
-        return session.SessionId;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
+    return session.SessionId;
   }
 
   public static async Task<IEnumerable<string>> CreateTasksAndCheckReplyAsync(this Submitter.SubmitterClient client,

@@ -88,18 +88,8 @@ public class GridClient : IGridClient
                                  },
                                };
     var createSessionReply = client_.CreateSession(createSessionRequest);
-    switch (createSessionReply.ResultCase)
-    {
-      case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception("Error while creating session : " + createSessionReply.Error);
-      case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception("Issue with Server when creating session!");
-      case CreateSessionReply.ResultOneofCase.SessionId:
-        return new SessionClient(client_,
-                                 createSessionReply.SessionId,
-                                 logger_);
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
+    return new SessionClient(client_,
+                             createSessionReply.SessionId,
+                             logger_);
   }
 }

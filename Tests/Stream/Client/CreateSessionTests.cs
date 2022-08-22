@@ -105,7 +105,7 @@ internal class CreateSessionTests
                                                         partition_,
                                                       },
                                                     });
-    Assert.AreNotEqual(CreateSessionReply.ResultOneofCase.SessionId,
-                       createSessionReply.ResultCase);
+    Assert.AreNotEqual("",
+                       createSessionReply.SessionId);
   }
 }
