@@ -28,7 +28,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Utils;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
