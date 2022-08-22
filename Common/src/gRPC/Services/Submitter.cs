@@ -334,7 +334,7 @@ public class Submitter : ISubmitter
     var       storage  = ResultStorage(request.Session);
 
     var result = await resultTable_.GetResult(request.Session,
-                                              request.Key,
+                                              request.ResultId,
                                               cancellationToken)
                                    .ConfigureAwait(false);
 
@@ -389,7 +389,7 @@ public class Submitter : ISubmitter
       }
     }
 
-    await foreach (var chunk in storage.GetValuesAsync(request.Key,
+    await foreach (var chunk in storage.GetValuesAsync(request.ResultId,
                                                        cancellationToken)
                                        .ConfigureAwait(false))
     {
@@ -585,11 +585,11 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<Output> TryGetTaskOutputAsync(ResultRequest     request,
+  public async Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
                                                   CancellationToken contextCancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(TryGetTaskOutputAsync)}");
-    var output = await taskTable_.GetTaskOutput(request.Key,
+    var output = await taskTable_.GetTaskOutput(request.TaskId,
                                                 contextCancellationToken)
                                  .ConfigureAwait(false);
     return new Output(output);
@@ -610,7 +610,7 @@ public class Submitter : ISubmitter
     while (true)
     {
       var result = await resultTable_.GetResult(request.Session,
-                                                request.Key,
+                                                request.ResultId,
                                                 contextCancellationToken)
                                      .ConfigureAwait(false);
 

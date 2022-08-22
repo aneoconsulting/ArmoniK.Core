@@ -98,7 +98,7 @@ public interface ISubmitter
                          Output            output,
                          CancellationToken cancellationToken = default);
 
-  Task<Output> TryGetTaskOutputAsync(ResultRequest     request,
+  Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
                                      CancellationToken contextCancellationToken);
 
   Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,

@@ -495,8 +495,8 @@ public class SubmitterTests
 
     var resultRequest = new ResultRequest
                         {
-                          Key     = ExpectedOutput3,
-                          Session = sessionId,
+                          ResultId = ExpectedOutput3,
+                          Session  = sessionId,
                         };
 
     await submitter_!.WaitForAvailabilityAsync(resultRequest,
@@ -533,8 +533,8 @@ public class SubmitterTests
 
     Assert.ThrowsAsync<ResultNotFoundException>(() => submitter_!.TryGetResult(new ResultRequest
                                                                                {
-                                                                                 Key     = "NotExistingResult",
-                                                                                 Session = sessionId,
+                                                                                 ResultId = "NotExistingResult",
+                                                                                 Session  = sessionId,
                                                                                },
                                                                                writer,
                                                                                CancellationToken.None));
@@ -552,8 +552,8 @@ public class SubmitterTests
 
     await submitter_!.TryGetResult(new ResultRequest
                                    {
-                                     Key     = ExpectedOutput2,
-                                     Session = sessionId,
+                                     ResultId = ExpectedOutput2,
+                                     Session  = sessionId,
                                    },
                                    writer,
                                    CancellationToken.None)
@@ -612,9 +612,9 @@ public class SubmitterTests
                                         CancellationToken.None)
                      .ConfigureAwait(false);
 
-    var output = await submitter_.TryGetTaskOutputAsync(new ResultRequest
+    var output = await submitter_.TryGetTaskOutputAsync(new TaskOutputRequest
                                                         {
-                                                          Key     = taskCompleted,
+                                                          TaskId  = taskCompleted,
                                                           Session = sessionId,
                                                         },
                                                         CancellationToken.None)

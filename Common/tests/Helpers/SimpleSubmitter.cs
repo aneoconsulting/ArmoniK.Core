@@ -141,7 +141,7 @@ public class SimpleSubmitter : ISubmitter
                                 CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<Output> TryGetTaskOutputAsync(ResultRequest     request,
+  public Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
                                             CancellationToken contextCancellationToken)
     => Task.FromResult(new Output
                        {

@@ -79,8 +79,8 @@ public static class SubmitterExt
                                                                             {
                                                                               case CreateTaskReply.Types.CreationStatus.StatusOneofCase.None:
                                                                                 throw new Exception("Issue with Server !");
-                                                                              case CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskId:
-                                                                                return status.TaskId;
+                                                                              case CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskInfo:
+                                                                                return status.TaskInfo.TaskId;
                                                                               case CreateTaskReply.Types.CreationStatus.StatusOneofCase.Error:
                                                                                 return status.Error;
                                                                               default:

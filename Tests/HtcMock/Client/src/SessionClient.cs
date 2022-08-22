@@ -65,8 +65,8 @@ public class SessionClient : ISessionClient
   {
     var resultRequest = new ResultRequest
                         {
-                          Key     = id,
-                          Session = sessionId_,
+                          ResultId = id,
+                          Session  = sessionId_,
                         };
 
     var availabilityReply = client_.WaitForAvailability(resultRequest);
@@ -93,8 +93,8 @@ public class SessionClient : ISessionClient
   {
     var resultRequest = new ResultRequest
                         {
-                          Key     = id,
-                          Session = sessionId_,
+                          ResultId = id,
+                          Session  = sessionId_,
                         };
 
     var availabilityReply = client_.WaitForAvailability(resultRequest);

@@ -134,8 +134,8 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     var response = client.TryGetResultStream(new ResultRequest
                                              {
-                                               Key     = "Key",
-                                               Session = "Session",
+                                               ResultId = "Key",
+                                               Session  = "Session",
                                              });
 
     var result = await response.ResponseStream.ReadAllAsync()
@@ -231,7 +231,7 @@ internal class IntegrationGrpcSubmitterServiceTest
 
                         submitter => submitter.WaitForCompletion(It.IsAny<WaitRequest>(),
                                                                  It.IsAny<CancellationToken>()),
-                        submitter => submitter.TryGetTaskOutputAsync(It.IsAny<ResultRequest>(),
+                        submitter => submitter.TryGetTaskOutputAsync(It.IsAny<TaskOutputRequest>(),
                                                                      It.IsAny<CancellationToken>()),
                         submitter => submitter.WaitForAvailabilityAsync(It.IsAny<ResultRequest>(),
                                                                         It.IsAny<CancellationToken>()),
@@ -276,8 +276,8 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       _ = await client.TryGetResultStream(new ResultRequest
                                           {
-                                            Key     = "Key",
-                                            Session = "Session",
+                                            ResultId = "Key",
+                                            Session  = "Session",
                                           })
                       .ResponseStream.ReadAllAsync()
                       .SingleAsync()
@@ -601,7 +601,7 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     try
     {
-      _ = client.TryGetTaskOutput(new ResultRequest());
+      _ = client.TryGetTaskOutput(new TaskOutputRequest());
       Assert.Fail("Function should throw an exception");
     }
     catch (RpcException e)

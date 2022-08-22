@@ -152,8 +152,8 @@ public class AuthenticationIntegrationTest
     SessionFilter.Sessions.Add(SessionId);
     ResultRequest = new ResultRequest
                     {
-                      Key     = ResultKey,
-                      Session = SessionId,
+                      ResultId = ResultKey,
+                      Session  = SessionId,
                     };
     WaitRequest = new WaitRequest
                   {

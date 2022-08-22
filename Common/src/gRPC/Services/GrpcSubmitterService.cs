@@ -217,7 +217,10 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                       {
                                         tuple.requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
                                                                              {
-                                                                               TaskId = taskRequest.Id,
+                                                                               TaskInfo = new CreateTaskReply.Types.TaskInfo
+                                                                                          {
+                                                                                            TaskId = taskRequest.Id,
+                                                                                          },
                                                                              }),
                                       },
                                     },
@@ -289,7 +292,18 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                       {
                                         tuple.requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
                                                                              {
-                                                                               TaskId = taskRequest.Id,
+                                                                               TaskInfo = new CreateTaskReply.Types.TaskInfo
+                                                                                          {
+                                                                                            TaskId = taskRequest.Id,
+                                                                                            DataDependencies =
+                                                                                            {
+                                                                                              taskRequest.DataDependencies,
+                                                                                            },
+                                                                                            ExpectedOutputKeys =
+                                                                                            {
+                                                                                              taskRequest.ExpectedOutputKeys,
+                                                                                            },
+                                                                                          },
                                                                              }),
                                       },
                                     },
@@ -431,7 +445,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
   [RequiresPermission(Permissions.Submitter,
                       nameof(TryGetTaskOutput))]
-  public override Task<Output> TryGetTaskOutput(ResultRequest     request,
+  public override Task<Output> TryGetTaskOutput(TaskOutputRequest request,
                                                 ServerCallContext context)
   {
     try

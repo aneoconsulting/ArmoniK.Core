@@ -199,7 +199,18 @@ public class Agent : IAgent
                                                 {
                                                   currentTasks.requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
                                                                                               {
-                                                                                                TaskId = taskRequest.Id,
+                                                                                                TaskInfo = new CreateTaskReply.Types.TaskInfo
+                                                                                                           {
+                                                                                                             TaskId = taskRequest.Id,
+                                                                                                             DataDependencies =
+                                                                                                             {
+                                                                                                               taskRequest.DataDependencies,
+                                                                                                             },
+                                                                                                             ExpectedOutputKeys =
+                                                                                                             {
+                                                                                                               taskRequest.ExpectedOutputKeys,
+                                                                                                             },
+                                                                                                           },
                                                                                               }),
                                                 },
                                               },

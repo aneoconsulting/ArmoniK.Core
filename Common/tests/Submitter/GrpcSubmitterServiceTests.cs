@@ -81,8 +81,8 @@ public class GrpcSubmitterServiceTests
 
     await service.TryGetResultStream(new ResultRequest
                                      {
-                                       Key     = "Key",
-                                       Session = "Session",
+                                       ResultId = "Key",
+                                       Session  = "Session",
                                      },
                                      helperServerStreamWriter,
                                      TestServerCallContext.Create())
@@ -112,8 +112,8 @@ public class GrpcSubmitterServiceTests
     {
       await service.TryGetResultStream(new ResultRequest
                                        {
-                                         Key     = "Key",
-                                         Session = "Session",
+                                         ResultId = "Key",
+                                         Session  = "Session",
                                        },
                                        helperServerStreamWriter,
                                        TestServerCallContext.Create())
@@ -148,8 +148,8 @@ public class GrpcSubmitterServiceTests
     {
       await service.TryGetResultStream(new ResultRequest
                                        {
-                                         Key     = "Key",
-                                         Session = "Session",
+                                         ResultId = "Key",
+                                         Session  = "Session",
                                        },
                                        helperServerStreamWriter,
                                        TestServerCallContext.Create())
@@ -184,8 +184,8 @@ public class GrpcSubmitterServiceTests
     {
       await service.TryGetResultStream(new ResultRequest
                                        {
-                                         Key     = "Key",
-                                         Session = "Session",
+                                         ResultId = "Key",
+                                         Session  = "Session",
                                        },
                                        helperServerStreamWriter,
                                        TestServerCallContext.Create())
@@ -220,8 +220,8 @@ public class GrpcSubmitterServiceTests
     {
       await service.TryGetResultStream(new ResultRequest
                                        {
-                                         Key     = "Key",
-                                         Session = "Session",
+                                         ResultId = "Key",
+                                         Session  = "Session",
                                        },
                                        helperServerStreamWriter,
                                        TestServerCallContext.Create())
@@ -256,8 +256,8 @@ public class GrpcSubmitterServiceTests
     {
       await service.TryGetResultStream(new ResultRequest
                                        {
-                                         Key     = "Key",
-                                         Session = "Session",
+                                         ResultId = "Key",
+                                         Session  = "Session",
                                        },
                                        helperServerStreamWriter,
                                        TestServerCallContext.Create())
@@ -292,8 +292,8 @@ public class GrpcSubmitterServiceTests
     {
       await service.TryGetResultStream(new ResultRequest
                                        {
-                                         Key     = "Key",
-                                         Session = "Session",
+                                         ResultId = "Key",
+                                         Session  = "Session",
                                        },
                                        helperServerStreamWriter,
                                        TestServerCallContext.Create())
@@ -312,7 +312,7 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputInvalidOperationExceptionShouldThrowRpcException()
   {
     var mockSubmitter = new Mock<ISubmitter>();
-    mockSubmitter.Setup(submitter => submitter.TryGetTaskOutputAsync(It.IsAny<ResultRequest>(),
+    mockSubmitter.Setup(submitter => submitter.TryGetTaskOutputAsync(It.IsAny<TaskOutputRequest>(),
                                                                      CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
 
@@ -323,9 +323,9 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.TryGetTaskOutput(new ResultRequest
+      await service.TryGetTaskOutput(new TaskOutputRequest
                                      {
-                                       Key     = "Key",
+                                       TaskId  = "Key",
                                        Session = "Session",
                                      },
                                      TestServerCallContext.Create())
@@ -344,7 +344,7 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputArmonikExceptionShouldThrowRpcException()
   {
     var mockSubmitter = new Mock<ISubmitter>();
-    mockSubmitter.Setup(submitter => submitter.TryGetTaskOutputAsync(It.IsAny<ResultRequest>(),
+    mockSubmitter.Setup(submitter => submitter.TryGetTaskOutputAsync(It.IsAny<TaskOutputRequest>(),
                                                                      CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
@@ -355,9 +355,9 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.TryGetTaskOutput(new ResultRequest
+      await service.TryGetTaskOutput(new TaskOutputRequest
                                      {
-                                       Key     = "Key",
+                                       TaskId  = "Key",
                                        Session = "Session",
                                      },
                                      TestServerCallContext.Create())
@@ -376,7 +376,7 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputShouldSucceed()
   {
     var mockSubmitter = new Mock<ISubmitter>();
-    mockSubmitter.Setup(submitter => submitter.TryGetTaskOutputAsync(It.IsAny<ResultRequest>(),
+    mockSubmitter.Setup(submitter => submitter.TryGetTaskOutputAsync(It.IsAny<TaskOutputRequest>(),
                                                                      CancellationToken.None))
                  .Returns(() => Task.FromResult(new Output
                                                 {
@@ -388,9 +388,9 @@ public class GrpcSubmitterServiceTests
 
     mockSubmitter.Verify();
 
-    var output = await service.TryGetTaskOutput(new ResultRequest
+    var output = await service.TryGetTaskOutput(new TaskOutputRequest
                                                 {
-                                                  Key     = "Key",
+                                                  TaskId  = "Key",
                                                   Session = "Session",
                                                 },
                                                 TestServerCallContext.Create())
@@ -404,7 +404,7 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputShouldSucceed2()
   {
     var mockSubmitter = new Mock<ISubmitter>();
-    mockSubmitter.Setup(submitter => submitter.TryGetTaskOutputAsync(It.IsAny<ResultRequest>(),
+    mockSubmitter.Setup(submitter => submitter.TryGetTaskOutputAsync(It.IsAny<TaskOutputRequest>(),
                                                                      CancellationToken.None))
                  .Returns(() => Task.FromResult(new Output
                                                 {
@@ -419,9 +419,9 @@ public class GrpcSubmitterServiceTests
 
     mockSubmitter.Verify();
 
-    var output = await service.TryGetTaskOutput(new ResultRequest
+    var output = await service.TryGetTaskOutput(new TaskOutputRequest
                                                 {
-                                                  Key     = "Key",
+                                                  TaskId  = "Key",
                                                   Session = "Session",
                                                 },
                                                 TestServerCallContext.Create())
@@ -1372,7 +1372,7 @@ public class GrpcSubmitterServiceTests
 
     var response = await service.WaitForAvailability(new ResultRequest
                                                      {
-                                                       Key = "Key",
+                                                       ResultId = "Key",
                                                      },
                                                      TestServerCallContext.Create())
                                 .ConfigureAwait(false);
@@ -1398,7 +1398,7 @@ public class GrpcSubmitterServiceTests
     {
       await service.WaitForAvailability(new ResultRequest
                                         {
-                                          Key = "Key",
+                                          ResultId = "Key",
                                         },
                                         TestServerCallContext.Create())
                    .ConfigureAwait(false);
@@ -1429,7 +1429,7 @@ public class GrpcSubmitterServiceTests
     {
       await service.WaitForAvailability(new ResultRequest
                                         {
-                                          Key = "Key",
+                                          ResultId = "Key",
                                         },
                                         TestServerCallContext.Create())
                    .ConfigureAwait(false);
@@ -1460,7 +1460,7 @@ public class GrpcSubmitterServiceTests
     {
       await service.WaitForAvailability(new ResultRequest
                                         {
-                                          Key = "Key",
+                                          ResultId = "Key",
                                         },
                                         TestServerCallContext.Create())
                    .ConfigureAwait(false);
@@ -1491,7 +1491,7 @@ public class GrpcSubmitterServiceTests
     {
       await service.WaitForAvailability(new ResultRequest
                                         {
-                                          Key = "Key",
+                                          ResultId = "Key",
                                         },
                                         TestServerCallContext.Create())
                    .ConfigureAwait(false);
