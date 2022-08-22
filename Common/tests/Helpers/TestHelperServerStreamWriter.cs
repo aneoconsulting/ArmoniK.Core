@@ -42,5 +42,5 @@ internal class TestHelperServerStreamWriter<T> : IServerStreamWriter<T>
     return Task.CompletedTask;
   }
 
-  public WriteOptions WriteOptions { get; set; }
+  public WriteOptions? WriteOptions { get; set; }
 }

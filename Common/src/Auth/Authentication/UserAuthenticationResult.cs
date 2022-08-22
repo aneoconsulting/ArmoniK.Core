@@ -27,6 +27,13 @@ using System.Collections.Generic;
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
+/// <summary>
+///   Object containing the authentication result from database
+/// </summary>
+/// <param name="Id">User Id</param>
+/// <param name="Username">User name</param>
+/// <param name="Roles">User roles</param>
+/// <param name="Permissions">User permissions</param>
 public record UserAuthenticationResult(string              Id,
                                        string              Username,
                                        IEnumerable<string> Roles,

@@ -54,9 +54,6 @@ public static class Permissions
   // Permissions list
   public static readonly ImmutableList<Permission> PermissionList = GetPermissionList();
 
-  public static Permission Parse(string actionName)
-    => new(actionName);
-
   private static ImmutableList<Permission> GetPermissionList()
   {
     var permissions = typeof(GrpcSubmitterService).GetMethods()
@@ -67,6 +64,9 @@ public static class Permissions
     return permissions.ToImmutableList();
   }
 
+  /// <summary>
+  ///   Class used to store a permission
+  /// </summary>
   public class Permission
   {
     public readonly Claim  Claim;
@@ -74,6 +74,15 @@ public static class Permissions
     public readonly string Service;
     public readonly string Target;
 
+    /// <summary>
+    ///   Constructs the permission from a string with format :
+    ///   Service:Name
+    ///   or
+    ///   Service:Name:Target
+    /// </summary>
+    /// <param name="actionString">String representation of the permission</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the string is not of the right format</exception>
+    /// <exception cref="ArgumentException">Thrown if Service or Name is null or whitespace</exception>
     public Permission(string actionString)
     {
       var parts = actionString.Split(Separator);
@@ -125,6 +134,10 @@ public static class Permissions
       return action;
     }
 
+    /// <summary>
+    ///   Base permission string of the permission (service:name)
+    /// </summary>
+    /// <returns>The base permission string of this permission, no target</returns>
     public string ToBasePermission()
       => Service + Separator + Name;
   }

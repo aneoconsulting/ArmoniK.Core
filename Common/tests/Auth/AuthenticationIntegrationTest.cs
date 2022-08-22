@@ -105,6 +105,7 @@ public class AuthenticationIntegrationTest
 
   static AuthenticationIntegrationTest()
   {
+    // Prepare requests
     var taskOptions = new TaskOptions
                       {
                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(10)),
@@ -210,10 +211,19 @@ public class AuthenticationIntegrationTest
 
   public enum AuthenticationType
   {
+    // Auth and Authorization
     DefaultAuth,
+
+    // Auth Only
     NoAuthorization,
+
+    // No Auth, No Authorization
     NoAuthentication,
+
+    // Auth and Authorization, no impersonation
     NoImpersonation,
+
+    // Auth, no impersonation no authorization
     NoImpersonationNoAuthorization,
   }
 

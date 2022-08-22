@@ -25,7 +25,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-using ArmoniK.Api.Worker.Utils;
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -105,9 +105,10 @@ public static class ServiceCollectionExt
                                                   ConfigurationManager    configuration,
                                                   ILogger                 logger)
   {
-    services.AddOption<Options.MongoDB>(configuration,
-                                        Options.MongoDB.SettingSection,
-                                        out var mongoOptions);
+    Options.MongoDB mongoOptions;
+    services.AddOption(configuration,
+                       Options.MongoDB.SettingSection,
+                       out mongoOptions);
 
     using var _ = logger.BeginNamedScope("MongoDB configuration",
                                          ("host", mongoOptions.Host),

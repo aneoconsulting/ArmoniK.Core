@@ -94,7 +94,6 @@ public static class Program
       }
 
       app.UseSerilogRequestLogging();
-
       app.UseOpenTelemetryPrometheusScrapingEndpoint();
       app.UseRouting();
       app.UseHttpsRedirection();
@@ -127,6 +126,10 @@ public static class Program
             .LogCritical(ex,
                          "Host terminated unexpectedly");
       return 1;
+    }
+    finally
+    {
+      Log.CloseAndFlush();
     }
   }
 }

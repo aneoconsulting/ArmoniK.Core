@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -48,7 +48,7 @@ internal class IndexTest
     services.AddMongoStorages(configuration,
                               logger);
     services.AddSingleton(ActivitySource);
-    services.AddTransient(serviceProvider => client_);
+    services.AddTransient(_ => client_);
     services.AddLogging();
 
     provider_ = services.BuildServiceProvider(new ServiceProviderOptions
@@ -61,19 +61,19 @@ internal class IndexTest
   public void TearDown()
   {
     client_ = null;
-    runner_.Dispose();
+    runner_?.Dispose();
   }
 
-  private                 MongoDbRunner   runner_;
-  private                 IMongoClient    client_;
-  private const           string          DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource  ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
-  private                 ServiceProvider provider_;
+  private                 MongoDbRunner?   runner_;
+  private                 IMongoClient?    client_;
+  private const           string           DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource   ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
+  private                 ServiceProvider? provider_;
 
   [Test]
   public void IndexCreationShouldSucceed()
   {
-    var db         = provider_.GetRequiredService<IMongoDatabase>();
+    var db         = provider_!.GetRequiredService<IMongoDatabase>();
     var collection = db.GetCollection<TaskData>("Test");
     var taskIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
 
@@ -102,7 +102,7 @@ internal class IndexTest
   [Test]
   public void IndexCreation2ShouldSucceed()
   {
-    var db         = provider_.GetRequiredService<IMongoDatabase>();
+    var db         = provider_!.GetRequiredService<IMongoDatabase>();
     var collection = db.GetCollection<TaskData>("Test");
     var taskIndex  = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
     var ttlIndex   = Builders<TaskData>.IndexKeys.Text(model => model.PodTtl);
@@ -138,7 +138,7 @@ internal class IndexTest
   [Ignore("Cannot create combined indexes this way")]
   public void CombinedIndexCreationShouldSucceed()
   {
-    var db           = provider_.GetRequiredService<IMongoDatabase>();
+    var db           = provider_!.GetRequiredService<IMongoDatabase>();
     var collection   = db.GetCollection<TaskData>("Test");
     var taskIndex    = Builders<TaskData>.IndexKeys.Hashed(model => model.TaskId);
     var sessionIndex = Builders<TaskData>.IndexKeys.Text(model => model.SessionId);

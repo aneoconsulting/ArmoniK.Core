@@ -25,7 +25,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-using ArmoniK.Api.Worker.Utils;
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
@@ -51,9 +51,10 @@ public static class ServiceCollectionExt
 
     if (components["QueueStorage"] == "ArmoniK.Adapters.Amqp.QueueStorage")
     {
-      serviceCollection.AddOption<Options.Amqp>(configuration,
-                                                Options.Amqp.SettingSection,
-                                                out var amqpOptions);
+      Options.Amqp amqpOptions;
+      serviceCollection.AddOption(configuration,
+                                  Options.Amqp.SettingSection,
+                                  out amqpOptions);
       using var _ = logger.BeginNamedScope("AMQP configuration",
                                            ("host", amqpOptions.Host),
                                            ("port", amqpOptions.Port));

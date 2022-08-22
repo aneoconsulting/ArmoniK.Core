@@ -33,9 +33,9 @@ namespace ArmoniK.Core.Adapters.Amqp;
 
 public interface ISessionAmqp
 {
-  public Session            Session { get; set; }
-  public Options.Amqp       Options { get; set; }
-  public ILogger            Logger  { get; set; }
-  public Task<ISessionAmqp> OpenConnection();
-  public HealthCheckResult  Check();
+  Session?           Session { get; set; }
+  Options.Amqp       Options { get; set; }
+  ILogger            Logger  { get; set; }
+  Task<ISessionAmqp> OpenConnection();
+  HealthCheckResult  Check();
 }

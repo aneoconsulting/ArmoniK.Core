@@ -57,9 +57,11 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
     }
   }
 
+  /// <inheritdoc />
   public string CollectionName
     => nameof(UserData);
 
+  /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                            IMongoCollection<UserData> collection)
   {

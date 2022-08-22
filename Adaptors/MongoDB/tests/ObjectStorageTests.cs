@@ -49,8 +49,8 @@ public class ObjectStorageTests : ObjectStorageTestBase
     RunTests      = false;
   }
 
-  private                 MongoDbRunner  runner_;
-  private                 IMongoClient   client_;
+  private                 MongoDbRunner? runner_;
+  private                 IMongoClient?  client_;
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
 
@@ -82,7 +82,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
     services.AddMongoStorages(configuration,
                               logger);
     services.AddSingleton(ActivitySource);
-    services.AddTransient(serviceProvider => client_);
+    services.AddTransient(_ => client_);
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions

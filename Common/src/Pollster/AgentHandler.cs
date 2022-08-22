@@ -27,7 +27,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Worker.Options;
+using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;

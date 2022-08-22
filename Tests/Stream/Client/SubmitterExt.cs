@@ -74,7 +74,7 @@ public static class SubmitterExt
 
   public static async Task CreateTasksAndCheckReplyAsync(this Submitter.SubmitterClient client,
                                                          string                         sessionId,
-                                                         TaskOptions                    taskOptions,
+                                                         TaskOptions?                   taskOptions,
                                                          IEnumerable<TaskRequest>       taskRequestList)
   {
     var createTaskReply = await client.CreateTasksAsync(sessionId,

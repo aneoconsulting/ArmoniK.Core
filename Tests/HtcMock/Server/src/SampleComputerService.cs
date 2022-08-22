@@ -28,8 +28,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Channel.Utils;
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Api.Worker.Worker;
 
 using Google.Protobuf;
@@ -77,7 +78,7 @@ public class SampleComputerService : WorkerStreamWrapper
                                                          throw new KeyNotFoundException(armonikId);
                                                        }
 
-                                                       return Encoding.Default.GetString(data);
+                                                       return Encoding.Default.GetString(data!);
                                                      });
       logger_.LogDebug("Inputs {input}",
                        inputs);

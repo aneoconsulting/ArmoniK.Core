@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -23,6 +23,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Api.gRPC.V1;
+
+using Armonik.Api.gRPC.V1.Tasks;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -56,4 +58,15 @@ public record Output(bool   Success,
          _ => new Output(false,
                          output.Error.Details),
        };
+
+  public static implicit operator TaskRaw.Types.Output(Output output)
+    => new()
+       {
+         Error   = output.Error,
+         Success = output.Success,
+       };
+
+  public static implicit operator Output(TaskRaw.Types.Output output)
+    => new(output.Success,
+           output.Error);
 }

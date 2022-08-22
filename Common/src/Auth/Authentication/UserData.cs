@@ -25,6 +25,12 @@
 
 namespace ArmoniK.Core.Common.Auth.Authentication;
 
+/// <summary>
+///   User object in database
+/// </summary>
+/// <param name="UserId">User Id</param>
+/// <param name="Username">User name</param>
+/// <param name="Roles">User roles</param>
 public record UserData(string   UserId,
                        string   Username,
                        string[] Roles);

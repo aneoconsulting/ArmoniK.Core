@@ -32,7 +32,7 @@ using System.Threading.Tasks;
 
 using Amqp;
 
-using ArmoniK.Api.Worker.Utils;
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;

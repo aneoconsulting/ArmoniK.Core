@@ -53,9 +53,9 @@ public class ObjectStorageTestBase
     dataBytesList.Add(Encoding.ASCII.GetBytes("BBBB"));
     dataBytesList.Add(Encoding.ASCII.GetBytes("CCCC"));
     dataBytesList.Add(Encoding.ASCII.GetBytes("DDDD"));
-    ObjectStorage.AddOrUpdateAsync("dataKey1",
-                                   dataBytesList.ToAsyncEnumerable())
-                 .Wait();
+    ObjectStorage!.AddOrUpdateAsync("dataKey1",
+                                    dataBytesList.ToAsyncEnumerable())
+                  .Wait();
 
     dataBytesList = new List<byte[]>();
     dataBytesList.Add(Encoding.ASCII.GetBytes("AAAABBBB"));
@@ -78,7 +78,7 @@ public class ObjectStorageTestBase
   }
 
   /* Interface to test */
-  protected IObjectStorage ObjectStorage;
+  protected IObjectStorage? ObjectStorage;
 
   /* Boolean to control that tests are executed in
    * an instance of this class */
@@ -95,9 +95,9 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<ArmoniKException>(async () => await ObjectStorage.AddOrUpdateAsync("dataKeyNoChunk",
-                                                                                            new List<byte[]>().ToAsyncEnumerable())
-                                                                          .ConfigureAwait(false));
+      Assert.ThrowsAsync<ArmoniKException>(async () => await ObjectStorage!.AddOrUpdateAsync("dataKeyNoChunk",
+                                                                                             new List<byte[]>().ToAsyncEnumerable())
+                                                                           .ConfigureAwait(false));
     }
   }
 
@@ -106,7 +106,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage.GetValuesAsync("dataKey1");
+      var res = ObjectStorage!.GetValuesAsync("dataKey1");
       Assert.AreEqual(4,
                       await res.CountAsync()
                                .ConfigureAwait(false));
@@ -118,7 +118,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage.GetValuesAsync("dataKeyNotExist");
+      var res = ObjectStorage!.GetValuesAsync("dataKeyNotExist");
       Assert.ThrowsAsync<ObjectDataNotFoundException>(async () => await res.FirstAsync()
                                                                            .ConfigureAwait(false));
     }
@@ -129,7 +129,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage.GetValuesAsync("dataKey2");
+      var res = ObjectStorage!.GetValuesAsync("dataKey2");
       var data = await res.SingleAsync()
                           .ConfigureAwait(false);
       var str = Encoding.ASCII.GetString(data);
@@ -143,7 +143,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage.GetValuesAsync("dataKey1");
+      var res = ObjectStorage!.GetValuesAsync("dataKey1");
       // var data = await res.AggregateAsync((bytes1, bytes2) => bytes1.Concat(bytes2).ToArray());
       var data = new List<byte>();
       foreach (var item in await res.ToListAsync()
@@ -163,12 +163,12 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage.GetValuesAsync("dataKeyEmpty");
-      Console.WriteLine(await res.CountAsync()
-                                 .ConfigureAwait(false));
+      var res = await ObjectStorage!.GetValuesAsync("dataKeyEmpty")
+                                    .ToListAsync()
+                                    .ConfigureAwait(false);
+      Console.WriteLine(res.Count);
       var data = new List<byte>();
-      foreach (var item in await res.ToListAsync()
-                                    .ConfigureAwait(false))
+      foreach (var item in res)
       {
         data.AddRange(item);
       }

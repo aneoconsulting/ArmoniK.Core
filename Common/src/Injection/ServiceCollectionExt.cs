@@ -24,8 +24,8 @@
 
 using System;
 
-using ArmoniK.Api.Worker.Options;
-using ArmoniK.Api.Worker.Utils;
+using ArmoniK.Api.Common.Channel.Utils;
+using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Stream.Worker;
@@ -81,17 +81,14 @@ public static class ServiceCollectionExt
 
     var computePlanOptions = computePlanComponent.Get<ComputePlane>();
 
-    if (computePlanOptions.WorkerChannel is not null)
-    {
-      services.AddSingleton(computePlanOptions)
-              .AddSingleton(computePlanOptions.WorkerChannel)
-              .AddOption<Components>(configuration,
-                                     Components.SettingSection)
-              .AddOption<InitWorker>(configuration,
-                                     InitWorker.SettingSection)
-              .AddSingleton<GrpcChannelProvider>()
-              .AddSingleton<IWorkerStreamHandler, WorkerStreamHandler>();
-    }
+    services.AddSingleton(computePlanOptions)
+            .AddSingleton(computePlanOptions.WorkerChannel)
+            .AddOption<Components>(configuration,
+                                   Components.SettingSection)
+            .AddOption<InitWorker>(configuration,
+                                   InitWorker.SettingSection)
+            .AddSingleton<GrpcChannelProvider>()
+            .AddSingleton<IWorkerStreamHandler, WorkerStreamHandler>();
 
     return services;
   }
@@ -286,5 +283,7 @@ public static class ServiceCollectionExt
                .AddValidator<TaskOptionsValidator>()
                .AddValidator<TaskFilterValidator>()
                .AddValidator<SessionFilterValidator>()
+               .AddValidator<ListSessionsRequestValidator>()
+               .AddValidator<ListTasksRequestValidator>()
                .AddGrpcValidation();
 }

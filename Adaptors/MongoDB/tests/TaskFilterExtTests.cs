@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
@@ -32,12 +33,21 @@ using ArmoniK.Core.Common.Storage;
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
+using TaskOptions = ArmoniK.Core.Common.Storage.TaskOptions;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 [TestFixture(TestOf = typeof(TaskFilterExt))]
 internal class TaskFilterExtTests
 {
+  private static readonly TaskOptions _taskOptions = new(new Dictionary<string, string>(),
+                                                         TimeSpan.Zero,
+                                                         0,
+                                                         0,
+                                                         "part1",
+                                                         "ApplicationName",
+                                                         "ApplicationVersion");
+
   [Test]
   public void ShouldRecognizeSession()
   {
@@ -71,7 +81,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -111,7 +121,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -159,7 +169,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -206,7 +216,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -254,7 +264,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -302,7 +312,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Completed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -349,7 +359,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -396,7 +406,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -444,7 +454,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -492,7 +502,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -533,7 +543,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -575,7 +585,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -616,7 +626,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 
@@ -658,7 +668,7 @@ internal class TaskFilterExtTests
                              },
                              Array.Empty<string>(),
                              TaskStatus.Failed,
-                             default,
+                             _taskOptions,
                              new Output(true,
                                         ""));
 

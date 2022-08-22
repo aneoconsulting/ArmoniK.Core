@@ -29,8 +29,11 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Submitter;
 
+using Armonik.Api.gRPC.V1.Tasks;
+
 using Microsoft.Extensions.Logging;
 
+using Task = System.Threading.Tasks.Task;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -193,6 +196,17 @@ public interface ITaskTable : IInitializable
   /// </returns>
   IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
                                           CancellationToken cancellationToken);
+
+  /// <summary>
+  ///   List all tasks matching the given request
+  /// </summary>
+  /// <param name="request">Filter request</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Collection of task metadata matching the request
+  /// </returns>
+  Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
+                                             CancellationToken cancellationToken);
 
   /// <summary>
   ///   Change the status of the task to succeeded

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -27,14 +27,14 @@ namespace ArmoniK.Core.Adapters.Redis.Options;
 internal class Redis
 {
   public const string SettingSection = nameof(Redis);
-  public       string InstanceName    { get; set; }
-  public       string EndpointUrl     { get; set; }
-  public       string ClientName      { get; set; }
-  public       string SslHost         { get; set; }
+  public       string InstanceName    { get; set; } = "";
+  public       string EndpointUrl     { get; set; } = "";
+  public       string ClientName      { get; set; } = "";
+  public       string SslHost         { get; set; } = "";
   public       int    Timeout         { get; set; }
-  public       string Password        { get; set; }
-  public       string User            { get; set; }
+  public       string Password        { get; set; } = "";
+  public       string User            { get; set; } = "";
   public       bool   Ssl             { get; set; }
-  public       string CredentialsPath { get; set; }
-  public       string CaPath          { get; set; }
+  public       string CredentialsPath { get; set; } = "";
+  public       string CaPath          { get; set; } = "";
 }

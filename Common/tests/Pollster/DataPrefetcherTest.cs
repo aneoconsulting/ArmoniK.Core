@@ -31,12 +31,11 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Worker;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Pollster;
-using ArmoniK.Core.Common.StateMachines;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 using Moq;
 
@@ -53,18 +52,14 @@ public class DataPrefetcherTest
 {
   [SetUp]
   public void SetUp()
-  {
-    activitySource_ = new ActivitySource(nameof(DataPrefetcherTest));
-    sm_             = new ComputeRequestStateMachine(NullLogger<ComputeRequestStateMachine>.Instance);
-  }
+    => activitySource_ = new ActivitySource(nameof(DataPrefetcherTest));
 
   [TearDown]
   public virtual void TearDown()
   {
   }
 
-  private ActivitySource             activitySource_;
-  private ComputeRequestStateMachine sm_;
+  private ActivitySource? activitySource_;
 
   [Test]
   public async Task EmptyPayloadAndOneDependency()
@@ -73,20 +68,20 @@ public class DataPrefetcherTest
     var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>().ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
     mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>
-                                                           {
-                                                             Convert.FromBase64String("1111"),
-                                                             Convert.FromBase64String("2222"),
-                                                             Convert.FromBase64String("3333"),
-                                                             Convert.FromBase64String("4444"),
-                                                           }.ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("1111"),
+                                                         Convert.FromBase64String("2222"),
+                                                         Convert.FromBase64String("3333"),
+                                                         Convert.FromBase64String("4444"),
+                                                       }.ToAsyncEnumerable());
 
     mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
                             .Returns((string objname) =>
@@ -101,7 +96,7 @@ public class DataPrefetcherTest
                                          return mockObjectStorage.Object;
                                        }
 
-                                       return null;
+                                       throw new ArmoniKException();
                                      });
 
     var loggerFactory = new LoggerFactory();
@@ -139,7 +134,9 @@ public class DataPrefetcherTest
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1,
-                                                                                  "part1"),
+                                                                                  "part1",
+                                                                                  "applicationName",
+                                                                                  "applicationVersion"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -228,20 +225,20 @@ public class DataPrefetcherTest
     var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>().ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
     mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>
-                                                           {
-                                                             Convert.FromBase64String("1111"),
-                                                             Convert.FromBase64String("2222"),
-                                                             Convert.FromBase64String("3333"),
-                                                             Convert.FromBase64String("4444"),
-                                                           }.ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("1111"),
+                                                         Convert.FromBase64String("2222"),
+                                                         Convert.FromBase64String("3333"),
+                                                         Convert.FromBase64String("4444"),
+                                                       }.ToAsyncEnumerable());
 
     mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
                             .Returns((string objname) =>
@@ -256,7 +253,7 @@ public class DataPrefetcherTest
                                          return mockObjectStorage.Object;
                                        }
 
-                                       return null;
+                                       throw new ArmoniKException();
                                      });
 
     var loggerFactory = new LoggerFactory();
@@ -294,7 +291,9 @@ public class DataPrefetcherTest
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1,
-                                                                                  "part1"),
+                                                                                  "part1",
+                                                                                  "",
+                                                                                  ""),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -310,26 +309,26 @@ public class DataPrefetcherTest
     var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>
-                                                           {
-                                                             Convert.FromBase64String("AAAA"),
-                                                             Convert.FromBase64String("BBBB"),
-                                                             Convert.FromBase64String("CCCC"),
-                                                             Convert.FromBase64String("DDDD"),
-                                                           }.ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("AAAA"),
+                                                         Convert.FromBase64String("BBBB"),
+                                                         Convert.FromBase64String("CCCC"),
+                                                         Convert.FromBase64String("DDDD"),
+                                                       }.ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
     mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>
-                                                           {
-                                                             Convert.FromBase64String("1111"),
-                                                             Convert.FromBase64String("2222"),
-                                                             Convert.FromBase64String("3333"),
-                                                             Convert.FromBase64String("4444"),
-                                                           }.ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("1111"),
+                                                         Convert.FromBase64String("2222"),
+                                                         Convert.FromBase64String("3333"),
+                                                         Convert.FromBase64String("4444"),
+                                                       }.ToAsyncEnumerable());
 
     mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
                             .Returns((string objname) =>
@@ -344,7 +343,7 @@ public class DataPrefetcherTest
                                          return mockObjectStorage.Object;
                                        }
 
-                                       return null;
+                                       throw new ArmoniKException();
                                      });
 
     var loggerFactory = new LoggerFactory();
@@ -382,7 +381,9 @@ public class DataPrefetcherTest
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1,
-                                                                                  "part1"),
+                                                                                  "part1",
+                                                                                  "applicationName",
+                                                                                  "applicationVersion"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -398,26 +399,26 @@ public class DataPrefetcherTest
     var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>
-                                                           {
-                                                             Convert.FromBase64String("AAAA"),
-                                                             Convert.FromBase64String("BBBB"),
-                                                             Convert.FromBase64String("CCCC"),
-                                                             Convert.FromBase64String("DDDD"),
-                                                           }.ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("AAAA"),
+                                                         Convert.FromBase64String("BBBB"),
+                                                         Convert.FromBase64String("CCCC"),
+                                                         Convert.FromBase64String("DDDD"),
+                                                       }.ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
     mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>
-                                                           {
-                                                             Convert.FromBase64String("1111"),
-                                                             Convert.FromBase64String("2222"),
-                                                             Convert.FromBase64String("3333"),
-                                                             Convert.FromBase64String("4444"),
-                                                           }.ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("1111"),
+                                                         Convert.FromBase64String("2222"),
+                                                         Convert.FromBase64String("3333"),
+                                                         Convert.FromBase64String("4444"),
+                                                       }.ToAsyncEnumerable());
 
     mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
                             .Returns((string objname) =>
@@ -432,7 +433,7 @@ public class DataPrefetcherTest
                                          return mockObjectStorage.Object;
                                        }
 
-                                       return null;
+                                       throw new ArmoniKException();
                                      });
 
     var loggerFactory = new LoggerFactory();
@@ -470,7 +471,9 @@ public class DataPrefetcherTest
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1,
-                                                                                  "part1"),
+                                                                                  "part1",
+                                                                                  "applicationName",
+                                                                                  "applicationVersion"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -486,20 +489,20 @@ public class DataPrefetcherTest
     var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>().ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
     mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>
-                                                           {
-                                                             Convert.FromBase64String("1111"),
-                                                             Convert.FromBase64String("2222"),
-                                                             Convert.FromBase64String("3333"),
-                                                             Convert.FromBase64String("4444"),
-                                                           }.ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("1111"),
+                                                         Convert.FromBase64String("2222"),
+                                                         Convert.FromBase64String("3333"),
+                                                         Convert.FromBase64String("4444"),
+                                                       }.ToAsyncEnumerable());
 
     mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
                             .Returns((string objname) =>
@@ -514,7 +517,7 @@ public class DataPrefetcherTest
                                          return mockObjectStorage.Object;
                                        }
 
-                                       return null;
+                                       throw new ArmoniKException();
                                      });
 
     var loggerFactory = new LoggerFactory();
@@ -554,7 +557,9 @@ public class DataPrefetcherTest
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1,
-                                                                                  "part1"),
+                                                                                  "part1",
+                                                                                  "applicationName",
+                                                                                  "applicationVersion"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)
@@ -570,20 +575,20 @@ public class DataPrefetcherTest
     var mockObjectStorage        = new Mock<IObjectStorage>();
     mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>().ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>().ToAsyncEnumerable());
 
     var mockResultStorage = new Mock<IObjectStorage>();
     mockResultStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
                                                   CancellationToken.None))
-                     .Returns((string            key,
-                               CancellationToken token) => new List<byte[]>
-                                                           {
-                                                             Convert.FromBase64String("1111"),
-                                                             Convert.FromBase64String("2222"),
-                                                             Convert.FromBase64String("3333"),
-                                                             Convert.FromBase64String("4444"),
-                                                           }.ToAsyncEnumerable());
+                     .Returns((string            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("1111"),
+                                                         Convert.FromBase64String("2222"),
+                                                         Convert.FromBase64String("3333"),
+                                                         Convert.FromBase64String("4444"),
+                                                       }.ToAsyncEnumerable());
 
     mockObjectStorageFactory.Setup(x => x.CreateObjectStorage(It.IsAny<string>()))
                             .Returns((string objname) =>
@@ -598,7 +603,7 @@ public class DataPrefetcherTest
                                          return mockObjectStorage.Object;
                                        }
 
-                                       return null;
+                                       throw new ArmoniKException();
                                      });
 
     var loggerFactory = new LoggerFactory();
@@ -638,7 +643,9 @@ public class DataPrefetcherTest
                                                                                   TimeSpan.FromSeconds(100),
                                                                                   5,
                                                                                   1,
-                                                                                  "part1"),
+                                                                                  "part1",
+                                                                                  "applicationName",
+                                                                                  "applicationVersion"),
                                                                   new Output(true,
                                                                              "")),
                                                      CancellationToken.None)

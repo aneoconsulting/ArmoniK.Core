@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -29,7 +29,7 @@ namespace ArmoniK.Samples.HtcMock.Client;
 internal class SimpleStats
 {
   public long   EllapsedTime { get; set; }
-  public string Test         { get; set; }
+  public string Test         { get; set; } = "";
   public int    NRun         { get; set; }
 
   public string ToJson()

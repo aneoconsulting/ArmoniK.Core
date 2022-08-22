@@ -30,7 +30,7 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleAgentHandler : IAgentHandler
 {
-  public IAgent Agent;
+  public IAgent? Agent;
 
   public Task Stop(CancellationToken cancellationToken)
     => Task.CompletedTask;

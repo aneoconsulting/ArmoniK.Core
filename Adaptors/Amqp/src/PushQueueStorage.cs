@@ -31,7 +31,7 @@ using System.Threading.Tasks;
 using Amqp;
 using Amqp.Framing;
 
-using ArmoniK.Api.Worker.Utils;
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;

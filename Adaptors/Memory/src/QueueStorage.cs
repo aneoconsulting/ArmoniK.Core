@@ -132,7 +132,7 @@ public class QueueStorage : IQueueStorage
 
   private class MessageHandler : IQueueMessageHandler
   {
-    private static long count_;
+    private static long _count;
 
     public int Priority { get; init; }
 
@@ -140,10 +140,10 @@ public class QueueStorage : IQueueStorage
 
     public SemaphoreSlim Semaphore { get; } = new(1);
 
-    public long Order { get; } = Interlocked.Increment(ref count_);
+    public long Order { get; } = Interlocked.Increment(ref _count);
 
-    public SortedList<MessageHandler, MessageHandler>   Queues   { get; set; }
-    public ConcurrentDictionary<string, MessageHandler> Handlers { get; set; }
+    public SortedList<MessageHandler, MessageHandler>   Queues   { get; init; } = new();
+    public ConcurrentDictionary<string, MessageHandler> Handlers { get; init; } = new();
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()
@@ -245,25 +245,25 @@ public class QueueStorage : IQueueStorage
     }
 
     /// <inheritdoc />
-    public CancellationToken CancellationToken { get; init; }
+    public CancellationToken CancellationToken { get; init; } = CancellationToken.None;
 
     /// <inheritdoc />
     public string MessageId
       => $"Message#{Order}";
 
     /// <inheritdoc />
-    public string TaskId { get; init; }
+    public string TaskId { get; init; } = "";
 
     /// <inheritdoc />
-    public QueueMessageStatus Status { get; set; }
+    public QueueMessageStatus Status { get; set; } = 0;
   }
 
   private class MessageComparer : IComparer<MessageHandler>
   {
     public static readonly IComparer<MessageHandler> Instance = new MessageComparer();
 
-    public int Compare(MessageHandler x,
-                       MessageHandler y)
+    public int Compare(MessageHandler? x,
+                       MessageHandler? y)
     {
       if (ReferenceEquals(x,
                           y))

@@ -23,7 +23,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 
 using ArmoniK.Core.Adapters.Amqp;
@@ -37,6 +36,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -45,25 +45,23 @@ using Serilog;
 
 namespace ArmoniK.Core.Control.Metrics;
 
-public static partial class Program
+public static class Program
 {
-  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Control.Metrics");
-
   public static int Main(string[] args)
   {
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
+           .AddJsonFile("appsettings.json",
+                        true,
+                        false)
+           .AddEnvironmentVariables()
+           .AddCommandLine(args);
+
+    var logger = new LoggerInit(builder.Configuration);
+
     try
     {
-      var builder = WebApplication.CreateBuilder(args);
-
-      builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
-             .AddJsonFile("appsettings.json",
-                          true,
-                          false)
-             .AddEnvironmentVariables()
-             .AddCommandLine(args);
-
-      var logger = new LoggerInit(builder.Configuration);
-
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
       builder.Services.AddLogging(logger.Configure)
@@ -91,7 +89,6 @@ public static partial class Program
       }
 
       app.UseSerilogRequestLogging();
-
       app.UseOpenTelemetryPrometheusScrapingEndpoint();
       app.UseRouting();
       app.UseHttpsRedirection();
@@ -114,17 +111,15 @@ public static partial class Program
                          endpoints.MapControllers();
                        });
 
-      //app.MapGet("/metrics",
-      //           (MetricGenerator generator) => generator.GetMetrics());
-
       app.Run();
 
       return 0;
     }
     catch (Exception ex)
     {
-      Log.Fatal(ex,
-                "Host terminated unexpectedly");
+      logger.GetLogger()
+            .LogCritical(ex,
+                         "Host terminated unexpectedly");
       return 1;
     }
     finally

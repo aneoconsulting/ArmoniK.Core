@@ -49,7 +49,7 @@ public class QueueStorageTests
      * the later is defined in the  SimpleAmqpClientHelper class */
     => Options = CreateDefaultOptions();
 
-  public Options.Amqp Options { get; set; }
+  public Options.Amqp? Options;
 
   private static Options.Amqp CreateDefaultOptions()
     => new()
@@ -223,11 +223,11 @@ public class QueueStorageTests
     pushProvider.Setup(sp => sp.Session)
                 .Returns(helper.Session);
 
-    var pushQueueStorage = new PushQueueStorage(Options,
+    var pushQueueStorage = new PushQueueStorage(Options!,
                                                 pushProvider.Object,
                                                 NullLogger<PushQueueStorage>.Instance);
 
-    var pullQueueStorage = new PullQueueStorage(Options,
+    var pullQueueStorage = new PullQueueStorage(Options!,
                                                 pullProvider.Object,
                                                 NullLogger<PullQueueStorage>.Instance);
 

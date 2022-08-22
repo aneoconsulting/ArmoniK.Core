@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -40,10 +41,10 @@ public class ObjectDataModelMapping : IMongoDataModelMapping<ObjectDataModelMapp
     => $"{Key}.{ChunkIdx}";
 
   [BsonElement]
-  public string Key { get; set; }
+  public string Key { get; set; } = "";
 
   [BsonElement]
-  public byte[] Chunk { get; set; }
+  public byte[] Chunk { get; set; } = Array.Empty<byte>();
 
   [BsonElement]
   public int ChunkIdx { get; set; }

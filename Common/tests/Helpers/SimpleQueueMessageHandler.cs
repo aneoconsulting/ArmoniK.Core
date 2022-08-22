@@ -29,8 +29,8 @@ public class SimpleQueueMessageHandler : IQueueMessageHandler
   public ValueTask DisposeAsync()
     => ValueTask.CompletedTask;
 
-  public CancellationToken  CancellationToken { get; set; }
-  public string             MessageId         { get; set; }
-  public string             TaskId            { get; set; }
+  public CancellationToken  CancellationToken { get; init; }
+  public string             MessageId         { get; init; } = "";
+  public string             TaskId            { get; init; } = "";
   public QueueMessageStatus Status            { get; set; }
 }

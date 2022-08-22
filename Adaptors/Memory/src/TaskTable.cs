@@ -30,14 +30,19 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Api.Worker.Utils;
+
+using Armonik.Api.gRPC.V1.Tasks;
+
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Logging;
 
+using Task = System.Threading.Tasks.Task;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.Memory;
@@ -285,6 +290,21 @@ public class TaskTable : ITaskTable
                   .ToAsyncEnumerable();
   }
 
+  public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
+                                                    CancellationToken cancellationToken)
+  {
+    var queryable = taskId2TaskData_.AsQueryable()
+                                    .Select(pair => pair.Value)
+                                    .Where(request.Filter.ToTaskDataFilter());
+
+    var ordered = request.Sort.Direction == ListTasksRequest.Types.OrderDirection.Asc
+                    ? queryable.OrderBy(request.Sort.ToTaskDataField())
+                    : queryable.OrderByDescending(request.Sort.ToTaskDataField());
+
+    return Task.FromResult<IEnumerable<TaskData>>(ordered.Skip(request.Page * request.PageSize)
+                                                         .Take(request.PageSize));
+  }
+
   /// <inheritdoc />
   public Task SetTaskSuccessAsync(string            taskId,
                                   CancellationToken cancellationToken)
@@ -445,7 +465,8 @@ public class TaskTable : ITaskTable
                                                     {
                                                       if (data.OwnerPodId != ownerPodId)
                                                       {
-                                                        return null;
+                                                        throw new
+                                                          InvalidOperationException($"The task {taskId} is acquired by {data.OwnerPodId}, but release is done by {ownerPodId}.");
                                                       }
 
                                                       return data with

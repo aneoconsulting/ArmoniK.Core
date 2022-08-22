@@ -32,6 +32,9 @@ using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Common.Auth.Authorization;
 
+/// <summary>
+///   Class used by the authorization middleware to generate the policy from its name and configuration
+/// </summary>
 public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
 {
   private readonly bool requireAuthentication_;
@@ -64,7 +67,7 @@ public class AuthorizationPolicyProvider : IAuthorizationPolicyProvider
     }
 
     // Require the authenticated user to have the right permission type
-    var permission = Permissions.Parse(policyName[RequiresPermissionAttribute.PolicyPrefix.Length..]);
+    var permission = new Permissions.Permission(policyName[RequiresPermissionAttribute.PolicyPrefix.Length..]);
     return Task.FromResult<AuthorizationPolicy?>(new AuthorizationPolicyBuilder(Authenticator.SchemeName).RequireAuthenticatedUser()
                                                                                                          .RequireClaim(permission.ToBasePermission())
                                                                                                          .Build());

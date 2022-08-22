@@ -59,9 +59,11 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
     }
   }
 
+  /// <inheritdoc />
   public string CollectionName
     => nameof(AuthData);
 
+  /// <inheritdoc />
   public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
                                            IMongoCollection<AuthData> collection)
   {

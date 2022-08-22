@@ -48,7 +48,7 @@ public class SessionAmqp : ISessionAmqp
     retriesReconnect_ = options.MaxRetries;
   }
 
-  public Session      Session { get; set; }
+  public Session?     Session { get; set; }
   public Options.Amqp Options { get; set; }
 
   public ILogger Logger { get; set; }
@@ -80,10 +80,10 @@ public class SessionAmqp : ISessionAmqp
     var connectionFactory = new ConnectionFactory();
     if (Options.Scheme.Equals("AMQPS"))
     {
-      connectionFactory.SSL.RemoteCertificateValidationCallback = delegate(object          sender,
-                                                                           X509Certificate certificate,
-                                                                           X509Chain       chain,
-                                                                           SslPolicyErrors errors)
+      connectionFactory.SSL.RemoteCertificateValidationCallback = delegate(object           _,
+                                                                           X509Certificate? _,
+                                                                           X509Chain?       _,
+                                                                           SslPolicyErrors  errors)
                                                                   {
                                                                     switch (errors)
                                                                     {
