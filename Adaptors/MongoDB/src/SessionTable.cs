@@ -76,12 +76,13 @@ public class SessionTable : ISessionTable
 
 
   [PublicAPI]
-  public async Task SetSessionDataAsync(string              rootSessionId,
-                                        IEnumerable<string> partitionIds,
-                                        TaskOptions         defaultOptions,
-                                        CancellationToken   cancellationToken = default)
+  public async Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
+                                                TaskOptions         defaultOptions,
+                                                CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity($"{nameof(SetSessionDataAsync)}");
+    var rootSessionId = Guid.NewGuid()
+                            .ToString();
     activity?.SetTag($"{nameof(SetSessionDataAsync)}_sessionId",
                      rootSessionId);
     var sessionCollection = sessionCollectionProvider_.Get();
@@ -94,6 +95,7 @@ public class SessionTable : ISessionTable
     await sessionCollection.InsertOneAsync(data,
                                            cancellationToken: cancellationToken)
                            .ConfigureAwait(false);
+    return data.SessionId;
   }
 
   /// <inheritdoc />

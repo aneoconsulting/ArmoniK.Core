@@ -91,13 +91,9 @@ public class TaskHandlerTest
   [Test]
   public async Task AcquireTaskShouldSucceed()
   {
-    var sessionId = "sessionId";
-    var taskId    = "TaskId";
-
     var sqmh = new SimpleQueueMessageHandler
                {
                  CancellationToken = CancellationToken.None,
-                 TaskId            = taskId,
                  Status            = QueueMessageStatus.Waiting,
                  MessageId = Guid.NewGuid()
                                  .ToString(),
@@ -110,8 +106,7 @@ public class TaskHandlerTest
                                                                 sqmh);
 
     var taskRequests = new List<TaskRequest>();
-    taskRequests.Add(new TaskRequest(taskId,
-                                     new List<string>
+    taskRequests.Add(new TaskRequest(new List<string>
                                      {
                                        "ExpectedOutput",
                                      },
@@ -140,21 +135,20 @@ public class TaskHandlerTest
                                                                    })
                              .ConfigureAwait(false);
 
-    await testServiceProvider.Submitter.CreateSession(sessionId,
-                                                      new[]
-                                                      {
-                                                        "part1",
-                                                        "part2",
-                                                      },
-                                                      new TaskOptions
-                                                      {
-                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                        MaxRetries  = 2,
-                                                        Priority    = 1,
-                                                        PartitionId = "part1",
-                                                      },
-                                                      CancellationToken.None)
-                             .ConfigureAwait(false);
+    var sessionId = (await testServiceProvider.Submitter.CreateSession(new[]
+                                                                       {
+                                                                         "part1",
+                                                                         "part2",
+                                                                       },
+                                                                       new TaskOptions
+                                                                       {
+                                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
+                                                                         MaxRetries  = 2,
+                                                                         Priority    = 1,
+                                                                         PartitionId = "part1",
+                                                                       },
+                                                                       CancellationToken.None)
+                                              .ConfigureAwait(false)).SessionId;
 
     var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
@@ -176,6 +170,11 @@ public class TaskHandlerTest
                                                              CancellationToken.None)
                              .ConfigureAwait(false);
 
+    var taskId = requests.First()
+                         .Id;
+
+    sqmh.TaskId = taskId;
+
     var acquired = await testServiceProvider.TaskHandler.AcquireTask(CancellationToken.None)
                                             .ConfigureAwait(false);
 
@@ -187,13 +186,9 @@ public class TaskHandlerTest
   [Test]
   public async Task AcquireNotReadyTaskShouldFail()
   {
-    var sessionId = "sessionId";
-    var taskId    = "TaskId";
-
     var sqmh = new SimpleQueueMessageHandler
                {
                  CancellationToken = CancellationToken.None,
-                 TaskId            = taskId,
                  Status            = QueueMessageStatus.Waiting,
                  MessageId = Guid.NewGuid()
                                  .ToString(),
@@ -206,8 +201,7 @@ public class TaskHandlerTest
                                                                 sqmh);
 
     var taskRequests = new List<TaskRequest>();
-    taskRequests.Add(new TaskRequest(taskId,
-                                     new List<string>
+    taskRequests.Add(new TaskRequest(new List<string>
                                      {
                                        "ExpectedOutput",
                                      },
@@ -239,21 +233,20 @@ public class TaskHandlerTest
                                                                    })
                              .ConfigureAwait(false);
 
-    await testServiceProvider.Submitter.CreateSession(sessionId,
-                                                      new[]
-                                                      {
-                                                        "part1",
-                                                        "part2",
-                                                      },
-                                                      new TaskOptions
-                                                      {
-                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                        MaxRetries  = 2,
-                                                        Priority    = 1,
-                                                        PartitionId = "part1",
-                                                      },
-                                                      CancellationToken.None)
-                             .ConfigureAwait(false);
+    var sessionId = (await testServiceProvider.Submitter.CreateSession(new[]
+                                                                       {
+                                                                         "part1",
+                                                                         "part2",
+                                                                       },
+                                                                       new TaskOptions
+                                                                       {
+                                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
+                                                                         MaxRetries  = 2,
+                                                                         Priority    = 1,
+                                                                         PartitionId = "part1",
+                                                                       },
+                                                                       CancellationToken.None)
+                                              .ConfigureAwait(false)).SessionId;
 
     var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
@@ -275,6 +268,11 @@ public class TaskHandlerTest
                                                              CancellationToken.None)
                              .ConfigureAwait(false);
 
+    var taskId = requests.First()
+                         .Id;
+
+    sqmh.TaskId = taskId;
+
     var acquired = await testServiceProvider.TaskHandler.AcquireTask(CancellationToken.None)
                                             .ConfigureAwait(false);
 
@@ -285,13 +283,9 @@ public class TaskHandlerTest
   [Test]
   public async Task ExecuteTaskShouldSucceed()
   {
-    var sessionId = "sessionId";
-    var taskId    = "TaskId";
-
     var sqmh = new SimpleQueueMessageHandler
                {
                  CancellationToken = CancellationToken.None,
-                 TaskId            = taskId,
                  Status            = QueueMessageStatus.Waiting,
                  MessageId = Guid.NewGuid()
                                  .ToString(),
@@ -305,8 +299,7 @@ public class TaskHandlerTest
                                                                 sqmh);
 
     var taskRequests = new List<TaskRequest>();
-    taskRequests.Add(new TaskRequest(taskId,
-                                     new List<string>
+    taskRequests.Add(new TaskRequest(new List<string>
                                      {
                                        "ExpectedOutput",
                                      },
@@ -335,21 +328,20 @@ public class TaskHandlerTest
                                                                    })
                              .ConfigureAwait(false);
 
-    await testServiceProvider.Submitter.CreateSession(sessionId,
-                                                      new[]
-                                                      {
-                                                        "part1",
-                                                        "part2",
-                                                      },
-                                                      new TaskOptions
-                                                      {
-                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                        MaxRetries  = 2,
-                                                        Priority    = 1,
-                                                        PartitionId = "part1",
-                                                      },
-                                                      CancellationToken.None)
-                             .ConfigureAwait(false);
+    var sessionId = (await testServiceProvider.Submitter.CreateSession(new[]
+                                                                       {
+                                                                         "part1",
+                                                                         "part2",
+                                                                       },
+                                                                       new TaskOptions
+                                                                       {
+                                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
+                                                                         MaxRetries  = 2,
+                                                                         Priority    = 1,
+                                                                         PartitionId = "part1",
+                                                                       },
+                                                                       CancellationToken.None)
+                                              .ConfigureAwait(false)).SessionId;
 
     var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
@@ -370,6 +362,11 @@ public class TaskHandlerTest
                                                              sessionId,
                                                              CancellationToken.None)
                              .ConfigureAwait(false);
+
+    var taskId = requests.First()
+                         .Id;
+
+    sqmh.TaskId = taskId;
 
     var acquired = await testServiceProvider.TaskHandler.AcquireTask(CancellationToken.None)
                                             .ConfigureAwait(false);
@@ -397,13 +394,9 @@ public class TaskHandlerTest
   [Test]
   public async Task ExecuteTaskWithResultsShouldSucceed()
   {
-    var sessionId = "sessionId";
-    var taskId    = "TaskId";
-
     var sqmh = new SimpleQueueMessageHandler
                {
                  CancellationToken = CancellationToken.None,
-                 TaskId            = taskId,
                  Status            = QueueMessageStatus.Waiting,
                  MessageId = Guid.NewGuid()
                                  .ToString(),
@@ -417,8 +410,7 @@ public class TaskHandlerTest
                                                                 sqmh);
 
     var taskRequests = new List<TaskRequest>();
-    taskRequests.Add(new TaskRequest(taskId,
-                                     new List<string>
+    taskRequests.Add(new TaskRequest(new List<string>
                                      {
                                        "ExpectedOutput",
                                      },
@@ -447,21 +439,20 @@ public class TaskHandlerTest
                                                                    })
                              .ConfigureAwait(false);
 
-    await testServiceProvider.Submitter.CreateSession(sessionId,
-                                                      new[]
-                                                      {
-                                                        "part1",
-                                                        "part2",
-                                                      },
-                                                      new TaskOptions
-                                                      {
-                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
-                                                        MaxRetries  = 2,
-                                                        Priority    = 1,
-                                                        PartitionId = "part1",
-                                                      },
-                                                      CancellationToken.None)
-                             .ConfigureAwait(false);
+    var sessionId = (await testServiceProvider.Submitter.CreateSession(new[]
+                                                                       {
+                                                                         "part1",
+                                                                         "part2",
+                                                                       },
+                                                                       new TaskOptions
+                                                                       {
+                                                                         MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(2)),
+                                                                         MaxRetries  = 2,
+                                                                         Priority    = 1,
+                                                                         PartitionId = "part1",
+                                                                       },
+                                                                       CancellationToken.None)
+                                              .ConfigureAwait(false)).SessionId;
 
     var (requests, priority) = await testServiceProvider.Submitter.CreateTasks(sessionId,
                                                                                sessionId,
@@ -482,6 +473,11 @@ public class TaskHandlerTest
                                                              sessionId,
                                                              CancellationToken.None)
                              .ConfigureAwait(false);
+
+    var taskId = requests.First()
+                         .Id;
+
+    sqmh.TaskId = taskId;
 
     var acquired = await testServiceProvider.TaskHandler.AcquireTask(CancellationToken.None)
                                             .ConfigureAwait(false);

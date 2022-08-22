@@ -72,36 +72,12 @@ internal class CreateSessionTests
   [Test]
   public void NullDefaultTaskOptionShouldThrowException()
   {
-    var sessionId = Guid.NewGuid() + "mytestsession";
     Console.WriteLine("NullDefaultTaskOptionShouldThrowException");
 
     Assert.Throws(typeof(RpcException),
                   () => client_!.CreateSession(new CreateSessionRequest
                                                {
                                                  DefaultTaskOption = null,
-                                                 Id                = sessionId,
-                                                 PartitionIds =
-                                                 {
-                                                   partition_,
-                                                 },
-                                               }));
-  }
-
-  [Test]
-  public void EmptyIdTaskOptionShouldThrowException()
-  {
-    Console.WriteLine("EmptyIdTaskOptionShouldThrowException");
-    Assert.Throws(typeof(RpcException),
-                  () => client_!.CreateSession(new CreateSessionRequest
-                                               {
-                                                 DefaultTaskOption = new TaskOptions
-                                                                     {
-                                                                       Priority    = 1,
-                                                                       MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
-                                                                       MaxRetries  = 2,
-                                                                       PartitionId = partition_,
-                                                                     },
-                                                 Id = "",
                                                  PartitionIds =
                                                  {
                                                    partition_,
@@ -124,13 +100,12 @@ internal class CreateSessionTests
                                                                             MaxRetries  = 2,
                                                                             PartitionId = partition_,
                                                                           },
-                                                      Id = sessionId,
                                                       PartitionIds =
                                                       {
                                                         partition_,
                                                       },
                                                     });
-    Assert.AreEqual(createSessionReply.ResultCase,
-                    CreateSessionReply.ResultOneofCase.Ok);
+    Assert.AreNotEqual(CreateSessionReply.ResultOneofCase.SessionId,
+                       createSessionReply.ResultCase);
   }
 }

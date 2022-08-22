@@ -192,10 +192,6 @@ public class TaskHandler : IAsyncDisposable
         case TaskStatus.Processing:
           logger_.LogInformation("Task is processing elsewhere ; taking over here");
           break;
-        case TaskStatus.Failed:
-          logger_.LogInformation("Task is failed");
-          messageHandler_.Status = QueueMessageStatus.Poisonous;
-          return false;
         case TaskStatus.Unspecified:
         default:
           logger_.LogCritical("Task was in an unknown state {state}",

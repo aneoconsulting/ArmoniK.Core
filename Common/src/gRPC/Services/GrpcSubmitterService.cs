@@ -155,8 +155,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   {
     try
     {
-      return submitter_.CreateSession(request.Id,
-                                      request.PartitionIds,
+      return submitter_.CreateSession(request.PartitionIds,
                                       request.DefaultTaskOption,
                                       context.CancellationToken);
     }
@@ -194,8 +193,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                                request.SessionId,
                                                request.TaskOptions,
                                                request.TaskRequests.ToAsyncEnumerable()
-                                                      .Select(taskRequest => new TaskRequest(taskRequest.Id,
-                                                                                             taskRequest.ExpectedOutputKeys,
+                                                      .Select(taskRequest => new TaskRequest(taskRequest.ExpectedOutputKeys,
                                                                                              taskRequest.DataDependencies,
                                                                                              new[]
                                                                                              {
@@ -213,7 +211,16 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
       return new CreateTaskReply
              {
-               Successfull = new Empty(),
+               CreationStatusList = new CreateTaskReply.Types.CreationStatusList
+                                    {
+                                      CreationStatuses =
+                                      {
+                                        tuple.requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
+                                                                             {
+                                                                               TaskId = taskRequest.Id,
+                                                                             }),
+                                      },
+                                    },
              };
     }
     catch (ArmoniKException e)
@@ -276,7 +283,16 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
       return new CreateTaskReply
              {
-               Successfull = new Empty(),
+               CreationStatusList = new CreateTaskReply.Types.CreationStatusList
+                                    {
+                                      CreationStatuses =
+                                      {
+                                        tuple.requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
+                                                                             {
+                                                                               TaskId = taskRequest.Id,
+                                                                             }),
+                                      },
+                                    },
              };
     }
     catch (ArmoniKException e)

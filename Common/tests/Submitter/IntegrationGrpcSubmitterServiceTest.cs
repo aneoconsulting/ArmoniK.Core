@@ -220,8 +220,7 @@ internal class IntegrationGrpcSubmitterServiceTest
 
                         submitter => submitter.CountTasks(It.IsAny<TaskFilter>(),
                                                           It.IsAny<CancellationToken>()),
-                        submitter => submitter.CreateSession(It.IsAny<string>(),
-                                                             It.IsAny<IList<string>>(),
+                        submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
                                                              It.IsAny<TaskOptions>(),
                                                              It.IsAny<CancellationToken>()),
                         submitter => submitter.CreateTasks(It.IsAny<string>(),
@@ -439,7 +438,6 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       _ = client.CreateSession(new CreateSessionRequest
                                {
-                                 Id = "Id",
                                  DefaultTaskOption = new TaskOptions
                                                      {
                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
@@ -485,7 +483,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                                     {
                                       new Api.gRPC.V1.TaskRequest
                                       {
-                                        Id      = "Id",
                                         Payload = ByteString.CopyFromUtf8("Payload"),
                                       },
                                     },
@@ -536,10 +533,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                    {
                                                      InitTask = new InitTaskRequest
                                                                 {
-                                                                  Header = new TaskRequestHeader
-                                                                           {
-                                                                             Id = "Id",
-                                                                           },
+                                                                  Header = new TaskRequestHeader(),
                                                                 },
                                                    })
                          .ConfigureAwait(false);

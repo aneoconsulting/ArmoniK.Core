@@ -105,13 +105,11 @@ public class FullyIntegratedTest
                       };
     client.CreateSession(new CreateSessionRequest
                          {
-                           Id                = sessionId,
                            DefaultTaskOption = taskOptions,
                          });
 
     var taskRequest = new TaskRequest
                       {
-                        Id      = taskId,
                         Payload = ByteString.CopyFromUtf8("taskPayload"),
                       };
 
@@ -129,8 +127,8 @@ public class FullyIntegratedTest
                                                         },
                                                       },
                                                     });
-    Assert.AreEqual(CreateTaskReply.DataOneofCase.Successfull,
-                    taskCreationReply.DataCase);
+    Assert.AreEqual(CreateTaskReply.ResponseOneofCase.CreationStatusList,
+                    taskCreationReply.ResponseCase);
 
     var taskWaitForCompletion = client.WaitForCompletion(new WaitRequest
                                                          {
@@ -174,13 +172,11 @@ public class FullyIntegratedTest
                       };
     client.CreateSession(new CreateSessionRequest
                          {
-                           Id                = sessionId,
                            DefaultTaskOption = taskOptions,
                          });
 
     var taskRequest = new TaskRequest
                       {
-                        Id      = taskId,
                         Payload = ByteString.CopyFromUtf8("taskPayload"),
                       };
 
@@ -198,8 +194,8 @@ public class FullyIntegratedTest
                                                         },
                                                       },
                                                     });
-    Assert.AreEqual(CreateTaskReply.DataOneofCase.Successfull,
-                    taskCreationReply.DataCase);
+    Assert.AreEqual(CreateTaskReply.ResponseOneofCase.CreationStatusList,
+                    taskCreationReply.ResponseCase);
 
     var taskWaitForCompletion = client.WaitForCompletion(new WaitRequest
                                                          {

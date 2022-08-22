@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Client.Submitter;
@@ -36,9 +37,8 @@ namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
 
 public static class SubmitterExt
 {
-  public static void CreateSessionAndCheckReply(this Submitter.SubmitterClient client,
-                                                string                         sessionId,
-                                                string                         partitionId)
+  public static string CreateSessionAndCheckReply(this Submitter.SubmitterClient client,
+                                                  string                         partitionId)
   {
     var taskOptions = new TaskOptions
                       {
@@ -51,7 +51,6 @@ public static class SubmitterExt
     var session = client.CreateSession(new CreateSessionRequest
                                        {
                                          DefaultTaskOption = taskOptions,
-                                         Id                = sessionId,
                                          PartitionIds =
                                          {
                                            partitionId,
@@ -63,32 +62,44 @@ public static class SubmitterExt
         throw new Exception("Error while creating session : " + session.Error);
       case CreateSessionReply.ResultOneofCase.None:
         throw new Exception("Issue with Server !");
-      case CreateSessionReply.ResultOneofCase.Ok:
-        break;
+      case CreateSessionReply.ResultOneofCase.SessionId:
+        Console.WriteLine("Session Created");
+        return session.SessionId;
       default:
         throw new ArgumentOutOfRangeException();
     }
-
-    Console.WriteLine("Session Created");
   }
 
-  public static async Task CreateTasksAndCheckReplyAsync(this Submitter.SubmitterClient client,
-                                                         string                         sessionId,
-                                                         TaskOptions?                   taskOptions,
-                                                         IEnumerable<TaskRequest>       taskRequestList)
+  public static async Task<IEnumerable<string>> CreateTasksAndCheckReplyAsync(this Submitter.SubmitterClient client,
+                                                                              string                         sessionId,
+                                                                              TaskOptions?                   taskOptions,
+                                                                              IEnumerable<TaskRequest>       taskRequestList)
   {
     var createTaskReply = await client.CreateTasksAsync(sessionId,
                                                         taskOptions,
                                                         taskRequestList)
                                       .ConfigureAwait(false);
-    switch (createTaskReply.DataCase)
+    switch (createTaskReply.ResponseCase)
     {
-      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
-        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
-      case CreateTaskReply.DataOneofCase.None:
+      case CreateTaskReply.ResponseOneofCase.None:
         throw new Exception("Issue with Server !");
-      case CreateTaskReply.DataOneofCase.Successfull:
-        break;
+      case CreateTaskReply.ResponseOneofCase.CreationStatusList:
+        return createTaskReply.CreationStatusList.CreationStatuses.Select(status =>
+                                                                          {
+                                                                            switch (status.StatusCase)
+                                                                            {
+                                                                              case CreateTaskReply.Types.CreationStatus.StatusOneofCase.None:
+                                                                                throw new Exception("Issue with Server !");
+                                                                              case CreateTaskReply.Types.CreationStatus.StatusOneofCase.TaskId:
+                                                                                return status.TaskId;
+                                                                              case CreateTaskReply.Types.CreationStatus.StatusOneofCase.Error:
+                                                                                return status.Error;
+                                                                              default:
+                                                                                throw new ArgumentOutOfRangeException();
+                                                                            }
+                                                                          });
+      case CreateTaskReply.ResponseOneofCase.Error:
+        throw new Exception("Error : " + createTaskReply.Error);
       default:
         throw new ArgumentOutOfRangeException();
     }

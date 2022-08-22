@@ -55,8 +55,6 @@ public class GridClient : IGridClient
 
   public ISessionClient CreateSession()
   {
-    var sessionId = Guid.NewGuid()
-                        .ToString();
     var createSessionRequest = new CreateSessionRequest
                                {
                                  DefaultTaskOption = new TaskOptions
@@ -88,23 +86,20 @@ public class GridClient : IGridClient
                                  {
                                    optionsHtcMock_.Partition,
                                  },
-                                 Id = sessionId,
                                };
-    var session = client_.CreateSession(createSessionRequest);
-    switch (session.ResultCase)
+    var createSessionReply = client_.CreateSession(createSessionRequest);
+    switch (createSessionReply.ResultCase)
     {
       case CreateSessionReply.ResultOneofCase.Error:
-        throw new Exception($"Error while creating session {sessionId}: " + session.Error);
+        throw new Exception("Error while creating session : " + createSessionReply.Error);
       case CreateSessionReply.ResultOneofCase.None:
-        throw new Exception($"Issue with Server for session {sessionId}!");
-      case CreateSessionReply.ResultOneofCase.Ok:
-        break;
+        throw new Exception("Issue with Server when creating session!");
+      case CreateSessionReply.ResultOneofCase.SessionId:
+        return new SessionClient(client_,
+                                 createSessionReply.SessionId,
+                                 logger_);
       default:
         throw new ArgumentOutOfRangeException();
     }
-
-    return new SessionClient(client_,
-                             sessionId,
-                             logger_);
   }
 }

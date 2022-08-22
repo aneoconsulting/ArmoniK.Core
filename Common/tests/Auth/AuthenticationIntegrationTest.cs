@@ -126,13 +126,11 @@ public class AuthenticationIntegrationTest
                               };
     CreateSmallTasksRequest.TaskRequests.Add(new TaskRequest
                                              {
-                                               Id = TaskId,
                                                Payload = ByteString.CopyFrom("payload",
                                                                              Encoding.ASCII),
                                              });
     CreateSessionRequest = new CreateSessionRequest
                            {
-                             Id                = SessionId,
                              DefaultTaskOption = taskOptions,
                              PartitionIds =
                              {
@@ -172,10 +170,7 @@ public class AuthenticationIntegrationTest
                                                    TaskOptions = taskOptions,
                                                  },
                                  };
-    var taskRequestHeader = new TaskRequestHeader
-                            {
-                              Id = TaskId,
-                            };
+    var taskRequestHeader = new TaskRequestHeader();
     taskRequestHeader.DataDependencies.Add("dependency");
     taskRequestHeader.ExpectedOutputKeys.Add("outputKey");
     CreateLargeTaskRequestInitTask = new CreateLargeTaskRequest

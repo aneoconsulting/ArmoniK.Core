@@ -142,21 +142,17 @@ public class SubmitterTests
   private                 MongoDbRunner?   runner_;
   private                 MongoClient?     client_;
   private const           string           DatabaseName    = "ArmoniK_TestDB";
-  private const           string           SessionId       = "SessionId";
-  private const           string           TaskCreatingId  = "TaskCreatingId";
-  private const           string           TaskSubmittedId = "TaskSubmittedId";
-  private const           string           TaskCompletedId = "TaskCompeletedId";
-  private const           string           ExpectedOutput1 = "ExpectedOutput1";
-  private const           string           ExpectedOutput2 = "ExpectedOutput2";
-  private const           string           ExpectedOutput3 = "ExpectedOutput3";
+  private static readonly string           ExpectedOutput1 = "ExpectedOutput1";
+  private static readonly string           ExpectedOutput2 = "ExpectedOutput2";
+  private static readonly string           ExpectedOutput3 = "ExpectedOutput3";
   private static readonly ActivitySource   ActivitySource  = new("ArmoniK.Core.Common.Tests.Submitter");
   private                 ISessionTable?   sessionTable_;
   private                 ITaskTable?      taskTable_;
   private                 IPartitionTable? partitionTable_;
 
-  private static async Task InitSubmitter(ISubmitter        submitter,
-                                          IPartitionTable   partitionTable,
-                                          CancellationToken token)
+  private static async Task<(string sessionId, string taskCreating, string taskSubmitted)> InitSubmitter(ISubmitter        submitter,
+                                                                                                         IPartitionTable   partitionTable,
+                                                                                                         CancellationToken token)
   {
     var defaultTaskOptions = new TaskOptions
                              {
@@ -186,42 +182,40 @@ public class SubmitterTests
                                                token)
                         .ConfigureAwait(false);
 
-    await submitter.CreateSession(SessionId,
-                                  new[]
-                                  {
-                                    "part1",
-                                    "part2",
-                                  },
-                                  defaultTaskOptions,
-                                  token)
-                   .ConfigureAwait(false);
+    var sessionId = (await submitter.CreateSession(new[]
+                                                   {
+                                                     "part1",
+                                                     "part2",
+                                                   },
+                                                   defaultTaskOptions,
+                                                   token)
+                                    .ConfigureAwait(false)).SessionId;
 
-    await submitter.CreateTasks(SessionId,
-                                SessionId,
-                                defaultTaskOptions,
-                                new List<TaskRequest>
-                                {
-                                  new(TaskCreatingId,
-                                      new[]
-                                      {
-                                        ExpectedOutput1,
-                                      },
-                                      new List<string>(),
-                                      new List<ReadOnlyMemory<byte>>
-                                      {
-                                        new(Encoding.ASCII.GetBytes("AAAA")),
-                                      }.ToAsyncEnumerable()),
-                                }.ToAsyncEnumerable(),
-                                CancellationToken.None)
-                   .ConfigureAwait(false);
+    var taskCreating = (await submitter.CreateTasks(sessionId,
+                                                    sessionId,
+                                                    defaultTaskOptions,
+                                                    new List<TaskRequest>
+                                                    {
+                                                      new(new[]
+                                                          {
+                                                            ExpectedOutput1,
+                                                          },
+                                                          new List<string>(),
+                                                          new List<ReadOnlyMemory<byte>>
+                                                          {
+                                                            new(Encoding.ASCII.GetBytes("AAAA")),
+                                                          }.ToAsyncEnumerable()),
+                                                    }.ToAsyncEnumerable(),
+                                                    CancellationToken.None)
+                                       .ConfigureAwait(false)).requests.First()
+                                                              .Id;
 
-    var tuple = await submitter.CreateTasks(SessionId,
-                                            SessionId,
+    var tuple = await submitter.CreateTasks(sessionId,
+                                            sessionId,
                                             defaultTaskOptions,
                                             new List<TaskRequest>
                                             {
-                                              new(TaskSubmittedId,
-                                                  new[]
+                                              new(new[]
                                                   {
                                                     ExpectedOutput2,
                                                   },
@@ -234,16 +228,22 @@ public class SubmitterTests
                                             CancellationToken.None)
                                .ConfigureAwait(false);
 
+    var taskSubmitted = tuple.requests.First()
+                             .Id;
+
     await submitter.FinalizeTaskCreation(tuple.requests,
                                          tuple.priority,
-                                         SessionId,
-                                         SessionId,
+                                         sessionId,
+                                         sessionId,
                                          CancellationToken.None)
                    .ConfigureAwait(false);
+
+    return (sessionId, taskCreating, taskSubmitted);
   }
 
-  private static async Task InitSubmitterCompleteTask(ISubmitter        submitter,
-                                                      CancellationToken token)
+  private static async Task<string> InitSubmitterCompleteTask(ISubmitter        submitter,
+                                                              string            sessionId,
+                                                              CancellationToken token)
   {
     var defaultTaskOptions = new TaskOptions
                              {
@@ -253,8 +253,37 @@ public class SubmitterTests
                                PartitionId = "part2",
                              };
 
-    var taskdata = new TaskData(SessionId,
-                                TaskCompletedId,
+
+    var tuple = await submitter.CreateTasks(sessionId,
+                                            sessionId,
+                                            defaultTaskOptions,
+                                            new List<TaskRequest>
+                                            {
+                                              new(new[]
+                                                  {
+                                                    ExpectedOutput3,
+                                                  },
+                                                  new List<string>(),
+                                                  new List<ReadOnlyMemory<byte>>
+                                                  {
+                                                    new(Encoding.ASCII.GetBytes("AAAA")),
+                                                  }.ToAsyncEnumerable()),
+                                            }.ToAsyncEnumerable(),
+                                            token)
+                               .ConfigureAwait(false);
+
+    var taskCompletedId = tuple.requests.First()
+                               .Id;
+
+    await submitter.FinalizeTaskCreation(tuple.requests,
+                                         tuple.priority,
+                                         sessionId,
+                                         sessionId,
+                                         token)
+                   .ConfigureAwait(false);
+
+    var taskData = new TaskData(sessionId,
+                                taskCompletedId,
                                 "OwnerPodId",
                                 "PayloadId",
                                 new List<string>(),
@@ -269,38 +298,12 @@ public class SubmitterTests
                                 new Output(false,
                                            ""));
 
-    var tuple = await submitter.CreateTasks(SessionId,
-                                            SessionId,
-                                            defaultTaskOptions,
-                                            new List<TaskRequest>
-                                            {
-                                              new(TaskCompletedId,
-                                                  new[]
-                                                  {
-                                                    ExpectedOutput3,
-                                                  },
-                                                  new List<string>(),
-                                                  new List<ReadOnlyMemory<byte>>
-                                                  {
-                                                    new(Encoding.ASCII.GetBytes("AAAA")),
-                                                  }.ToAsyncEnumerable()),
-                                            }.ToAsyncEnumerable(),
-                                            token)
-                               .ConfigureAwait(false);
-
-    await submitter.FinalizeTaskCreation(tuple.requests,
-                                         tuple.priority,
-                                         SessionId,
-                                         SessionId,
-                                         token)
-                   .ConfigureAwait(false);
-
-    await submitter.StartTask(TaskCompletedId,
+    await submitter.StartTask(taskCompletedId,
                               token)
                    .ConfigureAwait(false);
 
-    await submitter.SetResult(SessionId,
-                              TaskCompletedId,
+    await submitter.SetResult(sessionId,
+                              taskCompletedId,
                               ExpectedOutput3,
                               new List<ReadOnlyMemory<byte>>
                               {
@@ -310,7 +313,7 @@ public class SubmitterTests
                               token)
                    .ConfigureAwait(false);
 
-    await submitter.CompleteTaskAsync(taskdata,
+    await submitter.CompleteTaskAsync(taskData,
                                       true,
                                       new Api.gRPC.V1.Output
                                       {
@@ -318,33 +321,34 @@ public class SubmitterTests
                                       },
                                       token)
                    .ConfigureAwait(false);
+
+    return taskCompletedId;
   }
 
 
   [Test]
   public async Task CreateSessionShouldSucceed()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (sessionId, _, _) = await InitSubmitter(submitter_!,
+                                                partitionTable_!,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
 
     var result = await submitter_!.ListSessionsAsync(new SessionFilter
                                                      {
                                                        Sessions =
                                                        {
-                                                         SessionId,
+                                                         sessionId,
                                                        },
                                                      },
                                                      CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    Assert.AreEqual(SessionId,
+    Assert.AreEqual(sessionId,
                     result.SessionIds.Single());
   }
 
   [Test]
-  [Ignore("Partitions not fully integrated yet")]
   public void CreateSessionWithoutPartition()
   {
     var defaultTaskOptions = new TaskOptions
@@ -355,19 +359,19 @@ public class SubmitterTests
                                PartitionId = "invalid",
                              };
 
-    Assert.ThrowsAsync<InvalidOperationException>(() => submitter_!.CreateSession(SessionId,
-                                                                                  Array.Empty<string>(),
-                                                                                  defaultTaskOptions,
-                                                                                  CancellationToken.None));
+    Assert.ThrowsAsync<InvalidOperationException>(async () => await submitter_!.CreateSession(Array.Empty<string>(),
+                                                                                              defaultTaskOptions,
+                                                                                              CancellationToken.None)
+                                                                               .ConfigureAwait(false));
   }
 
   [Test]
   public async Task CreateTaskShouldSucceed()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (_, taskCreating, _) = await InitSubmitter(submitter_!,
+                                                   partitionTable_!,
+                                                   CancellationToken.None)
+                                 .ConfigureAwait(false);
 
     var result = await submitter_!.ListTasksAsync(new TaskFilter
                                                   {
@@ -375,14 +379,14 @@ public class SubmitterTests
                                                            {
                                                              Ids =
                                                              {
-                                                               TaskCreatingId,
+                                                               taskCreating,
                                                              },
                                                            },
                                                   },
                                                   CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskCreatingId,
+    Assert.AreEqual(taskCreating,
                     result.TaskIds.Single());
   }
 
@@ -397,23 +401,21 @@ public class SubmitterTests
                                PartitionId = "invalid",
                              };
 
-    await submitter_!.CreateSession(SessionId,
-                                    new[]
-                                    {
-                                      "part1",
-                                      "part2",
-                                    },
-                                    defaultTaskOptions,
-                                    CancellationToken.None)
-                     .ConfigureAwait(false);
+    var sessionId = (await submitter_!.CreateSession(new[]
+                                                     {
+                                                       "part1",
+                                                       "part2",
+                                                     },
+                                                     defaultTaskOptions,
+                                                     CancellationToken.None)
+                                      .ConfigureAwait(false)).SessionId;
 
-    Assert.ThrowsAsync<SessionNotFoundException>(() => submitter_.CreateTasks(SessionId,
-                                                                              SessionId,
+    Assert.ThrowsAsync<SessionNotFoundException>(() => submitter_.CreateTasks(sessionId,
+                                                                              sessionId,
                                                                               defaultTaskOptions,
                                                                               new List<TaskRequest>
                                                                               {
-                                                                                new(TaskCreatingId,
-                                                                                    new[]
+                                                                                new(new[]
                                                                                     {
                                                                                       ExpectedOutput1,
                                                                                     },
@@ -429,16 +431,16 @@ public class SubmitterTests
   [Test]
   public async Task GetStatusShouldSucceed()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (_, taskCreating, _) = await InitSubmitter(submitter_!,
+                                                   partitionTable_!,
+                                                   CancellationToken.None)
+                                 .ConfigureAwait(false);
 
     var result = await submitter_!.GetTaskStatusAsync(new GetTaskStatusRequest
                                                       {
                                                         TaskIds =
                                                         {
-                                                          TaskCreatingId,
+                                                          taskCreating,
                                                         },
                                                       },
                                                       CancellationToken.None)
@@ -452,16 +454,16 @@ public class SubmitterTests
   [Test]
   public async Task FinalizeTaskCreationShouldSucceed()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (_, _, taskSubmitted) = await InitSubmitter(submitter_!,
+                                                    partitionTable_!,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
 
     var result = await submitter_!.GetTaskStatusAsync(new GetTaskStatusRequest
                                                       {
                                                         TaskIds =
                                                         {
-                                                          TaskSubmittedId,
+                                                          taskSubmitted,
                                                         },
                                                       },
                                                       CancellationToken.None)
@@ -496,12 +498,13 @@ public class SubmitterTests
   [Test]
   public async Task TryGetResultShouldSucceed()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (sessionId, _, _) = await InitSubmitter(submitter_!,
+                                                partitionTable_!,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
 
     await InitSubmitterCompleteTask(submitter_!,
+                                    sessionId,
                                     CancellationToken.None)
       .ConfigureAwait(false);
 
@@ -510,7 +513,7 @@ public class SubmitterTests
     var resultRequest = new ResultRequest
                         {
                           Key     = ExpectedOutput3,
-                          Session = SessionId,
+                          Session = sessionId,
                         };
 
     await submitter_!.WaitForAvailabilityAsync(resultRequest,
@@ -538,17 +541,17 @@ public class SubmitterTests
   [Test]
   public async Task TryGetResultShouldFail()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (sessionId, _, _) = await InitSubmitter(submitter_!,
+                                                partitionTable_!,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
 
     var writer = new TestHelperServerStreamWriter<ResultReply>();
 
     Assert.ThrowsAsync<ResultNotFoundException>(() => submitter_!.TryGetResult(new ResultRequest
                                                                                {
                                                                                  Key     = "NotExistingResult",
-                                                                                 Session = SessionId,
+                                                                                 Session = sessionId,
                                                                                },
                                                                                writer,
                                                                                CancellationToken.None));
@@ -557,17 +560,17 @@ public class SubmitterTests
   [Test]
   public async Task TryGetResultWithNotCompletedTaskShouldReturnNotCompletedTaskReply()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (sessionId, _, _) = await InitSubmitter(submitter_!,
+                                                partitionTable_!,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
 
     var writer = new TestHelperServerStreamWriter<ResultReply>();
 
     await submitter_!.TryGetResult(new ResultRequest
                                    {
                                      Key     = ExpectedOutput2,
-                                     Session = SessionId,
+                                     Session = sessionId,
                                    },
                                    writer,
                                    CancellationToken.None)
@@ -583,16 +586,16 @@ public class SubmitterTests
   [Test]
   public async Task CancelSessionShouldSucceed()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (sessionId, _, _) = await InitSubmitter(submitter_!,
+                                                partitionTable_!,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
 
-    await submitter_!.CancelSession(SessionId,
+    await submitter_!.CancelSession(sessionId,
                                     CancellationToken.None)
                      .ConfigureAwait(false);
 
-    Assert.IsTrue(await sessionTable_!.IsSessionCancelledAsync(SessionId,
+    Assert.IsTrue(await sessionTable_!.IsSessionCancelledAsync(sessionId,
                                                                CancellationToken.None)
                                       .ConfigureAwait(false));
   }
@@ -600,14 +603,15 @@ public class SubmitterTests
   [Test]
   public async Task GetTaskOutputShouldSucceed()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (sessionId, _, _) = await InitSubmitter(submitter_!,
+                                                partitionTable_!,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
 
-    await InitSubmitterCompleteTask(submitter_!,
-                                    CancellationToken.None)
-      .ConfigureAwait(false);
+    var taskCompleted = await InitSubmitterCompleteTask(submitter_!,
+                                                        sessionId,
+                                                        CancellationToken.None)
+                          .ConfigureAwait(false);
 
     await submitter_!.WaitForCompletion(new WaitRequest
                                         {
@@ -617,7 +621,7 @@ public class SubmitterTests
                                                             {
                                                               Ids =
                                                               {
-                                                                TaskCompletedId,
+                                                                taskCompleted,
                                                               },
                                                             },
                                                    },
@@ -627,8 +631,8 @@ public class SubmitterTests
 
     var output = await submitter_.TryGetTaskOutputAsync(new ResultRequest
                                                         {
-                                                          Key     = TaskCompletedId,
-                                                          Session = SessionId,
+                                                          Key     = taskCompleted,
+                                                          Session = sessionId,
                                                         },
                                                         CancellationToken.None)
                                  .ConfigureAwait(false);
@@ -640,10 +644,10 @@ public class SubmitterTests
   [Test]
   public async Task CancelTaskShouldSucceed()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (sessionId, taskCreating, _) = await InitSubmitter(submitter_!,
+                                                           partitionTable_!,
+                                                           CancellationToken.None)
+                                         .ConfigureAwait(false);
 
     await submitter_!.CancelTasks(new TaskFilter
                                   {
@@ -651,7 +655,7 @@ public class SubmitterTests
                                               {
                                                 Ids =
                                                 {
-                                                  SessionId,
+                                                  sessionId,
                                                 },
                                               },
                                   },
@@ -662,7 +666,7 @@ public class SubmitterTests
                                                     {
                                                       TaskIds =
                                                       {
-                                                        TaskCreatingId,
+                                                        taskCreating,
                                                       },
                                                     },
                                                     CancellationToken.None)
@@ -676,14 +680,14 @@ public class SubmitterTests
   [Test]
   public async Task GetResultStatusShouldSucceed()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (sessionId, _, _) = await InitSubmitter(submitter_!,
+                                                partitionTable_!,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
 
     var result = await submitter_!.GetResultStatusAsync(new GetResultStatusRequest
                                                         {
-                                                          SessionId = SessionId,
+                                                          SessionId = sessionId,
                                                           ResultIds =
                                                           {
                                                             ExpectedOutput2,
@@ -703,14 +707,14 @@ public class SubmitterTests
   [Test]
   public async Task GetNotExistingResultStatusShouldSucceed()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (sessionId, _, _) = await InitSubmitter(submitter_!,
+                                                partitionTable_!,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
 
     var result = await submitter_!.GetResultStatusAsync(new GetResultStatusRequest
                                                         {
-                                                          SessionId = SessionId,
+                                                          SessionId = sessionId,
                                                           ResultIds =
                                                           {
                                                             "NotExistingId",
@@ -726,11 +730,13 @@ public class SubmitterTests
   [Test]
   public async Task GetPartitionTaskStatus()
   {
-    await InitSubmitter(submitter_!,
-                        partitionTable_!,
-                        CancellationToken.None)
-      .ConfigureAwait(false);
+    var (sessionId, _, _) = await InitSubmitter(submitter_!,
+                                                partitionTable_!,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
+
     await InitSubmitterCompleteTask(submitter_!,
+                                    sessionId,
                                     CancellationToken.None)
       .ConfigureAwait(false);
 

@@ -110,10 +110,12 @@ public class Agent : IAgent
   public async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                 CancellationToken                     cancellationToken)
   {
-    var                            fsmCreate           = new ProcessReplyCreateLargeTaskStateMachine(logger_);
-    Task?                          completionTask      = null;
-    Channel<ReadOnlyMemory<byte>>? payloadsChannel     = null;
-    var                            taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
+    var                                                       fsmCreate           = new ProcessReplyCreateLargeTaskStateMachine(logger_);
+    Task?                                                     completionTask      = null;
+    Channel<ReadOnlyMemory<byte>>?                            payloadsChannel     = null;
+    var                                                       taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
+    (IEnumerable<Storage.TaskRequest> requests, int priority) currentTasks;
+    currentTasks.requests = new List<Storage.TaskRequest>();
 
     using var _ = logger_.BeginNamedScope(nameof(CreateTask),
                                           ("taskId", taskData_.TaskId)!,
@@ -147,12 +149,13 @@ public class Agent : IAgent
 
           completionTask = Task.Run(async () =>
                                     {
-                                      createdTasks_.Add(await submitter_.CreateTasks(sessionData_,
-                                                                                     taskData_.TaskId!,
-                                                                                     request.InitRequest.TaskOptions,
-                                                                                     taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
-                                                                                     cancellationToken)
-                                                                        .ConfigureAwait(false));
+                                      currentTasks = await submitter_.CreateTasks(sessionData_,
+                                                                                  taskData_.TaskId!,
+                                                                                  request.InitRequest.TaskOptions,
+                                                                                  taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),
+                                                                                  cancellationToken)
+                                                                     .ConfigureAwait(false);
+                                      createdTasks_.Add(currentTasks);
                                     },
                                     cancellationToken);
 
@@ -169,13 +172,11 @@ public class Agent : IAgent
                                                                                 SingleReader = true,
                                                                               });
 
-              await taskRequestsChannel.Writer.WriteAsync(new TaskRequest(request.InitTask.Header.Id,
-                                                                          request.InitTask.Header.ExpectedOutputKeys,
+              await taskRequestsChannel.Writer.WriteAsync(new TaskRequest(request.InitTask.Header.ExpectedOutputKeys,
                                                                           request.InitTask.Header.DataDependencies,
                                                                           payloadsChannel.Reader.ReadAllAsync(cancellationToken)),
                                                           cancellationToken)
                                        .ConfigureAwait(false);
-
 
               break;
             case InitTaskRequest.TypeOneofCase.LastTask:
@@ -192,7 +193,16 @@ public class Agent : IAgent
 
                 return new CreateTaskReply
                        {
-                         Successfull = new Empty(),
+                         CreationStatusList = new CreateTaskReply.Types.CreationStatusList
+                                              {
+                                                CreationStatuses =
+                                                {
+                                                  currentTasks.requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
+                                                                                              {
+                                                                                                TaskId = taskRequest.Id,
+                                                                                              }),
+                                                },
+                                              },
                        };
               }
               catch (Exception e)
@@ -201,7 +211,16 @@ public class Agent : IAgent
                                    "Error during task creation");
                 return new CreateTaskReply
                        {
-                         NonSuccessfullIds = new CreateTaskReply.Types.TaskIds(),
+                         CreationStatusList = new CreateTaskReply.Types.CreationStatusList
+                                              {
+                                                CreationStatuses =
+                                                {
+                                                  currentTasks.requests.Select(_ => new CreateTaskReply.Types.CreationStatus
+                                                                                    {
+                                                                                      Error = "An error occured during task creation",
+                                                                                    }),
+                                                },
+                                              },
                        };
               }
 

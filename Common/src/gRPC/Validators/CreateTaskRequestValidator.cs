@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -114,9 +114,6 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
   {
     public CreateLargeTaskInitTaskHeaderValidator()
     {
-      RuleFor(r => r.Id)
-        .NotNull()
-        .NotEmpty();
       RuleFor(r => r.ExpectedOutputKeys)
         .NotNull()
         .NotEmpty();
