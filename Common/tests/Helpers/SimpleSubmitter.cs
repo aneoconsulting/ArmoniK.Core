@@ -79,30 +79,21 @@ public class SimpleSubmitter : ISubmitter
                          Ok = new Empty(),
                        });
 
-  public async Task<(IEnumerable<TaskRequest> requests, int priority)> CreateTasks(SessionData                                 sessionData,
-                                                                                   string                                      parentTaskId,
-                                                                                   TaskOptions                                 options,
-                                                                                   IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
-                                                                                   CancellationToken                           cancellationToken)
-    => (await taskRequests.Select(r => new TaskRequest(r.Id,
-                                                       r.ExpectedOutputKeys,
-                                                       r.DataDependencies))
-                          .ToArrayAsync(cancellationToken)
-                          .ConfigureAwait(false), 1);
 
-  public async Task<(IEnumerable<TaskRequest> requests, int priority)> CreateTasks(string                                      sessionId,
-                                                                                   string                                      parentTaskId,
-                                                                                   TaskOptions                                 options,
-                                                                                   IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
-                                                                                   CancellationToken                           cancellationToken)
+  public async Task<(IEnumerable<TaskRequest> requests, int priority, string partitionId)> CreateTasks(string                                      sessionId,
+                                                                                                       string                                      parentTaskId,
+                                                                                                       TaskOptions                                 options,
+                                                                                                       IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
+                                                                                                       CancellationToken                           cancellationToken)
     => (await taskRequests.Select(r => new TaskRequest(r.Id,
                                                        r.ExpectedOutputKeys,
                                                        r.DataDependencies))
                           .ToArrayAsync(cancellationToken)
-                          .ConfigureAwait(false), 1);
+                          .ConfigureAwait(false), 1, "");
 
   public Task FinalizeTaskCreation(IEnumerable<TaskRequest> requests,
                                    int                      priority,
+                                   string                   partitionId,
                                    string                   sessionId,
                                    string                   parentTaskId,
                                    CancellationToken        cancellationToken)

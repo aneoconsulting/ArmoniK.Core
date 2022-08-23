@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -15,34 +15,22 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Storage;
+using Amqp;
 
-public interface IQueueStorageBase : IInitializable
+namespace ArmoniK.Core.Adapters.Amqp;
+
+public interface IConnectionAmqp
 {
-  int MaxPriority { get; }
+  public Connection? Connection { get; set; }
 
-  IAsyncEnumerable<IQueueMessageHandler> PullAsync(int               nbMessages,
-                                                   CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Submit new messages
-  /// </summary>
-  /// <param name="messages"></param>
-  /// <param name="priority"></param>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
-  Task EnqueueMessagesAsync(IEnumerable<string> messages,
-                            int                 priority          = 1,
-                            CancellationToken   cancellationToken = default);
+  Task<IConnectionAmqp> OpenConnectionAsync();
 }

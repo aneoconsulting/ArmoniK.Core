@@ -117,7 +117,7 @@ public class SubmitterTests
             .AddSingleton<IMongoClient>(client_)
             .AddLogging()
             .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
-            .AddSingleton<IQueueStorage, QueueStorage>();
+            .AddSingleton<IPushQueueStorage, PushQueueStorage>();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
                                                  {
@@ -236,6 +236,7 @@ public class SubmitterTests
 
     await submitter.FinalizeTaskCreation(tuple.requests,
                                          tuple.priority,
+                                         "part1",
                                          SessionId,
                                          SessionId,
                                          CancellationToken.None)
@@ -290,6 +291,7 @@ public class SubmitterTests
 
     await submitter.FinalizeTaskCreation(tuple.requests,
                                          tuple.priority,
+                                         "part2",
                                          SessionId,
                                          SessionId,
                                          token)

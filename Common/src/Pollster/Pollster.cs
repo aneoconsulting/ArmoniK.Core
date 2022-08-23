@@ -50,7 +50,7 @@ public class Pollster
   private readonly int                      messageBatchSize_;
   private readonly IObjectStorageFactory    objectStorageFactory_;
   private readonly string                   ownerPodId_;
-  private readonly IQueueStorage            queueStorage_;
+  private readonly IPullQueueStorage        pullQueueStorage_;
   private readonly IResultTable             resultTable_;
   private readonly ISessionTable            sessionTable_;
   private readonly ISubmitter               submitter_;
@@ -59,7 +59,7 @@ public class Pollster
   private readonly IWorkerStreamHandler     workerStreamHandler_;
   public           string                   TaskProcessing;
 
-  public Pollster(IQueueStorage            queueStorage,
+  public Pollster(IPullQueueStorage        pullQueueStorage,
                   DataPrefetcher           dataPrefetcher,
                   ComputePlane             options,
                   IHostApplicationLifetime lifeTime,
@@ -82,7 +82,7 @@ public class Pollster
 
     logger_                = logger;
     activitySource_        = activitySource;
-    queueStorage_          = queueStorage;
+    pullQueueStorage_      = pullQueueStorage;
     lifeTime_              = lifeTime;
     dataPrefetcher_        = dataPrefetcher;
     messageBatchSize_      = options.MessageBatchSize;
@@ -100,8 +100,8 @@ public class Pollster
 
   public async Task Init(CancellationToken cancellationToken)
   {
-    await queueStorage_.Init(cancellationToken)
-                       .ConfigureAwait(false);
+    await pullQueueStorage_.Init(cancellationToken)
+                           .ConfigureAwait(false);
     await dataPrefetcher_.Init(cancellationToken)
                          .ConfigureAwait(false);
     await workerStreamHandler_.Init(cancellationToken)
@@ -129,9 +129,9 @@ public class Pollster
       {
         logger_.LogTrace("Trying to fetch messages");
 
-        logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(queueStorage_.PullAsync)}");
-        var messages = queueStorage_.PullAsync(messageBatchSize_,
-                                               cancellationToken);
+        logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(pullQueueStorage_.PullMessagesAsync)}");
+        var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
+                                                           cancellationToken);
 
         await foreach (var message in messages.WithCancellation(cancellationToken)
                                               .ConfigureAwait(false))

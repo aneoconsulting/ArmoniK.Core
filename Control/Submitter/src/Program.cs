@@ -15,7 +15,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -48,8 +49,6 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry.Trace;
 
 using Serilog;
-
-using SessionProvider = ArmoniK.Core.Adapters.MongoDB.Common.SessionProvider;
 
 namespace ArmoniK.Core.Control.Submitter;
 

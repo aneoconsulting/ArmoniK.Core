@@ -206,6 +206,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
 
       await submitter_.FinalizeTaskCreation(tuple.requests,
                                             tuple.priority,
+                                            request.TaskOptions.PartitionId,
                                             request.SessionId,
                                             request.SessionId,
                                             context.CancellationToken)
@@ -260,15 +261,16 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                "First message in stream must be of type InitRequest");
       }
 
-      var tuple = await submitter_.CreateTasks(first.InitRequest.SessionId,
-                                               first.InitRequest.SessionId,
-                                               first.InitRequest.TaskOptions,
-                                               enumerator.BuildRequests(context.CancellationToken),
-                                               context.CancellationToken)
-                                  .ConfigureAwait(false);
+      var (requests, priority, partitionId) = await submitter_.CreateTasks(first.InitRequest.SessionId,
+                                                                           first.InitRequest.SessionId,
+                                                                           first.InitRequest.TaskOptions,
+                                                                           enumerator.BuildRequests(context.CancellationToken),
+                                                                           context.CancellationToken)
+                                                              .ConfigureAwait(false);
 
-      await submitter_.FinalizeTaskCreation(tuple.requests,
-                                            tuple.priority,
+      await submitter_.FinalizeTaskCreation(requests,
+                                            priority,
+                                            partitionId,
                                             first.InitRequest.SessionId,
                                             first.InitRequest.SessionId,
                                             context.CancellationToken)

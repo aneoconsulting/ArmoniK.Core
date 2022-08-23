@@ -15,13 +15,12 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 
 using JetBrains.Annotations;
 
@@ -38,6 +37,7 @@ public class Amqp
   public string Password          { get; set; } = "";
   public string Scheme            { get; set; } = "";
   public string CaPath            { get; set; } = "";
+  public string PartitionId       { get; set; } = "";
   public int    Port              { get; set; }
   public int    MaxPriority       { get; set; }
   public bool   AllowHostMismatch { get; set; }

@@ -26,7 +26,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,7 +34,7 @@ using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
-public class QueueStorage : IQueueStorage
+public class PushQueueStorage : IPushQueueStorage
 {
   private static readonly MessageHandler DefaultMessage = new();
 
@@ -63,44 +62,6 @@ public class QueueStorage : IQueueStorage
     => 100;
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
-                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-  {
-    while (nbMessages > 0 && queues_.Any())
-    {
-      cancellationToken.ThrowIfCancellationRequested();
-      var (message, _) = queues_.FirstOrDefault(pair => pair.Key.IsVisible = true,
-                                                DefaultPair);
-      if (ReferenceEquals(message,
-                          DefaultMessage))
-      {
-        continue;
-      }
-
-      try
-      {
-        await message.Semaphore.WaitAsync(CancellationToken.None)
-                     .ConfigureAwait(false);
-        if (message.IsVisible)
-        {
-          message.IsVisible = false;
-          yield return message;
-        }
-        else
-        {
-          continue;
-        }
-      }
-      finally
-      {
-        message.Semaphore.Release();
-      }
-
-      nbMessages--;
-    }
-  }
-
-  /// <inheritdoc />
   public Task PushMessagesAsync(IEnumerable<string> messages,
                                 string              partitionId,
                                 int                 priority          = 1,
@@ -120,7 +81,7 @@ public class QueueStorage : IQueueStorage
     {
       queues_.Add(messageHandler,
                   messageHandler);
-      if (!id2Handlers_.TryAdd(messageHandler.TaskId,
+      if (!id2Handlers_.TryAdd(messageHandler.TaskId!,
                                messageHandler))
       {
         throw new InvalidOperationException("Duplicate messageId found.");
@@ -142,8 +103,8 @@ public class QueueStorage : IQueueStorage
 
     public long Order { get; } = Interlocked.Increment(ref _count);
 
-    public SortedList<MessageHandler, MessageHandler>   Queues   { get; init; } = new();
-    public ConcurrentDictionary<string, MessageHandler> Handlers { get; init; } = new();
+    public SortedList<MessageHandler, MessageHandler>?   Queues   { get; set; }
+    public ConcurrentDictionary<string, MessageHandler>? Handlers { get; set; }
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()
@@ -151,8 +112,8 @@ public class QueueStorage : IQueueStorage
       switch (Status)
       {
         case QueueMessageStatus.Postponed:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var handler))
+          if (!Handlers!.TryRemove(TaskId!,
+                                   out var handler))
           {
             throw new KeyNotFoundException();
           }
@@ -171,9 +132,9 @@ public class QueueStorage : IQueueStorage
                              Status            = QueueMessageStatus.Waiting,
                            };
 
-          Queues.Add(newMessage,
-                     newMessage);
-          if (!Handlers.TryAdd(newMessage.TaskId,
+          Queues!.Add(newMessage,
+                      newMessage);
+          if (!Handlers.TryAdd(newMessage.TaskId!,
                                newMessage))
           {
             throw new InvalidOperationException("Duplicate messageId found.");
@@ -187,8 +148,8 @@ public class QueueStorage : IQueueStorage
 
           break;
         case QueueMessageStatus.Failed:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var failedHandler))
+          if (!Handlers!.TryRemove(TaskId!,
+                                   out var failedHandler))
           {
             throw new KeyNotFoundException();
           }
@@ -196,8 +157,8 @@ public class QueueStorage : IQueueStorage
           failedHandler.IsVisible = true;
           break;
         case QueueMessageStatus.Processed:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var processedHandler))
+          if (!Handlers!.TryRemove(TaskId!,
+                                   out var processedHandler))
           {
             throw new KeyNotFoundException();
           }
@@ -207,16 +168,16 @@ public class QueueStorage : IQueueStorage
             throw new InvalidOperationException("Cannot change the status of a message that is visible.");
           }
 
-          if (!Queues.Remove(processedHandler,
-                             out _))
+          if (!Queues!.Remove(processedHandler,
+                              out _))
           {
             throw new KeyNotFoundException();
           }
 
           break;
         case QueueMessageStatus.Poisonous:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var rejectedHandler))
+          if (!Handlers!.TryRemove(TaskId!,
+                                   out var rejectedHandler))
           {
             throw new KeyNotFoundException();
           }
@@ -226,8 +187,8 @@ public class QueueStorage : IQueueStorage
             throw new InvalidOperationException("Cannot change the status of a message that is visible.");
           }
 
-          if (!Queues.Remove(rejectedHandler,
-                             out _))
+          if (!Queues!.Remove(rejectedHandler,
+                              out _))
           {
             throw new KeyNotFoundException();
           }
@@ -245,25 +206,25 @@ public class QueueStorage : IQueueStorage
     }
 
     /// <inheritdoc />
-    public CancellationToken CancellationToken { get; init; } = CancellationToken.None;
+    public CancellationToken CancellationToken { get; init; }
 
     /// <inheritdoc />
     public string MessageId
       => $"Message#{Order}";
 
     /// <inheritdoc />
-    public string TaskId { get; init; } = "";
+    public string? TaskId { get; init; } = "";
 
     /// <inheritdoc />
-    public QueueMessageStatus Status { get; set; } = 0;
+    public QueueMessageStatus Status { get; set; }
   }
 
   private class MessageComparer : IComparer<MessageHandler>
   {
     public static readonly IComparer<MessageHandler> Instance = new MessageComparer();
 
-    public int Compare(MessageHandler? x,
-                       MessageHandler? y)
+    public int Compare(MessageHandler x,
+                       MessageHandler y)
     {
       if (ReferenceEquals(x,
                           y))

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -51,12 +51,6 @@ public static class ServiceCollectionExt
               .AddTransient<ISessionTable, SessionTable>()
               .AddTransient<IResultTable, ResultTable>();
     }
-
-    if (components["QueueStorage"] == "ArmoniK.Adapters.Memory.LockedQueueStorage")
-    {
-      services.AddTransient<ILockedQueueStorage, LockedQueueStorage>();
-    }
-
 
     return services;
   }

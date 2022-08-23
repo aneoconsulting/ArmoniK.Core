@@ -172,6 +172,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                                     It.IsAny<int>(),
                                                                     It.IsAny<string>(),
                                                                     It.IsAny<string>(),
+                                                                    It.IsAny<string>(),
                                                                     It.IsAny<CancellationToken>()),
                         submitter => submitter.StartTask(It.IsAny<string>(),
                                                          It.IsAny<CancellationToken>()),
