@@ -81,7 +81,7 @@ public class PushQueueStorage : IPushQueueStorage
     {
       queues_.Add(messageHandler,
                   messageHandler);
-      if (!id2Handlers_.TryAdd(messageHandler.TaskId,
+      if (!id2Handlers_.TryAdd(messageHandler.TaskId!,
                                messageHandler))
       {
         throw new InvalidOperationException("Duplicate messageId found.");
@@ -93,7 +93,7 @@ public class PushQueueStorage : IPushQueueStorage
 
   private class MessageHandler : IQueueMessageHandler
   {
-    private static long count_;
+    private static long _count;
 
     public int Priority { get; init; }
 
@@ -101,10 +101,10 @@ public class PushQueueStorage : IPushQueueStorage
 
     public SemaphoreSlim Semaphore { get; } = new(1);
 
-    public long Order { get; } = Interlocked.Increment(ref count_);
+    public long Order { get; } = Interlocked.Increment(ref _count);
 
-    public SortedList<MessageHandler, MessageHandler>   Queues   { get; set; }
-    public ConcurrentDictionary<string, MessageHandler> Handlers { get; set; }
+    public SortedList<MessageHandler, MessageHandler>?   Queues   { get; set; }
+    public ConcurrentDictionary<string, MessageHandler>? Handlers { get; set; }
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()
@@ -112,8 +112,8 @@ public class PushQueueStorage : IPushQueueStorage
       switch (Status)
       {
         case QueueMessageStatus.Postponed:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var handler))
+          if (!Handlers!.TryRemove(TaskId!,
+                                   out var handler))
           {
             throw new KeyNotFoundException();
           }
@@ -132,9 +132,9 @@ public class PushQueueStorage : IPushQueueStorage
                              Status            = QueueMessageStatus.Waiting,
                            };
 
-          Queues.Add(newMessage,
-                     newMessage);
-          if (!Handlers.TryAdd(newMessage.TaskId,
+          Queues!.Add(newMessage,
+                      newMessage);
+          if (!Handlers.TryAdd(newMessage.TaskId!,
                                newMessage))
           {
             throw new InvalidOperationException("Duplicate messageId found.");
@@ -148,8 +148,8 @@ public class PushQueueStorage : IPushQueueStorage
 
           break;
         case QueueMessageStatus.Failed:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var failedHandler))
+          if (!Handlers!.TryRemove(TaskId!,
+                                   out var failedHandler))
           {
             throw new KeyNotFoundException();
           }
@@ -157,8 +157,8 @@ public class PushQueueStorage : IPushQueueStorage
           failedHandler.IsVisible = true;
           break;
         case QueueMessageStatus.Processed:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var processedHandler))
+          if (!Handlers!.TryRemove(TaskId!,
+                                   out var processedHandler))
           {
             throw new KeyNotFoundException();
           }
@@ -168,16 +168,16 @@ public class PushQueueStorage : IPushQueueStorage
             throw new InvalidOperationException("Cannot change the status of a message that is visible.");
           }
 
-          if (!Queues.Remove(processedHandler,
-                             out _))
+          if (!Queues!.Remove(processedHandler,
+                              out _))
           {
             throw new KeyNotFoundException();
           }
 
           break;
         case QueueMessageStatus.Poisonous:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var rejectedHandler))
+          if (!Handlers!.TryRemove(TaskId!,
+                                   out var rejectedHandler))
           {
             throw new KeyNotFoundException();
           }
@@ -187,8 +187,8 @@ public class PushQueueStorage : IPushQueueStorage
             throw new InvalidOperationException("Cannot change the status of a message that is visible.");
           }
 
-          if (!Queues.Remove(rejectedHandler,
-                             out _))
+          if (!Queues!.Remove(rejectedHandler,
+                              out _))
           {
             throw new KeyNotFoundException();
           }
@@ -213,7 +213,7 @@ public class PushQueueStorage : IPushQueueStorage
       => $"Message#{Order}";
 
     /// <inheritdoc />
-    public string TaskId { get; init; }
+    public string? TaskId { get; init; } = "";
 
     /// <inheritdoc />
     public QueueMessageStatus Status { get; set; }
