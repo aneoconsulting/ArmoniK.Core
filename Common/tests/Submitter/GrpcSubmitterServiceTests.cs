@@ -814,7 +814,7 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int())));
+                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int(), string.Empty)));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
@@ -957,7 +957,7 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int())));
+                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int(), string.Empty)));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
@@ -994,7 +994,7 @@ public class GrpcSubmitterServiceTests
                                                            It.IsAny<TaskOptions>(),
                                                            It.IsAny<IAsyncEnumerable<TaskRequest>>(),
                                                            CancellationToken.None))
-                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int())));
+                 .Returns(() => Task.FromResult((new List<Storage.TaskRequest>().AsEnumerable(), new int(), string.Empty)));
 
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);

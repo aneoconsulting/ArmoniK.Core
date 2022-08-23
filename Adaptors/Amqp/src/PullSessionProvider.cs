@@ -22,40 +22,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Threading.Tasks;
-
-using Amqp;
+using ArmoniK.Core.Common.Injection;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Common.Tests.Helpers;
+namespace ArmoniK.Core.Adapters.Amqp;
 
-public class SimpleAmqpClientHelper : IAsyncDisposable
+// ReSharper disable once ClassNeverInstantiated.Global
+public class PullSessionProvider : ProviderBase<PullSessionAmqp>
 {
-  private readonly ILoggerFactory loggerFactory_;
+  /// <inheritdoc />
+  public PullSessionProvider(Options.Amqp options,
+                             ILogger      logger)
+    : base(async () =>
+           {
+             var session = new PullSessionAmqp(options,
+                                               logger);
+             await session.OpenConnection()
+                          .ConfigureAwait(false);
 
-  public SimpleAmqpClientHelper()
+             return session;
+           })
   {
-    loggerFactory_ = new LoggerFactory();
-    loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
-
-    var address = new Address("amqp://guest:guest@localhost:5672");
-
-    Connection = new Connection(address);
-    Session    = new Session(Connection);
-  }
-
-  public Connection Connection { get; }
-
-  public Session Session { get; }
-
-  public async ValueTask DisposeAsync()
-  {
-    await Session.CloseAsync()
-                 .ConfigureAwait(false);
-    await Connection.CloseAsync()
-                    .ConfigureAwait(false);
-    GC.SuppressFinalize(this);
   }
 }

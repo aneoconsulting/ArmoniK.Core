@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -22,11 +22,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
-
 namespace ArmoniK.Core.Common.Storage;
 
-[PublicAPI]
-public interface IQueueStorage : IQueueStorageBase
+public interface IQueueStorage : IInitializable
 {
+  public int MaxPriority { get; }
 }

@@ -51,13 +51,13 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 /// </summary>
 public class Agent : IAgent
 {
-  private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority)> createdTasks_;
-  private readonly ILogger                                                         logger_;
-  private readonly IObjectStorage                                                  resourcesStorage_;
-  private readonly SessionData                                                     sessionData_;
-  private readonly ISubmitter                                                      submitter_;
-  private readonly TaskData                                                        taskData_;
-  private readonly string                                                          token_;
+  private readonly List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)> createdTasks_;
+  private readonly ILogger                                                                             logger_;
+  private readonly IObjectStorage                                                                      resourcesStorage_;
+  private readonly SessionData                                                                         sessionData_;
+  private readonly ISubmitter                                                                          submitter_;
+  private readonly TaskData                                                                            taskData_;
+  private readonly string                                                                              token_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
@@ -78,7 +78,7 @@ public class Agent : IAgent
     submitter_        = submitter;
     logger_           = logger;
     resourcesStorage_ = objectStorageFactory.CreateResourcesStorage();
-    createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority)>();
+    createdTasks_     = new List<(IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId)>();
     sessionData_      = sessionData;
     taskData_         = taskData;
     token_            = token;
@@ -100,6 +100,7 @@ public class Agent : IAgent
     {
       await submitter_.FinalizeTaskCreation(createdTask.requests,
                                             createdTask.priority,
+                                            taskData_.Options.PartitionId,
                                             sessionData_.SessionId!,
                                             taskData_.TaskId!,
                                             cancellationToken)
@@ -110,11 +111,11 @@ public class Agent : IAgent
   public async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                 CancellationToken                     cancellationToken)
   {
-    var                                                       fsmCreate           = new ProcessReplyCreateLargeTaskStateMachine(logger_);
-    Task?                                                     completionTask      = null;
-    Channel<ReadOnlyMemory<byte>>?                            payloadsChannel     = null;
-    var                                                       taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
-    (IEnumerable<Storage.TaskRequest> requests, int priority) currentTasks;
+    var                                                                           fsmCreate           = new ProcessReplyCreateLargeTaskStateMachine(logger_);
+    Task?                                                                         completionTask      = null;
+    Channel<ReadOnlyMemory<byte>>?                                                payloadsChannel     = null;
+    var                                                                           taskRequestsChannel = Channel.CreateBounded<TaskRequest>(10);
+    (IEnumerable<Storage.TaskRequest> requests, int priority, string partitionId) currentTasks;
     currentTasks.requests = new List<Storage.TaskRequest>();
 
     using var _ = logger_.BeginNamedScope(nameof(CreateTask),
@@ -149,7 +150,7 @@ public class Agent : IAgent
 
           completionTask = Task.Run(async () =>
                                     {
-                                      currentTasks = await submitter_.CreateTasks(sessionData_,
+                                      currentTasks = await submitter_.CreateTasks(sessionData_.SessionId,
                                                                                   taskData_.TaskId!,
                                                                                   request.InitRequest.TaskOptions,
                                                                                   taskRequestsChannel.Reader.ReadAllAsync(cancellationToken),

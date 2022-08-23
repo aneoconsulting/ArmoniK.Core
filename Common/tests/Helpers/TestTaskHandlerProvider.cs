@@ -116,7 +116,7 @@ public class TestTaskHandlerProvider : IDisposable
            .AddLogging()
            .AddSingleton(loggerFactory_.CreateLogger(nameof(TestTaskHandlerProvider)))
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
-           .AddSingleton<IQueueStorage, QueueStorage>()
+           .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<TaskHandler>()
            .AddSingleton<DataPrefetcher>()
