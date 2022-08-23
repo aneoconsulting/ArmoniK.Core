@@ -41,8 +41,7 @@ public class QueueStorage : IQueueStorage
 
   public bool IsInitialized;
 
-  public QueueStorage(Options.Amqp options,
-                      ISessionAmqp sessionAmqp)
+  public QueueStorage(Options.Amqp options)
   {
     if (string.IsNullOrEmpty(options.Host))
     {
@@ -92,13 +91,17 @@ public class QueueStorage : IQueueStorage
                                             $"Minimum value for {nameof(Options.LinkCredit)} is 1.");
     }
 
-    SessionAmqp = sessionAmqp;
     Options     = options;
     MaxPriority = options.MaxPriority;
     PartitionId = options.PartitionId;
 
     NbLinks = (MaxPriority + MaxInternalQueuePriority - 1) / MaxInternalQueuePriority;
   }
+
+  public QueueStorage(Options.Amqp options,
+                      ISessionAmqp sessionAmqp)
+    : this(options)
+    => SessionAmqp = sessionAmqp;
 
   /// <inheritdoc />
   public string PartitionId { get; }

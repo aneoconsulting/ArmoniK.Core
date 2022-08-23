@@ -22,32 +22,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Storage;
+using Amqp;
 
-public interface IQueueStorageBase : IInitializable
+namespace ArmoniK.Core.Adapters.Amqp;
+
+public interface IConnectionAmqp
 {
-  int MaxPriority { get; }
+  public Connection? Connection { get; set; }
 
-  string PartitionId { get; }
-
-  IAsyncEnumerable<IQueueMessageHandler> PullAsync(int               nbMessages,
-                                                   string            partitionId,
-                                                   CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Submit new messages
-  /// </summary>
-  /// <param name="messages"></param>
-  /// <param name="partitionId"></param>
-  /// <param name="priority"></param>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
-  Task EnqueueMessagesAsync(IEnumerable<string> messages,
-                            string              partitionId,
-                            int                 priority          = 1,
-                            CancellationToken   cancellationToken = default);
+  Task<IConnectionAmqp> OpenConnectionAsync();
 }

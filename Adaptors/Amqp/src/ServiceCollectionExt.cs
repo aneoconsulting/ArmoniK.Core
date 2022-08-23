@@ -100,32 +100,24 @@ public static class ServiceCollectionExt
         }
       }
 
-      var pushSessionProvider = new PushSessionProvider(amqpOptions,
-                                                        logger);
+      var pushConnectionProvider = new ConnectionProvider(amqpOptions,
+                                                          logger);
+      serviceCollection.AddSingleton<IConnectionAmqp, ConnectionAmqp>(cp => pushConnectionProvider.Get());
+
+      serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
+
       var pullSessionProvider = new PullSessionProvider(amqpOptions,
                                                         logger);
-
-      serviceCollection.AddSingleton<IPushSessionAmqp, PushSessionAmqp>(sp => pushSessionProvider.Get());
 
       serviceCollection.AddSingleton<IPullSessionAmqp, PullSessionAmqp>(sp => pullSessionProvider.Get());
 
       serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();
-
-      serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
 
       serviceCollection.AddHealthChecks()
                        .AddCheck("AmqpPullHealthCheck",
                                  () =>
                                  {
                                    var t = pullSessionProvider.Get();
-                                   return t.Check();
-                                 });
-
-      serviceCollection.AddHealthChecks()
-                       .AddCheck("AmqpPushHealthCheck",
-                                 () =>
-                                 {
-                                   var t = pushSessionProvider.Get();
                                    return t.Check();
                                  });
       logger.LogInformation("Amqp configuration complete");

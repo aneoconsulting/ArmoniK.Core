@@ -42,14 +42,18 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 {
   private const int MaxInternalQueuePriority = 10;
 
+  private readonly IConnectionAmqp connectionAmqp_;
+
   private readonly ILogger<PushQueueStorage>? logger_;
 
   public PushQueueStorage(Options.Amqp              options,
-                          IPushSessionAmqp          sessionAmqp,
+                          IConnectionAmqp           connectionAmqp,
                           ILogger<PushQueueStorage> logger)
-    : base(options,
-           sessionAmqp)
-    => logger_ = logger;
+    : base(options)
+  {
+    connectionAmqp_ = connectionAmqp;
+    logger_         = logger;
+  }
 
   /// <inheritdoc />
   public async Task PushMessagesAsync(IEnumerable<string> messages,
@@ -58,6 +62,9 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                       CancellationToken   cancellationToken = default)
   {
     using var _ = logger_!.LogFunction();
+
+    /* Create Session at each call of push */
+    var session = new Session(connectionAmqp_.Connection);
 
     /* Priority is handled using multiple queues; there should be at least one queue which
      * is imposed via the restriction MaxPriority > 1. If a user tries to enqueue a message
@@ -76,7 +83,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                       whichQueue,
                       internalPriority);
 
-    var sender = new SenderLink(SessionAmqp!.Session,
+    var sender = new SenderLink(session,
                                 $"{partitionId}###SenderLink{whichQueue}",
                                 $"{partitionId}###q{whichQueue}");
 
@@ -92,5 +99,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 
     await sender.CloseAsync()
                 .ConfigureAwait(false);
+    await session.CloseAsync()
+                 .ConfigureAwait(false);
   }
 }

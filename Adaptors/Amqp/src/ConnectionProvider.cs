@@ -22,32 +22,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using ArmoniK.Core.Common.Injection;
 
-namespace ArmoniK.Core.Common.Storage;
+using Microsoft.Extensions.Logging;
 
-public interface IQueueStorageBase : IInitializable
+namespace ArmoniK.Core.Adapters.Amqp;
+
+// ReSharper disable once ClassNeverInstantiated.Global
+public class ConnectionProvider : ProviderBase<ConnectionAmqp>
 {
-  int MaxPriority { get; }
+  /// <inheritdoc />
+  public ConnectionProvider(Options.Amqp options,
+                            ILogger      logger)
+    : base(async () =>
+           {
+             var amqpConnection = new ConnectionAmqp(options,
+                                                     logger);
+             await amqpConnection.OpenConnectionAsync()
+                                 .ConfigureAwait(false);
 
-  string PartitionId { get; }
-
-  IAsyncEnumerable<IQueueMessageHandler> PullAsync(int               nbMessages,
-                                                   string            partitionId,
-                                                   CancellationToken cancellationToken = default);
-
-  /// <summary>
-  ///   Submit new messages
-  /// </summary>
-  /// <param name="messages"></param>
-  /// <param name="partitionId"></param>
-  /// <param name="priority"></param>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
-  Task EnqueueMessagesAsync(IEnumerable<string> messages,
-                            string              partitionId,
-                            int                 priority          = 1,
-                            CancellationToken   cancellationToken = default);
+             return amqpConnection;
+           })
+  {
+  }
 }
