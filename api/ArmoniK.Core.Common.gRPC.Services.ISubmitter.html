@@ -192,7 +192,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_CompleteTaskAsync_ArmoniK_Core_Common_Storage_TaskData_System_Boolean_ArmoniK_Api_gRPC_V1_Output_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.CompleteTaskAsync(ArmoniK.Core.Common.Storage.TaskData%2CSystem.Boolean%2CArmoniK.Api.gRPC.V1.Output%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L98">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L93">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_CompleteTaskAsync_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.CompleteTaskAsync*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_CompleteTaskAsync_ArmoniK_Core_Common_Storage_TaskData_System_Boolean_ArmoniK_Api_gRPC_V1_Output_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.CompleteTaskAsync(ArmoniK.Core.Common.Storage.TaskData,System.Boolean,ArmoniK.Api.gRPC.V1.Output,CancellationToken)">CompleteTaskAsync(TaskData, Boolean, Output, CancellationToken)</h4>
@@ -365,77 +365,10 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateTasks_ArmoniK_Core_Common_Storage_SessionData_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData%2CSystem.String%2CArmoniK.Api.gRPC.V1.TaskOptions%2CIAsyncEnumerable%7BArmoniK.Core.Common.gRPC.Services.TaskRequest%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
-  </span>
-  <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L63">View Source</a>
-  </span>
-  <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateTasks_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateTasks_ArmoniK_Core_Common_Storage_SessionData_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)">CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable&lt;TaskRequest&gt;, CancellationToken)</h4>
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;(IEnumerable&lt;TaskRequest&gt; requests, int priority)&gt; CreateTasks(SessionData sessionData, string parentTaskId, TaskOptions options, IAsyncEnumerable&lt;TaskRequest&gt; taskRequests, CancellationToken cancellationToken)</code></pre>
-  </div>
-  <h5 class="parameters">Parameters</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Name</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="ArmoniK.Core.Common.Storage.SessionData.html">SessionData</a></td>
-        <td><span class="parametername">sessionData</span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><span class="xref">System.String</span></td>
-        <td><span class="parametername">parentTaskId</span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><span class="xref">ArmoniK.Api.gRPC.V1.TaskOptions</span></td>
-        <td><span class="parametername">options</span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><span class="xref">IAsyncEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.gRPC.Services.TaskRequest.html">TaskRequest</a>&gt;</td>
-        <td><span class="parametername">taskRequests</span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><span class="xref">CancellationToken</span></td>
-        <td><span class="parametername">cancellationToken</span></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  <h5 class="returns">Returns</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">Task</span>&lt;<span class="xref">System.ValueTuple</span>&lt;<span class="xref">IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskRequest.html">TaskRequest</a>&gt;, <span class="xref">System.Int32</span>&gt;&gt;</td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  <span class="small pull-right mobile-hide">
-    <span class="divider">|</span>
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String%2CSystem.String%2CArmoniK.Api.gRPC.V1.TaskOptions%2CIAsyncEnumerable%7BArmoniK.Core.Common.gRPC.Services.TaskRequest%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L69">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L63">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateTasks_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)">CreateTasks(String, String, TaskOptions, IAsyncEnumerable&lt;TaskRequest&gt;, CancellationToken)</h4>
@@ -443,7 +376,7 @@
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;(IEnumerable&lt;TaskRequest&gt; requests, int priority)&gt; CreateTasks(string sessionId, string parentTaskId, TaskOptions options, IAsyncEnumerable&lt;TaskRequest&gt; taskRequests, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;(IEnumerable&lt;TaskRequest&gt; requests, int priority, string partitionId)&gt; CreateTasks(string sessionId, string parentTaskId, TaskOptions options, IAsyncEnumerable&lt;TaskRequest&gt; taskRequests, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -492,25 +425,25 @@
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">Task</span>&lt;<span class="xref">System.ValueTuple</span>&lt;<span class="xref">IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskRequest.html">TaskRequest</a>&gt;, <span class="xref">System.Int32</span>&gt;&gt;</td>
+        <td><span class="xref">Task</span>&lt;<span class="xref">System.ValueTuple</span>&lt;<span class="xref">IEnumerable</span>&lt;<a class="xref" href="ArmoniK.Core.Common.Storage.TaskRequest.html">TaskRequest</a>&gt;, <span class="xref">System.Int32</span>, <span class="xref">System.String</span>&gt;&gt;</td>
         <td></td>
       </tr>
     </tbody>
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable%7BArmoniK.Core.Common.Storage.TaskRequest%7D%2CSystem.Int32%2CSystem.String%2CSystem.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable%7BArmoniK.Core.Common.Storage.TaskRequest%7D%2CSystem.Int32%2CSystem.String%2CSystem.String%2CSystem.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L75">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L69">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation*"></a>
-  <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)">FinalizeTaskCreation(IEnumerable&lt;TaskRequest&gt;, Int32, String, String, CancellationToken)</h4>
+  <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_System_String_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,System.String,CancellationToken)">FinalizeTaskCreation(IEnumerable&lt;TaskRequest&gt;, Int32, String, String, String, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task FinalizeTaskCreation(IEnumerable&lt;TaskRequest&gt; requests, int priority, string sessionId, string parentTaskId, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">Task FinalizeTaskCreation(IEnumerable&lt;TaskRequest&gt; requests, int priority, string partitionId, string sessionId, string parentTaskId, CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -530,6 +463,11 @@
       <tr>
         <td><span class="xref">System.Int32</span></td>
         <td><span class="parametername">priority</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.String</span></td>
+        <td><span class="parametername">partitionId</span></td>
         <td></td>
       </tr>
       <tr>
@@ -569,7 +507,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetResultStatusAsync_GetResultStatusRequest_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetResultStatusAsync(GetResultStatusRequest%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L112">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L107">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetResultStatusAsync_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetResultStatusAsync*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetResultStatusAsync_GetResultStatusRequest_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetResultStatusAsync(GetResultStatusRequest,CancellationToken)">GetResultStatusAsync(GetResultStatusRequest, CancellationToken)</h4>
@@ -621,7 +559,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetServiceConfiguration_Empty_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetServiceConfiguration(Empty%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L84">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L79">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetServiceConfiguration_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetServiceConfiguration*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetServiceConfiguration_Empty_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetServiceConfiguration(Empty,CancellationToken)">GetServiceConfiguration(Empty, CancellationToken)</h4>
@@ -673,7 +611,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetTaskStatusAsync_GetTaskStatusRequest_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetTaskStatusAsync(GetTaskStatusRequest%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L109">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L104">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetTaskStatusAsync_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetTaskStatusAsync*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_GetTaskStatusAsync_GetTaskStatusRequest_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.GetTaskStatusAsync(GetTaskStatusRequest,CancellationToken)">GetTaskStatusAsync(GetTaskStatusRequest, CancellationToken)</h4>
@@ -725,7 +663,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_ListSessionsAsync_SessionFilter_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListSessionsAsync(SessionFilter%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L118">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L113">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_ListSessionsAsync_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListSessionsAsync*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_ListSessionsAsync_SessionFilter_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListSessionsAsync(SessionFilter,CancellationToken)">ListSessionsAsync(SessionFilter, CancellationToken)</h4>
@@ -777,7 +715,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_ListTasksAsync_TaskFilter_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListTasksAsync(TaskFilter%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L115">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L110">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_ListTasksAsync_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListTasksAsync*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_ListTasksAsync_TaskFilter_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.ListTasksAsync(TaskFilter,CancellationToken)">ListTasksAsync(TaskFilter, CancellationToken)</h4>
@@ -829,7 +767,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_SetResult_System_String_System_String_System_String_IAsyncEnumerable_ReadOnlyMemory_System_Byte___CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult(System.String%2CSystem.String%2CSystem.String%2CIAsyncEnumerable%7BReadOnlyMemory%7BSystem.Byte%7D%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L121">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L116">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_SetResult_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_SetResult_System_String_System_String_System_String_IAsyncEnumerable_ReadOnlyMemory_System_Byte___CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.SetResult(System.String,System.String,System.String,IAsyncEnumerable{ReadOnlyMemory{System.Byte}},CancellationToken)">SetResult(String, String, String, IAsyncEnumerable&lt;ReadOnlyMemory&lt;Byte&gt;&gt;, CancellationToken)</h4>
@@ -896,7 +834,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_StartTask_System_String_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.StartTask(System.String%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L81">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L76">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_StartTask_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.StartTask*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_StartTask_System_String_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.StartTask(System.String,CancellationToken)">StartTask(String, CancellationToken)</h4>
@@ -948,7 +886,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_TryGetResult_ResultRequest_IServerStreamWriter_ResultReply__CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetResult(ResultRequest%2CIServerStreamWriter%7BResultReply%7D%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L87">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L82">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_TryGetResult_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetResult*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_TryGetResult_ResultRequest_IServerStreamWriter_ResultReply__CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetResult(ResultRequest,IServerStreamWriter{ResultReply},CancellationToken)">TryGetResult(ResultRequest, IServerStreamWriter&lt;ResultReply&gt;, CancellationToken)</h4>
@@ -1005,7 +943,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_TryGetTaskOutputAsync_ResultRequest_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetTaskOutputAsync(ResultRequest%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L103">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L98">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_TryGetTaskOutputAsync_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetTaskOutputAsync*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_TryGetTaskOutputAsync_ResultRequest_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetTaskOutputAsync(ResultRequest,CancellationToken)">TryGetTaskOutputAsync(ResultRequest, CancellationToken)</h4>
@@ -1057,7 +995,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_UpdateTaskStatusAsync_System_String_ArmoniK_Api_gRPC_V1_TaskStatus_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.UpdateTaskStatusAsync(System.String%2CArmoniK.Api.gRPC.V1.TaskStatus%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L94">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L89">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_UpdateTaskStatusAsync_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.UpdateTaskStatusAsync*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_UpdateTaskStatusAsync_System_String_ArmoniK_Api_gRPC_V1_TaskStatus_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.UpdateTaskStatusAsync(System.String,ArmoniK.Api.gRPC.V1.TaskStatus,CancellationToken)">UpdateTaskStatusAsync(String, TaskStatus, CancellationToken)</h4>
@@ -1114,7 +1052,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_WaitForAvailabilityAsync_ResultRequest_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.WaitForAvailabilityAsync(ResultRequest%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L106">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L101">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_WaitForAvailabilityAsync_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.WaitForAvailabilityAsync*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_WaitForAvailabilityAsync_ResultRequest_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.WaitForAvailabilityAsync(ResultRequest,CancellationToken)">WaitForAvailabilityAsync(ResultRequest, CancellationToken)</h4>
@@ -1166,7 +1104,7 @@
     <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Common_gRPC_Services_ISubmitter_WaitForCompletion_WaitRequest_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Common.gRPC.Services.ISubmitter.WaitForCompletion(WaitRequest%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L91">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Common/src/gRPC/Services/ISubmitter.cs/#L86">View Source</a>
   </span>
   <a id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_WaitForCompletion_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.WaitForCompletion*"></a>
   <h4 id="ArmoniK_Core_Common_gRPC_Services_ISubmitter_WaitForCompletion_WaitRequest_CancellationToken_" data-uid="ArmoniK.Core.Common.gRPC.Services.ISubmitter.WaitForCompletion(WaitRequest,CancellationToken)">WaitForCompletion(WaitRequest, CancellationToken)</h4>

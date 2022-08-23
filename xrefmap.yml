@@ -25,6 +25,108 @@ references:
   commentId: N:ArmoniK.Core.Adapters.Amqp
   fullName: ArmoniK.Core.Adapters.Amqp
   nameWithType: ArmoniK.Core.Adapters.Amqp
+- uid: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp
+  name: ConnectionAmqp
+  href: api/ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.html
+  commentId: T:ArmoniK.Core.Adapters.Amqp.ConnectionAmqp
+  fullName: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp
+  nameWithType: ConnectionAmqp
+- uid: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
+  name: ConnectionAmqp(Amqp, ILogger)
+  href: api/ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.html#ArmoniK_Core_Adapters_Amqp_ConnectionAmqp__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ILogger_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
+  fullName: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.ConnectionAmqp(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ILogger)
+  nameWithType: ConnectionAmqp.ConnectionAmqp(Amqp, ILogger)
+- uid: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.#ctor*
+  name: ConnectionAmqp
+  href: api/ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.html#ArmoniK_Core_Adapters_Amqp_ConnectionAmqp__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.ConnectionAmqp
+  nameWithType: ConnectionAmqp.ConnectionAmqp
+- uid: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Connection
+  name: Connection
+  href: api/ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.html#ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Connection
+  commentId: P:ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Connection
+  fullName: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Connection
+  nameWithType: ConnectionAmqp.Connection
+- uid: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Connection*
+  name: Connection
+  href: api/ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.html#ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_Connection_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Connection
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.Connection
+  nameWithType: ConnectionAmqp.Connection
+- uid: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.OpenConnectionAsync
+  name: OpenConnectionAsync()
+  href: api/ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.html#ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_OpenConnectionAsync
+  commentId: M:ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.OpenConnectionAsync
+  fullName: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.OpenConnectionAsync()
+  nameWithType: ConnectionAmqp.OpenConnectionAsync()
+- uid: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.OpenConnectionAsync*
+  name: OpenConnectionAsync
+  href: api/ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.html#ArmoniK_Core_Adapters_Amqp_ConnectionAmqp_OpenConnectionAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.OpenConnectionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.ConnectionAmqp.OpenConnectionAsync
+  nameWithType: ConnectionAmqp.OpenConnectionAsync
+- uid: ArmoniK.Core.Adapters.Amqp.ConnectionProvider
+  name: ConnectionProvider
+  href: api/ArmoniK.Core.Adapters.Amqp.ConnectionProvider.html
+  commentId: T:ArmoniK.Core.Adapters.Amqp.ConnectionProvider
+  fullName: ArmoniK.Core.Adapters.Amqp.ConnectionProvider
+  nameWithType: ConnectionProvider
+- uid: ArmoniK.Core.Adapters.Amqp.ConnectionProvider.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
+  name: ConnectionProvider(Amqp, ILogger)
+  href: api/ArmoniK.Core.Adapters.Amqp.ConnectionProvider.html#ArmoniK_Core_Adapters_Amqp_ConnectionProvider__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ILogger_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.ConnectionProvider.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
+  fullName: ArmoniK.Core.Adapters.Amqp.ConnectionProvider.ConnectionProvider(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ILogger)
+  nameWithType: ConnectionProvider.ConnectionProvider(Amqp, ILogger)
+- uid: ArmoniK.Core.Adapters.Amqp.ConnectionProvider.#ctor*
+  name: ConnectionProvider
+  href: api/ArmoniK.Core.Adapters.Amqp.ConnectionProvider.html#ArmoniK_Core_Adapters_Amqp_ConnectionProvider__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.ConnectionProvider.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.ConnectionProvider.ConnectionProvider
+  nameWithType: ConnectionProvider.ConnectionProvider
+- uid: ArmoniK.Core.Adapters.Amqp.IConnectionAmqp
+  name: IConnectionAmqp
+  href: api/ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.html
+  commentId: T:ArmoniK.Core.Adapters.Amqp.IConnectionAmqp
+  fullName: ArmoniK.Core.Adapters.Amqp.IConnectionAmqp
+  nameWithType: IConnectionAmqp
+- uid: ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.Connection
+  name: Connection
+  href: api/ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.html#ArmoniK_Core_Adapters_Amqp_IConnectionAmqp_Connection
+  commentId: P:ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.Connection
+  fullName: ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.Connection
+  nameWithType: IConnectionAmqp.Connection
+- uid: ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.Connection*
+  name: Connection
+  href: api/ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.html#ArmoniK_Core_Adapters_Amqp_IConnectionAmqp_Connection_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.Connection
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.Connection
+  nameWithType: IConnectionAmqp.Connection
+- uid: ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.OpenConnectionAsync
+  name: OpenConnectionAsync()
+  href: api/ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.html#ArmoniK_Core_Adapters_Amqp_IConnectionAmqp_OpenConnectionAsync
+  commentId: M:ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.OpenConnectionAsync
+  fullName: ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.OpenConnectionAsync()
+  nameWithType: IConnectionAmqp.OpenConnectionAsync()
+- uid: ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.OpenConnectionAsync*
+  name: OpenConnectionAsync
+  href: api/ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.html#ArmoniK_Core_Adapters_Amqp_IConnectionAmqp_OpenConnectionAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.OpenConnectionAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.IConnectionAmqp.OpenConnectionAsync
+  nameWithType: IConnectionAmqp.OpenConnectionAsync
+- uid: ArmoniK.Core.Adapters.Amqp.IPullSessionAmqp
+  name: IPullSessionAmqp
+  href: api/ArmoniK.Core.Adapters.Amqp.IPullSessionAmqp.html
+  commentId: T:ArmoniK.Core.Adapters.Amqp.IPullSessionAmqp
+  fullName: ArmoniK.Core.Adapters.Amqp.IPullSessionAmqp
+  nameWithType: IPullSessionAmqp
 - uid: ArmoniK.Core.Adapters.Amqp.ISessionAmqp
   name: ISessionAmqp
   href: api/ArmoniK.Core.Adapters.Amqp.ISessionAmqp.html
@@ -199,6 +301,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.Options.Amqp.MaxRetries
   nameWithType: Amqp.MaxRetries
+- uid: ArmoniK.Core.Adapters.Amqp.Options.Amqp.PartitionId
+  name: PartitionId
+  href: api/ArmoniK.Core.Adapters.Amqp.Options.Amqp.html#ArmoniK_Core_Adapters_Amqp_Options_Amqp_PartitionId
+  commentId: P:ArmoniK.Core.Adapters.Amqp.Options.Amqp.PartitionId
+  fullName: ArmoniK.Core.Adapters.Amqp.Options.Amqp.PartitionId
+  nameWithType: Amqp.PartitionId
+- uid: ArmoniK.Core.Adapters.Amqp.Options.Amqp.PartitionId*
+  name: PartitionId
+  href: api/ArmoniK.Core.Adapters.Amqp.Options.Amqp.html#ArmoniK_Core_Adapters_Amqp_Options_Amqp_PartitionId_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Options.Amqp.PartitionId
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.Options.Amqp.PartitionId
+  nameWithType: Amqp.PartitionId
 - uid: ArmoniK.Core.Adapters.Amqp.Options.Amqp.Password
   name: Password
   href: api/ArmoniK.Core.Adapters.Amqp.Options.Amqp.html#ArmoniK_Core_Adapters_Amqp_Options_Amqp_Password
@@ -257,6 +372,143 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.Options.Amqp.User
   nameWithType: Amqp.User
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage
+  name: PullQueueStorage
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html
+  commentId: T:ArmoniK.Core.Adapters.Amqp.PullQueueStorage
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage
+  nameWithType: PullQueueStorage
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.IPullSessionAmqp,ILogger{ArmoniK.Core.Adapters.Amqp.PullQueueStorage})
+  name: PullQueueStorage(Amqp, IPullSessionAmqp, ILogger<PullQueueStorage>)
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ArmoniK_Core_Adapters_Amqp_IPullSessionAmqp_ILogger_ArmoniK_Core_Adapters_Amqp_PullQueueStorage__
+  commentId: M:ArmoniK.Core.Adapters.Amqp.PullQueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.IPullSessionAmqp,ILogger{ArmoniK.Core.Adapters.Amqp.PullQueueStorage})
+  name.vb: PullQueueStorage(Amqp, IPullSessionAmqp, ILogger(Of PullQueueStorage))
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullQueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Adapters.Amqp.IPullSessionAmqp, ILogger<ArmoniK.Core.Adapters.Amqp.PullQueueStorage>)
+  fullName.vb: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullQueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Adapters.Amqp.IPullSessionAmqp, ILogger(Of ArmoniK.Core.Adapters.Amqp.PullQueueStorage))
+  nameWithType: PullQueueStorage.PullQueueStorage(Amqp, IPullSessionAmqp, ILogger<PullQueueStorage>)
+  nameWithType.vb: PullQueueStorage.PullQueueStorage(Amqp, IPullSessionAmqp, ILogger(Of PullQueueStorage))
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.#ctor*
+  name: PullQueueStorage
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.PullQueueStorage.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullQueueStorage
+  nameWithType: PullQueueStorage.PullQueueStorage
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  name: Check(HealthCheckTag)
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: PullQueueStorage.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check*
+  name: Check
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check
+  nameWithType: PullQueueStorage.Check
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Init(CancellationToken)
+  name: Init(CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Init(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Init(CancellationToken)
+  nameWithType: PullQueueStorage.Init(CancellationToken)
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Init*
+  name: Init
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Init_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Init
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Init
+  nameWithType: PullQueueStorage.Init
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullMessagesAsync(System.Int32,CancellationToken)
+  name: PullMessagesAsync(Int32, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage_PullMessagesAsync_System_Int32_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullMessagesAsync(System.Int32,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullMessagesAsync(System.Int32, CancellationToken)
+  nameWithType: PullQueueStorage.PullMessagesAsync(Int32, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullMessagesAsync*
+  name: PullMessagesAsync
+  href: api/ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PullQueueStorage_PullMessagesAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullMessagesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullMessagesAsync
+  nameWithType: PullQueueStorage.PullMessagesAsync
+- uid: ArmoniK.Core.Adapters.Amqp.PullSessionAmqp
+  name: PullSessionAmqp
+  href: api/ArmoniK.Core.Adapters.Amqp.PullSessionAmqp.html
+  commentId: T:ArmoniK.Core.Adapters.Amqp.PullSessionAmqp
+  fullName: ArmoniK.Core.Adapters.Amqp.PullSessionAmqp
+  nameWithType: PullSessionAmqp
+- uid: ArmoniK.Core.Adapters.Amqp.PullSessionAmqp.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
+  name: PullSessionAmqp(Amqp, ILogger)
+  href: api/ArmoniK.Core.Adapters.Amqp.PullSessionAmqp.html#ArmoniK_Core_Adapters_Amqp_PullSessionAmqp__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ILogger_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.PullSessionAmqp.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
+  fullName: ArmoniK.Core.Adapters.Amqp.PullSessionAmqp.PullSessionAmqp(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ILogger)
+  nameWithType: PullSessionAmqp.PullSessionAmqp(Amqp, ILogger)
+- uid: ArmoniK.Core.Adapters.Amqp.PullSessionAmqp.#ctor*
+  name: PullSessionAmqp
+  href: api/ArmoniK.Core.Adapters.Amqp.PullSessionAmqp.html#ArmoniK_Core_Adapters_Amqp_PullSessionAmqp__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.PullSessionAmqp.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.PullSessionAmqp.PullSessionAmqp
+  nameWithType: PullSessionAmqp.PullSessionAmqp
+- uid: ArmoniK.Core.Adapters.Amqp.PullSessionProvider
+  name: PullSessionProvider
+  href: api/ArmoniK.Core.Adapters.Amqp.PullSessionProvider.html
+  commentId: T:ArmoniK.Core.Adapters.Amqp.PullSessionProvider
+  fullName: ArmoniK.Core.Adapters.Amqp.PullSessionProvider
+  nameWithType: PullSessionProvider
+- uid: ArmoniK.Core.Adapters.Amqp.PullSessionProvider.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
+  name: PullSessionProvider(Amqp, ILogger)
+  href: api/ArmoniK.Core.Adapters.Amqp.PullSessionProvider.html#ArmoniK_Core_Adapters_Amqp_PullSessionProvider__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ILogger_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.PullSessionProvider.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
+  fullName: ArmoniK.Core.Adapters.Amqp.PullSessionProvider.PullSessionProvider(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ILogger)
+  nameWithType: PullSessionProvider.PullSessionProvider(Amqp, ILogger)
+- uid: ArmoniK.Core.Adapters.Amqp.PullSessionProvider.#ctor*
+  name: PullSessionProvider
+  href: api/ArmoniK.Core.Adapters.Amqp.PullSessionProvider.html#ArmoniK_Core_Adapters_Amqp_PullSessionProvider__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.PullSessionProvider.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.PullSessionProvider.PullSessionProvider
+  nameWithType: PullSessionProvider.PullSessionProvider
+- uid: ArmoniK.Core.Adapters.Amqp.PushQueueStorage
+  name: PushQueueStorage
+  href: api/ArmoniK.Core.Adapters.Amqp.PushQueueStorage.html
+  commentId: T:ArmoniK.Core.Adapters.Amqp.PushQueueStorage
+  fullName: ArmoniK.Core.Adapters.Amqp.PushQueueStorage
+  nameWithType: PushQueueStorage
+- uid: ArmoniK.Core.Adapters.Amqp.PushQueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.IConnectionAmqp,ILogger{ArmoniK.Core.Adapters.Amqp.PushQueueStorage})
+  name: PushQueueStorage(Amqp, IConnectionAmqp, ILogger<PushQueueStorage>)
+  href: api/ArmoniK.Core.Adapters.Amqp.PushQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PushQueueStorage__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ArmoniK_Core_Adapters_Amqp_IConnectionAmqp_ILogger_ArmoniK_Core_Adapters_Amqp_PushQueueStorage__
+  commentId: M:ArmoniK.Core.Adapters.Amqp.PushQueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.IConnectionAmqp,ILogger{ArmoniK.Core.Adapters.Amqp.PushQueueStorage})
+  name.vb: PushQueueStorage(Amqp, IConnectionAmqp, ILogger(Of PushQueueStorage))
+  fullName: ArmoniK.Core.Adapters.Amqp.PushQueueStorage.PushQueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Adapters.Amqp.IConnectionAmqp, ILogger<ArmoniK.Core.Adapters.Amqp.PushQueueStorage>)
+  fullName.vb: ArmoniK.Core.Adapters.Amqp.PushQueueStorage.PushQueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Adapters.Amqp.IConnectionAmqp, ILogger(Of ArmoniK.Core.Adapters.Amqp.PushQueueStorage))
+  nameWithType: PushQueueStorage.PushQueueStorage(Amqp, IConnectionAmqp, ILogger<PushQueueStorage>)
+  nameWithType.vb: PushQueueStorage.PushQueueStorage(Amqp, IConnectionAmqp, ILogger(Of PushQueueStorage))
+- uid: ArmoniK.Core.Adapters.Amqp.PushQueueStorage.#ctor*
+  name: PushQueueStorage
+  href: api/ArmoniK.Core.Adapters.Amqp.PushQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PushQueueStorage__ctor_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.PushQueueStorage.#ctor
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.PushQueueStorage.PushQueueStorage
+  nameWithType: PushQueueStorage.PushQueueStorage
+- uid: ArmoniK.Core.Adapters.Amqp.PushQueueStorage.PushMessagesAsync(IEnumerable{System.String},System.String,System.Int32,CancellationToken)
+  name: PushMessagesAsync(IEnumerable<String>, String, Int32, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Amqp.PushQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PushQueueStorage_PushMessagesAsync_IEnumerable_System_String__System_String_System_Int32_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.PushQueueStorage.PushMessagesAsync(IEnumerable{System.String},System.String,System.Int32,CancellationToken)
+  name.vb: PushMessagesAsync(IEnumerable(Of String), String, Int32, CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Amqp.PushQueueStorage.PushMessagesAsync(IEnumerable<System.String>, System.String, System.Int32, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Amqp.PushQueueStorage.PushMessagesAsync(IEnumerable(Of System.String), System.String, System.Int32, CancellationToken)
+  nameWithType: PushQueueStorage.PushMessagesAsync(IEnumerable<String>, String, Int32, CancellationToken)
+  nameWithType.vb: PushQueueStorage.PushMessagesAsync(IEnumerable(Of String), String, Int32, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Amqp.PushQueueStorage.PushMessagesAsync*
+  name: PushMessagesAsync
+  href: api/ArmoniK.Core.Adapters.Amqp.PushQueueStorage.html#ArmoniK_Core_Adapters_Amqp_PushQueueStorage_PushMessagesAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.PushQueueStorage.PushMessagesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.PushQueueStorage.PushMessagesAsync
+  nameWithType: PushQueueStorage.PushMessagesAsync
 - uid: ArmoniK.Core.Adapters.Amqp.QueueMessageHandler
   name: QueueMessageHandler
   href: api/ArmoniK.Core.Adapters.Amqp.QueueMessageHandler.html
@@ -347,15 +599,18 @@ references:
   commentId: T:ArmoniK.Core.Adapters.Amqp.QueueStorage
   fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage
   nameWithType: QueueStorage
-- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.ISessionAmqp,ILogger{ArmoniK.Core.Adapters.Amqp.QueueStorage})
-  name: QueueStorage(Amqp, ISessionAmqp, ILogger<QueueStorage>)
-  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ArmoniK_Core_Adapters_Amqp_ISessionAmqp_ILogger_ArmoniK_Core_Adapters_Amqp_QueueStorage__
-  commentId: M:ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.ISessionAmqp,ILogger{ArmoniK.Core.Adapters.Amqp.QueueStorage})
-  name.vb: QueueStorage(Amqp, ISessionAmqp, ILogger(Of QueueStorage))
-  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.QueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Adapters.Amqp.ISessionAmqp, ILogger<ArmoniK.Core.Adapters.Amqp.QueueStorage>)
-  fullName.vb: ArmoniK.Core.Adapters.Amqp.QueueStorage.QueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Adapters.Amqp.ISessionAmqp, ILogger(Of ArmoniK.Core.Adapters.Amqp.QueueStorage))
-  nameWithType: QueueStorage.QueueStorage(Amqp, ISessionAmqp, ILogger<QueueStorage>)
-  nameWithType.vb: QueueStorage.QueueStorage(Amqp, ISessionAmqp, ILogger(Of QueueStorage))
+- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp)
+  name: QueueStorage(Amqp)
+  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp)
+  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.QueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp)
+  nameWithType: QueueStorage.QueueStorage(Amqp)
+- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.ISessionAmqp)
+  name: QueueStorage(Amqp, ISessionAmqp)
+  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ArmoniK_Core_Adapters_Amqp_ISessionAmqp_
+  commentId: M:ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.ISessionAmqp)
+  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.QueueStorage(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ArmoniK.Core.Adapters.Amqp.ISessionAmqp)
+  nameWithType: QueueStorage.QueueStorage(Amqp, ISessionAmqp)
 - uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.#ctor*
   name: QueueStorage
   href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage__ctor_
@@ -376,22 +631,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.Check
   nameWithType: QueueStorage.Check
-- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
-  name: EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_EnqueueMessagesAsync_IEnumerable_System_String__System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Amqp.QueueStorage.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
-  name.vb: EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.EnqueueMessagesAsync(IEnumerable<System.String>, System.Int32, CancellationToken)
-  fullName.vb: ArmoniK.Core.Adapters.Amqp.QueueStorage.EnqueueMessagesAsync(IEnumerable(Of System.String), System.Int32, CancellationToken)
-  nameWithType: QueueStorage.EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
-  nameWithType.vb: QueueStorage.EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.EnqueueMessagesAsync*
-  name: EnqueueMessagesAsync
-  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_EnqueueMessagesAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Amqp.QueueStorage.EnqueueMessagesAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.EnqueueMessagesAsync
-  nameWithType: QueueStorage.EnqueueMessagesAsync
 - uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.Init(CancellationToken)
   name: Init(CancellationToken)
   href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_Init_CancellationToken_
@@ -405,6 +644,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.Init
   nameWithType: QueueStorage.Init
+- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.IsInitialized
+  name: IsInitialized
+  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_IsInitialized
+  commentId: F:ArmoniK.Core.Adapters.Amqp.QueueStorage.IsInitialized
+  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.IsInitialized
+  nameWithType: QueueStorage.IsInitialized
 - uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.MaxPriority
   name: MaxPriority
   href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_MaxPriority
@@ -418,19 +663,37 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.MaxPriority
   nameWithType: QueueStorage.MaxPriority
-- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.PullAsync(System.Int32,CancellationToken)
-  name: PullAsync(Int32, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_PullAsync_System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Amqp.QueueStorage.PullAsync(System.Int32,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.PullAsync(System.Int32, CancellationToken)
-  nameWithType: QueueStorage.PullAsync(Int32, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.PullAsync*
-  name: PullAsync
-  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_PullAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Amqp.QueueStorage.PullAsync
+- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.NbLinks
+  name: NbLinks
+  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_NbLinks
+  commentId: F:ArmoniK.Core.Adapters.Amqp.QueueStorage.NbLinks
+  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.NbLinks
+  nameWithType: QueueStorage.NbLinks
+- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.Options
+  name: Options
+  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_Options
+  commentId: F:ArmoniK.Core.Adapters.Amqp.QueueStorage.Options
+  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.Options
+  nameWithType: QueueStorage.Options
+- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.PartitionId
+  name: PartitionId
+  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_PartitionId
+  commentId: P:ArmoniK.Core.Adapters.Amqp.QueueStorage.PartitionId
+  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.PartitionId
+  nameWithType: QueueStorage.PartitionId
+- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.PartitionId*
+  name: PartitionId
+  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_PartitionId_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.QueueStorage.PartitionId
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.PullAsync
-  nameWithType: QueueStorage.PullAsync
+  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.PartitionId
+  nameWithType: QueueStorage.PartitionId
+- uid: ArmoniK.Core.Adapters.Amqp.QueueStorage.SessionAmqp
+  name: SessionAmqp
+  href: api/ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_SessionAmqp
+  commentId: F:ArmoniK.Core.Adapters.Amqp.QueueStorage.SessionAmqp
+  fullName: ArmoniK.Core.Adapters.Amqp.QueueStorage.SessionAmqp
+  nameWithType: QueueStorage.SessionAmqp
 - uid: ArmoniK.Core.Adapters.Amqp.ServiceCollectionExt
   name: ServiceCollectionExt
   href: api/ArmoniK.Core.Adapters.Amqp.ServiceCollectionExt.html
@@ -534,25 +797,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.SessionAmqp.Session
   nameWithType: SessionAmqp.Session
-- uid: ArmoniK.Core.Adapters.Amqp.SessionProvider
-  name: SessionProvider
-  href: api/ArmoniK.Core.Adapters.Amqp.SessionProvider.html
-  commentId: T:ArmoniK.Core.Adapters.Amqp.SessionProvider
-  fullName: ArmoniK.Core.Adapters.Amqp.SessionProvider
-  nameWithType: SessionProvider
-- uid: ArmoniK.Core.Adapters.Amqp.SessionProvider.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
-  name: SessionProvider(Amqp, ILogger)
-  href: api/ArmoniK.Core.Adapters.Amqp.SessionProvider.html#ArmoniK_Core_Adapters_Amqp_SessionProvider__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ILogger_
-  commentId: M:ArmoniK.Core.Adapters.Amqp.SessionProvider.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ILogger)
-  fullName: ArmoniK.Core.Adapters.Amqp.SessionProvider.SessionProvider(ArmoniK.Core.Adapters.Amqp.Options.Amqp, ILogger)
-  nameWithType: SessionProvider.SessionProvider(Amqp, ILogger)
-- uid: ArmoniK.Core.Adapters.Amqp.SessionProvider.#ctor*
-  name: SessionProvider
-  href: api/ArmoniK.Core.Adapters.Amqp.SessionProvider.html#ArmoniK_Core_Adapters_Amqp_SessionProvider__ctor_
-  commentId: Overload:ArmoniK.Core.Adapters.Amqp.SessionProvider.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Amqp.SessionProvider.SessionProvider
-  nameWithType: SessionProvider.SessionProvider
 - uid: ArmoniK.Core.Adapters.Amqp.Tests
   name: ArmoniK.Core.Adapters.Amqp.Tests
   href: api/ArmoniK.Core.Adapters.Amqp.Tests.html
@@ -565,19 +809,32 @@ references:
   commentId: T:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests
   fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests
   nameWithType: QueueStorageTests
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreateQueueStorageShouldSucceed
-  name: CreateQueueStorageShouldSucceed()
-  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_CreateQueueStorageShouldSucceed
-  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreateQueueStorageShouldSucceed
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreateQueueStorageShouldSucceed()
-  nameWithType: QueueStorageTests.CreateQueueStorageShouldSucceed()
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreateQueueStorageShouldSucceed*
-  name: CreateQueueStorageShouldSucceed
-  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_CreateQueueStorageShouldSucceed_
-  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreateQueueStorageShouldSucceed
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldSucceed
+  name: CreatePullQueueStorageShouldSucceed()
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_CreatePullQueueStorageShouldSucceed
+  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldSucceed
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldSucceed()
+  nameWithType: QueueStorageTests.CreatePullQueueStorageShouldSucceed()
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldSucceed*
+  name: CreatePullQueueStorageShouldSucceed
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_CreatePullQueueStorageShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldSucceed
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreateQueueStorageShouldSucceed
-  nameWithType: QueueStorageTests.CreateQueueStorageShouldSucceed
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldSucceed
+  nameWithType: QueueStorageTests.CreatePullQueueStorageShouldSucceed
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePushQueueStorageShouldSucceed
+  name: CreatePushQueueStorageShouldSucceed()
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_CreatePushQueueStorageShouldSucceed
+  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePushQueueStorageShouldSucceed
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePushQueueStorageShouldSucceed()
+  nameWithType: QueueStorageTests.CreatePushQueueStorageShouldSucceed()
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePushQueueStorageShouldSucceed*
+  name: CreatePushQueueStorageShouldSucceed
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_CreatePushQueueStorageShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePushQueueStorageShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePushQueueStorageShouldSucceed
+  nameWithType: QueueStorageTests.CreatePushQueueStorageShouldSucceed
 - uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreateQueueStorageShouldThrowIfBadOptionsGiven(ArmoniK.Core.Adapters.Amqp.Options.Amqp)
   name: CreateQueueStorageShouldThrowIfBadOptionsGiven(Amqp)
   href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_CreateQueueStorageShouldThrowIfBadOptionsGiven_ArmoniK_Core_Adapters_Amqp_Options_Amqp_
@@ -591,51 +848,64 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreateQueueStorageShouldThrowIfBadOptionsGiven
   nameWithType: QueueStorageTests.CreateQueueStorageShouldThrowIfBadOptionsGiven
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceeds
-  name: EnqueueMessagesAsyncSucceeds()
-  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_EnqueueMessagesAsyncSucceeds
-  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceeds
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceeds()
-  nameWithType: QueueStorageTests.EnqueueMessagesAsyncSucceeds()
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceeds*
-  name: EnqueueMessagesAsyncSucceeds
-  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_EnqueueMessagesAsyncSucceeds_
-  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceeds
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceeds
-  nameWithType: QueueStorageTests.EnqueueMessagesAsyncSucceeds
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceedsIfTooBigPriority
-  name: EnqueueMessagesAsyncSucceedsIfTooBigPriority()
-  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_EnqueueMessagesAsyncSucceedsIfTooBigPriority
-  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceedsIfTooBigPriority
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceedsIfTooBigPriority()
-  nameWithType: QueueStorageTests.EnqueueMessagesAsyncSucceedsIfTooBigPriority()
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceedsIfTooBigPriority*
-  name: EnqueueMessagesAsyncSucceedsIfTooBigPriority
-  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_EnqueueMessagesAsyncSucceedsIfTooBigPriority_
-  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceedsIfTooBigPriority
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.EnqueueMessagesAsyncSucceedsIfTooBigPriority
-  nameWithType: QueueStorageTests.EnqueueMessagesAsyncSucceedsIfTooBigPriority
 - uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
   name: Options
   href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_Options
   commentId: F:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
   fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.Options
   nameWithType: QueueStorageTests.Options
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullAsyncAsyncSucceeds
-  name: PullAsyncAsyncSucceeds()
-  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PullAsyncAsyncSucceeds
-  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullAsyncAsyncSucceeds
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullAsyncAsyncSucceeds()
-  nameWithType: QueueStorageTests.PullAsyncAsyncSucceeds()
-- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullAsyncAsyncSucceeds*
-  name: PullAsyncAsyncSucceeds
-  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PullAsyncAsyncSucceeds_
-  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullAsyncAsyncSucceeds
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncFromMultiplePartitionsSucceeds
+  name: PullMessagesAsyncFromMultiplePartitionsSucceeds()
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PullMessagesAsyncFromMultiplePartitionsSucceeds
+  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncFromMultiplePartitionsSucceeds
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncFromMultiplePartitionsSucceeds()
+  nameWithType: QueueStorageTests.PullMessagesAsyncFromMultiplePartitionsSucceeds()
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncFromMultiplePartitionsSucceeds*
+  name: PullMessagesAsyncFromMultiplePartitionsSucceeds
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PullMessagesAsyncFromMultiplePartitionsSucceeds_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncFromMultiplePartitionsSucceeds
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullAsyncAsyncSucceeds
-  nameWithType: QueueStorageTests.PullAsyncAsyncSucceeds
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncFromMultiplePartitionsSucceeds
+  nameWithType: QueueStorageTests.PullMessagesAsyncFromMultiplePartitionsSucceeds
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceeds
+  name: PullMessagesAsyncSucceeds()
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PullMessagesAsyncSucceeds
+  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceeds
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceeds()
+  nameWithType: QueueStorageTests.PullMessagesAsyncSucceeds()
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceeds*
+  name: PullMessagesAsyncSucceeds
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PullMessagesAsyncSucceeds_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceeds
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceeds
+  nameWithType: QueueStorageTests.PullMessagesAsyncSucceeds
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceedsOnMultipleCalls
+  name: PullMessagesAsyncSucceedsOnMultipleCalls()
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PullMessagesAsyncSucceedsOnMultipleCalls
+  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceedsOnMultipleCalls
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceedsOnMultipleCalls()
+  nameWithType: QueueStorageTests.PullMessagesAsyncSucceedsOnMultipleCalls()
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceedsOnMultipleCalls*
+  name: PullMessagesAsyncSucceedsOnMultipleCalls
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PullMessagesAsyncSucceedsOnMultipleCalls_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceedsOnMultipleCalls
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PullMessagesAsyncSucceedsOnMultipleCalls
+  nameWithType: QueueStorageTests.PullMessagesAsyncSucceedsOnMultipleCalls
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PushMessagesAsyncSucceeds
+  name: PushMessagesAsyncSucceeds()
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PushMessagesAsyncSucceeds
+  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PushMessagesAsyncSucceeds
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PushMessagesAsyncSucceeds()
+  nameWithType: QueueStorageTests.PushMessagesAsyncSucceeds()
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PushMessagesAsyncSucceeds*
+  name: PushMessagesAsyncSucceeds
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_PushMessagesAsyncSucceeds_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PushMessagesAsyncSucceeds
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.PushMessagesAsyncSucceeds
+  nameWithType: QueueStorageTests.PushMessagesAsyncSucceeds
 - uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.SetDefaultOptions
   name: SetDefaultOptions()
   href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_SetDefaultOptions
@@ -668,184 +938,80 @@ references:
   commentId: N:ArmoniK.Core.Adapters.Memory
   fullName: ArmoniK.Core.Adapters.Memory
   nameWithType: ArmoniK.Core.Adapters.Memory
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage
-  name: LockedQueueStorage
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html
-  commentId: T:ArmoniK.Core.Adapters.Memory.LockedQueueStorage
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage
-  nameWithType: LockedQueueStorage
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.AreMessagesUnique
-  name: AreMessagesUnique
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_AreMessagesUnique
-  commentId: P:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.AreMessagesUnique
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.AreMessagesUnique
-  nameWithType: LockedQueueStorage.AreMessagesUnique
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.AreMessagesUnique*
-  name: AreMessagesUnique
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_AreMessagesUnique_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.AreMessagesUnique
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.AreMessagesUnique
-  nameWithType: LockedQueueStorage.AreMessagesUnique
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage
+  name: PushQueueStorage
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html
+  commentId: T:ArmoniK.Core.Adapters.Memory.PushQueueStorage
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage
+  nameWithType: PushQueueStorage
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
   name: Check(HealthCheckTag)
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_
-  commentId: M:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
-  nameWithType: LockedQueueStorage.Check(HealthCheckTag)
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Check*
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_
+  commentId: M:ArmoniK.Core.Adapters.Memory.PushQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
+  nameWithType: PushQueueStorage.Check(HealthCheckTag)
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.Check*
   name: Check
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_Check_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Check
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_Check_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.PushQueueStorage.Check
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Check
-  nameWithType: LockedQueueStorage.Check
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
-  name: EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_EnqueueMessagesAsync_IEnumerable_System_String__System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
-  name.vb: EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.EnqueueMessagesAsync(IEnumerable<System.String>, System.Int32, CancellationToken)
-  fullName.vb: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.EnqueueMessagesAsync(IEnumerable(Of System.String), System.Int32, CancellationToken)
-  nameWithType: LockedQueueStorage.EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
-  nameWithType.vb: LockedQueueStorage.EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.EnqueueMessagesAsync*
-  name: EnqueueMessagesAsync
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_EnqueueMessagesAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.EnqueueMessagesAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.EnqueueMessagesAsync
-  nameWithType: LockedQueueStorage.EnqueueMessagesAsync
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Init(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.Check
+  nameWithType: PushQueueStorage.Check
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.Init(CancellationToken)
   name: Init(CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_Init_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Init(CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Init(CancellationToken)
-  nameWithType: LockedQueueStorage.Init(CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Init*
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_Init_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.PushQueueStorage.Init(CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.Init(CancellationToken)
+  nameWithType: PushQueueStorage.Init(CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.Init*
   name: Init
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_Init_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Init
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_Init_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.PushQueueStorage.Init
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.Init
-  nameWithType: LockedQueueStorage.Init
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshExtension
-  name: LockRefreshExtension
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_LockRefreshExtension
-  commentId: P:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshExtension
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshExtension
-  nameWithType: LockedQueueStorage.LockRefreshExtension
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshExtension*
-  name: LockRefreshExtension
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_LockRefreshExtension_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshExtension
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshExtension
-  nameWithType: LockedQueueStorage.LockRefreshExtension
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshPeriodicity
-  name: LockRefreshPeriodicity
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_LockRefreshPeriodicity
-  commentId: P:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshPeriodicity
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshPeriodicity
-  nameWithType: LockedQueueStorage.LockRefreshPeriodicity
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshPeriodicity*
-  name: LockRefreshPeriodicity
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_LockRefreshPeriodicity_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshPeriodicity
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.LockRefreshPeriodicity
-  nameWithType: LockedQueueStorage.LockRefreshPeriodicity
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MaxPriority
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.Init
+  nameWithType: PushQueueStorage.Init
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.MaxPriority
   name: MaxPriority
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_MaxPriority
-  commentId: P:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MaxPriority
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MaxPriority
-  nameWithType: LockedQueueStorage.MaxPriority
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MaxPriority*
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_MaxPriority
+  commentId: P:ArmoniK.Core.Adapters.Memory.PushQueueStorage.MaxPriority
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.MaxPriority
+  nameWithType: PushQueueStorage.MaxPriority
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.MaxPriority*
   name: MaxPriority
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_MaxPriority_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MaxPriority
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_MaxPriority_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.PushQueueStorage.MaxPriority
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MaxPriority
-  nameWithType: LockedQueueStorage.MaxPriority
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageProcessedAsync(System.String,CancellationToken)
-  name: MessageProcessedAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_MessageProcessedAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageProcessedAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageProcessedAsync(System.String, CancellationToken)
-  nameWithType: LockedQueueStorage.MessageProcessedAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageProcessedAsync*
-  name: MessageProcessedAsync
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_MessageProcessedAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageProcessedAsync
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.MaxPriority
+  nameWithType: PushQueueStorage.MaxPriority
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId
+  name: PartitionId
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_PartitionId
+  commentId: P:ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId
+  nameWithType: PushQueueStorage.PartitionId
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId*
+  name: PartitionId
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_PartitionId_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageProcessedAsync
-  nameWithType: LockedQueueStorage.MessageProcessedAsync
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageRejectedAsync(System.String,CancellationToken)
-  name: MessageRejectedAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_MessageRejectedAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageRejectedAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageRejectedAsync(System.String, CancellationToken)
-  nameWithType: LockedQueueStorage.MessageRejectedAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageRejectedAsync*
-  name: MessageRejectedAsync
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_MessageRejectedAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageRejectedAsync
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId
+  nameWithType: PushQueueStorage.PartitionId
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PushMessagesAsync(IEnumerable{System.String},System.String,System.Int32,CancellationToken)
+  name: PushMessagesAsync(IEnumerable<String>, String, Int32, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_PushMessagesAsync_IEnumerable_System_String__System_String_System_Int32_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.PushQueueStorage.PushMessagesAsync(IEnumerable{System.String},System.String,System.Int32,CancellationToken)
+  name.vb: PushMessagesAsync(IEnumerable(Of String), String, Int32, CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PushMessagesAsync(IEnumerable<System.String>, System.String, System.Int32, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PushMessagesAsync(IEnumerable(Of System.String), System.String, System.Int32, CancellationToken)
+  nameWithType: PushQueueStorage.PushMessagesAsync(IEnumerable<String>, String, Int32, CancellationToken)
+  nameWithType.vb: PushQueueStorage.PushMessagesAsync(IEnumerable(Of String), String, Int32, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PushMessagesAsync*
+  name: PushMessagesAsync
+  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_PushMessagesAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.PushQueueStorage.PushMessagesAsync
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.MessageRejectedAsync
-  nameWithType: LockedQueueStorage.MessageRejectedAsync
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.PullAsync(System.Int32,CancellationToken)
-  name: PullAsync(Int32, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_PullAsync_System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.PullAsync(System.Int32,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.PullAsync(System.Int32, CancellationToken)
-  nameWithType: LockedQueueStorage.PullAsync(Int32, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.PullAsync*
-  name: PullAsync
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_PullAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.PullAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.PullAsync
-  nameWithType: LockedQueueStorage.PullAsync
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.ReleaseMessageAsync(System.String,CancellationToken)
-  name: ReleaseMessageAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_ReleaseMessageAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.ReleaseMessageAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.ReleaseMessageAsync(System.String, CancellationToken)
-  nameWithType: LockedQueueStorage.ReleaseMessageAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.ReleaseMessageAsync*
-  name: ReleaseMessageAsync
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_ReleaseMessageAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.ReleaseMessageAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.ReleaseMessageAsync
-  nameWithType: LockedQueueStorage.ReleaseMessageAsync
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RenewDeadlineAsync(System.String,CancellationToken)
-  name: RenewDeadlineAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_RenewDeadlineAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RenewDeadlineAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RenewDeadlineAsync(System.String, CancellationToken)
-  nameWithType: LockedQueueStorage.RenewDeadlineAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RenewDeadlineAsync*
-  name: RenewDeadlineAsync
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_RenewDeadlineAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RenewDeadlineAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RenewDeadlineAsync
-  nameWithType: LockedQueueStorage.RenewDeadlineAsync
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RequeueMessageAsync(System.String,CancellationToken)
-  name: RequeueMessageAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_RequeueMessageAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RequeueMessageAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RequeueMessageAsync(System.String, CancellationToken)
-  nameWithType: LockedQueueStorage.RequeueMessageAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RequeueMessageAsync*
-  name: RequeueMessageAsync
-  href: api/ArmoniK.Core.Adapters.Memory.LockedQueueStorage.html#ArmoniK_Core_Adapters_Memory_LockedQueueStorage_RequeueMessageAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RequeueMessageAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.LockedQueueStorage.RequeueMessageAsync
-  nameWithType: LockedQueueStorage.RequeueMessageAsync
+  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PushMessagesAsync
+  nameWithType: PushQueueStorage.PushMessagesAsync
 - uid: ArmoniK.Core.Adapters.Memory.QueueStorage
   name: QueueStorage
   href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html
@@ -865,22 +1031,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.Check
   nameWithType: QueueStorage.Check
-- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
-  name: EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_EnqueueMessagesAsync_IEnumerable_System_String__System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
-  name.vb: EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync(IEnumerable<System.String>, System.Int32, CancellationToken)
-  fullName.vb: ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync(IEnumerable(Of System.String), System.Int32, CancellationToken)
-  nameWithType: QueueStorage.EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
-  nameWithType.vb: QueueStorage.EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync*
-  name: EnqueueMessagesAsync
-  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_EnqueueMessagesAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.EnqueueMessagesAsync
-  nameWithType: QueueStorage.EnqueueMessagesAsync
 - uid: ArmoniK.Core.Adapters.Memory.QueueStorage.Init(CancellationToken)
   name: Init(CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_Init_CancellationToken_
@@ -907,19 +1057,48 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.MaxPriority
   nameWithType: QueueStorage.MaxPriority
-- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync(System.Int32,CancellationToken)
-  name: PullAsync(Int32, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_PullAsync_System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync(System.Int32,CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync(System.Int32, CancellationToken)
-  nameWithType: QueueStorage.PullAsync(Int32, CancellationToken)
-- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync*
-  name: PullAsync
-  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_PullAsync_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.PartitionId
+  name: PartitionId
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_PartitionId
+  commentId: P:ArmoniK.Core.Adapters.Memory.QueueStorage.PartitionId
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.PartitionId
+  nameWithType: QueueStorage.PartitionId
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.PartitionId*
+  name: PartitionId
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_PartitionId_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.QueueStorage.PartitionId
   isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.PullAsync
-  nameWithType: QueueStorage.PullAsync
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.PartitionId
+  nameWithType: QueueStorage.PartitionId
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync(System.Int32,CancellationToken)
+  name: PullMessagesAsync(Int32, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_PullMessagesAsync_System_Int32_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync(System.Int32,CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync(System.Int32, CancellationToken)
+  nameWithType: QueueStorage.PullMessagesAsync(Int32, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync*
+  name: PullMessagesAsync
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_PullMessagesAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync
+  nameWithType: QueueStorage.PullMessagesAsync
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync(IEnumerable{System.String},System.String,System.Int32,CancellationToken)
+  name: PushMessagesAsync(IEnumerable<String>, String, Int32, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_PushMessagesAsync_IEnumerable_System_String__System_String_System_Int32_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync(IEnumerable{System.String},System.String,System.Int32,CancellationToken)
+  name.vb: PushMessagesAsync(IEnumerable(Of String), String, Int32, CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync(IEnumerable<System.String>, System.String, System.Int32, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync(IEnumerable(Of System.String), System.String, System.Int32, CancellationToken)
+  nameWithType: QueueStorage.PushMessagesAsync(IEnumerable<String>, String, Int32, CancellationToken)
+  nameWithType.vb: QueueStorage.PushMessagesAsync(IEnumerable(Of String), String, Int32, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync*
+  name: PushMessagesAsync
+  href: api/ArmoniK.Core.Adapters.Memory.QueueStorage.html#ArmoniK_Core_Adapters_Memory_QueueStorage_PushMessagesAsync_
+  commentId: Overload:ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync
+  nameWithType: QueueStorage.PushMessagesAsync
 - uid: ArmoniK.Core.Adapters.Memory.ResultTable
   name: ResultTable
   href: api/ArmoniK.Core.Adapters.Memory.ResultTable.html
@@ -7085,15 +7264,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession
   nameWithType: ISubmitter.CreateSession
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
-  name: CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateTasks_ArmoniK_Core_Common_Storage_SessionData_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
-  name.vb: CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable<ArmoniK.Core.Common.gRPC.Services.TaskRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable(Of ArmoniK.Core.Common.gRPC.Services.TaskRequest), CancellationToken)
-  nameWithType: ISubmitter.CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
-  nameWithType.vb: ISubmitter.CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
   name: CreateTasks(String, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_
@@ -7110,15 +7280,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateTasks
   nameWithType: ISubmitter.CreateTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)
-  name: FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)
-  name.vb: FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable<ArmoniK.Core.Common.Storage.TaskRequest>, System.Int32, System.String, System.String, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskRequest), System.Int32, System.String, System.String, CancellationToken)
-  nameWithType: ISubmitter.FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, CancellationToken)
-  nameWithType.vb: ISubmitter.FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,System.String,CancellationToken)
+  name: FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,System.String,CancellationToken)
+  name.vb: FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, String, CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable<ArmoniK.Core.Common.Storage.TaskRequest>, System.Int32, System.String, System.String, System.String, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskRequest), System.Int32, System.String, System.String, System.String, CancellationToken)
+  nameWithType: ISubmitter.FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, String, CancellationToken)
+  nameWithType.vb: ISubmitter.FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, String, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.FinalizeTaskCreation*
   name: FinalizeTaskCreation
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_FinalizeTaskCreation_
@@ -7294,15 +7464,15 @@ references:
   commentId: T:ArmoniK.Core.Common.gRPC.Services.Submitter
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter
   nameWithType: Submitter
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.IPartitionTable,ActivitySource)
-  name: Submitter(IQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter__ctor_ArmoniK_Core_Common_Storage_IQueueStorage_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ILogger_ArmoniK_Core_Common_gRPC_Services_Submitter__ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_Storage_IPartitionTable_ActivitySource_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.IPartitionTable,ActivitySource)
-  name.vb: Submitter(IQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger<ArmoniK.Core.Common.gRPC.Services.Submitter>, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.IPartitionTable, ActivitySource)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger(Of ArmoniK.Core.Common.gRPC.Services.Submitter), ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.IPartitionTable, ActivitySource)
-  nameWithType: Submitter.Submitter(IQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
-  nameWithType.vb: Submitter.Submitter(IQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IPushQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.IPartitionTable,ActivitySource)
+  name: Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter__ctor_ArmoniK_Core_Common_Storage_IPushQueueStorage_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ILogger_ArmoniK_Core_Common_gRPC_Services_Submitter__ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_Storage_IPartitionTable_ActivitySource_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IPushQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.IPartitionTable,ActivitySource)
+  name.vb: Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IPushQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger<ArmoniK.Core.Common.gRPC.Services.Submitter>, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.IPartitionTable, ActivitySource)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IPushQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger(Of ArmoniK.Core.Common.gRPC.Services.Submitter), ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.IPartitionTable, ActivitySource)
+  nameWithType: Submitter.Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
+  nameWithType.vb: Submitter.Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor*
   name: Submitter
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter__ctor_
@@ -7378,15 +7548,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession
   nameWithType: Submitter.CreateSession
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
-  name: CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CreateTasks_ArmoniK_Core_Common_Storage_SessionData_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
-  name.vb: CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable<ArmoniK.Core.Common.gRPC.Services.TaskRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable(Of ArmoniK.Core.Common.gRPC.Services.TaskRequest), CancellationToken)
-  nameWithType: Submitter.CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
-  nameWithType.vb: Submitter.CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
   name: CreateTasks(String, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_
@@ -7403,15 +7564,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateTasks
   nameWithType: Submitter.CreateTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)
-  name: FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)
-  name.vb: FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable<ArmoniK.Core.Common.Storage.TaskRequest>, System.Int32, System.String, System.String, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskRequest), System.Int32, System.String, System.String, CancellationToken)
-  nameWithType: Submitter.FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, CancellationToken)
-  nameWithType.vb: Submitter.FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,System.String,CancellationToken)
+  name: FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,System.String,CancellationToken)
+  name.vb: FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, String, CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable<ArmoniK.Core.Common.Storage.TaskRequest>, System.Int32, System.String, System.String, System.String, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskRequest), System.Int32, System.String, System.String, System.String, CancellationToken)
+  nameWithType: Submitter.FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, String, CancellationToken)
+  nameWithType.vb: Submitter.FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, String, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.FinalizeTaskCreation*
   name: FinalizeTaskCreation
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_FinalizeTaskCreation_
@@ -8531,15 +8692,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Pollster.Pollster
   fullName: ArmoniK.Core.Common.Pollster.Pollster
   nameWithType: Pollster
-- uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ComputePlane,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler)
-  name: Pollster(IQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
-  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_ArmoniK_Core_Common_Storage_IQueueStorage_ArmoniK_Core_Common_Pollster_DataPrefetcher_ComputePlane_IHostApplicationLifetime_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_Storage_IObjectStorageFactory_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_
-  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ComputePlane,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler)
-  name.vb: Pollster(IQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
-  fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler)
-  fullName.vb: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler)
-  nameWithType: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
-  nameWithType.vb: Pollster.Pollster(IQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+- uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IPullQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ComputePlane,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler)
+  name: Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+  href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_ArmoniK_Core_Common_Storage_IPullQueueStorage_ArmoniK_Core_Common_Pollster_DataPrefetcher_ComputePlane_IHostApplicationLifetime_ActivitySource_ILogger_ArmoniK_Core_Common_Pollster_Pollster__ArmoniK_Core_Common_Storage_IObjectStorageFactory_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_gRPC_Services_ISubmitter_ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Pollster_TaskProcessingChecker_ITaskProcessingChecker_ArmoniK_Core_Common_Stream_Worker_IWorkerStreamHandler_ArmoniK_Core_Common_Pollster_IAgentHandler_
+  commentId: M:ArmoniK.Core.Common.Pollster.Pollster.#ctor(ArmoniK.Core.Common.Storage.IPullQueueStorage,ArmoniK.Core.Common.Pollster.DataPrefetcher,ComputePlane,IHostApplicationLifetime,ActivitySource,ILogger{ArmoniK.Core.Common.Pollster.Pollster},ArmoniK.Core.Common.Storage.IObjectStorageFactory,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.gRPC.Services.ISubmitter,ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker,ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler,ArmoniK.Core.Common.Pollster.IAgentHandler)
+  name.vb: Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+  fullName: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IPullQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger<ArmoniK.Core.Common.Pollster.Pollster>, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler)
+  fullName.vb: ArmoniK.Core.Common.Pollster.Pollster.Pollster(ArmoniK.Core.Common.Storage.IPullQueueStorage, ArmoniK.Core.Common.Pollster.DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger(Of ArmoniK.Core.Common.Pollster.Pollster), ArmoniK.Core.Common.Storage.IObjectStorageFactory, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.gRPC.Services.ISubmitter, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Pollster.TaskProcessingChecker.ITaskProcessingChecker, ArmoniK.Core.Common.Stream.Worker.IWorkerStreamHandler, ArmoniK.Core.Common.Pollster.IAgentHandler)
+  nameWithType: Pollster.Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger<Pollster>, IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
+  nameWithType.vb: Pollster.Pollster(IPullQueueStorage, DataPrefetcher, ComputePlane, IHostApplicationLifetime, ActivitySource, ILogger(Of Pollster), IObjectStorageFactory, IResultTable, ISubmitter, ISessionTable, ITaskTable, ITaskProcessingChecker, IWorkerStreamHandler, IAgentHandler)
 - uid: ArmoniK.Core.Common.Pollster.Pollster.#ctor*
   name: Pollster
   href: api/ArmoniK.Core.Common.Pollster.Pollster.html#ArmoniK_Core_Common_Pollster_Pollster__ctor_
@@ -9495,116 +9656,6 @@ references:
   commentId: N:ArmoniK.Core.Common.Storage
   fullName: ArmoniK.Core.Common.Storage
   nameWithType: ArmoniK.Core.Common.Storage
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage
-  name: ILockedQueueStorage
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html
-  commentId: T:ArmoniK.Core.Common.Storage.ILockedQueueStorage
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage
-  nameWithType: ILockedQueueStorage
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.AreMessagesUnique
-  name: AreMessagesUnique
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_AreMessagesUnique
-  commentId: P:ArmoniK.Core.Common.Storage.ILockedQueueStorage.AreMessagesUnique
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.AreMessagesUnique
-  nameWithType: ILockedQueueStorage.AreMessagesUnique
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.AreMessagesUnique*
-  name: AreMessagesUnique
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_AreMessagesUnique_
-  commentId: Overload:ArmoniK.Core.Common.Storage.ILockedQueueStorage.AreMessagesUnique
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.AreMessagesUnique
-  nameWithType: ILockedQueueStorage.AreMessagesUnique
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshExtension
-  name: LockRefreshExtension
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_LockRefreshExtension
-  commentId: P:ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshExtension
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshExtension
-  nameWithType: ILockedQueueStorage.LockRefreshExtension
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshExtension*
-  name: LockRefreshExtension
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_LockRefreshExtension_
-  commentId: Overload:ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshExtension
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshExtension
-  nameWithType: ILockedQueueStorage.LockRefreshExtension
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshPeriodicity
-  name: LockRefreshPeriodicity
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_LockRefreshPeriodicity
-  commentId: P:ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshPeriodicity
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshPeriodicity
-  nameWithType: ILockedQueueStorage.LockRefreshPeriodicity
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshPeriodicity*
-  name: LockRefreshPeriodicity
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_LockRefreshPeriodicity_
-  commentId: Overload:ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshPeriodicity
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.LockRefreshPeriodicity
-  nameWithType: ILockedQueueStorage.LockRefreshPeriodicity
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageProcessedAsync(System.String,CancellationToken)
-  name: MessageProcessedAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_MessageProcessedAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageProcessedAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageProcessedAsync(System.String, CancellationToken)
-  nameWithType: ILockedQueueStorage.MessageProcessedAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageProcessedAsync*
-  name: MessageProcessedAsync
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_MessageProcessedAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageProcessedAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageProcessedAsync
-  nameWithType: ILockedQueueStorage.MessageProcessedAsync
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageRejectedAsync(System.String,CancellationToken)
-  name: MessageRejectedAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_MessageRejectedAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageRejectedAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageRejectedAsync(System.String, CancellationToken)
-  nameWithType: ILockedQueueStorage.MessageRejectedAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageRejectedAsync*
-  name: MessageRejectedAsync
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_MessageRejectedAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageRejectedAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.MessageRejectedAsync
-  nameWithType: ILockedQueueStorage.MessageRejectedAsync
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.ReleaseMessageAsync(System.String,CancellationToken)
-  name: ReleaseMessageAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_ReleaseMessageAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ILockedQueueStorage.ReleaseMessageAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.ReleaseMessageAsync(System.String, CancellationToken)
-  nameWithType: ILockedQueueStorage.ReleaseMessageAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.ReleaseMessageAsync*
-  name: ReleaseMessageAsync
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_ReleaseMessageAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.ILockedQueueStorage.ReleaseMessageAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.ReleaseMessageAsync
-  nameWithType: ILockedQueueStorage.ReleaseMessageAsync
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.RenewDeadlineAsync(System.String,CancellationToken)
-  name: RenewDeadlineAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_RenewDeadlineAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ILockedQueueStorage.RenewDeadlineAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.RenewDeadlineAsync(System.String, CancellationToken)
-  nameWithType: ILockedQueueStorage.RenewDeadlineAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.RenewDeadlineAsync*
-  name: RenewDeadlineAsync
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_RenewDeadlineAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.ILockedQueueStorage.RenewDeadlineAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.RenewDeadlineAsync
-  nameWithType: ILockedQueueStorage.RenewDeadlineAsync
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.RequeueMessageAsync(System.String,CancellationToken)
-  name: RequeueMessageAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_RequeueMessageAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ILockedQueueStorage.RequeueMessageAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.RequeueMessageAsync(System.String, CancellationToken)
-  nameWithType: ILockedQueueStorage.RequeueMessageAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.ILockedQueueStorage.RequeueMessageAsync*
-  name: RequeueMessageAsync
-  href: api/ArmoniK.Core.Common.Storage.ILockedQueueStorage.html#ArmoniK_Core_Common_Storage_ILockedQueueStorage_RequeueMessageAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.ILockedQueueStorage.RequeueMessageAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.ILockedQueueStorage.RequeueMessageAsync
-  nameWithType: ILockedQueueStorage.RequeueMessageAsync
 - uid: ArmoniK.Core.Common.Storage.IObjectStorage
   name: IObjectStorage
   href: api/ArmoniK.Core.Common.Storage.IObjectStorage.html
@@ -9771,6 +9822,47 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.IPartitionTable.ReadPartitionAsync
   nameWithType: IPartitionTable.ReadPartitionAsync
+- uid: ArmoniK.Core.Common.Storage.IPullQueueStorage
+  name: IPullQueueStorage
+  href: api/ArmoniK.Core.Common.Storage.IPullQueueStorage.html
+  commentId: T:ArmoniK.Core.Common.Storage.IPullQueueStorage
+  fullName: ArmoniK.Core.Common.Storage.IPullQueueStorage
+  nameWithType: IPullQueueStorage
+- uid: ArmoniK.Core.Common.Storage.IPullQueueStorage.PullMessagesAsync(System.Int32,CancellationToken)
+  name: PullMessagesAsync(Int32, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IPullQueueStorage.html#ArmoniK_Core_Common_Storage_IPullQueueStorage_PullMessagesAsync_System_Int32_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IPullQueueStorage.PullMessagesAsync(System.Int32,CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IPullQueueStorage.PullMessagesAsync(System.Int32, CancellationToken)
+  nameWithType: IPullQueueStorage.PullMessagesAsync(Int32, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IPullQueueStorage.PullMessagesAsync*
+  name: PullMessagesAsync
+  href: api/ArmoniK.Core.Common.Storage.IPullQueueStorage.html#ArmoniK_Core_Common_Storage_IPullQueueStorage_PullMessagesAsync_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IPullQueueStorage.PullMessagesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IPullQueueStorage.PullMessagesAsync
+  nameWithType: IPullQueueStorage.PullMessagesAsync
+- uid: ArmoniK.Core.Common.Storage.IPushQueueStorage
+  name: IPushQueueStorage
+  href: api/ArmoniK.Core.Common.Storage.IPushQueueStorage.html
+  commentId: T:ArmoniK.Core.Common.Storage.IPushQueueStorage
+  fullName: ArmoniK.Core.Common.Storage.IPushQueueStorage
+  nameWithType: IPushQueueStorage
+- uid: ArmoniK.Core.Common.Storage.IPushQueueStorage.PushMessagesAsync(IEnumerable{System.String},System.String,System.Int32,CancellationToken)
+  name: PushMessagesAsync(IEnumerable<String>, String, Int32, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.IPushQueueStorage.html#ArmoniK_Core_Common_Storage_IPushQueueStorage_PushMessagesAsync_IEnumerable_System_String__System_String_System_Int32_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.IPushQueueStorage.PushMessagesAsync(IEnumerable{System.String},System.String,System.Int32,CancellationToken)
+  name.vb: PushMessagesAsync(IEnumerable(Of String), String, Int32, CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.IPushQueueStorage.PushMessagesAsync(IEnumerable<System.String>, System.String, System.Int32, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.IPushQueueStorage.PushMessagesAsync(IEnumerable(Of System.String), System.String, System.Int32, CancellationToken)
+  nameWithType: IPushQueueStorage.PushMessagesAsync(IEnumerable<String>, String, Int32, CancellationToken)
+  nameWithType.vb: IPushQueueStorage.PushMessagesAsync(IEnumerable(Of String), String, Int32, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.IPushQueueStorage.PushMessagesAsync*
+  name: PushMessagesAsync
+  href: api/ArmoniK.Core.Common.Storage.IPushQueueStorage.html#ArmoniK_Core_Common_Storage_IPushQueueStorage_PushMessagesAsync_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IPushQueueStorage.PushMessagesAsync
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.IPushQueueStorage.PushMessagesAsync
+  nameWithType: IPushQueueStorage.PushMessagesAsync
 - uid: ArmoniK.Core.Common.Storage.IQueueMessageHandler
   name: IQueueMessageHandler
   href: api/ArmoniK.Core.Common.Storage.IQueueMessageHandler.html
@@ -9835,54 +9927,19 @@ references:
   commentId: T:ArmoniK.Core.Common.Storage.IQueueStorage
   fullName: ArmoniK.Core.Common.Storage.IQueueStorage
   nameWithType: IQueueStorage
-- uid: ArmoniK.Core.Common.Storage.IQueueStorageBase
-  name: IQueueStorageBase
-  href: api/ArmoniK.Core.Common.Storage.IQueueStorageBase.html
-  commentId: T:ArmoniK.Core.Common.Storage.IQueueStorageBase
-  fullName: ArmoniK.Core.Common.Storage.IQueueStorageBase
-  nameWithType: IQueueStorageBase
-- uid: ArmoniK.Core.Common.Storage.IQueueStorageBase.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
-  name: EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.IQueueStorageBase.html#ArmoniK_Core_Common_Storage_IQueueStorageBase_EnqueueMessagesAsync_IEnumerable_System_String__System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.IQueueStorageBase.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
-  name.vb: EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.IQueueStorageBase.EnqueueMessagesAsync(IEnumerable<System.String>, System.Int32, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Storage.IQueueStorageBase.EnqueueMessagesAsync(IEnumerable(Of System.String), System.Int32, CancellationToken)
-  nameWithType: IQueueStorageBase.EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
-  nameWithType.vb: IQueueStorageBase.EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.IQueueStorageBase.EnqueueMessagesAsync*
-  name: EnqueueMessagesAsync
-  href: api/ArmoniK.Core.Common.Storage.IQueueStorageBase.html#ArmoniK_Core_Common_Storage_IQueueStorageBase_EnqueueMessagesAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.IQueueStorageBase.EnqueueMessagesAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.IQueueStorageBase.EnqueueMessagesAsync
-  nameWithType: IQueueStorageBase.EnqueueMessagesAsync
-- uid: ArmoniK.Core.Common.Storage.IQueueStorageBase.MaxPriority
+- uid: ArmoniK.Core.Common.Storage.IQueueStorage.MaxPriority
   name: MaxPriority
-  href: api/ArmoniK.Core.Common.Storage.IQueueStorageBase.html#ArmoniK_Core_Common_Storage_IQueueStorageBase_MaxPriority
-  commentId: P:ArmoniK.Core.Common.Storage.IQueueStorageBase.MaxPriority
-  fullName: ArmoniK.Core.Common.Storage.IQueueStorageBase.MaxPriority
-  nameWithType: IQueueStorageBase.MaxPriority
-- uid: ArmoniK.Core.Common.Storage.IQueueStorageBase.MaxPriority*
+  href: api/ArmoniK.Core.Common.Storage.IQueueStorage.html#ArmoniK_Core_Common_Storage_IQueueStorage_MaxPriority
+  commentId: P:ArmoniK.Core.Common.Storage.IQueueStorage.MaxPriority
+  fullName: ArmoniK.Core.Common.Storage.IQueueStorage.MaxPriority
+  nameWithType: IQueueStorage.MaxPriority
+- uid: ArmoniK.Core.Common.Storage.IQueueStorage.MaxPriority*
   name: MaxPriority
-  href: api/ArmoniK.Core.Common.Storage.IQueueStorageBase.html#ArmoniK_Core_Common_Storage_IQueueStorageBase_MaxPriority_
-  commentId: Overload:ArmoniK.Core.Common.Storage.IQueueStorageBase.MaxPriority
+  href: api/ArmoniK.Core.Common.Storage.IQueueStorage.html#ArmoniK_Core_Common_Storage_IQueueStorage_MaxPriority_
+  commentId: Overload:ArmoniK.Core.Common.Storage.IQueueStorage.MaxPriority
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.IQueueStorageBase.MaxPriority
-  nameWithType: IQueueStorageBase.MaxPriority
-- uid: ArmoniK.Core.Common.Storage.IQueueStorageBase.PullAsync(System.Int32,CancellationToken)
-  name: PullAsync(Int32, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.IQueueStorageBase.html#ArmoniK_Core_Common_Storage_IQueueStorageBase_PullAsync_System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.IQueueStorageBase.PullAsync(System.Int32,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.IQueueStorageBase.PullAsync(System.Int32, CancellationToken)
-  nameWithType: IQueueStorageBase.PullAsync(Int32, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.IQueueStorageBase.PullAsync*
-  name: PullAsync
-  href: api/ArmoniK.Core.Common.Storage.IQueueStorageBase.html#ArmoniK_Core_Common_Storage_IQueueStorageBase_PullAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.IQueueStorageBase.PullAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.IQueueStorageBase.PullAsync
-  nameWithType: IQueueStorageBase.PullAsync
+  fullName: ArmoniK.Core.Common.Storage.IQueueStorage.MaxPriority
+  nameWithType: IQueueStorage.MaxPriority
 - uid: ArmoniK.Core.Common.Storage.IResultTable
   name: IResultTable
   href: api/ArmoniK.Core.Common.Storage.IResultTable.html
@@ -10579,393 +10636,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ITaskTable.UpdateTaskStatusAsync
   nameWithType: ITaskTable.UpdateTaskStatusAsync
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler
-  name: LockedQueueMessageDeadlineHandler
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.html
-  commentId: T:ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler
-  nameWithType: LockedQueueMessageDeadlineHandler
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.#ctor(ArmoniK.Core.Common.Storage.ILockedQueueStorage,System.String,ILogger,CancellationToken)
-  name: LockedQueueMessageDeadlineHandler(ILockedQueueStorage, String, ILogger, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageDeadlineHandler__ctor_ArmoniK_Core_Common_Storage_ILockedQueueStorage_System_String_ILogger_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.#ctor(ArmoniK.Core.Common.Storage.ILockedQueueStorage,System.String,ILogger,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.LockedQueueMessageDeadlineHandler(ArmoniK.Core.Common.Storage.ILockedQueueStorage, System.String, ILogger, CancellationToken)
-  nameWithType: LockedQueueMessageDeadlineHandler.LockedQueueMessageDeadlineHandler(ILockedQueueStorage, String, ILogger, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.#ctor*
-  name: LockedQueueMessageDeadlineHandler
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageDeadlineHandler__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.LockedQueueMessageDeadlineHandler
-  nameWithType: LockedQueueMessageDeadlineHandler.LockedQueueMessageDeadlineHandler
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.DisposeAsync
-  name: DisposeAsync()
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageDeadlineHandler_DisposeAsync
-  commentId: M:ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.DisposeAsync
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.DisposeAsync()
-  nameWithType: LockedQueueMessageDeadlineHandler.DisposeAsync()
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.DisposeAsync*
-  name: DisposeAsync
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageDeadlineHandler_DisposeAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.DisposeAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.DisposeAsync
-  nameWithType: LockedQueueMessageDeadlineHandler.DisposeAsync
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.MessageLockLost
-  name: MessageLockLost
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageDeadlineHandler_MessageLockLost
-  commentId: P:ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.MessageLockLost
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.MessageLockLost
-  nameWithType: LockedQueueMessageDeadlineHandler.MessageLockLost
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.MessageLockLost*
-  name: MessageLockLost
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageDeadlineHandler_MessageLockLost_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.MessageLockLost
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler.MessageLockLost
-  nameWithType: LockedQueueMessageDeadlineHandler.MessageLockLost
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler
-  name: LockedQueueMessageHandler
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html
-  commentId: T:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler
-  nameWithType: LockedQueueMessageHandler
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.#ctor(ArmoniK.Core.Common.Storage.ILockedQueueStorage,System.String,System.String,ILogger,CancellationToken)
-  name: LockedQueueMessageHandler(ILockedQueueStorage, String, String, ILogger, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler__ctor_ArmoniK_Core_Common_Storage_ILockedQueueStorage_System_String_System_String_ILogger_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.#ctor(ArmoniK.Core.Common.Storage.ILockedQueueStorage,System.String,System.String,ILogger,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.LockedQueueMessageHandler(ArmoniK.Core.Common.Storage.ILockedQueueStorage, System.String, System.String, ILogger, CancellationToken)
-  nameWithType: LockedQueueMessageHandler.LockedQueueMessageHandler(ILockedQueueStorage, String, String, ILogger, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.#ctor*
-  name: LockedQueueMessageHandler
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.LockedQueueMessageHandler
-  nameWithType: LockedQueueMessageHandler.LockedQueueMessageHandler
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.CancellationToken
-  name: CancellationToken
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler_CancellationToken
-  commentId: P:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.CancellationToken
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.CancellationToken
-  nameWithType: LockedQueueMessageHandler.CancellationToken
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.CancellationToken*
-  name: CancellationToken
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler_CancellationToken_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.CancellationToken
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.CancellationToken
-  nameWithType: LockedQueueMessageHandler.CancellationToken
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.DisposeAsync
-  name: DisposeAsync()
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler_DisposeAsync
-  commentId: M:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.DisposeAsync
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.DisposeAsync()
-  nameWithType: LockedQueueMessageHandler.DisposeAsync()
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.DisposeAsync*
-  name: DisposeAsync
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler_DisposeAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.DisposeAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.DisposeAsync
-  nameWithType: LockedQueueMessageHandler.DisposeAsync
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.MessageId
-  name: MessageId
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler_MessageId
-  commentId: P:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.MessageId
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.MessageId
-  nameWithType: LockedQueueMessageHandler.MessageId
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.MessageId*
-  name: MessageId
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler_MessageId_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.MessageId
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.MessageId
-  nameWithType: LockedQueueMessageHandler.MessageId
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.Status
-  name: Status
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler_Status
-  commentId: P:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.Status
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.Status
-  nameWithType: LockedQueueMessageHandler.Status
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.Status*
-  name: Status
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler_Status_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.Status
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.Status
-  nameWithType: LockedQueueMessageHandler.Status
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.TaskId
-  name: TaskId
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler_TaskId
-  commentId: P:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.TaskId
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.TaskId
-  nameWithType: LockedQueueMessageHandler.TaskId
-- uid: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.TaskId*
-  name: TaskId
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedQueueMessageHandler_TaskId_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.TaskId
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueMessageHandler.TaskId
-  nameWithType: LockedQueueMessageHandler.TaskId
-- uid: ArmoniK.Core.Common.Storage.LockedQueueStorageExt
-  name: LockedQueueStorageExt
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueStorageExt.html
-  commentId: T:ArmoniK.Core.Common.Storage.LockedQueueStorageExt
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueStorageExt
-  nameWithType: LockedQueueStorageExt
-- uid: ArmoniK.Core.Common.Storage.LockedQueueStorageExt.EnqueueAsync(ArmoniK.Core.Common.Storage.ILockedQueueStorage,System.String,System.Int32,CancellationToken)
-  name: EnqueueAsync(ILockedQueueStorage, String, Int32, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueStorageExt.html#ArmoniK_Core_Common_Storage_LockedQueueStorageExt_EnqueueAsync_ArmoniK_Core_Common_Storage_ILockedQueueStorage_System_String_System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedQueueStorageExt.EnqueueAsync(ArmoniK.Core.Common.Storage.ILockedQueueStorage,System.String,System.Int32,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueStorageExt.EnqueueAsync(ArmoniK.Core.Common.Storage.ILockedQueueStorage, System.String, System.Int32, CancellationToken)
-  nameWithType: LockedQueueStorageExt.EnqueueAsync(ILockedQueueStorage, String, Int32, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedQueueStorageExt.EnqueueAsync*
-  name: EnqueueAsync
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueStorageExt.html#ArmoniK_Core_Common_Storage_LockedQueueStorageExt_EnqueueAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueStorageExt.EnqueueAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueStorageExt.EnqueueAsync
-  nameWithType: LockedQueueStorageExt.EnqueueAsync
-- uid: ArmoniK.Core.Common.Storage.LockedQueueStorageExt.GetDeadlineHandler(ArmoniK.Core.Common.Storage.ILockedQueueStorage,System.String,ILogger,CancellationToken)
-  name: GetDeadlineHandler(ILockedQueueStorage, String, ILogger, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueStorageExt.html#ArmoniK_Core_Common_Storage_LockedQueueStorageExt_GetDeadlineHandler_ArmoniK_Core_Common_Storage_ILockedQueueStorage_System_String_ILogger_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedQueueStorageExt.GetDeadlineHandler(ArmoniK.Core.Common.Storage.ILockedQueueStorage,System.String,ILogger,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueStorageExt.GetDeadlineHandler(ArmoniK.Core.Common.Storage.ILockedQueueStorage, System.String, ILogger, CancellationToken)
-  nameWithType: LockedQueueStorageExt.GetDeadlineHandler(ILockedQueueStorage, String, ILogger, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedQueueStorageExt.GetDeadlineHandler*
-  name: GetDeadlineHandler
-  href: api/ArmoniK.Core.Common.Storage.LockedQueueStorageExt.html#ArmoniK_Core_Common_Storage_LockedQueueStorageExt_GetDeadlineHandler_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedQueueStorageExt.GetDeadlineHandler
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedQueueStorageExt.GetDeadlineHandler
-  nameWithType: LockedQueueStorageExt.GetDeadlineHandler
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler
-  name: LockedWrapperQueueMessageHandler
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html
-  commentId: T:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler
-  nameWithType: LockedWrapperQueueMessageHandler
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.#ctor(ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler,CancellationToken)
-  name: LockedWrapperQueueMessageHandler(IQueueMessageHandler, LockedQueueMessageDeadlineHandler, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler__ctor_ArmoniK_Core_Common_Storage_IQueueMessageHandler_ArmoniK_Core_Common_Storage_LockedQueueMessageDeadlineHandler_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.#ctor(ArmoniK.Core.Common.Storage.IQueueMessageHandler,ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.LockedWrapperQueueMessageHandler(ArmoniK.Core.Common.Storage.IQueueMessageHandler, ArmoniK.Core.Common.Storage.LockedQueueMessageDeadlineHandler, CancellationToken)
-  nameWithType: LockedWrapperQueueMessageHandler.LockedWrapperQueueMessageHandler(IQueueMessageHandler, LockedQueueMessageDeadlineHandler, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.#ctor*
-  name: LockedWrapperQueueMessageHandler
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.LockedWrapperQueueMessageHandler
-  nameWithType: LockedWrapperQueueMessageHandler.LockedWrapperQueueMessageHandler
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.CancellationToken
-  name: CancellationToken
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler_CancellationToken
-  commentId: P:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.CancellationToken
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.CancellationToken
-  nameWithType: LockedWrapperQueueMessageHandler.CancellationToken
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.CancellationToken*
-  name: CancellationToken
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler_CancellationToken_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.CancellationToken
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.CancellationToken
-  nameWithType: LockedWrapperQueueMessageHandler.CancellationToken
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.DisposeAsync
-  name: DisposeAsync()
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler_DisposeAsync
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.DisposeAsync
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.DisposeAsync()
-  nameWithType: LockedWrapperQueueMessageHandler.DisposeAsync()
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.DisposeAsync*
-  name: DisposeAsync
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler_DisposeAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.DisposeAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.DisposeAsync
-  nameWithType: LockedWrapperQueueMessageHandler.DisposeAsync
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.MessageId
-  name: MessageId
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler_MessageId
-  commentId: P:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.MessageId
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.MessageId
-  nameWithType: LockedWrapperQueueMessageHandler.MessageId
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.MessageId*
-  name: MessageId
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler_MessageId_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.MessageId
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.MessageId
-  nameWithType: LockedWrapperQueueMessageHandler.MessageId
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.Status
-  name: Status
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler_Status
-  commentId: P:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.Status
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.Status
-  nameWithType: LockedWrapperQueueMessageHandler.Status
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.Status*
-  name: Status
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler_Status_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.Status
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.Status
-  nameWithType: LockedWrapperQueueMessageHandler.Status
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.TaskId
-  name: TaskId
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler_TaskId
-  commentId: P:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.TaskId
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.TaskId
-  nameWithType: LockedWrapperQueueMessageHandler.TaskId
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.TaskId*
-  name: TaskId
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueMessageHandler_TaskId_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.TaskId
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueMessageHandler.TaskId
-  nameWithType: LockedWrapperQueueMessageHandler.TaskId
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage
-  name: LockedWrapperQueueStorage
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html
-  commentId: T:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage
-  nameWithType: LockedWrapperQueueStorage
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.#ctor(ArmoniK.Core.Common.Storage.ILockedQueueStorage,ILogger{ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage})
-  name: LockedWrapperQueueStorage(ILockedQueueStorage, ILogger<LockedWrapperQueueStorage>)
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage__ctor_ArmoniK_Core_Common_Storage_ILockedQueueStorage_ILogger_ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage__
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.#ctor(ArmoniK.Core.Common.Storage.ILockedQueueStorage,ILogger{ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage})
-  name.vb: LockedWrapperQueueStorage(ILockedQueueStorage, ILogger(Of LockedWrapperQueueStorage))
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.LockedWrapperQueueStorage(ArmoniK.Core.Common.Storage.ILockedQueueStorage, ILogger<ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage>)
-  fullName.vb: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.LockedWrapperQueueStorage(ArmoniK.Core.Common.Storage.ILockedQueueStorage, ILogger(Of ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage))
-  nameWithType: LockedWrapperQueueStorage.LockedWrapperQueueStorage(ILockedQueueStorage, ILogger<LockedWrapperQueueStorage>)
-  nameWithType.vb: LockedWrapperQueueStorage.LockedWrapperQueueStorage(ILockedQueueStorage, ILogger(Of LockedWrapperQueueStorage))
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.#ctor*
-  name: LockedWrapperQueueStorage
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage__ctor_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.#ctor
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.LockedWrapperQueueStorage
-  nameWithType: LockedWrapperQueueStorage.LockedWrapperQueueStorage
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
-  name: Check(HealthCheckTag)
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)
-  nameWithType: LockedWrapperQueueStorage.Check(HealthCheckTag)
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Check*
-  name: Check
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_Check_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Check
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Check
-  nameWithType: LockedWrapperQueueStorage.Check
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
-  name: EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_EnqueueMessagesAsync_IEnumerable_System_String__System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.EnqueueMessagesAsync(IEnumerable{System.String},System.Int32,CancellationToken)
-  name.vb: EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.EnqueueMessagesAsync(IEnumerable<System.String>, System.Int32, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.EnqueueMessagesAsync(IEnumerable(Of System.String), System.Int32, CancellationToken)
-  nameWithType: LockedWrapperQueueStorage.EnqueueMessagesAsync(IEnumerable<String>, Int32, CancellationToken)
-  nameWithType.vb: LockedWrapperQueueStorage.EnqueueMessagesAsync(IEnumerable(Of String), Int32, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.EnqueueMessagesAsync*
-  name: EnqueueMessagesAsync
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_EnqueueMessagesAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.EnqueueMessagesAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.EnqueueMessagesAsync
-  nameWithType: LockedWrapperQueueStorage.EnqueueMessagesAsync
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Init(CancellationToken)
-  name: Init(CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_Init_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Init(CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Init(CancellationToken)
-  nameWithType: LockedWrapperQueueStorage.Init(CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Init*
-  name: Init
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_Init_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Init
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.Init
-  nameWithType: LockedWrapperQueueStorage.Init
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MaxPriority
-  name: MaxPriority
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_MaxPriority
-  commentId: P:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MaxPriority
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MaxPriority
-  nameWithType: LockedWrapperQueueStorage.MaxPriority
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MaxPriority*
-  name: MaxPriority
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_MaxPriority_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MaxPriority
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MaxPriority
-  nameWithType: LockedWrapperQueueStorage.MaxPriority
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageProcessedAsync(System.String,CancellationToken)
-  name: MessageProcessedAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_MessageProcessedAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageProcessedAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageProcessedAsync(System.String, CancellationToken)
-  nameWithType: LockedWrapperQueueStorage.MessageProcessedAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageProcessedAsync*
-  name: MessageProcessedAsync
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_MessageProcessedAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageProcessedAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageProcessedAsync
-  nameWithType: LockedWrapperQueueStorage.MessageProcessedAsync
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageRejectedAsync(System.String,CancellationToken)
-  name: MessageRejectedAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_MessageRejectedAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageRejectedAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageRejectedAsync(System.String, CancellationToken)
-  nameWithType: LockedWrapperQueueStorage.MessageRejectedAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageRejectedAsync*
-  name: MessageRejectedAsync
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_MessageRejectedAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageRejectedAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.MessageRejectedAsync
-  nameWithType: LockedWrapperQueueStorage.MessageRejectedAsync
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.PullAsync(System.Int32,CancellationToken)
-  name: PullAsync(Int32, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_PullAsync_System_Int32_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.PullAsync(System.Int32,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.PullAsync(System.Int32, CancellationToken)
-  nameWithType: LockedWrapperQueueStorage.PullAsync(Int32, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.PullAsync*
-  name: PullAsync
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_PullAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.PullAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.PullAsync
-  nameWithType: LockedWrapperQueueStorage.PullAsync
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.ReleaseMessageAsync(System.String,CancellationToken)
-  name: ReleaseMessageAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_ReleaseMessageAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.ReleaseMessageAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.ReleaseMessageAsync(System.String, CancellationToken)
-  nameWithType: LockedWrapperQueueStorage.ReleaseMessageAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.ReleaseMessageAsync*
-  name: ReleaseMessageAsync
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_ReleaseMessageAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.ReleaseMessageAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.ReleaseMessageAsync
-  nameWithType: LockedWrapperQueueStorage.ReleaseMessageAsync
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.RequeueMessageAsync(System.String,CancellationToken)
-  name: RequeueMessageAsync(String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_RequeueMessageAsync_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.RequeueMessageAsync(System.String,CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.RequeueMessageAsync(System.String, CancellationToken)
-  nameWithType: LockedWrapperQueueStorage.RequeueMessageAsync(String, CancellationToken)
-- uid: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.RequeueMessageAsync*
-  name: RequeueMessageAsync
-  href: api/ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.html#ArmoniK_Core_Common_Storage_LockedWrapperQueueStorage_RequeueMessageAsync_
-  commentId: Overload:ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.RequeueMessageAsync
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Storage.LockedWrapperQueueStorage.RequeueMessageAsync
-  nameWithType: LockedWrapperQueueStorage.RequeueMessageAsync
 - uid: ArmoniK.Core.Common.Storage.ObjectStorageFactoryExt
   name: ObjectStorageFactoryExt
   href: api/ArmoniK.Core.Common.Storage.ObjectStorageFactoryExt.html
@@ -14441,6 +14111,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.SimpleAmqpClientHelper
   nameWithType: SimpleAmqpClientHelper.SimpleAmqpClientHelper
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.Connection
+  name: Connection
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAmqpClientHelper_Connection
+  commentId: P:ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.Connection
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.Connection
+  nameWithType: SimpleAmqpClientHelper.Connection
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.Connection*
+  name: Connection
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAmqpClientHelper_Connection_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.Connection
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.Connection
+  nameWithType: SimpleAmqpClientHelper.Connection
 - uid: ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.DisposeAsync
   name: DisposeAsync()
   href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleAmqpClientHelper.html#ArmoniK_Core_Common_Tests_Helpers_SimpleAmqpClientHelper_DisposeAsync
@@ -14631,15 +14314,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession
   nameWithType: SimpleSubmitter.CreateSession
-- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
-  name: CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_CreateTasks_ArmoniK_Core_Common_Storage_SessionData_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
-  name.vb: CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable<ArmoniK.Core.Common.gRPC.Services.TaskRequest>, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateTasks(ArmoniK.Core.Common.Storage.SessionData, System.String, ArmoniK.Api.gRPC.V1.TaskOptions, IAsyncEnumerable(Of ArmoniK.Core.Common.gRPC.Services.TaskRequest), CancellationToken)
-  nameWithType: SimpleSubmitter.CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
-  nameWithType.vb: SimpleSubmitter.CreateTasks(SessionData, String, TaskOptions, IAsyncEnumerable(Of TaskRequest), CancellationToken)
 - uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateTasks(System.String,System.String,ArmoniK.Api.gRPC.V1.TaskOptions,IAsyncEnumerable{ArmoniK.Core.Common.gRPC.Services.TaskRequest},CancellationToken)
   name: CreateTasks(String, String, TaskOptions, IAsyncEnumerable<TaskRequest>, CancellationToken)
   href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_CreateTasks_System_String_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_IAsyncEnumerable_ArmoniK_Core_Common_gRPC_Services_TaskRequest__CancellationToken_
@@ -14662,15 +14336,15 @@ references:
   commentId: F:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.DefaultCount
   fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.DefaultCount
   nameWithType: SimpleSubmitter.DefaultCount
-- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)
-  name: FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,CancellationToken)
-  name.vb: FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.FinalizeTaskCreation(IEnumerable<ArmoniK.Core.Common.Storage.TaskRequest>, System.Int32, System.String, System.String, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.FinalizeTaskCreation(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskRequest), System.Int32, System.String, System.String, CancellationToken)
-  nameWithType: SimpleSubmitter.FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, CancellationToken)
-  nameWithType.vb: SimpleSubmitter.FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,System.String,CancellationToken)
+  name: FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, String, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_FinalizeTaskCreation_IEnumerable_ArmoniK_Core_Common_Storage_TaskRequest__System_Int32_System_String_System_String_System_String_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.FinalizeTaskCreation(IEnumerable{ArmoniK.Core.Common.Storage.TaskRequest},System.Int32,System.String,System.String,System.String,CancellationToken)
+  name.vb: FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, String, CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.FinalizeTaskCreation(IEnumerable<ArmoniK.Core.Common.Storage.TaskRequest>, System.Int32, System.String, System.String, System.String, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.FinalizeTaskCreation(IEnumerable(Of ArmoniK.Core.Common.Storage.TaskRequest), System.Int32, System.String, System.String, System.String, CancellationToken)
+  nameWithType: SimpleSubmitter.FinalizeTaskCreation(IEnumerable<TaskRequest>, Int32, String, String, String, CancellationToken)
+  nameWithType.vb: SimpleSubmitter.FinalizeTaskCreation(IEnumerable(Of TaskRequest), Int32, String, String, String, CancellationToken)
 - uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.FinalizeTaskCreation*
   name: FinalizeTaskCreation
   href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_FinalizeTaskCreation_

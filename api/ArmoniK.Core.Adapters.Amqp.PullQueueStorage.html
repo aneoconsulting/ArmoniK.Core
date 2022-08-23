@@ -5,10 +5,10 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Class QueueStorage
+    <title>Class PullQueueStorage
    </title>
     <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Class QueueStorage
+    <meta name="title" content="Class PullQueueStorage
    ">
     <meta name="generator" content="docfx 2.59.3.0">
     
@@ -68,88 +68,93 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage">
+            <article class="content wrap" id="_content" data-uid="ArmoniK.Core.Adapters.Amqp.PullQueueStorage">
   
   
-  <h1 id="ArmoniK_Core_Adapters_Memory_QueueStorage" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage" class="text-break">Class QueueStorage
+  <h1 id="ArmoniK_Core_Adapters_Amqp_PullQueueStorage" data-uid="ArmoniK.Core.Adapters.Amqp.PullQueueStorage" class="text-break">Class PullQueueStorage
   </h1>
   <div class="markdown level0 summary"></div>
   <div class="markdown level0 conceptual"></div>
   <div class="inheritance">
     <h5>Inheritance</h5>
     <div class="level0"><span class="xref">System.Object</span></div>
-    <div class="level1"><span class="xref">QueueStorage</span></div>
+    <div class="level1"><a class="xref" href="ArmoniK.Core.Adapters.Amqp.QueueStorage.html">QueueStorage</a></div>
+    <div class="level2"><span class="xref">PullQueueStorage</span></div>
   </div>
   <div class="implements">
     <h5>Implements</h5>
+    <div><a class="xref" href="ArmoniK.Core.Common.Storage.IPullQueueStorage.html">IPullQueueStorage</a></div>
     <div><a class="xref" href="ArmoniK.Core.Common.Storage.IQueueStorage.html">IQueueStorage</a></div>
     <div><a class="xref" href="ArmoniK.Core.Common.IInitializable.html">IInitializable</a></div>
     <div><a class="xref" href="ArmoniK.Core.Common.IHealthCheckProvider.html">IHealthCheckProvider</a></div>
   </div>
-  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.Memory.html">ArmoniK.Core.Adapters.Memory</a></h6>
-  <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.Memory.dll</h6>
-  <h5 id="ArmoniK_Core_Adapters_Memory_QueueStorage_syntax">Syntax</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class QueueStorage : object, IQueueStorage, IInitializable, IHealthCheckProvider</code></pre>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_NbLinks">QueueStorage.NbLinks</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_Options">QueueStorage.Options</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_SessionAmqp">QueueStorage.SessionAmqp</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_IsInitialized">QueueStorage.IsInitialized</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_PartitionId">QueueStorage.PartitionId</a>
+    </div>
+    <div>
+      <a class="xref" href="ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_MaxPriority">QueueStorage.MaxPriority</a>
+    </div>
   </div>
-  <h3 id="properties">Properties
+  <h6><strong>Namespace</strong>: <a class="xref" href="ArmoniK.Core.Adapters.Amqp.html">ArmoniK.Core.Adapters.Amqp</a></h6>
+  <h6><strong>Assembly</strong>: ArmoniK.Core.Adapters.Amqp.dll</h6>
+  <h5 id="ArmoniK_Core_Adapters_Amqp_PullQueueStorage_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class PullQueueStorage : QueueStorage, IPullQueueStorage, IQueueStorage, IInitializable, IHealthCheckProvider</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_QueueStorage_MaxPriority.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.QueueStorage.MaxPriority%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_PullQueueStorage__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ArmoniK_Core_Adapters_Amqp_IPullSessionAmqp_ILogger_ArmoniK_Core_Adapters_Amqp_PullQueueStorage__.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.PullQueueStorage.%23ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp%2CArmoniK.Core.Adapters.Amqp.IPullSessionAmqp%2CILogger%7BArmoniK.Core.Adapters.Amqp.PullQueueStorage%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Memory/src/QueueStorage.cs/#L62">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/PullQueueStorage.cs/#L53">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Memory_QueueStorage_MaxPriority_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.MaxPriority*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Memory_QueueStorage_MaxPriority" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.MaxPriority">MaxPriority</h4>
+  <a id="ArmoniK_Core_Adapters_Amqp_PullQueueStorage__ctor_" data-uid="ArmoniK.Core.Adapters.Amqp.PullQueueStorage.#ctor*"></a>
+  <h4 id="ArmoniK_Core_Adapters_Amqp_PullQueueStorage__ctor_ArmoniK_Core_Adapters_Amqp_Options_Amqp_ArmoniK_Core_Adapters_Amqp_IPullSessionAmqp_ILogger_ArmoniK_Core_Adapters_Amqp_PullQueueStorage__" data-uid="ArmoniK.Core.Adapters.Amqp.PullQueueStorage.#ctor(ArmoniK.Core.Adapters.Amqp.Options.Amqp,ArmoniK.Core.Adapters.Amqp.IPullSessionAmqp,ILogger{ArmoniK.Core.Adapters.Amqp.PullQueueStorage})">PullQueueStorage(Amqp, IPullSessionAmqp, ILogger&lt;PullQueueStorage&gt;)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public int MaxPriority { get; }</code></pre>
+    <pre><code class="lang-csharp hljs">public PullQueueStorage(Amqp options, IPullSessionAmqp sessionAmqp, ILogger&lt;PullQueueStorage&gt; logger)</code></pre>
   </div>
-  <h5 class="propertyValue">Property Value</h5>
+  <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
     <thead>
       <tr>
         <th>Type</th>
+        <th>Name</th>
         <th>Description</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">System.Int32</span></td>
+        <td><a class="xref" href="ArmoniK.Core.Adapters.Amqp.Options.Amqp.html">Amqp</a></td>
+        <td><span class="parametername">options</span></td>
         <td></td>
       </tr>
-    </tbody>
-  </table>
-  <span class="small pull-right mobile-hide">
-    <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_QueueStorage_PartitionId.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.QueueStorage.PartitionId%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
-  </span>
-  <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Memory/src/QueueStorage.cs/#L50">View Source</a>
-  </span>
-  <a id="ArmoniK_Core_Adapters_Memory_QueueStorage_PartitionId_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PartitionId*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Memory_QueueStorage_PartitionId" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PartitionId">PartitionId</h4>
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public string PartitionId { get; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
       <tr>
-        <th>Type</th>
-        <th>Description</th>
+        <td><a class="xref" href="ArmoniK.Core.Adapters.Amqp.IPullSessionAmqp.html">IPullSessionAmqp</a></td>
+        <td><span class="parametername">sessionAmqp</span></td>
+        <td></td>
       </tr>
-    </thead>
-    <tbody>
       <tr>
-        <td><span class="xref">System.String</span></td>
+        <td><span class="xref">ILogger</span>&lt;<a class="xref" href="ArmoniK.Core.Adapters.Amqp.PullQueueStorage.html">PullQueueStorage</a>&gt;</td>
+        <td><span class="parametername">logger</span></td>
         <td></td>
       </tr>
     </tbody>
@@ -158,13 +163,13 @@
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_QueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.QueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Memory/src/QueueStorage.cs/#L54">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/PullQueueStorage.cs/#L87">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Memory_QueueStorage_Check_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.Check*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Memory_QueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)">Check(HealthCheckTag)</h4>
+  <a id="ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Check_" data-uid="ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check*"></a>
+  <h4 id="ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Check_ArmoniK_Core_Common_HealthCheckTag_" data-uid="ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Check(ArmoniK.Core.Common.HealthCheckTag)">Check(HealthCheckTag)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -205,18 +210,18 @@
   </table>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_QueueStorage_Init_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.QueueStorage.Init(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Init_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Init(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Memory/src/QueueStorage.cs/#L58">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/PullQueueStorage.cs/#L90">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Memory_QueueStorage_Init_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.Init*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Memory_QueueStorage_Init_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.Init(CancellationToken)">Init(CancellationToken)</h4>
+  <a id="ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Init_" data-uid="ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Init*"></a>
+  <h4 id="ArmoniK_Core_Adapters_Amqp_PullQueueStorage_Init_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Amqp.PullQueueStorage.Init(CancellationToken)">Init(CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task Init(CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public override async Task Init(CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -250,15 +255,17 @@
       </tr>
     </tbody>
   </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><a class="xref" href="ArmoniK.Core.Adapters.Amqp.QueueStorage.html#ArmoniK_Core_Adapters_Amqp_QueueStorage_Init_CancellationToken_">QueueStorage.Init(CancellationToken)</a></div>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_QueueStorage_PullMessagesAsync_System_Int32_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync(System.Int32%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_PullQueueStorage_PullMessagesAsync_System_Int32_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullMessagesAsync(System.Int32%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Memory/src/QueueStorage.cs/#L66">View Source</a>
+    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/PullQueueStorage.cs/#L104">View Source</a>
   </span>
-  <a id="ArmoniK_Core_Adapters_Memory_QueueStorage_PullMessagesAsync_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Memory_QueueStorage_PullMessagesAsync_System_Int32_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PullMessagesAsync(System.Int32,CancellationToken)">PullMessagesAsync(Int32, CancellationToken)</h4>
+  <a id="ArmoniK_Core_Adapters_Amqp_PullQueueStorage_PullMessagesAsync_" data-uid="ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullMessagesAsync*"></a>
+  <h4 id="ArmoniK_Core_Adapters_Amqp_PullQueueStorage_PullMessagesAsync_System_Int32_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Amqp.PullQueueStorage.PullMessagesAsync(System.Int32,CancellationToken)">PullMessagesAsync(Int32, CancellationToken)</h4>
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
@@ -302,69 +309,10 @@
       </tr>
     </tbody>
   </table>
-  <span class="small pull-right mobile-hide">
-    <span class="divider">|</span>
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_QueueStorage_PushMessagesAsync_IEnumerable_System_String__System_String_System_Int32_CancellationToken_.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync(IEnumerable%7BSystem.String%7D%2CSystem.String%2CSystem.Int32%2CCancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
-  </span>
-  <span class="small pull-right mobile-hide">
-    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Memory/src/QueueStorage.cs/#L104">View Source</a>
-  </span>
-  <a id="ArmoniK_Core_Adapters_Memory_QueueStorage_PushMessagesAsync_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync*"></a>
-  <h4 id="ArmoniK_Core_Adapters_Memory_QueueStorage_PushMessagesAsync_IEnumerable_System_String__System_String_System_Int32_CancellationToken_" data-uid="ArmoniK.Core.Adapters.Memory.QueueStorage.PushMessagesAsync(IEnumerable{System.String},System.String,System.Int32,CancellationToken)">PushMessagesAsync(IEnumerable&lt;String&gt;, String, Int32, CancellationToken)</h4>
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task PushMessagesAsync(IEnumerable&lt;string&gt; messages, string partitionId, int priority = 1, CancellationToken cancellationToken = null)</code></pre>
-  </div>
-  <h5 class="parameters">Parameters</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Name</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">IEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
-        <td><span class="parametername">messages</span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><span class="xref">System.String</span></td>
-        <td><span class="parametername">partitionId</span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><span class="xref">System.Int32</span></td>
-        <td><span class="parametername">priority</span></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><span class="xref">CancellationToken</span></td>
-        <td><span class="parametername">cancellationToken</span></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  <h5 class="returns">Returns</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">Task</span></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
   <h3 id="implements">Implements</h3>
+  <div>
+      <a class="xref" href="ArmoniK.Core.Common.Storage.IPullQueueStorage.html">IPullQueueStorage</a>
+  </div>
   <div>
       <a class="xref" href="ArmoniK.Core.Common.Storage.IQueueStorage.html">IQueueStorage</a>
   </div>
@@ -382,10 +330,10 @@
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Memory_QueueStorage.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Memory.QueueStorage%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/new/main/apiSpec/new?filename=ArmoniK_Core_Adapters_Amqp_PullQueueStorage.md&amp;value=---%0Auid%3A%20ArmoniK.Core.Adapters.Amqp.PullQueueStorage%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Memory/src/QueueStorage.cs/#L38" class="contribution-link">View Source</a>
+                    <a href="https://github.com/aneoconsulting/ArmoniK.Core/blob/main/Adaptors/Amqp/src/PullQueueStorage.cs/#L44" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>
