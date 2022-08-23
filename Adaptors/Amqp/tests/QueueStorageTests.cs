@@ -72,10 +72,10 @@ public class QueueStorageTests
   public async Task CreatePushQueueStorageShouldSucceed()
   {
     await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IPushSessionAmqp>();
+    var             provider = new Mock<IConnectionAmqp>();
 
-    provider.Setup(sp => sp.Session)
-            .Returns(helper.Session);
+    provider.Setup(cp => cp.Connection)
+            .Returns(helper.Connection);
 
     var pushQueueStorage = new PushQueueStorage(Options!,
                                                 provider.Object,
@@ -185,10 +185,10 @@ public class QueueStorageTests
   public async Task PushMessagesAsyncSucceeds()
   {
     await using var helper   = new SimpleAmqpClientHelper();
-    var             provider = new Mock<IPushSessionAmqp>();
+    var             provider = new Mock<IConnectionAmqp>();
 
-    provider.Setup(sp => sp.Session)
-            .Returns(helper.Session);
+    provider.Setup(cp => cp.Connection)
+            .Returns(helper.Connection);
 
     var pushQueueStorage = new PushQueueStorage(Options!,
                                                 provider.Object,
@@ -215,13 +215,13 @@ public class QueueStorageTests
   {
     await using var helper       = new SimpleAmqpClientHelper();
     var             pullProvider = new Mock<IPullSessionAmqp>();
-    var             pushProvider = new Mock<IPushSessionAmqp>();
+    var             pushProvider = new Mock<IConnectionAmqp>();
 
     pullProvider.Setup(sp => sp.Session)
                 .Returns(helper.Session);
 
-    pushProvider.Setup(sp => sp.Session)
-                .Returns(helper.Session);
+    pushProvider.Setup(cp => cp.Connection)
+                .Returns(helper.Connection);
 
     var pushQueueStorage = new PushQueueStorage(Options!,
                                                 pushProvider.Object,
@@ -265,13 +265,13 @@ public class QueueStorageTests
   {
     await using var helper       = new SimpleAmqpClientHelper();
     var             pullProvider = new Mock<IPullSessionAmqp>();
-    var             pushProvider = new Mock<IPushSessionAmqp>();
+    var             pushProvider = new Mock<IConnectionAmqp>();
 
     pullProvider.Setup(sp => sp.Session)
                 .Returns(helper.Session);
 
-    pushProvider.Setup(sp => sp.Session)
-                .Returns(helper.Session);
+    pushProvider.Setup(cp => cp.Connection)
+                .Returns(helper.Connection);
     var pushQueueStorage = new PushQueueStorage(Options!,
                                                 pushProvider.Object,
                                                 NullLogger<PushQueueStorage>.Instance);
@@ -319,13 +319,13 @@ public class QueueStorageTests
   {
     await using var helper       = new SimpleAmqpClientHelper();
     var             pullProvider = new Mock<IPullSessionAmqp>();
-    var             pushProvider = new Mock<IPushSessionAmqp>();
+    var             pushProvider = new Mock<IConnectionAmqp>();
 
     pullProvider.Setup(sp => sp.Session)
                 .Returns(helper.Session);
 
-    pushProvider.Setup(sp => sp.Session)
-                .Returns(helper.Session);
+    pushProvider.Setup(cp => cp.Connection)
+                .Returns(helper.Connection);
 
     var pushQueueStorage = new PushQueueStorage(Options!,
                                                 pushProvider.Object,

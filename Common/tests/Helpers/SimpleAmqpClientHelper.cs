@@ -33,7 +33,6 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleAmqpClientHelper : IAsyncDisposable
 {
-  private readonly Connection     connection_;
   private readonly ILoggerFactory loggerFactory_;
 
   public SimpleAmqpClientHelper()
@@ -43,9 +42,11 @@ public class SimpleAmqpClientHelper : IAsyncDisposable
 
     var address = new Address("amqp://guest:guest@localhost:5672");
 
-    connection_ = new Connection(address);
-    Session     = new Session(connection_);
+    Connection = new Connection(address);
+    Session    = new Session(Connection);
   }
+
+  public Connection Connection { get; }
 
   public Session Session { get; }
 
@@ -53,8 +54,8 @@ public class SimpleAmqpClientHelper : IAsyncDisposable
   {
     await Session.CloseAsync()
                  .ConfigureAwait(false);
-    await connection_.CloseAsync()
-                     .ConfigureAwait(false);
+    await Connection.CloseAsync()
+                    .ConfigureAwait(false);
     GC.SuppressFinalize(this);
   }
 }
