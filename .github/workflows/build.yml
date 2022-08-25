@@ -332,7 +332,7 @@ jobs:
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
         -  img : dockerhubaneo/armonik_pollingagent
