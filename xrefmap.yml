@@ -1475,15 +1475,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.SessionTable.Logger
   nameWithType: SessionTable.Logger
-- uid: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(System.String,IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  name: SetSessionDataAsync(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_SetSessionDataAsync_System_String_IEnumerable_System_String__ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(System.String,IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  name.vb: SetSessionDataAsync(String, IEnumerable(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(System.String, IEnumerable<System.String>, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(System.String, IEnumerable(Of System.String), ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
-  nameWithType: SessionTable.SetSessionDataAsync(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: SessionTable.SetSessionDataAsync(String, IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name: SetSessionDataAsync(IEnumerable<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_SetSessionDataAsync_IEnumerable_System_String__ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name.vb: SetSessionDataAsync(IEnumerable(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(IEnumerable<System.String>, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync(IEnumerable(Of System.String), ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  nameWithType: SessionTable.SetSessionDataAsync(IEnumerable<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: SessionTable.SetSessionDataAsync(IEnumerable(Of String), TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Adapters.Memory.SessionTable.SetSessionDataAsync*
   name: SetSessionDataAsync
   href: api/ArmoniK.Core.Adapters.Memory.SessionTable.html#ArmoniK_Core_Adapters_Memory_SessionTable_SetSessionDataAsync_
@@ -3330,15 +3330,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.Logger
   nameWithType: SessionTable.Logger
-- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(System.String,IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  name: SetSessionDataAsync(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_SetSessionDataAsync_System_String_IEnumerable_System_String__ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(System.String,IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  name.vb: SetSessionDataAsync(String, IEnumerable(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(System.String, IEnumerable<System.String>, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(System.String, IEnumerable(Of System.String), ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
-  nameWithType: SessionTable.SetSessionDataAsync(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: SessionTable.SetSessionDataAsync(String, IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name: SetSessionDataAsync(IEnumerable<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_SetSessionDataAsync_IEnumerable_System_String__ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name.vb: SetSessionDataAsync(IEnumerable(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(IEnumerable<System.String>, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync(IEnumerable(Of System.String), ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  nameWithType: SessionTable.SetSessionDataAsync(IEnumerable<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: SessionTable.SetSessionDataAsync(IEnumerable(Of String), TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Adapters.MongoDB.SessionTable.SetSessionDataAsync*
   name: SetSessionDataAsync
   href: api/ArmoniK.Core.Adapters.MongoDB.SessionTable.html#ArmoniK_Core_Adapters_MongoDB_SessionTable_SetSessionDataAsync_
@@ -7004,12 +7004,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetResultStream
   nameWithType: GrpcSubmitterService.TryGetResultStream
-- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetTaskOutput(ResultRequest,ServerCallContext)
-  name: TryGetTaskOutput(ResultRequest, ServerCallContext)
-  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_TryGetTaskOutput_ResultRequest_ServerCallContext_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetTaskOutput(ResultRequest,ServerCallContext)
-  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetTaskOutput(ResultRequest, ServerCallContext)
-  nameWithType: GrpcSubmitterService.TryGetTaskOutput(ResultRequest, ServerCallContext)
+- uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetTaskOutput(TaskOutputRequest,ServerCallContext)
+  name: TryGetTaskOutput(TaskOutputRequest, ServerCallContext)
+  href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_TryGetTaskOutput_TaskOutputRequest_ServerCallContext_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetTaskOutput(TaskOutputRequest,ServerCallContext)
+  fullName: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetTaskOutput(TaskOutputRequest, ServerCallContext)
+  nameWithType: GrpcSubmitterService.TryGetTaskOutput(TaskOutputRequest, ServerCallContext)
 - uid: ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.TryGetTaskOutput*
   name: TryGetTaskOutput
   href: api/ArmoniK.Core.Common.gRPC.Services.GrpcSubmitterService.html#ArmoniK_Core_Common_gRPC_Services_GrpcSubmitterService_TryGetTaskOutput_
@@ -7248,15 +7248,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CountTasks
   nameWithType: ISubmitter.CountTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(System.String,IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name: CreateSession(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateSession_System_String_IEnumerable_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(System.String,IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name.vb: CreateSession(String, IEnumerable(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(System.String, IEnumerable<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(System.String, IEnumerable(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  nameWithType: ISubmitter.CreateSession(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: ISubmitter.CreateSession(String, IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name: CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateSession_IEnumerable_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name.vb: CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IEnumerable<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IEnumerable(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  nameWithType: ISubmitter.CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: ISubmitter.CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession*
   name: CreateSession
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateSession_
@@ -7406,12 +7406,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetResult
   nameWithType: ISubmitter.TryGetResult
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetTaskOutputAsync(ResultRequest,CancellationToken)
-  name: TryGetTaskOutputAsync(ResultRequest, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_TryGetTaskOutputAsync_ResultRequest_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetTaskOutputAsync(ResultRequest,CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetTaskOutputAsync(ResultRequest, CancellationToken)
-  nameWithType: ISubmitter.TryGetTaskOutputAsync(ResultRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetTaskOutputAsync(TaskOutputRequest,CancellationToken)
+  name: TryGetTaskOutputAsync(TaskOutputRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_TryGetTaskOutputAsync_TaskOutputRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetTaskOutputAsync(TaskOutputRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetTaskOutputAsync(TaskOutputRequest, CancellationToken)
+  nameWithType: ISubmitter.TryGetTaskOutputAsync(TaskOutputRequest, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.TryGetTaskOutputAsync*
   name: TryGetTaskOutputAsync
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_TryGetTaskOutputAsync_
@@ -7532,15 +7532,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CountTasks
   nameWithType: Submitter.CountTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(System.String,IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name: CreateSession(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CreateSession_System_String_IEnumerable_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(System.String,IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name.vb: CreateSession(String, IEnumerable(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(System.String, IEnumerable<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(System.String, IEnumerable(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  nameWithType: Submitter.CreateSession(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: Submitter.CreateSession(String, IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name: CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CreateSession_IEnumerable_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name.vb: CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IEnumerable<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IEnumerable(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  nameWithType: Submitter.CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: Submitter.CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession*
   name: CreateSession
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CreateSession_
@@ -7690,12 +7690,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.TryGetResult
   nameWithType: Submitter.TryGetResult
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.TryGetTaskOutputAsync(ResultRequest,CancellationToken)
-  name: TryGetTaskOutputAsync(ResultRequest, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_TryGetTaskOutputAsync_ResultRequest_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.TryGetTaskOutputAsync(ResultRequest,CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.TryGetTaskOutputAsync(ResultRequest, CancellationToken)
-  nameWithType: Submitter.TryGetTaskOutputAsync(ResultRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.TryGetTaskOutputAsync(TaskOutputRequest,CancellationToken)
+  name: TryGetTaskOutputAsync(TaskOutputRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_TryGetTaskOutputAsync_TaskOutputRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.TryGetTaskOutputAsync(TaskOutputRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.TryGetTaskOutputAsync(TaskOutputRequest, CancellationToken)
+  nameWithType: Submitter.TryGetTaskOutputAsync(TaskOutputRequest, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.TryGetTaskOutputAsync*
   name: TryGetTaskOutputAsync
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_TryGetTaskOutputAsync_
@@ -7748,15 +7748,15 @@ references:
   commentId: T:ArmoniK.Core.Common.gRPC.Services.TaskRequest
   fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest
   nameWithType: TaskRequest
-- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.#ctor(System.String,IEnumerable{System.String},IEnumerable{System.String},IAsyncEnumerable{ReadOnlyMemory{System.Byte}})
-  name: TaskRequest(String, IEnumerable<String>, IEnumerable<String>, IAsyncEnumerable<ReadOnlyMemory<Byte>>)
-  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest__ctor_System_String_IEnumerable_System_String__IEnumerable_System_String__IAsyncEnumerable_ReadOnlyMemory_System_Byte___
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.TaskRequest.#ctor(System.String,IEnumerable{System.String},IEnumerable{System.String},IAsyncEnumerable{ReadOnlyMemory{System.Byte}})
-  name.vb: TaskRequest(String, IEnumerable(Of String), IEnumerable(Of String), IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)))
-  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.TaskRequest(System.String, IEnumerable<System.String>, IEnumerable<System.String>, IAsyncEnumerable<ReadOnlyMemory<System.Byte>>)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.TaskRequest.TaskRequest(System.String, IEnumerable(Of System.String), IEnumerable(Of System.String), IAsyncEnumerable(Of ReadOnlyMemory(Of System.Byte)))
-  nameWithType: TaskRequest.TaskRequest(String, IEnumerable<String>, IEnumerable<String>, IAsyncEnumerable<ReadOnlyMemory<Byte>>)
-  nameWithType.vb: TaskRequest.TaskRequest(String, IEnumerable(Of String), IEnumerable(Of String), IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)))
+- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.#ctor(IEnumerable{System.String},IEnumerable{System.String},IAsyncEnumerable{ReadOnlyMemory{System.Byte}})
+  name: TaskRequest(IEnumerable<String>, IEnumerable<String>, IAsyncEnumerable<ReadOnlyMemory<Byte>>)
+  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest__ctor_IEnumerable_System_String__IEnumerable_System_String__IAsyncEnumerable_ReadOnlyMemory_System_Byte___
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.TaskRequest.#ctor(IEnumerable{System.String},IEnumerable{System.String},IAsyncEnumerable{ReadOnlyMemory{System.Byte}})
+  name.vb: TaskRequest(IEnumerable(Of String), IEnumerable(Of String), IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)))
+  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.TaskRequest(IEnumerable<System.String>, IEnumerable<System.String>, IAsyncEnumerable<ReadOnlyMemory<System.Byte>>)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.TaskRequest.TaskRequest(IEnumerable(Of System.String), IEnumerable(Of System.String), IAsyncEnumerable(Of ReadOnlyMemory(Of System.Byte)))
+  nameWithType: TaskRequest.TaskRequest(IEnumerable<String>, IEnumerable<String>, IAsyncEnumerable<ReadOnlyMemory<Byte>>)
+  nameWithType.vb: TaskRequest.TaskRequest(IEnumerable(Of String), IEnumerable(Of String), IAsyncEnumerable(Of ReadOnlyMemory(Of Byte)))
 - uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.#ctor*
   name: TaskRequest
   href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest__ctor_
@@ -7790,19 +7790,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.ExpectedOutputKeys
   nameWithType: TaskRequest.ExpectedOutputKeys
-- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id
-  name: Id
-  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_Id
-  commentId: P:ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id
-  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id
-  nameWithType: TaskRequest.Id
-- uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id*
-  name: Id
-  href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_Id_
-  commentId: Overload:ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.gRPC.Services.TaskRequest.Id
-  nameWithType: TaskRequest.Id
 - uid: ArmoniK.Core.Common.gRPC.Services.TaskRequest.PayloadChunks
   name: PayloadChunks
   href: api/ArmoniK.Core.Common.gRPC.Services.TaskRequest.html#ArmoniK_Core_Common_gRPC_Services_TaskRequest_PayloadChunks
@@ -10261,15 +10248,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.ISessionTable.Logger
   nameWithType: ISessionTable.Logger
-- uid: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(System.String,IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  name: SetSessionDataAsync(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_SetSessionDataAsync_System_String_IEnumerable_System_String__ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(System.String,IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
-  name.vb: SetSessionDataAsync(String, IEnumerable(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(System.String, IEnumerable<System.String>, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(System.String, IEnumerable(Of System.String), ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
-  nameWithType: ISessionTable.SetSessionDataAsync(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: ISessionTable.SetSessionDataAsync(String, IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name: SetSessionDataAsync(IEnumerable<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_SetSessionDataAsync_IEnumerable_System_String__ArmoniK_Core_Common_Storage_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(IEnumerable{System.String},ArmoniK.Core.Common.Storage.TaskOptions,CancellationToken)
+  name.vb: SetSessionDataAsync(IEnumerable(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(IEnumerable<System.String>, ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync(IEnumerable(Of System.String), ArmoniK.Core.Common.Storage.TaskOptions, CancellationToken)
+  nameWithType: ISessionTable.SetSessionDataAsync(IEnumerable<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: ISessionTable.SetSessionDataAsync(IEnumerable(Of String), TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Common.Storage.ISessionTable.SetSessionDataAsync*
   name: SetSessionDataAsync
   href: api/ArmoniK.Core.Common.Storage.ISessionTable.html#ArmoniK_Core_Common_Storage_ISessionTable_SetSessionDataAsync_
@@ -13224,19 +13211,6 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest
   fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest
   nameWithType: CreateSessionRequestValidatorTest
-- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyIdShouldFail
-  name: EmptyIdShouldFail()
-  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyIdShouldFail
-  commentId: M:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyIdShouldFail
-  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyIdShouldFail()
-  nameWithType: CreateSessionRequestValidatorTest.EmptyIdShouldFail()
-- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyIdShouldFail*
-  name: EmptyIdShouldFail
-  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyIdShouldFail_
-  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyIdShouldFail
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyIdShouldFail
-  nameWithType: CreateSessionRequestValidatorTest.EmptyIdShouldFail
 - uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
   name: EmptyPartitionIdInTaskOptionsShouldFail()
   href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdInTaskOptionsShouldFail
@@ -14292,21 +14266,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CountTasks
   nameWithType: SimpleSubmitter.CountTasks
-- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(System.String,ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name: CreateSession(String, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_CreateSession_System_String_ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(System.String,ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(System.String, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  nameWithType: SimpleSubmitter.CreateSession(String, TaskOptions, CancellationToken)
-- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(System.String,IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name: CreateSession(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_CreateSession_System_String_IEnumerable_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(System.String,IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name.vb: CreateSession(String, IEnumerable(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(System.String, IEnumerable<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(System.String, IEnumerable(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  nameWithType: SimpleSubmitter.CreateSession(String, IEnumerable<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: SimpleSubmitter.CreateSession(String, IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name: CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_CreateSession_IEnumerable_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name.vb: CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IEnumerable<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IEnumerable(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  nameWithType: SimpleSubmitter.CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: SimpleSubmitter.CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession*
   name: CreateSession
   href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_CreateSession_
@@ -14462,12 +14430,12 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.TryGetResult
   nameWithType: SimpleSubmitter.TryGetResult
-- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.TryGetTaskOutputAsync(ResultRequest,CancellationToken)
-  name: TryGetTaskOutputAsync(ResultRequest, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_TryGetTaskOutputAsync_ResultRequest_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.TryGetTaskOutputAsync(ResultRequest,CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.TryGetTaskOutputAsync(ResultRequest, CancellationToken)
-  nameWithType: SimpleSubmitter.TryGetTaskOutputAsync(ResultRequest, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.TryGetTaskOutputAsync(TaskOutputRequest,CancellationToken)
+  name: TryGetTaskOutputAsync(TaskOutputRequest, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_TryGetTaskOutputAsync_TaskOutputRequest_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.TryGetTaskOutputAsync(TaskOutputRequest,CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.TryGetTaskOutputAsync(TaskOutputRequest, CancellationToken)
+  nameWithType: SimpleSubmitter.TryGetTaskOutputAsync(TaskOutputRequest, CancellationToken)
 - uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.TryGetTaskOutputAsync*
   name: TryGetTaskOutputAsync
   href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_TryGetTaskOutputAsync_
@@ -18097,6 +18065,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CancelTaskShouldSucceed
   nameWithType: SubmitterTests.CancelTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionInvalidPartitionShouldFail
+  name: CreateSessionInvalidPartitionShouldFail()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionInvalidPartitionShouldFail
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionInvalidPartitionShouldFail
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionInvalidPartitionShouldFail()
+  nameWithType: SubmitterTests.CreateSessionInvalidPartitionShouldFail()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionInvalidPartitionShouldFail*
+  name: CreateSessionInvalidPartitionShouldFail
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionInvalidPartitionShouldFail_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionInvalidPartitionShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionInvalidPartitionShouldFail
+  nameWithType: SubmitterTests.CreateSessionInvalidPartitionShouldFail
 - uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionShouldSucceed
   name: CreateSessionShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionShouldSucceed
@@ -18123,19 +18104,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithoutPartition
   nameWithType: SubmitterTests.CreateSessionWithoutPartition
-- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskInvalidPartitionShouldFail
-  name: CreateTaskInvalidPartitionShouldFail()
-  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateTaskInvalidPartitionShouldFail
-  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskInvalidPartitionShouldFail
-  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskInvalidPartitionShouldFail()
-  nameWithType: SubmitterTests.CreateTaskInvalidPartitionShouldFail()
-- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskInvalidPartitionShouldFail*
-  name: CreateTaskInvalidPartitionShouldFail
-  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateTaskInvalidPartitionShouldFail_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskInvalidPartitionShouldFail
-  isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskInvalidPartitionShouldFail
-  nameWithType: SubmitterTests.CreateTaskInvalidPartitionShouldFail
 - uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskShouldSucceed
   name: CreateTaskShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateTaskShouldSucceed
@@ -20536,12 +20504,12 @@ references:
   commentId: T:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt
   fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt
   nameWithType: SubmitterExt
-- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient,System.String,System.String)
-  name: CreateSessionAndCheckReply(Submitter.SubmitterClient, String, String)
-  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateSessionAndCheckReply_Submitter_SubmitterClient_System_String_System_String_
-  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient,System.String,System.String)
-  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient, System.String, System.String)
-  nameWithType: SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient, String, String)
+- uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient,System.String)
+  name: CreateSessionAndCheckReply(Submitter.SubmitterClient, String)
+  href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateSessionAndCheckReply_Submitter_SubmitterClient_System_String_
+  commentId: M:ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient,System.String)
+  fullName: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient, System.String)
+  nameWithType: SubmitterExt.CreateSessionAndCheckReply(Submitter.SubmitterClient, String)
 - uid: ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.CreateSessionAndCheckReply*
   name: CreateSessionAndCheckReply
   href: api/ArmoniK.Extensions.Common.StreamWrapper.Tests.Client.SubmitterExt.html#ArmoniK_Extensions_Common_StreamWrapper_Tests_Client_SubmitterExt_CreateSessionAndCheckReply_
