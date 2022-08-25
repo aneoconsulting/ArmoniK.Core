@@ -31,6 +31,6 @@ public class SimpleQueueMessageHandler : IQueueMessageHandler
 
   public CancellationToken  CancellationToken { get; init; }
   public string             MessageId         { get; init; } = "";
-  public string             TaskId            { get; init; } = "";
+  public string             TaskId            { get; set; }  = "";
   public QueueMessageStatus Status            { get; set; }
 }

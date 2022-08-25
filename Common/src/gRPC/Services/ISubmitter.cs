@@ -39,8 +39,7 @@ using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-public record TaskRequest(string                                 Id,
-                          IEnumerable<string>                    ExpectedOutputKeys,
+public record TaskRequest(IEnumerable<string>                    ExpectedOutputKeys,
                           IEnumerable<string>                    DataDependencies,
                           IAsyncEnumerable<ReadOnlyMemory<byte>> PayloadChunks);
 
@@ -55,8 +54,7 @@ public interface ISubmitter
   Task<Count> CountTasks(TaskFilter        request,
                          CancellationToken cancellationToken);
 
-  Task<CreateSessionReply> CreateSession(string              sessionId,
-                                         IEnumerable<string> partitionIds,
+  Task<CreateSessionReply> CreateSession(IEnumerable<string> partitionIds,
                                          TaskOptions         defaultTaskOptions,
                                          CancellationToken   cancellationToken);
 
@@ -95,7 +93,7 @@ public interface ISubmitter
                          Output            output,
                          CancellationToken cancellationToken = default);
 
-  Task<Output> TryGetTaskOutputAsync(ResultRequest     request,
+  Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
                                      CancellationToken contextCancellationToken);
 
   Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,

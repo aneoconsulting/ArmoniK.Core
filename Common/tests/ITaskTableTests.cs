@@ -189,7 +189,7 @@ public class TaskTableTestBase
                                               "output1",
                                             },
                                             Array.Empty<string>(),
-                                            TaskStatus.Failed,
+                                            TaskStatus.Error,
                                             options,
                                             new Output(false,
                                                        "sad task")),
@@ -272,7 +272,7 @@ public class TaskTableTestBase
     {
       Assert.ThrowsAsync<ArmoniKException>(async () =>
                                            {
-                                             await TaskTable!.UpdateTaskStatusAsync("TaskFailedId",
+                                             await TaskTable!.UpdateTaskStatusAsync("TaskCompletedId",
                                                                                     TaskStatus.Unspecified,
                                                                                     CancellationToken.None)
                                                              .ConfigureAwait(false);
@@ -431,7 +431,7 @@ public class TaskTableTestBase
                                     {
                                       Statuses =
                                       {
-                                        TaskStatus.Failed, // Presence of this status should generate an exception
+                                        TaskStatus.Completed, // Presence of this status should generate an exception
                                         TaskStatus.Creating,
                                         TaskStatus.Processing,
                                       },
@@ -533,7 +533,7 @@ public class TaskTableTestBase
                                                    1),
                       result[2]);
       Assert.AreEqual(new PartitionTaskStatusCount("part1",
-                                                   TaskStatus.Failed,
+                                                   TaskStatus.Error,
                                                    1),
                       result[3]);
       Assert.AreEqual(new PartitionTaskStatusCount("part1",

@@ -108,8 +108,7 @@ public class TaskTable : ITaskTable
                                                   TaskStatus        status,
                                                   CancellationToken cancellationToken = default)
   {
-    if (filter.Included != null && filter.Included.Statuses.Contains(TaskStatus.Completed) | filter.Included.Statuses.Contains(TaskStatus.Failed) |
-        filter.Included.Statuses.Contains(TaskStatus.Canceled))
+    if (filter.Included != null && filter.Included.Statuses.Contains(TaskStatus.Completed) | filter.Included.Statuses.Contains(TaskStatus.Canceled))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state or isn't initialized properly");
     }
@@ -329,7 +328,7 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-                                   if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   if (data.Status is TaskStatus.Canceled or TaskStatus.Completed)
                                    {
                                      throw new ArmoniKException("Task already in a final status");
                                    }
@@ -367,7 +366,7 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-                                   if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   if (data.Status is TaskStatus.Canceled or TaskStatus.Completed)
                                    {
                                      throw new ArmoniKException("Task already in a final status");
                                    }
@@ -407,7 +406,7 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-                                   if (data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   if (data.Status is TaskStatus.Canceled or TaskStatus.Completed)
                                    {
                                      updated = false;
                                    }
@@ -587,12 +586,12 @@ public class TaskTable : ITaskTable
                                  (_,
                                   data) =>
                                  {
-                                   if (status is not TaskStatus.Canceling && data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   if (status is not TaskStatus.Canceling && data.Status is TaskStatus.Canceled or TaskStatus.Completed)
                                    {
                                      throw new ArmoniKException("the task is in a final state ant its status cannot change anymore");
                                    }
 
-                                   if (data.Status == status || data.Status is TaskStatus.Failed or TaskStatus.Canceled or TaskStatus.Completed)
+                                   if (data.Status == status || data.Status is TaskStatus.Canceled or TaskStatus.Completed)
                                    {
                                      return data;
                                    }

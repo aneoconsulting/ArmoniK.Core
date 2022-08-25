@@ -191,40 +191,31 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateSessionReply> CreateSession(string              sessionId,
-                                                      IEnumerable<string> partitionIds,
+  public async Task<CreateSessionReply> CreateSession(IEnumerable<string> partitionIds,
                                                       TaskOptions         defaultTaskOptions,
                                                       CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
-    try
+    if (!partitionIds.Any())
     {
-      if (!await partitionTable_.ArePartitionsExistingAsync(partitionIds,
-                                                            cancellationToken)
-                                .ConfigureAwait(false))
-      {
-        throw new PartitionNotFoundException("One of the partitions does not exist");
-      }
+      throw new InvalidOperationException("Partition collection should not be empty");
+    }
 
-      await sessionTable_.SetSessionDataAsync(sessionId,
-                                              partitionIds,
-                                              defaultTaskOptions,
-                                              cancellationToken)
-                         .ConfigureAwait(false);
-      return new CreateSessionReply
-             {
-               Ok = new Empty(),
-             };
-    }
-    catch (Exception e)
+    if (!await partitionTable_.ArePartitionsExistingAsync(partitionIds,
+                                                          cancellationToken)
+                              .ConfigureAwait(false))
     {
-      logger_.LogError(e,
-                       "Error while creating Session");
-      return new CreateSessionReply
-             {
-               Error = e.ToString(),
-             };
+      throw new PartitionNotFoundException("One of the partitions does not exist");
     }
+
+    var sessionId = await sessionTable_.SetSessionDataAsync(partitionIds,
+                                                            defaultTaskOptions,
+                                                            cancellationToken)
+                                       .ConfigureAwait(false);
+    return new CreateSessionReply
+           {
+             SessionId = sessionId,
+           };
   }
 
   /// <inheritdoc />
@@ -236,7 +227,7 @@ public class Submitter : ISubmitter
     var       storage  = ResultStorage(request.Session);
 
     var result = await resultTable_.GetResult(request.Session,
-                                              request.Key,
+                                              request.ResultId,
                                               cancellationToken)
                                    .ConfigureAwait(false);
 
@@ -252,7 +243,6 @@ public class Submitter : ISubmitter
         case TaskStatus.Completed:
           break;
         case TaskStatus.Error:
-        case TaskStatus.Failed:
         case TaskStatus.Timeout:
         case TaskStatus.Canceled:
         case TaskStatus.Canceling:
@@ -292,7 +282,7 @@ public class Submitter : ISubmitter
       }
     }
 
-    await foreach (var chunk in storage.GetValuesAsync(request.Key,
+    await foreach (var chunk in storage.GetValuesAsync(request.ResultId,
                                                        cancellationToken)
                                        .ConfigureAwait(false))
     {
@@ -359,10 +349,6 @@ public class Submitter : ISubmitter
             notCompleted += count;
             break;
           case TaskStatus.Completed:
-            break;
-          case TaskStatus.Failed:
-            notCompleted += count;
-            error        =  true;
             break;
           case TaskStatus.Timeout:
             notCompleted += count;
@@ -493,11 +479,11 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<Output> TryGetTaskOutputAsync(ResultRequest     request,
+  public async Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
                                                   CancellationToken contextCancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(TryGetTaskOutputAsync)}");
-    var output = await taskTable_.GetTaskOutput(request.Key,
+    var output = await taskTable_.GetTaskOutput(request.TaskId,
                                                 contextCancellationToken)
                                  .ConfigureAwait(false);
     return new Output(output);
@@ -518,7 +504,7 @@ public class Submitter : ISubmitter
     while (true)
     {
       var result = await resultTable_.GetResult(request.Session,
-                                                request.Key,
+                                                request.ResultId,
                                                 contextCancellationToken)
                                      .ConfigureAwait(false);
 
@@ -696,11 +682,13 @@ public class Submitter : ISubmitter
     await foreach (var taskRequest in taskRequests.WithCancellation(cancellationToken)
                                                   .ConfigureAwait(false))
     {
-      requests.Add(new Storage.TaskRequest(taskRequest.Id,
+      var taskId = Guid.NewGuid()
+                       .ToString();
+      requests.Add(new Storage.TaskRequest(taskId,
                                            taskRequest.ExpectedOutputKeys,
                                            taskRequest.DataDependencies));
       payloadUploadTasks.Add(PayloadStorage(sessionData.SessionId)
-                               .AddOrUpdateAsync(taskRequest.Id,
+                               .AddOrUpdateAsync(taskId,
                                                  taskRequest.PayloadChunks,
                                                  cancellationToken));
     }

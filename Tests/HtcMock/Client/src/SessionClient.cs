@@ -65,8 +65,8 @@ public class SessionClient : ISessionClient
   {
     var resultRequest = new ResultRequest
                         {
-                          Key     = id,
-                          Session = sessionId_,
+                          ResultId = id,
+                          Session  = sessionId_,
                         };
 
     var availabilityReply = client_.WaitForAvailability(resultRequest);
@@ -85,69 +85,56 @@ public class SessionClient : ISessionClient
         throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
     }
 
-    var taskOutput = client_.TryGetTaskOutput(resultRequest);
-
-    switch (taskOutput.TypeCase)
-    {
-      case Output.TypeOneofCase.None:
-        throw new Exception("Issue with Server !");
-      case Output.TypeOneofCase.Ok:
-        break;
-      case Output.TypeOneofCase.Error:
-        throw new Exception($"Task Error - {id}");
-      default:
-        throw new ArgumentOutOfRangeException(nameof(taskOutput.TypeCase));
-    }
-
     var response = client_.GetResultAsync(resultRequest);
     return response.Result;
   }
 
   public Task WaitSubtasksCompletion(string id)
   {
-    client_.WaitForCompletion(new WaitRequest
-                              {
-                                Filter = new TaskFilter
-                                         {
-                                           Task = new TaskFilter.Types.IdsRequest
-                                                  {
-                                                    Ids =
-                                                    {
-                                                      sessionId_ + "%" + id,
-                                                    },
-                                                  },
-                                         },
-                                StopOnFirstTaskCancellation = true,
-                                StopOnFirstTaskError        = true,
-                              });
+    var resultRequest = new ResultRequest
+                        {
+                          ResultId = id,
+                          Session  = sessionId_,
+                        };
+
+    var availabilityReply = client_.WaitForAvailability(resultRequest);
+
+    switch (availabilityReply.TypeCase)
+    {
+      case AvailabilityReply.TypeOneofCase.None:
+        throw new Exception("Issue with Server !");
+      case AvailabilityReply.TypeOneofCase.Ok:
+        break;
+      case AvailabilityReply.TypeOneofCase.Error:
+        throw new Exception($"Task in Error - {availabilityReply.Error.TaskId} : {availabilityReply.Error.Errors}");
+      case AvailabilityReply.TypeOneofCase.NotCompletedTask:
+        throw new Exception($"Task not completed - {id}");
+      default:
+        throw new ArgumentOutOfRangeException(nameof(availabilityReply.TypeCase));
+    }
+
     return Task.CompletedTask;
   }
 
   public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
   {
-    logger_.LogDebug("payload with dependencies {len}",
-                     payloadsWithDependencies.Count());
     var taskRequests = new List<TaskRequest>();
 
     foreach (var (payload, dependencies) in payloadsWithDependencies)
     {
-      var taskId = "root";
-      logger_.LogDebug("Create task {taskId}",
-                       taskId);
       var taskRequest = new TaskRequest
                         {
-                          Id      = sessionId_ + "%" + taskId,
                           Payload = ByteString.CopyFrom(payload),
                           DataDependencies =
                           {
-                            // p.Item2,
-                            dependencies.Select(i => sessionId_ + "%" + i),
+                            dependencies,
                           },
                           ExpectedOutputKeys =
                           {
-                            sessionId_ + "%" + taskId,
+                            Guid.NewGuid() + "%root",
                           },
                         };
+      ;
       logger_.LogDebug("Dependencies : {dep}",
                        string.Join(", ",
                                    dependencies.Select(item => item.ToString())));
@@ -158,23 +145,16 @@ public class SessionClient : ISessionClient
                                                    null,
                                                    taskRequests)
                                  .Result;
-    switch (createTaskReply.DataCase)
+    switch (createTaskReply.ResponseCase)
     {
-      case CreateTaskReply.DataOneofCase.NonSuccessfullIds:
-        throw new Exception($"NonSuccessfullIds : {createTaskReply.NonSuccessfullIds}");
-      case CreateTaskReply.DataOneofCase.None:
+      case CreateTaskReply.ResponseOneofCase.None:
         throw new Exception("Issue with Server !");
-      case CreateTaskReply.DataOneofCase.Successfull:
-        Console.WriteLine("Task Created");
-        break;
+      case CreateTaskReply.ResponseOneofCase.CreationStatusList:
+        return taskRequests.Select(request => request.ExpectedOutputKeys.Single());
+      case CreateTaskReply.ResponseOneofCase.Error:
+        throw new Exception("Error : " + createTaskReply.Error);
       default:
-        throw new ArgumentOutOfRangeException(nameof(createTaskReply.DataCase));
+        throw new ArgumentOutOfRangeException();
     }
-
-    var taskCreated = taskRequests.Select(t => t.Id);
-
-    logger_.LogDebug("Tasks created : {ids}",
-                     taskCreated);
-    return taskCreated;
   }
 }

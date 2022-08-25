@@ -53,79 +53,75 @@ public class SessionTableTestBase
 
     if (RunTests)
     {
-      SessionTable!.SetSessionDataAsync(RootSessionId,
-                                        new[]
-                                        {
-                                          "part1",
-                                          "part2",
-                                        },
-                                        new TaskOptions
-                                        {
-                                          MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                          MaxRetries         = 2,
-                                          Priority           = 1,
-                                          PartitionId        = "part1",
-                                          ApplicationName    = "ApplicationName",
-                                          ApplicationVersion = "ApplicationVersion",
-                                        },
-                                        CancellationToken.None)
-                   .Wait();
+      rootSessionId_ = SessionTable!.SetSessionDataAsync(new[]
+                                                         {
+                                                           "part1",
+                                                           "part2",
+                                                         },
+                                                         new TaskOptions
+                                                         {
+                                                           MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                                           MaxRetries         = 2,
+                                                           Priority           = 1,
+                                                           PartitionId        = "part1",
+                                                           ApplicationName    = "ApplicationName",
+                                                           ApplicationVersion = "ApplicationVersion",
+                                                         },
+                                                         CancellationToken.None)
+                                    .Result;
 
-      SessionTable!.SetSessionDataAsync("SessionId2",
-                                        new[]
-                                        {
-                                          "part1",
-                                          "part2",
-                                        },
-                                        new TaskOptions
-                                        {
-                                          MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                          MaxRetries         = 2,
-                                          Priority           = 1,
-                                          PartitionId        = "part1",
-                                          ApplicationName    = "ApplicationName",
-                                          ApplicationVersion = "ApplicationVersion",
-                                        },
-                                        CancellationToken.None)
-                   .Wait();
+      rootSessionId2_ = SessionTable!.SetSessionDataAsync(new[]
+                                                          {
+                                                            "part1",
+                                                            "part2",
+                                                          },
+                                                          new TaskOptions
+                                                          {
+                                                            MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                                            MaxRetries         = 2,
+                                                            Priority           = 1,
+                                                            PartitionId        = "part1",
+                                                            ApplicationName    = "ApplicationName",
+                                                            ApplicationVersion = "ApplicationVersion",
+                                                          },
+                                                          CancellationToken.None)
+                                     .Result;
 
-      SessionTable!.SetSessionDataAsync("SessionId3",
-                                        new[]
-                                        {
-                                          "part1",
-                                          "part2",
-                                        },
-                                        new TaskOptions
-                                        {
-                                          MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                          MaxRetries         = 2,
-                                          Priority           = 1,
-                                          PartitionId        = "part1",
-                                          ApplicationName    = "ApplicationName",
-                                          ApplicationVersion = "ApplicationVersion",
-                                        },
-                                        CancellationToken.None)
-                   .Wait();
+      rootSessionId3_ = SessionTable!.SetSessionDataAsync(new[]
+                                                          {
+                                                            "part1",
+                                                            "part2",
+                                                          },
+                                                          new TaskOptions
+                                                          {
+                                                            MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                                            MaxRetries         = 2,
+                                                            Priority           = 1,
+                                                            PartitionId        = "part1",
+                                                            ApplicationName    = "ApplicationName",
+                                                            ApplicationVersion = "ApplicationVersion",
+                                                          },
+                                                          CancellationToken.None)
+                                     .Result;
 
-      SessionTable!.SetSessionDataAsync("SessionId4",
-                                        new[]
-                                        {
-                                          "part1",
-                                          "part2",
-                                        },
-                                        new TaskOptions
-                                        {
-                                          MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
-                                          MaxRetries         = 2,
-                                          Priority           = 1,
-                                          PartitionId        = "part1",
-                                          ApplicationName    = "ApplicationName2",
-                                          ApplicationVersion = "ApplicationVersion2",
-                                        },
-                                        CancellationToken.None)
-                   .Wait();
+      rootSessionId4_ = SessionTable!.SetSessionDataAsync(new[]
+                                                          {
+                                                            "part1",
+                                                            "part2",
+                                                          },
+                                                          new TaskOptions
+                                                          {
+                                                            MaxDuration        = Duration.FromTimeSpan(TimeSpan.FromMinutes(1)),
+                                                            MaxRetries         = 2,
+                                                            Priority           = 1,
+                                                            PartitionId        = "part1",
+                                                            ApplicationName    = "ApplicationName2",
+                                                            ApplicationVersion = "ApplicationVersion2",
+                                                          },
+                                                          CancellationToken.None)
+                                     .Result;
 
-      SessionTable.CancelSessionAsync("SessionId3",
+      SessionTable.CancelSessionAsync(rootSessionId3_,
                                       CancellationToken.None)
                   .Wait();
     }
@@ -142,7 +138,10 @@ public class SessionTableTestBase
 
   protected bool RunTests;
 
-  private const string RootSessionId = "SessionId";
+  private string? rootSessionId_;
+  private string? rootSessionId2_;
+  private string? rootSessionId3_;
+  private string? rootSessionId4_;
 
   public virtual void GetSessionTableInstance()
   {
@@ -153,7 +152,7 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.IsSessionCancelledAsync("SessionId",
+      var res = await SessionTable!.IsSessionCancelledAsync(rootSessionId_!,
                                                             CancellationToken.None)
                                    .ConfigureAwait(false);
       Assert.IsFalse(res);
@@ -179,7 +178,7 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = await SessionTable!.GetDefaultTaskOptionAsync("SessionId",
+      var res = await SessionTable!.GetDefaultTaskOptionAsync(rootSessionId_!,
                                                               CancellationToken.None)
                                    .ConfigureAwait(false);
       Assert.NotNull(res);
@@ -205,14 +204,14 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var sessionData = await SessionTable!.CancelSessionAsync("SessionId",
+      var sessionData = await SessionTable!.CancelSessionAsync(rootSessionId_!,
                                                                CancellationToken.None)
                                            .ConfigureAwait(false);
 
       Assert.AreEqual(SessionStatus.Canceled,
                       sessionData.Status);
 
-      var wasSessionCanceled = await SessionTable.IsSessionCancelledAsync(RootSessionId,
+      var wasSessionCanceled = await SessionTable.IsSessionCancelledAsync(rootSessionId_!,
                                                                           CancellationToken.None)
                                                  .ConfigureAwait(false);
       Assert.IsTrue(wasSessionCanceled);
@@ -238,13 +237,13 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      await SessionTable!.CancelSessionAsync("SessionId",
+      await SessionTable!.CancelSessionAsync(rootSessionId_!,
                                              CancellationToken.None)
                          .ConfigureAwait(false);
 
       Assert.ThrowsAsync<SessionNotFoundException>(async () =>
                                                    {
-                                                     await SessionTable.CancelSessionAsync("SessionId",
+                                                     await SessionTable.CancelSessionAsync(rootSessionId_!,
                                                                                            CancellationToken.None)
                                                                        .ConfigureAwait(false);
                                                    });
@@ -257,7 +256,7 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      var res = SessionTable!.DeleteSessionAsync(RootSessionId,
+      var res = SessionTable!.DeleteSessionAsync(rootSessionId_!,
                                                  CancellationToken.None);
       await res.ConfigureAwait(false);
 
@@ -312,7 +311,7 @@ public class SessionTableTestBase
                                                       {
                                                         Sessions =
                                                         {
-                                                          "SessionId",
+                                                          rootSessionId_!,
                                                         },
                                                       },
                                                       CancellationToken.None)
@@ -391,7 +390,7 @@ public class SessionTableTestBase
                   Filter = new ListSessionsRequest.Types.Filter
                            {
                              ApplicationName = "ApplicationName",
-                             SessionId       = "SessionId",
+                             SessionId       = rootSessionId_!,
                            },
                   Sort = new ListSessionsRequest.Types.Sort
                          {

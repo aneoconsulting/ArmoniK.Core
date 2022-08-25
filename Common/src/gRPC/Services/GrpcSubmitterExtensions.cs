@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2022. All rights reserved.
 //   W. Kirschenmann   <wkirschenmann@aneo.fr>
@@ -38,7 +38,6 @@ public static class GrpcSubmitterExtensions
   public static async IAsyncEnumerable<TaskRequest> BuildRequests(this                     IAsyncEnumerator<CreateLargeTaskRequest> enumerator,
                                                                   [EnumeratorCancellation] CancellationToken                        cancellationToken)
   {
-    var           id                 = string.Empty;
     IList<string> expectedOutputKeys = Array.Empty<string>();
     IList<string> dataDependencies   = Array.Empty<string>();
     var           chunks             = new Queue<ReadOnlyMemory<byte>>();
@@ -49,7 +48,7 @@ public static class GrpcSubmitterExtensions
       switch (enumerator.Current.TypeCase)
       {
         case CreateLargeTaskRequest.TypeOneofCase.InitTask:
-          if (!string.IsNullOrEmpty(id) || dataDependencies.Any() || expectedOutputKeys.Any() || chunks.Any())
+          if (dataDependencies.Any() || expectedOutputKeys.Any() || chunks.Any())
           {
             throw new InvalidOperationException();
           }
@@ -58,7 +57,6 @@ public static class GrpcSubmitterExtensions
           {
             case InitTaskRequest.TypeOneofCase.Header:
 
-              id                 = enumerator.Current.InitTask.Header.Id;
               expectedOutputKeys = enumerator.Current.InitTask.Header.ExpectedOutputKeys;
               dataDependencies   = enumerator.Current.InitTask.Header.DataDependencies;
               break;
@@ -71,7 +69,7 @@ public static class GrpcSubmitterExtensions
 
           break;
         case CreateLargeTaskRequest.TypeOneofCase.TaskPayload:
-          if (string.IsNullOrEmpty(id) || !expectedOutputKeys.Any())
+          if (!expectedOutputKeys.Any())
           {
             throw new InvalidOperationException();
           }
@@ -82,12 +80,10 @@ public static class GrpcSubmitterExtensions
               chunks.Enqueue(enumerator.Current.TaskPayload.Data.Memory);
               break;
             case DataChunk.TypeOneofCase.DataComplete:
-              yield return new TaskRequest(id,
-                                           expectedOutputKeys,
+              yield return new TaskRequest(expectedOutputKeys,
                                            dataDependencies,
                                            chunks.ToAsyncEnumerable());
 
-              id                 = string.Empty;
               expectedOutputKeys = Array.Empty<string>();
               dataDependencies   = Array.Empty<string>();
               chunks             = new Queue<ReadOnlyMemory<byte>>();

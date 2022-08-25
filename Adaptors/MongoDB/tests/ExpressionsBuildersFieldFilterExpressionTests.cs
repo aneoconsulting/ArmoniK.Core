@@ -75,7 +75,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Failed,
+                             TaskStatus.Completed,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -110,7 +110,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Failed,
+                             TaskStatus.Completed,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -146,7 +146,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Failed,
+                             TaskStatus.Completed,
                              _taskOptions,
                              new Output(true,
                                         ""));
@@ -182,7 +182,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                                "output1",
                              },
                              Array.Empty<string>(),
-                             TaskStatus.Failed,
+                             TaskStatus.Completed,
                              _taskOptions,
                              new Output(true,
                                         ""));

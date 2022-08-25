@@ -55,6 +55,9 @@ internal class StreamWrapperTests
                                               {
                                                 "GrpcClient:Endpoint", "http://localhost:5001"
                                               },
+                                              {
+                                                "Partition", "TestPartition"
+                                              },
                                             };
 
     var builder = new ConfigurationBuilder().AddInMemoryCollection(baseConfig)
@@ -63,7 +66,7 @@ internal class StreamWrapperTests
     var options = configuration.GetRequiredSection(GrpcClient.SettingSection)
                                .Get<GrpcClient>();
 
-    partition_ = Environment.GetEnvironmentVariable("Partition");
+    partition_ = configuration.GetValue<string>("Partition");
 
     Console.WriteLine($"endpoint : {options.Endpoint}");
     var channel = GrpcChannelFactory.CreateChannel(options);
@@ -80,26 +83,23 @@ internal class StreamWrapperTests
             ExpectedResult = 16)]
   public async Task<int> Square(int input)
   {
-    var sessionId = Guid.NewGuid() + "mytestsession";
-    var taskId    = Guid.NewGuid() + "mytask";
+    var expectedOutput = Guid.NewGuid() + "exp";
 
-    client_!.CreateSessionAndCheckReply(sessionId,
-                                        partition_!);
+    var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
     var payload = new TestPayload
                   {
                     Type      = TestPayload.TaskType.Compute,
                     DataBytes = BitConverter.GetBytes(input),
-                    ResultKey = taskId,
+                    ResultKey = expectedOutput,
                   };
 
     var req = new TaskRequest
               {
-                Id      = taskId,
                 Payload = ByteString.CopyFrom(payload.Serialize()),
                 ExpectedOutputKeys =
                 {
-                  taskId,
+                  expectedOutput,
                 },
               };
 
@@ -115,8 +115,8 @@ internal class StreamWrapperTests
 
     var resultRequest = new ResultRequest
                         {
-                          Key     = taskId,
-                          Session = sessionId,
+                          ResultId = expectedOutput,
+                          Session  = sessionId,
                         };
 
     var availabilityReply = client_!.WaitForAvailability(resultRequest);
@@ -133,7 +133,7 @@ internal class StreamWrapperTests
       return 0;
     }
 
-    Console.WriteLine($"Payload Type : {resultPayload.Type} - {taskId}");
+    Console.WriteLine($"Payload Type : {resultPayload.Type} - {expectedOutput}");
     if (resultPayload.Type == TestPayload.TaskType.Result)
     {
       var output = BitConverter.ToInt32(resultPayload.DataBytes);
@@ -148,11 +148,9 @@ internal class StreamWrapperTests
   [Repeat(2)]
   public async Task<Output.TypeOneofCase> TaskError()
   {
-    var sessionId = Guid.NewGuid() + "mytestsession";
-    var taskId    = Guid.NewGuid() + "mytask";
+    var expectedOutput = Guid.NewGuid() + "exp";
 
-    client_!.CreateSessionAndCheckReply(sessionId,
-                                        partition_!);
+    var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
     var payload = new TestPayload
                   {
@@ -161,27 +159,26 @@ internal class StreamWrapperTests
 
     var req = new TaskRequest
               {
-                Id      = taskId,
                 Payload = ByteString.CopyFrom(payload.Serialize()),
                 ExpectedOutputKeys =
                 {
-                  taskId,
+                  expectedOutput,
                 },
               };
 
     Console.WriteLine("TaskRequest Created");
 
-    await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                 null,
-                                                 new[]
-                                                 {
-                                                   req,
-                                                 })
-                  .ConfigureAwait(false);
+    var taskIds = await client_!.CreateTasksAndCheckReplyAsync(sessionId,
+                                                               null,
+                                                               new[]
+                                                               {
+                                                                 req,
+                                                               })
+                                .ConfigureAwait(false);
 
-    var resultRequest = new ResultRequest
+    var resultRequest = new TaskOutputRequest
                         {
-                          Key     = taskId,
+                          TaskId  = taskIds.Single(),
                           Session = sessionId,
                         };
 
@@ -194,10 +191,7 @@ internal class StreamWrapperTests
   [Repeat(2)]
   public async Task TaskFailed()
   {
-    var sessionId = Guid.NewGuid() + nameof(TaskFailed);
-
-    client_!.CreateSessionAndCheckReply(sessionId,
-                                        partition_!);
+    var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
     var payload = new TestPayload
                   {
@@ -211,7 +205,6 @@ internal class StreamWrapperTests
       var taskId = Guid.NewGuid() + "mytask";
       var req = new TaskRequest
                 {
-                  Id      = taskId,
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
@@ -223,23 +216,23 @@ internal class StreamWrapperTests
 
     Console.WriteLine("TaskRequest Created");
 
-    await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                 null,
-                                                 taskRequests)
-                  .ConfigureAwait(false);
+    var taskIds = await client_!.CreateTasksAndCheckReplyAsync(sessionId,
+                                                               null,
+                                                               taskRequests)
+                                .ConfigureAwait(false);
 
-    var taskOutput = taskRequests.Select(request =>
-                                         {
-                                           var resultRequest = new ResultRequest
-                                                               {
-                                                                 Key     = request.Id,
-                                                                 Session = sessionId,
-                                                               };
+    var taskOutput = taskIds.Select(id =>
+                                    {
+                                      var resultRequest = new TaskOutputRequest
+                                                          {
+                                                            TaskId  = id,
+                                                            Session = sessionId,
+                                                          };
 
-                                           var taskOutput = client_!.TryGetTaskOutput(resultRequest);
-                                           Console.WriteLine(request.Id + " - " + taskOutput);
-                                           return taskOutput.TypeCase;
-                                         });
+                                      var taskOutput = client_!.TryGetTaskOutput(resultRequest);
+                                      Console.WriteLine(id + " - " + taskOutput);
+                                      return taskOutput.TypeCase;
+                                    });
 
     Assert.IsTrue(taskOutput.All(status => status == Output.TypeOneofCase.Error));
   }
@@ -254,11 +247,7 @@ internal class StreamWrapperTests
                                           TestPayload.TaskType.Transfer)]
                                   TestPayload.TaskType taskType)
   {
-    var sessionId = "sessionId-" + Guid.NewGuid() + "-" + nameof(MultipleTasks) + " - " + taskType;
-    Console.WriteLine($"Type of task {taskType}");
-
-    client_!.CreateSessionAndCheckReply(sessionId,
-                                        partition_!);
+    var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -275,7 +264,6 @@ internal class StreamWrapperTests
 
       var req = new TaskRequest
                 {
-                  Id      = taskId,
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
@@ -296,8 +284,8 @@ internal class StreamWrapperTests
                                                     {
                                                       var resultRequest = new ResultRequest
                                                                           {
-                                                                            Key     = request.Id,
-                                                                            Session = sessionId,
+                                                                            ResultId = request.ExpectedOutputKeys.Single(),
+                                                                            Session  = sessionId,
                                                                           };
                                                       var availabilityReply = client_!.WaitForAvailability(resultRequest);
                                                       return availabilityReply.TypeCase;
@@ -309,8 +297,8 @@ internal class StreamWrapperTests
                                             {
                                               var resultRequest = new ResultRequest
                                                                   {
-                                                                    Key     = request.Id,
-                                                                    Session = sessionId,
+                                                                    ResultId = request.ExpectedOutputKeys.Single(),
+                                                                    Session  = sessionId,
                                                                   };
 
                                               var resultPayload = TestPayload.Deserialize(await client_!.GetResultAsync(resultRequest)
@@ -320,7 +308,7 @@ internal class StreamWrapperTests
                                                 return 0;
                                               }
 
-                                              Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.Id}");
+                                              Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.ExpectedOutputKeys.Single()}");
                                               if (resultPayload.Type == TestPayload.TaskType.Result)
                                               {
                                                 var output = BitConverter.ToInt32(resultPayload.DataBytes);
@@ -343,10 +331,7 @@ internal class StreamWrapperTests
                                                      20)]
                                              int n)
   {
-    var sessionId = Guid.NewGuid() + "-MultipleDatadependencies";
-
-    client_!.CreateSessionAndCheckReply(sessionId,
-                                        partition_!);
+    var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -363,7 +348,6 @@ internal class StreamWrapperTests
 
       var req = new TaskRequest
                 {
-                  Id      = taskId,
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
@@ -385,8 +369,8 @@ internal class StreamWrapperTests
                                                      {
                                                        var resultRequest = new ResultRequest
                                                                            {
-                                                                             Key     = request.Id + "-res1",
-                                                                             Session = sessionId,
+                                                                             ResultId = request.ExpectedOutputKeys.First(),
+                                                                             Session  = sessionId,
                                                                            };
                                                        var availabilityReply = client_!.WaitForAvailability(resultRequest);
                                                        return availabilityReply.TypeCase;
@@ -398,8 +382,8 @@ internal class StreamWrapperTests
                                                      {
                                                        var resultRequest = new ResultRequest
                                                                            {
-                                                                             Key     = request.Id + "-res2",
-                                                                             Session = sessionId,
+                                                                             ResultId = request.ExpectedOutputKeys.Last(),
+                                                                             Session  = sessionId,
                                                                            };
                                                        var availabilityReply = client_!.WaitForAvailability(resultRequest);
                                                        return availabilityReply.TypeCase;
@@ -411,8 +395,8 @@ internal class StreamWrapperTests
                                          {
                                            var resultRequest1 = new ResultRequest
                                                                 {
-                                                                  Key     = request.Id + "-res1",
-                                                                  Session = sessionId,
+                                                                  ResultId = request.ExpectedOutputKeys.First(),
+                                                                  Session  = sessionId,
                                                                 };
                                            var resultBytes1 = await client_!.GetResultAsync(resultRequest1)
                                                                             .ConfigureAwait(false);
@@ -425,8 +409,8 @@ internal class StreamWrapperTests
 
                                            var resultRequest2 = new ResultRequest
                                                                 {
-                                                                  Key     = request.Id + "-res2",
-                                                                  Session = sessionId,
+                                                                  ResultId = request.ExpectedOutputKeys.Last(),
+                                                                  Session  = sessionId,
                                                                 };
                                            var resultBytes2 = await client_!.GetResultAsync(resultRequest2)
                                                                             .ConfigureAwait(false);
@@ -464,10 +448,7 @@ internal class StreamWrapperTests
                                           10)]
                                   int size)
   {
-    var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
-
-    client_!.CreateSessionAndCheckReply(sessionId,
-                                        partition_!);
+    var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
     var taskRequestList = new List<TaskRequest>();
 
@@ -491,7 +472,6 @@ internal class StreamWrapperTests
       var taskId = nameof(LargePayloads) + "-" + i + "-" + Guid.NewGuid();
       var req = new TaskRequest
                 {
-                  Id      = taskId,
                   Payload = byteString,
                   ExpectedOutputKeys =
                   {
@@ -513,8 +493,8 @@ internal class StreamWrapperTests
                                                     {
                                                       var resultRequest = new ResultRequest
                                                                           {
-                                                                            Key     = request.Id,
-                                                                            Session = sessionId,
+                                                                            ResultId = request.ExpectedOutputKeys.Single(),
+                                                                            Session  = sessionId,
                                                                           };
                                                       var availabilityReply = client_!.WaitForAvailability(resultRequest);
                                                       return availabilityReply.TypeCase;
@@ -526,8 +506,8 @@ internal class StreamWrapperTests
                                             {
                                               var resultRequest = new ResultRequest
                                                                   {
-                                                                    Key     = request.Id,
-                                                                    Session = sessionId,
+                                                                    ResultId = request.ExpectedOutputKeys.Single(),
+                                                                    Session  = sessionId,
                                                                   };
 
                                               var resultPayload = TestPayload.Deserialize(await client_!.GetResultAsync(resultRequest)
@@ -537,7 +517,7 @@ internal class StreamWrapperTests
                                                 return false;
                                               }
 
-                                              Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.Id}");
+                                              Console.WriteLine($"Payload Type : {resultPayload.Type} - {request.ExpectedOutputKeys.Single()}");
                                               if (resultPayload.Type == TestPayload.TaskType.Result)
                                               {
                                                 return hash.SequenceEqual(resultPayload.DataBytes ?? Array.Empty<byte>());
@@ -552,41 +532,41 @@ internal class StreamWrapperTests
   [Test]
   public async Task EmptyPayload()
   {
-    var sessionId = Guid.NewGuid() + "-" + nameof(LargePayloads);
+    var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
-    client_!.CreateSessionAndCheckReply(sessionId,
-                                        partition_!);
+    var outputId = nameof(LargePayloads) + "-" + Guid.NewGuid();
 
-    var taskId = nameof(LargePayloads) + "-" + Guid.NewGuid();
-
-    await client_!.CreateTasksAndCheckReplyAsync(sessionId,
-                                                 null,
-                                                 new[]
-                                                 {
-                                                   new TaskRequest
-                                                   {
-                                                     Id = taskId,
-                                                     ExpectedOutputKeys =
-                                                     {
-                                                       taskId,
-                                                     },
-                                                     Payload = ByteString.Empty,
-                                                   },
-                                                 })
-                  .ConfigureAwait(false);
+    var taskIds = await client_!.CreateTasksAndCheckReplyAsync(sessionId,
+                                                               null,
+                                                               new[]
+                                                               {
+                                                                 new TaskRequest
+                                                                 {
+                                                                   ExpectedOutputKeys =
+                                                                   {
+                                                                     outputId,
+                                                                   },
+                                                                   Payload = ByteString.Empty,
+                                                                 },
+                                                               })
+                                .ConfigureAwait(false);
 
     var resultRequest = new ResultRequest
                         {
-                          Key     = taskId,
-                          Session = sessionId,
+                          ResultId = outputId,
+                          Session  = sessionId,
                         };
     var availabilityReply = client_!.WaitForAvailability(resultRequest);
 
     Assert.AreEqual(AvailabilityReply.TypeOneofCase.Error,
                     availabilityReply.TypeCase);
 
-    var taskOutput = client_.TryGetTaskOutput(resultRequest);
-    Console.WriteLine(taskId + " - " + taskOutput);
+    var taskOutput = client_.TryGetTaskOutput(new TaskOutputRequest
+                                              {
+                                                TaskId  = taskIds.Single(),
+                                                Session = sessionId,
+                                              });
+    Console.WriteLine(outputId + " - " + taskOutput);
 
     Assert.AreEqual(Output.TypeOneofCase.Error,
                     taskOutput.TypeCase);
@@ -597,10 +577,7 @@ internal class StreamWrapperTests
                                                        50)]
                                                int n)
   {
-    var sessionId = Guid.NewGuid() + "-" + nameof(PriorityShouldHaveAnEffect);
-
-    client_!.CreateSessionAndCheckReply(sessionId,
-                                        partition_!);
+    var sessionId = client_!.CreateSessionAndCheckReply(partition_!);
 
     var tasks = Enumerable.Range(1,
                                  9)
@@ -643,7 +620,6 @@ internal class StreamWrapperTests
 
       var req = new TaskRequest
                 {
-                  Id      = taskId,
                   Payload = ByteString.CopyFrom(payload.Serialize()),
                   ExpectedOutputKeys =
                   {
@@ -663,8 +639,8 @@ internal class StreamWrapperTests
                                                     {
                                                       var resultRequest = new ResultRequest
                                                                           {
-                                                                            Key     = request.Id,
-                                                                            Session = sessionId,
+                                                                            ResultId = request.ExpectedOutputKeys.Single(),
+                                                                            Session  = sessionId,
                                                                           };
                                                       var availabilityReply = client_!.WaitForAvailability(resultRequest);
                                                       return availabilityReply.TypeCase;
@@ -679,8 +655,8 @@ internal class StreamWrapperTests
                                             {
                                               var resultRequest = new ResultRequest
                                                                   {
-                                                                    Key     = request.Id,
-                                                                    Session = sessionId,
+                                                                    ResultId = request.ExpectedOutputKeys.Single(),
+                                                                    Session  = sessionId,
                                                                   };
 
                                               var resultPayload = TestPayload.Deserialize(await client_!.GetResultAsync(resultRequest)

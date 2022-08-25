@@ -39,10 +39,6 @@ public class CreateSessionRequestValidator : AbstractValidator<CreateSessionRequ
       .SetValidator(new TaskOptionsValidator())
       .NotNull()
       .WithName(nameof(CreateSessionRequest.DefaultTaskOption));
-    RuleFor(request => request.Id)
-      .NotNull()
-      .NotEmpty()
-      .WithName(nameof(CreateSessionRequest.Id));
     RuleFor(request => request.PartitionIds)
       .NotNull()
       .NotEmpty()

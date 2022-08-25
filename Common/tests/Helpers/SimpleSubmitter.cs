@@ -70,13 +70,13 @@ public class SimpleSubmitter : ISubmitter
                                 CancellationToken cancellationToken)
     => Task.FromResult(DefaultCount);
 
-  public Task<CreateSessionReply> CreateSession(string              sessionId,
-                                                IEnumerable<string> partitionIds,
+  public Task<CreateSessionReply> CreateSession(IEnumerable<string> partitionIds,
                                                 TaskOptions         defaultTaskOptions,
                                                 CancellationToken   cancellationToken)
     => Task.FromResult(new CreateSessionReply
                        {
-                         Ok = new Empty(),
+                         SessionId = Guid.NewGuid()
+                                         .ToString(),
                        });
 
 
@@ -85,7 +85,8 @@ public class SimpleSubmitter : ISubmitter
                                                                                                        TaskOptions                                 options,
                                                                                                        IAsyncEnumerable<gRPC.Services.TaskRequest> taskRequests,
                                                                                                        CancellationToken                           cancellationToken)
-    => (await taskRequests.Select(r => new TaskRequest(r.Id,
+    => (await taskRequests.Select(r => new TaskRequest(Guid.NewGuid()
+                                                           .ToString(),
                                                        r.ExpectedOutputKeys,
                                                        r.DataDependencies))
                           .ToArrayAsync(cancellationToken)
@@ -130,7 +131,7 @@ public class SimpleSubmitter : ISubmitter
                                 CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
-  public Task<Output> TryGetTaskOutputAsync(ResultRequest     request,
+  public Task<Output> TryGetTaskOutputAsync(TaskOutputRequest request,
                                             CancellationToken contextCancellationToken)
     => Task.FromResult(new Output
                        {
@@ -194,12 +195,4 @@ public class SimpleSubmitter : ISubmitter
                         IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
                         CancellationToken                      cancellationToken)
     => Task.CompletedTask;
-
-  public Task<CreateSessionReply> CreateSession(string            sessionId,
-                                                TaskOptions       defaultTaskOptions,
-                                                CancellationToken cancellationToken)
-    => Task.FromResult(new CreateSessionReply
-                       {
-                         Ok = new Empty(),
-                       });
 }

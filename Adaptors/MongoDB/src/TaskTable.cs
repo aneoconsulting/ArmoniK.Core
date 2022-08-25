@@ -132,8 +132,7 @@ public class TaskTable : ITaskTable
     Logger.LogInformation("update task {taskId} to status {status}",
                           id,
                           status);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Failed &&
-                                                        x.Status != TaskStatus.Canceled,
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == id && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Canceled,
                                                    updateDefinition,
                                                    cancellationToken: cancellationToken)
                                   .ConfigureAwait(false);
@@ -161,8 +160,7 @@ public class TaskTable : ITaskTable
     using var activity       = activitySource_.StartActivity($"{nameof(UpdateAllTaskStatusAsync)}");
     var       taskCollection = taskCollectionProvider_.Get();
 
-    if (filter.Included != null && filter.Included.Statuses.Contains(TaskStatus.Completed) | filter.Included.Statuses.Contains(TaskStatus.Failed) |
-        filter.Included.Statuses.Contains(TaskStatus.Canceled))
+    if (filter.Included != null && filter.Included.Statuses.Contains(TaskStatus.Completed) | filter.Included.Statuses.Contains(TaskStatus.Canceled))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state, update forbidden");
     }
@@ -220,8 +218,7 @@ public class TaskTable : ITaskTable
     Logger.LogInformation("update task {taskId} to status {status}",
                           taskId,
                           TaskStatus.Processing);
-    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Failed &&
-                                                        x.Status != TaskStatus.Canceled,
+    var res = await taskCollection.UpdateManyAsync(x => x.TaskId == taskId && x.Status != TaskStatus.Completed && x.Status != TaskStatus.Canceled,
                                                    updateDefinition,
                                                    cancellationToken: cancellationToken)
                                   .ConfigureAwait(false);
@@ -274,8 +271,7 @@ public class TaskTable : ITaskTable
       throw new SessionNotFoundException($"Session '{sessionId}' not found");
     }
 
-    await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId && model.Status != TaskStatus.Completed && model.Status != TaskStatus.Failed &&
-                                                  model.Status    != TaskStatus.Canceled,
+    await taskCollection.UpdateManyAsync(model => model.SessionId == sessionId && model.Status != TaskStatus.Completed && model.Status != TaskStatus.Canceled,
                                          Builders<TaskData>.Update.Set(model => model.Status,
                                                                        TaskStatus.Canceling),
                                          cancellationToken: cancellationToken)

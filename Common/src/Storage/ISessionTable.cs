@@ -46,17 +46,15 @@ public interface ISessionTable : IInitializable
   /// <summary>
   ///   Set metadata for a new session
   /// </summary>
-  /// <param name="rootSessionId">Id for the new session</param>
   /// <param name="partitionIds">List of partitions allowed to be used during the session</param>
   /// <param name="defaultOptions">Default metadata for the tasks to be created in this session</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Task representing the asynchronous execution of the method
+  ///   Id of the created session
   /// </returns>
-  Task SetSessionDataAsync(string              rootSessionId,
-                           IEnumerable<string> partitionIds,
-                           TaskOptions         defaultOptions,
-                           CancellationToken   cancellationToken = default);
+  Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
+                                   TaskOptions         defaultOptions,
+                                   CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   Get SessionData from sessionId

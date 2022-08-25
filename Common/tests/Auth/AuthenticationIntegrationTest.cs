@@ -96,6 +96,7 @@ public class AuthenticationIntegrationTest
   private static readonly Empty                  Empty;
   private static readonly SessionFilter          SessionFilter;
   private static readonly ResultRequest          ResultRequest;
+  private static readonly TaskOutputRequest      TaskOutputRequest;
   private static readonly WaitRequest            WaitRequest;
   private static readonly CreateLargeTaskRequest CreateLargeTaskRequestInit;
   private static readonly CreateLargeTaskRequest CreateLargeTaskRequestInitTask;
@@ -126,13 +127,11 @@ public class AuthenticationIntegrationTest
                               };
     CreateSmallTasksRequest.TaskRequests.Add(new TaskRequest
                                              {
-                                               Id = TaskId,
                                                Payload = ByteString.CopyFrom("payload",
                                                                              Encoding.ASCII),
                                              });
     CreateSessionRequest = new CreateSessionRequest
                            {
-                             Id                = SessionId,
                              DefaultTaskOption = taskOptions,
                              PartitionIds =
                              {
@@ -154,9 +153,14 @@ public class AuthenticationIntegrationTest
     SessionFilter.Sessions.Add(SessionId);
     ResultRequest = new ResultRequest
                     {
-                      Key     = ResultKey,
-                      Session = SessionId,
+                      ResultId = ResultKey,
+                      Session  = SessionId,
                     };
+    TaskOutputRequest = new TaskOutputRequest
+                        {
+                          TaskId  = TaskId,
+                          Session = SessionId,
+                        };
     WaitRequest = new WaitRequest
                   {
                     Filter                      = TaskFilter,
@@ -172,10 +176,7 @@ public class AuthenticationIntegrationTest
                                                    TaskOptions = taskOptions,
                                                  },
                                  };
-    var taskRequestHeader = new TaskRequestHeader
-                            {
-                              Id = TaskId,
-                            };
+    var taskRequestHeader = new TaskRequestHeader();
     taskRequestHeader.DataDependencies.Add("dependency");
     taskRequestHeader.ExpectedOutputKeys.Add("outputKey");
     CreateLargeTaskRequestInitTask = new CreateLargeTaskRequest
@@ -584,7 +585,7 @@ public class AuthenticationIntegrationTest
                               (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.GetTaskStatus), GetTaskStatusRequest),
                               (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.ListSessions), SessionFilter),
                               (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.ListTasks), TaskFilter),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.TryGetTaskOutput), ResultRequest),
+                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.TryGetTaskOutput), TaskOutputRequest),
                               (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.WaitForAvailability), ResultRequest),
                               (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.WaitForCompletion), WaitRequest),
                             };
@@ -606,7 +607,7 @@ public class AuthenticationIntegrationTest
                               (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.GetTaskStatusAsync), GetTaskStatusRequest),
                               (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.ListSessionsAsync), SessionFilter),
                               (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.ListTasksAsync), TaskFilter),
-                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.TryGetTaskOutputAsync), ResultRequest),
+                              (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.TryGetTaskOutputAsync), TaskOutputRequest),
                               (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.WaitForAvailabilityAsync), ResultRequest),
                               (nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterClient.WaitForCompletionAsync), WaitRequest),
                             };

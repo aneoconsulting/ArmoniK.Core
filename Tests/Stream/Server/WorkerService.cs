@@ -108,7 +108,6 @@ public class WorkerService : WorkerStreamWrapper
             payload.Type = TestPayload.TaskType.Compute;
             var req = new TaskRequest
                       {
-                        Id      = taskId,
                         Payload = ByteString.CopyFrom(payload.Serialize()),
                         ExpectedOutputKeys =
                         {
@@ -145,7 +144,6 @@ public class WorkerService : WorkerStreamWrapper
 
             req = new TaskRequest
                   {
-                    Id      = taskId,
                     Payload = ByteString.CopyFrom(payload.Serialize()),
                     ExpectedOutputKeys =
                     {

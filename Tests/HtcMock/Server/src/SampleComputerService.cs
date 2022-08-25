@@ -31,6 +31,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Channel.Utils;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Agent;
 using ArmoniK.Api.Worker.Worker;
 
 using Google.Protobuf;
@@ -56,9 +57,9 @@ public class SampleComputerService : WorkerStreamWrapper
     using var scopedLog = logger_.BeginNamedScope("Execute task",
                                                   ("sessionId", taskHandler.SessionId),
                                                   ("taskId", taskHandler.TaskId));
-    logger_.LogTrace("DataDependencies {DataDependencies}",
+    logger_.LogDebug("DataDependencies {DataDependencies}",
                      taskHandler.DataDependencies.Keys);
-    logger_.LogTrace("ExpectedResults {ExpectedResults}",
+    logger_.LogDebug("ExpectedResults {ExpectedResults}",
                      taskHandler.ExpectedResults);
 
     try
@@ -70,12 +71,11 @@ public class SampleComputerService : WorkerStreamWrapper
                                                      {
                                                        logger_.LogInformation("Looking for result for Id {id}",
                                                                               id);
-                                                       var armonikId = taskHandler.SessionId + "%" + id;
-                                                       var isOkay = taskHandler.DataDependencies.TryGetValue(armonikId,
+                                                       var isOkay = taskHandler.DataDependencies.TryGetValue(id,
                                                                                                              out var data);
                                                        if (!isOkay)
                                                        {
-                                                         throw new KeyNotFoundException(armonikId);
+                                                         throw new KeyNotFoundException(id);
                                                        }
 
                                                        return Encoding.Default.GetString(data!);
@@ -120,39 +120,48 @@ public class SampleComputerService : WorkerStreamWrapper
                          requests[true]
                            .Count());
         var readyRequests = requests[true];
-        await taskHandler.CreateTasksAsync(readyRequests.Select(r =>
-                                                                {
-                                                                  var taskId = taskHandler.SessionId + "%" + r.Id;
-                                                                  logger_.LogDebug("Create task {task}",
-                                                                                   taskId);
-                                                                  return new TaskRequest
-                                                                         {
-                                                                           Id = taskId,
-                                                                           Payload = ByteString.CopyFrom(DataAdapter.BuildPayload(runConfiguration,
-                                                                                                                                  r)),
-                                                                           DataDependencies =
-                                                                           {
-                                                                             r.Dependencies.Select(s => taskHandler.SessionId + "%" + s),
-                                                                           },
-                                                                           ExpectedOutputKeys =
-                                                                           {
-                                                                             taskId,
-                                                                           },
-                                                                         };
-                                                                }))
-                         .ConfigureAwait(false);
+
+        // todo : can be batched in order to improve memory usage
+        var taskRequests = readyRequests.Select(r => new TaskRequest
+                                                     {
+                                                       Payload = ByteString.CopyFrom(DataAdapter.BuildPayload(runConfiguration,
+                                                                                                              r)),
+                                                       DataDependencies =
+                                                       {
+                                                         r.Dependencies,
+                                                       },
+                                                       ExpectedOutputKeys =
+                                                       {
+                                                         Guid.NewGuid() + "%" + r.Id,
+                                                       },
+                                                     })
+                                        .ToList();
+
+        var createTaskReply = await taskHandler.CreateTasksAsync(taskRequests)
+                                               .ConfigureAwait(false);
+        if (createTaskReply.ResponseCase != CreateTaskReply.ResponseOneofCase.CreationStatusList)
+        {
+          throw new Exception("Error while creating tasks");
+        }
+
         var req = requests[false]
           .Single();
+
+        req.Dependencies.Clear();
+        foreach (var dependencyId in taskRequests.Select(taskRequest => taskRequest.ExpectedOutputKeys.Single()))
+        {
+          req.Dependencies.Add(dependencyId);
+        }
+
         await taskHandler.CreateTasksAsync(new[]
                                            {
                                              new TaskRequest
                                              {
-                                               Id = taskHandler.SessionId + "%" + req.Id,
                                                Payload = ByteString.CopyFrom(DataAdapter.BuildPayload(runConfiguration,
                                                                                                       req)),
                                                DataDependencies =
                                                {
-                                                 req.Dependencies.Select(s => taskHandler.SessionId + "%" + s),
+                                                 req.Dependencies,
                                                },
                                                ExpectedOutputKeys =
                                                {

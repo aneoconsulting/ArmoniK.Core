@@ -64,17 +64,19 @@ public class SessionTable : ISessionTable
     => Task.CompletedTask;
 
   /// <inheritdoc />
-  public Task SetSessionDataAsync(string              rootSessionId,
-                                  IEnumerable<string> partitionIds,
-                                  TaskOptions         defaultOptions,
-                                  CancellationToken   cancellationToken = default)
+  public Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
+                                          TaskOptions         defaultOptions,
+                                          CancellationToken   cancellationToken = default)
   {
+    var rootSessionId = Guid.NewGuid()
+                            .ToString();
+
     storage_.TryAdd(rootSessionId,
                     new SessionData(rootSessionId,
                                     SessionStatus.Running,
                                     partitionIds.ToIList(),
                                     defaultOptions));
-    return Task.CompletedTask;
+    return Task.FromResult(rootSessionId);
   }
 
   /// <inheritdoc />

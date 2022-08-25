@@ -48,7 +48,6 @@ public class CreateSessionRequestValidatorTest
                                                             MaxRetries  = 2,
                                                             PartitionId = "PartitionId",
                                                           },
-                                      Id = "Id",
                                       PartitionIds =
                                       {
                                         "PartitionId",
@@ -67,13 +66,6 @@ public class CreateSessionRequestValidatorTest
                              .IsValid);
   }
 
-  [Test]
-  public void EmptyIdShouldFail()
-  {
-    validCreateSessionRequest_!.Id = string.Empty;
-    Assert.IsFalse(validator_.Validate(validCreateSessionRequest_)
-                             .IsValid);
-  }
 
   [Test]
   public void EmptyPartitionIdInTaskOptionsShouldFail()

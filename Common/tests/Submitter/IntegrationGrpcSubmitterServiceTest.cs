@@ -134,8 +134,8 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     var response = client.TryGetResultStream(new ResultRequest
                                              {
-                                               Key     = "Key",
-                                               Session = "Session",
+                                               ResultId = "Key",
+                                               Session  = "Session",
                                              });
 
     var result = await response.ResponseStream.ReadAllAsync()
@@ -221,8 +221,7 @@ internal class IntegrationGrpcSubmitterServiceTest
 
                         submitter => submitter.CountTasks(It.IsAny<TaskFilter>(),
                                                           It.IsAny<CancellationToken>()),
-                        submitter => submitter.CreateSession(It.IsAny<string>(),
-                                                             It.IsAny<IList<string>>(),
+                        submitter => submitter.CreateSession(It.IsAny<IList<string>>(),
                                                              It.IsAny<TaskOptions>(),
                                                              It.IsAny<CancellationToken>()),
                         submitter => submitter.CreateTasks(It.IsAny<string>(),
@@ -233,7 +232,7 @@ internal class IntegrationGrpcSubmitterServiceTest
 
                         submitter => submitter.WaitForCompletion(It.IsAny<WaitRequest>(),
                                                                  It.IsAny<CancellationToken>()),
-                        submitter => submitter.TryGetTaskOutputAsync(It.IsAny<ResultRequest>(),
+                        submitter => submitter.TryGetTaskOutputAsync(It.IsAny<TaskOutputRequest>(),
                                                                      It.IsAny<CancellationToken>()),
                         submitter => submitter.WaitForAvailabilityAsync(It.IsAny<ResultRequest>(),
                                                                         It.IsAny<CancellationToken>()),
@@ -278,8 +277,8 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       _ = await client.TryGetResultStream(new ResultRequest
                                           {
-                                            Key     = "Key",
-                                            Session = "Session",
+                                            ResultId = "Key",
+                                            Session  = "Session",
                                           })
                       .ResponseStream.ReadAllAsync()
                       .SingleAsync()
@@ -440,7 +439,6 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       _ = client.CreateSession(new CreateSessionRequest
                                {
-                                 Id = "Id",
                                  DefaultTaskOption = new TaskOptions
                                                      {
                                                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
@@ -486,7 +484,6 @@ internal class IntegrationGrpcSubmitterServiceTest
                                     {
                                       new Api.gRPC.V1.TaskRequest
                                       {
-                                        Id      = "Id",
                                         Payload = ByteString.CopyFromUtf8("Payload"),
                                       },
                                     },
@@ -537,10 +534,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                                                    {
                                                      InitTask = new InitTaskRequest
                                                                 {
-                                                                  Header = new TaskRequestHeader
-                                                                           {
-                                                                             Id = "Id",
-                                                                           },
+                                                                  Header = new TaskRequestHeader(),
                                                                 },
                                                    })
                          .ConfigureAwait(false);
@@ -608,7 +602,7 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     try
     {
-      _ = client.TryGetTaskOutput(new ResultRequest());
+      _ = client.TryGetTaskOutput(new TaskOutputRequest());
       Assert.Fail("Function should throw an exception");
     }
     catch (RpcException e)
