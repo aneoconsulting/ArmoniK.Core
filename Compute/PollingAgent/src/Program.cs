@@ -83,6 +83,8 @@ public static class Program
              .AddSingleton<Pollster>()
              .AddSingleton(logger)
              .AddSingleton<ISubmitter, Submitter>()
+             .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
+                                                            Common.Injection.Options.Submitter.SettingSection)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()

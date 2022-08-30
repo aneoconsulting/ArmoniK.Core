@@ -13,6 +13,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Amqp__PartitionId=TestPartition0
+      - Submitter__DefaultPartition=TestPartition0
     ports:
       - 9980:1080
     volumes:
@@ -22,6 +23,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Amqp__PartitionId=TestPartition1
+      - Submitter__DefaultPartition=TestPartition1
     ports:
       - 9981:1080
     volumes:
