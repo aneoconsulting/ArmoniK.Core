@@ -52,26 +52,28 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class Submitter : ISubmitter
 {
-  private readonly ActivitySource        activitySource_;
-  private readonly ILogger<Submitter>    logger_;
-  private readonly IObjectStorageFactory objectStorageFactory_;
-  private readonly IPartitionTable       partitionTable_;
-  private readonly IPushQueueStorage     pushQueueStorage_;
-  private readonly IResultTable          resultTable_;
+  private readonly ActivitySource              activitySource_;
+  private readonly ILogger<Submitter>          logger_;
+  private readonly IObjectStorageFactory       objectStorageFactory_;
+  private readonly IPartitionTable             partitionTable_;
+  private readonly Injection.Options.Submitter submitterOptions_;
+  private readonly IPushQueueStorage           pushQueueStorage_;
+  private readonly IResultTable                resultTable_;
 
 
   private readonly ISessionTable sessionTable_;
   private readonly ITaskTable    taskTable_;
 
   [UsedImplicitly]
-  public Submitter(IPushQueueStorage     pushQueueStorage,
-                   IObjectStorageFactory objectStorageFactory,
-                   ILogger<Submitter>    logger,
-                   ISessionTable         sessionTable,
-                   ITaskTable            taskTable,
-                   IResultTable          resultTable,
-                   IPartitionTable       partitionTable,
-                   ActivitySource        activitySource)
+  public Submitter(IPushQueueStorage                  pushQueueStorage,
+                   IObjectStorageFactory              objectStorageFactory,
+                   ILogger<Submitter>                 logger,
+                   ISessionTable                      sessionTable,
+                   ITaskTable                         taskTable,
+                   IResultTable                       resultTable,
+                   IPartitionTable                    partitionTable,
+                   Common.Injection.Options.Submitter submitterOptions,
+                   ActivitySource                     activitySource)
   {
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
@@ -79,6 +81,7 @@ public class Submitter : ISubmitter
     taskTable_            = taskTable;
     resultTable_          = resultTable;
     partitionTable_       = partitionTable;
+    submitterOptions_     = submitterOptions;
     activitySource_       = activitySource;
     pushQueueStorage_     = pushQueueStorage;
   }
@@ -191,14 +194,14 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateSessionReply> CreateSession(IEnumerable<string> partitionIds,
+  public async Task<CreateSessionReply> CreateSession(IList<string> partitionIds,
                                                       TaskOptions         defaultTaskOptions,
                                                       CancellationToken   cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     if (!partitionIds.Any())
     {
-      throw new InvalidOperationException("Partition collection should not be empty");
+      partitionIds.Add(submitterOptions_.DefaultPartition);
     }
 
     if (!await partitionTable_.ArePartitionsExistingAsync(partitionIds,
@@ -206,6 +209,16 @@ public class Submitter : ISubmitter
                               .ConfigureAwait(false))
     {
       throw new PartitionNotFoundException("One of the partitions does not exist");
+    }
+
+    if (!await partitionTable_.ArePartitionsExistingAsync(new[]
+                                                          {
+                                                            defaultTaskOptions.PartitionId,
+                                                          },
+                                                          cancellationToken)
+                              .ConfigureAwait(false))
+    {
+      throw new PartitionNotFoundException("The partition in the task options does not exist");
     }
 
     var sessionId = await sessionTable_.SetSessionDataAsync(partitionIds,
@@ -646,7 +659,9 @@ public class Submitter : ISubmitter
                 ? Storage.TaskOptions.Merge(options,
                                             sessionData.Options)
                 : sessionData.Options;
-    var partitionId = options.PartitionId;
+    var partitionId = string.IsNullOrEmpty(options.PartitionId)
+                        ? submitterOptions_.DefaultPartition
+                        : options.PartitionId;
 
     using var logFunction = logger_.LogFunction(parentTaskId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");

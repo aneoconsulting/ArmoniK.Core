@@ -70,9 +70,9 @@ public class SimpleSubmitter : ISubmitter
                                 CancellationToken cancellationToken)
     => Task.FromResult(DefaultCount);
 
-  public Task<CreateSessionReply> CreateSession(IEnumerable<string> partitionIds,
-                                                TaskOptions         defaultTaskOptions,
-                                                CancellationToken   cancellationToken)
+  public Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
+                                                TaskOptions       defaultTaskOptions,
+                                                CancellationToken cancellationToken)
     => Task.FromResult(new CreateSessionReply
                        {
                          SessionId = Guid.NewGuid()

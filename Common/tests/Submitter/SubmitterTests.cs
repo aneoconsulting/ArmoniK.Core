@@ -37,6 +37,7 @@ using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
@@ -98,6 +99,10 @@ public class SubmitterTests
                                                  {
                                                    $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
                                                  },
+                                                 {
+                                                   $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
+                                                   DefaultPartition
+                                                 },
                                                };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -117,6 +122,8 @@ public class SubmitterTests
             .AddSingleton<IMongoClient>(client_)
             .AddLogging()
             .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
+            .AddOption<Injection.Options.Submitter>(configuration,
+                                                    Injection.Options.Submitter.SettingSection)
             .AddSingleton<IPushQueueStorage, PushQueueStorage>();
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
@@ -128,6 +135,18 @@ public class SubmitterTests
     sessionTable_   = provider.GetRequiredService<ISessionTable>();
     taskTable_      = provider.GetRequiredService<ITaskTable>();
     partitionTable_ = provider.GetRequiredService<IPartitionTable>();
+
+    partitionTable_.CreatePartitionsAsync(new[]
+                                          {
+                                            new PartitionData(DefaultPartition,
+                                                              new List<string>(),
+                                                              10,
+                                                              50,
+                                                              20,
+                                                              1,
+                                                              new PodConfiguration(new Dictionary<string, string>())),
+                                          })
+                   .Wait();
   }
 
   [TearDown]
@@ -141,11 +160,12 @@ public class SubmitterTests
   private                 ISubmitter?      submitter_;
   private                 MongoDbRunner?   runner_;
   private                 MongoClient?     client_;
-  private const           string           DatabaseName    = "ArmoniK_TestDB";
-  private static readonly string           ExpectedOutput1 = "ExpectedOutput1";
-  private static readonly string           ExpectedOutput2 = "ExpectedOutput2";
-  private static readonly string           ExpectedOutput3 = "ExpectedOutput3";
-  private static readonly ActivitySource   ActivitySource  = new("ArmoniK.Core.Common.Tests.Submitter");
+  private const           string           DatabaseName     = "ArmoniK_TestDB";
+  private static readonly string           ExpectedOutput1  = "ExpectedOutput1";
+  private static readonly string           ExpectedOutput2  = "ExpectedOutput2";
+  private static readonly string           ExpectedOutput3  = "ExpectedOutput3";
+  private static readonly string           DefaultPartition = "DefaultPartition";
+  private static readonly ActivitySource   ActivitySource   = new("ArmoniK.Core.Common.Tests.Submitter");
   private                 ISessionTable?   sessionTable_;
   private                 ITaskTable?      taskTable_;
   private                 IPartitionTable? partitionTable_;
@@ -351,7 +371,7 @@ public class SubmitterTests
   }
 
   [Test]
-  public void CreateSessionWithoutPartition()
+  public void CreateSessionWithInvalidPartition()
   {
     var defaultTaskOptions = new TaskOptions
                              {
@@ -361,10 +381,55 @@ public class SubmitterTests
                                PartitionId = "invalid",
                              };
 
-    Assert.ThrowsAsync<InvalidOperationException>(async () => await submitter_!.CreateSession(Array.Empty<string>(),
+    Assert.ThrowsAsync<PartitionNotFoundException>(async () => await submitter_!.CreateSession(new List<string>
+                                                                                              {
+                                                                                                "invalid",
+                                                                                              },
                                                                                               defaultTaskOptions,
                                                                                               CancellationToken.None)
                                                                                .ConfigureAwait(false));
+  }
+
+  [Test]
+  public void CreateSessionWithInvalidPartitionInTaskOptions()
+  {
+    var defaultTaskOptions = new TaskOptions
+                             {
+                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                               MaxRetries  = 2,
+                               Priority    = 1,
+                               PartitionId = "invalid",
+                             };
+
+    Assert.ThrowsAsync<PartitionNotFoundException>(async () => await submitter_!.CreateSession(new List<string>
+                                                                                               {
+                                                                                                 DefaultPartition,
+                                                                                               },
+                                                                                               defaultTaskOptions,
+                                                                                               CancellationToken.None)
+                                                                                .ConfigureAwait(false));
+  }
+
+  [Test]
+  public async Task CreateSessionWithDefaultPartition()
+  {
+    var defaultTaskOptions = new TaskOptions
+                             {
+                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                               MaxRetries  = 2,
+                               Priority    = 1,
+                               PartitionId = DefaultPartition,
+                             };
+
+    var sessionReply = await submitter_!.CreateSession(new List<string>
+                                    {
+                                      DefaultPartition,
+                                    },
+                                    defaultTaskOptions,
+                                    CancellationToken.None)
+                     .ConfigureAwait(false);
+    Assert.NotNull(sessionReply.SessionId);
+    Assert.IsNotEmpty(sessionReply.SessionId);
   }
 
   [Test]

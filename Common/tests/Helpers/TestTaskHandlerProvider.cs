@@ -31,6 +31,7 @@ using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
@@ -98,6 +99,10 @@ public class TestTaskHandlerProvider : IDisposable
                                                  {
                                                    $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
                                                  },
+                                                 {
+                                                   $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
+                                                   "DefaultPartition"
+                                                 },
                                                };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -116,6 +121,8 @@ public class TestTaskHandlerProvider : IDisposable
            .AddLogging()
            .AddSingleton(loggerFactory_.CreateLogger(nameof(TestTaskHandlerProvider)))
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
+           .AddOption<Injection.Options.Submitter>(builder.Configuration,
+                                                   Injection.Options.Submitter.SettingSection)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<TaskHandler>()
@@ -124,6 +131,7 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton(workerStreamHandler)
            .AddSingleton(agentHandler)
            .AddSingleton(queueStorage);
+
 
     var computePlanComponent = builder.Configuration.GetSection(ComputePlane.SettingSection);
     var computePlanOptions   = computePlanComponent.Get<ComputePlane>();

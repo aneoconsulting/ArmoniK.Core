@@ -68,19 +68,19 @@ public class CreateSessionRequestValidatorTest
 
 
   [Test]
-  public void EmptyPartitionIdInTaskOptionsShouldFail()
+  public void EmptyPartitionIdInTaskOptionsShouldSucceed()
   {
     validCreateSessionRequest_!.DefaultTaskOption.PartitionId = string.Empty;
-    Assert.IsFalse(validator_.Validate(validCreateSessionRequest_)
-                             .IsValid);
+    Assert.IsTrue(validator_.Validate(validCreateSessionRequest_)
+                            .IsValid);
   }
 
 
   [Test]
-  public void EmptyPartitionIdShouldFail()
+  public void EmptyPartitionIdShouldSucceed()
   {
     validCreateSessionRequest_!.PartitionIds.Clear();
-    Assert.IsFalse(validator_.Validate(validCreateSessionRequest_)
+    Assert.IsTrue(validator_.Validate(validCreateSessionRequest_)
                              .IsValid);
   }
 

@@ -45,6 +45,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using OpenTelemetry.Trace;
 
@@ -81,6 +82,8 @@ public static class Program
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
+             .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
+                                                            Common.Injection.Options.Submitter.SettingSection)
              .AddGrpcReflection()
              .ValidateGrpcRequests();
 

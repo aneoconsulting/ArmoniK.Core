@@ -48,6 +48,7 @@ services:
       - Amqp__MaxRetries=10
       - Amqp__LinkCredit=2
       - Amqp__PartitionId=TestPartition0
+      - Submitter__DefaultPartition=TestPartition0
       - Serilog__MinimumLevel=${LOGGING_LEVEL:-Information}
       - Zipkin__Uri=http://zipkin:9411/api/v2/spans
     logging:

@@ -119,6 +119,14 @@ public class TaskOptionsValidatorTest
   }
 
   [Test]
+  public void EmptyPartitionShouldSucceed()
+  {
+    validTaskOptions_!.PartitionId = string.Empty;
+    Assert.IsTrue(validator_.Validate(validTaskOptions_)
+                            .IsValid);
+  }
+
+  [Test]
   public void OnlyMaxRetryAndPriorityDefinedShouldFail()
   {
     var to = new TaskOptions
