@@ -217,6 +217,11 @@ public class Submitter : ISubmitter
       throw new PartitionNotFoundException("One of the partitions does not exist");
     }
 
+    if (string.IsNullOrEmpty(defaultTaskOptions.PartitionId))
+    {
+      defaultTaskOptions.PartitionId = submitterOptions_.DefaultPartition;
+    }
+
     if (!await partitionTable_.ArePartitionsExistingAsync(new[]
                                                           {
                                                             defaultTaskOptions.PartitionId,
