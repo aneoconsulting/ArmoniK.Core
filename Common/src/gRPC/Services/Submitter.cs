@@ -204,6 +204,12 @@ public class Submitter : ISubmitter
       partitionIds.Add(submitterOptions_.DefaultPartition);
     }
 
+    if (partitionIds.Count == 1 && string.IsNullOrEmpty(partitionIds.Single()))
+    {
+      partitionIds.Clear();
+      partitionIds.Add(submitterOptions_.DefaultPartition);
+    }
+
     if (!await partitionTable_.ArePartitionsExistingAsync(partitionIds,
                                                           cancellationToken)
                               .ConfigureAwait(false))
