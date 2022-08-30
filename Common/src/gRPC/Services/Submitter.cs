@@ -52,28 +52,28 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 
 public class Submitter : ISubmitter
 {
-  private readonly ActivitySource              activitySource_;
-  private readonly ILogger<Submitter>          logger_;
-  private readonly IObjectStorageFactory       objectStorageFactory_;
-  private readonly IPartitionTable             partitionTable_;
+  private readonly ActivitySource        activitySource_;
+  private readonly ILogger<Submitter>    logger_;
+  private readonly IObjectStorageFactory objectStorageFactory_;
+  private readonly IPartitionTable       partitionTable_;
+  private readonly IPushQueueStorage     pushQueueStorage_;
+  private readonly IResultTable          resultTable_;
+
+
+  private readonly ISessionTable               sessionTable_;
   private readonly Injection.Options.Submitter submitterOptions_;
-  private readonly IPushQueueStorage           pushQueueStorage_;
-  private readonly IResultTable                resultTable_;
-
-
-  private readonly ISessionTable sessionTable_;
-  private readonly ITaskTable    taskTable_;
+  private readonly ITaskTable                  taskTable_;
 
   [UsedImplicitly]
-  public Submitter(IPushQueueStorage                  pushQueueStorage,
-                   IObjectStorageFactory              objectStorageFactory,
-                   ILogger<Submitter>                 logger,
-                   ISessionTable                      sessionTable,
-                   ITaskTable                         taskTable,
-                   IResultTable                       resultTable,
-                   IPartitionTable                    partitionTable,
-                   Common.Injection.Options.Submitter submitterOptions,
-                   ActivitySource                     activitySource)
+  public Submitter(IPushQueueStorage           pushQueueStorage,
+                   IObjectStorageFactory       objectStorageFactory,
+                   ILogger<Submitter>          logger,
+                   ISessionTable               sessionTable,
+                   ITaskTable                  taskTable,
+                   IResultTable                resultTable,
+                   IPartitionTable             partitionTable,
+                   Injection.Options.Submitter submitterOptions,
+                   ActivitySource              activitySource)
   {
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
@@ -194,9 +194,9 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateSessionReply> CreateSession(IList<string> partitionIds,
-                                                      TaskOptions         defaultTaskOptions,
-                                                      CancellationToken   cancellationToken)
+  public async Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
+                                                      TaskOptions       defaultTaskOptions,
+                                                      CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     if (!partitionIds.Any())

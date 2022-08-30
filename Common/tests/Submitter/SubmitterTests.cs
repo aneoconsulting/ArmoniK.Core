@@ -382,12 +382,12 @@ public class SubmitterTests
                              };
 
     Assert.ThrowsAsync<PartitionNotFoundException>(async () => await submitter_!.CreateSession(new List<string>
-                                                                                              {
-                                                                                                "invalid",
-                                                                                              },
-                                                                                              defaultTaskOptions,
-                                                                                              CancellationToken.None)
-                                                                               .ConfigureAwait(false));
+                                                                                               {
+                                                                                                 "invalid",
+                                                                                               },
+                                                                                               defaultTaskOptions,
+                                                                                               CancellationToken.None)
+                                                                                .ConfigureAwait(false));
   }
 
   [Test]
@@ -422,12 +422,12 @@ public class SubmitterTests
                              };
 
     var sessionReply = await submitter_!.CreateSession(new List<string>
-                                    {
-                                      DefaultPartition,
-                                    },
-                                    defaultTaskOptions,
-                                    CancellationToken.None)
-                     .ConfigureAwait(false);
+                                                       {
+                                                         DefaultPartition,
+                                                       },
+                                                       defaultTaskOptions,
+                                                       CancellationToken.None)
+                                        .ConfigureAwait(false);
     Assert.NotNull(sessionReply.SessionId);
     Assert.IsNotEmpty(sessionReply.SessionId);
   }

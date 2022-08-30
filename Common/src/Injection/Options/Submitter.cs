@@ -22,13 +22,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 namespace ArmoniK.Core.Common.Injection.Options;
 
 public class Submitter
 {
   public const string SettingSection = nameof(Submitter);
 
-  public string DefaultPartition   { get; set; } = string.Empty;
+  public string DefaultPartition { get; set; } = string.Empty;
 }

@@ -48,6 +48,8 @@ using OpenTelemetry.Trace;
 
 using Serilog;
 
+using Submitter = ArmoniK.Core.Common.Injection.Options.Submitter;
+
 namespace ArmoniK.Core.Compute.PollingAgent;
 
 public static class Program
@@ -82,9 +84,9 @@ public static class Program
              .AddHostedService<Worker>()
              .AddSingleton<Pollster>()
              .AddSingleton(logger)
-             .AddSingleton<ISubmitter, Submitter>()
-             .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
-                                                            Common.Injection.Options.Submitter.SettingSection)
+             .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
+             .AddOption<Submitter>(builder.Configuration,
+                                   Submitter.SettingSection)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()

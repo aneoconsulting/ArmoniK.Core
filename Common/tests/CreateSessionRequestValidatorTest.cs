@@ -81,7 +81,7 @@ public class CreateSessionRequestValidatorTest
   {
     validCreateSessionRequest_!.PartitionIds.Clear();
     Assert.IsTrue(validator_.Validate(validCreateSessionRequest_)
-                             .IsValid);
+                            .IsValid);
   }
 
   [Test]
