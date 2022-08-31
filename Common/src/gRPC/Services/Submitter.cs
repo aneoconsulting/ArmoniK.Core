@@ -60,18 +60,20 @@ public class Submitter : ISubmitter
   private readonly IResultTable          resultTable_;
 
 
-  private readonly ISessionTable sessionTable_;
-  private readonly ITaskTable    taskTable_;
+  private readonly ISessionTable               sessionTable_;
+  private readonly Injection.Options.Submitter submitterOptions_;
+  private readonly ITaskTable                  taskTable_;
 
   [UsedImplicitly]
-  public Submitter(IPushQueueStorage     pushQueueStorage,
-                   IObjectStorageFactory objectStorageFactory,
-                   ILogger<Submitter>    logger,
-                   ISessionTable         sessionTable,
-                   ITaskTable            taskTable,
-                   IResultTable          resultTable,
-                   IPartitionTable       partitionTable,
-                   ActivitySource        activitySource)
+  public Submitter(IPushQueueStorage           pushQueueStorage,
+                   IObjectStorageFactory       objectStorageFactory,
+                   ILogger<Submitter>          logger,
+                   ISessionTable               sessionTable,
+                   ITaskTable                  taskTable,
+                   IResultTable                resultTable,
+                   IPartitionTable             partitionTable,
+                   Injection.Options.Submitter submitterOptions,
+                   ActivitySource              activitySource)
   {
     objectStorageFactory_ = objectStorageFactory;
     logger_               = logger;
@@ -79,6 +81,7 @@ public class Submitter : ISubmitter
     taskTable_            = taskTable;
     resultTable_          = resultTable;
     partitionTable_       = partitionTable;
+    submitterOptions_     = submitterOptions;
     activitySource_       = activitySource;
     pushQueueStorage_     = pushQueueStorage;
   }
@@ -191,14 +194,20 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateSessionReply> CreateSession(IEnumerable<string> partitionIds,
-                                                      TaskOptions         defaultTaskOptions,
-                                                      CancellationToken   cancellationToken)
+  public async Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
+                                                      TaskOptions       defaultTaskOptions,
+                                                      CancellationToken cancellationToken)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
     if (!partitionIds.Any())
     {
-      throw new InvalidOperationException("Partition collection should not be empty");
+      partitionIds.Add(submitterOptions_.DefaultPartition);
+    }
+
+    if (partitionIds.Count == 1 && string.IsNullOrEmpty(partitionIds.Single()))
+    {
+      partitionIds.Clear();
+      partitionIds.Add(submitterOptions_.DefaultPartition);
     }
 
     if (!await partitionTable_.ArePartitionsExistingAsync(partitionIds,
@@ -206,6 +215,21 @@ public class Submitter : ISubmitter
                               .ConfigureAwait(false))
     {
       throw new PartitionNotFoundException("One of the partitions does not exist");
+    }
+
+    if (string.IsNullOrEmpty(defaultTaskOptions.PartitionId))
+    {
+      defaultTaskOptions.PartitionId = submitterOptions_.DefaultPartition;
+    }
+
+    if (!await partitionTable_.ArePartitionsExistingAsync(new[]
+                                                          {
+                                                            defaultTaskOptions.PartitionId,
+                                                          },
+                                                          cancellationToken)
+                              .ConfigureAwait(false))
+    {
+      throw new PartitionNotFoundException("The partition in the task options does not exist");
     }
 
     var sessionId = await sessionTable_.SetSessionDataAsync(partitionIds,
@@ -646,7 +670,6 @@ public class Submitter : ISubmitter
                 ? Storage.TaskOptions.Merge(options,
                                             sessionData.Options)
                 : sessionData.Options;
-    var partitionId = options.PartitionId;
 
     using var logFunction = logger_.LogFunction(parentTaskId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
@@ -660,10 +683,10 @@ public class Submitter : ISubmitter
     }
 
     var availablePartitionIds = sessionData.PartitionIds ?? Array.Empty<string>();
-    if (!availablePartitionIds.Contains(partitionId))
+    if (!availablePartitionIds.Contains(options.PartitionId))
     {
       throw new InvalidOperationException($"The session {sessionData.SessionId} is assigned to the partitions " +
-                                          $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {partitionId}");
+                                          $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {options.PartitionId}");
     }
 
     if (options.Priority >= pushQueueStorage_.MaxPriority)

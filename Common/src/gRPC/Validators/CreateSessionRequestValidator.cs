@@ -34,14 +34,8 @@ namespace ArmoniK.Core.Common.gRPC.Validators;
 public class CreateSessionRequestValidator : AbstractValidator<CreateSessionRequest>
 {
   public CreateSessionRequestValidator()
-  {
-    RuleFor(request => request.DefaultTaskOption)
-      .SetValidator(new TaskOptionsValidator())
-      .NotNull()
-      .WithName(nameof(CreateSessionRequest.DefaultTaskOption));
-    RuleFor(request => request.PartitionIds)
-      .NotNull()
-      .NotEmpty()
-      .WithName(nameof(CreateSessionRequest.PartitionIds));
-  }
+    => RuleFor(request => request.DefaultTaskOption)
+       .SetValidator(new TaskOptionsValidator())
+       .NotNull()
+       .WithName(nameof(CreateSessionRequest.DefaultTaskOption));
 }

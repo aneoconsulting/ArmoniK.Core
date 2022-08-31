@@ -61,12 +61,6 @@ public class QueueStorage : IQueueStorage
                                             $"{nameof(Options.Password)} is not defined.");
     }
 
-    if (string.IsNullOrEmpty(options.PartitionId))
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.PartitionId)} is not defined.");
-    }
-
     if (options.Port == 0)
     {
       throw new ArgumentOutOfRangeException(nameof(options),

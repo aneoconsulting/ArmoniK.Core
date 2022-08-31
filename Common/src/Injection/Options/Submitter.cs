@@ -22,27 +22,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.gRPC.V1;
+namespace ArmoniK.Core.Common.Injection.Options;
 
-using FluentValidation;
-
-namespace ArmoniK.Core.Common.gRPC.Validators;
-
-public class TaskOptionsValidator : AbstractValidator<TaskOptions>
+public class Submitter
 {
-  public TaskOptionsValidator()
-  {
-    RuleFor(o => o.MaxRetries)
-      .GreaterThanOrEqualTo(1)
-      .WithName(nameof(TaskOptions.MaxRetries));
-    RuleFor(o => o.Priority)
-      .GreaterThanOrEqualTo(1)
-      .LessThanOrEqualTo(99)
-      .WithMessage("Priority should be included between 1 and 99")
-      .WithName(nameof(TaskOptions.Priority));
-    RuleFor(o => o.MaxDuration)
-      .NotNull()
-      .NotEmpty()
-      .WithName(nameof(TaskOptions.MaxDuration));
-  }
+  public const string SettingSection = nameof(Submitter);
+
+  public string DefaultPartition { get; set; } = string.Empty;
 }

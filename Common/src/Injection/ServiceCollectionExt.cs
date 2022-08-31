@@ -46,10 +46,33 @@ public static class ConfigurationExt
                                       string              key)
     => configuration.GetRequiredSection(key)
                     .Get<T>();
+
+  public static T GetInitializedValue<T>(this IConfiguration configuration,
+                                         string              key)
+    where T : new()
+    => configuration.GetSection(key)
+                    .Get<T>() ?? new T();
 }
 
 public static class ServiceCollectionExt
 {
+  /// <summary>
+  ///   Fill a class with values found in configurations
+  /// </summary>
+  /// <typeparam name="T">Class to fill</typeparam>
+  /// <param name="services">Collection of services</param>
+  /// <param name="configuration">Configurations used to fill the class</param>
+  /// <param name="key">Path to the Object in the configuration</param>
+  /// <returns>
+  ///   Input collection of services to chain usages
+  /// </returns>
+  [PublicAPI]
+  public static IServiceCollection AddInitializedOption<T>(this IServiceCollection services,
+                                                           IConfiguration          configuration,
+                                                           string                  key)
+    where T : class, new()
+    => services.AddSingleton(configuration.GetInitializedValue<T>(key));
+
   [PublicAPI]
   public static IServiceCollection AddOption<T>(this IServiceCollection services,
                                                 IConfiguration          configuration,

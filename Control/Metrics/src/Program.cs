@@ -25,9 +25,7 @@
 using System;
 using System.IO;
 
-using ArmoniK.Core.Adapters.Amqp;
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.Utils;
 
@@ -67,10 +65,6 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddAmqp(builder.Configuration,
-                      logger.GetLogger())
-             .AddRedis(builder.Configuration,
-                       logger.GetLogger())
              .AddOpenTelemetryMetrics(b =>
                                       {
                                         b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);

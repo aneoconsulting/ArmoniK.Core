@@ -56,6 +56,12 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     : base(options,
            sessionAmqp)
   {
+    if (string.IsNullOrEmpty(options.PartitionId))
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(Options.PartitionId)} is not defined.");
+    }
+
     receivers_ = Enumerable.Range(0,
                                   NbLinks)
                            .Select(i => new AsyncLazy<IReceiverLink>(() =>
