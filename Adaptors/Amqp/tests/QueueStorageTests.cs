@@ -114,6 +114,21 @@ public class QueueStorageTests
                                         .ConfigureAwait(false));
   }
 
+  [Test]
+  public async Task CreatePullQueueStorageShouldFail()
+  {
+    await using var helper   = new SimpleAmqpClientHelper();
+    var             provider = new Mock<IPullSessionAmqp>();
+
+    provider.Setup(sp => sp.Session)
+            .Returns(helper.Session);
+
+    Options!.PartitionId = "";
+    Assert.Throws<ArgumentOutOfRangeException>(() => new PullQueueStorage(Options,
+                                                                          provider.Object,
+                                                                          NullLogger<PullQueueStorage>.Instance));
+  }
+
   public static IEnumerable TestCasesBadOptions
   {
     get
@@ -135,12 +150,6 @@ public class QueueStorageTests
       var badPswd = new TestCaseData(badPswdOpt);
       badPswd.SetArgDisplayNames("InvalidPassword");
       yield return badPswd;
-
-      var badPartitionOpt = CreateDefaultOptions();
-      badPartitionOpt.PartitionId = "";
-      var badPartition = new TestCaseData(badPartitionOpt);
-      badPartition.SetArgDisplayNames("InvalidPartition");
-      yield return badPartition;
 
       var badPortOpt = CreateDefaultOptions();
       badPortOpt.Port = 0;
