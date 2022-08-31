@@ -809,6 +809,19 @@ references:
   commentId: T:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests
   fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests
   nameWithType: QueueStorageTests
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldFail
+  name: CreatePullQueueStorageShouldFail()
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_CreatePullQueueStorageShouldFail
+  commentId: M:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldFail
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldFail()
+  nameWithType: QueueStorageTests.CreatePullQueueStorageShouldFail()
+- uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldFail*
+  name: CreatePullQueueStorageShouldFail
+  href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_CreatePullQueueStorageShouldFail_
+  commentId: Overload:ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldFail
+  isSpec: "True"
+  fullName: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldFail
+  nameWithType: QueueStorageTests.CreatePullQueueStorageShouldFail
 - uid: ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.CreatePullQueueStorageShouldSucceed
   name: CreatePullQueueStorageShouldSucceed()
   href: api/ArmoniK.Core.Adapters.Amqp.Tests.QueueStorageTests.html#ArmoniK_Core_Adapters_Amqp_Tests_QueueStorageTests_CreatePullQueueStorageShouldSucceed
@@ -7248,15 +7261,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CountTasks
   nameWithType: ISubmitter.CountTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name: CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateSession_IEnumerable_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name.vb: CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IEnumerable<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IEnumerable(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  nameWithType: ISubmitter.CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: ISubmitter.CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name: CreateSession(IList<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateSession_IList_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name.vb: CreateSession(IList(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IList<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession(IList(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  nameWithType: ISubmitter.CreateSession(IList<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: ISubmitter.CreateSession(IList(Of String), TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.ISubmitter.CreateSession*
   name: CreateSession
   href: api/ArmoniK.Core.Common.gRPC.Services.ISubmitter.html#ArmoniK_Core_Common_gRPC_Services_ISubmitter_CreateSession_
@@ -7464,15 +7477,15 @@ references:
   commentId: T:ArmoniK.Core.Common.gRPC.Services.Submitter
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter
   nameWithType: Submitter
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IPushQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.IPartitionTable,ActivitySource)
-  name: Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter__ctor_ArmoniK_Core_Common_Storage_IPushQueueStorage_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ILogger_ArmoniK_Core_Common_gRPC_Services_Submitter__ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_Storage_IPartitionTable_ActivitySource_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IPushQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.IPartitionTable,ActivitySource)
-  name.vb: Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IPushQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger<ArmoniK.Core.Common.gRPC.Services.Submitter>, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.IPartitionTable, ActivitySource)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IPushQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger(Of ArmoniK.Core.Common.gRPC.Services.Submitter), ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.IPartitionTable, ActivitySource)
-  nameWithType: Submitter.Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
-  nameWithType.vb: Submitter.Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, IPartitionTable, ActivitySource)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IPushQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.IPartitionTable,ArmoniK.Core.Common.Injection.Options.Submitter,ActivitySource)
+  name: Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, IPartitionTable, Submitter, ActivitySource)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter__ctor_ArmoniK_Core_Common_Storage_IPushQueueStorage_ArmoniK_Core_Common_Storage_IObjectStorageFactory_ILogger_ArmoniK_Core_Common_gRPC_Services_Submitter__ArmoniK_Core_Common_Storage_ISessionTable_ArmoniK_Core_Common_Storage_ITaskTable_ArmoniK_Core_Common_Storage_IResultTable_ArmoniK_Core_Common_Storage_IPartitionTable_ArmoniK_Core_Common_Injection_Options_Submitter_ActivitySource_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor(ArmoniK.Core.Common.Storage.IPushQueueStorage,ArmoniK.Core.Common.Storage.IObjectStorageFactory,ILogger{ArmoniK.Core.Common.gRPC.Services.Submitter},ArmoniK.Core.Common.Storage.ISessionTable,ArmoniK.Core.Common.Storage.ITaskTable,ArmoniK.Core.Common.Storage.IResultTable,ArmoniK.Core.Common.Storage.IPartitionTable,ArmoniK.Core.Common.Injection.Options.Submitter,ActivitySource)
+  name.vb: Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, IPartitionTable, Submitter, ActivitySource)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IPushQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger<ArmoniK.Core.Common.gRPC.Services.Submitter>, ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.IPartitionTable, ArmoniK.Core.Common.Injection.Options.Submitter, ActivitySource)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.Submitter(ArmoniK.Core.Common.Storage.IPushQueueStorage, ArmoniK.Core.Common.Storage.IObjectStorageFactory, ILogger(Of ArmoniK.Core.Common.gRPC.Services.Submitter), ArmoniK.Core.Common.Storage.ISessionTable, ArmoniK.Core.Common.Storage.ITaskTable, ArmoniK.Core.Common.Storage.IResultTable, ArmoniK.Core.Common.Storage.IPartitionTable, ArmoniK.Core.Common.Injection.Options.Submitter, ActivitySource)
+  nameWithType: Submitter.Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger<Submitter>, ISessionTable, ITaskTable, IResultTable, IPartitionTable, Submitter, ActivitySource)
+  nameWithType.vb: Submitter.Submitter(IPushQueueStorage, IObjectStorageFactory, ILogger(Of Submitter), ISessionTable, ITaskTable, IResultTable, IPartitionTable, Submitter, ActivitySource)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.#ctor*
   name: Submitter
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter__ctor_
@@ -7532,15 +7545,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CountTasks
   nameWithType: Submitter.CountTasks
-- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name: CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CreateSession_IEnumerable_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name.vb: CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IEnumerable<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IEnumerable(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  nameWithType: Submitter.CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: Submitter.CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name: CreateSession(IList<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CreateSession_IList_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name.vb: CreateSession(IList(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IList<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession(IList(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  nameWithType: Submitter.CreateSession(IList<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: Submitter.CreateSession(IList(Of String), TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Common.gRPC.Services.Submitter.CreateSession*
   name: CreateSession
   href: api/ArmoniK.Core.Common.gRPC.Services.Submitter.html#ArmoniK_Core_Common_gRPC_Services_Submitter_CreateSession_
@@ -8086,6 +8099,22 @@ references:
   commentId: T:ArmoniK.Core.Common.Injection.ConfigurationExt
   fullName: ArmoniK.Core.Common.Injection.ConfigurationExt
   nameWithType: ConfigurationExt
+- uid: ArmoniK.Core.Common.Injection.ConfigurationExt.GetInitializedValue*
+  name: GetInitializedValue
+  href: api/ArmoniK.Core.Common.Injection.ConfigurationExt.html#ArmoniK_Core_Common_Injection_ConfigurationExt_GetInitializedValue_
+  commentId: Overload:ArmoniK.Core.Common.Injection.ConfigurationExt.GetInitializedValue
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Injection.ConfigurationExt.GetInitializedValue
+  nameWithType: ConfigurationExt.GetInitializedValue
+- uid: ArmoniK.Core.Common.Injection.ConfigurationExt.GetInitializedValue``1(IConfiguration,System.String)
+  name: GetInitializedValue<T>(IConfiguration, String)
+  href: api/ArmoniK.Core.Common.Injection.ConfigurationExt.html#ArmoniK_Core_Common_Injection_ConfigurationExt_GetInitializedValue__1_IConfiguration_System_String_
+  commentId: M:ArmoniK.Core.Common.Injection.ConfigurationExt.GetInitializedValue``1(IConfiguration,System.String)
+  name.vb: GetInitializedValue(Of T)(IConfiguration, String)
+  fullName: ArmoniK.Core.Common.Injection.ConfigurationExt.GetInitializedValue<T>(IConfiguration, System.String)
+  fullName.vb: ArmoniK.Core.Common.Injection.ConfigurationExt.GetInitializedValue(Of T)(IConfiguration, System.String)
+  nameWithType: ConfigurationExt.GetInitializedValue<T>(IConfiguration, String)
+  nameWithType.vb: ConfigurationExt.GetInitializedValue(Of T)(IConfiguration, String)
 - uid: ArmoniK.Core.Common.Injection.ConfigurationExt.GetRequiredValue*
   name: GetRequiredValue
   href: api/ArmoniK.Core.Common.Injection.ConfigurationExt.html#ArmoniK_Core_Common_Injection_ConfigurationExt_GetRequiredValue_
@@ -8223,6 +8252,31 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Injection.Options.InitWorker.WorkerCheckRetries
   nameWithType: InitWorker.WorkerCheckRetries
+- uid: ArmoniK.Core.Common.Injection.Options.Submitter
+  name: Submitter
+  href: api/ArmoniK.Core.Common.Injection.Options.Submitter.html
+  commentId: T:ArmoniK.Core.Common.Injection.Options.Submitter
+  fullName: ArmoniK.Core.Common.Injection.Options.Submitter
+  nameWithType: Submitter
+- uid: ArmoniK.Core.Common.Injection.Options.Submitter.DefaultPartition
+  name: DefaultPartition
+  href: api/ArmoniK.Core.Common.Injection.Options.Submitter.html#ArmoniK_Core_Common_Injection_Options_Submitter_DefaultPartition
+  commentId: P:ArmoniK.Core.Common.Injection.Options.Submitter.DefaultPartition
+  fullName: ArmoniK.Core.Common.Injection.Options.Submitter.DefaultPartition
+  nameWithType: Submitter.DefaultPartition
+- uid: ArmoniK.Core.Common.Injection.Options.Submitter.DefaultPartition*
+  name: DefaultPartition
+  href: api/ArmoniK.Core.Common.Injection.Options.Submitter.html#ArmoniK_Core_Common_Injection_Options_Submitter_DefaultPartition_
+  commentId: Overload:ArmoniK.Core.Common.Injection.Options.Submitter.DefaultPartition
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Injection.Options.Submitter.DefaultPartition
+  nameWithType: Submitter.DefaultPartition
+- uid: ArmoniK.Core.Common.Injection.Options.Submitter.SettingSection
+  name: SettingSection
+  href: api/ArmoniK.Core.Common.Injection.Options.Submitter.html#ArmoniK_Core_Common_Injection_Options_Submitter_SettingSection
+  commentId: F:ArmoniK.Core.Common.Injection.Options.Submitter.SettingSection
+  fullName: ArmoniK.Core.Common.Injection.Options.Submitter.SettingSection
+  nameWithType: Submitter.SettingSection
 - uid: ArmoniK.Core.Common.Injection.ProviderBase`1
   name: ProviderBase<T>
   href: api/ArmoniK.Core.Common.Injection.ProviderBase-1.html
@@ -8303,6 +8357,22 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddArmoniKWorkerConnection
   nameWithType: ServiceCollectionExt.AddArmoniKWorkerConnection
+- uid: ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddInitializedOption*
+  name: AddInitializedOption
+  href: api/ArmoniK.Core.Common.Injection.ServiceCollectionExt.html#ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddInitializedOption_
+  commentId: Overload:ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddInitializedOption
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddInitializedOption
+  nameWithType: ServiceCollectionExt.AddInitializedOption
+- uid: ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddInitializedOption``1(IServiceCollection,IConfiguration,System.String)
+  name: AddInitializedOption<T>(IServiceCollection, IConfiguration, String)
+  href: api/ArmoniK.Core.Common.Injection.ServiceCollectionExt.html#ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddInitializedOption__1_IServiceCollection_IConfiguration_System_String_
+  commentId: M:ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddInitializedOption``1(IServiceCollection,IConfiguration,System.String)
+  name.vb: AddInitializedOption(Of T)(IServiceCollection, IConfiguration, String)
+  fullName: ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddInitializedOption<T>(IServiceCollection, IConfiguration, System.String)
+  fullName.vb: ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddInitializedOption(Of T)(IServiceCollection, IConfiguration, System.String)
+  nameWithType: ServiceCollectionExt.AddInitializedOption<T>(IServiceCollection, IConfiguration, String)
+  nameWithType.vb: ServiceCollectionExt.AddInitializedOption(Of T)(IServiceCollection, IConfiguration, String)
 - uid: ArmoniK.Core.Common.Injection.ServiceCollectionExt.AddOption*
   name: AddOption
   href: api/ArmoniK.Core.Common.Injection.ServiceCollectionExt.html#ArmoniK_Core_Common_Injection_ServiceCollectionExt_AddOption_
@@ -13211,32 +13281,32 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest
   fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest
   nameWithType: CreateSessionRequestValidatorTest
-- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
-  name: EmptyPartitionIdInTaskOptionsShouldFail()
-  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdInTaskOptionsShouldFail
-  commentId: M:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
-  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail()
-  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail()
-- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail*
-  name: EmptyPartitionIdInTaskOptionsShouldFail
-  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdInTaskOptionsShouldFail_
-  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldSucceed
+  name: EmptyPartitionIdInTaskOptionsShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdInTaskOptionsShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldSucceed()
+  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldSucceed*
+  name: EmptyPartitionIdInTaskOptionsShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdInTaskOptionsShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldSucceed
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
-  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldFail
-- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail
-  name: EmptyPartitionIdShouldFail()
-  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdShouldFail
-  commentId: M:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail
-  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail()
-  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail()
-- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail*
-  name: EmptyPartitionIdShouldFail
-  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdShouldFail_
-  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldSucceed
+  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdInTaskOptionsShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldSucceed
+  name: EmptyPartitionIdShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldSucceed()
+  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldSucceed*
+  name: EmptyPartitionIdShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_EmptyPartitionIdShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldSucceed
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail
-  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdShouldFail
+  fullName: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.EmptyPartitionIdShouldSucceed
+  nameWithType: CreateSessionRequestValidatorTest.EmptyPartitionIdShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.NullDefaultTaskOptionShouldFail
   name: NullDefaultTaskOptionShouldFail()
   href: api/ArmoniK.Core.Common.Tests.CreateSessionRequestValidatorTest.html#ArmoniK_Core_Common_Tests_CreateSessionRequestValidatorTest_NullDefaultTaskOptionShouldFail
@@ -14266,15 +14336,15 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CountTasks
   nameWithType: SimpleSubmitter.CountTasks
-- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name: CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
-  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_CreateSession_IEnumerable_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
-  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IEnumerable{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
-  name.vb: CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
-  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IEnumerable<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IEnumerable(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
-  nameWithType: SimpleSubmitter.CreateSession(IEnumerable<String>, TaskOptions, CancellationToken)
-  nameWithType.vb: SimpleSubmitter.CreateSession(IEnumerable(Of String), TaskOptions, CancellationToken)
+- uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name: CreateSession(IList<String>, TaskOptions, CancellationToken)
+  href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_CreateSession_IList_System_String__ArmoniK_Api_gRPC_V1_TaskOptions_CancellationToken_
+  commentId: M:ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IList{System.String},ArmoniK.Api.gRPC.V1.TaskOptions,CancellationToken)
+  name.vb: CreateSession(IList(Of String), TaskOptions, CancellationToken)
+  fullName: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IList<System.String>, ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  fullName.vb: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession(IList(Of System.String), ArmoniK.Api.gRPC.V1.TaskOptions, CancellationToken)
+  nameWithType: SimpleSubmitter.CreateSession(IList<String>, TaskOptions, CancellationToken)
+  nameWithType.vb: SimpleSubmitter.CreateSession(IList(Of String), TaskOptions, CancellationToken)
 - uid: ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.CreateSession*
   name: CreateSession
   href: api/ArmoniK.Core.Common.Tests.Helpers.SimpleSubmitter.html#ArmoniK_Core_Common_Tests_Helpers_SimpleSubmitter_CreateSession_
@@ -18091,19 +18161,45 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionShouldSucceed
   nameWithType: SubmitterTests.CreateSessionShouldSucceed
-- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithoutPartition
-  name: CreateSessionWithoutPartition()
-  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionWithoutPartition
-  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithoutPartition
-  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithoutPartition()
-  nameWithType: SubmitterTests.CreateSessionWithoutPartition()
-- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithoutPartition*
-  name: CreateSessionWithoutPartition
-  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionWithoutPartition_
-  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithoutPartition
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithDefaultPartition
+  name: CreateSessionWithDefaultPartition()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionWithDefaultPartition
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithDefaultPartition
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithDefaultPartition()
+  nameWithType: SubmitterTests.CreateSessionWithDefaultPartition()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithDefaultPartition*
+  name: CreateSessionWithDefaultPartition
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionWithDefaultPartition_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithDefaultPartition
   isSpec: "True"
-  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithoutPartition
-  nameWithType: SubmitterTests.CreateSessionWithoutPartition
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithDefaultPartition
+  nameWithType: SubmitterTests.CreateSessionWithDefaultPartition
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartition
+  name: CreateSessionWithInvalidPartition()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionWithInvalidPartition
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartition
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartition()
+  nameWithType: SubmitterTests.CreateSessionWithInvalidPartition()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartition*
+  name: CreateSessionWithInvalidPartition
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionWithInvalidPartition_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartition
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartition
+  nameWithType: SubmitterTests.CreateSessionWithInvalidPartition
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartitionInTaskOptions
+  name: CreateSessionWithInvalidPartitionInTaskOptions()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionWithInvalidPartitionInTaskOptions
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartitionInTaskOptions
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartitionInTaskOptions()
+  nameWithType: SubmitterTests.CreateSessionWithInvalidPartitionInTaskOptions()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartitionInTaskOptions*
+  name: CreateSessionWithInvalidPartitionInTaskOptions
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateSessionWithInvalidPartitionInTaskOptions_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartitionInTaskOptions
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateSessionWithInvalidPartitionInTaskOptions
+  nameWithType: SubmitterTests.CreateSessionWithInvalidPartitionInTaskOptions
 - uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskShouldSucceed
   name: CreateTaskShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateTaskShouldSucceed
@@ -18117,6 +18213,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskShouldSucceed
   nameWithType: SubmitterTests.CreateTaskShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionForTasksShouldSucceed
+  name: CreateTaskWithoutPartitionForTasksShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateTaskWithoutPartitionForTasksShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionForTasksShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionForTasksShouldSucceed()
+  nameWithType: SubmitterTests.CreateTaskWithoutPartitionForTasksShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionForTasksShouldSucceed*
+  name: CreateTaskWithoutPartitionForTasksShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateTaskWithoutPartitionForTasksShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionForTasksShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionForTasksShouldSucceed
+  nameWithType: SubmitterTests.CreateTaskWithoutPartitionForTasksShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionShouldSucceed
+  name: CreateTaskWithoutPartitionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateTaskWithoutPartitionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionShouldSucceed()
+  nameWithType: SubmitterTests.CreateTaskWithoutPartitionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionShouldSucceed*
+  name: CreateTaskWithoutPartitionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_CreateTaskWithoutPartitionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.CreateTaskWithoutPartitionShouldSucceed
+  nameWithType: SubmitterTests.CreateTaskWithoutPartitionShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.FinalizeTaskCreationShouldSucceed
   name: FinalizeTaskCreationShouldSucceed()
   href: api/ArmoniK.Core.Common.Tests.Submitter.SubmitterTests.html#ArmoniK_Core_Common_Tests_Submitter_SubmitterTests_FinalizeTaskCreationShouldSucceed
@@ -18454,6 +18576,19 @@ references:
   commentId: T:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest
   fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest
   nameWithType: TaskOptionsValidatorTest
+- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.EmptyPartitionShouldSucceed
+  name: EmptyPartitionShouldSucceed()
+  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_EmptyPartitionShouldSucceed
+  commentId: M:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.EmptyPartitionShouldSucceed
+  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.EmptyPartitionShouldSucceed()
+  nameWithType: TaskOptionsValidatorTest.EmptyPartitionShouldSucceed()
+- uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.EmptyPartitionShouldSucceed*
+  name: EmptyPartitionShouldSucceed
+  href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_EmptyPartitionShouldSucceed_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.EmptyPartitionShouldSucceed
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.EmptyPartitionShouldSucceed
+  nameWithType: TaskOptionsValidatorTest.EmptyPartitionShouldSucceed
 - uid: ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.NegativeMaxRetryShouldFail
   name: NegativeMaxRetryShouldFail()
   href: api/ArmoniK.Core.Common.Tests.TaskOptionsValidatorTest.html#ArmoniK_Core_Common_Tests_TaskOptionsValidatorTest_NegativeMaxRetryShouldFail
