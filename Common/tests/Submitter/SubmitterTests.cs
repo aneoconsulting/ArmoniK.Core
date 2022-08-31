@@ -37,7 +37,9 @@ using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
@@ -48,6 +50,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 
 using Mongo2Go;
 
@@ -454,6 +457,145 @@ public class SubmitterTests
                                   .ConfigureAwait(false);
 
     Assert.AreEqual(taskCreating,
+                    result.TaskIds.Single());
+  }
+
+  [Test]
+  public async Task CreateTaskWithoutPartitionShouldSucceed()
+  {
+    var _ = await InitSubmitter(submitter_!,
+                                partitionTable_!,
+                                CancellationToken.None)
+              .ConfigureAwait(false);
+
+    var taskOptions = new TaskOptions
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(4)),
+                        MaxRetries  = 3,
+                        Priority    = 1,
+                      };
+
+    var taskOptionsValidator = new TaskOptionsValidator();
+    Assert.IsTrue(taskOptionsValidator.Validate(taskOptions)
+                                      .IsValid);
+
+    var sessionId = (await submitter_!.CreateSession(new List<string>(),
+                                                     taskOptions,
+                                                     CancellationToken.None)
+                                      .ConfigureAwait(false)).SessionId;
+
+    var tuple = await submitter_!.CreateTasks(sessionId,
+                                              sessionId,
+                                              taskOptions,
+                                              new List<TaskRequest>
+                                              {
+                                                new(new[]
+                                                    {
+                                                      ExpectedOutput2,
+                                                    },
+                                                    new List<string>(),
+                                                    new List<ReadOnlyMemory<byte>>
+                                                    {
+                                                      new(Encoding.ASCII.GetBytes("AAAA")),
+                                                    }.ToAsyncEnumerable()),
+                                              }.ToAsyncEnumerable(),
+                                              CancellationToken.None)
+                                 .ConfigureAwait(false);
+
+    Assert.AreEqual(DefaultPartition,
+                    tuple.partitionId);
+
+    var result = await submitter_!.ListTasksAsync(new TaskFilter
+                                                  {
+                                                    Task = new TaskFilter.Types.IdsRequest
+                                                           {
+                                                             Ids =
+                                                             {
+                                                               tuple.requests.Single()
+                                                                    .Id,
+                                                             },
+                                                           },
+                                                  },
+                                                  CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+    Assert.AreEqual(tuple.requests.Single()
+                         .Id,
+                    result.TaskIds.Single());
+  }
+
+  [Test]
+  public async Task CreateTaskWithoutPartitionForTasksShouldSucceed()
+  {
+    var _ = await InitSubmitter(submitter_!,
+                                partitionTable_!,
+                                CancellationToken.None)
+              .ConfigureAwait(false);
+
+    var taskOptions = new TaskOptions
+                      {
+                        MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(4)),
+                        MaxRetries  = 3,
+                        Priority    = 1,
+                      };
+
+    var sessionTaskOptions = new TaskOptions
+                             {
+                               MaxDuration = Duration.FromTimeSpan(TimeSpan.FromMinutes(4)),
+                               MaxRetries  = 3,
+                               Priority    = 1,
+                               PartitionId = "part1",
+                             };
+
+    var taskOptionsValidator = new TaskOptionsValidator();
+    Assert.IsTrue(taskOptionsValidator.Validate(taskOptions)
+                                      .IsValid);
+
+    var sessionId = (await submitter_!.CreateSession(new List<string>
+                                                     {
+                                                       "part1",
+                                                     },
+                                                     sessionTaskOptions,
+                                                     CancellationToken.None)
+                                      .ConfigureAwait(false)).SessionId;
+
+    var tuple = await submitter_!.CreateTasks(sessionId,
+                                              sessionId,
+                                              taskOptions,
+                                              new List<TaskRequest>
+                                              {
+                                                new(new[]
+                                                    {
+                                                      ExpectedOutput2,
+                                                    },
+                                                    new List<string>(),
+                                                    new List<ReadOnlyMemory<byte>>
+                                                    {
+                                                      new(Encoding.ASCII.GetBytes("AAAA")),
+                                                    }.ToAsyncEnumerable()),
+                                              }.ToAsyncEnumerable(),
+                                              CancellationToken.None)
+                                 .ConfigureAwait(false);
+
+    Assert.AreEqual("part1",
+                    tuple.partitionId);
+
+    var result = await submitter_!.ListTasksAsync(new TaskFilter
+                                                  {
+                                                    Task = new TaskFilter.Types.IdsRequest
+                                                           {
+                                                             Ids =
+                                                             {
+                                                               tuple.requests.Single()
+                                                                    .Id,
+                                                             },
+                                                           },
+                                                  },
+                                                  CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+    Assert.AreEqual(tuple.requests.Single()
+                         .Id,
                     result.TaskIds.Single());
   }
 

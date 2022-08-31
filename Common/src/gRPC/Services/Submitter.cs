@@ -670,9 +670,6 @@ public class Submitter : ISubmitter
                 ? Storage.TaskOptions.Merge(options,
                                             sessionData.Options)
                 : sessionData.Options;
-    var partitionId = string.IsNullOrEmpty(options.PartitionId)
-                        ? submitterOptions_.DefaultPartition
-                        : options.PartitionId;
 
     using var logFunction = logger_.LogFunction(parentTaskId);
     using var activity    = activitySource_.StartActivity($"{nameof(CreateTasks)}");
@@ -686,10 +683,10 @@ public class Submitter : ISubmitter
     }
 
     var availablePartitionIds = sessionData.PartitionIds ?? Array.Empty<string>();
-    if (!availablePartitionIds.Contains(partitionId))
+    if (!availablePartitionIds.Contains(options.PartitionId))
     {
       throw new InvalidOperationException($"The session {sessionData.SessionId} is assigned to the partitions " +
-                                          $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {partitionId}");
+                                          $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {options.PartitionId}");
     }
 
     if (options.Priority >= pushQueueStorage_.MaxPriority)

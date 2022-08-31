@@ -85,7 +85,7 @@ public static class Program
              .AddSingleton<Pollster>()
              .AddSingleton(logger)
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
-             .AddOption<Submitter>(builder.Configuration,
+             .AddInitializedOption<Submitter>(builder.Configuration,
                                    Submitter.SettingSection)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()

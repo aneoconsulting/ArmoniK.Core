@@ -69,10 +69,6 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddAmqp(builder.Configuration,
-                      logger.GetLogger())
-             .AddRedis(builder.Configuration,
-                       logger.GetLogger())
              .AddOpenTelemetryMetrics(b =>
                                       {
                                         b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);
