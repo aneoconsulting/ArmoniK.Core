@@ -50,10 +50,8 @@ public static class ConfigurationExt
   public static T GetInitializedValue<T>(this IConfiguration configuration,
                                          string              key)
     where T : new()
-  {
-    return configuration.GetSection(key)
-                        .Get<T>() ?? new T();
-  }
+    => configuration.GetSection(key)
+                    .Get<T>() ?? new T();
 }
 
 public static class ServiceCollectionExt
@@ -66,7 +64,7 @@ public static class ServiceCollectionExt
   /// <param name="configuration">Configurations used to fill the class</param>
   /// <param name="key">Path to the Object in the configuration</param>
   /// <returns>
-  ///  Input collection of services to chain usages
+  ///   Input collection of services to chain usages
   /// </returns>
   [PublicAPI]
   public static IServiceCollection AddInitializedOption<T>(this IServiceCollection services,
