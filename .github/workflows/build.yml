@@ -387,6 +387,7 @@ jobs:
         cat descr.json
 
     - name: Tag
+      continue-on-error: true
       run: |
         docker buildx imagetools create ${{ matrix.img }}:$VERSION -t ${{ matrix.img }}:$VERSION --append -f descr.json
 
@@ -590,7 +591,6 @@ jobs:
       - defaultPartitionMock
       - testStreamDC
       - buildImages
-      - buildImagesCross
     runs-on: ubuntu-latest
     steps:
       - name: Echo OK
