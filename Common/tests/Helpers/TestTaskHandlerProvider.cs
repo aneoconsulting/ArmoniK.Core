@@ -156,6 +156,9 @@ public class TestTaskHandlerProvider : IDisposable
     ((IDisposable)app_)?.Dispose();
     loggerFactory_?.Dispose();
     runner_?.Dispose();
+    TaskHandler.DisposeAsync()
+               .AsTask()
+               .Wait();
     GC.SuppressFinalize(this);
   }
 }
