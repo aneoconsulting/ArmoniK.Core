@@ -100,6 +100,8 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 
     await sender.CloseAsync()
                 .ConfigureAwait(false);
+
+    // todo : find a better solution for this timeout because it waste a lot of time to wait for it to timeout
     try
     {
       await session.CloseAsync()
