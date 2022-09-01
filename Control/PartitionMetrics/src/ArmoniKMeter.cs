@@ -97,9 +97,21 @@ public class ArmoniKMeter : Meter, IHostedService
     // Populate dictionary from request
     var measurements = new Dictionary<string, long>();
 
-    var parsedLines = Prometheus.ParseText(await client_.GetStringAsync(metricsExporterUri_,
-                                                                        cancellationToken)
-                                                        .ConfigureAwait(false));
+    string rawMetrics;
+    try
+    {
+      rawMetrics = await client_.GetStringAsync(metricsExporterUri_,
+                                                cancellationToken)
+                                .ConfigureAwait(false);
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Error while trying to read metrics from metrics exporter");
+      rawMetrics = string.Empty;
+    }
+
+    var parsedLines = Prometheus.ParseText(rawMetrics);
 
     var metrics = new Hashtable();
     foreach (var line in parsedLines.Where(line => line.IsMetric))
