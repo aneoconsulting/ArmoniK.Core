@@ -22,6 +22,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,7 +45,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 
   private readonly IConnectionAmqp connectionAmqp_;
 
-  private readonly ILogger<PushQueueStorage>? logger_;
+  private readonly ILogger<PushQueueStorage> logger_;
 
   public PushQueueStorage(Options.Amqp              options,
                           IConnectionAmqp           connectionAmqp,
@@ -61,7 +62,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                       int                 priority          = 1,
                                       CancellationToken   cancellationToken = default)
   {
-    using var _ = logger_!.LogFunction();
+    using var _ = logger_.LogFunction();
 
     /* Create Session at each call of push */
     var session = new Session(connectionAmqp_.Connection);
@@ -77,11 +78,11 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                              ? priority % MaxInternalQueuePriority
                              : MaxInternalQueuePriority;
 
-    logger_!.LogDebug("Priority is {priority} ; will use queue {partitionId}###q{whichQueue} with internal priority {internal priority}",
-                      priority,
-                      partitionId,
-                      whichQueue,
-                      internalPriority);
+    logger_.LogDebug("Priority is {priority} ; will use queue {partitionId}###q{whichQueue} with internal priority {internal priority}",
+                     priority,
+                     partitionId,
+                     whichQueue,
+                     internalPriority);
 
     var sender = new SenderLink(session,
                                 $"{partitionId}###SenderLink{whichQueue}",
@@ -99,7 +100,17 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
 
     await sender.CloseAsync()
                 .ConfigureAwait(false);
-    await session.CloseAsync()
-                 .ConfigureAwait(false);
+
+    // todo : find a better solution for this timeout because it waste a lot of time to wait for it to timeout
+    try
+    {
+      await session.CloseAsync()
+                   .ConfigureAwait(false);
+    }
+    catch (TimeoutException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while closing Amqp session");
+    }
   }
 }
