@@ -109,6 +109,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     handler_ = null;
     channel_?.Dispose();
     channel_ = null;
+    loggerFactory_.Dispose();
     GC.SuppressFinalize(this);
   }
 

@@ -56,6 +56,7 @@ public class SimpleAmqpClientHelper : IAsyncDisposable
                  .ConfigureAwait(false);
     await Connection.CloseAsync()
                     .ConfigureAwait(false);
+    loggerFactory_.Dispose();
     GC.SuppressFinalize(this);
   }
 }
