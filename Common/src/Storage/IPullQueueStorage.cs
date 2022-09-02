@@ -30,6 +30,6 @@ namespace ArmoniK.Core.Common.Storage;
 
 public interface IPullQueueStorage : IQueueStorage
 {
-  IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
-                                                           [EnumeratorCancellation] CancellationToken cancellationToken = default);
+  IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
+                                                           CancellationToken cancellationToken = default);
 }
