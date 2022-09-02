@@ -153,6 +153,8 @@ public class Pollster
                                                                             cancellationToken);
           if (combinedCts.IsCancellationRequested)
           {
+            logger_.LogWarning("Cancellation triggered, message requeued");
+            message.Status = QueueMessageStatus.Postponed;
             return;
           }
 
@@ -178,6 +180,7 @@ public class Pollster
             {
               if (combinedCts.IsCancellationRequested)
               {
+                logger_.LogWarning("Cancellation triggered, the acquired task is released and the message requeued");
                 await taskHandler.ReleaseTask(CancellationToken.None)
                                  .ConfigureAwait(false);
                 return;
@@ -190,6 +193,7 @@ public class Pollster
 
               if (combinedCts.IsCancellationRequested)
               {
+                logger_.LogWarning("Cancellation triggered, the acquired task is released and the message requeued");
                 await taskHandler.ReleaseTask(CancellationToken.None)
                                  .ConfigureAwait(false);
                 return;
@@ -207,6 +211,7 @@ public class Pollster
 
               if (combinedCts.IsCancellationRequested)
               {
+                logger_.LogWarning("Cancellation triggered, no more messages will be fetched");
                 return;
               }
             }
