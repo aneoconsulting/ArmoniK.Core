@@ -217,6 +217,7 @@ public class QueueStorageTests
                                              priority,
                                              CancellationToken.None)
                           .ConfigureAwait(false);
+    Assert.Pass();
   }
 
   [Test]

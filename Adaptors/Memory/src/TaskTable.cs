@@ -108,7 +108,7 @@ public class TaskTable : ITaskTable
                                                   TaskStatus        status,
                                                   CancellationToken cancellationToken = default)
   {
-    if (filter.Included != null && filter.Included.Statuses.Contains(TaskStatus.Completed) | filter.Included.Statuses.Contains(TaskStatus.Canceled))
+    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Canceled)))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state or isn't initialized properly");
     }

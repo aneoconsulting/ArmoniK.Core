@@ -29,6 +29,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common;
@@ -80,6 +81,7 @@ public class PartitionTable : IPartitionTable
   public async Task CreatePartitionsAsync(IEnumerable<PartitionData> partitions,
                                           CancellationToken          cancellationToken = default)
   {
+    using var _        = logger_.LogFunction();
     using var activity = activitySource_.StartActivity($"{nameof(CreatePartitionsAsync)}");
 
     var taskCollection = partitionCollectionProvider_.Get();
@@ -92,6 +94,7 @@ public class PartitionTable : IPartitionTable
   public async Task<PartitionData> ReadPartitionAsync(string            partitionId,
                                                       CancellationToken cancellationToken = default)
   {
+    using var _        = logger_.LogFunction();
     using var activity = activitySource_.StartActivity($"{nameof(ReadPartitionAsync)}");
     activity?.SetTag("ReadPartitionId",
                      partitionId);
@@ -114,6 +117,7 @@ public class PartitionTable : IPartitionTable
 
   public IAsyncEnumerable<PartitionData> GetPartitionWithAllocationAsync(CancellationToken cancellationToken = default)
   {
+    using var _              = logger_.LogFunction();
     using var activity       = activitySource_.StartActivity($"{nameof(GetPartitionWithAllocationAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = partitionCollectionProvider_.Get();
@@ -126,6 +130,7 @@ public class PartitionTable : IPartitionTable
   public async Task DeletePartitionAsync(string            partitionId,
                                          CancellationToken cancellationToken = default)
   {
+    using var _        = logger_.LogFunction();
     using var activity = activitySource_.StartActivity($"{nameof(DeletePartitionAsync)}");
     activity?.SetTag($"{nameof(DeletePartitionAsync)}_TaskId",
                      partitionId);
@@ -144,6 +149,7 @@ public class PartitionTable : IPartitionTable
   public async Task<bool> ArePartitionsExistingAsync(IEnumerable<string> partitionIds,
                                                      CancellationToken   cancellationToken = default)
   {
+    using var _              = logger_.LogFunction();
     using var activity       = activitySource_.StartActivity($"{nameof(ArePartitionsExistingAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = partitionCollectionProvider_.Get();
