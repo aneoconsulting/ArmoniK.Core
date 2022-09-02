@@ -157,6 +157,8 @@ services:
   armonik.compute.pollingagent1:
     <<: *armonik_compute_pollingagent_base
 
+  armonik.compute.pollingagent2:
+    <<: *armonik_compute_pollingagent_base
 
   armonik.compute.worker0: &armonik_compute_worker_base
     image: ${ARMONIK_WORKER}
@@ -179,6 +181,8 @@ services:
   armonik.compute.worker1:
     <<: *armonik_compute_worker_base
 
+  armonik.compute.worker2:
+    <<: *armonik_compute_worker_base
 
   fluentbit:
     image: fluent/fluent-bit:latest
@@ -223,3 +227,4 @@ networks:
 volumes:
   socket_vol0: {}
   socket_vol1: {}
+  socket_vol2: {}

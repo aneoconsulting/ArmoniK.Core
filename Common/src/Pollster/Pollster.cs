@@ -151,6 +151,11 @@ public class Pollster
 
           var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
                                                                             cancellationToken);
+          if (combinedCts.IsCancellationRequested)
+          {
+            return;
+          }
+
           try
           {
             await using var taskHandler = new TaskHandler(sessionTable_,
@@ -171,10 +176,24 @@ public class Pollster
 
             if (precondition)
             {
+              if (combinedCts.IsCancellationRequested)
+              {
+                await taskHandler.ReleaseTask(CancellationToken.None)
+                                 .ConfigureAwait(false);
+                return;
+              }
+
               TaskProcessing = taskHandler.GetAcquiredTask();
 
               await taskHandler.PreProcessing(combinedCts.Token)
                                .ConfigureAwait(false);
+
+              if (combinedCts.IsCancellationRequested)
+              {
+                await taskHandler.ReleaseTask(CancellationToken.None)
+                                 .ConfigureAwait(false);
+                return;
+              }
 
               await taskHandler.ExecuteTask(combinedCts.Token)
                                .ConfigureAwait(false);
@@ -185,6 +204,11 @@ public class Pollster
                                .ConfigureAwait(false);
 
               logger_.LogDebug("Task returned");
+
+              if (combinedCts.IsCancellationRequested)
+              {
+                return;
+              }
             }
           }
           catch (Exception e)

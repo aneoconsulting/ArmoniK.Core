@@ -114,6 +114,26 @@ public class TaskHandler : IAsyncDisposable
   }
 
   /// <summary>
+  ///   Release the acquired task if any
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public async Task ReleaseTask(CancellationToken cancellationToken)
+  {
+    using var activity = activitySource_.StartActivity($"{nameof(ReleaseTask)}");
+    if (taskData_ is not null)
+    {
+      await taskTable_.ReleaseTask(taskData_.TaskId,
+                                   ownerPodId_,
+                                   cancellationToken)
+                      .ConfigureAwait(false);
+      messageHandler_.Status = QueueMessageStatus.Postponed;
+    }
+  }
+
+  /// <summary>
   ///   Acquisition of the task in the message given to the constructor
   /// </summary>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -199,6 +219,26 @@ public class TaskHandler : IAsyncDisposable
           throw new ArgumentException(nameof(taskData_));
       }
 
+      sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
+                                                         cancellationToken)
+                                        .ConfigureAwait(false);
+      var isSessionCancelled = sessionData_.Status == SessionStatus.Canceled;
+
+      if (isSessionCancelled && taskData_.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.Error))
+      {
+        logger_.LogInformation("Task is being cancelled");
+
+        messageHandler_.Status = QueueMessageStatus.Cancelled;
+        await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
+                                              cancellationToken)
+                        .ConfigureAwait(false);
+        await resultTable_.AbortTaskResults(taskData_.SessionId,
+                                            taskData_.TaskId,
+                                            CancellationToken.None)
+                          .ConfigureAwait(false);
+        return false;
+      }
+
       if (taskData_.DataDependencies.Any())
       {
         var dependencies = await resultTable_.AreResultsAvailableAsync(taskData_.SessionId,
@@ -247,26 +287,6 @@ public class TaskHandler : IAsyncDisposable
 
           return false;
         }
-      }
-
-      sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
-                                                         cancellationToken)
-                                        .ConfigureAwait(false);
-      var isSessionCancelled = sessionData_.Status == SessionStatus.Canceled;
-
-      if (isSessionCancelled && taskData_.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.Error))
-      {
-        logger_.LogInformation("Task is being cancelled");
-
-        messageHandler_.Status = QueueMessageStatus.Cancelled;
-        await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
-                                              cancellationToken)
-                        .ConfigureAwait(false);
-        await resultTable_.AbortTaskResults(taskData_.SessionId,
-                                            taskData_.TaskId,
-                                            CancellationToken.None)
-                          .ConfigureAwait(false);
-        return false;
       }
 
       logger_.LogDebug("Trying to acquire task");
@@ -491,26 +511,51 @@ public class TaskHandler : IAsyncDisposable
     {
       logger_.LogError(e,
                        "Error while computing task, retrying task");
-      await submitter_.CompleteTaskAsync(taskData_,
-                                         true,
-                                         new Output
-                                         {
-                                           Error = new Output.Types.Error
-                                                   {
-                                                     Details = e.Message,
-                                                   },
-                                         },
-                                         CancellationToken.None)
-                      .ConfigureAwait(false);
-      messageHandler_.Status = QueueMessageStatus.Cancelled;
+
+      await CompleteTaskAfterErrorAsync(e,
+                                        taskData_,
+                                        QueueMessageStatus.Cancelled,
+                                        true,
+                                        cancellationToken)
+        .ConfigureAwait(false);
       return;
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
                          "Error while finalizing task processing");
-      await submitter_.CompleteTaskAsync(taskData_,
-                                         false,
+
+      await CompleteTaskAfterErrorAsync(e,
+                                        taskData_,
+                                        QueueMessageStatus.Processed,
+                                        false,
+                                        cancellationToken)
+        .ConfigureAwait(false);
+
+      return;
+    }
+
+    logger_.LogDebug("End Task Processing");
+  }
+
+
+  private async Task CompleteTaskAfterErrorAsync(Exception          e,
+                                                 TaskData           taskData,
+                                                 QueueMessageStatus queueStatus,
+                                                 bool               resubmit,
+                                                 CancellationToken  cancellationToken)
+  {
+    if (cancellationToken.IsCancellationRequested)
+    {
+      logger_.LogWarning("Cancellation triggered, task cancelled here and re executed elsewhere");
+      await ReleaseTask(CancellationToken.None)
+        .ConfigureAwait(false);
+      messageHandler_.Status = QueueMessageStatus.Postponed;
+    }
+    else
+    {
+      await submitter_.CompleteTaskAsync(taskData,
+                                         resubmit,
                                          new Output
                                          {
                                            Error = new Output.Types.Error
@@ -520,10 +565,7 @@ public class TaskHandler : IAsyncDisposable
                                          },
                                          CancellationToken.None)
                       .ConfigureAwait(false);
-      messageHandler_.Status = QueueMessageStatus.Processed;
-      return;
+      messageHandler_.Status = queueStatus;
     }
-
-    logger_.LogDebug("End Task Processing");
   }
 }

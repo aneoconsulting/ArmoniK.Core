@@ -37,3 +37,8 @@ services:
     environment:
       - Amqp__User=admin
       - Amqp__Password=admin
+
+  armonik.compute.pollingagent2:
+    environment:
+      - Amqp__User=admin
+      - Amqp__Password=admin
