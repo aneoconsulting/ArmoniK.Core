@@ -31,6 +31,7 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
 {
   private readonly Func<Task<T>> builder_;
   private          T?            object_;
+  private readonly object        lockObj_ = new();
 
   protected ProviderBase(Func<Task<T>> builder)
     => builder_ = builder;
@@ -47,7 +48,7 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
       return object_;
     }
 
-    lock (this)
+    lock (lockObj_)
     {
       // can be simplified with Resharper :)
       object_ = object_ is null
