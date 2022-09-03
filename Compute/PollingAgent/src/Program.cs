@@ -87,6 +87,8 @@ public static class Program
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddInitializedOption<Submitter>(builder.Configuration,
                                               Submitter.SettingSection)
+             .AddInitializedOption<Common.Injection.Options.Pollster>(builder.Configuration,
+                                                                      Common.Injection.Options.Pollster.SettingSection)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()

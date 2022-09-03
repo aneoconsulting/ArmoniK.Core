@@ -408,14 +408,14 @@ public class TaskHandler : IAsyncDisposable
   /// <summary>
   ///   Execution of the acquired task on the worker
   /// </summary>
-  /// <param name="agent">Agent that will be used to keep track of the requests of the worker</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <param name="cancellationToken">Token used to cancel the method before the task is started</param>
+  /// <param name="connectionCancellationToken">Token used to cancel the connection to the worker</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
   /// <exception cref="ArmoniKException">worker pipe is not initialized</exception>
-  public async Task ExecuteTask(CancellationToken cancellationToken)
+  public async Task ExecuteTask(CancellationToken cancellationToken, CancellationToken connectionCancellationToken)
   {
     using var _ = logger_.BeginNamedScope("TaskExecution",
                                           ("taskId", messageHandler_.TaskId));
@@ -440,7 +440,7 @@ public class TaskHandler : IAsyncDisposable
                     .ConfigureAwait(false);
 
     workerStreamHandler_.StartTaskProcessing(taskData_,
-                                             cancellationToken);
+                                             connectionCancellationToken);
     if (workerStreamHandler_.Pipe is null)
     {
       throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
@@ -463,31 +463,44 @@ public class TaskHandler : IAsyncDisposable
   /// <summary>
   ///   Post processing of the acquired task
   /// </summary>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <param name="readCancellationToken">Token used to cancel the wait for the worker reply</param>
+  /// <param name="postCancellationToken">Token used to cancel the operations after the reply is received</param>
+  /// <param name="errorCancellationToken">Token used to cancel the error management operations</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
-  public async Task PostProcessing(CancellationToken cancellationToken)
+  public async Task PostProcessing(CancellationToken readCancellationToken,
+                                   CancellationToken postCancellationToken,
+                                   CancellationToken errorCancellationToken)
   {
     using var _ = logger_.BeginNamedScope("PostProcessing",
                                           ("taskId", messageHandler_.TaskId));
 
-    if (workerStreamHandler_.Pipe == null || taskData_ == null || agent_ == null)
+    if (workerStreamHandler_.Pipe is null)
     {
-      throw new NullReferenceException();
+      throw new NullReferenceException(nameof(workerStreamHandler_.Pipe) + " is null.");
+    }
+
+    if (taskData_ is null)
+    {
+      throw new NullReferenceException(nameof(taskData_) + " is null.");
+    }
+
+    if (agent_ is null)
+    {
+      throw new NullReferenceException(nameof(agent_) + " is null.");
     }
 
     try
     {
       // at this point worker requests should have ended
       logger_.LogDebug("Waiting for task output");
-      var reply = await workerStreamHandler_.Pipe.ReadAsync(cancellationToken)
+      var reply = await workerStreamHandler_.Pipe.ReadAsync(readCancellationToken)
                                             .ConfigureAwait(false);
 
       logger_.LogDebug("Stop agent server");
-      // todo fixme: Add stop to the server in Dispose in case of error
-      await agentHandler_.Stop(CancellationToken.None)
+      await agentHandler_.Stop(postCancellationToken)
                          .ConfigureAwait(false);
 
       logger_.LogInformation("Process task output of type {type}",
@@ -496,14 +509,14 @@ public class TaskHandler : IAsyncDisposable
       if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
       {
         logger_.LogDebug("Complete processing of the request");
-        await agent_.FinalizeTaskCreation(CancellationToken.None)
+        await agent_.FinalizeTaskCreation(postCancellationToken)
                     .ConfigureAwait(false);
       }
 
       await submitter_.CompleteTaskAsync(taskData_,
                                          false,
                                          reply.Output,
-                                         CancellationToken.None)
+                                         postCancellationToken)
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Processed;
     }
@@ -516,7 +529,7 @@ public class TaskHandler : IAsyncDisposable
                                         taskData_,
                                         QueueMessageStatus.Cancelled,
                                         true,
-                                        cancellationToken)
+                                        errorCancellationToken)
         .ConfigureAwait(false);
       return;
     }
@@ -529,7 +542,7 @@ public class TaskHandler : IAsyncDisposable
                                         taskData_,
                                         QueueMessageStatus.Processed,
                                         false,
-                                        cancellationToken)
+                                        errorCancellationToken)
         .ConfigureAwait(false);
 
       return;

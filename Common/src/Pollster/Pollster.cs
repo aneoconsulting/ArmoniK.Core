@@ -42,37 +42,39 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class Pollster
 {
-  private readonly ActivitySource           activitySource_;
-  private readonly IAgentHandler            agentHandler_;
-  private readonly DataPrefetcher           dataPrefetcher_;
-  private readonly IHostApplicationLifetime lifeTime_;
-  private readonly ILogger<Pollster>        logger_;
-  private readonly int                      messageBatchSize_;
-  private readonly IObjectStorageFactory    objectStorageFactory_;
-  private readonly string                   ownerPodId_;
-  private readonly IPullQueueStorage        pullQueueStorage_;
-  private readonly IResultTable             resultTable_;
-  private readonly ISessionTable            sessionTable_;
-  private readonly ISubmitter               submitter_;
-  private readonly ITaskProcessingChecker   taskProcessingChecker_;
-  private readonly ITaskTable               taskTable_;
-  private readonly IWorkerStreamHandler     workerStreamHandler_;
-  public           string                   TaskProcessing;
+  private readonly ActivitySource             activitySource_;
+  private readonly IAgentHandler              agentHandler_;
+  private readonly DataPrefetcher             dataPrefetcher_;
+  private readonly Injection.Options.Pollster pollsterOptions_;
+  private readonly IHostApplicationLifetime   lifeTime_;
+  private readonly ILogger<Pollster>          logger_;
+  private readonly int                        messageBatchSize_;
+  private readonly IObjectStorageFactory      objectStorageFactory_;
+  private readonly string                     ownerPodId_;
+  private readonly IPullQueueStorage          pullQueueStorage_;
+  private readonly IResultTable               resultTable_;
+  private readonly ISessionTable              sessionTable_;
+  private readonly ISubmitter                 submitter_;
+  private readonly ITaskProcessingChecker     taskProcessingChecker_;
+  private readonly ITaskTable                 taskTable_;
+  private readonly IWorkerStreamHandler       workerStreamHandler_;
+  public           string                     TaskProcessing;
 
-  public Pollster(IPullQueueStorage        pullQueueStorage,
-                  DataPrefetcher           dataPrefetcher,
-                  ComputePlane             options,
-                  IHostApplicationLifetime lifeTime,
-                  ActivitySource           activitySource,
-                  ILogger<Pollster>        logger,
-                  IObjectStorageFactory    objectStorageFactory,
-                  IResultTable             resultTable,
-                  ISubmitter               submitter,
-                  ISessionTable            sessionTable,
-                  ITaskTable               taskTable,
-                  ITaskProcessingChecker   taskProcessingChecker,
-                  IWorkerStreamHandler     workerStreamHandler,
-                  IAgentHandler            agentHandler)
+  public Pollster(IPullQueueStorage          pullQueueStorage,
+                  DataPrefetcher             dataPrefetcher,
+                  ComputePlane               options,
+                  Injection.Options.Pollster pollsterOptions,
+                  IHostApplicationLifetime   lifeTime,
+                  ActivitySource             activitySource,
+                  ILogger<Pollster>          logger,
+                  IObjectStorageFactory      objectStorageFactory,
+                  IResultTable               resultTable,
+                  ISubmitter                 submitter,
+                  ISessionTable              sessionTable,
+                  ITaskTable                 taskTable,
+                  ITaskProcessingChecker     taskProcessingChecker,
+                  IWorkerStreamHandler       workerStreamHandler,
+                  IAgentHandler              agentHandler)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -85,6 +87,7 @@ public class Pollster
     pullQueueStorage_      = pullQueueStorage;
     lifeTime_              = lifeTime;
     dataPrefetcher_        = dataPrefetcher;
+    pollsterOptions_       = pollsterOptions;
     messageBatchSize_      = options.MessageBatchSize;
     objectStorageFactory_  = objectStorageFactory;
     resultTable_           = resultTable;
@@ -199,12 +202,27 @@ public class Pollster
                 return;
               }
 
-              await taskHandler.ExecuteTask(combinedCts.Token)
+              var workerConnectionCts = new CancellationTokenSource();
+              var postConnectionCts = new CancellationTokenSource();
+              var errorConnectionCts = new CancellationTokenSource();
+              combinedCts.Token.Register(() =>
+                                         {
+                                           logger_.LogWarning("Cancellation triggered, waiting {timeBeforeCancellation} before cancelling task",
+                                                              pollsterOptions_.GraceDelay);
+                                           workerConnectionCts.CancelAfter(pollsterOptions_.GraceDelay);
+                                           postConnectionCts.CancelAfter(pollsterOptions_.GraceDelay  + TimeSpan.FromSeconds(1));
+                                           errorConnectionCts.CancelAfter(pollsterOptions_.GraceDelay + TimeSpan.FromSeconds(2));
+                                         });
+
+              await taskHandler.ExecuteTask(combinedCts.Token,
+                                            workerConnectionCts.Token)
                                .ConfigureAwait(false);
 
               logger_.LogDebug("Complete task processing");
 
-              await taskHandler.PostProcessing(combinedCts.Token)
+              await taskHandler.PostProcessing(workerConnectionCts.Token,
+                                               postConnectionCts.Token,
+                                               errorConnectionCts.Token)
                                .ConfigureAwait(false);
 
               logger_.LogDebug("Task returned");

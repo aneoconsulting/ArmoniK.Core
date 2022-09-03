@@ -379,10 +379,13 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PreProcessing(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.ExecuteTask(CancellationToken.None)
+    await testServiceProvider.TaskHandler.ExecuteTask(CancellationToken.None,
+                                                      CancellationToken.None)
                              .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.PostProcessing(CancellationToken.None)
+    await testServiceProvider.TaskHandler.PostProcessing(CancellationToken.None,
+                                                         CancellationToken.None,
+                                                         CancellationToken.None)
                              .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Completed,
@@ -491,7 +494,8 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PreProcessing(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.ExecuteTask(CancellationToken.None)
+    await testServiceProvider.TaskHandler.ExecuteTask(CancellationToken.None,
+                                                      CancellationToken.None)
                              .ConfigureAwait(false);
 
 
@@ -517,7 +521,9 @@ public class TaskHandlerTest
                                         CancellationToken.None)
                       .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.PostProcessing(CancellationToken.None)
+    await testServiceProvider.TaskHandler.PostProcessing(CancellationToken.None,
+                                                         CancellationToken.None,
+                                                         CancellationToken.None)
                              .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Completed,
