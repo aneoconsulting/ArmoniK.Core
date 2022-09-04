@@ -45,12 +45,12 @@ public class Pollster
   private readonly ActivitySource             activitySource_;
   private readonly IAgentHandler              agentHandler_;
   private readonly DataPrefetcher             dataPrefetcher_;
-  private readonly Injection.Options.Pollster pollsterOptions_;
   private readonly IHostApplicationLifetime   lifeTime_;
   private readonly ILogger<Pollster>          logger_;
   private readonly int                        messageBatchSize_;
   private readonly IObjectStorageFactory      objectStorageFactory_;
   private readonly string                     ownerPodId_;
+  private readonly Injection.Options.Pollster pollsterOptions_;
   private readonly IPullQueueStorage          pullQueueStorage_;
   private readonly IResultTable               resultTable_;
   private readonly ISessionTable              sessionTable_;

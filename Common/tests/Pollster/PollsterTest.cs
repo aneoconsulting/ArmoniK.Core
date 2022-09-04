@@ -47,16 +47,13 @@ using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Api.gRPC.V1.Output;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
-
+using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
 
 [TestFixture]
 public class PollsterTest
 {
-  private static readonly string ExpectedOutput1 = "ExpectedOutput1";
-  private static readonly string ExpectedOutput2 = "ExpectedOutput2";
-
   [SetUp]
   public void SetUp()
   {
@@ -66,6 +63,9 @@ public class PollsterTest
   public virtual void TearDown()
   {
   }
+
+  private static readonly string ExpectedOutput1 = "ExpectedOutput1";
+  private static readonly string ExpectedOutput2 = "ExpectedOutput2";
 
   private static async Task<(string sessionId, string taskCreating, string taskSubmitted)> InitSubmitter(ISubmitter        submitter,
                                                                                                          IPartitionTable   partitionTable,
@@ -211,9 +211,7 @@ public class PollsterTest
     private readonly double delay_;
 
     public WaitWorkerStreamHandler(double delay)
-    {
-      delay_ = delay;
-    }
+      => delay_ = delay;
 
     public ValueTask<bool> Check(HealthCheckTag tag)
       => new(true);
@@ -229,9 +227,7 @@ public class PollsterTest
 
     public void StartTaskProcessing(TaskData          taskData,
                                     CancellationToken cancellationToken)
-    {
-      Pipe = new WaitAsyncPipe(delay_);
-    }
+      => Pipe = new WaitAsyncPipe(delay_);
   }
 
   public class WaitAsyncPipe : IAsyncPipe<ProcessReply, ProcessRequest>
@@ -239,9 +235,7 @@ public class PollsterTest
     private readonly double delay_;
 
     public WaitAsyncPipe(double delay)
-    {
-      this.delay_ = delay;
-    }
+      => delay_ = delay;
 
     public async Task<ProcessReply> ReadAsync(CancellationToken cancellationToken)
     {
@@ -307,7 +301,7 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
     Assert.True(source.Token.IsCancellationRequested);
 
-    Assert.AreEqual(Api.gRPC.V1.TaskStatus.Completed,
+    Assert.AreEqual(TaskStatus.Completed,
                     (await testServiceProvider.TaskTable.GetTaskStatus(new[]
                                                                        {
                                                                          tuple.taskSubmitted,
@@ -316,6 +310,4 @@ public class PollsterTest
                                               .ConfigureAwait(false)).Single()
                                                                      .Status);
   }
-
-
 }

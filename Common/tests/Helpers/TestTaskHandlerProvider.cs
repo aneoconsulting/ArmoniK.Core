@@ -52,24 +52,29 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestTaskHandlerProvider : IDisposable
 {
-  private const           string          DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource  ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
-  private readonly        WebApplication  app_;
-  private readonly        IMongoClient    client_;
-  private readonly        LoggerFactory   loggerFactory_;
-  public readonly         IPartitionTable PartitionTable;
-  private readonly        IResultTable    resultTable_;
-  private readonly        MongoDbRunner   runner_;
-  private readonly        ISessionTable   sessionTable_;
-  public readonly         ISubmitter      Submitter;
-  public readonly         TaskHandler     TaskHandler;
-  public readonly         ITaskTable      TaskTable;
+  private const           string                  DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource          ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
+  private readonly        WebApplication          app_;
+  private readonly        CancellationTokenSource cancellationTokenSource_;
+  private readonly        IMongoClient            client_;
+  private readonly        LoggerFactory           loggerFactory_;
+  public readonly         IPartitionTable         PartitionTable;
+  private readonly        IResultTable            resultTable_;
+  private readonly        MongoDbRunner           runner_;
+  public readonly         ISessionTable           SessionTable;
+  public readonly         ISubmitter              Submitter;
+  public readonly         TaskHandler             TaskHandler;
+  public readonly         ITaskTable              TaskTable;
 
 
-  public TestTaskHandlerProvider(IWorkerStreamHandler workerStreamHandler,
-                                 IAgentHandler        agentHandler,
-                                 IQueueMessageHandler queueStorage)
+  public TestTaskHandlerProvider(IWorkerStreamHandler    workerStreamHandler,
+                                 IAgentHandler           agentHandler,
+                                 IQueueMessageHandler    queueStorage,
+                                 CancellationTokenSource cancellationTokenSource,
+                                 ITaskTable?             inputTaskTable    = null,
+                                 ISessionTable?          inputSessionTable = null)
   {
+    cancellationTokenSource_ = cancellationTokenSource;
     var logger = NullLogger.Instance;
     runner_ = MongoDbRunner.Start(singleNodeReplSet: false,
                                   logger: logger);
@@ -128,7 +133,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                    Injection.Options.Submitter.SettingSection)
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
-           .AddSingleton(_ => new CancellationTokenSource())
+           .AddSingleton(cancellationTokenSource)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<TaskHandler>()
@@ -138,6 +143,15 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton(agentHandler)
            .AddSingleton(queueStorage);
 
+    if (inputTaskTable is not null)
+    {
+      builder.Services.AddSingleton(inputTaskTable);
+    }
+
+    if (inputSessionTable is not null)
+    {
+      builder.Services.AddSingleton(inputSessionTable);
+    }
 
     var computePlanComponent = builder.Configuration.GetSection(ComputePlane.SettingSection);
     var computePlanOptions   = computePlanComponent.Get<ComputePlane>();
@@ -149,12 +163,12 @@ public class TestTaskHandlerProvider : IDisposable
     resultTable_   = app_.Services.GetRequiredService<IResultTable>();
     TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
     PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
-    sessionTable_  = app_.Services.GetRequiredService<ISessionTable>();
+    SessionTable   = app_.Services.GetRequiredService<ISessionTable>();
     Submitter      = app_.Services.GetRequiredService<ISubmitter>();
     TaskHandler    = app_.Services.GetRequiredService<TaskHandler>();
 
-    sessionTable_.Init(CancellationToken.None)
-                 .Wait();
+    SessionTable.Init(CancellationToken.None)
+                .Wait();
   }
 
   public void Dispose()

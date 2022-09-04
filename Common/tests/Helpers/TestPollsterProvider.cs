@@ -62,8 +62,8 @@ public class TestPollsterProvider : IDisposable
   private readonly        MongoDbRunner            runner_;
   private readonly        ISessionTable            sessionTable_;
   public readonly         ISubmitter               Submitter;
-  public                  Common.Pollster.Pollster Pollster;
   public readonly         ITaskTable               TaskTable;
+  public                  Common.Pollster.Pollster Pollster;
 
 
   public TestPollsterProvider(IWorkerStreamHandler workerStreamHandler,

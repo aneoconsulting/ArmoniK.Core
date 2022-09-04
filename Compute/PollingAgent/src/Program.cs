@@ -48,6 +48,7 @@ using OpenTelemetry.Trace;
 
 using Serilog;
 
+using Pollster = ArmoniK.Core.Common.Injection.Options.Pollster;
 using Submitter = ArmoniK.Core.Common.Injection.Options.Submitter;
 
 namespace ArmoniK.Core.Compute.PollingAgent;
@@ -82,13 +83,13 @@ public static class Program
              .AddRedis(builder.Configuration,
                        logger.GetLogger())
              .AddHostedService<Worker>()
-             .AddSingleton<Pollster>()
+             .AddSingleton<Common.Pollster.Pollster>()
              .AddSingleton(logger)
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddInitializedOption<Submitter>(builder.Configuration,
                                               Submitter.SettingSection)
-             .AddInitializedOption<Common.Injection.Options.Pollster>(builder.Configuration,
-                                                                      Common.Injection.Options.Pollster.SettingSection)
+             .AddInitializedOption<Pollster>(builder.Configuration,
+                                             Pollster.SettingSection)
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
@@ -153,7 +154,7 @@ public static class Program
                                                    });
 
                          endpoints.MapGet("/taskprocessing",
-                                          () => Task.FromResult(app.Services.GetRequiredService<Pollster>()
+                                          () => Task.FromResult(app.Services.GetRequiredService<Common.Pollster.Pollster>()
                                                                    .TaskProcessing));
                        });
 

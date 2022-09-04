@@ -51,9 +51,9 @@ public class TaskHandler : IAsyncDisposable
 {
   private readonly ActivitySource                              activitySource_;
   private readonly IAgentHandler                               agentHandler_;
+  private readonly CancellationTokenSource                     cancellationTokenSource_;
   private readonly DataPrefetcher                              dataPrefetcher_;
   private readonly ILogger                                     logger_;
-  private readonly CancellationTokenSource                     cancellationTokenSource_;
   private readonly IQueueMessageHandler                        messageHandler_;
   private readonly string                                      ownerPodId_;
   private readonly IResultTable                                resultTable_;
@@ -151,6 +151,7 @@ public class TaskHandler : IAsyncDisposable
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
+        logger_.LogDebug("Task data read but execution cancellation requested");
         return false;
       }
 
@@ -226,7 +227,7 @@ public class TaskHandler : IAsyncDisposable
 
       if (isSessionCancelled && taskData_.Status is not (TaskStatus.Canceled or TaskStatus.Completed or TaskStatus.Error))
       {
-        logger_.LogInformation("Task is being cancelled");
+        logger_.LogInformation("Task is being cancelled because its session is cancelled");
 
         messageHandler_.Status = QueueMessageStatus.Cancelled;
         await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
@@ -242,6 +243,7 @@ public class TaskHandler : IAsyncDisposable
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
+        logger_.LogDebug("Session running but execution cancellation requested");
         return false;
       }
 
@@ -298,6 +300,7 @@ public class TaskHandler : IAsyncDisposable
       if (cancellationTokenSource_.IsCancellationRequested)
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
+        logger_.LogDebug("Dependencies resolved but execution cancellation requested");
         return false;
       }
 
@@ -309,10 +312,12 @@ public class TaskHandler : IAsyncDisposable
 
       if (cancellationTokenSource_.IsCancellationRequested)
       {
+        logger_.LogDebug("Task acquired but execution cancellation requested");
         await taskTable_.ReleaseTask(taskData_.TaskId,
                                      ownerPodId_,
                                      CancellationToken.None)
                         .ConfigureAwait(false);
+        messageHandler_.Status = QueueMessageStatus.Postponed;
         return false;
       }
 
@@ -382,10 +387,12 @@ public class TaskHandler : IAsyncDisposable
 
       if (cancellationTokenSource_.IsCancellationRequested)
       {
+        logger_.LogDebug("Task preconditions ok but execution cancellation requested");
         await taskTable_.ReleaseTask(taskData_.TaskId,
                                      ownerPodId_,
                                      CancellationToken.None)
                         .ConfigureAwait(false);
+        messageHandler_.Status = QueueMessageStatus.Postponed;
         return false;
       }
 
