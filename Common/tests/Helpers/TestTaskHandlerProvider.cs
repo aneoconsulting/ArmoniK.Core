@@ -103,6 +103,9 @@ public class TestTaskHandlerProvider : IDisposable
                                                    $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
                                                    "DefaultPartition"
                                                  },
+                                                 {
+                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
+                                                 },
                                                };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -123,6 +126,9 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddOption<Injection.Options.Submitter>(builder.Configuration,
                                                    Injection.Options.Submitter.SettingSection)
+           .AddOption<Injection.Options.Pollster>(builder.Configuration,
+                                                  Injection.Options.Pollster.SettingSection)
+           .AddSingleton(_ => new CancellationTokenSource())
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<TaskHandler>()

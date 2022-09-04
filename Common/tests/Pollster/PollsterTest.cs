@@ -268,10 +268,12 @@ public class PollsterTest
   }
 
   [Test]
-  public async Task ExecuteTaskShouldSucceed()
+  [TestCase(100)]
+  [TestCase(5000)] // task should be longer than the grace delay
+  public async Task ExecuteTaskShouldSucceed(double delay)
   {
     var mockPullQueueStorage    = new Mock<IPullQueueStorage>();
-    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(100);
+    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(delay);
     var simpleAgentHandler      = new SimpleAgentHandler();
 
     using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
@@ -315,53 +317,5 @@ public class PollsterTest
                                                                      .Status);
   }
 
-  [Test]
-  public async Task ExecuteLongTaskShouldSucceed()
-  {
-    var mockPullQueueStorage    = new Mock<IPullQueueStorage>();
-    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(5000);
-    var simpleAgentHandler      = new SimpleAgentHandler();
-
-    using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
-                                                             simpleAgentHandler,
-                                                             mockPullQueueStorage.Object);
-
-    var tuple = await InitSubmitter(testServiceProvider.Submitter,
-                                    testServiceProvider.PartitionTable,
-                                    CancellationToken.None)
-                  .ConfigureAwait(false);
-
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
-                                                                    It.IsAny<CancellationToken>()))
-                        .Returns(() => new List<IQueueMessageHandler>
-                                       {
-                                         new SimpleQueueMessageHandler
-                                         {
-                                           CancellationToken = CancellationToken.None,
-                                           Status            = QueueMessageStatus.Waiting,
-                                           MessageId = Guid.NewGuid()
-                                                           .ToString(),
-                                           TaskId = tuple.taskSubmitted,
-                                         },
-                                       }.ToAsyncEnumerable());
-
-    await testServiceProvider.Pollster.Init(CancellationToken.None)
-                             .ConfigureAwait(false);
-
-    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(120));
-
-    await testServiceProvider.Pollster.MainLoop(source.Token)
-                             .ConfigureAwait(false);
-    Assert.True(source.Token.IsCancellationRequested);
-
-    Assert.AreEqual(Api.gRPC.V1.TaskStatus.Submitted,
-                    (await testServiceProvider.TaskTable.GetTaskStatus(new[]
-                                                                       {
-                                                                         tuple.taskSubmitted,
-                                                                       },
-                                                                       CancellationToken.None)
-                                              .ConfigureAwait(false)).Single()
-                                                                     .Status);
-  }
 
 }

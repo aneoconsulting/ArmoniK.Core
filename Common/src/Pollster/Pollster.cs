@@ -141,7 +141,8 @@ public class Pollster
         {
           using var scopedLogger = logger_.BeginNamedScope("Prefetch messageHandler",
                                                            ("messageHandler", message.MessageId),
-                                                           ("taskId", message.TaskId));
+                                                           ("taskId", message.TaskId),
+                                                           ("ownerPodId", ownerPodId_));
           TaskProcessing = "";
 
           using var activity = activitySource_.StartActivity("ProcessQueueMessage");
@@ -154,12 +155,6 @@ public class Pollster
 
           var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(message.CancellationToken,
                                                                             cancellationToken);
-          if (combinedCts.IsCancellationRequested)
-          {
-            logger_.LogWarning("Cancellation triggered, message requeued");
-            message.Status = QueueMessageStatus.Postponed;
-            return;
-          }
 
           try
           {
@@ -174,55 +169,26 @@ public class Pollster
                                                           ownerPodId_,
                                                           activitySource_,
                                                           agentHandler_,
-                                                          logger_);
+                                                          logger_,
+                                                          pollsterOptions_,
+                                                          combinedCts);
 
-            var precondition = await taskHandler.AcquireTask(combinedCts.Token)
+            var precondition = await taskHandler.AcquireTask()
                                                 .ConfigureAwait(false);
 
             if (precondition)
             {
-              if (combinedCts.IsCancellationRequested)
-              {
-                logger_.LogWarning("Cancellation triggered, the acquired task is released and the message requeued");
-                await taskHandler.ReleaseTask(CancellationToken.None)
-                                 .ConfigureAwait(false);
-                return;
-              }
-
               TaskProcessing = taskHandler.GetAcquiredTask();
 
-              await taskHandler.PreProcessing(combinedCts.Token)
+              await taskHandler.PreProcessing()
                                .ConfigureAwait(false);
 
-              if (combinedCts.IsCancellationRequested)
-              {
-                logger_.LogWarning("Cancellation triggered, the acquired task is released and the message requeued");
-                await taskHandler.ReleaseTask(CancellationToken.None)
-                                 .ConfigureAwait(false);
-                return;
-              }
-
-              var workerConnectionCts = new CancellationTokenSource();
-              var postConnectionCts = new CancellationTokenSource();
-              var errorConnectionCts = new CancellationTokenSource();
-              combinedCts.Token.Register(() =>
-                                         {
-                                           logger_.LogWarning("Cancellation triggered, waiting {timeBeforeCancellation} before cancelling task",
-                                                              pollsterOptions_.GraceDelay);
-                                           workerConnectionCts.CancelAfter(pollsterOptions_.GraceDelay);
-                                           postConnectionCts.CancelAfter(pollsterOptions_.GraceDelay  + TimeSpan.FromSeconds(1));
-                                           errorConnectionCts.CancelAfter(pollsterOptions_.GraceDelay + TimeSpan.FromSeconds(2));
-                                         });
-
-              await taskHandler.ExecuteTask(combinedCts.Token,
-                                            workerConnectionCts.Token)
+              await taskHandler.ExecuteTask()
                                .ConfigureAwait(false);
 
               logger_.LogDebug("Complete task processing");
 
-              await taskHandler.PostProcessing(workerConnectionCts.Token,
-                                               postConnectionCts.Token,
-                                               errorConnectionCts.Token)
+              await taskHandler.PostProcessing()
                                .ConfigureAwait(false);
 
               logger_.LogDebug("Task returned");

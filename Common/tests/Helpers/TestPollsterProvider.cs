@@ -103,8 +103,7 @@ public class TestPollsterProvider : IDisposable
                                                    "DefaultPartition"
                                                  },
                                                  {
-                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}",
-                                                   "00:00:02"
+                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
                                                  },
                                                };
 

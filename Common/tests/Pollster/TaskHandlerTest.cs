@@ -82,7 +82,7 @@ public class TaskHandlerTest
                                                                 mockAgentHandler.Object,
                                                                 mockQueueMessageHandler.Object);
 
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask(CancellationToken.None)
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
     Assert.IsFalse(acquired);
@@ -176,7 +176,7 @@ public class TaskHandlerTest
 
     sqmh.TaskId = taskId;
 
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask(CancellationToken.None)
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
     Assert.IsTrue(acquired);
@@ -275,7 +275,7 @@ public class TaskHandlerTest
 
     sqmh.TaskId = taskId;
 
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask(CancellationToken.None)
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
     Assert.IsFalse(acquired);
@@ -371,21 +371,18 @@ public class TaskHandlerTest
 
     sqmh.TaskId = taskId;
 
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask(CancellationToken.None)
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
     Assert.IsTrue(acquired);
 
-    await testServiceProvider.TaskHandler.PreProcessing(CancellationToken.None)
+    await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.ExecuteTask(CancellationToken.None,
-                                                      CancellationToken.None)
+    await testServiceProvider.TaskHandler.ExecuteTask()
                              .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.PostProcessing(CancellationToken.None,
-                                                         CancellationToken.None,
-                                                         CancellationToken.None)
+    await testServiceProvider.TaskHandler.PostProcessing()
                              .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Completed,
@@ -486,16 +483,15 @@ public class TaskHandlerTest
 
     sqmh.TaskId = taskId;
 
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask(CancellationToken.None)
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
     Assert.IsTrue(acquired);
 
-    await testServiceProvider.TaskHandler.PreProcessing(CancellationToken.None)
+    await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.ExecuteTask(CancellationToken.None,
-                                                      CancellationToken.None)
+    await testServiceProvider.TaskHandler.ExecuteTask()
                              .ConfigureAwait(false);
 
 
@@ -521,9 +517,7 @@ public class TaskHandlerTest
                                         CancellationToken.None)
                       .ConfigureAwait(false);
 
-    await testServiceProvider.TaskHandler.PostProcessing(CancellationToken.None,
-                                                         CancellationToken.None,
-                                                         CancellationToken.None)
+    await testServiceProvider.TaskHandler.PostProcessing()
                              .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Completed,

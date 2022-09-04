@@ -53,6 +53,7 @@ public class TaskHandler : IAsyncDisposable
   private readonly IAgentHandler                               agentHandler_;
   private readonly DataPrefetcher                              dataPrefetcher_;
   private readonly ILogger                                     logger_;
+  private readonly CancellationTokenSource                     cancellationTokenSource_;
   private readonly IQueueMessageHandler                        messageHandler_;
   private readonly string                                      ownerPodId_;
   private readonly IResultTable                                resultTable_;
@@ -66,36 +67,48 @@ public class TaskHandler : IAsyncDisposable
   private          Queue<ProcessRequest.Types.ComputeRequest>? computeRequestStream_;
   private          SessionData?                                sessionData_;
   private          TaskData?                                   taskData_;
+  private          CancellationTokenSource?                    workerConnectionCts_;
 
-  public TaskHandler(ISessionTable          sessionTable,
-                     ITaskTable             taskTable,
-                     IResultTable           resultTable,
-                     ISubmitter             submitter,
-                     DataPrefetcher         dataPrefetcher,
-                     IWorkerStreamHandler   workerStreamHandler,
-                     IQueueMessageHandler   messageHandler,
-                     ITaskProcessingChecker taskProcessingChecker,
-                     string                 ownerPodId,
-                     ActivitySource         activitySource,
-                     IAgentHandler          agentHandler,
-                     ILogger                logger)
+  public TaskHandler(ISessionTable              sessionTable,
+                     ITaskTable                 taskTable,
+                     IResultTable               resultTable,
+                     ISubmitter                 submitter,
+                     DataPrefetcher             dataPrefetcher,
+                     IWorkerStreamHandler       workerStreamHandler,
+                     IQueueMessageHandler       messageHandler,
+                     ITaskProcessingChecker     taskProcessingChecker,
+                     string                     ownerPodId,
+                     ActivitySource             activitySource,
+                     IAgentHandler              agentHandler,
+                     ILogger                    logger,
+                     Injection.Options.Pollster pollsterOptions,
+                     CancellationTokenSource    cancellationTokenSource)
   {
-    sessionTable_          = sessionTable;
-    taskTable_             = taskTable;
-    resultTable_           = resultTable;
-    messageHandler_        = messageHandler;
-    taskProcessingChecker_ = taskProcessingChecker;
-    submitter_             = submitter;
-    dataPrefetcher_        = dataPrefetcher;
-    workerStreamHandler_   = workerStreamHandler;
-    activitySource_        = activitySource;
-    agentHandler_          = agentHandler;
-    logger_                = logger;
-    ownerPodId_            = ownerPodId;
-    taskData_              = null;
-    sessionData_           = null;
+    sessionTable_            = sessionTable;
+    taskTable_               = taskTable;
+    resultTable_             = resultTable;
+    messageHandler_          = messageHandler;
+    taskProcessingChecker_   = taskProcessingChecker;
+    submitter_               = submitter;
+    dataPrefetcher_          = dataPrefetcher;
+    workerStreamHandler_     = workerStreamHandler;
+    activitySource_          = activitySource;
+    agentHandler_            = agentHandler;
+    logger_                  = logger;
+    cancellationTokenSource_ = cancellationTokenSource;
+    ownerPodId_              = ownerPodId;
+    taskData_                = null;
+    sessionData_             = null;
     token_ = Guid.NewGuid()
                  .ToString();
+
+    workerConnectionCts_ = new CancellationTokenSource();
+    cancellationTokenSource_.Token.Register(() =>
+                                            {
+                                              logger_.LogWarning("Cancellation triggered, waiting {timeBeforeCancellation} before cancelling task",
+                                                                 pollsterOptions.GraceDelay);
+                                              workerConnectionCts_?.CancelAfter(pollsterOptions.GraceDelay);
+                                            });
   }
 
 
@@ -110,38 +123,19 @@ public class TaskHandler : IAsyncDisposable
     await messageHandler_.DisposeAsync()
                          .ConfigureAwait(false);
 
+    workerConnectionCts_?.Dispose();
+    workerConnectionCts_ = null;
     agent_?.Dispose();
-  }
-
-  /// <summary>
-  ///   Release the acquired task if any
-  /// </summary>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  public async Task ReleaseTask(CancellationToken cancellationToken)
-  {
-    using var activity = activitySource_.StartActivity($"{nameof(ReleaseTask)}");
-    if (taskData_ is not null)
-    {
-      await taskTable_.ReleaseTask(taskData_.TaskId,
-                                   ownerPodId_,
-                                   cancellationToken)
-                      .ConfigureAwait(false);
-      messageHandler_.Status = QueueMessageStatus.Postponed;
-    }
   }
 
   /// <summary>
   ///   Acquisition of the task in the message given to the constructor
   /// </summary>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Bool representing whether the task has been acquired
   /// </returns>
   /// <exception cref="ArgumentException">status of the task is not recognized</exception>
-  public async Task<bool> AcquireTask(CancellationToken cancellationToken)
+  public async Task<bool> AcquireTask()
   {
     using var activity = activitySource_.StartActivity($"{nameof(AcquireTask)}");
     using var _ = logger_.BeginNamedScope("Acquiring task",
@@ -151,8 +145,14 @@ public class TaskHandler : IAsyncDisposable
     try
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
-                                                 cancellationToken)
+                                                 CancellationToken.None)
                                   .ConfigureAwait(false);
+
+      if (cancellationTokenSource_.IsCancellationRequested)
+      {
+        messageHandler_.Status = QueueMessageStatus.Postponed;
+        return false;
+      }
 
       /*
      * Check preconditions:
@@ -220,7 +220,7 @@ public class TaskHandler : IAsyncDisposable
       }
 
       sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
-                                                         cancellationToken)
+                                                         CancellationToken.None)
                                         .ConfigureAwait(false);
       var isSessionCancelled = sessionData_.Status == SessionStatus.Canceled;
 
@@ -230,7 +230,7 @@ public class TaskHandler : IAsyncDisposable
 
         messageHandler_.Status = QueueMessageStatus.Cancelled;
         await taskTable_.SetTaskCanceledAsync(messageHandler_.TaskId,
-                                              cancellationToken)
+                                              CancellationToken.None)
                         .ConfigureAwait(false);
         await resultTable_.AbortTaskResults(taskData_.SessionId,
                                             taskData_.TaskId,
@@ -239,11 +239,17 @@ public class TaskHandler : IAsyncDisposable
         return false;
       }
 
+      if (cancellationTokenSource_.IsCancellationRequested)
+      {
+        messageHandler_.Status = QueueMessageStatus.Postponed;
+        return false;
+      }
+
       if (taskData_.DataDependencies.Any())
       {
         var dependencies = await resultTable_.AreResultsAvailableAsync(taskData_.SessionId,
                                                                        taskData_.DataDependencies,
-                                                                       cancellationToken)
+                                                                       cancellationTokenSource_.Token)
                                              .ConfigureAwait(false);
 
         if (!dependencies.Any())
@@ -289,11 +295,26 @@ public class TaskHandler : IAsyncDisposable
         }
       }
 
+      if (cancellationTokenSource_.IsCancellationRequested)
+      {
+        messageHandler_.Status = QueueMessageStatus.Postponed;
+        return false;
+      }
+
       logger_.LogDebug("Trying to acquire task");
       taskData_ = await taskTable_.AcquireTask(messageHandler_.TaskId,
                                                ownerPodId_,
-                                               cancellationToken)
+                                               CancellationToken.None)
                                   .ConfigureAwait(false);
+
+      if (cancellationTokenSource_.IsCancellationRequested)
+      {
+        await taskTable_.ReleaseTask(taskData_.TaskId,
+                                     ownerPodId_,
+                                     CancellationToken.None)
+                        .ConfigureAwait(false);
+        return false;
+      }
 
       // empty OwnerPodId means that the task was not acquired because not ready
       if (taskData_.OwnerPodId == "")
@@ -308,7 +329,7 @@ public class TaskHandler : IAsyncDisposable
         // if the task is acquired by another pod, we check if the task is running on the other pod
         var taskProcessingElsewhere = await taskProcessingChecker_.Check(taskData_.TaskId,
                                                                          taskData_.OwnerPodId,
-                                                                         cancellationToken)
+                                                                         CancellationToken.None)
                                                                   .ConfigureAwait(false);
 
         logger_.LogInformation("Task {taskId} already acquired by {OtherOwnerPodId}, treating it {processing}",
@@ -320,7 +341,7 @@ public class TaskHandler : IAsyncDisposable
         if (!taskProcessingElsewhere)
         {
           taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
-                                                     cancellationToken)
+                                                     CancellationToken.None)
                                       .ConfigureAwait(false);
           if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
           {
@@ -359,6 +380,15 @@ public class TaskHandler : IAsyncDisposable
         return false;
       }
 
+      if (cancellationTokenSource_.IsCancellationRequested)
+      {
+        await taskTable_.ReleaseTask(taskData_.TaskId,
+                                     ownerPodId_,
+                                     CancellationToken.None)
+                        .ConfigureAwait(false);
+        return false;
+      }
+
       logger_.LogInformation("Task preconditions are OK");
       return true;
     }
@@ -385,12 +415,11 @@ public class TaskHandler : IAsyncDisposable
   /// <summary>
   ///   Preprocessing (including the data prefetching) of the acquired task
   /// </summary>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
-  public async Task PreProcessing(CancellationToken cancellationToken)
+  public async Task PreProcessing()
   {
     logger_.LogDebug("Start prefetch data");
     using var _ = logger_.BeginNamedScope("PreProcessing",
@@ -401,21 +430,19 @@ public class TaskHandler : IAsyncDisposable
     }
 
     computeRequestStream_ = await dataPrefetcher_.PrefetchDataAsync(taskData_,
-                                                                    cancellationToken)
+                                                                    cancellationTokenSource_.Token)
                                                  .ConfigureAwait(false);
   }
 
   /// <summary>
   ///   Execution of the acquired task on the worker
   /// </summary>
-  /// <param name="cancellationToken">Token used to cancel the method before the task is started</param>
-  /// <param name="connectionCancellationToken">Token used to cancel the connection to the worker</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
   /// <exception cref="ArmoniKException">worker pipe is not initialized</exception>
-  public async Task ExecuteTask(CancellationToken cancellationToken, CancellationToken connectionCancellationToken)
+  public async Task ExecuteTask()
   {
     using var _ = logger_.BeginNamedScope("TaskExecution",
                                           ("taskId", messageHandler_.TaskId));
@@ -431,16 +458,16 @@ public class TaskHandler : IAsyncDisposable
                                        logger_,
                                        sessionData_,
                                        taskData_,
-                                       cancellationToken)
+                                       cancellationTokenSource_.Token)
                                 .ConfigureAwait(false);
 
     logger_.LogInformation("Start processing task");
     await submitter_.StartTask(taskData_.TaskId,
-                               cancellationToken)
+                               cancellationTokenSource_.Token)
                     .ConfigureAwait(false);
 
     workerStreamHandler_.StartTaskProcessing(taskData_,
-                                             connectionCancellationToken);
+                                             workerConnectionCts_!.Token);
     if (workerStreamHandler_.Pipe is null)
     {
       throw new ArmoniKException($"{nameof(IWorkerStreamHandler.Pipe)} should not be null");
@@ -463,16 +490,11 @@ public class TaskHandler : IAsyncDisposable
   /// <summary>
   ///   Post processing of the acquired task
   /// </summary>
-  /// <param name="readCancellationToken">Token used to cancel the wait for the worker reply</param>
-  /// <param name="postCancellationToken">Token used to cancel the operations after the reply is received</param>
-  /// <param name="errorCancellationToken">Token used to cancel the error management operations</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
-  public async Task PostProcessing(CancellationToken readCancellationToken,
-                                   CancellationToken postCancellationToken,
-                                   CancellationToken errorCancellationToken)
+  public async Task PostProcessing()
   {
     using var _ = logger_.BeginNamedScope("PostProcessing",
                                           ("taskId", messageHandler_.TaskId));
@@ -496,11 +518,11 @@ public class TaskHandler : IAsyncDisposable
     {
       // at this point worker requests should have ended
       logger_.LogDebug("Waiting for task output");
-      var reply = await workerStreamHandler_.Pipe.ReadAsync(readCancellationToken)
+      var reply = await workerStreamHandler_.Pipe.ReadAsync(workerConnectionCts_!.Token)
                                             .ConfigureAwait(false);
 
       logger_.LogDebug("Stop agent server");
-      await agentHandler_.Stop(postCancellationToken)
+      await agentHandler_.Stop(workerConnectionCts_.Token)
                          .ConfigureAwait(false);
 
       logger_.LogInformation("Process task output of type {type}",
@@ -509,14 +531,14 @@ public class TaskHandler : IAsyncDisposable
       if (reply.Output.TypeCase is Output.TypeOneofCase.Ok)
       {
         logger_.LogDebug("Complete processing of the request");
-        await agent_.FinalizeTaskCreation(postCancellationToken)
+        await agent_.FinalizeTaskCreation(CancellationToken.None)
                     .ConfigureAwait(false);
       }
 
       await submitter_.CompleteTaskAsync(taskData_,
                                          false,
                                          reply.Output,
-                                         postCancellationToken)
+                                         CancellationToken.None)
                       .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Processed;
     }
@@ -529,7 +551,7 @@ public class TaskHandler : IAsyncDisposable
                                         taskData_,
                                         QueueMessageStatus.Cancelled,
                                         true,
-                                        errorCancellationToken)
+                                        workerConnectionCts_!.Token)
         .ConfigureAwait(false);
       return;
     }
@@ -542,7 +564,7 @@ public class TaskHandler : IAsyncDisposable
                                         taskData_,
                                         QueueMessageStatus.Processed,
                                         false,
-                                        errorCancellationToken)
+                                        workerConnectionCts_!.Token)
         .ConfigureAwait(false);
 
       return;
@@ -561,8 +583,10 @@ public class TaskHandler : IAsyncDisposable
     if (cancellationToken.IsCancellationRequested)
     {
       logger_.LogWarning("Cancellation triggered, task cancelled here and re executed elsewhere");
-      await ReleaseTask(CancellationToken.None)
-        .ConfigureAwait(false);
+      await taskTable_.ReleaseTask(taskData.TaskId,
+                                   ownerPodId_,
+                                   CancellationToken.None)
+                      .ConfigureAwait(false);
       messageHandler_.Status = QueueMessageStatus.Postponed;
     }
     else
