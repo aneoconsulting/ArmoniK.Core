@@ -996,19 +996,6 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.MaxPriority
   nameWithType: PushQueueStorage.MaxPriority
-- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId
-  name: PartitionId
-  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_PartitionId
-  commentId: P:ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId
-  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId
-  nameWithType: PushQueueStorage.PartitionId
-- uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId*
-  name: PartitionId
-  href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_PartitionId_
-  commentId: Overload:ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId
-  isSpec: "True"
-  fullName: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PartitionId
-  nameWithType: PushQueueStorage.PartitionId
 - uid: ArmoniK.Core.Adapters.Memory.PushQueueStorage.PushMessagesAsync(IEnumerable{System.String},System.String,System.Int32,CancellationToken)
   name: PushMessagesAsync(IEnumerable<String>, String, Int32, CancellationToken)
   href: api/ArmoniK.Core.Adapters.Memory.PushQueueStorage.html#ArmoniK_Core_Adapters_Memory_PushQueueStorage_PushMessagesAsync_IEnumerable_System_String__System_String_System_Int32_CancellationToken_

@@ -655,7 +655,7 @@ status to change</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;string&gt;&gt; GetParentTaskIds(string taskId, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;string&gt;&gt; GetParentTaskIds(string taskId, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -823,7 +823,7 @@ status to change</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;GetTaskStatusReply.Types.IdStatus&gt;&gt; GetTaskStatus(IEnumerable&lt;string&gt; taskId, CancellationToken cancellationToken = null)</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;GetTaskStatusReply.Types.IdStatus&gt;&gt; GetTaskStatus(IEnumerable&lt;string&gt; taskIds, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -837,7 +837,7 @@ status to change</p>
     <tbody>
       <tr>
         <td><span class="xref">IEnumerable</span>&lt;<span class="xref">System.String</span>&gt;</td>
-        <td><span class="parametername">taskId</span></td>
+        <td><span class="parametername">taskIds</span></td>
         <td><p>Id of the target task</p>
 </td>
       </tr>
@@ -935,7 +935,7 @@ status to change</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;TaskData&gt;&gt; ListTasksAsync(ListTasksRequest request, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;IEnumerable&lt;TaskData&gt;&gt; ListTasksAsync(ListTasksRequest request, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -991,7 +991,7 @@ status to change</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;string&gt; ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">IAsyncEnumerable&lt;string&gt; ListTasksAsync(TaskFilter filter, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1165,7 +1165,7 @@ status to change</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;string&gt; RetryTask(TaskData taskData, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;string&gt; RetryTask(TaskData taskData, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1221,7 +1221,7 @@ status to change</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">System.Threading.Tasks.Task SetTaskCanceledAsync(string taskId, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">System.Threading.Tasks.Task SetTaskCanceledAsync(string taskId, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1278,7 +1278,7 @@ error message</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;bool&gt; SetTaskErrorAsync(string taskId, string errorDetail, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;bool&gt; SetTaskErrorAsync(string taskId, string errorDetail, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -1340,7 +1340,7 @@ error message</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">System.Threading.Tasks.Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken)</code></pre>
+    <pre><code class="lang-csharp hljs">System.Threading.Tasks.Task SetTaskSuccessAsync(string taskId, CancellationToken cancellationToken = null)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
