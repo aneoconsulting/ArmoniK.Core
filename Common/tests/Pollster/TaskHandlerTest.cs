@@ -23,6 +23,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -35,12 +36,16 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 
 using Armonik.Api.gRPC.V1.Tasks;
 
+using ArmoniK.Api.gRPC.V1.Worker;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Core.Common.Utils;
 
 using Google.Protobuf.WellKnownTypes;
+
+using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -651,6 +656,151 @@ public class TaskHandlerTest
                                             .ConfigureAwait(false);
 
     Assert.IsFalse(acquired);
+  }
+
+  private class ExceptionAsyncPipe<T> : IAsyncPipe<ProcessReply, ProcessRequest>
+    where T : Exception, new()
+  {
+    private readonly int delay_;
+
+    public ExceptionAsyncPipe(int delay)
+      => delay_ = delay;
+
+    public async Task<ProcessReply> ReadAsync(CancellationToken cancellationToken)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(delay_))
+                .ConfigureAwait(false);
+      throw new T();
+    }
+
+    public Task WriteAsync(ProcessRequest message)
+      => Task.CompletedTask;
+
+    public Task WriteAsync(IEnumerable<ProcessRequest> message)
+      => Task.CompletedTask;
+
+    public Task CompleteAsync()
+      => Task.CompletedTask;
+  }
+
+  private class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
+    where T : Exception, new()
+  {
+    private readonly int delay_;
+
+    public ExceptionWorkerStreamHandler(int delay)
+      => delay_ = delay;
+
+    public ValueTask<bool> Check(HealthCheckTag tag)
+      => new(true);
+
+    public Task Init(CancellationToken cancellationToken)
+      => Task.CompletedTask;
+
+    public void Dispose()
+    {
+    }
+
+    public IAsyncPipe<ProcessReply, ProcessRequest>? Pipe { get; private set; }
+
+    public void StartTaskProcessing(TaskData          taskData,
+                                    CancellationToken cancellationToken)
+      => Pipe = new ExceptionAsyncPipe<T>(delay_);
+  }
+
+  public class TestRpcException : RpcException
+  {
+    public TestRpcException()
+      : base(new Status(StatusCode.Aborted,
+                        ""))
+    {
+    }
+
+    public TestRpcException(string message)
+      : base(new Status(StatusCode.Aborted,
+                        ""),
+             message)
+    {
+    }
+
+    public TestRpcException(Metadata trailers)
+      : base(new Status(StatusCode.Aborted,
+                        ""),
+             trailers)
+    {
+    }
+
+    public TestRpcException(Metadata trailers,
+                            string   message)
+      : base(new Status(StatusCode.Aborted,
+                        ""),
+             trailers,
+             message)
+    {
+    }
+  }
+
+  public static IEnumerable TestCaseOuptut
+  {
+    get
+    {
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(0)).Returns(TaskStatus.Error)
+                                                                                   .SetArgDisplayNames("ExceptionError");
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(3000)).Returns(TaskStatus.Submitted)
+                                                                                      .SetArgDisplayNames("ExceptionTaskCancellation");
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0)).Returns(TaskStatus.Error)
+                                                                                          .SetArgDisplayNames("RpcExceptionResubmit");
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(3000)).Returns(TaskStatus.Submitted)
+                                                                                             .SetArgDisplayNames("RpcExceptionTaskCancellation");
+    }
+  }
+
+  [Test]
+  [TestCaseSource(nameof(TestCaseOuptut))]
+  public async Task<TaskStatus> ExecuteTaskWithExceptionDuringCancellationShouldSucceed(IWorkerStreamHandler workerStreamHandler)
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var agentHandler            = new SimpleAgentHandler();
+    var cancellationTokenSource = new CancellationTokenSource();
+    using var testServiceProvider = new TestTaskHandlerProvider(workerStreamHandler,
+                                                                agentHandler,
+                                                                sqmh,
+                                                                cancellationTokenSource);
+
+    var (taskId, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                           .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.IsTrue(acquired);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    await testServiceProvider.TaskHandler.ExecuteTask()
+                             .ConfigureAwait(false);
+
+    cancellationTokenSource.Cancel();
+
+    await testServiceProvider.TaskHandler.PostProcessing()
+                             .ConfigureAwait(false);
+
+    return (await testServiceProvider.TaskTable.GetTaskStatus(new[]
+                                                              {
+                                                                taskId,
+                                                              })
+                                     .ConfigureAwait(false)).Single()
+                                                            .Status;
   }
 
   [Test]
