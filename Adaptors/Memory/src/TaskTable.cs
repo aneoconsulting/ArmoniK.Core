@@ -108,7 +108,7 @@ public class TaskTable : ITaskTable
                                                   TaskStatus        status,
                                                   CancellationToken cancellationToken = default)
   {
-    if (filter.Included != null && filter.Included.Statuses.Contains(TaskStatus.Completed) | filter.Included.Statuses.Contains(TaskStatus.Canceled))
+    if (filter.Included != null && (filter.Included.Statuses.Contains(TaskStatus.Completed) || filter.Included.Statuses.Contains(TaskStatus.Canceled)))
     {
       throw new ArmoniKException("The given TaskFilter contains a terminal state or isn't initialized properly");
     }
@@ -264,7 +264,7 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
-                                                 CancellationToken cancellationToken)
+                                                 CancellationToken cancellationToken = default)
   {
     IEnumerable<string> rawList = filter.IdsCase switch
                                   {
@@ -290,7 +290,7 @@ public class TaskTable : ITaskTable
   }
 
   public Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                                    CancellationToken cancellationToken)
+                                                    CancellationToken cancellationToken = default)
   {
     var queryable = taskId2TaskData_.AsQueryable()
                                     .Select(pair => pair.Value)
@@ -306,7 +306,7 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public Task SetTaskSuccessAsync(string            taskId,
-                                  CancellationToken cancellationToken)
+                                  CancellationToken cancellationToken = default)
   {
     using var _ = Logger.LogFunction();
 
@@ -344,7 +344,7 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public Task SetTaskCanceledAsync(string            taskId,
-                                   CancellationToken cancellationToken)
+                                   CancellationToken cancellationToken = default)
   {
     using var _ = Logger.LogFunction();
 
@@ -383,7 +383,7 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public Task<bool> SetTaskErrorAsync(string            taskId,
                                       string            errorDetail,
-                                      CancellationToken cancellationToken)
+                                      CancellationToken cancellationToken = default)
   {
     using var _ = Logger.LogFunction();
 
@@ -499,7 +499,7 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
-                                                    CancellationToken cancellationToken)
+                                                    CancellationToken cancellationToken = default)
   {
     if (!taskId2TaskData_.ContainsKey(taskId))
     {
@@ -512,7 +512,7 @@ public class TaskTable : ITaskTable
 
   /// <inheritdoc />
   public Task<string> RetryTask(TaskData          taskData,
-                                CancellationToken cancellationToken)
+                                CancellationToken cancellationToken = default)
   {
     var newTaskId = taskData.InitialTaskId + $"###{taskData.RetryOfIds.Count + 1}";
     var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)

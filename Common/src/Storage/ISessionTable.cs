@@ -114,12 +114,12 @@ public interface ISessionTable : IInitializable
   /// <summary>
   ///   List all sessions matching a given filter
   /// </summary>
-  /// <param name="request">Session filter describing the sessions to be listed </param>
+  /// <param name="sessionFilter">Session filter describing the sessions to be listed </param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Collection of sessions that matched the filter
   /// </returns>
-  IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     request,
+  IAsyncEnumerable<string> ListSessionsAsync(SessionFilter     sessionFilter,
                                              CancellationToken cancellationToken = default);
 
   /// <summary>

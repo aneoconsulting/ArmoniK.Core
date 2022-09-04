@@ -195,7 +195,7 @@ public interface ITaskTable : IInitializable
   ///   List of tasks that matched the filter
   /// </returns>
   IAsyncEnumerable<string> ListTasksAsync(TaskFilter        filter,
-                                          CancellationToken cancellationToken);
+                                          CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   List all tasks matching the given request
@@ -206,7 +206,7 @@ public interface ITaskTable : IInitializable
   ///   Collection of task metadata matching the request
   /// </returns>
   Task<IEnumerable<TaskData>> ListTasksAsync(ListTasksRequest  request,
-                                             CancellationToken cancellationToken);
+                                             CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Change the status of the task to succeeded
@@ -217,7 +217,7 @@ public interface ITaskTable : IInitializable
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task SetTaskSuccessAsync(string            taskId,
-                           CancellationToken cancellationToken);
+                           CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Change the status of the task to canceled
@@ -228,7 +228,7 @@ public interface ITaskTable : IInitializable
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task SetTaskCanceledAsync(string            taskId,
-                            CancellationToken cancellationToken);
+                            CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Tag a task as errored and populate its output with an
@@ -242,7 +242,7 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task<bool> SetTaskErrorAsync(string            taskId,
                                string            errorDetail,
-                               CancellationToken cancellationToken);
+                               CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Retrieve a task's output
@@ -284,12 +284,12 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Get reply status metadata of a task given its id
   /// </summary>
-  /// <param name="taskId">Id of the target task</param>
+  /// <param name="taskIds">Id of the target task</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Reply status metadata
   /// </returns>
-  Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskId,
+  Task<IEnumerable<GetTaskStatusReply.Types.IdStatus>> GetTaskStatus(IEnumerable<string> taskIds,
                                                                      CancellationToken   cancellationToken = default);
 
   /// <summary>
@@ -312,7 +312,7 @@ public interface ITaskTable : IInitializable
   ///   The parent's ids
   /// </returns>
   Task<IEnumerable<string>> GetParentTaskIds(string            taskId,
-                                             CancellationToken cancellationToken);
+                                             CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Retry a task identified by its meta data
@@ -323,7 +323,7 @@ public interface ITaskTable : IInitializable
   ///   The id of the freshly created task
   /// </returns>
   Task<string> RetryTask(TaskData          taskData,
-                         CancellationToken cancellationToken);
+                         CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Tag a collection of tasks as submitted

@@ -69,6 +69,7 @@ public class TaskHandlerTest
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
                                                                 mockQueueMessageHandler.Object);
+    Assert.IsNotNull(testServiceProvider.TaskHandler);
   }
 
   [Test]

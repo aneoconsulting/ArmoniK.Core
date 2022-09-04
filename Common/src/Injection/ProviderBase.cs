@@ -30,6 +30,7 @@ namespace ArmoniK.Core.Common.Injection;
 public abstract class ProviderBase<T> : IHealthCheckProvider
 {
   private readonly Func<Task<T>> builder_;
+  private readonly object        lockObj_ = new();
   private          T?            object_;
 
   protected ProviderBase(Func<Task<T>> builder)
@@ -47,7 +48,7 @@ public abstract class ProviderBase<T> : IHealthCheckProvider
       return object_;
     }
 
-    lock (this)
+    lock (lockObj_)
     {
       // can be simplified with Resharper :)
       object_ = object_ is null
