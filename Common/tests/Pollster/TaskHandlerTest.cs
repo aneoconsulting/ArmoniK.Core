@@ -260,41 +260,6 @@ public class TaskHandlerTest
                     testServiceProvider.TaskHandler.GetAcquiredTask());
   }
 
-  [Test]
-  [TestCase(0)]
-  [TestCase(1)]
-  public async Task AcquireTaskWithCancellationShouldFail(int delay)
-  {
-    var sqmh = new SimpleQueueMessageHandler
-               {
-                 CancellationToken = CancellationToken.None,
-                 Status            = QueueMessageStatus.Waiting,
-                 MessageId = Guid.NewGuid()
-                                 .ToString(),
-               };
-
-    var mockStreamHandler       = new Mock<IWorkerStreamHandler>();
-    var mockAgentHandler        = new Mock<IAgentHandler>();
-    var cancellationTokenSource = new CancellationTokenSource();
-    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
-                                                                mockAgentHandler.Object,
-                                                                sqmh,
-                                                                cancellationTokenSource);
-
-    var (taskId, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                           .ConfigureAwait(false);
-
-    sqmh.TaskId = taskId;
-
-    cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(delay));
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
-                                            .ConfigureAwait(false);
-
-    Assert.IsFalse(acquired);
-    Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTask());
-  }
-
   public class WaitTaskTable : ITaskTable
   {
     public enum WaitMethod
