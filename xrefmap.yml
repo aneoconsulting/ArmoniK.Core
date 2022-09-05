@@ -11796,15 +11796,15 @@ references:
   commentId: T:ArmoniK.Core.Common.Storage.TaskOptions
   fullName: ArmoniK.Core.Common.Storage.TaskOptions
   nameWithType: TaskOptions
-- uid: ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32,System.String,System.String,System.String)
-  name: TaskOptions(IDictionary<String, String>, TimeSpan, Int32, Int32, String, String, String)
-  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions__ctor_IDictionary_System_String_System_String__TimeSpan_System_Int32_System_Int32_System_String_System_String_System_String_
-  commentId: M:ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32,System.String,System.String,System.String)
-  name.vb: TaskOptions(IDictionary(Of String, String), TimeSpan, Int32, Int32, String, String, String)
-  fullName: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions(IDictionary<System.String, System.String>, TimeSpan, System.Int32, System.Int32, System.String, System.String, System.String)
-  fullName.vb: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions(IDictionary(Of System.String, System.String), TimeSpan, System.Int32, System.Int32, System.String, System.String, System.String)
-  nameWithType: TaskOptions.TaskOptions(IDictionary<String, String>, TimeSpan, Int32, Int32, String, String, String)
-  nameWithType.vb: TaskOptions.TaskOptions(IDictionary(Of String, String), TimeSpan, Int32, Int32, String, String, String)
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32,System.String,System.String,System.String,System.String,System.String,System.String)
+  name: TaskOptions(IDictionary<String, String>, TimeSpan, Int32, Int32, String, String, String, String, String, String)
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions__ctor_IDictionary_System_String_System_String__TimeSpan_System_Int32_System_Int32_System_String_System_String_System_String_System_String_System_String_System_String_
+  commentId: M:ArmoniK.Core.Common.Storage.TaskOptions.#ctor(IDictionary{System.String,System.String},TimeSpan,System.Int32,System.Int32,System.String,System.String,System.String,System.String,System.String,System.String)
+  name.vb: TaskOptions(IDictionary(Of String, String), TimeSpan, Int32, Int32, String, String, String, String, String, String)
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions(IDictionary<System.String, System.String>, TimeSpan, System.Int32, System.Int32, System.String, System.String, System.String, System.String, System.String, System.String)
+  fullName.vb: ArmoniK.Core.Common.Storage.TaskOptions.TaskOptions(IDictionary(Of System.String, System.String), TimeSpan, System.Int32, System.Int32, System.String, System.String, System.String, System.String, System.String, System.String)
+  nameWithType: TaskOptions.TaskOptions(IDictionary<String, String>, TimeSpan, Int32, Int32, String, String, String, String, String, String)
+  nameWithType.vb: TaskOptions.TaskOptions(IDictionary(Of String, String), TimeSpan, Int32, Int32, String, String, String, String, String, String)
 - uid: ArmoniK.Core.Common.Storage.TaskOptions.#ctor*
   name: TaskOptions
   href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions__ctor_
@@ -11825,6 +11825,32 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationName
   nameWithType: TaskOptions.ApplicationName
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationNamespace
+  name: ApplicationNamespace
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_ApplicationNamespace
+  commentId: P:ArmoniK.Core.Common.Storage.TaskOptions.ApplicationNamespace
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationNamespace
+  nameWithType: TaskOptions.ApplicationNamespace
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationNamespace*
+  name: ApplicationNamespace
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_ApplicationNamespace_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.ApplicationNamespace
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationNamespace
+  nameWithType: TaskOptions.ApplicationNamespace
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationService
+  name: ApplicationService
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_ApplicationService
+  commentId: P:ArmoniK.Core.Common.Storage.TaskOptions.ApplicationService
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationService
+  nameWithType: TaskOptions.ApplicationService
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationService*
+  name: ApplicationService
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_ApplicationService_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.ApplicationService
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationService
+  nameWithType: TaskOptions.ApplicationService
 - uid: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationVersion
   name: ApplicationVersion
   href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_ApplicationVersion
@@ -11838,6 +11864,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Storage.TaskOptions.ApplicationVersion
   nameWithType: TaskOptions.ApplicationVersion
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.EngineType
+  name: EngineType
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_EngineType
+  commentId: P:ArmoniK.Core.Common.Storage.TaskOptions.EngineType
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.EngineType
+  nameWithType: TaskOptions.EngineType
+- uid: ArmoniK.Core.Common.Storage.TaskOptions.EngineType*
+  name: EngineType
+  href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_EngineType_
+  commentId: Overload:ArmoniK.Core.Common.Storage.TaskOptions.EngineType
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Storage.TaskOptions.EngineType
+  nameWithType: TaskOptions.EngineType
 - uid: ArmoniK.Core.Common.Storage.TaskOptions.MaxDuration
   name: MaxDuration
   href: api/ArmoniK.Core.Common.Storage.TaskOptions.html#ArmoniK_Core_Common_Storage_TaskOptions_MaxDuration
@@ -19128,6 +19167,19 @@ references:
   isSpec: "True"
   fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.ListTaskWithRequestTaskStatusShouldSucceed
   nameWithType: TaskTableTestBase.ListTaskWithRequestTaskStatusShouldSucceed
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.OptionsAreEqual
+  name: OptionsAreEqual()
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_OptionsAreEqual
+  commentId: M:ArmoniK.Core.Common.Tests.TaskTableTestBase.OptionsAreEqual
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.OptionsAreEqual()
+  nameWithType: TaskTableTestBase.OptionsAreEqual()
+- uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.OptionsAreEqual*
+  name: OptionsAreEqual
+  href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_OptionsAreEqual_
+  commentId: Overload:ArmoniK.Core.Common.Tests.TaskTableTestBase.OptionsAreEqual
+  isSpec: "True"
+  fullName: ArmoniK.Core.Common.Tests.TaskTableTestBase.OptionsAreEqual
+  nameWithType: TaskTableTestBase.OptionsAreEqual
 - uid: ArmoniK.Core.Common.Tests.TaskTableTestBase.PayloadIdAfterRetryShouldBeCorrect
   name: PayloadIdAfterRetryShouldBeCorrect()
   href: api/ArmoniK.Core.Common.Tests.TaskTableTestBase.html#ArmoniK_Core_Common_Tests_TaskTableTestBase_PayloadIdAfterRetryShouldBeCorrect
