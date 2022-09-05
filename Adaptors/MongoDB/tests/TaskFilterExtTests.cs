@@ -46,7 +46,10 @@ internal class TaskFilterExtTests
                                                         0,
                                                         "part1",
                                                         "ApplicationName",
-                                                        "ApplicationVersion");
+                                                        "ApplicationVersion",
+                                                        "applicationNamespace",
+                                                        "applicationService",
+                                                        "engineType");
 
   [Test]
   public void ShouldRecognizeSession()
