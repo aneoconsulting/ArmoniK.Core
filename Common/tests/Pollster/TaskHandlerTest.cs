@@ -688,14 +688,14 @@ public class TaskHandlerTest
 
   [Test]
   [TestCase(WaitTaskTable.WaitMethod.Read,
-            100,
+            1000,
             0)]
   [TestCase(WaitTaskTable.WaitMethod.Acquire,
-            100,
+            1000,
             0)]
   [TestCase(WaitTaskTable.WaitMethod.Read,
             0,
-            100)]
+            1000)]
   public async Task AcquireTaskWithCancellationWaitTaskTableShouldFail(WaitTaskTable.WaitMethod waitMethod,
                                                                        int                      delayTaskTable,
                                                                        int                      delaySessionTable)
