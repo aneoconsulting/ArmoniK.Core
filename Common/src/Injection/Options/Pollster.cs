@@ -26,9 +26,18 @@ using System;
 
 namespace ArmoniK.Core.Common.Injection.Options;
 
+/// <summary>
+///   Configuration for Pollster
+/// </summary>
 public class Pollster
 {
+  /// <summary>
+  ///   Path to the section containing the values in the configuration object
+  /// </summary>
   public const string SettingSection = nameof(Pollster);
 
+  /// <summary>
+  ///   Grace delay before the pollster cancels the task and put the message back into the queue
+  /// </summary>
   public TimeSpan GraceDelay { get; set; } = TimeSpan.FromSeconds(5);
 }
