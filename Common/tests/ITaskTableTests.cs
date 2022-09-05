@@ -61,7 +61,10 @@ public class TaskTableTestBase
                                     1,
                                     "part1",
                                     "applicationName",
-                                    "applicationVersion");
+                                    "applicationVersion",
+                                    "applicationNamespace",
+                                    "applicationService",
+                                    "engineType");
       TaskTable!.CreateTasks(new[]
                              {
                                new TaskData("SessionId",

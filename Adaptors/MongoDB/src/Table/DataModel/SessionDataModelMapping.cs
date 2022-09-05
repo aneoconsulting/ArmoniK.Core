@@ -86,7 +86,10 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                                                              options.Priority,
                                                                                              options.PartitionId,
                                                                                              options.ApplicationName,
-                                                                                             options.ApplicationVersion));
+                                                                                             options.ApplicationVersion,
+                                                                                             options.ApplicationNamespace,
+                                                                                             options.ApplicationService,
+                                                                                             options.EngineType));
                                                  });
     }
   }

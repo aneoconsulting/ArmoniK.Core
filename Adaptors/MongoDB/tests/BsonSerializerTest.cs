@@ -152,7 +152,10 @@ internal class BsonSerializerTest
                                                                1,
                                                                "part1",
                                                                "applicationName",
-                                                               "applicationVersion"),
+                                                               "applicationVersion",
+                                                               "applicationNamespace",
+                                                               "applicationService",
+                                                               "engineType"),
                            new Output(true,
                                       ""));
 
